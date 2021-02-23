@@ -178,7 +178,7 @@ class BaseUser(_BaseUser):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or ``static_format``, or
             invalid ``size``.
@@ -265,7 +265,7 @@ class BaseUser(_BaseUser):
             The message to check if you're mentioned in.
 
         Returns
-        -------
+        --------
         :class:`bool`
             Indicates if the user is mentioned in the message.
         """
@@ -441,7 +441,7 @@ class ClientUser(BaseUser):
             Could be ``None`` to denote no avatar.
 
         Raises
-        ------
+        -------
         HTTPException
             Editing your profile failed.
         InvalidArgument
@@ -527,7 +527,7 @@ class ClientUser(BaseUser):
             This does not include yourself.
 
         Returns
-        -------
+        --------
         :class:`GroupChannel`
             The new group channel.
         """
@@ -551,7 +551,7 @@ class ClientUser(BaseUser):
             This can only be used by non-bot accounts.
 
         Parameters
-        -------
+        -----------
         afk_timeout: :class:`int`
             How long (in seconds) the user needs to be AFK until Discord
             sends push notifications to your mobile device.
@@ -613,7 +613,7 @@ class ClientUser(BaseUser):
             The client is a bot user and not a user account.
 
         Returns
-        -------
+        --------
         :class:`dict`
             The client user's updated settings.
         """
@@ -726,7 +726,7 @@ class User(BaseUser, discord.abc.Messageable):
         people.
 
         Returns
-        -------
+        --------
         :class:`.DMChannel`
             The channel that was created.
         """
@@ -765,7 +765,7 @@ class User(BaseUser, discord.abc.Messageable):
             Getting mutual friends failed.
 
         Returns
-        -------
+        --------
         List[:class:`User`]
             The users that are mutual friends.
         """

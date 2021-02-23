@@ -203,7 +203,7 @@ class Asset:
         .. versionadded:: 1.1
 
         Raises
-        ------
+        -------
         DiscordException
             There was no valid URL or internal connection state.
         HTTPException
@@ -212,7 +212,7 @@ class Asset:
             The asset was deleted.
 
         Returns
-        -------
+        --------
         :class:`bytes`
             The content of the asset.
         """
@@ -230,14 +230,14 @@ class Asset:
         Saves this asset into a file-like object.
 
         Parameters
-        ----------
+        -----------
         fp: Union[BinaryIO, :class:`os.PathLike`]
             Same as in :meth:`Attachment.save`.
         seek_begin: :class:`bool`
             Same as in :meth:`Attachment.save`.
 
         Raises
-        ------
+        -------
         DiscordException
             There was no valid URL or internal connection state.
         HTTPException

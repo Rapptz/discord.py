@@ -262,13 +262,13 @@ class Cog(metaclass=CogMeta):
         This is the cog equivalent of :meth:`.Bot.listen`.
 
         Parameters
-        ------------
+        -----------
         name: :class:`str`
             The name of the event being listened to. If not provided, it
             defaults to the function's name.
 
         Raises
-        --------
+        -------
         TypeError
             The function is not a coroutine function or a string was not passed as
             the name.

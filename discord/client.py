@@ -431,7 +431,7 @@ class Client:
 
         Raises
         -------
-        :exc:`.InvalidArgument`
+        InvalidArgument
             If any guild is unavailable in the collection.
         """
         if any(g.unavailable for g in guilds):
@@ -460,7 +460,7 @@ class Client:
         .. versionadded:: 1.4
 
         Parameters
-        ------------
+        -----------
         shard_id: :class:`int`
             The shard ID that requested being IDENTIFY'd
         initial: :class:`bool`
@@ -496,7 +496,7 @@ class Client:
             token or not.
 
         Raises
-        ------
+        -------
         :exc:`.LoginFailure`
             The wrong credentials are passed.
         :exc:`.HTTPException`
@@ -944,7 +944,7 @@ class Client:
 
 
         Parameters
-        ------------
+        -----------
         event: :class:`str`
             The event name, similar to the :ref:`event reference <discord-api-events>`,
             but without the ``on_`` prefix, to wait for.
@@ -1003,7 +1003,7 @@ class Client:
                 print('Ready!')
 
         Raises
-        --------
+        -------
         TypeError
             The coroutine passed is not actually a coroutine.
         """
@@ -1029,7 +1029,7 @@ class Client:
             await client.change_presence(status=discord.Status.idle, activity=game)
 
         Parameters
-        ----------
+        -----------
         activity: Optional[:class:`.BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`.Status`]
@@ -1041,7 +1041,7 @@ class Client:
             for you in case you are actually idle and not lying.
 
         Raises
-        ------
+        -------
         :exc:`.InvalidArgument`
             If the ``activity`` parameter is not the proper type.
         """
@@ -1116,7 +1116,7 @@ class Client:
             If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
-        ------
+        -------
         :exc:`.HTTPException`
             Getting the guilds failed.
 
@@ -1173,7 +1173,7 @@ class Client:
             The guild's ID to fetch from.
 
         Raises
-        ------
+        -------
         :exc:`.Forbidden`
             You do not have access to the guild.
         :exc:`.HTTPException`
@@ -1195,7 +1195,7 @@ class Client:
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The name of the guild.
         region: :class:`.VoiceRegion`
@@ -1210,14 +1210,14 @@ class Client:
             .. versionadded:: 1.4
 
         Raises
-        ------
+        -------
         :exc:`.HTTPException`
             Guild creation failed.
         :exc:`.InvalidArgument`
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
-        -------
+        --------
         :class:`.Guild`
             The guild created. This is not the same guild that is
             added to cache.
@@ -1284,7 +1284,7 @@ class Client:
         the associated guild to do this.
 
         Parameters
-        ----------
+        -----------
         invite: Union[:class:`.Invite`, :class:`str`]
             The invite to revoke.
 
@@ -1395,7 +1395,7 @@ class Client:
             This can only be used by non-bot accounts.
 
         Parameters
-        ------------
+        -----------
         user_id: :class:`int`
             The ID of the user to fetch their profile for.
 
@@ -1475,7 +1475,7 @@ class Client:
         Retrieves a :class:`.Webhook` with the specified ID.
 
         Raises
-        --------
+        -------
         :exc:`.HTTPException`
             Retrieving the webhook failed.
         :exc:`.NotFound`
@@ -1484,7 +1484,7 @@ class Client:
             You do not have permission to fetch this webhook.
 
         Returns
-        ---------
+        --------
         :class:`.Webhook`
             The webhook you requested.
         """

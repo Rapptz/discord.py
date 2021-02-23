@@ -72,7 +72,7 @@ class Attachment:
     """Represents an attachment from Discord.
 
     Attributes
-    ------------
+    -----------
     id: :class:`int`
         The attachment ID.
     size: :class:`int`
@@ -134,7 +134,7 @@ class Attachment:
             on some types of attachments.
 
         Raises
-        --------
+        -------
         HTTPException
             Saving the attachment failed.
         NotFound
@@ -173,7 +173,7 @@ class Attachment:
             on some types of attachments.
 
         Raises
-        ------
+        -------
         HTTPException
             Downloading the attachment failed.
         Forbidden
@@ -182,7 +182,7 @@ class Attachment:
             The attachment was deleted.
 
         Returns
-        -------
+        --------
         :class:`bytes`
             The contents of the attachment.
         """
@@ -215,7 +215,7 @@ class Attachment:
             .. versionadded:: 1.4
 
         Raises
-        ------
+        -------
         HTTPException
             Downloading the attachment failed.
         Forbidden
@@ -224,7 +224,7 @@ class Attachment:
             The attachment was deleted.
 
         Returns
-        -------
+        --------
         :class:`File`
             The attachment as a file suitable for sending.
         """
@@ -317,12 +317,12 @@ class MessageReference:
         .. versionadded:: 1.6
 
         Parameters
-        ----------
+        -----------
         message: :class:`~discord.Message`
             The message to be converted into a reference.
 
         Returns
-        -------
+        --------
         :class:`MessageReference`
             A reference to the message.
         """
@@ -940,7 +940,7 @@ class Message(Hashable):
             before deleting the message. If the deletion fails then it is silently ignored.
 
         Raises
-        ------
+        -------
         Forbidden
             You do not have proper permissions to delete the message.
         NotFound
@@ -1139,12 +1139,12 @@ class Message(Hashable):
         emoji, the :attr:`~Permissions.add_reactions` permission is required.
 
         Parameters
-        ------------
+        -----------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to react with.
 
         Raises
-        --------
+        -------
         HTTPException
             Adding the reaction failed.
         Forbidden
@@ -1172,14 +1172,14 @@ class Message(Hashable):
         the :class:`abc.Snowflake` abc.
 
         Parameters
-        ------------
+        -----------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
 
         Raises
-        --------
+        -------
         HTTPException
             Removing the reaction failed.
         Forbidden
@@ -1214,7 +1214,7 @@ class Message(Hashable):
             The emoji to clear.
 
         Raises
-        --------
+        -------
         HTTPException
             Clearing the reaction failed.
         Forbidden
@@ -1236,7 +1236,7 @@ class Message(Hashable):
         You need the :attr:`~Permissions.manage_messages` permission to use this.
 
         Raises
-        --------
+        -------
         HTTPException
             Removing the reactions failed.
         Forbidden
@@ -1273,7 +1273,7 @@ class Message(Hashable):
         .. versionadded:: 1.6
 
         Raises
-        --------
+        -------
         ~discord.HTTPException
             Sending the message failed.
         ~discord.Forbidden
@@ -1283,7 +1283,7 @@ class Message(Hashable):
             you specified both ``file`` and ``files``.
 
         Returns
-        ---------
+        --------
         :class:`Message`
             The message that was sent.
         """
@@ -1296,7 +1296,7 @@ class Message(Hashable):
         .. versionadded:: 1.6
 
         Returns
-        ---------
+        --------
         :class:`~discord.MessageReference`
             The reference to this message.
         """
@@ -1409,7 +1409,7 @@ class PartialMessage(Hashable):
         Fetches the partial message to a full :class:`Message`.
 
         Raises
-        --------
+        -------
         NotFound
             The message was not found.
         Forbidden
@@ -1472,7 +1472,7 @@ class PartialMessage(Hashable):
             edited a message's content or embed that isn't yours.
 
         Returns
-        ---------
+        --------
         Optional[:class:`Message`]
             The message that was edited.
         """

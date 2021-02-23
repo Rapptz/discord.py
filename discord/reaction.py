@@ -131,7 +131,7 @@ class Reaction:
         .. versionadded:: 1.3
 
         Raises
-        --------
+        -------
         HTTPException
             Clearing the reaction failed.
         Forbidden
@@ -166,7 +166,7 @@ class Reaction:
             await channel.send('{} has won the raffle.'.format(winner))
 
         Parameters
-        ------------
+        -----------
         limit: :class:`int`
             The maximum number of results to return.
             If not provided, returns all the users who
@@ -175,7 +175,7 @@ class Reaction:
             For pagination, reactions are sorted by member.
 
         Raises
-        --------
+        -------
         HTTPException
             Getting the users for the reaction failed.
 

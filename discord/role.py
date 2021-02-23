@@ -42,7 +42,7 @@ class RoleTags:
     .. versionadded:: 1.6
 
     Attributes
-    ------------
+    -----------
     bot_id: Optional[:class:`int`]
         The bot's user ID that manages this role.
     integration_id: Optional[:class:`int`]
@@ -114,7 +114,7 @@ class Role(Hashable):
             Returns the role's name.
 
     Attributes
-    ----------
+    -----------
     id: :class:`int`
         The ID for the role.
     name: :class:`str`
@@ -363,7 +363,7 @@ class Role(Hashable):
             The reason for deleting this role. Shows up on the audit log.
 
         Raises
-        --------
+        -------
         Forbidden
             You do not have permissions to delete the role.
         HTTPException

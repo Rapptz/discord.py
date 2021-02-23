@@ -49,7 +49,7 @@ class Sticker(Hashable):
            Checks if the sticker is not equal to another sticker
 
     Attributes
-    ----------
+    -----------
     name: :class:`str`
         The sticker's name
     id: :class:`int`
@@ -104,7 +104,7 @@ class Sticker(Hashable):
             This will return ``None`` if the format is ``StickerType.lottie``
 
         Returns
-        -------
+        --------
         Optional[:class:`Asset`]
             The resulting CDN asset.
         """
@@ -124,12 +124,12 @@ class Sticker(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Invalid ``size``.
 
         Returns
-        -------
+        --------
         Optional[:class:`Asset`]
             The resulting CDN asset or ``None``.
         """

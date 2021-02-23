@@ -182,7 +182,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         variable in order for this to work.
 
     Parameters
-    ------------
+    -----------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to PCM bytes.
         If ``pipe`` is ``True`` then this is a file-like object that is
@@ -201,7 +201,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
 
     Raises
-    --------
+    -------
     ClientException
         The subprocess failed to be created.
     """
@@ -255,7 +255,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         variable in order for this to work.
 
     Parameters
-    ------------
+    -----------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to Opus bytes.
         If ``pipe`` is ``True`` then this is a file-like object that is
@@ -289,7 +289,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         Extra command line arguments to pass to ffmpeg after the ``-i`` flag.
 
     Raises
-    --------
+    -------
     ClientException
         The subprocess failed to be created.
     """
@@ -356,7 +356,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             voice_client.play(source)
 
         Parameters
-        ------------
+        -----------
         source
             Identical to the ``source`` parameter for the constructor.
         method: Optional[Union[:class:`str`, Callable[:class:`str`, :class:`str`]]]
@@ -370,7 +370,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             excluding ``bitrate`` and ``codec``.
 
         Raises
-        --------
+        -------
         AttributeError
             Invalid probe method, must be ``'native'`` or ``'fallback'``.
         TypeError
@@ -393,7 +393,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         Probes the input source for bitrate and codec information.
 
         Parameters
-        ------------
+        -----------
         source
             Identical to the ``source`` parameter for :class:`FFmpegOpusAudio`.
         method
@@ -402,14 +402,14 @@ class FFmpegOpusAudio(FFmpegAudio):
             Identical to the ``executable`` parameter for :class:`FFmpegOpusAudio`.
 
         Raises
-        --------
+        -------
         AttributeError
             Invalid probe method, must be ``'native'`` or ``'fallback'``.
         TypeError
             Invalid value for ``probe`` parameter, must be :class:`str` or a callable.
 
         Returns
-        ---------
+        --------
         Tuple[Optional[:class:`str`], Optional[:class:`int`]]
             A 2-tuple with the codec and bitrate of the input source.
         """
@@ -502,7 +502,7 @@ class PCMVolumeTransformer(AudioSource):
     set to ``True``.
 
     Parameters
-    ------------
+    -----------
     original: :class:`AudioSource`
         The original AudioSource to transform.
     volume: :class:`float`

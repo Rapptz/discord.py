@@ -35,7 +35,7 @@ class AppInfo:
 
 
     Attributes
-    -------------
+    -----------
     id: :class:`int`
         The application ID.
     name: :class:`str`
@@ -154,7 +154,7 @@ class AppInfo:
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -194,7 +194,7 @@ class AppInfo:
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 

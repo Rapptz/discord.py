@@ -203,7 +203,7 @@ class ShardInfo:
     .. versionadded:: 1.4
 
     Attributes
-    ------------
+    -----------
     id: :class:`int`
         The shard ID for this shard.
     shard_count: Optional[:class:`int`]
@@ -290,7 +290,7 @@ class AutoShardedClient(Client):
     0 to ``shard_count - 1``.
 
     Attributes
-    ------------
+    -----------
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
@@ -480,7 +480,7 @@ class AutoShardedClient(Client):
             await client.change_presence(status=discord.Status.idle, activity=game)
 
         Parameters
-        ----------
+        -----------
         activity: Optional[:class:`BaseActivity`]
             The activity being done. ``None`` if no currently active activity is done.
         status: Optional[:class:`Status`]
@@ -496,7 +496,7 @@ class AutoShardedClient(Client):
             shard the bot can see.
 
         Raises
-        ------
+        -------
         InvalidArgument
             If the ``activity`` parameter is not of proper type.
         """

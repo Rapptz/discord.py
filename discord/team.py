@@ -38,7 +38,7 @@ class Team:
     """Represents an application team for a bot provided by Discord.
 
     Attributes
-    -------------
+    -----------
     id: :class:`int`
         The team ID.
     name: :class:`str`
@@ -91,7 +91,7 @@ class Team:
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -131,7 +131,7 @@ class TeamMember(BaseUser):
     .. versionadded:: 1.3
 
     Attributes
-    -------------
+    -----------
     name: :class:`str`
         The team member's username.
     id: :class:`int`

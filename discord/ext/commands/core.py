@@ -1550,7 +1550,7 @@ def check_any(*checks):
     .. versionadded:: 1.3
 
     Parameters
-    ------------
+    -----------
     \*checks: Callable[[:class:`Context`], :class:`bool`]
         An argument list of checks that have been decorated with
         the :func:`check` decorator.
@@ -1755,7 +1755,7 @@ def has_permissions(**perms):
     that is inherited from :exc:`.CheckFailure`.
 
     Parameters
-    ------------
+    -----------
     perms
         An argument list of permissions to check for.
 
@@ -1951,7 +1951,7 @@ def cooldown(rate, per, type=BucketType.default):
     A command can only have a single cooldown.
 
     Parameters
-    ------------
+    -----------
     rate: :class:`int`
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
@@ -1979,7 +1979,7 @@ def max_concurrency(number, per=BucketType.default, *, wait=False):
     .. versionadded:: 1.3
 
     Parameters
-    -------------
+    -----------
     number: :class:`int`
         The maximum number of invocations of this command that can be running at the same time.
     per: :class:`.BucketType`

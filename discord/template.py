@@ -135,7 +135,7 @@ class Template:
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The name of the guild.
         region: :class:`.VoiceRegion`
@@ -146,14 +146,14 @@ class Template:
             for more details on what is expected.
 
         Raises
-        ------
+        -------
         :exc:`.HTTPException`
             Guild creation failed.
         :exc:`.InvalidArgument`
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
-        -------
+        --------
         :class:`.Guild`
             The guild created. This is not the same guild that is
             added to cache.

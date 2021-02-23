@@ -552,7 +552,7 @@ class DiscordWebSocket:
         """Polls for a DISPATCH event and handles the general gateway loop.
 
         Raises
-        ------
+        -------
         ConnectionClosed
             The websocket connection was terminated for unhandled reasons.
         """

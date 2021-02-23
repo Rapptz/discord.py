@@ -179,7 +179,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             attribute.
 
         Returns
-        ---------
+        --------
         Optional[:class:`Message`]
             The last message in this channel or ``None`` if not found.
         """
@@ -200,7 +200,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The ``type`` keyword-only parameter was added.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The new channel name.
         topic: :class:`str`
@@ -229,7 +229,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
-        ------
+        -------
         InvalidArgument
             If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
@@ -273,7 +273,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             An iterable of messages denoting which ones to bulk delete.
 
         Raises
-        ------
+        -------
         ClientException
             The number of messages to delete was more than 100.
         Forbidden
@@ -443,7 +443,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Added the ``reason`` keyword-only parameter.
 
         Parameters
-        -------------
+        -----------
         name: :class:`str`
             The webhook's name.
         avatar: Optional[:class:`bytes`]
@@ -526,12 +526,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionadded:: 1.6
 
         Parameters
-        ------------
+        -----------
         message_id: :class:`int`
             The message ID to create a partial message for.
 
         Returns
-        ---------
+        --------
         :class:`PartialMessage`
             The partial message.
         """
@@ -684,7 +684,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             The ``overwrites`` keyword-only parameter was added.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The new channel's name.
         bitrate: :class:`int`
@@ -706,7 +706,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
-        ------
+        -------
         InvalidArgument
             If the permission overwrite information is not in proper form.
         Forbidden
@@ -803,7 +803,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             The ``overwrites`` keyword-only parameter was added.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The new category's name.
         position: :class:`int`
@@ -817,7 +817,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
-        ------
+        -------
         InvalidArgument
             If position is less than 0 or greater than the number of categories.
         Forbidden
@@ -865,7 +865,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
 
         Returns
-        -------
+        --------
         :class:`TextChannel`
             The channel that was just created.
         """
@@ -877,7 +877,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
 
         Returns
-        -------
+        --------
         :class:`VoiceChannel`
             The channel that was just created.
         """
@@ -976,7 +976,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         use this.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The new channel name.
         position: :class:`int`
@@ -998,7 +998,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             .. versionadded:: 1.3
 
         Raises
-        ------
+        -------
         InvalidArgument
             If position is less than 0 or greater than the number of channels, or if
             the permission overwrite information is not in proper form.
@@ -1031,7 +1031,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
             Returns a string representation of the channel
 
     Attributes
-    ----------
+    -----------
     recipient: :class:`User`
         The user you are participating with in the direct message channel.
     me: :class:`ClientUser`
@@ -1105,12 +1105,12 @@ class DMChannel(discord.abc.Messageable, Hashable):
         .. versionadded:: 1.6
 
         Parameters
-        ------------
+        -----------
         message_id: :class:`int`
             The message ID to create a partial message for.
 
         Returns
-        ---------
+        --------
         :class:`PartialMessage`
             The partial message.
         """
@@ -1140,7 +1140,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             Returns a string representation of the channel
 
     Attributes
-    ----------
+    -----------
     recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
@@ -1223,7 +1223,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 

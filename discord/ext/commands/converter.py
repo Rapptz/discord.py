@@ -669,7 +669,7 @@ class clean_content(Converter):
     This behaves similarly to :attr:`~discord.Message.clean_content`.
 
     Attributes
-    ------------
+    -----------
     fix_channel_mentions: :class:`bool`
         Whether to clean channel mentions.
     use_nicknames: :class:`bool`

@@ -75,7 +75,7 @@ class Guild(Hashable):
             Returns the guild's name.
 
     Attributes
-    ----------
+    -----------
     name: :class:`str`
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
@@ -622,7 +622,7 @@ class Guild(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -652,7 +652,7 @@ class Guild(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -682,7 +682,7 @@ class Guild(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -717,7 +717,7 @@ class Guild(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -922,7 +922,7 @@ class Guild(Hashable):
             The permission overwrite information is not in proper form.
 
         Returns
-        -------
+        --------
         :class:`TextChannel`
             The channel that was just created.
         """
@@ -947,7 +947,7 @@ class Guild(Hashable):
             The channel's limit for number of members that can be in a voice channel.
 
         Raises
-        ------
+        -------
         Forbidden
             You do not have the proper permissions to create this channel.
         HTTPException
@@ -956,7 +956,7 @@ class Guild(Hashable):
             The permission overwrite information is not in proper form.
 
         Returns
-        -------
+        --------
         :class:`VoiceChannel`
             The channel that was just created.
         """
@@ -978,7 +978,7 @@ class Guild(Hashable):
             cannot have categories.
 
         Raises
-        ------
+        -------
         Forbidden
             You do not have the proper permissions to create this channel.
         HTTPException
@@ -987,7 +987,7 @@ class Guild(Hashable):
             The permission overwrite information is not in proper form.
 
         Returns
-        -------
+        --------
         :class:`CategoryChannel`
             The channel that was just created.
         """
@@ -1011,7 +1011,7 @@ class Guild(Hashable):
             via :meth:`delete`.
 
         Raises
-        --------
+        -------
         HTTPException
             Leaving the guild failed.
         """
@@ -1024,7 +1024,7 @@ class Guild(Hashable):
         guild.
 
         Raises
-        --------
+        -------
         HTTPException
             Deleting the guild failed.
         Forbidden
@@ -1045,7 +1045,7 @@ class Guild(Hashable):
             The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
 
         Parameters
-        ----------
+        -----------
         name: :class:`str`
             The new name of the guild.
         description: :class:`str`
@@ -1244,7 +1244,7 @@ class Guild(Hashable):
             Retrieving the channels failed.
 
         Returns
-        -------
+        --------
         List[:class:`abc.GuildChannel`]
             All channels in the guild.
         """
@@ -1275,7 +1275,7 @@ class Guild(Hashable):
         All parameters are optional.
 
         Parameters
-        ----------
+        -----------
         limit: Optional[:class:`int`]
             The number of members to retrieve. Defaults to 1000.
             Pass ``None`` to fetch all members. Note that this is potentially slow.
@@ -1284,7 +1284,7 @@ class Guild(Hashable):
             If a date is provided it must be a timezone-naive datetime representing UTC time.
 
         Raises
-        ------
+        -------
         ClientException
             The members intent is not enabled.
         HTTPException
@@ -1357,7 +1357,7 @@ class Guild(Hashable):
             The user to get ban information from.
 
         Raises
-        ------
+        -------
         Forbidden
             You do not have proper permissions to get the information.
         NotFound
@@ -1366,7 +1366,7 @@ class Guild(Hashable):
             An error occurred while fetching the information.
 
         Returns
-        -------
+        --------
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
@@ -1446,7 +1446,7 @@ class Guild(Hashable):
             An integer was not passed for ``days``.
 
         Returns
-        ---------
+        --------
         Optional[:class:`int`]
             The number of members pruned. If ``compute_prune_count`` is ``False``
             then this returns ``None``.
@@ -1505,7 +1505,7 @@ class Guild(Hashable):
             An integer was not passed for ``days``.
 
         Returns
-        ---------
+        --------
         :class:`int`
             The number of members estimated to be pruned.
         """
@@ -1532,7 +1532,7 @@ class Guild(Hashable):
             An error occurred while fetching the information.
 
         Returns
-        -------
+        --------
         List[:class:`Invite`]
             The list of invites that are currently active.
         """
@@ -1608,7 +1608,7 @@ class Guild(Hashable):
             This method is an API call. For general usage, consider :attr:`emojis` instead.
 
         Raises
-        ---------
+        -------
         HTTPException
             An error occurred fetching the emojis.
 
@@ -1631,12 +1631,12 @@ class Guild(Hashable):
             For general usage, consider iterating over :attr:`emojis` instead.
 
         Parameters
-        -------------
+        -----------
         emoji_id: :class:`int`
             The emoji's ID.
 
         Raises
-        ---------
+        -------
         NotFound
             The emoji requested could not be found.
         HTTPException
@@ -1709,7 +1709,7 @@ class Guild(Hashable):
             Retrieving the roles failed.
 
         Returns
-        -------
+        --------
         List[:class:`Role`]
             All roles in the guild.
         """

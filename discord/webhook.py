@@ -55,7 +55,7 @@ class WebhookAdapter:
     """Base class for all webhook adapters.
 
     Attributes
-    ------------
+    -----------
     webhook: :class:`Webhook`
         The webhook that owns this adapter.
     """
@@ -115,7 +115,7 @@ class WebhookAdapter:
         Subclasses must implement this.
 
         Parameters
-        ------------
+        -----------
         data
             The data that was returned from the request.
         wait: :class:`bool`
@@ -445,7 +445,7 @@ class WebhookMessage(Message):
         .. versionadded:: 1.6
 
         Parameters
-        ------------
+        -----------
         content: Optional[:class:`str`]
             The content to edit the message with or ``None`` to clear it.
         embeds: List[:class:`Embed`]
@@ -498,7 +498,7 @@ class WebhookMessage(Message):
             are ignored. If this is not a coroutine then the delay blocks the thread.
 
         Raises
-        ------
+        -------
         Forbidden
             You do not have proper permissions to delete the message.
         NotFound
@@ -574,7 +574,7 @@ class Webhook(Hashable):
         Webhooks are now comparable and hashable.
 
     Attributes
-    ------------
+    -----------
     id: :class:`int`
         The webhook's ID
     type: :class:`WebhookType`
@@ -667,7 +667,7 @@ class Webhook(Hashable):
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
-        ------------
+        -----------
         url: :class:`str`
             The URL of the webhook.
         adapter: :class:`WebhookAdapter`
@@ -771,7 +771,7 @@ class Webhook(Hashable):
             The size of the image to display.
 
         Raises
-        ------
+        -------
         InvalidArgument
             Bad image format passed to ``format`` or invalid ``size``.
 
@@ -804,7 +804,7 @@ class Webhook(Hashable):
         not a coroutine.
 
         Parameters
-        ------------
+        -----------
         reason: Optional[:class:`str`]
             The reason for deleting this webhook. Shows up on the audit log.
 
@@ -835,7 +835,7 @@ class Webhook(Hashable):
         not a coroutine.
 
         Parameters
-        ------------
+        -----------
         name: Optional[:class:`str`]
             The webhook's new default name.
         avatar: Optional[:class:`bytes`]
@@ -900,7 +900,7 @@ class Webhook(Hashable):
         ``embeds`` parameter, which must be a :class:`list` of :class:`Embed` objects to send.
 
         Parameters
-        ------------
+        -----------
         content: :class:`str`
             The content of the message to send.
         wait: :class:`bool`
@@ -932,7 +932,7 @@ class Webhook(Hashable):
             .. versionadded:: 1.4
 
         Raises
-        --------
+        -------
         HTTPException
             Sending the message failed.
         NotFound
@@ -945,7 +945,7 @@ class Webhook(Hashable):
             this webhook.
 
         Returns
-        ---------
+        --------
         Optional[:class:`WebhookMessage`]
             The message that was sent.
         """
@@ -1002,7 +1002,7 @@ class Webhook(Hashable):
         .. versionadded:: 1.6
 
         Parameters
-        ------------
+        -----------
         message_id: :class:`int`
             The message ID to edit.
         content: Optional[:class:`str`]
@@ -1090,7 +1090,7 @@ class Webhook(Hashable):
         .. versionadded:: 1.6
 
         Parameters
-        ------------
+        -----------
         message_id: :class:`int`
             The message ID to delete.
 

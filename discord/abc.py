@@ -370,7 +370,7 @@ class GuildChannel:
             whose overwrite to get.
 
         Returns
-        ---------
+        --------
         :class:`~discord.PermissionOverwrite`
             The permission overwrites for this object.
         """
@@ -454,12 +454,12 @@ class GuildChannel:
         - Member overrides
 
         Parameters
-        ----------
+        -----------
         member: :class:`~discord.Member`
             The member to resolve permissions for.
 
         Returns
-        -------
+        --------
         :class:`~discord.Permissions`
             The resolved permissions for the member.
         """
@@ -686,7 +686,7 @@ class GuildChannel:
         .. versionadded:: 1.1
 
         Parameters
-        ------------
+        -----------
         name: Optional[:class:`str`]
             The name of the new channel. If not provided, defaults to this
             channel name.
@@ -716,7 +716,7 @@ class GuildChannel:
         do this.
 
         Parameters
-        ------------
+        -----------
         max_age: :class:`int`
             How long the invite should last in seconds. If it's 0 then the invite
             doesn't expire. Defaults to ``0``.
@@ -765,7 +765,7 @@ class GuildChannel:
             An error occurred while fetching the information.
 
         Returns
-        -------
+        --------
         List[:class:`~discord.Invite`]
             The list of invites that are currently active.
         """
@@ -821,7 +821,7 @@ class Messageable(metaclass=abc.ABCMeta):
         it must be a rich embed type.
 
         Parameters
-        ------------
+        -----------
         content: :class:`str`
             The content of the message to send.
         tts: :class:`bool`
@@ -863,7 +863,7 @@ class Messageable(metaclass=abc.ABCMeta):
             .. versionadded:: 1.6
 
         Raises
-        --------
+        -------
         ~discord.HTTPException
             Sending the message failed.
         ~discord.Forbidden
@@ -875,7 +875,7 @@ class Messageable(metaclass=abc.ABCMeta):
             or :class:`~discord.MessageReference`.
 
         Returns
-        ---------
+        --------
         :class:`~discord.Message`
             The message that was sent.
         """
@@ -979,12 +979,12 @@ class Messageable(metaclass=abc.ABCMeta):
         This can only be used by bot accounts.
 
         Parameters
-        ------------
+        -----------
         id: :class:`int`
             The message ID to look for.
 
         Raises
-        --------
+        -------
         ~discord.NotFound
             The specified message was not found.
         ~discord.Forbidden
@@ -1073,7 +1073,7 @@ class Messageable(metaclass=abc.ABCMeta):
             ``after`` is specified, otherwise ``False``.
 
         Raises
-        ------
+        -------
         ~discord.Forbidden
             You do not have permissions to get channel message history.
         ~discord.HTTPException

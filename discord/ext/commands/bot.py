@@ -635,14 +635,14 @@ class BotBase(GroupMixin):
         point must have a single argument, the ``bot``.
 
         Parameters
-        ------------
+        -----------
         name: :class:`str`
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
 
         Raises
-        --------
+        -------
         ExtensionNotFound
             The extension could not be imported.
         ExtensionAlreadyLoaded
@@ -674,7 +674,7 @@ class BotBase(GroupMixin):
         :meth:`~.Bot.load_extension`.
 
         Parameters
-        ------------
+        -----------
         name: :class:`str`
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
@@ -702,7 +702,7 @@ class BotBase(GroupMixin):
         the bot will roll-back to the prior working state.
 
         Parameters
-        ------------
+        -----------
         name: :class:`str`
             The extension name to reload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.

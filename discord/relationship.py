@@ -56,7 +56,7 @@ class Relationship:
         Deletes the relationship.
 
         Raises
-        ------
+        -------
         HTTPException
             Deleting the relationship failed.
         """

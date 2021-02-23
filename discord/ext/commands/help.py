@@ -126,7 +126,7 @@ class Paginator:
             Indicates if another empty line should be added.
 
         Raises
-        ------
+        -------
         RuntimeError
             The line was too big for the current :attr:`max_size`.
         """
@@ -265,7 +265,7 @@ class HelpCommand:
         the same between command invocations would not work as expected.
 
     Attributes
-    ------------
+    -----------
     context: Optional[:class:`Context`]
         The context that invoked this help formatter. This is generally set after
         the help command assigned, :func:`command_callback`\, has been called.
@@ -341,7 +341,7 @@ class HelpCommand:
         .. versionadded:: 1.4
 
         Parameters
-        ----------
+        -----------
         func
             The function that will be used as a check.
         """
@@ -364,7 +364,7 @@ class HelpCommand:
         .. versionadded:: 1.4
 
         Parameters
-        ----------
+        -----------
         func
             The function to remove from the checks.
         """
@@ -409,7 +409,7 @@ class HelpCommand:
         then it returns the internal command name of the help command.
 
         Returns
-        ---------
+        --------
         :class:`str`
             The command name that triggered this invocation.
         """
@@ -423,7 +423,7 @@ class HelpCommand:
         """Retrieves the signature portion of the help page.
 
         Parameters
-        ------------
+        -----------
         command: :class:`Command`
             The command to get the signature of.
 
@@ -451,7 +451,7 @@ class HelpCommand:
         This includes ``@everyone``, ``@here``, member mentions and role mentions.
 
         Returns
-        -------
+        --------
         :class:`str`
             The string with mentions removed.
         """
@@ -496,13 +496,13 @@ class HelpCommand:
         Defaults to ``No command called {0} found.``
 
         Parameters
-        ------------
+        -----------
         string: :class:`str`
             The string that contains the invalid command. Note that this has
             had mentions removed to prevent abuse.
 
         Returns
-        ---------
+        --------
         :class:`str`
             The string to use when a command has not been found.
         """
@@ -522,7 +522,7 @@ class HelpCommand:
             - If the ``command`` parameter has subcommands but not one named ``string``.
 
         Parameters
-        ------------
+        -----------
         command: :class:`Command`
             The command that did not have the subcommand requested.
         string: :class:`str`
@@ -530,7 +530,7 @@ class HelpCommand:
             had mentions removed to prevent abuse.
 
         Returns
-        ---------
+        --------
         :class:`str`
             The string to use when the command did not have the subcommand requested.
         """
@@ -547,7 +547,7 @@ class HelpCommand:
         attributes.
 
         Parameters
-        ------------
+        -----------
         commands: Iterable[:class:`Command`]
             An iterable of commands that are getting filtered.
         sort: :class:`bool`
@@ -558,7 +558,7 @@ class HelpCommand:
             passed as ``True`` then this will default as the command name.
 
         Returns
-        ---------
+        --------
         List[:class:`Command`]
             A list of commands that passed the filter.
         """
@@ -594,7 +594,7 @@ class HelpCommand:
         """Returns the largest name length of the specified command list.
 
         Parameters
-        ------------
+        -----------
         commands: Sequence[:class:`Command`]
             A sequence of commands to check for the largest size.
 
@@ -618,7 +618,7 @@ class HelpCommand:
         By default this returns the context's channel.
 
         Returns
-        -------
+        --------
         :class:`.abc.Messageable`
             The destination where the help command will be output.
         """
@@ -641,7 +641,7 @@ class HelpCommand:
             You can access the invocation context with :attr:`HelpCommand.context`.
 
         Parameters
-        ------------
+        -----------
         error: :class:`str`
             The error message to display to the user. Note that this has
             had mentions removed to prevent abuse.
@@ -662,7 +662,7 @@ class HelpCommand:
         error handlers.
 
         Parameters
-        ------------
+        -----------
         ctx: :class:`Context`
             The invocation context.
         error: :class:`CommandError`
@@ -691,7 +691,7 @@ class HelpCommand:
             you will have to call :meth:`filter_commands` yourself.
 
         Parameters
-        ------------
+        -----------
         mapping: Mapping[Optional[:class:`Cog`], List[:class:`Command`]]
             A mapping of cogs to commands that have been requested by the user for help.
             The key of the mapping is the :class:`~.commands.Cog` that the command belongs to, or
@@ -885,7 +885,7 @@ class DefaultHelpCommand(HelpCommand):
     It extends it with the following attributes.
 
     Attributes
-    ------------
+    -----------
     width: :class:`int`
         The maximum number of characters that fit in a line.
         Defaults to 80.
@@ -986,7 +986,7 @@ class DefaultHelpCommand(HelpCommand):
         """A utility function to format the non-indented block of commands and groups.
 
         Parameters
-        ------------
+        -----------
         command: :class:`Command`
             The command to format.
         """
@@ -1086,7 +1086,7 @@ class MinimalHelpCommand(HelpCommand):
     This inherits from :class:`HelpCommand`.
 
     Attributes
-    ------------
+    -----------
     sort_commands: :class:`bool`
         Whether to sort the commands in the output alphabetically. Defaults to ``True``.
     commands_heading: :class:`str`
@@ -1141,7 +1141,7 @@ class MinimalHelpCommand(HelpCommand):
             You can also use `{prefix}{command_name} [category]` for more info on a category.
 
         Returns
-        -------
+        --------
         :class:`str`
             The help command opening note.
         """
@@ -1158,7 +1158,7 @@ class MinimalHelpCommand(HelpCommand):
         The default implementation does nothing.
 
         Returns
-        -------
+        --------
         :class:`str`
             The help command ending note.
         """
@@ -1222,7 +1222,7 @@ class MinimalHelpCommand(HelpCommand):
         """A utility function to format commands and groups.
 
         Parameters
-        ------------
+        -----------
         command: :class:`Command`
             The command to format.
         """
