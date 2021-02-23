@@ -313,7 +313,7 @@ class Invite(Hashable):
         self.channel = data.get('channel')
         target_user_data = data.get('target_user')
         self.target_user = target_user_data and self._state.store_user(target_user_data)
-        self._target_user_type = data.get('target_user_type', 0)
+        self.target_user_type = try_enum(InviteUserTarget, data.get('target_user_type', 0))
 
     @classmethod
     def from_incomplete(cls, *, state, data):
