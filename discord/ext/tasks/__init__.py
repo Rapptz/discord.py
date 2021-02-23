@@ -472,7 +472,7 @@ class Loop:
         now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
         next_time = self._time[self._time_index]
-        if next_time == 0:
+        if self._time_index == 0:
             # we can assume that the earliest time should be scheduled for tomorrow
             next_date = now + datetime.timedelta(days=1)
         else:
