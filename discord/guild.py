@@ -1570,7 +1570,7 @@ class Guild(Hashable):
 
         return result
     
-    async def create_template(self, *, name, description=utils._unset):
+    async def create_template(self, *, name, description=None):
         """|coro|
         
         Creates a template for the guild.
@@ -1593,7 +1593,7 @@ class Guild(Hashable):
             'name': name
         }
 
-        if description is not utils._unset:
+        if description:
             payload['description'] = description
         
         data = await self._state.http.create_template(self.id, payload)
