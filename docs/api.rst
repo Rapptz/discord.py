@@ -2103,7 +2103,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: stream
 
-        Represents the invite directing to a stream.
+        The invite targets a stream.
 
 Async Iterator
 ----------------
