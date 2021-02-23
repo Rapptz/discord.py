@@ -465,7 +465,7 @@ class Loop:
         if self._sleep is not None:
             return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
-        if self._time_index > len(self._time):
+        if self._time_index >= len(self._time):
             self._time_index = 0
 
         # microseconds in calculation can sometimes lead to sleep time being too small
