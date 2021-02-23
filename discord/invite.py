@@ -290,7 +290,7 @@ class Invite(Hashable):
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                  'temporary', 'max_uses', 'inviter', 'channel', 'target_user',
-                 '_target_user_type', '_state', 'approximate_member_count',
+                 'target_user_type', '_state', 'approximate_member_count',
                  'approximate_presence_count')
 
     BASE = 'https://discord.gg'
