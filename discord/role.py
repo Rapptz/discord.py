@@ -188,7 +188,7 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self._permissions = int(data.get('permissions_new', 0))
+        self._permissions = int(data.get('permissions', 0))
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)

@@ -169,9 +169,9 @@ class _Overwrites:
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('id')
-        self.allow = int(kwargs.pop('allow_new', 0))
-        self.deny = int(kwargs.pop('deny_new', 0))
-        self.type = sys.intern(kwargs.pop('type'))
+        self.allow = int(kwargs.pop('allow', 0))
+        self.deny = int(kwargs.pop('deny', 0))
+        self.type = int(kwargs.pop('type'))
 
     def _asdict(self):
         return {
@@ -290,9 +290,9 @@ class GuildChannel:
                 }
 
                 if isinstance(target, Role):
-                    payload['type'] = 'role'
+                    payload['type'] = 0
                 else:
-                    payload['type'] = 'member'
+                    payload['type'] = 1
 
                 perms.append(payload)
             options['permission_overwrites'] = perms
@@ -319,7 +319,7 @@ class GuildChannel:
             overridden_id = int(overridden.pop('id'))
             self._overwrites.append(_Overwrites(id=overridden_id, **overridden))
 
-            if overridden['type'] == 'member':
+            if overridden['type'] == 1:
                 continue
 
             if overridden_id == everyone_id:
@@ -341,7 +341,7 @@ class GuildChannel:
         their default values in the :attr:`~discord.Guild.roles` attribute."""
         ret = []
         g = self.guild
-        for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
+        for overwrite in filter(lambda o: o.type == 0, self._overwrites):
             role = g.get_role(overwrite.id)
             if role is None:
                 continue
@@ -377,9 +377,9 @@ class GuildChannel:
         """
 
         if isinstance(obj, User):
-            predicate = lambda p: p.type == 'member'
+            predicate = lambda p: p.type == 1
         elif isinstance(obj, Role):
-            predicate = lambda p: p.type == 'role'
+            predicate = lambda p: p.type == 0
         else:
             predicate = lambda p: True
 
@@ -410,9 +410,9 @@ class GuildChannel:
             deny = Permissions(ow.deny)
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
-            if ow.type == 'role':
+            if ow.type == 0:
                 target = self.guild.get_role(ow.id)
-            elif ow.type == 'member':
+            elif ow.type == 1:
                 target = self.guild.get_member(ow.id)
 
             # TODO: There is potential data loss here in the non-chunked
@@ -514,7 +514,7 @@ class GuildChannel:
 
         # Apply channel specific role permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'role' and roles.has(overwrite.id):
+            if overwrite.type == 0 and roles.has(overwrite.id):
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
@@ -522,7 +522,7 @@ class GuildChannel:
 
         # Apply member specific permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'member' and overwrite.id == member.id:
+            if overwrite.type == 1 and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
 
@@ -633,9 +633,9 @@ class GuildChannel:
         http = self._state.http
 
         if isinstance(target, User):
-            perm_type = 'member'
+            perm_type = 1
         elif isinstance(target, Role):
-            perm_type = 'role'
+            perm_type = 0
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 

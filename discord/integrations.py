@@ -52,6 +52,43 @@ class IntegrationAccount:
     def __repr__(self):
         return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
 
+class IntegrationApplication:
+    """Represents an integration application.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    icon: Optional[:class:`str`]
+        The icon hash of the application, if it exists.
+    description: :class:`str`
+        The application description.
+    summary: :class:`str`
+        The application description.
+    bot: Optional[:class:`User`]
+        The bot associated with the application, if there is one.
+    """
+
+    __slots__ = ('id', 'name', 'icon', 'description', 'summary',
+                 'bot')
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.pop('id')
+        self.name = kwargs.pop('name')
+        self.icon = kwargs.pop('icon', None)
+        self.description = kwargs.pop('description')
+        self.summary = kwargs.pop('summary')
+
+        try:
+            self.bot = User(state=self._state, data=kwargs['bot'])
+        except KeyError:
+            self.bot = None
+
+    def __repr__(self):
+        return '<IntegrationApplication id={0.id} name={0.name!r}>'.format(self)
+
 class Integration:
     """Represents a guild integration.
 
@@ -69,28 +106,35 @@ class Integration:
         The integration type (i.e. Twitch).
     enabled: :class:`bool`
         Whether the integration is currently enabled.
-    syncing: :class:`bool`
+    syncing: Optional[:class:`bool`]
         Where the integration is currently syncing.
-    role: :class:`Role`
+    role: Optional[:class:`Role`]
         The role which the integration uses for subscribers.
     enable_emoticons: Optional[:class:`bool`]
         Whether emoticons should be synced for this integration (currently twitch only).
-    expire_behaviour: :class:`ExpireBehaviour`
+    expire_behaviour: Optional[:class:`ExpireBehaviour`]
         The behaviour of expiring subscribers. Aliased to ``expire_behavior`` as well.
-    expire_grace_period: :class:`int`
+    expire_grace_period: Optional[:class:`int`]
         The grace period (in days) for expiring subscribers.
-    user: :class:`User`
+    user: Optional[:class:`User`]
         The user for the integration.
     account: :class:`IntegrationAccount`
         The integration account information.
-    synced_at: :class:`datetime.datetime`
+    synced_at: Optional[:class:`datetime.datetime`]
         When the integration was last synced.
+    subscriber_count: Optional[:class:`int`]
+        How many subscribers the integration has.
+    revoked: Optional[:class:`bool`]
+        Whether the integration has been revoked.
+    application: Optional[:class:`IntegrationApplication`]
+        The bot or OAuth2 application for discord integrations.
     """
 
     __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
                  'syncing', 'role', 'expire_behaviour', 'expire_behavior',
                  'expire_grace_period', 'synced_at', 'user', 'account',
-                 'enable_emoticons', '_role_id')
+                 'enable_emoticons', '_role_id', 'subscriber_count',
+                 'revoked', 'application')
 
     def __init__(self, *, data, guild):
         self.guild = guild
@@ -105,17 +149,26 @@ class Integration:
         self.name = integ['name']
         self.type = integ['type']
         self.enabled = integ['enabled']
-        self.syncing = integ['syncing']
+        self.syncing = integ.get('syncing')
         self._role_id = _get_as_snowflake(integ, 'role_id')
         self.role = get(self.guild.roles, id=self._role_id)
         self.enable_emoticons = integ.get('enable_emoticons')
-        self.expire_behaviour = try_enum(ExpireBehaviour, integ['expire_behavior'])
+        self.expire_behaviour = try_enum(ExpireBehaviour, integ.get('expire_behavior'))
         self.expire_behavior = self.expire_behaviour
-        self.expire_grace_period = integ['expire_grace_period']
-        self.synced_at = parse_time(integ['synced_at'])
+        self.expire_grace_period = integ.get('expire_grace_period')
+        self.synced_at = parse_time(integ.get('synced_at'))
+        self.subscriber_count = integ.get('subscriber_count')
+        self.revoked = integ.get('revoked')
 
-        self.user = User(state=self._state, data=integ['user'])
+        try:
+            self.user = User(state=self._state, data=integ['user'])
+        except KeyError:
+            self.user = None
         self.account = IntegrationAccount(**integ['account'])
+        try:
+            self.application = IntegrationApplication(**integ['application'])
+        except KeyError:
+            self.application = None
 
     async def edit(self, **fields):
         """|coro|
@@ -148,15 +201,18 @@ class Integration:
         except KeyError:
             expire_behaviour = fields.get('expire_behavior', self.expire_behaviour)
 
-        if not isinstance(expire_behaviour, ExpireBehaviour):
-            raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
+        payload = {}
+        
+        if expire_behaviour is not None:
+            if not isinstance(expire_behaviour, ExpireBehaviour):
+                raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
+
+            payload['expire_behavior'] = expire_behaviour
 
         expire_grace_period = fields.get('expire_grace_period', self.expire_grace_period)
 
-        payload = {
-            'expire_behavior': expire_behaviour.value,
-            'expire_grace_period': expire_grace_period,
-        }
+        if expire_grace_period is not None:
+            payload['expire_grace_period'] = expire_grace_period
 
         enable_emoticons = fields.get('enable_emoticons')
 

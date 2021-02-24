@@ -51,7 +51,7 @@ async def json_or_text(response):
     return text
 
 class Route:
-    BASE = 'https://discord.com/api/v7'
+    BASE = 'https://discord.com/api/v8'
 
     def __init__(self, method, path, **parameters):
         self.path = path
@@ -145,7 +145,7 @@ class HTTPClient:
         # header creation
         headers = {
             'User-Agent': self.user_agent,
-            'X-Ratelimit-Precision': 'millisecond',
+            'X-Ratelimit-Precision': 'millisecond', # Ignored, but is in miliseconds anyway
         }
 
         if self.token is not None:
@@ -408,7 +408,7 @@ class HTTPClient:
         return self.request(r, reason=reason)
 
     def delete_messages(self, channel_id, message_ids, *, reason=None):
-        r = Route('POST', '/channels/{channel_id}/messages/bulk_delete', channel_id=channel_id)
+        r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
             'messages': message_ids
         }
@@ -934,7 +934,7 @@ class HTTPClient:
     def application_info(self):
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
-    async def get_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_gateway(self, *, encoding='json', v=8, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway'))
         except HTTPException as exc:
@@ -945,7 +945,7 @@ class HTTPClient:
             value = '{0}?encoding={1}&v={2}'
         return value.format(data['url'], encoding, v)
 
-    async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_bot_gateway(self, *, encoding='json', v=8, zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:

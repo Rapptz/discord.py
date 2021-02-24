@@ -833,9 +833,9 @@ class Guild(Hashable):
             }
 
             if isinstance(target, Role):
-                payload['type'] = 'role'
+                payload['type'] = 0
             else:
-                payload['type'] = 'member'
+                payload['type'] = 1
 
             perms.append(payload)
 
@@ -1818,9 +1818,9 @@ class Guild(Hashable):
         try:
             perms = fields.pop('permissions')
         except KeyError:
-            fields['permissions'] = 0
+            fields['permissions'] = str(0)
         else:
-            fields['permissions'] = perms.value
+            fields['permissions'] = str(perms.value)
 
         try:
             colour = fields.pop('colour')

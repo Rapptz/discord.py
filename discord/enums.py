@@ -53,6 +53,7 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
+    'PermissionOverwriteType',
 )
 
 def _create_value_cls(name):
@@ -181,6 +182,8 @@ class MessageType(Enum):
     guild_discovery_requalified                  = 15
     guild_discovery_grace_period_initial_warning = 16
     guild_discovery_grace_period_final_warning   = 17
+    reply                                        = 19
+    application_command                          = 20
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
@@ -455,6 +458,10 @@ class StickerType(Enum):
     png = 1
     apng = 2
     lottie = 3
+
+class PermissionOverwriteType(Enum):
+    role = 0
+    member = 1
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

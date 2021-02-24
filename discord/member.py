@@ -175,7 +175,12 @@ class Member(discord.abc.Messageable, _BaseUser):
         self.guild = guild
         self.joined_at = utils.parse_time(data.get('joined_at'))
         self.premium_since = utils.parse_time(data.get('premium_since'))
-        self._update_roles(data)
+        if 'roles' in data:
+            self._update_roles(data)
+        else:
+            # No roles when created by PRESENCE_UPDATE
+            # Should hopefully be overridden soon
+            self._roles = []
         self._client_status = {
             None: 'offline'
         }
