@@ -290,7 +290,7 @@ class Invite(Hashable):
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
                  'temporary', 'max_uses', 'inviter', 'channel', 'target_user',
-                 '_target_user_type', '_state', 'approximate_member_count',
+                 'target_user_type', '_state', 'approximate_member_count',
                  'approximate_presence_count')
 
     BASE = 'https://discord.gg'
@@ -313,7 +313,7 @@ class Invite(Hashable):
         self.channel = data.get('channel')
         target_user_data = data.get('target_user')
         self.target_user = None if target_user_data is None else self._state.store_user(target_user_data)
-        self._target_user_type = data.get('target_user_type', 0)
+        self.target_user_type = try_enum(InviteUserTarget, data.get('target_user_type', 0))
 
     @classmethod
     def from_incomplete(cls, *, state, data):
