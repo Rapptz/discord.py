@@ -3193,6 +3193,7 @@ class Guild(Hashable):
                 if not isinstance(wc, WelcomeChannel):
                     raise InvalidArgument('welcome_channels parameter must be a list of WelcomeChannel')
                 welcome_channels_serialised.append(wc.to_dict())
+            kwargs['welcome_channels'] = welcome_channels_serialised
 
         if kwargs:
             data = await self._state.http.edit_welcome_screen(self.id, kwargs)
