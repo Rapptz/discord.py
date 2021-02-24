@@ -929,8 +929,8 @@ class ConnectionState:
     def parse_guild_ban_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None and 'user' in data:
-                user = self.store_user(data['user'])
-                self.dispatch('member_unban', guild, user)
+            user = self.store_user(data['user'])
+            self.dispatch('member_unban', guild, user)
 
     def parse_guild_role_create(self, data):
         guild = self._get_guild(int(data['guild_id']))

@@ -754,7 +754,7 @@ class Client:
 
     @allowed_mentions.setter
     def allowed_mentions(self, value):
-        if value is None and isinstance(value, AllowedMentions):
+        if value is None or isinstance(value, AllowedMentions):
             self._connection.allowed_mentions = value
         else:
             raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
