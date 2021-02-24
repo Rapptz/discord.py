@@ -527,7 +527,7 @@ class Loop:
             The number of minutes between every iteration.
         hours: :class:`float`
             The number of hours between every iteration.
-        time: Union[:class:`datetime.time`, Sequnce[:class:`datetime.time`]]
+        time: Union[:class:`datetime.time`, Sequence[:class:`datetime.time`]]
             The exact times to run this loop at. Either a non-empty list or a single
             value of :class:`datetime.time` should be passed.
             This cannot be used in conjunction with the relative time parameters.
