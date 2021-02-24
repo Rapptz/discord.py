@@ -1212,6 +1212,20 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id), params=params)
 
+    def get_welcome_screen(self, guild_id):
+        return self.request(Route('GET', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id))
+
+    def edit_welcome_screen(self, guild_id, payload):
+        valid_keys = (
+            'description',
+            'welcome_channels',
+            'enabled',
+        )
+        payload = {
+            k: v for k, v in payload.items() if k in valid_keys
+        }
+        return self.request(Route('PATCH', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id), json=payload)
+
     def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
 

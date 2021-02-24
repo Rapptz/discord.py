@@ -86,6 +86,7 @@ from .sticker import GuildSticker
 from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
+from .welcome_screen import WelcomeScreen, WelcomeChannel
 
 
 __all__ = (
@@ -3136,6 +3137,66 @@ class Guild(Hashable):
             self._roles[role.id] = role
 
         return roles
+
+    async def welcome_screen(self):
+        """|coro|
+
+        Returns the guild's welcome screen.
+
+        The guild must have ``COMMUNITY`` in :attr:`~Guild.features`.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to use
+        this as well.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to get this.
+        HTTPException
+            Retrieving the welcome screen failed.
+
+        Returns
+        --------
+        :class:`WelcomeScreen`
+            The welcome screen.
+        """
+        data = await self._state.http.get_welcome_screen(self.id)
+        return WelcomeScreen(data=data, guild=self)
+
+    async def edit_welcome_screen(self, **kwargs):
+        """|coro|
+
+        A shorthand method of :attr:`WelcomeScreen.edit` without needing
+        to fetch the welcome screen beforehand.
+
+        The guild must have ``COMMUNITY`` in :attr:`~Guild.features`.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to use
+        this as well.
+
+        .. versionadded:: 1.7
+
+        Returns
+        --------
+        :class:`WelcomeScreen`
+            The edited welcome screen.
+        """
+        try:
+            welcome_channels = kwargs['welcome_channels']
+        except KeyError:
+            pass
+        else:
+            welcome_channels_serialised = []
+            for wc in welcome_channels:
+                if not isinstance(wc, WelcomeChannel):
+                    raise InvalidArgument('welcome_channels parameter must be a list of WelcomeChannel')
+                welcome_channels_serialised.append(wc.to_dict())
+
+        if kwargs:
+            data = await self._state.http.edit_welcome_screen(self.id, kwargs)
+            return WelcomeScreen(data=data, guild=self)
 
     async def kick(self, user: Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
