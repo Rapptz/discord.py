@@ -481,9 +481,9 @@ class Loop:
         self._time_index += 1
         return datetime.datetime.combine(next_date, next_time)
 
-    def _prepare_time_index(self):
+    def _prepare_time_index(self, now=None):
         # pre-condition: self._time is set
-        time_now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
+        time_now = now or datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
         for idx, time in enumerate(self._time):
             if time >= time_now:
                 self._time_index = idx
@@ -562,6 +562,10 @@ class Loop:
                 raise TypeError('Cannot mix explicit time with relative time')
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = None
+            if self.is_running():
+                # if the loop is currently running the index needs to be recalculated to
+                # prepare the next time index starting from after the next iteration
+                self._prepare_time_index(now=self._next_iteration)
 
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
