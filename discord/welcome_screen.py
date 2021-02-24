@@ -129,16 +129,16 @@ class WelcomeScreen:
 
         Usage: ::
 
-            channel_1 = guild.get_channel(12345678)
-            channel_2 = guild.get_channel(87654321)
+            rules_channel = guild.get_channel(12345678)
+            announcements_channel = guild.get_channel(87654321)
 
             custom_emoji = utils.get(guild.emojis, name='loudspeaker')
 
             await welcome_screen.edit(
                 description='This is a very cool community server!',
                 welcome_channels=[
-                    WelcomeChannel(channel=channel_one, description='Read the rules!', emoji='👨‍🏫'),
-                    WelcomeChannel(channel=channel_two, description='Watch out for announcements!', emoji=custom_emoji), 
+                    WelcomeChannel(channel=rules_channel, description='Read the rules!', emoji='👨‍🏫'),
+                    WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji), 
                 ]
             )
         
