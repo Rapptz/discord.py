@@ -149,21 +149,21 @@ class Loop:
 
     @property
     def seconds(self):
-        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of seconds
+        """Optional[:class:`float`]: Read-only value for the number of seconds
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._seconds
     
     @property
     def minutes(self):
-        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of minutes
+        """Optional[:class:`float`]: Read-only value for the number of minutes
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._minutes
     
     @property
     def hours(self):
-        """Optional[Union[:class:`int`, :class:`float`]]: Read-only value for the number of hours
+        """Optional[:class:`float`]: Read-only value for the number of hours
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
         """
         return self._hours
@@ -470,7 +470,7 @@ class Loop:
 
         next_time = self._time[self._time_index]
         self._time_index += 1
-        
+
         if self._current_loop == 0:
             return datetime.datetime.combine(datetime.datetime.now(datetime.timezone.utc), next_time)
 
@@ -509,7 +509,7 @@ class Loop:
         ret = sorted(set(ret)) # de-dupe and sort times
         return ret
 
-    def change_interval(self, *, seconds=0, minutes=0, hours=0, time=None):
+    def change_interval(self, *, seconds=0.0, minutes=0.0, hours=0.0, time=None):
         """Changes the interval for the sleep time.
 
         .. note::
@@ -521,11 +521,11 @@ class Loop:
 
         Parameters
         ------------
-        seconds: Union[:class:`int`, :class:`float`]
+        seconds: :class:`float`
             The number of seconds between every iteration.
-        minutes: Union[:class:`int`, :class:`float`]
+        minutes: :class:`float`
             The number of minutes between every iteration.
-        hours: Union[:class:`int`, :class:`float`]
+        hours: :class:`float`
             The number of hours between every iteration.
         time: Union[:class:`datetime.time`, Sequnce[:class:`datetime.time`]]
             The exact times to run this loop at. Either a non-empty list or a single
@@ -568,17 +568,17 @@ class Loop:
                 self._prepare_time_index(now=self._next_iteration)
 
 
-def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
+def loop(*, seconds=0.0, minutes=0.0, hours=0.0, count=None, time=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
     Parameters
     ------------
-    seconds: Union[:class:`int`, :class:`float`]
+    seconds: :class:`float`
         The number of seconds between every iteration.
-    minutes: Union[:class:`int`, :class:`float`]
+    minutes: :class:`float`
         The number of minutes between every iteration.
-    hours: Union[:class:`int`, :class:`float`]
+    hours: :class:`float`
         The number of hours between every iteration.
     time: Union[:class:`datetime.time`, Sequence[:class:`datetime.time`]]
         The exact times to run this loop at. Either a non-empty list or a single
