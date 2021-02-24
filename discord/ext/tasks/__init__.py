@@ -468,17 +468,17 @@ class Loop:
         if self._time_index >= len(self._time):
             self._time_index = 0
 
-        # microseconds in calculation can sometimes lead to sleep time being too small
-        now = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-
         next_time = self._time[self._time_index]
-        if self._time_index == 0:
-            # we can assume that the earliest time should be scheduled for tomorrow
-            next_date = now + datetime.timedelta(days=1)
-        else:
-            next_date = now.date()
-
         self._time_index += 1
+        
+        if self._current_loop == 0:
+            return datetime.datetime.combine(datetime.date.today(), next_time)
+
+        next_date = self._last_iteration
+        if self._time_index == 0:
+            # we can assume that the earliest time should be scheduled for "tomorrow"
+            next_date += datetime.timedelta(days=1)
+
         return datetime.datetime.combine(next_date, next_time)
 
     def _prepare_time_index(self, now=None):
