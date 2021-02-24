@@ -896,7 +896,7 @@ class ConnectionState:
             log.debug('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['id'])
             return
 
-        if data.get('unavailable', False) and guild is not None:
+        if data.get('unavailable', False):
             # GUILD_DELETE with unavailable being True means that the
             # guild that was available is now currently unavailable
             guild.unavailable = True
