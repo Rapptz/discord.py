@@ -33,6 +33,7 @@ from .iterators import HistoryIterator
 from .context_managers import Typing
 from .enums import ChannelType
 from .errors import InvalidArgument, ClientException
+from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -895,7 +896,7 @@ class Messageable(metaclass=abc.ABCMeta):
             allowed_mentions = state.allowed_mentions and state.allowed_mentions.to_dict()
 
         if mention_author is not None:
-            allowed_mentions = allowed_mentions or {}
+            allowed_mentions = allowed_mentions or AllowedMentions().to_dict()
             allowed_mentions['replied_user'] = bool(mention_author)
 
         if reference is not None:
