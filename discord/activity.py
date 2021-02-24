@@ -770,7 +770,8 @@ def create_activity(data, state):
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
-    ret = Activity(**data)
+    else:
+        ret = Activity(**data)
 
     if isinstance(ret.emoji, PartialEmoji):
         ret.emoji._state = state
