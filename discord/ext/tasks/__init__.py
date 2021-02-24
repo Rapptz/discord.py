@@ -103,7 +103,7 @@ class Loop:
                     now = datetime.datetime.now(datetime.timezone.utc)
                     if now > self._next_iteration:
                         self._next_iteration = now
-                except self._valid_exception as exc:
+                except self._valid_exception:
                     self._last_iteration_failed = True
                     if not self.reconnect:
                         raise

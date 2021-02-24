@@ -51,8 +51,7 @@ def _transform_snowflake(entry, data):
 def _transform_channel(entry, data):
     if data is None:
         return None
-    channel = entry.guild.get_channel(int(data)) or Object(id=data)
-    return channel
+    return entry.guild.get_channel(int(data)) or Object(id=data)
 
 def _transform_owner_id(entry, data):
     if data is None:
