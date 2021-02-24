@@ -472,7 +472,7 @@ class Loop:
         self._time_index += 1
         
         if self._current_loop == 0:
-            return datetime.datetime.combine(datetime.date.today(), next_time)
+            return datetime.datetime.combine(datetime.datetime.now(datetime.timezone.utc), next_time)
 
         next_date = self._last_iteration
         if self._time_index == 0:
