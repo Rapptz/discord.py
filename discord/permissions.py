@@ -143,7 +143,8 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         
         .. versionchanged:: 1.7
-           Added :attr:`use_slash_commands` permission."""
+           Added :attr:`use_slash_commands` permission.
+       """
         return cls(0b11111111111111111111111111111111)
 
     @classmethod
