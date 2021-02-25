@@ -317,7 +317,7 @@ class GuildChannel:
                 except asyncio.TimeoutError:
                     # fallback, we didn't receive the event within 2s
                     pass
-            self._update(data)
+            self._update(self.guild, data)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
