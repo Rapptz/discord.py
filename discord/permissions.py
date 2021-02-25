@@ -144,7 +144,7 @@ class Permissions(BaseFlags):
         
         .. versionchanged:: 1.7
            Added :attr:`use_slash_commands` permission.
-       """
+        """
         return cls(0b11111111111111111111111111111111)
 
     @classmethod
@@ -185,9 +185,6 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         "Membership" permissions from the official Discord UI set to ``True``.
         
-        Membership permissions include :attr:`create_instant_invite`, :attr:`kick_members`,
-        :attr:`ban_members`, :attr:`change_nickname` and :attr:`manage_nicknames`.
-        
         .. versionadded:: 1.7
         """
         return cls(0b00001100000000000000000000000111)
@@ -213,8 +210,6 @@ class Permissions(BaseFlags):
     def advanced(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
-        
-        Advanced permissions only contain the :attr:`administrator` permission.
         
         .. versionadded: 1.7
         """
