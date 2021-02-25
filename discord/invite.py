@@ -286,6 +286,9 @@ class Invite(Hashable):
     target_user: Optional[:class:`User`]
         The target of this invite in the case of stream invites
         .. versionadded:: 1.7
+    target_user_type: :class:`InviteUserType`
+        The invite's target user type
+        .. versionadded:: 1.7
     """
 
     __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
