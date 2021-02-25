@@ -1138,9 +1138,6 @@ class Connectable(metaclass=abc.ABCMeta):
             A voice client that is fully connected to the voice server.
         """
 
-        if not issubclass(cls, VoiceProtocol):
-            raise TypeError('Type must meet VoiceProtocol abstract base class.')
-
         key_id, _ = self._get_voice_client_key()
         state = self._state
 
@@ -1149,6 +1146,10 @@ class Connectable(metaclass=abc.ABCMeta):
 
         client = state._get_client()
         voice = cls(client, self)
+    
+        if not isinstance(voice, VoiceProtocol):
+            raise TypeError('Type must meet VoiceProtocol abstract base class.')
+        
         state._add_voice_client(key_id, voice)
 
         try:
