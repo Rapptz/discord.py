@@ -312,7 +312,7 @@ class GuildChannel:
             client = self._state.dispatch.__self__
             try:
                 await client.wait_for('guild_channel_update', check=lambda b, a: b.id == a.id, timeout=2)
-            except TimeoutError:
+            except asyncio.TimeoutError:
                 # fallback, unfortunately we didn't receive the event in 2s
                 self._update(data)
 
