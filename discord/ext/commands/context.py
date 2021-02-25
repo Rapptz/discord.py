@@ -183,6 +183,7 @@ class Context(discord.abc.Messageable):
         index, previous = view.index, view.previous
         invoked_with = self.invoked_with
         invoked_subcommand = self.invoked_subcommand
+        invoked_parents = self.invoked_parents
         subcommand_passed = self.subcommand_passed
 
         if restart:
