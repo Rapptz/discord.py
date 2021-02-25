@@ -1039,9 +1039,9 @@ class Client:
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
             for you in case you are actually idle and not lying.
-            
+
             .. deprecated:: 1.7
-            
+
         Raises
         ------
         :exc:`.InvalidArgument`
