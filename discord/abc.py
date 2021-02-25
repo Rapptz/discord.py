@@ -308,7 +308,13 @@ class GuildChannel:
 
         if options:
             data = await self._state.http.edit_channel(self.id, reason=reason, **options)
-            self._update(self.guild, data)
+            # this will look ugly but it works i'm sure of it
+            client = self._state.dispatch.__self__
+            try:
+                await client.wait_for('guild_channel_update', check=lambda b, a: b.id == a.id, timeout=2)
+            except TimeoutError:
+                # fallback, unfortunately we didn't receive the event in 2s
+                self._update(data)
 
     def _fill_overwrites(self, data):
         self._overwrites = []
