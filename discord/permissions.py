@@ -198,7 +198,8 @@ class Permissions(BaseFlags):
         "Text" permissions from the official Discord UI set to ``True``.
         
         .. versionchanged:: 1.7
-           Permission :attr:`read_messages` is no longer part of the text permissions. Added :attr:`use_slash_commands` permission.
+           Permission :attr:`read_messages` is no longer part of the text permissions. 
+           Added :attr:`use_slash_commands` permission.
         """
         return cls(0b10000000000001111111100001000000)
 
