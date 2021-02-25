@@ -312,7 +312,7 @@ class GuildChannel:
             if 'parent_id' in options:
                 client = self._state._get_client()
                 try:
-                    await client.wait_for('guild_channel_update', check=lambda b, a: b.id == a.id, timeout=2)
+                    await client.wait_for('guild_channel_update', check=lambda b, a: b.id == a.id and b.id == self.id, timeout=2)
                     return
                 except asyncio.TimeoutError:
                     # fallback, we didn't receive the event within 2s
