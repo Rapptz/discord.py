@@ -104,7 +104,7 @@ class HTTPException(DiscordException):
 
         fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
-            fmt = fmt + ': {2}'
+            fmt += ': {2}'
 
         super().__init__(fmt.format(self.response, self.code, self.text))
 

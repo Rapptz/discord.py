@@ -313,7 +313,7 @@ class Context(discord.abc.Messageable):
             entity = bot.get_cog(entity) or bot.get_command(entity)
 
         try:
-            qualified_name = entity.qualified_name
+            entity.qualified_name
         except AttributeError:
             # if we're here then it's not a cog, group, or command.
             return None

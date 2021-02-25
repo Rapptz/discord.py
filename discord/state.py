@@ -896,7 +896,7 @@ class ConnectionState:
             log.debug('GUILD_DELETE referencing an unknown guild ID: %s. Discarding.', data['id'])
             return
 
-        if data.get('unavailable', False) and guild is not None:
+        if data.get('unavailable', False):
             # GUILD_DELETE with unavailable being True means that the
             # guild that was available is now currently unavailable
             guild.unavailable = True
@@ -928,10 +928,9 @@ class ConnectionState:
 
     def parse_guild_ban_remove(self, data):
         guild = self._get_guild(int(data['guild_id']))
-        if guild is not None:
-            if 'user' in data:
-                user = self.store_user(data['user'])
-                self.dispatch('member_unban', guild, user)
+        if guild is not None and 'user' in data:
+            user = self.store_user(data['user'])
+            self.dispatch('member_unban', guild, user)
 
     def parse_guild_role_create(self, data):
         guild = self._get_guild(int(data['guild_id']))

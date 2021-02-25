@@ -165,9 +165,8 @@ class BotBase(GroupMixin):
             return
 
         cog = context.cog
-        if cog:
-            if Cog._get_overridden_method(cog.cog_command_error) is not None:
-                return
+        if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
+            return
 
         print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
@@ -770,7 +769,7 @@ class BotBase(GroupMixin):
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, name)
             self.load_extension(name)
-        except Exception as e:
+        except Exception:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.

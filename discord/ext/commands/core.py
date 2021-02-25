@@ -715,9 +715,8 @@ class Command(_BaseCommand):
                     except RuntimeError:
                         break
 
-        if not self.ignore_extra:
-            if not view.eof:
-                raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
+        if not self.ignore_extra and not view.eof:
+            raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
     async def call_before_hooks(self, ctx):
         # now that we're done preparing we can call the pre-command hooks

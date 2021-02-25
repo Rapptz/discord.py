@@ -398,7 +398,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         if they have a guild specific nickname then that
         is returned instead.
         """
-        return self.nick if self.nick is not None else self.name
+        return self.nick or self.name
 
     @property
     def activity(self):
@@ -431,11 +431,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         if self._user.mentioned_in(message):
             return True
 
-        for role in message.role_mentions:
-            if self._roles.has(role.id):
-                return True
-
-        return False
+        return any(self._roles.has(role.id) for role in message.role_mentions)
 
     def permissions_in(self, channel):
         """An alias for :meth:`abc.GuildChannel.permissions_for`.
@@ -582,7 +578,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             # nick not present so...
             pass
         else:
-            nick = nick if nick else ''
+            nick = nick or ''
             if self._state.self_id == self.id:
                 await http.change_my_nickname(guild_id, nick, reason=reason)
             else:

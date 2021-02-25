@@ -96,7 +96,7 @@ class CogMeta(type):
     def __new__(cls, *args, **kwargs):
         name, bases, attrs = args
         attrs['__cog_name__'] = kwargs.pop('name', name)
-        attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
+        attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
 
         description = kwargs.pop('description', None)
         if description is None:
@@ -126,7 +126,7 @@ class CogMeta(type):
                     commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
-                        is_listener = getattr(value, '__cog_listener__')
+                        getattr(value, '__cog_listener__')
                     except AttributeError:
                         continue
                     else:
@@ -192,7 +192,7 @@ class Cog(metaclass=CogMeta):
                 parent = lookup[parent.qualified_name]
 
                 # Update our parent's reference to our self
-                removed = parent.remove_command(command.name)
+                parent.remove_command(command.name)
                 parent.add_command(command)
 
         return self
