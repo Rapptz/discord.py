@@ -469,9 +469,9 @@ class Loop:
             self._time_index = 0
 
         next_time = self._time[self._time_index]
-        self._time_index += 1
 
         if self._current_loop == 0:
+            self._time_index += 1
             return datetime.datetime.combine(datetime.datetime.now(datetime.timezone.utc), next_time)
 
         next_date = self._last_iteration
@@ -479,6 +479,7 @@ class Loop:
             # we can assume that the earliest time should be scheduled for "tomorrow"
             next_date += datetime.timedelta(days=1)
 
+        self._time_index += 1
         return datetime.datetime.combine(next_date, next_time)
 
     def _prepare_time_index(self, now=None):
