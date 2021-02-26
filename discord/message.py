@@ -279,6 +279,12 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
+    fail_if_not_exists: Optional[:class:`bool`]
+        Whether replying to the referenced message should raise :class:`HTTPException`
+        if the message has been deleted or reply without the message reference attached.
+
+        .. versionadded:: 1.7
+
     resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]]
         The message that this reference resolved to. If this is ``None``
         then the original message was not fetched either due to the Discord API
@@ -291,14 +297,15 @@ class MessageReference:
         .. versionadded:: 1.6
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'resolved', '_state')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id, channel_id, guild_id=None):
+    def __init__(self, *, message_id, channel_id, guild_id=None, fail_if_not_exists=None):
         self._state = None
         self.resolved = None
         self.message_id = message_id
         self.channel_id = channel_id
         self.guild_id = guild_id
+        self.fail_if_not_exists = fail_if_not_exists
 
     @classmethod
     def with_state(cls, state, data):
@@ -352,6 +359,8 @@ class MessageReference:
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
+        if self.fail_if_not_exists is not None:
+            result['fail_if_not_exists'] = self.fail_if_not_exists
         return result
 
     to_message_reference_dict = to_dict
