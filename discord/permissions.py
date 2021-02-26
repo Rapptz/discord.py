@@ -141,9 +141,6 @@ class Permissions(BaseFlags):
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
-        
-        .. versionchanged:: 1.7
-           Added :attr:`use_slash_commands` permission.
         """
         return cls(0b11111111111111111111111111111111)
 
