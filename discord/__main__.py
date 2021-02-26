@@ -301,4 +301,5 @@ def main():
     parser, args = parse_args()
     args.func(parser, args)
 
-main()
+if __name__ == '__main__':
+    main()
