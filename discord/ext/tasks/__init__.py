@@ -138,8 +138,8 @@ class Loop:
         if obj is None:
             return self
 
-        copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
-                               count=self.count, time=self.time, reconnect=self.reconnect, loop=self.loop)
+        copy = Loop(self.coro, seconds=self._seconds, hours=self._hours, minutes=self._minutes,
+                               count=self._count, time=self._time, reconnect=self.reconnect, loop=self.loop)
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
