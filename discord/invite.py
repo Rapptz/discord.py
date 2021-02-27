@@ -258,7 +258,8 @@ class Invite(Hashable):
     Attributes
     -----------
     max_age: :class:`int`
-        How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
+        How long the before the invite expires in seconds.
+        A value of ``0`` indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
     guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
