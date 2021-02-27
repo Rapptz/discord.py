@@ -139,7 +139,7 @@ class Loop:
             return self
 
         copy = Loop(self.coro, seconds=self.seconds, hours=self.hours, minutes=self.minutes,
-                               count=self.count, reconnect=self.reconnect, loop=self.loop)
+                               count=self.count, time=self.time, reconnect=self.reconnect, loop=self.loop)
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
