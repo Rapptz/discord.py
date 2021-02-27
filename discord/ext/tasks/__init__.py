@@ -175,7 +175,8 @@ class Loop:
 
         .. versionadded:: 1.7
         """
-        return self._time.copy()
+        if self._time is not None:
+            return self._time.copy()
 
     @property
     def current_loop(self):
