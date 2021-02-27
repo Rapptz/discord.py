@@ -154,7 +154,7 @@ class Loop:
 
         .. versionadded:: 1.3
         """
-        if self._task is None and self._sleep:
+        if self._task is None:
             return None
         elif self._task and self._task.done() or self._stop_next_iteration:
             return None
