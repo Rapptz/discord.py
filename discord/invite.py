@@ -273,7 +273,7 @@ class Invite(Hashable):
     uses: :class:`int`
         How many times the invite has been used.
     max_uses: :class:`int`
-        How many times the invite can be used.
+        How many times the invite can be used. A value of 0 indicates that an infinite number of people can use the invite.
     inviter: :class:`User`
         The user who created the invite.
     approximate_member_count: Optional[:class:`int`]
