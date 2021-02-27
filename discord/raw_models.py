@@ -94,7 +94,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
 
         .. versionadded:: 1.3
     guild_id: Optional[:class:`int`]
-        The guild ID where the message got deleted, if applicable.
+        The guild ID where the message got updated, if applicable.
 
         .. versionadded:: 1.7
 
