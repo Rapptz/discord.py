@@ -1460,10 +1460,10 @@ class Guild(Hashable):
 
         data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
-    
+
     async def templates(self):
         """|coro|
-        
+
         Gets the list of templates from this guild.
 
         Requires :attr:`~.Permissions.manage_guild` permissions.
@@ -1474,7 +1474,7 @@ class Guild(Hashable):
         -------
         Forbidden
             You don't have permissions to get the templates.
-        
+
         Returns
         --------
         List[:class:`Template`]
@@ -1569,10 +1569,10 @@ class Guild(Hashable):
             result.append(Invite(state=self._state, data=invite))
 
         return result
-    
+
     async def create_template(self, *, name, description=None):
         """|coro|
-        
+
         Creates a template for the guild.
 
         You must have the :attr:`~Permissions.manage_guild` permission to
@@ -1588,14 +1588,14 @@ class Guild(Hashable):
             The description of the template.
         """
         from .template import Template
-        
+
         payload = {
             'name': name
         }
 
         if description:
             payload['description'] = description
-        
+
         data = await self._state.http.create_template(self.id, payload)
 
         return Template(state=self._state, data=data)
@@ -2222,6 +2222,9 @@ class Guild(Hashable):
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
+
+        if user_ids is not None and not user_ids:
+            raise ValueError('user_ids must contain at least 1 value')
 
         limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)
