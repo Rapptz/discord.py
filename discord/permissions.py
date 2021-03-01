@@ -131,6 +131,26 @@ class Permissions(BaseFlags):
     __lt__ = is_strict_subset
     __gt__ = is_strict_superset
 
+    def __add__(self, other):
+        if not isinstance(other, Permissions):
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+        return Permissions(self.value | other.value)
+
+    def __sub__(self, other):
+        if not isinstance(other, Permissions):
+            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+        return Permissions(self.value & (~other.value))
+
+    def __bool__(self):
+        return bool(self.value)
+
+    def is_empty(self):
+        """Returns ``True`` if there are no permissions, ``False`` otherwise.
+        
+        .. versionadded:: 1.7
+        """
+        return self.value == 0
+
     @classmethod
     def none(cls):
         """A factory method that creates a :class:`Permissions` with all
