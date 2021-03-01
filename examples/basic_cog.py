@@ -14,10 +14,11 @@ intents.members = True
 # We define the basic bot, setting the prefix, description and intents
 bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
-# we define the class that will house the Utility commands
+# we define the class that will house the Miscellaneous commands
 # the class inherits from the commands.Cog class
 # The main advantage is we can take advantage of Object Oriented Programming
-# This also groups all commands in the help command under the `Utility` cog
+# This also groups all commands in the help command under the `Misc` cog
+# The name kwarg passed allows us to set the name of the cog. If not set it defaults to the name of the class.
 class Miscellaneous(commands.Cog, name="Misc"):
     """
     A simple utility cog
