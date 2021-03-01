@@ -73,5 +73,5 @@ class Miscellaneous(commands.Cog, name="Misc"):
 
 # This method allows us to add our Cog to the main bot. Without this you cog won't show up.
 # You can use bot.remove_cog to remove cogs from a bot
-bot.add_cog(Utility(bot))
+bot.add_cog(Miscellaneous(bot))
 bot.run('token')
