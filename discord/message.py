@@ -415,7 +415,7 @@ class Message(Hashable):
     call: Optional[:class:`CallMessage`]
         The call that the message refers to. This is only applicable to messages of type
         :attr:`MessageType.call`.
-        
+
         .. deprecated:: 1.7
 
     reference: Optional[:class:`~discord.MessageReference`]
@@ -923,7 +923,7 @@ class Message(Hashable):
 
         if self.type is MessageType.channel_follow_add:
             return '{0.author.name} has added {0.content} to this channel'.format(self)
-        
+
         if self.type is MessageType.guild_stream:
             return '{0.author.name} is live! Now streaming {0.author.activity.name}'.format(self)
 
