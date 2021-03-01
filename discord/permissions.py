@@ -146,7 +146,6 @@ class Permissions(BaseFlags):
 
     def is_empty(self):
         """Returns ``True`` if there are no permissions, ``False`` otherwise.
-        
         .. versionadded:: 1.7
         """
         return self.value == 0
