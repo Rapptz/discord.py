@@ -192,6 +192,20 @@ class AuditLogEntry(Hashable):
 
     You retrieve these via :meth:`Guild.audit_logs`.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two entries are equal.
+
+        .. describe:: x != y
+
+            Checks if two entries are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the entry's hash.
+
     Attributes
     -----------
     action: :class:`AuditLogAction`
