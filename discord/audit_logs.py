@@ -29,6 +29,7 @@ from .object import Object
 from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
+from .mixins import Hashable
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
@@ -186,7 +187,7 @@ class AuditLogChanges:
 
         setattr(second, 'roles', data)
 
-class AuditLogEntry:
+class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
