@@ -11,44 +11,44 @@ The example uses cogs to organize the code
 intents = discord.Intents.default()
 intents.members = True
 
-# We define the basic bot, setting the prefix, description and intents
+# We define the basic bot, setting the prefix, description and intents.
 bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
-# we define the class that will house the Miscellaneous commands
-# the class inherits from the commands.Cog class
-# The main advantage is we can take advantage of Object Oriented Programming
-# This also groups all commands in the help command under the `Misc` cog
+# We define the class that will house the Miscellaneous commands.
+# The class inherits from the `commands.Cog` class.
+# The main advantage is we can take advantage of Object Oriented Programming.
+# This also groups all commands in the help command under the `Misc` cog.
 # The name kwarg passed allows us to set the name of the cog. If not set it defaults to the name of the class.
 class Miscellaneous(commands.Cog, name="Misc"):
     """
-    A simple utility cog
+    A simple Miscellaneous cog.
     """
 
     def __init__(self, bot):
 
-        # We pass in the bot parameter when initializing the class, and make it a property. This lets us access the bot paramater throughput
+        # We pass in the bot parameter when initializing the class, and make it a property. This lets us access the bot parameter throughout.
         self.bot = bot
-        # You can also add other properties to the class
-        self.other_vale = "this is a property of the class"
+        # You can also add other properties to the class.
+        self.other_value = 'This is a property of the class.'
 
     # Cog checks are nice feature in cogs.
-    # They allow you to define a check that works for every single command in the cog
-    # You return a boolean value. if the check passes the command runs, otherwise a CheckFailure is raised. 
+    # They allow you to define a check that works for every single command in the cog.
+    # You return a boolean value. If the check passes the command runs, otherwise a `commands.CheckFailure` is raised. 
     async def cog_check(self, ctx):
-        # Check if there is a guild the command was invoked in
+        # Check if there is a guild the command was invoked in.
         if ctx.guild:
             return True
         return False
 
-    # A simple basic command inside a cog
-    # Instead of using bot.command decorator, the commands.command decorator is used
+    # A simple basic command inside a cog.
+    # Instead of using bot.command decorator, the commands.command decorator is used.
 
     @commands.command()
     async def add(self, ctx, left: int, right: int):
         """Adds two numbers together"""
         await ctx.send(left + right)
 
-    # A command group inside a cog
+    # A command group inside a cog.
     @commands.group()
     async def cool(ctx):
         """Says if a user is cool.
@@ -62,8 +62,8 @@ class Miscellaneous(commands.Cog, name="Misc"):
         """Is the bot cool?"""
         await ctx.send('Yes, the bot is cool.')
 
-    # Listening for events using a cog
-    # This works similar to the bot.event decorator
+    # Listening for events using a cog.
+    # This works like the bot.event decorator.
     @commands.Cog.listener()
     async def on_member_join(self, member):
         guild = member.guild
@@ -73,6 +73,6 @@ class Miscellaneous(commands.Cog, name="Misc"):
 
 
 # This method allows us to add our Cog to the main bot. Without this you cog won't show up.
-# You can use bot.remove_cog to remove cogs from a bot
+# You can use bot.remove_cog to remove cogs from a bot.
 bot.add_cog(Miscellaneous(bot))
 bot.run('token')
