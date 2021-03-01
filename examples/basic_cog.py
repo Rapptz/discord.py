@@ -11,23 +11,19 @@ The example uses cogs to organize the code
 intents = discord.Intents.default()
 intents.members = True
 
-
 # We define the basic bot, setting the prefix, description and intents
-
-bot = commands.Bot(command_prefix='?',
-                   description=description, intents=intents)
-
+bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
 # we define the class that will house the Utility commands
 # the class inherits from the commands.Cog class
 # The main advantage is we can take advantage of Object Oriented Programming
 # This also groups all commands in the help command under the `Utility` cog
-class Utility(commands.Cog):
+class Miscellaneous(commands.Cog, name="Misc"):
     """
     A simple utility cog
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot):
 
         # We pass in the bot parameter when initializing the class, and make it a property. This lets us access the bot paramater throughput
         self.bot = bot
