@@ -149,15 +149,16 @@ class Permissions(BaseFlags):
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
-        - manage_emojis
-        - view_audit_log
-        - view_guild_insights
-        - manage_guild
-        - change_nickname
-        - manage_nicknames
-        - kick_members
-        - ban_members
-        - administrator
+        
+        - :attr:`manage_emojis`\n
+        - :attr:`view_audit_log`\n
+        - :attr:`view_guild_insights`\n
+        - :attr:`manage_guild`\n
+        - :attr:`change_nickname`\n
+        - :attr:`manage_nicknames`\n
+        - :attr:`kick_members`\n
+        - :attr:`ban_members`\n
+        - :attr:`administrator`
         
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
@@ -208,7 +209,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
         
-        .. versionadded: 1.7
+        .. versionadded:: 1.7
         """
         return cls(1 << 3)
 
