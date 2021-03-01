@@ -140,41 +140,77 @@ class Permissions(BaseFlags):
     @classmethod
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
-        permissions set to ``True``."""
-        return cls(0b01111111111111111111111111111111)
+        permissions set to ``True``.
+        """
+        return cls(0b11111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
-
+        - manage_emojis
+        - view_audit_log
+        - view_guild_insights
         - manage_guild
+        - change_nickname
+        - manage_nicknames
         - kick_members
         - ban_members
         - administrator
-        - change_nickname
-        - manage_nicknames
+        
+        .. versionchanged:: 1.7
+           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
         """
-        return cls(0b00110011111101111111110001010001)
+        return cls(0b10110011111101111111111101010001)
 
     @classmethod
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "General" permissions from the official Discord UI set to ``True``."""
-        return cls(0b01111100000010000000000010111111)
-
+        "General" permissions from the official Discord UI set to ``True``.
+        
+        .. versionchanged:: 1.7
+           Permission :attr:`read_messages` is now included in the general permissions, but
+           permissions :attr:`administrator`, :attr:`create_instant_invite`, :attr:`kick_members`,
+           :attr:`ban_members`, :attr:`change_nickname` and :attr:`manage_nicknames` are
+           no longer part of the general permissions.
+        """
+        return cls(0b01110000000010000000010010110000)
+    
+    @classmethod
+    def membership(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Membership" permissions from the official Discord UI set to ``True``.
+        
+        .. versionadded:: 1.7
+        """
+        return cls(0b00001100000000000000000000000111)
+    
     @classmethod
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "Text" permissions from the official Discord UI set to ``True``."""
-        return cls(0b00000000000001111111110001000000)
+        "Text" permissions from the official Discord UI set to ``True``.
+        
+        .. versionchanged:: 1.7
+           Permission :attr:`read_messages` is no longer part of the text permissions. 
+           Added :attr:`use_slash_commands` permission.
+        """
+        return cls(0b10000000000001111111100001000000)
 
     @classmethod
     def voice(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
         return cls(0b00000011111100000000001100000000)
+    
+    @classmethod
+    def advanced(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Advanced" permissions from the official Discord UI set to ``True``.
+        
+        .. versionadded: 1.7
+        """
+        return cls(1 << 3)
 
 
     def update(self, **kwargs):
