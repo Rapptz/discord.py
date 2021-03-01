@@ -77,12 +77,21 @@ class Permissions(BaseFlags):
              Checks if a permission is a strict superset of another permission.
         .. describe:: hash(x)
 
-               Return the permission's hash.
+               Returns the permission's hash.
         .. describe:: iter(x)
 
                Returns an iterator of ``(perm, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
                Note that aliases are not shown.
+        .. describe:: x + y
+
+                Returns a new permission corresponding to the union of the two permissions.
+        .. describe:: x - y
+
+                Returns a new permission corresponding to the difference of the two permissions.
+        .. describe:: bool(x)
+
+                Returns ``True`` if permission is not empty, ``False`` otherwise.
 
     Attributes
     -----------
