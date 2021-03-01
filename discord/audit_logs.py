@@ -206,6 +206,9 @@ class AuditLogEntry(Hashable):
 
             Returns the entry's hash.
 
+    .. versionchanged:: 1.7
+        Audit log entries are now comparable and hashable.
+
     Attributes
     -----------
     action: :class:`AuditLogAction`
