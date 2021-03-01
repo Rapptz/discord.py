@@ -160,7 +160,6 @@ class Permissions(BaseFlags):
     def default(cls):
         """A factory method that creates a :class:`Permissions` with only
         the default permissions set to ``True``.
-        
         .. versionadded:: 1.7
         """
         return cls(0b10000110001101111100111001000001)
