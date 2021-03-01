@@ -93,6 +93,10 @@ class RawMessageUpdateEvent(_RawReprMixin):
         The channel ID where the update took place.
 
         .. versionadded:: 1.3
+    guild_id: Optional[:class:`int`]
+        The guild ID where the message got updated, if applicable.
+
+        .. versionadded:: 1.7
 
     data: :class:`dict`
         The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
@@ -101,13 +105,18 @@ class RawMessageUpdateEvent(_RawReprMixin):
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
     """
 
-    __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.channel_id = int(data['channel_id'])
         self.data = data
         self.cached_message = None
+
+        try:
+            self.guild_id = int(data['guild_id'])
+        except KeyError:
+            self.guild_id = None
 
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
