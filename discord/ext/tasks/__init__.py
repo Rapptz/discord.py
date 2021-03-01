@@ -151,6 +151,8 @@ class Loop:
     def seconds(self):
         """Optional[:class:`float`]: Read-only value for the number of seconds
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        
+        .. versionadded:: 1.7
         """
         return self._seconds
     
@@ -158,6 +160,8 @@ class Loop:
     def minutes(self):
         """Optional[:class:`float`]: Read-only value for the number of minutes
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        
+        .. versionadded:: 1.7
         """
         return self._minutes
     
@@ -165,6 +169,8 @@ class Loop:
     def hours(self):
         """Optional[:class:`float`]: Read-only value for the number of hours
         between each iteration. ``None`` if an explicit ``time`` value was passed instead.
+        
+        .. versionadded:: 1.7
         """
         return self._hours
 
