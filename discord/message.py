@@ -936,7 +936,7 @@ class Message(Hashable):
         if self.type is MessageType.guild_discovery_grace_period_initial_warning:
             return 'This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.'
 
-        if self.type is MessageType.guild_discovery_grave_period_final_warning:
+        if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
     async def delete(self, *, delay=None):
