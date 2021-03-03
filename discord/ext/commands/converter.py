@@ -102,7 +102,7 @@ class Converter:
 
 class IDConverter(Converter):
     def __init__(self):
-        self._id_regex = re.compile(r'([0-9]{15,21})$')
+        self._id_regex = re.compile(r'([0-9]{15,20})$')
         super().__init__()
 
     def _get_id_match(self, argument):
@@ -265,11 +265,11 @@ class PartialMessageConverter(Converter):
     3. By message URL
     """
     def _get_id_matches(self, argument):
-        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,21})-)?(?P<message_id>[0-9]{15,21})$')
+        id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,20})-)?(?P<message_id>[0-9]{15,20})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
-            r'(?:[0-9]{15,21}|@me)'
-            r'/(?P<channel_id>[0-9]{15,21})/(?P<message_id>[0-9]{15,21})/?$'
+            r'(?:[0-9]{15,20}|@me)'
+            r'/(?P<channel_id>[0-9]{15,20})/(?P<message_id>[0-9]{15,20})/?$'
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
