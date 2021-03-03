@@ -50,6 +50,9 @@ from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
+import time
+import wave
+import os
 
 try:
     import nacl.secret
@@ -219,8 +222,14 @@ class VoiceClient(VoiceProtocol):
         self._runner = None
         self._player = None
         self.encoder = None
+        self.decoder = None
         self._lite_nonce = 0
         self.ws = None
+
+        self.recording_event = asyncio.Event()
+        self.recording = False
+        self.user_timestamps = {}
+        self.waiting_recv = False
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -522,6 +531,31 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
+    def _decrypt_xsalsa20_poly1305(self, header,  data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        return box.decrypt(data, bytes(nonce))
+
+    def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce_size = nacl.secret.SecretBox.NONCE_SIZE
+        nonce = data[-nonce_size:]
+
+        return box.decrypt(data[:-nonce_size], nonce)
+
+    def _decrypt_xsalsa20_poly1305_lite(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:4] = data[-4:]
+        data = data[:-4]
+
+        return box.decrypt(data, bytes(nonce))
+
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
 
@@ -640,3 +674,198 @@ class VoiceClient(VoiceProtocol):
             log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
+
+    def unpack_audio(self, data):
+        """Takes an audio packet received from Discord and decodes it into pcm audio data.
+        If there are no users talking the channel, `None` will be returned
+
+        You must be connected to receive audio.
+
+        Parameters
+        ---------
+        data: :class:`bytes`
+            Bytes received by Discord via the UDP connection used for sending and receiving voice data
+        """
+        header = data[:12]
+        data = data[12:]
+
+        decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
+
+        ssrc = int.from_bytes(header[8:], 'big')
+        try:
+            user_id = self.ws.ssrc_map[ssrc]['user_id']
+        # When the on speak event fires after the
+        # voice data for this person is received
+        except KeyError:
+            return b'', 0, 0
+        timestamp = int.from_bytes(header[4:][:4], 'big')
+        if user_id not in self.user_timestamps:
+            self.user_timestamps.update({user_id: timestamp-960})
+
+        return decrypted_data, user_id, timestamp
+
+    def pcm_to_wave_file(self, file_names):
+        """Takes raw pcm data and stores it as a wave file.
+
+        Parameters
+        ----------
+        file_names: :class:`iter`
+            An iterable containing a list of paths to pcm files
+            which will be converted to wave files
+        pcm: :class:`bytes`
+            The raw pcm data which will be saved to the wave file
+        """
+        for file in file_names:
+            pcm_file = open(file, 'rb')
+            pcm = pcm_file.read()
+            pcm_file.close()
+            size = self.decoder.SAMPLING_RATE*self.decoder.SAMPLE_SIZE*3
+            pcm = pcm[size:]
+            with wave.open(file.replace("pcm", "wav"), 'wb') as f:
+                f.setnchannels(self.decoder.CHANNELS)
+                f.setsampwidth(self.decoder.SAMPLE_SIZE)
+                f.setframerate(self.decoder.SAMPLING_RATE/self.decoder.CHANNELS)
+                f.writeframes(pcm)
+                f.close()
+            os.remove(file)
+
+    def start_recording(self, callback, *args):
+        """The bot will begin recording audio from the current voice channel it is in.
+        This function uses a thread so the current code line will not be stopped.
+
+        Must be in a voice channel to use.
+        Must not be already recording.
+
+        Parameters
+        ----------
+        callback: :class:`asynchronous function`
+            A function which is called after the bot has stopped recording.
+        *args:
+            Args which will be passed to the callback function.
+
+        Raises
+        ------
+        ClientException
+            Not connected to a voice channel or already recording.
+        ClientException
+            Already recording.
+        """
+        if not self.is_connected():
+            raise ClientException('Not connected to voice channel.')
+        if self.recording:
+            raise ClientException("Already recording audio.")
+        self.recording = True
+        if not self.decoder:
+            self.decoder = opus.Encoder()
+
+        t = threading.Thread(target=self.recv_audio, args=(callback, *args,))
+        t.start()
+
+    def stop_recording(self):
+        """Stops the recording.
+
+        Must be already recording.
+
+        Raises
+        ------
+        ClientException
+            Not currently recording.
+        """
+        if not self.recording:
+            raise ClientException("Not currently recording audio.")
+        time.sleep(3)
+        self.recording = False
+        self.recording_event.clear()
+
+    async def pause_recording(self):
+        """Pauses or unpauses the recording.
+
+        Must be already recording.
+
+        Raises
+        ------
+        ClientException
+            Not currently recording.
+         """
+        if not self.recording:
+            raise ClientException("Not currently recording audio.")
+        getattr(self.recording_event, {True: 'clear', False: 'set'}[self.recording_event.is_set()])()
+
+    async def wait_on_recording_event(self):
+        pause_time = time.perf_counter()
+        await self.recording_event.wait()
+        return time.perf_counter() - pause_time
+
+    def _recv_audio(self):
+        #  Handles receiving, parsing, and decoding data
+        #  as well as adding silence where it should be
+        #  based on the timestamps given in the header.
+        data = self.socket.recv(1024)
+        try:
+            data, user, timestamp = self.unpack_audio(data)
+            if data == b'':
+                return b'', 0
+        except nacl.exceptions.CryptoError:
+            self.waiting_recv = True
+            return b'', 0
+        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
+            headerExtensionLength = int.from_bytes(data[2:][:2], "big")
+            offset = 4
+            for i in range(headerExtensionLength):
+                byte = data[offset]
+                offset += 1
+                if byte == 0:
+                    continue
+                offset += 1 + (0b1111 & (byte >> 4))
+            offset += 1
+            data = data[offset:]
+        if data == b'\xf8\xff\xfe':  # Frame of silence
+            return b'', 0
+        try:
+            decoded_data = self.decoder.decode(data, self.decoder.FRAME_SIZE)
+        except opus.OpusError:
+            print("Yikes data")
+            return b'', 0
+        silence = timestamp - self.user_timestamps[user] - 960
+        decoded_data = struct.pack('<h', 0) * silence + decoded_data
+        self.user_timestamps[user] = timestamp
+        return decoded_data, user
+
+    def recv_audio(self, callback, *args):
+        #  Gets data from _recv_audio and sorts
+        #  it by user, handles pcm files and
+        #  silence that should be added.
+        if not self.decoder:
+            self.decoder = opus.Encoder()
+        self.socket.setblocking(True)
+        self.user_timestamps = {}
+        starting_time = time.perf_counter()
+        registered_users = []
+        while self.recording:
+            data, user = self._recv_audio()
+
+            if data == b'':
+                continue
+
+            if self.waiting_recv:
+                self.waiting_recv = False
+                for user in registered_users:
+                    with open(f'{user}.pcm', 'ab') as f:
+                        f.write(data)
+
+            if user in registered_users:
+                with open(f'{user}.pcm', 'ab') as f:
+                    f.write(data)
+            else:
+                registered_users.append(user)
+                with open(f'{user}.pcm', 'wb') as f:
+                    f.write(struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data)
+
+        try:
+            callback = asyncio.run_coroutine_threadsafe(callback(self, [f'{user}.pcm' for user in registered_users], *args), self.loop)
+            result = callback.result()
+        except Exception as exc:
+            raise exc
+        else:
+            if result is not None:
+                print(result)
