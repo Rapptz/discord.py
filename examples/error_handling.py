@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord.ext.commands import BucketType
 import traceback
 
 description = '''
@@ -26,12 +25,12 @@ async def add(ctx, arg1: int, arg2: int):
 @commands.is_owner()
 @bot.command()
 async def owner_check(ctx):
-    await ctx.send("{} you do own this bot!".format(ctx.author.name))
+    await ctx.send("{}, you do own this bot!".format(ctx.author))
 
 # Here is a command with a cooldown.
 # The syntax for cooldown is rate / per / type.
 # Here we are doing 1 per 5 seconds per member.
-@commands.cooldown(1, 5, BucketType.member)
+@commands.cooldown(1, 5, commands.BucketType.member)
 @bot.command()
 async def cooldown_example(ctx):
     await ctx.send("{}, you are not on cooldown!".format(ctx.author))
@@ -46,9 +45,8 @@ async def on_command_error(ctx, error):
         return
 
     # Check for ctx.cog and return if it has a local handler.
-    elif ctx.cog:
-        if ctx.cog.has_error_handler():
-            return
+    elif ctx.cog and ctx.cog.has_error_handler():
+        return
 
     # The errors below are in a format that is readable, so we can just call `str` on them.
     readable_errors = (
