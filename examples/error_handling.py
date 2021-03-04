@@ -6,11 +6,11 @@ description = '''
 A basic bot featuring error handling for command errors
 '''
 
-# Here we are using regular intents, since they don't really matter for this example
+# Here we are using regular intents, since they don't really matter for this example.
 intents = discord.Intents.default()
 
 # Constructing the bot with a prefix, our above intents, and the description
-bot = commands.Bot(command_prefix="!", intents=intents, description=description)
+bot = commands.Bot(command_prefix='!', intents=intents, description=description)
 
 # Example command to showcase a potential error raised.
 # The important ones to see are `MissingRequiredArgument` and `BadArgument`.
@@ -19,13 +19,13 @@ bot = commands.Bot(command_prefix="!", intents=intents, description=description)
 @bot.command()
 async def add(ctx, arg1: int, arg2: int):
     added = arg1 + arg2
-    await ctx.send("{} + {} = {}".format(arg1, arg2, added))
+    await ctx.send('{} + {} = {}'.format(arg1, arg2, added))
 
 # This command showcases the `is_owner` check, which will raise `commands.NotOwner` if the user doesn't own the bot.
 @commands.is_owner()
 @bot.command()
 async def owner_check(ctx):
-    await ctx.send("{}, you do own this bot!".format(ctx.author))
+    await ctx.send('{}, you do own this bot!'.format(ctx.author))
 
 # Here is a command with a cooldown.
 # The syntax for cooldown is rate / per / type.
@@ -33,7 +33,7 @@ async def owner_check(ctx):
 @commands.cooldown(1, 5, commands.BucketType.member)
 @bot.command()
 async def cooldown_example(ctx):
-    await ctx.send("{}, you are not on cooldown!".format(ctx.author))
+    await ctx.send('{}, you are not on cooldown!'.format(ctx.author))
 
 # Here we are **overriding** on_command_error.
 # You can also use `bot.listen()` if you prefer not to override it, though there isn't a difference here.
@@ -72,7 +72,7 @@ async def on_command_error(ctx, error):
     # Here we send a custom error message if the user is on cooldown.
     # We also format the cooldown seconds to 2 digits.
     elif isinstance(error, commands.CommandOnCooldown):
-        await ctx.send("You are on cooldown! Please wait `{}` seconds".format(round(error.retry_after, 2)))
+        await ctx.send('You are on cooldown! Please wait `{}` seconds'.format(round(error.retry_after, 2)))
 
     # If the error isn't picked up by any of our other checks, then we should just print it.
     # **NOTE**: This error is *not* being raised. It is being printed.
@@ -80,4 +80,4 @@ async def on_command_error(ctx, error):
         traceback.print_exc()
 
 # Run the bot. You should really read the token from a configuration file.
-bot.run("TOKEN HERE")
+bot.run('TOKEN HERE')
