@@ -1,7 +1,7 @@
 import discord
 
 
-TOKEN = 'NzQwMDEzNzQyMTU0MDU1NzEw.Xyi1gA.oRQqbo8J6JmxW1pwLMjBXAKkRLw'
+TOKEN = '*****'
 
 
 def vc_required(func):
