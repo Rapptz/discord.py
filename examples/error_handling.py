@@ -14,15 +14,15 @@ bot = commands.Bot(command_prefix='!', description=description)
 # `MissingRequiredArgument` will be raised when a required argument is not passed.
 # Bad Argument will be raised in this case when the arg cannot be converted to an `int`.
 @bot.command()
-async def add(ctx, arg1: int, arg2: int):
-    added = arg1 + arg2
-    await ctx.send('{} + {} = {}'.format(arg1, arg2, added))
+async def divide(ctx, dividend: float, divisor: float):
+    quotient = dividend / divisor
+    await ctx.send('{} / {} = {}'.format(dividend, divisor, quotient))
 
 # This command showcases the `is_owner` check, which will raise `commands.NotOwner` if the user doesn't own the bot.
 @commands.is_owner()
 @bot.command()
 async def owner_check(ctx):
-    await ctx.send('{}, you do own this bot!'.format(ctx.author))
+    await ctx.send('{}, you own this bot!'.format(ctx.author))
 
 # Here is a command with a cooldown.
 # The syntax for cooldown is rate / per / type.
@@ -52,17 +52,17 @@ async def on_command_error(ctx, error):
         commands.NotOwner
     )
 
-    # The error may sometimes be wrapped in `CommandInvokeError`, which would cause our `isinstance` to fail,
+    # Exceptions that do not derive from `commands.CommandError` are wrapped in a `commands.CommandInvokeError` exception. Unwrap this using the following: 
     # to fix this, we unwrap the error.
     if isinstance(error, commands.CommandInvokeError):
         error = error.original
 
     # We use isinstance to check the type of error. 
     if isinstance(error, commands.CommandNotFound):
-        # We don't really care if the command is not found, so we can just return.
+        # We can suppress the `commands.CommandNotFound` exception to suppress extra noise.
         return
     
-    # Checking for our readable errors and then calling `str` on them.
+    # Checking for our readable error types and then sending their string format to the invoking channel.
     elif isinstance(error, readable_errors):
         await ctx.send(str(error))
 
