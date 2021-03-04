@@ -405,11 +405,12 @@ class Decoder(_OpusStruct):
             channel_count = self.CHANNELS
         else:
             frames = self.packet_get_nb_frames(data)
-            channel_count = self.packet_get_nb_channels(data)
+            # channel_count = self.packet_get_nb_channels(data)
+            channel_count = self.CHANNELS  # Original code returned 1, which caused problems
             samples_per_frame = self.packet_get_samples_per_frame(data)
-            frame_size = frames * samples_per_frame
+            frame_size = frames * samples_per_frame=
 
-        pcm = (ctypes.c_int16 * (frame_size * channel_count))()
+        pcm = (ctypes.c_int16 * (frame_size * channel_count * ctypes.sizeof(ctypes.c_int16)))()
         pcm_ptr = ctypes.cast(pcm, c_int16_ptr)
 
         ret = _lib.opus_decode(self._state, data, len(data) if data else 0, pcm_ptr, frame_size, fec)
