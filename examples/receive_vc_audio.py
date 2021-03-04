@@ -1,8 +1,7 @@
 import discord
-import asyncio
 
 
-TOKEN = '*****'
+TOKEN = 'NzQwMDEzNzQyMTU0MDU1NzEw.Xyi1gA.oRQqbo8J6JmxW1pwLMjBXAKkRLw'
 
 
 def vc_required(func):
@@ -23,6 +22,7 @@ class Client(discord.Client):
         self.commands = {
             '!start': self.start_recording,
             '!stop': self.stop_recording,
+            '!pause': self.pause_recording,
         }
 
     async def get_vc(self, message):
@@ -50,14 +50,17 @@ class Client(discord.Client):
     @vc_required
     async def start_recording(self, msg, vc):
         vc.start_recording(self.on_stopped, msg.channel)
-        await msg.channel.send("The recording will start in 3 seconds...")
-        await asyncio.sleep(3)
         await msg.channel.send("The recording has started!")
 
     @vc_required
+    async def pause_recording(self, msg, vc):
+        vc.pause_recording()
+        await msg.channel.send("The recording has been " + {True: "paused!", False: 'unpaused!'}[vc.paused])
+
+    @vc_required
     async def stop_recording(self, msg, vc):
-        await msg.channel.send("Recording has stopped! The pcm files will begin to be converted to wave files in 3 seconds.")
         vc.stop_recording()
+        await msg.channel.send("Recording has stopped! The pcm files will begin to be converted to wave files.")
 
     async def on_stopped(self, vc, pcm, *args):
         channel = args[0]
