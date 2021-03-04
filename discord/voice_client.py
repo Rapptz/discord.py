@@ -226,7 +226,7 @@ class VoiceClient(VoiceProtocol):
         self._lite_nonce = 0
         self.ws = None
 
-        self.recording_event = asyncio.Event()
+        self.paused = False
         self.recording = False
         self.user_timestamps = {}
         self.waiting_recv = False
@@ -537,7 +537,7 @@ class VoiceClient(VoiceProtocol):
         nonce = bytearray(24)
         nonce[:12] = header
 
-        return box.decrypt(data, bytes(nonce))
+        return self.strip_header_ext(box.decrypt(data, bytes(nonce)))
 
     def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -545,7 +545,7 @@ class VoiceClient(VoiceProtocol):
         nonce_size = nacl.secret.SecretBox.NONCE_SIZE
         nonce = data[-nonce_size:]
 
-        return box.decrypt(data[:-nonce_size], nonce)
+        return self.strip_header_ext(box.decrypt(data[:-nonce_size], nonce))
 
     def _decrypt_xsalsa20_poly1305_lite(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -554,7 +554,22 @@ class VoiceClient(VoiceProtocol):
         nonce[:4] = data[-4:]
         data = data[:-4]
 
-        return box.decrypt(data, bytes(nonce))
+        return self.strip_header_ext(box.decrypt(data, bytes(nonce)))
+
+    @staticmethod
+    def strip_header_ext(data):
+        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
+            headerExtensionLength = int.from_bytes(data[2:][:2], "big")
+            offset = 4
+            for i in range(headerExtensionLength):
+                byte = data[offset]
+                offset += 1
+                if byte == 0:
+                    continue
+                offset += 1 + (0b1111 & (byte >> 4))
+            offset += 1
+            data = data[offset:]
+        return data
 
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
@@ -692,38 +707,28 @@ class VoiceClient(VoiceProtocol):
             #  Receiving an error from nacl when certain data,
             #  all being of length 40, are passed through. I
             #  don't know exactly what this data is but it is
-            #  clearly not audio data.
+            #  clearly not audio data and is only sent when no
+            #  one is speaking in the vc.
             return b'', 0
         decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
 
         ssrc = int.from_bytes(header[8:], 'big')
         try:
             user_id = self.ws.ssrc_map[ssrc]['user_id']
-        # When the on speak event fires after the
-        # voice data for this person is received
-        # in other words we don't yet know who this
-        # audio belongs to.
         except KeyError:
+            # When the on speak event fires after the
+            # voice data for this person is received
+            # in other words we don't yet know who this
+            # audio belongs to.
             return b'', 0
         timestamp = int.from_bytes(header[4:][:4], 'big')
         if user_id not in self.user_timestamps:
             self.user_timestamps.update({user_id: timestamp-960})
 
-        if decrypted_data[0] == 0xbe and decrypted_data[1] == 0xde and len(decrypted_data) > 4:
-            headerExtensionLength = int.from_bytes(decrypted_data[2:][:2], "big")
-            offset = 4
-            for i in range(headerExtensionLength):
-                byte = decrypted_data[offset]
-                offset += 1
-                if byte == 0:
-                    continue
-                offset += 1 + (0b1111 & (byte >> 4))
-            offset += 1
-            decrypted_data = decrypted_data[offset:]
-
         if data == b'\xf8\xff\xfe':  # Frame of silence
             return b'', 0
 
+        decoded_data = decrypted_data
         try:
             decoded_data = self.decoder.decode(decrypted_data)
         except opus.OpusError:
@@ -733,6 +738,12 @@ class VoiceClient(VoiceProtocol):
         silence = timestamp - self.user_timestamps[user_id] - 960
         decoded_data = struct.pack('<h', 0) * silence + decoded_data
         self.user_timestamps[user_id] = timestamp
+
+        # Put it here so that the timestamps will
+        # still be updated but the audio data won't
+        # be sent back to recv_audio.
+        if self.paused:
+            return b'', 0
 
         return decoded_data, user_id
 
@@ -802,9 +813,9 @@ class VoiceClient(VoiceProtocol):
         if not self.recording:
             raise ClientException("Not currently recording audio.")
         self.recording = False
-        self.recording_event.clear()
+        self.paused = False
 
-    async def pause_recording(self):
+    def pause_recording(self):
         """Pauses or unpauses the recording.
 
         Must be already recording.
@@ -816,12 +827,7 @@ class VoiceClient(VoiceProtocol):
          """
         if not self.recording:
             raise ClientException("Not currently recording audio.")
-        getattr(self.recording_event, {True: 'clear', False: 'set'}[self.recording_event.is_set()])()
-
-    async def wait_on_recording_event(self):
-        pause_time = time.perf_counter()
-        await self.recording_event.wait()
-        return time.perf_counter() - pause_time
+        self.paused = {True: False, False: True}[self.paused]
 
     def recv_audio(self, callback, *args):
         #  Gets data from _recv_audio and sorts
@@ -830,6 +836,7 @@ class VoiceClient(VoiceProtocol):
         if not self.decoder:
             self.decoder = opus.Decoder()
         self.socket.setblocking(True)
+
         self.user_timestamps = {}
         starting_time = time.perf_counter()
         registered_users = []
