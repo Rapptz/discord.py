@@ -732,6 +732,8 @@ class VoiceClient(VoiceProtocol):
         try:
             decoded_data = self.decoder.decode(decrypted_data)
         except opus.OpusError:
+            # This happens when opus tries to decode audio
+            # from a user using the Discord website.
             print("Yikes data")
             return b'', 0
 
