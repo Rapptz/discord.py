@@ -6,11 +6,8 @@ description = '''
 A basic bot featuring error handling for command errors
 '''
 
-# Here we are using regular intents, since they don't really matter for this example.
-intents = discord.Intents.default()
-
-# Constructing the bot with a prefix, our above intents, and the description
-bot = commands.Bot(command_prefix='!', intents=intents, description=description)
+# Constructing the bot with a prefix and the description
+bot = commands.Bot(command_prefix='!', description=description)
 
 # Example command to showcase a potential error raised.
 # The important ones to see are `MissingRequiredArgument` and `BadArgument`.
@@ -41,7 +38,7 @@ async def cooldown_example(ctx):
 @bot.event
 async def on_command_error(ctx, error):
     # Check if the command has a local handler.
-    if ctx.command.has_error_handler():
+    if ctx.command and ctx.command.has_error_handler():
         return
 
     # Check for ctx.cog and return if it has a local handler.
