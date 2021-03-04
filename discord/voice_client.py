@@ -688,7 +688,12 @@ class VoiceClient(VoiceProtocol):
         """
         header = data[:12]
         data = data[12:]
-
+        if len(data) == 40:
+            #  Receiving an error from nacl when certain data,
+            #  all being of length 40, are passed through. I
+            #  don't know exactly what this data is but it is
+            #  clearly not audio data.
+            return b'', 0
         decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
 
         ssrc = int.from_bytes(header[8:], 'big')
@@ -696,13 +701,40 @@ class VoiceClient(VoiceProtocol):
             user_id = self.ws.ssrc_map[ssrc]['user_id']
         # When the on speak event fires after the
         # voice data for this person is received
+        # in other words we don't yet know who this
+        # audio belongs to.
         except KeyError:
-            return b'', 0, 0
+            return b'', 0
         timestamp = int.from_bytes(header[4:][:4], 'big')
         if user_id not in self.user_timestamps:
             self.user_timestamps.update({user_id: timestamp-960})
 
-        return decrypted_data, user_id, timestamp
+        if decrypted_data[0] == 0xbe and decrypted_data[1] == 0xde and len(decrypted_data) > 4:
+            headerExtensionLength = int.from_bytes(decrypted_data[2:][:2], "big")
+            offset = 4
+            for i in range(headerExtensionLength):
+                byte = decrypted_data[offset]
+                offset += 1
+                if byte == 0:
+                    continue
+                offset += 1 + (0b1111 & (byte >> 4))
+            offset += 1
+            decrypted_data = decrypted_data[offset:]
+
+        if data == b'\xf8\xff\xfe':  # Frame of silence
+            return b'', 0
+
+        try:
+            decoded_data = self.decoder.decode(decrypted_data)
+        except opus.OpusError:
+            print("Yikes data")
+            return b'', 0
+
+        silence = timestamp - self.user_timestamps[user_id] - 960
+        decoded_data = struct.pack('<h', 0) * silence + decoded_data
+        self.user_timestamps[user_id] = timestamp
+
+        return decoded_data, user_id
 
     def pcm_to_wave_file(self, file_names):
         """Takes raw pcm data and stores it as a wave file.
@@ -719,15 +751,13 @@ class VoiceClient(VoiceProtocol):
             pcm_file = open(file, 'rb')
             pcm = pcm_file.read()
             pcm_file.close()
-            size = self.decoder.SAMPLING_RATE*self.decoder.SAMPLE_SIZE*3
-            pcm = pcm[size:]
             with wave.open(file.replace("pcm", "wav"), 'wb') as f:
                 f.setnchannels(self.decoder.CHANNELS)
                 f.setsampwidth(self.decoder.SAMPLE_SIZE)
                 f.setframerate(self.decoder.SAMPLING_RATE/self.decoder.CHANNELS)
                 f.writeframes(pcm)
                 f.close()
-            os.remove(file)
+            # os.remove(file)
 
     def start_recording(self, callback, *args):
         """The bot will begin recording audio from the current voice channel it is in.
@@ -755,8 +785,6 @@ class VoiceClient(VoiceProtocol):
         if self.recording:
             raise ClientException("Already recording audio.")
         self.recording = True
-        if not self.decoder:
-            self.decoder = opus.Encoder()
 
         t = threading.Thread(target=self.recv_audio, args=(callback, *args,))
         t.start()
@@ -773,7 +801,6 @@ class VoiceClient(VoiceProtocol):
         """
         if not self.recording:
             raise ClientException("Not currently recording audio.")
-        time.sleep(3)
         self.recording = False
         self.recording_event.clear()
 
@@ -796,53 +823,19 @@ class VoiceClient(VoiceProtocol):
         await self.recording_event.wait()
         return time.perf_counter() - pause_time
 
-    def _recv_audio(self):
-        #  Handles receiving, parsing, and decoding data
-        #  as well as adding silence where it should be
-        #  based on the timestamps given in the header.
-        data = self.socket.recv(1024)
-        try:
-            data, user, timestamp = self.unpack_audio(data)
-            if data == b'':
-                return b'', 0
-        except nacl.exceptions.CryptoError:
-            self.waiting_recv = True
-            return b'', 0
-        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
-            headerExtensionLength = int.from_bytes(data[2:][:2], "big")
-            offset = 4
-            for i in range(headerExtensionLength):
-                byte = data[offset]
-                offset += 1
-                if byte == 0:
-                    continue
-                offset += 1 + (0b1111 & (byte >> 4))
-            offset += 1
-            data = data[offset:]
-        if data == b'\xf8\xff\xfe':  # Frame of silence
-            return b'', 0
-        try:
-            decoded_data = self.decoder.decode(data, self.decoder.FRAME_SIZE)
-        except opus.OpusError:
-            print("Yikes data")
-            return b'', 0
-        silence = timestamp - self.user_timestamps[user] - 960
-        decoded_data = struct.pack('<h', 0) * silence + decoded_data
-        self.user_timestamps[user] = timestamp
-        return decoded_data, user
-
     def recv_audio(self, callback, *args):
         #  Gets data from _recv_audio and sorts
         #  it by user, handles pcm files and
         #  silence that should be added.
         if not self.decoder:
-            self.decoder = opus.Encoder()
+            self.decoder = opus.Decoder()
         self.socket.setblocking(True)
         self.user_timestamps = {}
         starting_time = time.perf_counter()
         registered_users = []
         while self.recording:
-            data, user = self._recv_audio()
+            data = self.socket.recv(1024)
+            data, user = self.unpack_audio(data)
 
             if data == b'':
                 continue
@@ -852,14 +845,17 @@ class VoiceClient(VoiceProtocol):
                 for user in registered_users:
                     with open(f'{user}.pcm', 'ab') as f:
                         f.write(data)
+                        f.close()
 
             if user in registered_users:
                 with open(f'{user}.pcm', 'ab') as f:
                     f.write(data)
+                    f.close()
             else:
                 registered_users.append(user)
                 with open(f'{user}.pcm', 'wb') as f:
                     f.write(struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data)
+                    f.close()
 
         try:
             callback = asyncio.run_coroutine_threadsafe(callback(self, [f'{user}.pcm' for user in registered_users], *args), self.loop)
