@@ -52,8 +52,6 @@ from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 from .listener import Sink
 import time
-import wave
-import os
 
 try:
     import nacl.secret
@@ -753,29 +751,6 @@ class VoiceClient(VoiceProtocol):
             return b'', 0
 
         return decoded_data, user_id
-
-    def pcm_to_wave_file(self, file_names):
-        """Takes raw pcm data and stores it as a wave file.
-
-        Parameters
-        ----------
-        file_names: :class:`iter`
-            An iterable containing a list of paths to pcm files
-            which will be converted to wave files
-        pcm: :class:`bytes`
-            The raw pcm data which will be saved to the wave file
-        """
-        for file in file_names:
-            pcm_file = open(file, 'rb')
-            pcm = pcm_file.read()
-            pcm_file.close()
-            with wave.open(file.replace("pcm", "wav"), 'wb') as f:
-                f.setnchannels(self.decoder.CHANNELS)
-                f.setsampwidth(self.decoder.SAMPLE_SIZE)
-                f.setframerate(self.decoder.SAMPLING_RATE/self.decoder.CHANNELS)
-                f.writeframes(pcm)
-                f.close()
-            os.remove(file)
 
     def start_recording(self, sink, callback, *args):
         """The bot will begin recording audio from the current voice channel it is in.
