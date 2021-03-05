@@ -50,6 +50,7 @@ from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
+from .listener import Sink
 import time
 import wave
 import os
@@ -230,6 +231,7 @@ class VoiceClient(VoiceProtocol):
         self.recording = False
         self.user_timestamps = {}
         self.waiting_recv = False
+        self.sink = None
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -571,6 +573,9 @@ class VoiceClient(VoiceProtocol):
             data = data[offset:]
         return data
 
+    def get_ssrc(self, user_id):
+        return {info['user_id']: ssrc for ssrc, info in self.ws.ssrc_map.items()}[user_id]
+
     def play(self, source, *, after=None):
         """Plays an :class:`AudioSource`.
 
@@ -770,9 +775,9 @@ class VoiceClient(VoiceProtocol):
                 f.setframerate(self.decoder.SAMPLING_RATE/self.decoder.CHANNELS)
                 f.writeframes(pcm)
                 f.close()
-            # os.remove(file)
+            os.remove(file)
 
-    def start_recording(self, callback, *args):
+    def start_recording(self, sink, callback, *args):
         """The bot will begin recording audio from the current voice channel it is in.
         This function uses a thread so the current code line will not be stopped.
 
@@ -781,6 +786,8 @@ class VoiceClient(VoiceProtocol):
 
         Parameters
         ----------
+        sink: :class:`Sink`
+            A Sink which will "store" all the audio data
         callback: :class:`asynchronous function`
             A function which is called after the bot has stopped recording.
         *args:
@@ -789,15 +796,22 @@ class VoiceClient(VoiceProtocol):
         Raises
         ------
         ClientException
-            Not connected to a voice channel or already recording.
+            Not connected to a voice channel.
         ClientException
             Already recording.
+        ClientException
+            Must provide a Sink object.
         """
         if not self.is_connected():
             raise ClientException('Not connected to voice channel.')
         if self.recording:
-            raise ClientException("Already recording audio.")
+            raise ClientException("Already recording.")
+        if not isinstance(sink, Sink):
+            raise ClientException("Must provide a Sink object.")
+
         self.recording = True
+        self.sink = sink
+        self.sink.vc = self
 
         t = threading.Thread(target=self.recv_audio, args=(callback, *args,))
         t.start()
@@ -851,23 +865,17 @@ class VoiceClient(VoiceProtocol):
 
             if self.waiting_recv:
                 self.waiting_recv = False
-                for user in registered_users:
-                    with open(f'{user}.pcm', 'ab') as f:
-                        f.write(data)
-                        f.close()
+                for reg_user in registered_users:
+                    self.sink.write(data, reg_user)
 
-            if user in registered_users:
-                with open(f'{user}.pcm', 'ab') as f:
-                    f.write(data)
-                    f.close()
-            else:
+            if user not in registered_users:
                 registered_users.append(user)
-                with open(f'{user}.pcm', 'wb') as f:
-                    f.write(struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data)
-                    f.close()
+                data = struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data
+            self.sink.write(data, user)
 
+        self.sink.format_audio()
         try:
-            callback = asyncio.run_coroutine_threadsafe(callback(self, [f'{user}.pcm' for user in registered_users], *args), self.loop)
+            callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
             result = callback.result()
         except Exception as exc:
             raise exc
