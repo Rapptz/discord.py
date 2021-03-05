@@ -29,7 +29,14 @@ import wave
 import os
 import threading
 import time
+import subprocess
+import sys
 
+
+if sys.platform != 'win32':
+    CREATE_NO_WINDOW = 0
+else:
+    CREATE_NO_WINDOW = 0x08000000
 
 default_filters = {
     'time': 0,
@@ -47,11 +54,11 @@ class Filters:
             thread.start()
 
     @staticmethod
-    def user_filter(func):
-        def write(self, data, user):
+    def filter_decorator(func):  # Contains all filters
+        def _filter(self, data, user):
             if not self.filtered_users or user in self.filtered_users:
                 return func(self, data, user)
-        return write
+        return _filter
 
     def wait_and_stop(self):
         time.sleep(self.seconds+1)
@@ -59,6 +66,8 @@ class Filters:
 
 
 class Sink(Filters):
+    valid_encodings = ['wav', 'mp3', 'pcm']
+
     def __init__(self, *, encoding='wave', output_path='', filters=None):
         """A Sink "stores" all the audio data.
 
@@ -82,8 +91,7 @@ class Sink(Filters):
 
         # Would also like to add opus, but don't
         # know how I would go about it.
-        valid_encodings = ['wave']
-        if encoding not in valid_encodings:
+        if encoding not in self.valid_encodings:
             raise ClientException("That's not a valid encoding type.")
 
         self.encoding = encoding
@@ -91,7 +99,7 @@ class Sink(Filters):
         self.vc = None
         self.ssrc_cache = []
 
-    @Filters.user_filter
+    @Filters.filter_decorator
     def write(self, data, user):
         ssrc = self.vc.get_ssrc(user)
         file = os.path.join(self.file_path, f'{ssrc}.pcm')
@@ -106,36 +114,40 @@ class Sink(Filters):
             f.close()
 
     def get_user_audio(self, user):
-        encoding_to_ext = {
-            'wave': 'wav'
-        }
         ssrc = self.vc.get_ssrc(user)
-        file = os.path.join(self.file_path, f'{ssrc}.{encoding_to_ext[self.encoding]}')
+        file = os.path.join(self.file_path, f'{ssrc}.{self.encoding}')
         return file
 
     def format_audio(self):
         if self.vc.recording:
             raise ClientException("Audio may only be formatted after recording is finished.")
+        if self.encoding == 'pcm':
+            return
         for file in self.recorded_users.values():
             pcm_file = file.split('.')[0] + '.pcm'
             with open(pcm_file, 'rb') as pcm:
                 data = pcm.read()
                 pcm.close()
-            if self.encoding == 'wave':
+            if self.encoding == 'wav':
                 with wave.open(file, 'wb') as f:
                     f.setnchannels(self.vc.decoder.CHANNELS)
                     f.setsampwidth(self.vc.decoder.SAMPLE_SIZE)
                     f.setframerate(self.vc.decoder.SAMPLING_RATE / self.vc.decoder.CHANNELS)
                     f.writeframes(data)
                     f.close()
+            elif self.encoding == 'mp3':
+                args = ['ffmpeg', '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', pcm_file, file]
+                try:
+                    subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
+                except FileNotFoundError:
+                    raise ClientException('ffmpeg was not found.') from None
+                except subprocess.SubprocessError as exc:
+                    raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
             os.remove(pcm_file)
 
     @property
     def recorded_users(self):
-        encoding_to_ext = {
-            'wave': 'wav'
-        }
         return {
-            self.vc.ws.ssrc_map[ssrc]['user_id']: os.path.join(self.file_path, f'{ssrc}.{encoding_to_ext[self.encoding]}')
+            self.vc.ws.ssrc_map[ssrc]['user_id']: os.path.join(self.file_path, f'{ssrc}.{self.encoding}')
             for ssrc in self.ssrc_cache
         }
