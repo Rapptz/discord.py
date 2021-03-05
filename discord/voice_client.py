@@ -850,7 +850,11 @@ class VoiceClient(VoiceProtocol):
         # the end of recv_audio and will end its
         # execution after another recording starts
         while not self.recording:
-            self.socket.recv(1024)
+            try:
+                self.socket.recv(1024)
+            except OSError:
+                # Disconnected
+                return
 
     def recv_audio(self, sink, callback, *args):
         #  Gets data from _recv_audio and sorts
