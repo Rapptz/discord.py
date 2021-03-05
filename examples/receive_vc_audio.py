@@ -1,7 +1,9 @@
 import discord
+import os
 
 
-TOKEN = '*****'
+Sink = discord.Sink
+TOKEN = os.getenv('TOKEN')
 
 
 def vc_required(func):
@@ -11,6 +13,36 @@ def vc_required(func):
             return
         await func(self, msg, vc)
     return get_vc
+
+
+def args_to_filters(args):
+    filters = {}
+    if '--time' in args:
+        index = args.index('--time')
+        try:
+            seconds = args[index+1]
+        except IndexError:
+            return "You must provide an amount of seconds for the time."
+        try:
+            seconds = int(seconds)
+        except ValueError:
+            return "You must provide a value integer value"
+        filters.update({'time': seconds})
+    if '--users' in args:
+        users = []
+        index = args.index('--users')+1
+        while True:
+            try:
+                users.append(int(args[index]))
+            except IndexError:
+                break
+            except ValueError:
+                break
+            index += 1
+        if not users:
+            return "You must provide at least one user, or multiple separated by spaces"
+        filters.update({'users': users})
+    return filters
 
 
 class Client(discord.Client):
@@ -49,7 +81,11 @@ class Client(discord.Client):
 
     @vc_required
     async def start_recording(self, msg, vc):
-        vc.start_recording(self.on_stopped, msg.channel)
+        filters = args_to_filters(msg.content.split()[1:])
+        if type(filters) == str:
+            await msg.channel.send(filters)
+            return
+        vc.start_recording(Sink(filters=filters), self.on_stopped, msg.channel)
         await msg.channel.send("The recording has started!")
 
     @vc_required
@@ -60,15 +96,12 @@ class Client(discord.Client):
     @vc_required
     async def stop_recording(self, msg, vc):
         vc.stop_recording()
-        await msg.channel.send("Recording has stopped! The pcm files will begin to be converted to wave files.")
 
-    async def on_stopped(self, vc, pcm, *args):
+    async def on_stopped(self, sink, *args):
         channel = args[0]
-        if not pcm:
-            await channel.send("No audio was recorded")
-            return
-        vc.pcm_to_wave_file(pcm)
-        await channel.send("The files are finished being converted!")
+        # Note: sink.recorded_users = {user_id: file_path}
+        users = [" <@"+str(user_id)+"> " for user_id in list(sink.recorded_users.keys())]
+        await channel.send(f"Finished! Recorded audio for {','.join(users)}")
 
     async def on_voice_state_update(self, member, before, after):
         if member.id == self.user.id:
