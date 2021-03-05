@@ -45,6 +45,20 @@ def args_to_filters(args):
     return filters
 
 
+def get_encoding(args):
+    if '--output' in args:
+        index = args.index('--output')
+        try:
+            encoding = args[index+1].lower()
+            if encoding not in Sink.valid_encodings:
+                return
+            return encoding
+        except IndexError:
+            return
+    else:
+        return 'wav'
+
+
 class Client(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -81,11 +95,16 @@ class Client(discord.Client):
 
     @vc_required
     async def start_recording(self, msg, vc):
-        filters = args_to_filters(msg.content.split()[1:])
+        args = msg.content.split()[1:]
+        filters = args_to_filters(args)
         if type(filters) == str:
             await msg.channel.send(filters)
             return
-        vc.start_recording(Sink(filters=filters), self.on_stopped, msg.channel)
+        encoding = get_encoding(args)
+        if encoding is None:
+            await msg.channel.send("You must provide a valid output encoding.")
+            return
+        vc.start_recording(Sink(encoding=encoding, filters=filters), self.on_stopped, msg.channel)
         await msg.channel.send("The recording has started!")
 
     @vc_required
