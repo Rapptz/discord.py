@@ -809,11 +809,9 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, Sink):
             raise ClientException("Must provide a Sink object.")
 
-        self.recording = True
-        self.sink = sink
-        self.sink.vc = self
+        self.socket.setblocking(True)
 
-        t = threading.Thread(target=self.recv_audio, args=(callback, *args,))
+        t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
         t.start()
 
     def stop_recording(self):
@@ -845,13 +843,25 @@ class VoiceClient(VoiceProtocol):
             raise ClientException("Not currently recording audio.")
         self.paused = {True: False, False: True}[self.paused]
 
-    def recv_audio(self, callback, *args):
+    def continue_recv(self):
+        # If data is not received while not recording
+        # then it will be received when the next
+        # recording starts. This function is run at
+        # the end of recv_audio and will end its
+        # execution after another recording starts
+        while not self.recording:
+            self.socket.recv(1024)
+
+    def recv_audio(self, sink, callback, *args):
         #  Gets data from _recv_audio and sorts
         #  it by user, handles pcm files and
         #  silence that should be added.
         if not self.decoder:
             self.decoder = opus.Decoder()
-        self.socket.setblocking(True)
+        self.recording = True
+        self.sink = sink
+        self.sink.vc = self
+        print("Start")
 
         self.user_timestamps = {}
         starting_time = time.perf_counter()
@@ -882,3 +892,4 @@ class VoiceClient(VoiceProtocol):
         else:
             if result is not None:
                 print(result)
+        self.continue_recv()
