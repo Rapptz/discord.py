@@ -25,18 +25,63 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .errors import ClientException
-from . import opus
 import wave
 import os
+import threading
+import time
 
 
-class Sink:
-    def __init__(self, *, encoding='wave', output_path=''):
+default_filters = {
+    'time': 0,
+    'users': [],
+}
+
+
+class Filters:
+    def __init__(self, **kwargs):
+        self.filtered_users = kwargs.get('users', default_filters['users'])
+        self.seconds = kwargs.get('time', default_filters['time'])
+
+        if self.seconds != 0:
+            thread = threading.Thread(target=self.wait_and_stop)
+            thread.start()
+
+    @staticmethod
+    def user_filter(func):
+        def write(self, data, user):
+            if not self.filtered_users or user in self.filtered_users:
+                return func(self, data, user)
+        return write
+
+    def wait_and_stop(self):
+        time.sleep(self.seconds+1)
+        self.vc.stop_recording()
+
+
+class Sink(Filters):
+    def __init__(self, *, encoding='wave', output_path='', filters=None):
+        """A Sink "stores" all the audio data.
+
+        Parameters
+        ----------
+        encoding: :class:`string`
+            Valid types include wave
+        output_path: :class:`string`
+            A path to where the audio files should be output
+
+        Raises
+        ------
+        ClientException
+            That's not a valid encoding type.
+        """
+        if filters is None:
+            filters = default_filters
+        Filters.__init__(self, **filters)
+
         encoding = encoding.lower()
 
-        # Would also like to add opus, but failed in
-        # attempts to save the audio data to an opus
-        # file without decoding it.
+        # Would also like to add opus, but don't
+        # know how I would go about it.
         valid_encodings = ['wave']
         if encoding not in valid_encodings:
             raise ClientException("That's not a valid encoding type.")
@@ -46,6 +91,7 @@ class Sink:
         self.vc = None
         self.ssrc_cache = []
 
+    @Filters.user_filter
     def write(self, data, user):
         ssrc = self.vc.get_ssrc(user)
         file = os.path.join(self.file_path, f'{ssrc}.pcm')
