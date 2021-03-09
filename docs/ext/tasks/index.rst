@@ -139,5 +139,6 @@ API Reference
 
 .. autoclass:: discord.ext.tasks.Loop()
     :members:
+    :special-members: __call__
 
 .. autofunction:: discord.ext.tasks.loop

@@ -1317,7 +1317,7 @@ class Guild(Hashable):
     async def fetch_member(self, member_id):
         """|coro|
 
-        Retreives a :class:`Member` from a guild ID, and a member ID.
+        Retrieves a :class:`Member` from a guild ID, and a member ID.
 
         .. note::
 
@@ -1346,9 +1346,7 @@ class Guild(Hashable):
     async def fetch_ban(self, user):
         """|coro|
 
-        Retrieves the :class:`BanEntry` for a user, which is a namedtuple
-        with a ``user`` and ``reason`` field. See :meth:`bans` for more
-        information.
+        Retrieves the :class:`BanEntry` for a user.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
@@ -1369,8 +1367,8 @@ class Guild(Hashable):
 
         Returns
         -------
-        BanEntry
-            The BanEntry object for the specified user.
+        :class:`BanEntry`
+            The :class:`BanEntry` object for the specified user.
         """
         data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
@@ -1381,12 +1379,7 @@ class Guild(Hashable):
     async def bans(self):
         """|coro|
 
-        Retrieves all the users that are banned from the guild.
-
-        This coroutine returns a :class:`list` of BanEntry objects, which is a
-        namedtuple with a ``user`` field to denote the :class:`User`
-        that got banned along with a ``reason`` field specifying
-        why the user was banned that could be set to ``None``.
+        Retrieves all the users that are banned from the guild as a :class:`list` of :class:`BanEntry`.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
@@ -1400,8 +1393,8 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[BanEntry]
-            A list of BanEntry objects.
+        List[:class:`BanEntry`]
+            A list of :class:`BanEntry` objects.
         """
 
         data = await self._state.http.get_bans(self.id)
@@ -1467,6 +1460,29 @@ class Guild(Hashable):
 
         data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
+
+    async def templates(self):
+        """|coro|
+
+        Gets the list of templates from this guild.
+
+        Requires :attr:`~.Permissions.manage_guild` permissions.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the templates.
+
+        Returns
+        --------
+        List[:class:`Template`]
+            The templates for this guild.
+        """
+        from .template import Template
+        data = await self._state.http.guild_templates(self.id)
+        return [Template(data=d, state=self._state) for d in data]
 
     async def webhooks(self):
         """|coro|
@@ -1553,6 +1569,36 @@ class Guild(Hashable):
             result.append(Invite(state=self._state, data=invite))
 
         return result
+
+    async def create_template(self, *, name, description=None):
+        """|coro|
+
+        Creates a template for the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.7
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the template.
+        description: Optional[:class:`str`]
+            The description of the template.
+        """
+        from .template import Template
+
+        payload = {
+            'name': name
+        }
+
+        if description:
+            payload['description'] = description
+
+        data = await self._state.http.create_template(self.id, payload)
+
+        return Template(state=self._state, data=data)
 
     async def create_integration(self, *, type, id):
         """|coro|
@@ -1733,7 +1779,7 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_roles` permission to
         do this.
 
-        ..versionchanged:: 1.6
+        .. versionchanged:: 1.6
             Can now pass ``int`` to ``colour`` keyword-only parameter.
 
         Parameters
@@ -1981,12 +2027,15 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
+    @utils.deprecated()
     def ack(self):
         """|coro|
 
         Marks every message in this guild as read.
 
         The user must not be a bot user.
+
+        .. deprecated:: 1.7
 
         Raises
         -------
@@ -2173,6 +2222,9 @@ class Guild(Hashable):
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
+
+        if user_ids is not None and not user_ids:
+            raise ValueError('user_ids must contain at least 1 value')
 
         limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)

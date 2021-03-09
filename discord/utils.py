@@ -419,11 +419,8 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
         return match.endpos
 
     UNICODE_WIDE_CHAR_TYPE = 'WFA'
-    width = 0
     func = unicodedata.east_asian_width
-    for char in string:
-        width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
-    return width
+    return sum(2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1 for char in string)
 
 def resolve_invite(invite):
     """
@@ -547,4 +544,4 @@ def escape_mentions(text):
     :class:`str`
         The text with the mentions removed.
     """
-    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
+    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)

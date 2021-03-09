@@ -291,13 +291,10 @@ class HistoryIterator(_AsyncIterator):
 
     def _get_retrieve(self):
         l = self.limit
-        if l is None:
+        if l is None or l > 100:
             r = 100
-        elif l <= 100:
-            r = l
         else:
-            r = 100
-
+            r = l
         self.retrieve = r
         return r > 0
 
@@ -447,13 +444,10 @@ class AuditLogIterator(_AsyncIterator):
 
     def _get_retrieve(self):
         l = self.limit
-        if l is None:
+        if l is None or l > 100:
             r = 100
-        elif l <= 100:
-            r = l
         else:
-            r = 100
-
+            r = l
         self.retrieve = r
         return r > 0
 
@@ -547,13 +541,10 @@ class GuildIterator(_AsyncIterator):
 
     def _get_retrieve(self):
         l = self.limit
-        if l is None:
+        if l is None or l > 100:
             r = 100
-        elif l <= 100:
-            r = l
         else:
-            r = 100
-
+            r = l
         self.retrieve = r
         return r > 0
 
@@ -636,13 +627,10 @@ class MemberIterator(_AsyncIterator):
 
     def _get_retrieve(self):
         l = self.limit
-        if l is None:
+        if l is None or l > 1000:
             r = 1000
-        elif l <= 1000:
-            r = l
         else:
-            r = 1000
-
+            r = l
         self.retrieve = r
         return r > 0
 

@@ -33,6 +33,7 @@ from .iterators import HistoryIterator
 from .context_managers import Typing
 from .enums import ChannelType
 from .errors import InvalidArgument, ClientException
+from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -168,15 +169,15 @@ class _Overwrites:
 
     def __init__(self, **kwargs):
         self.id = kwargs.pop('id')
-        self.allow = kwargs.pop('allow', 0)
-        self.deny = kwargs.pop('deny', 0)
+        self.allow = int(kwargs.pop('allow_new', 0))
+        self.deny = int(kwargs.pop('deny_new', 0))
         self.type = sys.intern(kwargs.pop('type'))
 
     def _asdict(self):
         return {
             'id': self.id,
-            'allow': self.allow,
-            'deny': self.deny,
+            'allow': str(self.allow),
+            'deny': str(self.deny),
             'type': self.type,
         }
 
@@ -895,7 +896,7 @@ class Messageable(metaclass=abc.ABCMeta):
             allowed_mentions = state.allowed_mentions and state.allowed_mentions.to_dict()
 
         if mention_author is not None:
-            allowed_mentions = allowed_mentions or {}
+            allowed_mentions = allowed_mentions or AllowedMentions().to_dict()
             allowed_mentions['replied_user'] = bool(mention_author)
 
         if reference is not None:
@@ -1137,9 +1138,6 @@ class Connectable(metaclass=abc.ABCMeta):
             A voice client that is fully connected to the voice server.
         """
 
-        if not issubclass(cls, VoiceProtocol):
-            raise TypeError('Type must meet VoiceProtocol abstract base class.')
-
         key_id, _ = self._get_voice_client_key()
         state = self._state
 
@@ -1148,6 +1146,10 @@ class Connectable(metaclass=abc.ABCMeta):
 
         client = state._get_client()
         voice = cls(client, self)
+    
+        if not isinstance(voice, VoiceProtocol):
+            raise TypeError('Type must meet VoiceProtocol abstract base class.')
+        
         state._add_voice_client(key_id, voice)
 
         try:

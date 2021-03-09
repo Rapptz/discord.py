@@ -156,7 +156,7 @@ class WidgetMember(BaseUser):
     @property
     def display_name(self):
         """:class:`str`: Returns the member's display name."""
-        return self.nick if self.nick else self.name
+        return self.nick or self.name
 
 class Widget:
     """Represents a :class:`Guild` widget.

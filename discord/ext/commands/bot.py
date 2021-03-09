@@ -165,9 +165,8 @@ class BotBase(GroupMixin):
             return
 
         cog = context.cog
-        if cog:
-            if Cog._get_overridden_method(cog.cog_command_error) is not None:
-                return
+        if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
+            return
 
         print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
@@ -624,7 +623,13 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
-    def load_extension(self, name):
+    def _resolve_name(self, name, package):
+        try:
+            return importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
+    def load_extension(self, name, *, package=None):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -640,11 +645,19 @@ class BotBase(GroupMixin):
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when loading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         --------
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionAlreadyLoaded
             The extension is already loaded.
         NoEntryPointError
@@ -653,6 +666,7 @@ class BotBase(GroupMixin):
             The extension or its setup function had an execution error.
         """
 
+        name = self._resolve_name(name, package)
         if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
@@ -662,7 +676,7 @@ class BotBase(GroupMixin):
 
         self._load_from_module_spec(spec, name)
 
-    def unload_extension(self, name):
+    def unload_extension(self, name, *, package=None):
         """Unloads an extension.
 
         When the extension is unloaded, all commands, listeners, and cogs are
@@ -679,13 +693,23 @@ class BotBase(GroupMixin):
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when unloading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
+        ExtensionNotFound
+            The name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionNotLoaded
             The extension was not loaded.
         """
 
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -693,7 +717,7 @@ class BotBase(GroupMixin):
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
 
-    def reload_extension(self, name):
+    def reload_extension(self, name, *, package=None):
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -707,6 +731,12 @@ class BotBase(GroupMixin):
             The extension name to reload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when reloading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
@@ -714,12 +744,15 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
             The extension setup function had an execution error.
         """
 
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -736,7 +769,7 @@ class BotBase(GroupMixin):
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, name)
             self.load_extension(name)
-        except Exception as e:
+        except Exception:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.

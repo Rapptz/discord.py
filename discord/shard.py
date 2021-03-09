@@ -413,7 +413,7 @@ class AutoShardedClient(Client):
 
         self._connection.shard_count = self.shard_count
 
-        shard_ids = self.shard_ids if self.shard_ids else range(self.shard_count)
+        shard_ids = self.shard_ids or range(self.shard_count)
         self._connection.shard_ids = shard_ids
 
         for shard_id in shard_ids:

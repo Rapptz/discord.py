@@ -29,6 +29,7 @@ from .object import Object
 from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
+from .mixins import Hashable
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
@@ -51,8 +52,7 @@ def _transform_snowflake(entry, data):
 def _transform_channel(entry, data):
     if data is None:
         return None
-    channel = entry.guild.get_channel(int(data)) or Object(id=data)
-    return channel
+    return entry.guild.get_channel(int(data)) or Object(id=data)
 
 def _transform_owner_id(entry, data):
     if data is None:
@@ -187,10 +187,27 @@ class AuditLogChanges:
 
         setattr(second, 'roles', data)
 
-class AuditLogEntry:
+class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two entries are equal.
+
+        .. describe:: x != y
+
+            Checks if two entries are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the entry's hash.
+
+    .. versionchanged:: 1.7
+        Audit log entries are now comparable and hashable.
 
     Attributes
     -----------

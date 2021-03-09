@@ -276,17 +276,14 @@ class _OpusStruct:
 
     @staticmethod
     def get_opus_version() -> str:
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        if not is_loaded() and not _load_default():
+            raise OpusNotLoaded()
 
         return _lib.opus_get_version_string().decode('utf-8')
 
 class Encoder(_OpusStruct):
     def __init__(self, application=APPLICATION_AUDIO):
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        _OpusStruct.get_opus_version()
 
         self.application = application
         self._state = self._create_state()
@@ -342,9 +339,7 @@ class Encoder(_OpusStruct):
 
 class Decoder(_OpusStruct):
     def __init__(self):
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        _OpusStruct.get_opus_version()
 
         self._state = self._create_state()
 

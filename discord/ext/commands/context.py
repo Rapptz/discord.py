@@ -57,6 +57,14 @@ class Context(discord.abc.Messageable):
     invoked_with: :class:`str`
         The command name that triggered this invocation. Useful for finding out
         which alias called the command.
+    invoked_parents: List[:class:`str`]
+        The command names of the parents that triggered this invocation. Useful for
+        finding out which aliases called the command.
+
+        For example in commands ``?a b c test``, the invoked parents are ``['a', 'b', 'c']``.
+
+        .. versionadded:: 1.7
+
     invoked_subcommand: :class:`Command`
         The subcommand that was invoked.
         If no valid subcommand was invoked then this is equal to ``None``.
@@ -79,6 +87,7 @@ class Context(discord.abc.Messageable):
         self.command = attrs.pop('command', None)
         self.view = attrs.pop('view', None)
         self.invoked_with = attrs.pop('invoked_with', None)
+        self.invoked_parents = attrs.pop('invoked_parents', [])
         self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
         self.command_failed = attrs.pop('command_failed', False)
@@ -174,13 +183,15 @@ class Context(discord.abc.Messageable):
         index, previous = view.index, view.previous
         invoked_with = self.invoked_with
         invoked_subcommand = self.invoked_subcommand
+        invoked_parents = self.invoked_parents
         subcommand_passed = self.subcommand_passed
 
         if restart:
             to_call = cmd.root_parent or cmd
             view.index = len(self.prefix)
             view.previous = 0
-            view.get_word() # advance to get the root command
+            self.invoked_parents = []
+            self.invoked_with = view.get_word() # advance to get the root command
         else:
             to_call = cmd
 
@@ -192,6 +203,7 @@ class Context(discord.abc.Messageable):
             view.previous = previous
             self.invoked_with = invoked_with
             self.invoked_subcommand = invoked_subcommand
+            self.invoked_parents = invoked_parents
             self.subcommand_passed = subcommand_passed
 
     @property
@@ -301,7 +313,7 @@ class Context(discord.abc.Messageable):
             entity = bot.get_cog(entity) or bot.get_command(entity)
 
         try:
-            qualified_name = entity.qualified_name
+            entity.qualified_name
         except AttributeError:
             # if we're here then it's not a cog, group, or command.
             return None

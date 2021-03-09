@@ -347,7 +347,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         bulk: :class:`bool`
             If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
             a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if current account is a user bot, or if messages are
+            fall back to single delete if current account is a user bot (now deprecated), or if messages are
             older than two weeks.
 
         Raises
@@ -1248,8 +1248,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         This returns all the Text related permissions set to ``True`` except:
 
-        - send_tts_messages: You cannot send TTS messages in a DM.
-        - manage_messages: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
+        - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
 
         This also checks the kick_members permission if the user is the owner.
 
@@ -1274,6 +1274,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         return base
 
+    @utils.deprecated()
     async def add_recipients(self, *recipients):
         r"""|coro|
 
@@ -1283,6 +1284,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         Attempting to add more ends up in an exception. To
         add a recipient to the group, you must have a relationship
         with the user of type :attr:`RelationshipType.friend`.
+
+        .. deprecated:: 1.7
 
         Parameters
         -----------
@@ -1301,10 +1304,13 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
+    @utils.deprecated()
     async def remove_recipients(self, *recipients):
         r"""|coro|
 
         Removes recipients from this group.
+
+        .. deprecated:: 1.7
 
         Parameters
         -----------
@@ -1323,10 +1329,13 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
+    @utils.deprecated()
     async def edit(self, **fields):
         """|coro|
 
         Edits the group.
+
+        .. deprecated:: 1.7
 
         Parameters
         -----------
