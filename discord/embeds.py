@@ -557,9 +557,16 @@ class Embed:
         # add in the raw data into the dict
         result = {
             key[1:]: getattr(self, key)
-            for key in self.__slots__
+            for key in ('title', 'url', 'type', '_timestamp', '_colour', '_footer',
+                        '_image', '_thumbnail', '_video', '_provider', '_author',
+                        'description')
             if key[0] == '_' and hasattr(self, key)
         }
+
+        # to prevent _fields list reference persistence
+        _fields = getattr(self,'_fields', [])
+        if _fields:
+            result['fields'] = [f for f in _fields]
 
         # deal with basic convenience wrappers
 
