@@ -229,8 +229,8 @@ class Context(discord.abc.Messageable):
 
     @discord.utils.cached_property
     def channel(self):
-        """:class:`.TextChannel`:
-        Returns the channel associated with this context's command. Shorthand for :attr:`.Message.channel`.
+        """Union[:class:`.abc.Messageable`]: Returns the channel associated with this context's command.
+        Shorthand for :attr:`.Message.channel`.
         """
         return self.message.channel
 
