@@ -476,7 +476,7 @@ class Intents(BaseFlags):
         - :attr:`Member.nick`
         - :attr:`Member.premium_since`
         - :attr:`User.name`
-        - :attr:`User.avatar` (:meth:`User.avatar_url` and :meth:`User.avatar_url_as`)
+        - :attr:`User.avatar` (:attr:`User.avatar_url` and :meth:`User.avatar_url_as`)
         - :attr:`User.discriminator`
 
         For more information go to the :ref:`member intent documentation <need_members_intent>`.
