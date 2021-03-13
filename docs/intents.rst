@@ -200,8 +200,4 @@ To downgrade you can do the following:
 
 On Windows use ``py -3`` instead of ``python3``.
 
-.. warning::
-
-    There is no current set date on which the old gateway will stop working so it is recommended to update your code instead.
-
 If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_.
