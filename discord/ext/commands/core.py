@@ -1779,6 +1779,8 @@ def has_permissions(**perms):
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
+        if ctx.guild is None:
+            return True
         ch = ctx.channel
         permissions = ch.permissions_for(ctx.author)
 
@@ -1804,6 +1806,8 @@ def bot_has_permissions(**perms):
         raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
 
     def predicate(ctx):
+        if ctx.guild is None:
+            return True
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)
