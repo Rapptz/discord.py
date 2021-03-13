@@ -680,8 +680,8 @@ class HTTPClient:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
     def edit_template(self, guild_id, code, payload):
-        valid_keys = ( 
-            'name', 
+        valid_keys = (
+            'name',
             'description',
         )
         payload = {

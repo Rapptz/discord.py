@@ -159,7 +159,7 @@ class Permissions(BaseFlags):
         - :attr:`kick_members`
         - :attr:`ban_members`
         - :attr:`administrator`
-        
+
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
         """
@@ -169,7 +169,7 @@ class Permissions(BaseFlags):
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to ``True``.
-        
+
         .. versionchanged:: 1.7
            Permission :attr:`read_messages` is now included in the general permissions, but
            permissions :attr:`administrator`, :attr:`create_instant_invite`, :attr:`kick_members`,
@@ -182,7 +182,7 @@ class Permissions(BaseFlags):
     def membership(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Membership" permissions from the official Discord UI set to ``True``.
-        
+
         .. versionadded:: 1.7
         """
         return cls(0b00001100000000000000000000000111)
@@ -191,7 +191,7 @@ class Permissions(BaseFlags):
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to ``True``.
-        
+
         .. versionchanged:: 1.7
            Permission :attr:`read_messages` is no longer part of the text permissions. 
            Added :attr:`use_slash_commands` permission.
@@ -208,7 +208,7 @@ class Permissions(BaseFlags):
     def advanced(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
-        
+
         .. versionadded:: 1.7
         """
         return cls(1 << 3)
