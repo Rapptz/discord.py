@@ -187,17 +187,4 @@ Under the original system this would result in 2 requests to fetch the member li
 
 Unfortunately due to this change being required from Discord there is nothing that the library can do to mitigate this.
 
-I don't like this, can I go back?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For now, the old gateway will still work so downgrading to discord.py v1.4 is still possible and will continue to be supported until Discord officially kills the v6 gateway, which is imminent. However it is paramount that for the future of your bot that you upgrade your code to the new way things are done.
-
-To downgrade you can do the following:
-
-.. code-block:: python3
-
-    python3 -m pip install -U "discord.py>=1.4,<1.5"
-
-On Windows use ``py -3`` instead of ``python3``.
-
 If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_.
