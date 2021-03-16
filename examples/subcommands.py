@@ -15,17 +15,22 @@ async def spam(ctx):
     await ctx.send('Spam!')
 
 
-@spam.command(name='egg')  # can set the name of the command here
-async def spam_egg(ctx):  # the coroutine and command name can be different
+# we can set the name of the command in the decorator
+# the coroutine and command name can be different
+@spam.command(name='egg')
+async def spam_egg(ctx):
     """Subcommand of the spam group.
     Can only be called with the spam command.
     Ie. `?spam egg`
     """
+    # this subcommand will result in two messages being sent;
+    # "Spam!", from the parent command, and "and Eggs!".
     await ctx.send('and Eggs!')
 
 
 # the following parent command will not be executed when
-# invoking it with a subcommand
+# invoking it with a subcommand because of the keyword argument
+# invoke_without_command bring set to True
 @bot.group(invoke_without_command=True)
 async def foo(ctx):
     """Main command of the foo group.
@@ -34,6 +39,7 @@ async def foo(ctx):
     await ctx.send('Foo!')
 
 
+# subcommand of the group "foo"
 @foo.command()
 async def bar(ctx):
     """Subcommand of the foo group.
