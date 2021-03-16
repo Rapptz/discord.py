@@ -70,7 +70,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
     @commands.group(invoke_without_command=True)
     async def rate(self, ctx):
         """Let the bot rate you.
-        Generae a random rating between 1 and 100
+        Generate a random rating between 1 and 100.
         """
         # Thie command uses the random stdlib to generate a number
         # We use teh class method `get_rating`
