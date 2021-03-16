@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
+import random
 
-# https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html is the documentation page for cogs.
 description = '''An example bot to showcase the discord.ext.commands extension
 module.
 There are a number of utility commands being showcased here.
@@ -14,61 +14,80 @@ The example uses cogs to organize the code
 intents = discord.Intents.default()
 intents.members = True
 
-# We define the basic bot, setting the prefix, description and intents.
-bot = commands.Bot(command_prefix='?', description=description, intents=intents)
+bot = commands.Bot(command_prefix='?',
+                   description=description, intents=intents)
 
-# We define the class that will house the Miscellaneous commands.
-# The class *must* inherit from the `commands.Cog` class.
-# The main advantage is we can take advantage of Object Oriented Programming.
-# This also groups all commands in the help command under the `Misc` category.
-# The name kwarg passed allows us to set the name of the Cog. If not set it will default to the name of the class.
-class Miscellaneous(commands.Cog, name="Misc"):
+
+# This defines a class that contains commands in a "Miscellaneous" category
+# The library calls this concept a Cog and they must inherit from `commands.Cog`
+# Cogs are useful for grouping commands and having them share state
+# This class will group commands in a "Misc" category in the default help command
+# The `name` keyword argument passed allows us to set the name of the Cog
+# If a name is not given then it will default to the name of the class
+# Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html
+
+
+class Miscellaneous(commands.Cog, name='Misc'):
     """
     A simple Miscellaneous cog.
     """
 
     def __init__(self, bot):
 
-        # We pass in the bot parameter when initializing the class, and make it a class attribute. 
+        # We pass in the bot parameter when initializing the class, and make it an instance attribute.
         # This lets us access the bot parameter throughout our methods.
         self.bot = bot
         # You can also add other attributes to the class.
-        self.other_value = 'This is a class attribute.'
+        self.ratings = {}
 
-    # Cog checks are nice feature in Cogs.
-    # They allow you to define a check that applies to every single command in the Cog.
-    # You return a boolean value. If the check passes the command runs, otherwise a `commands.CheckFailure` is raised. 
+    # Cogs also have the capability to define checks that apply to every command in the Cog
+    # They work similarly to regular checks elsewhere in the framework.
+    # ref: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#checks
     async def cog_check(self, ctx):
         # Check if the command was invoked within a Guild channel.
-        if ctx.guild:
-            return True
-        return False
+        return ctx.guild is not None
 
-    # A simple basic command within a Cog.
-    # Instead of using bot.command decorator, the commands.command decorator is used.
-    # This is as the bot.command decorator will add the command to the bot's command list. 
-    # commands.commands.command is used so the command is registered under the Cog's command list.
+    # Commands within a Cog are defined using the commands.command decorator
+    # instead of the bot.command decorator.
+    # They must also pass a `self` parameter since it's within a class.
     @commands.command()
     async def add(self, ctx, left: int, right: int):
         """Adds two numbers together"""
         await ctx.send(left + right)
 
+    # A  method for getting the rating of a username.
+    def get_rating(self, name):
+        # We check the `self.ratings` dict to see if the member has a rating.
+        rating = self.ratings.get(name)
+        # We can now check if a rating exists, if not we generate a new one.
+        if not rating:
+            rating = random.randint(1, 100)
+            self.ratings[name] = rating
+        return rating
+
     # A command group within a Cog.
-    @commands.group()
-    async def cool(ctx):
-        """Says if a user is cool.
-        In reality this just checks if a subcommand is being invoked.
+    # The `invoke_without_command` flag for the group allows us to use the parent of the group as a command.
+    @commands.group(invoke_without_command=True)
+    async def rate(self, ctx):
+        """Let the bot rate you.
+        Generae a random rating between 1 and 100
         """
-        if ctx.invoked_subcommand is None:
-            await ctx.send('No, {0.subcommand_passed} is not cool'.format(ctx))
+        # Thie command uses the random stdlib to generate a number
+        # We use teh class method `get_rating`
+        rating = self.get_rating(ctx.author.name)
+        await ctx.send(f"{ctx.author.mention} is `{rating}%` cool.")
 
-    @cool.command(name='bot')
-    async def _bot(ctx):
-        """Is the bot cool?"""
-        await ctx.send('Yes, the bot is cool.')
+    # Subcommand for the group
+    @rate.command(name='user')
+    async def _user(self, ctx, *, user: discord.User = None):
+        """Rate another user"""
+        if not user:
+            return await ctx.send("I need a user to rate.")
+        rating = self.get_rating(user.name)
+        await ctx.send(f'I have given {user.mention} a rating of `{rating}%`.')
 
-    # Listening for events within a cog.
-    # This is how you create an event listener for a cog.
+    # Listening to events within a cog requires the `commands.Cog.listener` decorator.
+    # Note that `self` has to be passed for these as well.
     @commands.Cog.listener()
     async def on_member_join(self, member):
         guild = member.guild
@@ -77,8 +96,6 @@ class Miscellaneous(commands.Cog, name="Misc"):
             await guild.system_channel.send(to_send)
 
 
-# This method allows us to add our Cog to the main bot. 
-# Without this your  Cog will not be added to `Bot.cogs` and therefore its listeners and commands will not be registered.
-# You can use bot.remove_cog to remove a Cog from a bot.
+# Cogs have to be explicitly added.
 bot.add_cog(Miscellaneous(bot))
 bot.run('token')
