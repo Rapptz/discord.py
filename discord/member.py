@@ -481,15 +481,15 @@ class Member(discord.abc.Messageable, _BaseUser):
         administrator implication.
         """
 
-        if self.guild.owner_id == self.id:
-            return Permissions.all()
-
         base = Permissions.none()
         for r in self.roles:
             base.value |= r.permissions.value
 
-        if base.administrator:
-            return Permissions.all()
+        if self.guild.owner_id == self.id or base.administrator:
+            all_ = Permissions.all()
+            all_.priority_speaker = False
+
+            base.value |= all_.value
 
         return base
 
