@@ -67,5 +67,17 @@ async def cool(ctx):
 async def _bot(ctx):
     """Is the bot cool?"""
     await ctx.send('Yes, the bot is cool.')
+    
+@bot.command()
+async def lotto(ctx):
+    """Mentions a random user."""
+    seq = []
+
+    for i in bot.users:
+        if i is not bot.user:
+            seq.append(i)
+
+    user = random.choice(seq)
+    await ctx.send(f'{user.mention} wins the draw!')
 
 bot.run('token')
