@@ -1518,7 +1518,7 @@ class Guild(Hashable):
         days: :class:`int`
             The number of days before counting as inactive.
         roles: Optional[List[:class:`abc.Snowflake`]]
-            A list of :class:`abc.Snowflake` that represent roles to include in the pruning process. If a member
+            A list of :class:`abc.Snowflake` that represent roles to include in the estimate. If a member
             has a role that is not specified, they'll be excluded.
 
         Raises
