@@ -1521,6 +1521,8 @@ class Guild(Hashable):
             A list of :class:`abc.Snowflake` that represent roles to include in the estimate. If a member
             has a role that is not specified, they'll be excluded.
 
+            .. versionadded:: 1.7
+
         Raises
         -------
         Forbidden
