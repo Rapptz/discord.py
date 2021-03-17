@@ -739,10 +739,13 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
-    def estimate_pruned_members(self, guild_id, days):
+    def estimate_pruned_members(self, guild_id, days, roles):
         params = {
             'days': days
         }
+        if roles:
+            params['include_roles'] = ', '.join(roles)
+
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
     def get_all_custom_emojis(self, guild_id):
