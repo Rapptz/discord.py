@@ -275,7 +275,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             If providedm the number of seconds to wait in the background
             before deleting the messages provided. If deletion fails then it is silently ignored.
 
-            .. versaionadded:: 1.7
+            .. versionadded:: 1.7
 
         Raises
         ------
