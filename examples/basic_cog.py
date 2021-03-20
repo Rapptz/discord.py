@@ -18,13 +18,13 @@ bot = commands.Bot(command_prefix='?',
                    description=description, intents=intents)
 
 
-# This defines a class that contains commands in a "Miscellaneous" category
-# The library calls this concept a Cog and they must inherit from `commands.Cog`
-# Cogs are useful for grouping commands and having them share state
-# This class will group commands in a "Misc" category in the default help command
-# The `name` keyword argument passed allows us to set the name of the Cog
-# If a name is not given then it will default to the name of the class
-# Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html
+# This defines a class that contains commands in a "Miscellaneous" category.
+# The library calls this concept a Cog and they must inherit from `commands.Cog`.
+# Cogs are useful for grouping commands and having them share state.
+# This class will group commands in a "Misc" category in the default help command.
+# The `name` keyword argument passed allows us to set the name of the Cog.
+# If a name is not given then it will default to the name of the class.
+# Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html.
 
 
 class Miscellaneous(commands.Cog, name='Misc'):
@@ -40,7 +40,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # You can also add other attributes to the class.
         self.ratings = {}
 
-    # Cogs also have the capability to define checks that apply to every command in the Cog
+    # Cogs also have the capability to define checks that apply to every command in the Cog.
     # They work similarly to regular checks elsewhere in the framework.
     # ref: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#checks
     async def cog_check(self, ctx):
@@ -72,19 +72,18 @@ class Miscellaneous(commands.Cog, name='Misc'):
         """Let the bot rate you.
         Generate a random rating between 1 and 100.
         """
-        # Thie command uses the random stdlib to generate a number
-        # We use teh class method `get_rating`
+        # This command uses the random stdlib to generate a number
         rating = self.get_rating(ctx.author.name)
-        await ctx.send(f"{ctx.author.mention} is `{rating}%` cool.")
+        await ctx.send('{} is `{}%` cool.'.format(ctx.author.mention, rating))
 
-    # Subcommand for the group
+    # Subcommand for the group:
     @rate.command(name='user')
     async def _user(self, ctx, *, user: discord.User = None):
         """Rate another user"""
         if not user:
-            return await ctx.send("I need a user to rate.")
+            return await ctx.send('I need a user to rate.')
         rating = self.get_rating(user.name)
-        await ctx.send(f'I have given {user.mention} a rating of `{rating}%`.')
+        await ctx.send('I have given {} a rating of `{}%`.'.format(user.mention, rating))
 
     # Listening to events within a cog requires the `commands.Cog.listener` decorator.
     # Note that `self` has to be passed for these as well.
