@@ -41,6 +41,7 @@ else:
 default_filters = {
     'time': 0,
     'users': [],
+    'max_size': 0,
 }
 
 
@@ -48,6 +49,7 @@ class Filters:
     def __init__(self, **kwargs):
         self.filtered_users = kwargs.get('users', default_filters['users'])
         self.seconds = kwargs.get('time', default_filters['time'])
+        self.max_size = kwargs.get('max_size', default_filters['max_size'])
 
         if self.seconds != 0:
             thread = threading.Thread(target=self.wait_and_stop)
@@ -61,7 +63,7 @@ class Filters:
         return _filter
 
     def wait_and_stop(self):
-        time.sleep(self.seconds+1)
+        time.sleep(self.seconds)
         self.vc.stop_recording()
 
 
@@ -85,7 +87,7 @@ class Sink(Filters):
         """
         if filters is None:
             filters = default_filters
-        Filters.__init__(self, **filters)
+        self.filters = filters
 
         encoding = encoding.lower()
 
@@ -98,6 +100,9 @@ class Sink(Filters):
         self.file_path = output_path
         self.vc = None
         self.ssrc_cache = []
+
+    def init(self):  # called under start_recording
+        Filters.__init__(self, **self.filters)
 
     @Filters.filter_decorator
     def write(self, data, user):
