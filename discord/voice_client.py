@@ -784,6 +784,8 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, Sink):
             raise ClientException("Must provide a Sink object.")
 
+        sink.init()
+
         self.socket.setblocking(True)
 
         t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
@@ -840,7 +842,6 @@ class VoiceClient(VoiceProtocol):
         self.recording = True
         self.sink = sink
         self.sink.vc = self
-        print("Start")
 
         self.user_timestamps = {}
         starting_time = time.perf_counter()
