@@ -706,12 +706,18 @@ class VoiceClient(VoiceProtocol):
         """
         header = data[:12]
         data = data[12:]
-        if len(data) == 40:
-            #  Receiving an error from nacl when certain data,
-            #  all being of length 40, are passed through. I
-            #  don't know exactly what this data is but it is
-            #  clearly not audio data and is only sent when no
-            #  one is speaking in the vc.
+        if len(data) == {'xsalsa20_poly1305_lite': 40, 'xsalsa20_poly1305_suffix': 60, 'xsalsa20_poly1305': 36}[self.mode]:
+            # NACL throws an error when trying to decode data
+            # of certain lengths from each encryption mode
+            # respectively. I don't know exactly what this data
+            # is so I'll just ignore it.
+            # Extra info: each has a data length of 24 bytes if
+            # you subtract the bytes for it's header and anything else
+            # added on during encryption such as the nonce
+            # lite: 12byte(header) + 24bytes(data) + 4bytes(nonce) = 40
+            # suffix: 12byte(header) + 24bytes(data) + 24bytes(nonce) = 60
+            # normal: 12bytes(header) + 24bytes(data) = 36
+            # I don't know if this is in any way linked to what the data represents.
             return b'', 0
         decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
 
