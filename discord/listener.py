@@ -142,12 +142,17 @@ class Sink(Filters):
                     f.close()
             elif self.encoding == 'mp3':
                 args = ['ffmpeg', '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', pcm_file, file]
+                process = None
+                if os.path.exists(file):
+                    os.remove(file)  # process will get stuck asking whether or not to overwrite, if file already exists.
                 try:
-                    subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
+                    process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
                 except FileNotFoundError:
                     raise ClientException('ffmpeg was not found.') from None
                 except subprocess.SubprocessError as exc:
                     raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+                process.wait()
+
             os.remove(pcm_file)
 
     @property
