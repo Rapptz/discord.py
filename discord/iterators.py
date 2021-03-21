@@ -346,7 +346,7 @@ class HistoryIterator(_AsyncIterator):
         """Retrieve messages using before parameter."""
         before = self.before.id if self.before else None
         data = await self.logs_from(self.channel.id, retrieve, before=before)
-        if len(data):
+        if data:
             if self.limit is not None:
                 self.limit -= retrieve
             self.before = Object(id=int(data[-1]['id']))
@@ -356,7 +356,7 @@ class HistoryIterator(_AsyncIterator):
         """Retrieve messages using after parameter."""
         after = self.after.id if self.after else None
         data = await self.logs_from(self.channel.id, retrieve, after=after)
-        if len(data):
+        if data:
             if self.limit is not None:
                 self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
@@ -416,7 +416,7 @@ class AuditLogIterator(_AsyncIterator):
                                   action_type=self.action_type, before=before)
 
         entries = data.get('audit_log_entries', [])
-        if len(data) and entries:
+        if data and entries:
             if self.limit is not None:
                 self.limit -= retrieve
             self.before = Object(id=int(entries[-1]['id']))
@@ -427,7 +427,7 @@ class AuditLogIterator(_AsyncIterator):
         data = await self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
                                   action_type=self.action_type, after=after)
         entries = data.get('audit_log_entries', [])
-        if len(data) and entries:
+        if data and entries:
             if self.limit is not None:
                 self.limit -= retrieve
             self.after = Object(id=int(entries[0]['id']))
@@ -586,7 +586,7 @@ class GuildIterator(_AsyncIterator):
         """Retrieve guilds using before parameter."""
         before = self.before.id if self.before else None
         data = await self.get_guilds(retrieve, before=before)
-        if len(data):
+        if data:
             if self.limit is not None:
                 self.limit -= retrieve
             self.before = Object(id=int(data[-1]['id']))
@@ -596,7 +596,7 @@ class GuildIterator(_AsyncIterator):
         """Retrieve guilds using after parameter."""
         after = self.after.id if self.after else None
         data = await self.get_guilds(retrieve, after=after)
-        if len(data):
+        if data:
             if self.limit is not None:
                 self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
