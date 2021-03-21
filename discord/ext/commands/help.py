@@ -27,7 +27,6 @@ DEALINGS IN THE SOFTWARE.
 import itertools
 import copy
 import functools
-import inspect
 import re
 import discord.utils
 
