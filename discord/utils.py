@@ -111,7 +111,7 @@ def parse_time(timestamp):
     return None
 
 def copy_doc(overriden, original):
-    overriden.__doc__ = getattr(original, '__doc__')
+    overriden.__doc__ = original.__doc__
     overriden.__signature__ = _signature(original)
 
 def deprecated(instead=None):
