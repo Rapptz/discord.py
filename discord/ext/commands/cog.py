@@ -125,7 +125,7 @@ class CogMeta(type):
                     commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
-                        getattr(value, '__cog_listener__')
+                        value.__cog_listener__
                     except AttributeError:
                         continue
                     else:

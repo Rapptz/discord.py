@@ -46,7 +46,7 @@ MAX_ASYNCIO_SECONDS = 3456000
 class cached_property:
     def __init__(self, function):
         self.function = function
-        self.__doc__ = getattr(function, '__doc__')
+        self.__doc__ = function.__doc__
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -61,7 +61,7 @@ class CachedSlotProperty:
     def __init__(self, name, function):
         self.name = name
         self.function = function
-        self.__doc__ = getattr(function, '__doc__')
+        self.__doc__ = function.__doc__
 
     def __get__(self, instance, owner):
         if instance is None:
