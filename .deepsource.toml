@@ -1,0 +1,14 @@
+version = 1
+
+exclude_patterns = [
+    "discord/bin/**",
+    "docs/**",
+    "examples/**"
+]
+
+[[analyzers]]
+name = "python"
+enabled = true
+
+  [analyzers.meta]
+  runtime_version = "3.x.x"
