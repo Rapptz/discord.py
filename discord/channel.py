@@ -149,7 +149,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+    utils.copy_doc(permissions_for, discord.abc.GuildChannel.permissions_for)
 
     @property
     def members(self):
@@ -247,7 +247,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             'rate_limit_per_user': self.slowmode_delay
         }, name=name, reason=reason)
 
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
+    utils.copy_doc(clone, discord.abc.GuildChannel.clone)
 
     async def delete_messages(self, messages):
         """|coro|
@@ -662,7 +662,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+    utils.copy_doc(permissions_for, discord.abc.GuildChannel.permissions_for)
 
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
@@ -670,7 +670,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             'user_limit': self.user_limit
         }, name=name, reason=reason)
 
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
+    utils.copy_doc(clone, discord.abc.GuildChannel.clone)
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -789,7 +789,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             'nsfw': self.nsfw
         }, name=name, reason=reason)
 
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
+    utils.copy_doc(clone, discord.abc.GuildChannel.clone)
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -954,7 +954,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
+    utils.copy_doc(permissions_for, discord.abc.GuildChannel.permissions_for)
 
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
@@ -965,7 +965,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             'nsfw': self.nsfw
         }, name=name, reason=reason)
 
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
+    utils.copy_doc(clone, discord.abc.GuildChannel.clone)
 
     async def edit(self, *, reason=None, **options):
         """|coro|

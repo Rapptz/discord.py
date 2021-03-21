@@ -338,4 +338,4 @@ class Context(discord.abc.Messageable):
     async def reply(self, content=None, **kwargs):
         return await self.message.reply(content, **kwargs)
 
-    reply.__doc__ = discord.Message.reply.__doc__
+    discord.utils.copy_doc(reply, discord.Message.reply)
