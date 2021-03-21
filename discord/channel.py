@@ -1040,7 +1040,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         The direct message channel ID.
     """
 
-    __slots__ = ('id', 'recipient', 'me', '_state')
+    __slots__ = ('id', 'recipient', 'me', '_state', "send_tts_messages", "manage_messages")
 
     def __init__(self, *, me, state, data):
         self._state = state
@@ -1155,7 +1155,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         The group channel's name if provided.
     """
 
-    __slots__ = ('id', 'recipients', 'owner', 'icon', 'name', 'me', '_state')
+    __slots__ = ('id', 'recipients', 'owner', 'icon', 'name', 'me', '_state', "send_tts_messages", "manage_messages", "mention_everyone", "kick_members")
 
     def __init__(self, *, me, state, data):
         self._state = state
