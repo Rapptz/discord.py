@@ -127,12 +127,14 @@ class Colour:
             The random algorithm works by choosing a colour with a random hue but
             with maxed out saturation and value.
 
+        .. versionadded:: 1.6
+
         Parameters
         ------------
         seed: Optional[Union[:class:`int`, :class:`str`, :class:`float`, :class:`bytes`, :class:`bytearray`]]
             The seed to initialize the colour with.
 
-        .. versionadded:: 1.6
+            .. versionadded:: 1.7
         """
         rand = random
         if seed:
