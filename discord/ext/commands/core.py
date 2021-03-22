@@ -158,7 +158,7 @@ class Command(_BaseCommand):
         isn't one.
     cog: Optional[:class:`Cog`]
         The cog that this command belongs to. ``None`` if there isn't one.
-    checks: List[Callable[..., :class:`bool`]]
+    checks: List[Callable[[:class:`.Context`], :class:`bool`]]
         A list of predicates that verifies if the command could be executed
         with the given :class:`.Context` as the sole parameter. If an exception
         is necessary to be thrown to signal failure, then one inherited from
