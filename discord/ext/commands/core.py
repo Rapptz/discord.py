@@ -1959,7 +1959,7 @@ def cooldown(rate, per, type=BucketType.default):
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
-    type: Union[:class:`.BucketType`, Callable[:class:`.Message`, Any]]
+    type: Union[:class:`.BucketType`, Callable[[:class:`.Message`], Any]]
         The type of cooldown to have. If callable, should return a key for the mapping.
     """
 
