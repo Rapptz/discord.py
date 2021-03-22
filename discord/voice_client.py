@@ -44,6 +44,7 @@ import socket
 import logging
 import struct
 import threading
+import select
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -537,7 +538,7 @@ class VoiceClient(VoiceProtocol):
         nonce = bytearray(24)
         nonce[:12] = header
 
-        return self.strip_header_ext(box.decrypt(data, bytes(nonce)))
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
 
     def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -545,7 +546,7 @@ class VoiceClient(VoiceProtocol):
         nonce_size = nacl.secret.SecretBox.NONCE_SIZE
         nonce = data[-nonce_size:]
 
-        return self.strip_header_ext(box.decrypt(data[:-nonce_size], nonce))
+        return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
 
     def _decrypt_xsalsa20_poly1305_lite(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -554,20 +555,13 @@ class VoiceClient(VoiceProtocol):
         nonce[:4] = data[-4:]
         data = data[:-4]
 
-        return self.strip_header_ext(box.decrypt(data, bytes(nonce)))
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
 
     @staticmethod
     def strip_header_ext(data):
         if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
-            headerExtensionLength = int.from_bytes(data[2:][:2], "big")
-            offset = 4
-            for i in range(headerExtensionLength):
-                byte = data[offset]
-                offset += 1
-                if byte == 0:
-                    continue
-                offset += 1 + (0b1111 & (byte >> 4))
-            offset += 1
+            _, length = struct.unpack_from('>HH', data)
+            offset = 4 + length * 4
             data = data[offset:]
         return data
 
@@ -704,21 +698,15 @@ class VoiceClient(VoiceProtocol):
         data: :class:`bytes`
             Bytes received by Discord via the UDP connection used for sending and receiving voice data
         """
+        if 200 <= data[1] <= 204:
+            # RTCP received.
+            return b'', 0
+
+        assert data[0] >> 6 == 2
+
         header = data[:12]
         data = data[12:]
-        if len(data) == {'xsalsa20_poly1305_lite': 40, 'xsalsa20_poly1305_suffix': 60, 'xsalsa20_poly1305': 36}[self.mode]:
-            # NACL throws an error when trying to decode data
-            # of certain lengths from each encryption mode
-            # respectively. I don't know exactly what this data
-            # is so I'll just ignore it.
-            # Extra info: each has a data length of 24 bytes if
-            # you subtract the bytes for it's header and anything else
-            # added on during encryption such as the nonce
-            # lite: 12byte(header) + 24bytes(data) + 4bytes(nonce) = 40
-            # suffix: 12byte(header) + 24bytes(data) + 24bytes(nonce) = 60
-            # normal: 12bytes(header) + 24bytes(data) = 36
-            # I don't know if this is in any way linked to what the data represents.
-            return b'', 0
+
         decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
 
         ssrc = int.from_bytes(header[8:], 'big')
@@ -792,8 +780,6 @@ class VoiceClient(VoiceProtocol):
 
         sink.init()
 
-        self.socket.setblocking(True)
-
         t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
         t.start()
 
@@ -853,7 +839,14 @@ class VoiceClient(VoiceProtocol):
         starting_time = time.perf_counter()
         registered_users = []
         while self.recording:
-            data = self.socket.recv(1024)
+            ready, _, err = select.select([self.socket], [],
+                                          [self.socket], 0.01)
+            if not ready:
+                if err:
+                    print("Socket error")
+                continue
+
+            data = self.socket.recv(4096)
             data, user = self.unpack_audio(data)
 
             if data == b'':
@@ -869,7 +862,7 @@ class VoiceClient(VoiceProtocol):
                 data = struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data
             self.sink.write(data, user)
 
-        self.sink.format_audio()
+        self.sink.cleanup()
         try:
             callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
             result = callback.result()
