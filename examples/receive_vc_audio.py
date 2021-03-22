@@ -118,9 +118,9 @@ class Client(discord.Client):
 
     async def on_stopped(self, sink, *args):
         channel = args[0]
-        # Note: sink.recorded_users = {user_id: file_path}
-        users = [" <@"+str(user_id)+"> " for user_id in list(sink.recorded_users.keys())]
-        await channel.send(f"Finished! Recorded audio for {','.join(users)}")
+        # Note: sink.audio_data = {user_id: AudioData}
+        recorded_users = [f" <@{str(user_id)}> ({os.path.split(audio.file)[1]}) " for user_id, audio in sink.audio_data.items()]
+        await channel.send(f"Finished! Recorded audio for {','.join(recorded_users)}")
 
     async def on_voice_state_update(self, member, before, after):
         if member.id == self.user.id:
