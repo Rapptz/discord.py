@@ -67,6 +67,33 @@ class Filters:
         self.vc.stop_recording()
 
 
+class AudioData:
+    def __init__(self, file):
+        self.file = open(file, 'ab')
+        self.dir_path = os.path.split(file)[0]
+
+        self.finished = False
+
+    def write(self, data):
+        if self.finished:
+            raise ClientException("This AudioData is already finished writing.")
+        self.file.write(data)
+
+    def cleanup(self):
+        if self.finished:
+            raise ClientException("This AudioData is already finished writing.")
+        self.file.close()
+        self.file = os.path.join(self.dir_path, self.file.name)
+        self.finished = True
+
+    def on_format(self, encoding):
+        if not self.finished:
+            raise ClientException("This AudioData is still writing.")
+        name = os.path.split(self.file)[1]
+        name = name.split('.')[0] + f'.{encoding}'
+        self.file = os.path.join(self.dir_path, name)
+
+
 class Sink(Filters):
     valid_encodings = ['wav', 'mp3', 'pcm']
 
@@ -99,65 +126,56 @@ class Sink(Filters):
         self.encoding = encoding
         self.file_path = output_path
         self.vc = None
-        self.ssrc_cache = []
+        self.audio_data = {}
 
     def init(self):  # called under start_recording
         Filters.__init__(self, **self.filters)
 
     @Filters.filter_decorator
     def write(self, data, user):
-        ssrc = self.vc.get_ssrc(user)
-        file = os.path.join(self.file_path, f'{ssrc}.pcm')
-        if ssrc not in self.ssrc_cache:
-            self.ssrc_cache.append(ssrc)
-            open_type = 'wb'
-        else:
-            open_type = 'ab'
+        if user not in self.audio_data:
+            ssrc = self.vc.get_ssrc(user)
+            file = os.path.join(self.file_path, f'{ssrc}.pcm')
+            self.audio_data.update({user: AudioData(file)})
 
-        with open(file, open_type) as f:
-            f.write(data)
-            f.close()
+        file = self.audio_data[user]
+        file.write(data)
 
-    def get_user_audio(self, user):
-        ssrc = self.vc.get_ssrc(user)
-        file = os.path.join(self.file_path, f'{ssrc}.{self.encoding}')
-        return file
+    def cleanup(self):
+        for file in self.audio_data.values():
+            file.cleanup()
+            self.format_audio(file)
 
-    def format_audio(self):
+    def format_audio(self, audio):
         if self.vc.recording:
             raise ClientException("Audio may only be formatted after recording is finished.")
         if self.encoding == 'pcm':
             return
-        for file in self.recorded_users.values():
-            pcm_file = file.split('.')[0] + '.pcm'
-            with open(pcm_file, 'rb') as pcm:
+        if self.encoding == 'mp3':
+            mp3_file = audio.file.split('.')[0] + '.mp3'
+            args = ['ffmpeg', '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', audio.file, mp3_file]
+            process = None
+            if os.path.exists(mp3_file):
+                os.remove(mp3_file)  # process will get stuck asking whether or not to overwrite, if file already exists.
+            try:
+                process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
+            except FileNotFoundError:
+                raise ClientException('ffmpeg was not found.') from None
+            except subprocess.SubprocessError as exc:
+                raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+            process.wait()
+        elif self.encoding == 'wav':
+            with open(audio.file, 'rb') as pcm:
                 data = pcm.read()
                 pcm.close()
-            if self.encoding == 'wav':
-                with wave.open(file, 'wb') as f:
-                    f.setnchannels(self.vc.decoder.CHANNELS)
-                    f.setsampwidth(self.vc.decoder.SAMPLE_SIZE)
-                    f.setframerate(self.vc.decoder.SAMPLING_RATE / self.vc.decoder.CHANNELS)
-                    f.writeframes(data)
-                    f.close()
-            elif self.encoding == 'mp3':
-                args = ['ffmpeg', '-f', 's16le', '-ar', '48000', '-ac', '2', '-i', pcm_file, file]
-                process = None
-                if os.path.exists(file):
-                    os.remove(file)  # process will get stuck asking whether or not to overwrite, if file already exists.
-                try:
-                    process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
-                except FileNotFoundError:
-                    raise ClientException('ffmpeg was not found.') from None
-                except subprocess.SubprocessError as exc:
-                    raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
-                process.wait()
 
-            os.remove(pcm_file)
-
-    @property
-    def recorded_users(self):
-        return {
-            self.vc.ws.ssrc_map[ssrc]['user_id']: os.path.join(self.file_path, f'{ssrc}.{self.encoding}')
-            for ssrc in self.ssrc_cache
-        }
+            wav_file = audio.file.split('.')[0] + '.wav'
+            with wave.open(wav_file, 'wb') as f:
+                f.setnchannels(self.vc.decoder.CHANNELS)
+                f.setsampwidth(self.vc.decoder.SAMPLE_SIZE // self.vc.decoder.CHANNELS)
+                f.setframerate(self.vc.decoder.SAMPLING_RATE)
+                f.writeframes(data)
+                f.close()
+                
+        os.remove(audio.file)
+        audio.on_format(self.encoding)
