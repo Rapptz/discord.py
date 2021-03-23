@@ -511,7 +511,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+    This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
