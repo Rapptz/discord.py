@@ -568,6 +568,11 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
+    region: :class:`VoiceRegion`
+        The region the channel belongs on. There is a chance that the region
+        will be a :class:`str` if the value is not recognised by the enumerator.
+
+        .. versionadded:: 1.8
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -579,7 +584,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The channel's limit for number of members that can be in a voice channel.
     """
 
-    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
+    __slots__ = ('name', 'id', 'guild', 'region', 'bitrate', 'user_limit',
                  '_state', 'position', '_overwrites', 'category_id')
 
     def __init__(self, *, state, guild, data):
@@ -591,6 +596,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         attrs = [
             ('id', self.id),
             ('name', self.name),
+            ('region', self.region),
             ('position', self.position),
             ('bitrate', self.bitrate),
             ('user_limit', self.user_limit),
@@ -612,6 +618,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
+        self.region = data['region']
         self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
@@ -687,6 +694,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         ----------
         name: :class:`str`
             The new channel's name.
+        region: :class:`VoiceRegion`
+            The new region for the channel's voice communication.
+            
+            .. versionadded:: 1.8
         bitrate: :class:`int`
             The new channel's bitrate.
         user_limit: :class:`int`
