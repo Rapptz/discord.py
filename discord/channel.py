@@ -572,7 +572,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The region the channel belongs on. There is a chance that the region
         will be a :class:`str` if the value is not recognised by the enumerator.
 
-        .. versionadded:: 1.8
+        .. versionadded:: 2.0
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -697,7 +697,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         region: :class:`VoiceRegion`
             The new region for the channel's voice communication.
             
-            .. versionadded:: 1.8
+            .. versionadded:: 2.0
         bitrate: :class:`int`
             The new channel's bitrate.
         user_limit: :class:`int`
