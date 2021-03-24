@@ -111,10 +111,10 @@ class Embed:
             colour = kwargs.get('color', EmptyEmbed)
 
         self.colour = colour
-        self.title = kwargs.get('title', EmptyEmbed)
+        self.title = str(kwargs.get('title', EmptyEmbed))
         self.type = kwargs.get('type', 'rich')
-        self.url = kwargs.get('url', EmptyEmbed)
-        self.description = kwargs.get('description', EmptyEmbed)
+        self.url = str(kwargs.get('url', EmptyEmbed))
+        self.description = str(kwargs.get('description', EmptyEmbed))
 
         try:
             timestamp = kwargs['timestamp']
