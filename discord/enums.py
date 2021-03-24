@@ -183,6 +183,7 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning   = 17
 
 class VoiceRegion(Enum):
+    auto          = 'automatic'
     us_west       = 'us-west'
     us_east       = 'us-east'
     us_south      = 'us-south'
