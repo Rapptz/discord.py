@@ -203,19 +203,20 @@ class AsyncWebhookAdapter(WebhookAdapter):
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
-        if multipart:
-            data = aiohttp.FormData()
-            for key, value in multipart.items():
-                if key.startswith('file'):
-                    data.add_field(key, value[1], filename=value[0], content_type=value[2])
-                else:
-                    data.add_field(key, value)
 
         base_url = url.replace(self._request_url, '/') or '/'
         _id = self._webhook_id
         for tries in range(5):
             for file in files:
                 file.reset(seek=tries)
+
+            if multipart:
+                data = aiohttp.FormData()
+                for key, value in multipart.items():
+                    if key.startswith('file'):
+                        data.add_field(key, value[1], filename=value[0], content_type=value[2])
+                    else:
+                        data.add_field(key, value)
 
             async with self.session.request(verb, url, headers=headers, data=data) as r:
                 log.debug('Webhook ID %s with %s %s has returned status code %s', _id, verb, base_url, r.status)
