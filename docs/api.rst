@@ -474,7 +474,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     .. note::
 
-        To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
+        To get the :class:`Message` that the reaction was added to, use :attr:`Reaction.message`.
 
     This requires :attr:`Intents.reactions` to be enabled.
 
@@ -493,7 +493,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_raw_reaction_add(payload)
 
-    Called when a message has a reaction added. Unlike :func:`on_reaction_add`, this is
+    Called when a reaction is added to a message. Unlike :func:`on_reaction_add`, this is
     called regardless of the state of the internal message cache.
 
     This requires :attr:`Intents.reactions` to be enabled.
@@ -503,13 +503,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_remove(reaction, user)
 
-    Called when a message has a reaction removed from it. Similar to on_message_edit,
+    Called when a reaction is removed from a message. Similar to on_message_edit,
     if the message is not found in the internal message cache, then this event
     will not be called.
 
     .. note::
 
-        To get the message being reacted, access it via :attr:`Reaction.message`.
+        To get the :class:`Message` that the reaction was removed from, use :attr:`Reaction.message`.
 
     This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
     
@@ -525,7 +525,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_raw_reaction_remove(payload)
 
-    Called when a message has a reaction removed. Unlike :func:`on_reaction_remove`, this is
+    Called when a reaction is removed from a message. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
     This requires :attr:`Intents.reactions` to be enabled.
@@ -535,7 +535,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_clear(message, reactions)
 
-    Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`,
+    Called when a message has all its reactions removed. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear` instead.
 
@@ -558,7 +558,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_reaction_clear_emoji(reaction)
 
-    Called when a message has a specific reaction removed from it. Similar to :func:`on_message_edit`,
+    Called when a specific reaction is removed from a message. Similar to :func:`on_message_edit`,
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
 
@@ -571,7 +571,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_raw_reaction_clear_emoji(payload)
 
-    Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
+    Called when a specific reaction is removed from a message. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
     This requires :attr:`Intents.reactions` to be enabled.
