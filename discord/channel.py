@@ -29,7 +29,7 @@ import asyncio
 
 import discord.abc
 from .permissions import Permissions
-from .enums import ChannelType, try_enum
+from .enums import VoiceRegion, ChannelType, try_enum
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
