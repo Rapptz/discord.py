@@ -144,10 +144,10 @@ class Embed:
 
         # fill in the basic fields
 
-        self.title = data.get('title', EmptyEmbed)
+        self.title = str(data.get('title', EmptyEmbed))
         self.type = data.get('type', EmptyEmbed)
-        self.description = data.get('description', EmptyEmbed)
-        self.url = data.get('url', EmptyEmbed)
+        self.description = str(data.get('description', EmptyEmbed))
+        self.url = str(data.get('url', EmptyEmbed))
 
         # try to fill in the more rich fields
 
