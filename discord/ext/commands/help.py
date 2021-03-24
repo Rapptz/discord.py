@@ -437,15 +437,24 @@ class HelpCommand:
             The signature for the command.
         """
 
-        parent = command.full_parent_name
+        parent = command.parent
+        entries = []
+        while parent is not None:
+            if not parent.signature or parent.invoke_without_command:
+                entries.append(parent.name)
+            else:
+                entries.append(parent.name + ' ' + parent.signature)
+            parent = parent.parent
+        parent_sig = ' '.join(reversed(entries))
+
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
             fmt = '[%s|%s]' % (command.name, aliases)
-            if parent:
-                fmt = parent + ' ' + fmt
+            if parent_sig:
+                fmt = parent_sig + ' ' + fmt
             alias = fmt
         else:
-            alias = command.name if not parent else parent + ' ' + command.name
+            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
 
         return '%s%s %s' % (self.clean_prefix, alias, command.signature)
 
