@@ -31,6 +31,7 @@ import threading
 import time
 import subprocess
 import sys
+import struct
 
 
 if sys.platform != 'win32':
@@ -64,10 +65,37 @@ class Filters:
 
     def wait_and_stop(self):
         time.sleep(self.seconds)
-        self.vc.stop_recording()
+        try:
+            self.vc.stop_recording()
+        except ClientException:
+            return
+
+
+class RawData:
+    """
+    Handles raw data from Discord so that it can be
+    decrypted and decoded to be used.
+    """
+    def __init__(self, data, client):
+        self.data = bytearray(data)
+        self.client = client
+
+        self.header = data[:12]
+        self.data = self.data[12:]
+
+        unpacker = struct.Struct('>xxHII')
+        self.sequence, self.timestamp, self.ssrc = unpacker.unpack_from(self.header)
+        self.decrypted_data = getattr(self.client, '_decrypt_' + self.client.mode)(self.header, self.data)
+        self.decoded_data = None
+
+        self.user_id = None
 
 
 class AudioData:
+    """
+    Handles data that's been completely decrypted and decoded
+    and is ready to be saved to file.
+    """
     def __init__(self, file):
         self.file = open(file, 'ab')
         self.dir_path = os.path.split(file)[0]
@@ -176,6 +204,6 @@ class Sink(Filters):
                 f.setframerate(self.vc.decoder.SAMPLING_RATE)
                 f.writeframes(data)
                 f.close()
-                
+
         os.remove(audio.file)
         audio.on_format(self.encoding)
