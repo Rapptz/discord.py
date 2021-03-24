@@ -511,7 +511,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+    This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
+    
+    .. note::
+
+        Consider using :func:`on_raw_reaction_remove` if you need this and do not want
+        to enable the members intent.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
