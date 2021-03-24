@@ -107,7 +107,7 @@ class Guild(Hashable):
     max_video_channel_users: Optional[:class:`int`]
         The maximum amount of users in a video channel.
 
-        .. versionchanged:: 1.8
+        .. versionchanged:: 2.0
     Removed `region` attribute, which is now passed per voice channel.
 
         .. versionadded:: 1.4
@@ -1040,7 +1040,7 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission
         to edit the guild.
 
-        .. versionchanged:: 1.8
+        .. versionchanged:: 2.0
             Removed `region` attribute, which is now passed per voice channel.
 
         .. versionchanged:: 1.4
