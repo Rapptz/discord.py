@@ -479,6 +479,36 @@ _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
 _MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON), re.MULTILINE)
 
+def delete_markdown(text, *, ignore_links=True):
+    r"""A helper function that deletes Discord's markdown.
+    Parameters
+    -----------
+    text: :class:`str`
+        The text to delete markdown from.
+    ignore_links: :class:`bool`
+        Whether to leave links alone when removing markdown. For example,
+        if a URL in the text contains characters such as ``_`` then it will
+        be left alone.
+        Defaults to ``True``.
+    Returns
+    --------
+    :class:`str`
+        The text with the markdown special characters deleted.
+    """
+
+    url_regex = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
+    def replacement(match):
+        groupdict = match.groupdict()
+        is_url = groupdict.get('url')
+        if is_url:
+            return is_url
+        return ''
+
+    regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+    if ignore_links:
+        regex = '(?:%s|%s)' % (url_regex, regex)
+    return re.sub(regex, replacement, text, 0, re.MULTILINE)
+
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
 
@@ -521,36 +551,6 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
         text = re.sub(r'\\', r'\\\\', text)
         return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
-def delete_markdown(text, *, ignore_links=True):
-    r"""A helper function that deletes Discord's markdown.
-    Parameters
-    -----------
-    text: :class:`str`
-        The text to delete markdown from.
-    ignore_links: :class:`bool`
-        Whether to leave links alone when removing markdown. For example,
-        if a URL in the text contains characters such as ``_`` then it will
-        be left alone.
-        Defaults to ``True``.
-    Returns
-    --------
-    :class:`str`
-        The text with the markdown special characters deleted.
-    """
-
-    url_regex = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
-    def replacement(match):
-        groupdict = match.groupdict()
-        is_url = groupdict.get('url')
-        if is_url:
-            return is_url
-        return ''
-
-    regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
-    if ignore_links:
-        regex = '(?:%s|%s)' % (url_regex, regex)
-    return re.sub(regex, replacement, text, 0, re.MULTILINE)
-    
 def escape_mentions(text):
     """A helper function that escapes everyone, here, role, and user mentions.
 
