@@ -111,10 +111,19 @@ class Embed:
             colour = kwargs.get('color', EmptyEmbed)
 
         self.colour = colour
-        self.title = str(kwargs.get('title', EmptyEmbed))
+        self.title = kwargs.get('title', EmptyEmbed)
         self.type = kwargs.get('type', 'rich')
-        self.url = str(kwargs.get('url', EmptyEmbed))
-        self.description = str(kwargs.get('description', EmptyEmbed))
+        self.url = kwargs.get('url', EmptyEmbed)
+        self.description = kwargs.get('description', EmptyEmbed)
+
+        if self.title is not EmptyEmbed:
+            self.title = str(self.title)
+
+        if self.description is not EmptyEmbed:
+            self.description = str(self.description)
+
+        if self.url is not EmptyEmbed:
+            self.url = str(self.url)
 
         try:
             timestamp = kwargs['timestamp']
@@ -144,10 +153,19 @@ class Embed:
 
         # fill in the basic fields
 
-        self.title = str(data.get('title', EmptyEmbed))
+        self.title = data.get('title', EmptyEmbed)
         self.type = data.get('type', EmptyEmbed)
-        self.description = str(data.get('description', EmptyEmbed))
-        self.url = str(data.get('url', EmptyEmbed))
+        self.description = data.get('description', EmptyEmbed)
+        self.url = data.get('url', EmptyEmbed)
+
+        if self.title is not EmptyEmbed:
+            self.title = str(self.title)
+
+        if self.description is not EmptyEmbed:
+            self.description = str(self.description)
+
+        if self.url is not EmptyEmbed:
+            self.url = str(self.url)
 
         # try to fill in the more rich fields
 
