@@ -45,14 +45,15 @@ import logging
 import struct
 import threading
 import select
+import time
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
-from .listener import Sink
-import time
+from .listener import Sink, RawData
+
 
 try:
     import nacl.secret
@@ -229,8 +230,8 @@ class VoiceClient(VoiceProtocol):
         self.paused = False
         self.recording = False
         self.user_timestamps = {}
-        self.waiting_recv = False
         self.sink = None
+        self.starting_time = None
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -700,51 +701,16 @@ class VoiceClient(VoiceProtocol):
         """
         if 200 <= data[1] <= 204:
             # RTCP received.
-            return b'', 0
-
-        assert data[0] >> 6 == 2
-
-        header = data[:12]
-        data = data[12:]
-
-        decrypted_data = getattr(self, '_decrypt_'+self.mode)(header, data)
-
-        ssrc = int.from_bytes(header[8:], 'big')
-        try:
-            user_id = self.ws.ssrc_map[ssrc]['user_id']
-        except KeyError:
-            # When the on speak event fires after the
-            # voice data for this person is received
-            # in other words we don't yet know who this
-            # audio belongs to.
-            return b'', 0
-        timestamp = int.from_bytes(header[4:][:4], 'big')
-        if user_id not in self.user_timestamps:
-            self.user_timestamps.update({user_id: timestamp-960})
-
-        if data == b'\xf8\xff\xfe':  # Frame of silence
-            return b'', 0
-
-        decoded_data = decrypted_data
-        try:
-            decoded_data = self.decoder.decode(decrypted_data)
-        except opus.OpusError:
-            # This happens when opus tries to decode audio
-            # from a user using the Discord website.
-            print("Yikes data")
-            return b'', 0
-
-        silence = timestamp - self.user_timestamps[user_id] - 960
-        decoded_data = struct.pack('<h', 0) * silence + decoded_data
-        self.user_timestamps[user_id] = timestamp
-
-        # Put it here so that the timestamps will
-        # still be updated but the audio data won't
-        # be sent back to recv_audio.
+            return
         if self.paused:
-            return b'', 0
+            return
 
-        return decoded_data, user_id
+        data = RawData(data, self)
+
+        if data.decrypted_data == b'\xf8\xff\xfe':  # Frame of silence
+            return
+
+        self.decoder.decode(data)
 
     def start_recording(self, sink, callback, *args):
         """The bot will begin recording audio from the current voice channel it is in.
@@ -795,6 +761,7 @@ class VoiceClient(VoiceProtocol):
         """
         if not self.recording:
             raise ClientException("Not currently recording audio.")
+        self.decoder.stop()
         self.recording = False
         self.paused = False
 
@@ -820,7 +787,7 @@ class VoiceClient(VoiceProtocol):
         # execution after another recording starts
         while not self.recording:
             try:
-                self.socket.recv(1024)
+                self.socket.recv(4096)
             except OSError:
                 # Disconnected
                 return
@@ -830,14 +797,14 @@ class VoiceClient(VoiceProtocol):
         #  it by user, handles pcm files and
         #  silence that should be added.
         if not self.decoder:
-            self.decoder = opus.Decoder()
+            self.decoder = opus.DecodeManager(self)
+        self.decoder.start()
         self.recording = True
         self.sink = sink
         self.sink.vc = self
 
         self.user_timestamps = {}
-        starting_time = time.perf_counter()
-        registered_users = []
+        self.starting_time = time.perf_counter()
         while self.recording:
             ready, _, err = select.select([self.socket], [],
                                           [self.socket], 0.01)
@@ -846,21 +813,12 @@ class VoiceClient(VoiceProtocol):
                     print("Socket error")
                 continue
 
-            data = self.socket.recv(4096)
-            data, user = self.unpack_audio(data)
-
-            if data == b'':
+            try:
+                data = self.socket.recv(4096)
+            except OSError:
+                self.stop_recording()
                 continue
-
-            if self.waiting_recv:
-                self.waiting_recv = False
-                for reg_user in registered_users:
-                    self.sink.write(data, reg_user)
-
-            if user not in registered_users:
-                registered_users.append(user)
-                data = struct.pack('<h', 0) * round(self.decoder.CHANNELS*self.decoder.SAMPLING_RATE*(time.perf_counter()-starting_time)) + data
-            self.sink.write(data, user)
+            self.unpack_audio(data)
 
         self.sink.cleanup()
         try:
@@ -872,3 +830,15 @@ class VoiceClient(VoiceProtocol):
             if result is not None:
                 print(result)
         self.continue_recv()
+
+    def recv_decoded_audio(self, data):
+        if data.ssrc not in self.user_timestamps:
+            self.user_timestamps.update({data.ssrc: data.timestamp})
+            # Add silence of when they were not being recorded.
+            data.decoded_data = struct.pack('<h', 0) * round(self.decoder.CHANNELS * self.decoder.SAMPLING_RATE * (time.perf_counter() - self.starting_time)) + data.decoded_data
+        else:
+            self.user_timestamps[data.ssrc] = data.timestamp
+
+        silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
+        data.decoded_data = struct.pack('<h', 0) * silence + data.decoded_data
+        self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]['user_id'])
