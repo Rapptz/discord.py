@@ -36,7 +36,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import VoiceRegion, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
+from .enums import ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
@@ -80,9 +80,6 @@ class Guild(Hashable):
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
         All emojis that the guild owns.
-    region: :class:`VoiceRegion`
-        The region the guild belongs on. There is a chance that the region
-        will be a :class:`str` if the value is not recognised by the enumerator.
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
@@ -109,6 +106,9 @@ class Guild(Hashable):
             This attribute is only available via :meth:`.Client.fetch_guild`.
     max_video_channel_users: Optional[:class:`int`]
         The maximum amount of users in a video channel.
+
+        .. versionchanged:: 1.8
+    Removed `region` attribute, which is now passed per voice channel.
 
         .. versionadded:: 1.4
     banner: Optional[:class:`str`]
@@ -164,7 +164,7 @@ class Guild(Hashable):
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'banner', 'region', '_state',
+                 'name', 'id', 'unavailable', 'banner', '_state',
                  '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
                  'verification_level', 'explicit_content_filter', 'splash',
@@ -273,7 +273,6 @@ class Guild(Hashable):
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.region = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
         self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
@@ -1041,6 +1040,9 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_guild` permission
         to edit the guild.
 
+        .. versionchanged:: 1.8
+            Removed `region` attribute, which is now passed per voice channel.
+
         .. versionchanged:: 1.4
             The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
 
@@ -1063,8 +1065,6 @@ class Guild(Hashable):
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``INVITE_SPLASH``
             in :attr:`Guild.features`.
-        region: :class:`VoiceRegion`
-            The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
@@ -1182,9 +1182,6 @@ class Guild(Hashable):
                 raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
 
             fields['owner_id'] = fields['owner'].id
-
-        if 'region' in fields:
-            fields['region'] = str(fields['region'])
 
         level = fields.get('verification_level', self.verification_level)
         if not isinstance(level, VerificationLevel):
