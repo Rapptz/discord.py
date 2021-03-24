@@ -398,7 +398,7 @@ converter is given below:
 +--------------------------+-------------------------------------------------+
 | :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
 +--------------------------+-------------------------------------------------+
-| :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConveter`   |
+| :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConverter`  |
 +--------------------------+-------------------------------------------------+
 | :class:`User`            | :class:`~ext.commands.UserConverter`            |
 +--------------------------+-------------------------------------------------+
