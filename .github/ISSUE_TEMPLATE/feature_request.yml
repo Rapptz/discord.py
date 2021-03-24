@@ -1,5 +1,5 @@
 name: Feature Request
-about: Suggest a feature for this library
+description: Suggest a feature for this library
 labels: feature request
 issue_body: true
 body:
