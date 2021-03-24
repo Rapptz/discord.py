@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import inspect
 import itertools
 import sys
 from operator import attrgetter
@@ -106,8 +107,13 @@ def flatten_user(cls):
             # It probably breaks something in Sphinx.
             # probably a member function by now
             def generate_function(x):
-                def general(self, *args, **kwargs):
-                    return getattr(self._user, x)(*args, **kwargs)
+                # We want sphinx to properly show coroutine functions as coroutines
+                if inspect.iscoroutinefunction(value):
+                    async def general(self, *args, **kwargs):
+                        return await getattr(self._user, x)(*args, **kwargs)
+                else:
+                    def general(self, *args, **kwargs):
+                        return getattr(self._user, x)(*args, **kwargs)
 
                 general.__name__ = x
                 return general
