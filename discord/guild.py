@@ -1506,7 +1506,7 @@ class Guild(Hashable):
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def estimate_pruned_members(self, *, days):
+    async def estimate_pruned_members(self, *, days, roles=None):
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -1517,6 +1517,11 @@ class Guild(Hashable):
         -----------
         days: :class:`int`
             The number of days before counting as inactive.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the estimate. If a member
+            has a role that is not specified, they'll be excluded.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
@@ -1536,7 +1541,10 @@ class Guild(Hashable):
         if not isinstance(days, int):
             raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
 
-        data = await self._state.http.estimate_pruned_members(self.id, days)
+        if roles:
+            roles = [str(role.id) for role in roles]
+
+        data = await self._state.http.estimate_pruned_members(self.id, days, roles)
         return data['pruned']
 
     async def invites(self):
