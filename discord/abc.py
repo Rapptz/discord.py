@@ -441,8 +441,21 @@ class GuildChannel:
 
         .. versionadded:: 1.3
         """
+        def remove_empty_permissions(overwrite):
+            new_overwrite = [] # Able to keep it as a list since this is never getting passed
+                               # to the user.
+            for ow in overwrite: 
+                if not ((ow.allow == 0) and (ow.deny == 0)): # Only compare permissions that
+                    new_overwrite.append(ow)                 # actually matter.
+
+            return new_overwrite
+        
         category = self.guild.get_channel(self.category_id)
-        return bool(category and category.overwrites == self.overwrites)
+
+        category_overwrites = remove_empty_permissions(category._overwrites)
+        channel_overwrites = remove_empty_permissions(self._overwrites)
+        
+        return bool(category and category_overwrites == channel_overwrites)
 
     def permissions_for(self, member):
         """Handles permission resolution for the current :class:`~discord.Member`.
