@@ -445,8 +445,8 @@ class GuildChannel:
             new_overwrite = [] # Able to keep it as a list since this is never getting passed
                                # to the user.
             for ow in overwrite: 
-                if not (ow.allow == 0 and ow.deny == 0): # Only compare permissions that
-                    new_overwrite.append(ow)                 # actually matter.
+                if not (ow.allow == 0 and ow.deny == 0): # Only compare permissions
+                    new_overwrite.append(ow)             # that actually matter.
 
             return new_overwrite
         
