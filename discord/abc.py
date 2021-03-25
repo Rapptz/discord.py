@@ -441,20 +441,28 @@ class GuildChannel:
 
         .. versionadded:: 1.3
         """
-        def remove_empty_permissions(overwrite):
+        def in_opposite(id, overwrite):
+            for ow in overwrite:
+                if ow.id == id:
+                    return ow
+            return None     
+
+        def remove_empty_permissions(overwrite, opposite_overwrite):
             new_overwrite = [] # Able to keep it as a list since this is never getting passed
                                # to the user.
-            for ow in overwrite: 
-                if not (ow.allow == 0 and ow.deny == 0): # Only compare permissions
-                    new_overwrite.append(ow)             # that actually matter.
+            for ow in overwrite:
+                if in_opposite(ow.id, opposite_overwrite):
+                    new_overwrite.append(ow._asdict())
+                elif not (ow.allow == 0 and ow.deny == 0):
+                    new_overwrite.append(ow._asdict())
 
             return new_overwrite
-        
+
         category = self.guild.get_channel(self.category_id)
 
-        category_overwrites = remove_empty_permissions(category._overwrites)
-        channel_overwrites = remove_empty_permissions(self._overwrites)
-        
+        category_overwrites = remove_empty_permissions(category._overwrites, self._overwrites)
+        channel_overwrites = remove_empty_permissions(self._overwrites, category._overwrites)
+
         return bool(category and category_overwrites == channel_overwrites)
 
     def permissions_for(self, member):
