@@ -56,7 +56,7 @@ class CallMessage:
     @property
     def call_ended(self):
         """:class:`bool`: Indicates if the call has ended.
-        
+
         .. deprecated:: 1.7
         """
         return self.ended_timestamp is not None
@@ -64,7 +64,7 @@ class CallMessage:
     @property
     def channel(self):
         r""":class:`GroupChannel`\: The private channel associated with this message.
-        
+
         .. deprecated:: 1.7
         """
         return self.message.channel
@@ -148,7 +148,7 @@ class GroupCall:
     @property
     def channel(self):
         r""":class:`GroupChannel`\: Returns the channel the group call is in.
-        
+
         .. deprecated:: 1.7
         """
         return self.call.channel

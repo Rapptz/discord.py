@@ -1,6 +1,6 @@
 name: Bug Report
-about: Report broken or incorrect behaviour
-labels: bug
+description: Report broken or incorrect behaviour
+labels: unconfirmed bug
 issue_body: true
 body:
   - type: markdown
@@ -21,9 +21,14 @@ body:
       label: Reproduction Steps
       description: >
          What you did to make it happen.
-         Ideally there should be a short code snippet in this section to help reproduce the bug.
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Minimal Reproducible Code
+      description: >
+        A short snippet of code that showcases the bug.
+      render: python
   - type: textarea
     attributes:
       label: Expected Results

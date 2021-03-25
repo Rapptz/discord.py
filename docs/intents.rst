@@ -5,7 +5,7 @@
 A Primer to Gateway Intents
 =============================
 
-In version 1.5 comes the introduction of :class:`Intents`. This is a radical change in how bots are written. An intent basically allows a bot to subscribe into specific buckets of events. The events that correspond to each intent is documented in the individual attribute of the :class:`Intents` documentation.
+In version 1.5 comes the introduction of :class:`Intents`. This is a radical change in how bots are written. An intent basically allows a bot to subscribe to specific buckets of events. The events that correspond to each intent is documented in the individual attribute of the :class:`Intents` documentation.
 
 These intents are passed to the constructor of :class:`Client` or its subclasses (:class:`AutoShardedClient`, :class:`~.AutoShardedBot`, :class:`~.Bot`) with the ``intents`` argument.
 
@@ -121,7 +121,7 @@ It should be noted that certain things do not need a member cache since Discord 
 - :func:`on_reaction_add` will have the ``user`` parameter be a member when in a guild even if cache is disabled.
 - :func:`on_raw_reaction_add` will have :attr:`RawReactionActionEvent.member` be a member when in a guild even if cache is disabled.
 - The reaction add events do not contain additional information when in direct messages. This is a Discord limitation.
-- The reaction removal events do not have the member information. This is a Discord limitation.
+- The reaction removal events do not have member information. This is a Discord limitation.
 
 Other events that take a :class:`Member` will require the use of the member cache. If absolute accuracy over the member cache is desirable, then it is advisable to have the :attr:`Intents.members` intent enabled.
 
@@ -130,7 +130,7 @@ Other events that take a :class:`Member` will require the use of the member cach
 Retrieving Members
 --------------------
 
-If cache is disabled or you disable chunking guilds at startup, we might still need a way to load members. The library offers a few ways to do this:
+If the cache is disabled or you disable chunking guilds at startup, we might still need a way to load members. The library offers a few ways to do this:
 
 - :meth:`Guild.query_members`
     - Used to query members by a prefix matching nickname or username.
@@ -181,27 +181,10 @@ The first solution is to request the privileged presences intent along with the 
 
 The second solution is to disable member chunking by setting ``chunk_guilds_at_startup`` to ``False`` when constructing a client. Then, when chunking for a guild is necessary you can use the various techniques to :ref:`retrieve members <retrieving_members>`.
 
-To illustrate the slowdown caused the API change, take a bot who is in 840 guilds and 95 of these guilds are "large" (over 250 members).
+To illustrate the slowdown caused by the API change, take a bot who is in 840 guilds and 95 of these guilds are "large" (over 250 members).
 
 Under the original system this would result in 2 requests to fetch the member list (75 guilds, 20 guilds) roughly taking 60 seconds. With :attr:`Intents.members` but not :attr:`Intents.presences` this requires 840 requests, with a rate limit of 120 requests per 60 seconds means that due to waiting for the rate limit it totals to around 7 minutes of waiting for the rate limit to fetch all the members. With both :attr:`Intents.members` and :attr:`Intents.presences` we mostly get the old behaviour so we're only required to request for the 95 guilds that are large, this is slightly less than our rate limit so it's close to the original timing to fetch the member list.
 
 Unfortunately due to this change being required from Discord there is nothing that the library can do to mitigate this.
-
-I don't like this, can I go back?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For now, the old gateway will still work so downgrading to discord.py v1.4 is still possible and will continue to be supported until Discord officially kills the v6 gateway, which is imminent. However it is paramount that for the future of your bot that you upgrade your code to the new way things are done.
-
-To downgrade you can do the following:
-
-.. code-block:: python3
-
-    python3 -m pip install -U "discord.py>=1.4,<1.5"
-
-On Windows use ``py -3`` instead of ``python3``.
-
-.. warning::
-
-    There is no currently set date in which the old gateway will stop working so it is recommended to update your code instead.
 
 If you truly dislike the direction Discord is going with their API, you can contact them via `support <https://dis.gd/contact>`_.

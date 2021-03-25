@@ -106,7 +106,7 @@ class Template:
     def __init__(self, *, state, data):
         self._state = state
         self._store(data)
-    
+
     def _store(self, data):
         self.code = data['code']
         self.uses = data['usage_count']
@@ -173,10 +173,10 @@ class Template:
 
         data = await self._state.http.create_from_template(self.code, name, region_value, icon)
         return Guild(data=data, state=self._state)
-    
+
     async def sync(self):
         """|coro|
-        
+
         Sync the template to the guild's current state.
 
         You must have the :attr:`~Permissions.manage_guild` permission in the
@@ -199,14 +199,14 @@ class Template:
 
     async def edit(self, **kwargs):
         """|coro|
-        
+
         Edit the template metadata.
-        
+
         You must have the :attr:`~Permissions.manage_guild` permission in the
         source guild to do this.
 
         .. versionadded:: 1.7
-        
+
         Parameters
         ------------
         name: Optional[:class:`str`]
@@ -225,12 +225,12 @@ class Template:
         """
         data = await self._state.http.edit_template(self.source_guild.id, self.code, kwargs)
         self._store(data)
-    
+
     async def delete(self):
         """|coro|
-        
+
         Delete the template.
-        
+
         You must have the :attr:`~Permissions.manage_guild` permission in the
         source guild to do this.
 
