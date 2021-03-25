@@ -481,6 +481,8 @@ _MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_S
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
+_MARKDOWN_STOCK_REGEX = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+
 def remove_markdown(text, *, ignore_links=True):
     r"""A helper function that remove markdown characters.
 
@@ -506,7 +508,7 @@ def remove_markdown(text, *, ignore_links=True):
             return is_url
         return ''
 
-    regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+    regex = _MARKDOWN_STOCK_REGEX
     if ignore_links:
         regex = '(?:%s|%s)' % (_URL_REGEX, regex)
     return re.sub(regex, replacement, text, 0, re.MULTILINE)
@@ -544,7 +546,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+        regex = _MARKDOWN_STOCK_REGEX
         if ignore_links:
             regex = '(?:%s|%s)' % (_URL_REGEX, regex)
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
