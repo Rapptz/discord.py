@@ -480,7 +480,8 @@ _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 _MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON), re.MULTILINE)
 
 def delete_markdown(text, *, ignore_links=True):
-    r"""A helper function that deletes Discord's markdown.
+    r"""A helper function that remove markdown characters.
+
     Parameters
     -----------
     text: :class:`str`
@@ -488,8 +489,8 @@ def delete_markdown(text, *, ignore_links=True):
     ignore_links: :class:`bool`
         Whether to leave links alone when removing markdown. For example,
         if a URL in the text contains characters such as ``_`` then it will
-        be left alone.
-        Defaults to ``True``.
+        be left alone. Defaults to ``True``.
+
     Returns
     --------
     :class:`str`
