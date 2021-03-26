@@ -126,7 +126,7 @@ def deprecated(instead=None):
         return decorated
     return actual_decorator
 
-def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
+def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes=None):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
@@ -141,13 +141,18 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
+    scopes: Iterable[:class:`str`]
+        An optional valid list of scopes. Defaults to ``('bot',)``.
+
+        .. versionadded:: 1.7
 
     Returns
     --------
     :class:`str`
         The OAuth2 URL for inviting the bot into guilds.
     """
-    url = 'https://discord.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
+    url = 'https://discord.com/oauth2/authorize?client_id={}'.format(client_id)
+    url = url + '&scope=' + '+'.join(scopes or ('bot',))
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
