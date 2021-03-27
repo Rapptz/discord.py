@@ -97,7 +97,10 @@ class RawMessageUpdateEvent(_RawReprMixin):
         The guild ID where the message got updated, if applicable.
 
         .. versionadded:: 1.7
+    user_id: :class:`int`
+        The user ID of who edited the message.
 
+        .. versionadded:: 1.7
     data: :class:`dict`
         The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
@@ -105,11 +108,12 @@ class RawMessageUpdateEvent(_RawReprMixin):
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'user_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.channel_id = int(data['channel_id'])
+        self.user_id = int(data['author']['id'])
         self.data = data
         self.cached_message = None
 
