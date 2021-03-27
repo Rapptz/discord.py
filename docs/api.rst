@@ -2808,7 +2808,7 @@ the user of the library.
 .. note::
 
     Nearly all classes here have :ref:`py:slots` defined which means that it is
-    impossible to have dynamic attributes to the data classes.
+    impossible to add dynamic attributes to the data classes.
 
 
 ClientUser
