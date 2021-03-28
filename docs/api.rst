@@ -200,7 +200,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_disconnect()
 
-    Called when the client has disconnected from Discord, or a connection attempt to Discord has failed. 
+    Called when the client has disconnected from Discord, or a connection attempt to Discord has failed.
     This could happen either through the internet being disconnected, explicit calls to logout,
     or Discord terminating the connection one way or the other.
 
@@ -281,6 +281,25 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         exception.
     :param kwargs: The keyword arguments for the event that raised the
         exception.
+
+    .. function:: on_decompressed_raw_receive(msg)
+
+    Called whenever a message is received from the WebSocket and decompressed,
+    but before any further processing has been done to the message. This event
+    is always dispatched when the gateway receives a message. Moreover, no
+    additional processing other than handling decompression is performed.
+
+    This event is mainly useful for debugging and testing purposes.
+
+    .. note::
+
+        This event like the on_socket_raw_receive is only triggered by the
+        client websocket. Voice Websockets will not trigger this event.
+
+    :param msg: The message passed in from the WebSocket library.
+                Could be :class:`bytes` for a binary message or :class:`str`
+                for a regular message.
+    :type msg: Union[:class:`bytes`, :class:`str`]
 
 .. function:: on_socket_raw_receive(msg)
 
@@ -512,7 +531,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
     This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
-    
+
     .. note::
 
         Consider using :func:`on_raw_reaction_remove` if you need this and do not want
@@ -1148,7 +1167,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
     .. attribute:: guild_discovery_grace_period_initial_warning
-    
+
         The system message denoting that the guild has failed to meet the Server
         Discovery requirements for one week.
 
@@ -1157,7 +1176,7 @@ of :class:`enum.Enum`.
 
         The system message denoting that the guild has failed to meet the Server
         Discovery requirements for 3 weeks in a row.
-    
+
         .. versionadded:: 1.7
 
 .. class:: ActivityType
