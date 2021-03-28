@@ -509,10 +509,7 @@ def remove_markdown(text, *, ignore_links=True):
 
     def replacement(match):
         groupdict = match.groupdict()
-        is_url = groupdict.get('url')
-        if is_url:
-            return is_url
-        return ''
+        return groupdict.get('url', '')
 
     regex = _MARKDOWN_STOCK_REGEX
     if ignore_links:
