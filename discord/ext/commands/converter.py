@@ -677,7 +677,7 @@ class clean_content(Converter):
     escape_markdown: :class:`bool`
         Whether to also escape special markdown characters.
     remove_markdown: :class:`bool`
-        Whether to also escape special markdown characters. This option is not supported with ``escape_markdown``
+        Whether to also remove special markdown characters. This option is not supported with ``escape_markdown``
         
         .. versionadded:: 1.7
     """
