@@ -14,8 +14,7 @@ The example uses cogs to organize the code
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix='?',
-                   description=description, intents=intents)
+bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
 
 # This defines a class that contains commands in a "Miscellaneous" category.
