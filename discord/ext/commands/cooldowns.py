@@ -66,6 +66,9 @@ class BucketType(Enum):
             # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
             return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id
 
+    def __call__(self, msg):
+        return self.get_key(msg)
+
 
 class Cooldown:
     __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
@@ -78,8 +81,8 @@ class Cooldown:
         self._tokens = self.rate
         self._last = 0.0
 
-        if not isinstance(self.type, BucketType):
-            raise TypeError('Cooldown type must be a BucketType')
+        if not callable(self.type):
+            raise TypeError('Cooldown type must be a BucketType or callable')
 
     def get_tokens(self, current=None):
         if not current:
@@ -151,7 +154,7 @@ class CooldownMapping:
         return cls(Cooldown(rate, per, type))
 
     def _bucket_key(self, msg):
-        return self._cooldown.type.get_key(msg)
+        return self._cooldown.type(msg)
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used
