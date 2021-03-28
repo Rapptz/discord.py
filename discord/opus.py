@@ -37,7 +37,7 @@ import traceback
 import time
 
 from .errors import DiscordException
-from .listener import RawData
+from .sink import RawData
 
 log = logging.getLogger(__name__)
 
