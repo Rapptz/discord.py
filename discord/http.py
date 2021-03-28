@@ -929,6 +929,114 @@ class HTTPClient:
         }
         return self.request(r, json=payload)
 
+    # Interaction related
+
+    def get_global_application_commands(self, application_id):
+        r = Route('GET', '/applications/{application_id}/commands', application_id=application_id)
+        return self.request(r)
+
+    def create_global_application_command(self, application_id, *, name, description, options=None):
+        payload = {
+            'name' : name,
+            'description' : description,
+        }
+        if options != None:
+            payload['options'] = options
+        r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
+        return self.request(r, json=payload)
+
+    def get_global_application_command(self, application_id, command_id):
+        r = Route('GET', '/applications/{application_id}/commands/{command_id}',
+                  application_id=application_id, command_id=command_id)
+        return self.request(r)
+
+    def edit_global_application_command(self, application_id, command_id, **payload):
+        r = Route('PATCH', '/applications/{application_id}/commands/{command_id}',
+                  application_id=application_id, command_id=command_id)
+        return self.request(r, json=payload)
+
+    def delete_global_application_command(self, application_id, command_id):
+        r = Route('DELETE', '/applications/{application_id}/commands/{command_id}',
+                  application_id=application_id, command_id=command_id)
+        return self.request(r)
+
+    def get_guild_application_commands(self, application_id, guild_id):
+        r = Route('GET', '/applications/{application_id}/guilds/{guild_id}/commands',
+                  application_id=application_id, guild_id=guild_id)
+        return self.request(r)
+
+    def create_guild_application_command(self, application_id, guild_id, name, description, options=None):
+        payload = {
+            'name' : name,
+            'description' : description,
+        }
+        if options != None:
+            payload['options'] = options
+        r = Route('POST', '/applications/{application_id}/guilds/{guild_id}/commands',
+                  application_id=application_id, guild_id=guild_id)
+        return self.request(r, json=payload)
+
+    def get_guild_application_command(self, application_id, guild_id, command_id):
+        r = Route('GET', '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
+                  application_id=application_id, guild_id=guild_id, command_id=command_id)
+        return self.request(r)
+
+    def edit_guild_application_command(self, application_id, guild_id, command_id, **payload):
+        r = Route('PATCH', '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
+                  application_id=application_id, guild_id=guild_id, command_id=command_id)
+        return self.request(r, json=payload)
+
+    def delete_guild_application_command(self, application_id, guild_id, command_id):
+        r = Route('DELETE', '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
+                  application_id=application_id, guild_id=guild_id, command_id=command_id)
+        return self.request(r)
+
+    def create_interaction_response(self, interaction_id, interaction_token, response):
+        r = Route('POST', '/interactions/{interaction_id}/{interaction_token}/callback',
+                  interaction_id=interaction_id, interaction_token=interaction_token)
+        return self.request(r, json=response)
+
+    def edit_interaction_response(self, application_id, interaction_token, **payload):
+        r = Route('PATCH', '/webhooks/{application_id}/{interaction_token}/messages/@original',
+                  application_id=application_id, interaction_token=interaction_token)
+        return self.request(r, json=payload)
+
+    def delete_interaction_response(self, application_id, interaction_token):
+        r = Route('DELETE', '/webhooks/{application_id}/{interaction_token}/messages/@original',
+                  application_id=application_id, interaction_token=interaction_token)
+        return self.request(r)
+
+    def create_followup_message(self, application_id, interaction_token, *, file=None, files=None, **payload):
+        r = Route('POST', '/webhooks/{application_id}/{interaction_token}',
+                  application_id=application_id, interaction_token=interaction_token)
+
+        if (file != None or files != None):
+            form = aiohttp.FormData()
+            form.add_field('payload_json', utils.to_json(payload))
+            if file != None:
+                if files is None:
+                    files = []
+                files.append(file)
+            if len(files) == 1:
+                file = files[0]
+                form.add_field('file', file.fp, filename=file.filename, content_type='application/octet-stream')
+            else:
+                for index, file in enumerate(files):
+                    form.add_field('file%s' % index, file.fp, filename=file.filename, content_type='application/octet-stream')
+            return self.request(r, data=form, files=files)
+        else:
+            return self.request(r, json=payload)
+
+    def edit_followup_message(self, application_id, interaction_token, message_id, **payload):
+        r = Route('PATCH', '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
+                  application_id=application_id, interaction_token=interaction_token, message_id=message_id)
+        return self.request(r, json=payload)
+
+    def delete_followup_message(self, application_id, interaction_token, message_id):
+        r = Route('DELETE', '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
+                  application_id=application_id, interaction_token=interaction_token, message_id=message_id)
+        return self.request(r)
+
     # Misc
 
     def application_info(self):

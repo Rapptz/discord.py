@@ -54,6 +54,7 @@ __all__ = (
     'ExpireBehavior',
     'StickerType',
     'PermissionOverwriteType',
+    'InteractionType',
 )
 
 def _create_value_cls(name):
@@ -462,6 +463,27 @@ class StickerType(Enum):
 class PermissionOverwriteType(Enum):
     role = 0
     member = 1
+
+class InteractionType(Enum):
+    ping = 1
+    application_command = 2
+
+class InteractionResponseType(Enum):
+    pong = 1
+    acknowledge = 2
+    channel_message = 3
+    channel_message_with_source = 4
+    deferred_channel_message_with_source = 5
+
+class ApplicationCommandOptionType(Enum):
+    sub_command = 1
+    sub_command_group = 2
+    string = 3
+    integer = 4
+    boolean = 5
+    user = 6
+    channel = 7
+    role = 8
 
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.

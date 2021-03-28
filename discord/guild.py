@@ -45,6 +45,8 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
+from .command import is_valid_name as is_valid_command_name
+from .command import is_valid_description as is_valid_command_description
 
 
 BanEntry = namedtuple('BanEntry', 'reason user')
@@ -172,7 +174,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', 'discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id')
+                 '_public_updates_channel_id', '_commands')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -185,6 +187,7 @@ class Guild(Hashable):
     def __init__(self, *, data, state):
         self._channels = {}
         self._members = {}
+        self._commands = {}
         self._voice_states = {}
         self._state = state
         self._from_data(data)
@@ -203,6 +206,12 @@ class Guild(Hashable):
 
     def _remove_member(self, member):
         self._members.pop(member.id, None)
+
+    def _add_command(self, command):
+        self._commands[command.id] = command
+
+    def _remove_command(self, command):
+        self._commands.pop(command.id, None)
 
     def __str__(self):
         return self.name
@@ -509,6 +518,26 @@ class Guild(Hashable):
     def filesize_limit(self):
         """:class:`int`: The maximum number of bytes files can have when uploaded to this guild."""
         return self._PREMIUM_GUILD_LIMITS[self.premium_tier].filesize
+
+    @property
+    def application_commands(self):
+        """List[:class:`ApplicationCommand`]: A list of commands that belong to this guild."""
+        return list(self._commands.values())
+
+    def get_application_command(self, command_id):
+        """Returns an :class:`ApplicationCommand` with the given ID.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command.
+        
+        Returns
+        --------
+        Optional[:class:`ApplicationCommand`
+            The command or ``None`` if not found.
+        """
+        return self._commands.get(command_id)
 
     @property
     def members(self):
@@ -1000,6 +1029,49 @@ class Guild(Hashable):
 
     create_category_channel = create_category
 
+    async def create_application_command(self, *, name, description, options=None):
+        """|coro|
+        
+        Create a new :class:`.ApplicationCommand` for this guild.
+
+        If an :class:`.ApplicationCommand` with the same name already
+        exists for this guild , it will be overwritten by this one.
+
+        Parameters
+        ------------
+        name: :class:`str`
+            The 1-32 character name of the command. It may only consist of letters
+            and the dash '-' symbol.
+        description: :class:`str`
+            The 1-100 character description of this command.
+        options: List[:class:`.ApplicationCommandOption`]
+            A list of options for this command. Can be set to None to not include any options.
+
+        Raises
+        --------
+        :exc:`.InvalidArgument`
+            One of the arguments is invalid.
+        :exc:`.HTTPException`
+            Creating the command failed.
+
+        Returns
+        ---------
+        :class:`.ApplicationCommand`
+            The global command created.
+
+        """
+        if not is_valid_command_name(name):
+            raise InvalidArgument(f"The name '{name}' is not valid.")
+        if not is_valid_command_description(description):
+            raise InvalidArgument(f"The description '{description}' is not valid.")
+        if options is None:
+            options = []
+        options = [option.to_dict() for option in options]
+        data = await self._state.http.create_guild_application_command(self._state.application_id,
+                                                                       self.id, name=name, description=description,
+                                                                       options=options)
+        return self._state._store_command(data)
+
     async def leave(self):
         """|coro|
 
@@ -1259,6 +1331,52 @@ class Guild(Hashable):
             return channel
 
         return [convert(d) for d in data]
+
+    async def fetch_application_commands(self):
+        """|coro|
+
+        Retrieves a list of :class:`.ApplicationCommand` for this guild.
+
+        Raises
+        --------
+        :exc:`.HTTPException`
+            Retrieving the commands failed.
+
+        Returns
+        ---------
+        List[:class:`.ApplicationCommand`]
+            A list of the commands for this guild.
+
+        """
+        data = await self._state.http.get_guild_application_commands(self._state.application_id, self.id)
+        return [self._state._store_command(command) for command in data]
+
+    async def fetch_application_command(self, command_id):
+        """|coro|
+
+        Retrieve an :class:`.ApplicationCommand` for this guild.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command.
+
+        Raises
+        -------
+        exc:`.HTTPException`
+            Retrieving the command failed.
+        exc:`.NotFound`
+            The given ID does not correspond to a command.
+        
+        Returns
+        --------
+        :class:`.ApplicationCommand`
+            The command with the given ID.
+
+        """
+        data = await self._state.http.get_guild_application_command(self._state.application_id,
+                                                                    self.id, command_id)
+        return self._state._store_command(data)
 
     def fetch_members(self, *, limit=1000, after=None):
         """|coro|

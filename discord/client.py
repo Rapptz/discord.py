@@ -29,6 +29,7 @@ import logging
 import signal
 import sys
 import traceback
+import re
 
 import aiohttp
 
@@ -53,6 +54,8 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
+from .command import is_valid_name as is_valid_command_name
+from .command import is_valid_description as is_valid_command_description
 
 log = logging.getLogger(__name__)
 
@@ -1299,9 +1302,130 @@ class Client:
         invite_id = utils.resolve_invite(invite)
         await self.http.delete_invite(invite_id)
 
+    # Command related methods
+
+    async def fetch_global_commands(self):
+        """|coro|
+
+        Retrieves a list of global :class:`.ApplicationCommand` for
+        this Discord application.
+
+        Raises
+        --------
+        :exc:`.HTTPException`
+            Retrieving the commands failed.
+
+        Returns
+        ---------
+        List[:class:`.ApplicationCommand`]
+            A list of the global commands for this Discord application.
+        """
+        data = await self.http.get_global_application_commands(self._connection.application_id)
+        return [self._connection._store_command(command) for command in data]
+
+    @property
+    def application_commands(self):
+        """List[:class:`.ApplicationCommand`] A list of all commands (global
+        and guild specific) for this application. Note that this list may not
+        be up to date due to discord not sending command information in the
+        Ready payload.
+
+        """
+        return self._connection.commands
+
+    async def create_global_command(self, *, name, description, options=None):
+        """|coro|
+        
+        Create a new global :class:`.ApplicationCommand` for this application.
+
+        If a global :class:`.ApplicationCommand` with the same name
+        already exists, it will be overwritten by this one.
+
+        Parameters
+        ------------
+        name: :class:`str`
+            The 1-32 character name of the command. It may only consist of letters
+            and the dash '-' symbol.
+        description: :class:`str`
+            The 1-100 character description of this command.
+        options: List[:class:`.ApplicationCommandOption`]
+            A list of options for this command. Can be set to None to not include any options.
+
+        Raises
+        --------
+        :exc:`.InvalidArgument`
+            One of the arguments is invalid.
+        :exc:`.HTTPException`
+            Creating the command failed.
+
+        Returns
+        ---------
+        :class:`.ApplicationCommand`
+            The global command created.
+
+        """
+        if not is_valid_command_name(name):
+            raise InvalidArgument(f"The name '{name}' is not valid.")
+        if not is_valid_command_description(description):
+            raise InvalidArgument(f"The description '{description}' is not valid.")
+        if options is None:
+            options = []
+        options = [option.to_dict() for option in options]
+        data = await self.http.create_global_application_command(self._connection.application_id,
+                                                                 name=name, description=description,
+                                                                 options=options)
+        return self._connection._store_command(data)
+
+    async def fetch_global_command(self, command_id):
+        """|coro|
+
+        Retrieve a global :class:`.ApplicationCommand` for this Discord application.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command.
+
+        Raises
+        -------
+        exc:`.HTTPException`
+            Retrieving the command failed.
+        exc:`.NotFound`
+            The given ID does not correspond to a command.
+        
+        Returns
+        --------
+        :class:`.ApplicationCommand`
+            The command with the given ID.
+
+        """
+        data = await self.http.get_global_application_command(self._connection.application_id, command_id)
+        return self._connection._store_command(data)
+
+    def get_application_command(self, command_id):
+        """Retrieve a :class:`ApplicationCommand` from the internal state.
+
+        Note that the internal state might not necessarily contain all
+        commands, as discord does not send command information in the
+        ready payload.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command.
+        
+        Returns
+        --------
+        Optional[:class:`.ApplicationCommand`]
+            The command with the given ID, if it is in the internal state.
+
+        """
+        return self._connection._get_command(command_id)
+
     # Miscellaneous stuff
 
     async def fetch_widget(self, guild_id):
+
         """|coro|
 
         Gets a :class:`.Widget` from a guild ID.

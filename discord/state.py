@@ -54,6 +54,8 @@ from . import utils
 from .flags import Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .command import ApplicationCommand
+from .interaction import Interaction
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -118,6 +120,7 @@ class ConnectionState:
         self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
+        self.application_id = None
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -191,6 +194,8 @@ class ConnectionState:
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
                 parsers[attr[6:].upper()] = func
+
+        self._commands = {}
 
         self.clear()
 
@@ -319,6 +324,33 @@ class ConnectionState:
 
     def get_emoji(self, emoji_id):
         return self._emojis.get(emoji_id)
+
+    @property
+    def commands(self):
+        return list(self._commands.values())
+
+    def _add_command(self, command):
+        self._commands[command.id] = command
+        if isinstance(command.guild, Guild):
+            command.guild._add_command(command)
+
+    def _get_command(self, command_id):
+        return self._commands.get(command_id)
+
+    def _store_command(self, data):
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        command = self._get_command(utils._get_as_snowflake(data, 'id'))
+        if command is None:
+            command = ApplicationCommand(state=self, guild=guild, data=data)
+            self._add_command(command)
+        else:
+            command._update(guild=guild, data=data)
+        return command
+
+    def _remove_command(self, command):
+        self._commands.pop(command.id, None)
+        if isinstance(command.guild, Guild):
+            command.guild._remove_command(command)
 
     @property
     def private_channels(self):
@@ -462,6 +494,7 @@ class ConnectionState:
         self._ready_state = asyncio.Queue()
         self.clear()
         self.user = user = ClientUser(state=self, data=data['user'])
+        self.application_id = utils._get_as_snowflake(data['application'], 'id')
         self._users[user.id] = user
 
         for guild_data in data['guilds']:
@@ -1082,6 +1115,28 @@ class ConnectionState:
             pass
         else:
             self.dispatch('relationship_remove', old)
+
+    def parse_application_command_create(self, data):
+        command = self._store_command(data)
+        self.dispatch('application_command_create', command)
+
+    def parse_application_command_update(self, data):
+        old_command = self._get_command(utils._get_as_snowflake(data, 'id')).copy()
+        command = self._store_command(data)
+        self.dispatch('application_command_update', old_command, command)
+
+    def parse_application_command_delete(self, data):
+        command = self._store_command(data)
+        self.dispatch('application_command_delete', command)
+        self._remove_command(command)
+        
+    def parse_interaction_create(self, data):
+        if 'channel_id' in data:
+            channel, guild = self._get_guild_channel(data)
+        else:
+            channel = guild = None
+        interaction = Interaction(state=self, guild=guild, channel=channel, data=data)
+        self.dispatch('interaction', interaction)
 
     def _get_reaction_user(self, channel, user_id):
         if isinstance(channel, TextChannel):
