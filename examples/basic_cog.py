@@ -38,7 +38,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # This lets us access the bot parameter throughout our methods.
         self.bot = bot
         # You can also add other attributes to the class.
-        self.ratings = {}
+        self.afk = {}
 
     # Cogs also have the capability to define checks that apply to every command in the Cog
     # They work similarly to regular checks elsewhere in the framework.
@@ -51,49 +51,65 @@ class Miscellaneous(commands.Cog, name='Misc'):
     # instead of the bot.command decorator.
     # They must also pass a `self` parameter since it's within a class.
     @commands.command()
-    async def add(self, ctx, left: int, right: int):
+    async def hello(self, ctx):
         """Adds two numbers together"""
-        await ctx.send(left + right)
-
-    # A  method for getting the rating of a username.
-    def get_rating(self, name):
-        # We check the `self.ratings` dict to see if the member has a rating.
-        rating = self.ratings.get(name)
-        # We can now check if a rating exists, if not we generate a new one.
-        if not rating:
-            rating = random.randint(1, 100)
-            self.ratings[name] = rating
-        return rating
+        await ctx.send("Hello am I an example bot!")
 
     # A command group within a Cog.
     # The `invoke_without_command` flag for the group allows us to use the parent of the group as a command.
     @commands.group(invoke_without_command=True)
-    async def rate(self, ctx):
-        """Let the bot rate you.
-        Generate a random rating between 1 and 100.
+    async def afk(self, ctx, *, reason: str):
         """
-        # Thie command uses the random stdlib to generate a number
-        # We use teh class method `get_rating`
-        rating = self.get_rating(ctx.author.name)
-        await ctx.send(f"{ctx.author.mention} is `{rating}%` cool.")
+        Set your afk status
+        """
+        u_id = ctx.author.id
+        # Simply check if they exist in our afk dictionary aldready.
+        # If they exist then tell them they are afk, or let them set a new afk status.
+        rating = self.afk.get(u_id)
+        if not rating:
+            self.afk[u_id] = reason
+            await ctx.send(f"{ctx.author.mention} I have set your afk status as `{reason}`.")
+        else:
+            await ctx.send(f"{ctx.author.mdention} you are aldready afk.")
 
     # Subcommand for the group
-    @rate.command(name='user')
+    @afk.command(name='user')
     async def _user(self, ctx, *, user: discord.User = None):
-        """Rate another user"""
+        """Check a user's afk status"""
         if not user:
-            return await ctx.send("I need a user to rate.")
-        rating = self.get_rating(user.name)
-        await ctx.send(f'I have given {user.mention} a rating of `{rating}%`.')
+            return await ctx.send("I need a user to check the afk status")
+        afk = self.afk.get(user.id)
+        if afk:
+            return await ctx.send(f"{user.name} is afk with reason `{afk}`")
+        return await ctx.send(f'{user.name} is currently not afk')
 
     # Listening to events within a cog requires the `commands.Cog.listener` decorator.
     # Note that `self` has to be passed for these as well.
     @commands.Cog.listener()
-    async def on_member_join(self, member):
-        guild = member.guild
-        if guild.system_channel is not None:
-            to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
-            await guild.system_channel.send(to_send)
+    async def on_message(self, message):
+        # Don't want to reply to bots
+        if message.author.bot:
+            return
+        # Ensure that the message wasn't the afk command
+        ctx = await self.bot.get_context(message)
+        if ctx.invoked_with == "afk":
+            return
+
+        # If an afk user has sent a message, remove their afk
+        m_id = message.author.id
+        afk_status = self.afk.get(m_id)
+        if afk_status:
+            await message.channel.send(f"Welcome back {message.author.mention}! I have removed your afk status.")
+            self.afk.pop(m_id)
+            return
+
+        # If an afk user is mentioned in a message, let the author of the message know they are afk
+        mentions = [user.id for user in message.mentions]
+        common = [afk_user for afk_user in self.afk.keys()
+                  if afk_user in mentions]
+        if len(common) != 0:
+            akf_users = ",".join(str(self.bot.get_user(c)) for c in common)
+            await message.channel.send(f"{akf_users} {'is' if len(common) == 1 else 'are'} afk.")
 
 
 # Cogs have to be explicitly added.
