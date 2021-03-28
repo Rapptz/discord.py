@@ -119,7 +119,7 @@ class Colour:
         return cls(0)
 
     @classmethod
-    def random(cls):
+    def random(cls, *, seed=None):
         """A factory method that returns a :class:`Colour` with a random hue.
 
         .. note::
@@ -128,8 +128,16 @@ class Colour:
             with maxed out saturation and value.
 
         .. versionadded:: 1.6
+
+        Parameters
+        ------------
+        seed: Optional[Union[:class:`int`, :class:`str`, :class:`float`, :class:`bytes`, :class:`bytearray`]]
+            The seed to initialize the RNG with. If ``None`` is passed the default RNG is used. 
+
+            .. versionadded:: 1.7
         """
-        return cls.from_hsv(random.random(), 1, 1)
+        rand = random if seed is None else random.Random(seed)
+        return cls.from_hsv(rand.random(), 1, 1)
 
     @classmethod
     def teal(cls):
