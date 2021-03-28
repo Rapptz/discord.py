@@ -52,7 +52,7 @@ from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
-from .listener import Sink, RawData
+from .sink import Sink, RawData
 
 
 try:
