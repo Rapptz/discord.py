@@ -808,9 +808,9 @@ class Message(Hashable):
 
         .. note::
 
-            This *does not* escape markdown. If you want to escape
-            markdown then use :func:`utils.escape_markdown` along
-            with this function.
+            This *does not* affect markdown. If you want to escape
+            or remove markdown then use :func:`utils.escape_markdown` or :func:`utils.remove_markdown` 
+            respectively, along with this function.
         """
 
         transformations = {
