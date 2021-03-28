@@ -51,6 +51,7 @@ from . import utils
 from .flags import Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .interactions import Interaction
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -585,6 +586,10 @@ class ConnectionState:
             else:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
+
+    def parse_interaction_create(self, data):
+        interaction = Interaction(data=data, state=self)
+        self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data):
         guild_id = utils._get_as_snowflake(data, 'guild_id')

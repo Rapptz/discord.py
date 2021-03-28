@@ -418,6 +418,10 @@ class StickerType(Enum):
     apng = 2
     lottie = 3
 
+class InteractionType(Enum):
+    ping = 1
+    application_command = 2
+
 def try_enum(cls, val):
     """A function that tries to turn the value into enum ``cls``.
 
