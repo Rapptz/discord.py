@@ -1961,6 +1961,9 @@ def cooldown(rate, per, type=BucketType.default):
         The amount of seconds to wait for a cooldown when it's been triggered.
     type: Union[:class:`.BucketType`, Callable[[:class:`.Message`], Any]]
         The type of cooldown to have. If callable, should return a key for the mapping.
+        
+        .. versionchanged:: 1.7
+            Callables are now supported for custom bucket types.
     """
 
     def decorator(func):
