@@ -499,7 +499,12 @@ def remove_markdown(text, *, ignore_links=True):
     --------
     :class:`str`
         The text with the markdown special characters removed.
+    
     .. versionadded:: 1.7
+    
+    .. note::
+            This function is not markdown aware and may remove meaning from the original text. For example,
+            if the input contains ``10 * 5`` then it will be converted into ``10  5``.
     """
 
     def replacement(match):
