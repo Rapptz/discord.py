@@ -113,6 +113,7 @@ class ConnectionState:
         self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
+        self.application_id = utils._get_as_snowflake(options, 'application_id')
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -451,6 +452,14 @@ class ConnectionState:
         self.clear()
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
+
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
@@ -1152,6 +1161,14 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
+
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
