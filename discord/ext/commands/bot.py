@@ -46,7 +46,7 @@ def when_mentioned(bot, msg):
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
-    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id, bot.user.mention + '  ']
+    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id, bot.user.mention + '  '] #2 space versions as users may add 1 by themselves
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
