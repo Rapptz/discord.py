@@ -321,7 +321,7 @@ class HelpCommand:
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
         self.context = None
-        self._command_impl = None
+        self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self):
         obj = self.__class__(*self.__original_args__, **self.__original_kwargs__)
@@ -336,7 +336,6 @@ class HelpCommand:
     def _remove_from_bot(self, bot):
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
-        self._command_impl = None
 
     def add_check(self, func):
         """
@@ -350,13 +349,7 @@ class HelpCommand:
             The function that will be used as a check.
         """
 
-        if self._command_impl is not None:
-            self._command_impl.add_check(func)
-        else:
-            try:
-                self.command_attrs["checks"].append(func)
-            except KeyError:
-                self.command_attrs["checks"] = [func]
+        self._command_impl.add_check(func)
 
     def remove_check(self, func):
         """
@@ -373,13 +366,7 @@ class HelpCommand:
             The function to remove from the checks.
         """
 
-        if self._command_impl is not None:
-            self._command_impl.remove_check(func)
-        else:
-            try:
-                self.command_attrs["checks"].remove(func)
-            except (KeyError, ValueError):
-                pass
+        self._command_impl.remove_check(func)
 
     def get_bot_mapping(self):
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
