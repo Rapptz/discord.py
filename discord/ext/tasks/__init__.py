@@ -138,8 +138,16 @@ class Loop:
         if obj is None:
             return self
 
-        copy = Loop(self.coro, seconds=self._seconds, hours=self._hours, minutes=self._minutes,
-                               count=self._count, time=self._time, reconnect=self.reconnect, loop=self.loop)
+        copy = Loop(
+            self.coro, 
+            seconds=self._seconds, 
+            hours=self._hours, 
+            minutes=self._minutes,
+            count=self._count, 
+            time=self._time, 
+            reconnect=self.reconnect, 
+            loop=self.loop,
+        )
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
@@ -573,7 +581,7 @@ class Loop:
                 self._prepare_time_index(now=self._next_iteration)
 
 
-def loop(*, seconds=0.0, minutes=0.0, hours=0.0, count=None, time=None, reconnect=True, loop=None):
+def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
@@ -587,13 +595,16 @@ def loop(*, seconds=0.0, minutes=0.0, hours=0.0, count=None, time=None, reconnec
         The number of hours between every iteration.
     time: Union[:class:`datetime.time`, Sequence[:class:`datetime.time`]]
         The exact times to run this loop at. Either a non-empty list or a single
-        value of :class:`datetime.time` should be passed.
+        value of :class:`datetime.time` should be passed. Timezones are supported.
+        If no timezone is given for the times, it is assumed to represent UTC time. 
+
         This cannot be used in conjunction with the relative time parameters.
 
-        .. versionadded:: 1.7
         .. note::
 
             Duplicate times will be ignored, and only run once.
+
+        .. versionadded:: 1.7
 
     count: Optional[:class:`int`]
         The number of loops to do, ``None`` if it should be an
