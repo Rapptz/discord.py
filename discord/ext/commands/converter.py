@@ -678,6 +678,8 @@ class clean_content(Converter):
         Whether to also escape special markdown characters.
     remove_markdown: :class:`bool`
         Whether to also escape special markdown characters. This option is not supported with ``escape_markdown``
+        
+        .. versionadded:: 1.7
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False, remove_markdown=False):
         self.fix_channel_mentions = fix_channel_mentions
