@@ -498,8 +498,11 @@ class Loop:
         return datetime.datetime.combine(next_date, next_time)
 
     def _prepare_time_index(self, now=None):
+        # now kwarg should be a datetime.datetime representing the time "now"
+        # to calculate the next time index from
+
         # pre-condition: self._time is set
-        time_now = now or datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
+        time_now = now.timetz() or datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).timetz()
         for idx, time in enumerate(self._time):
             if time >= time_now:
                 self._time_index = idx
