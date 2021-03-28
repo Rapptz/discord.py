@@ -59,7 +59,7 @@ from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
 from .raw_models import *
 from .team import *
 from .sticker import Sticker
-from .listener import Sink
+from .sink import Sink, Filters
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
