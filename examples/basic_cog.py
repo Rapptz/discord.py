@@ -18,13 +18,13 @@ bot = commands.Bot(command_prefix='?',
                    description=description, intents=intents)
 
 
-# This defines a class that contains commands in a "Miscellaneous" category
-# The library calls this concept a Cog and they must inherit from `commands.Cog`
-# Cogs are useful for grouping commands and having them share state
-# This class will group commands in a "Misc" category in the default help command
-# The `name` keyword argument passed allows us to set the name of the Cog
-# If a name is not given then it will default to the name of the class
-# Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html
+# This defines a class that contains commands in a "Miscellaneous" category.
+# The library calls this concept a Cog and they must inherit from `commands.Cog`.
+# Cogs are useful for grouping commands and having them share state.
+# This class will group commands in a "Misc" category in the default help command.
+# The `name` keyword argument passed allows us to set the name of the Cog.
+# If a name is not given then it will default to the name of the class.
+# Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html.
 
 
 class Miscellaneous(commands.Cog, name='Misc'):
@@ -40,7 +40,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # You can also add other attributes to the class.
         self.afk = {}
 
-    # Cogs also have the capability to define checks that apply to every command in the Cog
+    # Cogs also have the capability to define checks that apply to every command in the Cog.
     # They work similarly to regular checks elsewhere in the framework.
     # ref: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#checks
     async def cog_check(self, ctx):
