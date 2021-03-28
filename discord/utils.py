@@ -499,6 +499,7 @@ def remove_markdown(text, *, ignore_links=True):
     --------
     :class:`str`
         The text with the markdown special characters removed.
+    .. versionadded:: 1.7
     """
 
     def replacement(match):
