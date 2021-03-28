@@ -484,7 +484,7 @@ _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\
 _MARKDOWN_STOCK_REGEX = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
 
 def remove_markdown(text, *, ignore_links=True):
-    r"""A helper function that removes markdown characters.
+    """A helper function that removes markdown characters.
 
     .. versionadded:: 1.7
     
