@@ -751,6 +751,7 @@ class GuildChannel:
         category: Optional[:class:`abc.Snowflake`]
             The category to move this channel under.
             If ``None`` is given then it moves it out of the category.
+            This parameter is ignored if moving a category channel.
         sync_permissions: :class:`bool`
             Whether to sync the permissions with the category (if given).
         reason: :class:`str`

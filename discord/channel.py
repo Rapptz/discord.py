@@ -823,6 +823,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         await self._edit(options=options, reason=reason)
 
+    @utils.copy_doc(discord.abc.GuildChannel.move)
+    async def move(self, **kwargs):
+        kwargs.pop('category', None)
+        await super().move(**kwargs)
+
     @property
     def channels(self):
         """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
