@@ -85,7 +85,8 @@ in the repository.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is a method for this under :class:`Client` called :meth:`Client.change_presence`.
+You may specify the ``activity`` keyword argument in the :class:`Client` constructor.
+There is also a method for this called :meth:`Client.change_presence`.
 The relevant aspect of this is its ``activity`` keyword argument which takes in an :class:`Activity` object.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
@@ -96,11 +97,11 @@ For memory optimisation purposes, some activities are offered in slimmed down ve
 
 Putting both of these pieces of info together, you get the following: ::
 
-    await client.change_presence(activity=discord.Game(name='my game'))
+    client = discord.Client(activity=discord.Game(name='my game'))
 
     # or, for watching:
     activity = discord.Activity(name='my activity', type=discord.ActivityType.watching)
-    await client.change_presence(activity=activity)
+    client = discord.Client(activity=activity)
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
