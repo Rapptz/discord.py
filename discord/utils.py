@@ -32,7 +32,7 @@ from base64 import b64encode
 from bisect import bisect_left
 import datetime
 import functools
-from inspect import isawaitable as _isawaitable
+from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
 import json
 import re
@@ -109,6 +109,13 @@ def parse_time(timestamp):
     if timestamp:
         return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
+
+def copy_doc(original):
+    def decorator(overriden):
+        overriden.__doc__ = original.__doc__
+        overriden.__signature__ = _signature(original)
+        return overriden
+    return decorator
 
 def deprecated(instead=None):
     def actual_decorator(func):
