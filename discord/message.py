@@ -279,7 +279,7 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
-    fail_if_not_exists: Optional[:class:`bool`]
+    fail_if_not_exists: :class:`bool`
         Whether replying to the referenced message should raise :class:`HTTPException`
         if the message has been deleted or reply without the message reference attached.
 
@@ -327,7 +327,7 @@ class MessageReference:
         ----------
         message: :class:`~discord.Message`
             The message to be converted into a reference.
-        fail_if_not_exists: Optional[:class:`bool`]
+        fail_if_not_exists: :class:`bool`
             Whether replying to the referenced message should raise :class:`HTTPException`
             if the message has been deleted or reply without the message reference attached.
 
@@ -1332,7 +1332,7 @@ class Message(Hashable):
 
         Parameters
         ----------
-        fail_if_not_exists: Optional[:class:`bool`]
+        fail_if_not_exists: :class:`bool`
             Whether replying using the message reference should raise :class:`HTTPException`
             if the message has been deleted or reply without the message reference attached.
 
