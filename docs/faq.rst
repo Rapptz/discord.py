@@ -85,9 +85,15 @@ in the repository.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You may specify the ``activity`` keyword argument in the :class:`Client` constructor.
+The ``activity`` keyword argument may be passed in the :class:`Client` constructor, given an :class:`Activity` object.
+
 There is also a method for this called :meth:`Client.change_presence`.
-The relevant aspect of this is its ``activity`` keyword argument which takes in an :class:`Activity` object.
+
+.. warning::
+
+    It is highly discouraged to use :meth:`Client.change_presence` or API calls in :func:`on_ready` as this event may be called many times while running, not just once.
+
+    Discord has a high chance to completely disconnect you during the ``READY`` or ``GUILD_CREATE`` events (``1006`` close code) and there is nothing you can do to prevent it.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
 For memory optimisation purposes, some activities are offered in slimmed down versions:
