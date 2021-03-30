@@ -803,15 +803,18 @@ class GuildChannel:
             # If we're not there then it's probably due to not being in the category
             pass
 
-        index = 0
+        index = None
         if beginning:
             index = 0
         elif end:
             index = len(channels)
         elif before:
-            index = next((i for i, c in enumerate(channels) if c.id == before.id), 0)
+            index = next((i for i, c in enumerate(channels) if c.id == before.id), None)
         elif after:
-            index = next((i + 1 for i, c in enumerate(channels) if c.id == after.id), len(channels))
+            index = next((i + 1 for i, c in enumerate(channels) if c.id == after.id), None)
+
+        if index is None:
+            raise InvalidArgument('Could not resolve appropriate move position')
 
         channels.insert(max((index + offset), 0), self)
         payload = []
