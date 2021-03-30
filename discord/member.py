@@ -113,7 +113,7 @@ def flatten_user(cls):
                 return general
 
             func = generate_function(attr)
-            utils.copy_doc(func, value)
+            func = utils.copy_doc(value)(func)
             setattr(cls, attr, func)
 
     return cls

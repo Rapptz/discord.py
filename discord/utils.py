@@ -110,9 +110,12 @@ def parse_time(timestamp):
         return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
     return None
 
-def copy_doc(overriden, original):
-    overriden.__doc__ = original.__doc__
-    overriden.__signature__ = _signature(original)
+def copy_doc(original):
+    def decorator(overriden):
+        overriden.__doc__ = original.__doc__
+        overriden.__signature__ = _signature(original)
+        return overriden
+    return decorator
 
 def deprecated(instead=None):
     def actual_decorator(func):
