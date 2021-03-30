@@ -93,7 +93,7 @@ There is also a method for this called :meth:`Client.change_presence`.
 
     It is highly discouraged to use :meth:`Client.change_presence` or API calls in :func:`on_ready` as this event may be called many times while running, not just once.
 
-    Discord has a high chance to completely disconnect you during the ``READY`` or ``GUILD_CREATE`` events (``1006`` close code) and there is nothing you can do to prevent it.
+    There is a high chance of disconnecting if presences are changed right after connecting.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
 For memory optimisation purposes, some activities are offered in slimmed down versions:
