@@ -804,7 +804,7 @@ class Messageable(metaclass=abc.ABCMeta):
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
                                           allowed_mentions=None, reference=None,
-                                          mention_author=None, fail_if_not_exists=None):
+                                          mention_author=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -854,9 +854,7 @@ class Messageable(metaclass=abc.ABCMeta):
             A reference to the :class:`~discord.Message` to which you are replying, this can be created using
             :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
             whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
-            attribute of ``allowed_mentions`` or by setting ``mention_author``. To control whether replying should
-            fail if the referenced message has been deleted set :attr:`~discord.MessageReference.fail_if_not_exists`
-            or ``fail_if_not_exists``.
+            attribute of ``allowed_mentions`` or by setting ``mention_author``.
 
             .. versionadded:: 1.6
 
@@ -864,11 +862,6 @@ class Messageable(metaclass=abc.ABCMeta):
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
-
-        fail_if_not_exists: Optional[:class:`bool`]
-            If set, overrides :attr:`~discord.MessageReference.fail_if_not_exists` attribute of ``reference``.
-
-            .. versionadded:: 1.7
 
         Raises
         --------
@@ -911,12 +904,6 @@ class Messageable(metaclass=abc.ABCMeta):
                 reference = reference.to_message_reference_dict()
             except AttributeError:
                 raise InvalidArgument('reference parameter must be Message or MessageReference') from None
-
-        if fail_if_not_exists is not None:
-            if reference is None:
-                raise InvalidArgument('fail_if_not_exists requires reference parameter to be set') from None
-
-            reference['fail_if_not_exists'] = fail_if_not_exists
 
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')

@@ -299,7 +299,7 @@ class MessageReference:
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id, channel_id, guild_id=None, fail_if_not_exists=None):
+    def __init__(self, *, message_id, channel_id, guild_id=None, fail_if_not_exists=True):
         self._state = None
         self.resolved = None
         self.message_id = message_id
@@ -318,7 +318,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message):
+    def from_message(cls, message, *, fail_if_not_exists=True):
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -327,13 +327,18 @@ class MessageReference:
         ----------
         message: :class:`~discord.Message`
             The message to be converted into a reference.
+        fail_if_not_exists: Optional[:class:`bool`]
+            Whether replying to the referenced message should raise :class:`HTTPException`
+            if the message has been deleted or reply without the message reference attached.
+
+            .. versionadded:: 1.7
 
         Returns
         -------
         :class:`MessageReference`
             A reference to the message.
         """
-        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None))
+        self = cls(message_id=message.id, channel_id=message.channel.id,guild_id=getattr(message.guild, 'id', None), fail_if_not_exists=fail_if_not_exists)
         self._state = message._state
         return self
 
@@ -1320,10 +1325,18 @@ class Message(Hashable):
 
         return await self.channel.send(content, reference=self, **kwargs)
 
-    def to_reference(self):
+    def to_reference(self, *, fail_if_not_exists=True):
         """Creates a :class:`~discord.MessageReference` from the current message.
 
         .. versionadded:: 1.6
+
+        Parameters
+        ----------
+        fail_if_not_exists: Optional[:class:`bool`]
+            Whether replying using the message reference should raise :class:`HTTPException`
+            if the message has been deleted or reply without the message reference attached.
+
+            .. versionadded:: 1.7
 
         Returns
         ---------
@@ -1331,7 +1344,7 @@ class Message(Hashable):
             The reference to this message.
         """
 
-        return MessageReference.from_message(self)
+        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
 
     def to_message_reference_dict(self):
         data = {
