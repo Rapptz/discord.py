@@ -767,6 +767,9 @@ class GuildChannel:
             Moving the channel failed.
         """
 
+        if not kwargs:
+            return
+
         beginning, end = kwargs.get('beginning'), kwargs.get('end')
         before, after = kwargs.get('before'), kwargs.get('after')
         offset = kwargs.get('offset', 0)
