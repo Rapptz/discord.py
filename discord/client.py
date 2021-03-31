@@ -511,10 +511,13 @@ class Client:
         await self.http.static_login(token.strip(), bot=bot)
         self._connection.is_bot = bot
 
+    @utils.deprecated('Client.close')
     async def logout(self):
         """|coro|
 
         Logs out of Discord and closes all connections.
+        
+        .. deprecated:: 1.7
 
         .. note::
 
@@ -675,7 +678,7 @@ class Client:
             try:
                 loop.run_until_complete(start(*args, **kwargs))
             except KeyboardInterrupt:
-                loop.run_until_complete(logout())
+                loop.run_until_complete(close())
                 # cancel all tasks lingering
             finally:
                 loop.close()
