@@ -201,7 +201,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_disconnect()
 
     Called when the client has disconnected from Discord, or a connection attempt to Discord has failed. 
-    This could happen either through the internet being disconnected, explicit calls to logout,
+    This could happen either through the internet being disconnected, explicit calls to close,
     or Discord terminating the connection one way or the other.
 
     This function can be called many times without a corresponding :func:`on_connect` call.
