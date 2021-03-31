@@ -112,7 +112,7 @@ command_bot.py
     @bot.command(name='hello', aliases=['hi'])
     async def hello(ctx: Context):
         '''Replies Hello.'''
-        await ctx.reply('Hello {0.user}!'.format(ctx))
+        await ctx.reply('Hello {0.author}!'.format(ctx))
 
     if __name__ == '__main__':
         # Run the bot.
