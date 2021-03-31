@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import types
 from collections import namedtuple
+from typing import Any, TYPE_CHECKING, Type, TypeVar
 
 __all__ = (
     'Enum',
@@ -90,6 +91,7 @@ class EnumMeta(type):
         attrs['_enum_value_map_'] = value_mapping
         attrs['_enum_member_map_'] = member_mapping
         attrs['_enum_member_names_'] = member_names
+        attrs['_enum_value_cls_'] = value_cls
         actual_cls = super().__new__(cls, name, bases, attrs)
         value_cls._actual_enum_cls_ = actual_cls
         return actual_cls
@@ -133,14 +135,16 @@ class EnumMeta(type):
         except AttributeError:
             return False
 
-class Enum(metaclass=EnumMeta):
-    @classmethod
-    def try_value(cls, value):
-        try:
-            return cls._enum_value_map_[value]
-        except (KeyError, TypeError):
-            return value
-
+if TYPE_CHECKING:
+    from enum import Enum
+else:
+    class Enum(metaclass=EnumMeta):
+        @classmethod
+        def try_value(cls, value):
+            try:
+                return cls._enum_value_map_[value]
+            except (KeyError, TypeError):
+                return value
 
 class ChannelType(Enum):
     text     = 0
@@ -422,13 +426,20 @@ class InteractionType(Enum):
     ping = 1
     application_command = 2
 
-def try_enum(cls, val):
+_T = TypeVar('_T')
+
+def create_unknown_value(cls: Type[_T], val: Any) -> _T:
+    value_cls = cls._enum_value_cls_ # type: ignore
+    name = f'unknown_{val}'
+    return value_cls(name=name, value=val)
+
+def try_enum(cls: Type[_T], val: Any) -> _T:
     """A function that tries to turn the value into enum ``cls``.
 
-    If it fails it returns the value instead.
+    If it fails it returns a proxy invalid value instead.
     """
 
     try:
-        return cls._enum_value_map_[val]
+        return cls._enum_value_map_[val] # type: ignore
     except (KeyError, TypeError, AttributeError):
-        return val
+        return create_unknown_value(cls, val)
