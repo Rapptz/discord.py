@@ -85,9 +85,9 @@ in the repository.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``activity`` keyword argument may be passed in the :class:`Client` constructor, given an :class:`Activity` object.
+The ``activity`` keyword argument may be passed in the :class:`Client` constructor or :meth:`Client.change_presence`, given an :class:`Activity` object.
 
-There is also a method for this called :meth:`Client.change_presence`.
+The constructor may be used for static activities, while :meth:`Client.change_presence` may be used to update the activity at runtime.
 
 .. warning::
 
