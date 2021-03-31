@@ -146,7 +146,7 @@ class Loop:
             seconds=self._seconds, 
             hours=self._hours, 
             minutes=self._minutes,
-            count=self._count, 
+            count=self.count,
             time=self._time, 
             reconnect=self.reconnect, 
             loop=self.loop,
