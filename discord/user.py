@@ -768,6 +768,8 @@ class User(BaseUser, discord.abc.Messageable):
     def relationship(self):
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise.
 
+        .. deprecated:: 1.7
+
         .. note::
 
             This can only be used by non-bot accounts.

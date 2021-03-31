@@ -335,7 +335,6 @@ class Context(discord.abc.Messageable):
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
 
+    @discord.utils.copy_doc(discord.Message.reply)
     async def reply(self, content=None, **kwargs):
         return await self.message.reply(content, **kwargs)
-
-    reply.__doc__ = discord.Message.reply.__doc__

@@ -108,6 +108,7 @@ class BotBase(GroupMixin):
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
+        self.strip_after_prefix = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')
@@ -911,6 +912,9 @@ class BotBase(GroupMixin):
                 # Getting here shouldn't happen
                 raise
 
+        if self.strip_after_prefix:
+            view.skip_ws()
+
         invoker = view.get_word()
         ctx.invoked_with = invoker
         ctx.prefix = invoked_prefix
@@ -1041,6 +1045,12 @@ class Bot(BotBase, discord.Client):
         for the collection. You cannot set both ``owner_id`` and ``owner_ids``.
 
         .. versionadded:: 1.3
+    strip_after_prefix: :class:`bool`
+        Whether to strip whitespace characters after encountering the command
+        prefix. This allows for ``!   hello`` and ``!hello`` to both work if
+        the ``command_prefix`` is set to ``!``. Defaults to ``False``.
+
+        .. versionadded:: 1.7
     """
     pass
 

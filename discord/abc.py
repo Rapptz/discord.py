@@ -708,6 +708,127 @@ class GuildChannel:
         """
         raise NotImplementedError
 
+    async def move(self, **kwargs):
+        """|coro|
+
+        A rich interface to help move a channel relative to other channels.
+
+        If exact position movement is required, :meth:`edit` should be used instead.
+
+        You must have the :attr:`~discord.Permissions.manage_channels` permission to
+        do this.
+
+        .. note::
+
+            Voice channels will always be sorted below text channels.
+            This is a Discord limitation.
+
+        .. versionadded:: 1.7
+
+        Parameters
+        ------------
+        beginning: :class:`bool`
+            Whether to move the channel to the beginning of the
+            channel list (or category if given).
+            This is mutually exclusive with ``end``, ``before``, and ``after``.
+        end: :class:`bool`
+            Whether to move the channel to the end of the
+            channel list (or category if given).
+            This is mutually exclusive with ``beginning``, ``before``, and ``after``.
+        before: :class:`abc.Snowflake`
+            The channel that should be before our current channel.
+            This is mutually exclusive with ``beginning``, ``end``, and ``after``.
+        after: :class:`abc.Snowflake`
+            The channel that should be after our current channel.
+            This is mutually exclusive with ``beginning``, ``end``, and ``before``.
+        offset: :class:`int`
+            The number of channels to offset the move by. For example,
+            an offset of ``2`` with ``beginning=True`` would move
+            it 2 after the beginning. A positive number moves it below
+            while a negative number moves it above. Note that this
+            number is relative and computed after the ``beginning``,
+            ``end``, ``before``, and ``after`` parameters.
+        category: Optional[:class:`abc.Snowflake`]
+            The category to move this channel under.
+            If ``None`` is given then it moves it out of the category.
+            This parameter is ignored if moving a category channel.
+        sync_permissions: :class:`bool`
+            Whether to sync the permissions with the category (if given).
+        reason: :class:`str`
+            The reason for the move.
+
+        Raises
+        -------
+        InvalidArgument
+            An invalid position was given or a bad mix of arguments were passed.
+        Forbidden
+            You do not have permissions to move the channel.
+        HTTPException
+            Moving the channel failed.
+        """
+
+        if not kwargs:
+            return
+
+        beginning, end = kwargs.get('beginning'), kwargs.get('end')
+        before, after = kwargs.get('before'), kwargs.get('after')
+        offset = kwargs.get('offset', 0)
+        if sum(bool(a) for a in (beginning, end, before, after)) > 1:
+            raise InvalidArgument('Only one of [before, after, end, beginning] can be used.')
+
+        bucket = self._sorting_bucket
+        parent_id = kwargs.get('category', ...)
+        if parent_id not in (..., None):
+            parent_id = parent_id.id
+            channels = [
+                ch
+                for ch in self.guild.channels
+                if ch._sorting_bucket == bucket
+                and ch.category_id == parent_id
+            ]
+        else:
+            channels = [
+                ch
+                for ch in self.guild.channels
+                if ch._sorting_bucket == bucket
+                and ch.category_id == self.category_id
+            ]
+
+        channels.sort(key=lambda c: (c.position, c.id))
+
+        try:
+            # Try to remove ourselves from the channel list
+            channels.remove(self)
+        except ValueError:
+            # If we're not there then it's probably due to not being in the category
+            pass
+
+        index = None
+        if beginning:
+            index = 0
+        elif end:
+            index = len(channels)
+        elif before:
+            index = next((i for i, c in enumerate(channels) if c.id == before.id), None)
+        elif after:
+            index = next((i + 1 for i, c in enumerate(channels) if c.id == after.id), None)
+
+        if index is None:
+            raise InvalidArgument('Could not resolve appropriate move position')
+
+        channels.insert(max((index + offset), 0), self)
+        payload = []
+        lock_permissions = kwargs.get('sync_permissions', False)
+        reason = kwargs.get('reason')
+        for index, channel in enumerate(channels):
+            d = { 'id': channel.id, 'position': index }
+            if parent_id is not ... and channel.id == self.id:
+                d.update(parent_id=parent_id, lock_permissions=lock_permissions)
+            payload.append(d)
+
+        await self._state.http.bulk_channel_update(self.guild.id, payload, reason=reason)
+
+
     async def create_invite(self, *, reason=None, **fields):
         """|coro|
 

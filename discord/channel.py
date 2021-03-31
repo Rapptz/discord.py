@@ -141,6 +141,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self):
         return ChannelType.text.value
 
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -148,8 +149,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         denied = Permissions.voice()
         base.value &= ~denied.value
         return base
-
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     @property
     def members(self):
@@ -240,14 +239,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         await self._edit(options, reason=reason)
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'topic': self.topic,
             'nsfw': self.nsfw,
             'rate_limit_per_user': self.slowmode_delay
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def delete_messages(self, messages):
         """|coro|
@@ -651,6 +649,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         """
         return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
 
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -662,15 +661,12 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
-
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'bitrate': self.bitrate,
             'user_limit': self.user_limit
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -784,12 +780,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """:class:`bool`: Checks if the category is NSFW."""
         return self.nsfw
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -827,6 +822,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
 
         await self._edit(options=options, reason=reason)
+
+    @utils.copy_doc(discord.abc.GuildChannel.move)
+    async def move(self, **kwargs):
+        kwargs.pop('category', None)
+        await super().move(**kwargs)
 
     @property
     def channels(self):
@@ -946,6 +946,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.store
 
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -954,18 +955,15 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
-
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
