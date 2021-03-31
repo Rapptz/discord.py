@@ -499,8 +499,22 @@ class Command(_BaseCommand):
                     else:
                         return value
 
-                # if we're  here, then we failed all the converters
+                # if we're here, then we failed all the converters
                 raise BadUnionArgument(param, converter.__args__, errors)
+
+            if hasattr(typing, 'Literal') and origin is typing.Literal:
+                errors = []
+                for literal in converter.__args__:
+                    try:
+                        value = await self._actual_conversion(ctx, type(literal), argument, param)
+                    except CommandError as exc:
+                        errors.append(exc)
+                    else:
+                        if value == literal:
+                            return value
+
+                # if we're here, then we failed to match all the literals
+                raise BadLiteralArgument(param, converter.__args__, errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
