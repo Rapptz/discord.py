@@ -6,11 +6,11 @@ class RoleReactClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.role_message_id = 0  # ID of message that can be reacted to to add role
+        self.role_message_id = 0 # ID of message that can be reacted to to add role
         self.emoji_to_role = {
-            '🔴': 0,  # ID of the role associated with unicode emoji '🔴'
-            '🟡': 0,  # ID of the role associated with unicode emoji '🟡'
-            0: 0, # ID of the role associated with a partial emoji's id.
+            discord.PartialEmoji(name='🔴'): 0, # ID of the role associated with unicode emoji '🔴'
+            discord.PartialEmoji(name='🟡'): 0, # ID of the role associated with unicode emoji '🟡'
+            discord.PartialEmoji(name='indigo', id=0): 0, # ID of the role associated with a partial emoji's id.
         }
 
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
@@ -26,8 +26,7 @@ class RoleReactClient(discord.Client):
 
         try:
             # If it is a unicode emoji, it should use .name, otherwise it should use .id.
-            emoji = payload.emoji.name if payload.emoji.is_unicode_emoji() else payload.emoji.id
-            role_id = self.emoji_to_role[emoji]
+            role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
             return
@@ -57,8 +56,7 @@ class RoleReactClient(discord.Client):
 
         try:
             # If it is a unicode emoji, it should use the name, otherwise it should use the ID.
-            emoji = payload.emoji.name if payload.emoji.is_unicode_emoji() else payload.emoji.id
-            role_id = self.emoji_to_role[emoji]
+            role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
             return
