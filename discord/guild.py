@@ -1261,9 +1261,7 @@ class Guild(Hashable):
         return [convert(d) for d in data]
 
     def fetch_members(self, *, limit=1000, after=None):
-        """|coro|
-
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
         .. note::

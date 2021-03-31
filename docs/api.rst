@@ -40,6 +40,10 @@ Client
 
 .. autoclass:: Client
     :members:
+    :exclude-members: fetch_guilds
+
+    .. automethod:: Client.fetch_guilds
+        :async-for:
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
@@ -2914,7 +2918,10 @@ Guild
 
 .. autoclass:: Guild()
     :members:
-    :exclude-members: audit_logs
+    :exclude-members: fetch_members, audit_logs
+
+    .. automethod:: fetch_members
+        :async-for:
 
     .. automethod:: audit_logs
         :async-for:
