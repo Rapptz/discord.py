@@ -490,6 +490,9 @@ class AutoShardedClient(Client):
             Indicates if you are going AFK. This allows the discord
             client to know how to handle push notifications better
             for you in case you are actually idle and not lying.
+
+            .. deprecated:: 1.7
+
         shard_id: Optional[:class:`int`]
             The shard_id to change the presence to. If not specified
             or ``None``, then it will change the presence of every
