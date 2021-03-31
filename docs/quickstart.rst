@@ -78,90 +78,54 @@ Now you can try playing around with your basic bot.
 A Command Bot
 ---------------
 
-Let's make a bot that supports command-driven functions and walk you through it.
-
-
-Pros
- * Easier to configure command-driven commands.
- * Self-documenting.
-Cons
- * Bulky for light bot applications.
+This is a bot style is geared towards command driven events instead of using if else statements 
+to filter for commands. It adds robust features such as ease of command documentation, command
+aliases, permission checks, and much more.
 
 command_bot.py
 """""""""""""""
 .. code-block:: python3
 
     import discord
-    from discord.ext.commands import Bot, Context
+    from discord.ext import commands
 
-    # This is the symbol that tells the bot a message is a command.
     PREFIX = '$'
 
-    bot = Bot(
+    bot = commands.Bot(
         command_prefix=PREFIX,
         # For info about intents: https://discordpy.readthedocs.io/en/stable/intents.html
         intents=discord.Intents.default(),
         # This makes the commands `$hello` and `$Hello` act as the same command.
-        case_insensitive=True
-        )
+        case_insensitive=True)
 
     @bot.event
     async def on_ready():
         print('Bot logged in as: {0.user}'.format(bot))
 
     @bot.command(name='hello', aliases=['hi'])
-    async def hello(ctx: Context):
-        '''Replies Hello.'''
+    async def hello(ctx: commands.Context):
+        """Replies to the user with a greeting."""
         await ctx.reply('Hello {0.author}!'.format(ctx))
 
-    if __name__ == '__main__':
-        # Run the bot.
-        bot.run('your token here')
+    # Run the bot.
+    bot.run('your token here')
 
-Let's name this file ``command_bot.py``. Make sure not to name it ``discord.py`` as that'll conflict
-with the library.
+Let's walk through the program step by step.
 
-There's a lot going on here, so let's walk you through it step by step.
-
-
-1. The first lines just import the library, if this raises a `ModuleNotFoundError` or `ImportError`
-   then head on over to :ref:`installing` section to properly install.
-
-2. Next, we give the program the prefix we want our commands to begin with.
-
-3. Then, we create an instance of a :class:`Bot`. This bot is our connection to Discord.
-
-4. This bot structure uses the bot extension of discord.py.
-
-5. We use the :meth:`bot.event` decorator to register an event and :meth:`bot.command` for commands.
-   Since this library is asynchronous, we do things in a "callback" style manner.
-
-6. A callback is essentially a function that is called when something happens. In our case,
-   the :func:`on_ready` event is called when the bot has finished logging in and setting things
-   up and the `hello` command is called when the bot has received a command.
-
-7. The docstrings of each command function give descriptions in the help command. This is extremely
+1. The first lines just import the library and commands extension.
+2. Next, we give the program the prefix. This tells the bot what messages to consider as commands.
+3. Then, we create an instance of a Bot using the commands extension. 
+   This acts similar to :class:`Client`.
+5. We use the ``@bot.event`` decorator to register an event and ``@bot.command`` for commands.
+   This is what makes python functions act as commands. By default, if no name is specified, the command
+   name will be the function name. 
+6. The ``hello()`` command will simply reply to your command with a greeting.
+7. The docstrings of each command give descriptions in the help command. This is extremely
    helpful in making your bot more user-friendly.
+8. You will need to type your bot's token in the ``'your token here'`` field. The bot is now complete.
+   If you need help getting your token or creating a bot, look in the :ref:`discord-intro` section.
 
-8. Finally, we run the bot with our login token. If you need help getting your token or creating a bot,
-   look in the :ref:`discord-intro` section.
+This bot executes in the same manner the Minimal Bot does. If you need assistance in running, 
+refer to its documentation on how to run the code.
 
-
-Now that we've made a bot, we have to *run* the bot. Luckily, this is simple since this is just a
-Python script, we can run it directly.
-
-On Windows:
-
-.. code-block:: shell
-
-    $ py -3 example_bot.py
-
-On other systems:
-
-.. code-block:: shell
-
-    $ python3 example_bot.py
-
-Now you can try playing around with your basic bot.
-
-Go ahead and type ``$hello`` in a channel you and your bot are in.
+Once your bot is running, type ``$hello`` in a channel you and your bot are in.
