@@ -799,7 +799,8 @@ class StageChannel(VocalGuildChannel):
 
     @property
     def requests_to_speak(self):
-        return [member for member in self.members if member.voice.requested_to_speak_at]
+        """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
+        return [member for member in self.members if member.voice.requested_to_speak_at is not None]
 
     @property
     def type(self):
