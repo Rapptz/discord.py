@@ -575,10 +575,15 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The channel's preferred audio bitrate in bits per second.
     user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
+    rtc_region: Optional[:class:`VoiceRegion`]
+        The new region for the voice channel's voice communication.
+
+        .. versionadded:: 1.7
     """
 
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
-                 '_state', 'position', '_overwrites', 'category_id')
+                 '_state', 'position', '_overwrites', 'category_id',
+                 'rtc_region')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -589,6 +594,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         attrs = [
             ('id', self.id),
             ('name', self.name),
+            ('rtc_region', self.rtc_region),
             ('position', self.position),
             ('bitrate', self.bitrate),
             ('user_limit', self.user_limit),
@@ -609,7 +615,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     def _update(self, guild, data):
         self.guild = guild
-        self.name = data['name']
+        self.name = data.get('name')
+        self.rtc_region = data['rtc_region']
         self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
@@ -700,6 +707,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The new region for the voice channel's voice communication.
+
+            .. versionadded:: 1.7
 
         Raises
         ------

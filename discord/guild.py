@@ -844,6 +844,11 @@ class Guild(Hashable):
         except KeyError:
             pass
 
+        try:
+            options['rtc_region'] = options.pop('rtc_region')
+        except KeyError:
+            pass
+
         parent_id = category.id if category else None
         return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
                                                permission_overwrites=perms, **options)
