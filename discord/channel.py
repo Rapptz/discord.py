@@ -576,7 +576,8 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
     rtc_region: Optional[:class:`VoiceRegion`]
-        The new region for the voice channel's voice communication.
+        The region for the voice channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection.
 
         .. versionadded:: 1.7
     """
@@ -711,6 +712,7 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
 
             .. versionadded:: 1.7
 
