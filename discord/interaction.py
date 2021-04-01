@@ -425,6 +425,9 @@ class Interaction(Hashable):
         if embed is not None:
             payload['embeds'] = [embed.to_dict()]
 
+        if file is not None:
+            files = [file]
+
         if content is not None:
             payload['content'] = str(content)
 
@@ -440,7 +443,12 @@ class Interaction(Hashable):
         if ephemeral:
             payload['flags'] = 64
 
-        data = await self._state.http.create_followup_message(self._state.application_id, self._token, file=file, files=files, **payload)
+        if files:
+            data = await self._state.http.send_followup_files(self._state.application_id, self._token,
+                                                              files=files, **payload)
+        else:
+            data = await self._state.http.send_followup_message(self._state.application_id, self._token, **payload)
+            
         return InteractionMessage(interaction=self, data=data)
 
     def edit_message(self, message_id, **fields):

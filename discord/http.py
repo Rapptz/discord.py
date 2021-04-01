@@ -1005,26 +1005,24 @@ class HTTPClient:
                   application_id=application_id, interaction_token=interaction_token)
         return self.request(r)
 
-    def create_followup_message(self, application_id, interaction_token, *, file=None, files=None, **payload):
+    def send_followup_message(self, application_id, interaction_token, *, **payload):
+        r = Route('POST', '/webhooks/{application_id}/{interaction_token}',
+                  application_id=application_id, interaction_token=interaction_token)
+        return self.request(r, json=payload)
+
+    def send_followup_files(self, application_id, interaction_token, *, files=None, **payload):
         r = Route('POST', '/webhooks/{application_id}/{interaction_token}',
                   application_id=application_id, interaction_token=interaction_token)
 
-        if file is not None or files is not None:
-            form = aiohttp.FormData()
-            form.add_field('payload_json', utils.to_json(payload))
-            if file is not None:
-                if files is None:
-                    files = []
-                files.append(file)
-            if len(files) == 1:
-                file = files[0]
-                form.add_field('file', file.fp, filename=file.filename, content_type='application/octet-stream')
-            else:
-                for index, file in enumerate(files):
-                    form.add_field('file%s' % index, file.fp, filename=file.filename, content_type='application/octet-stream')
-            return self.request(r, data=form, files=files)
+        form = aiohttp.FormData()
+        form.add_field('payload_json', utils.to_json(payload))
+        if len(files) == 1:
+            file = files[0]
+            form.add_field('file', file.fp, filename=file.filename, content_type='application/octet-stream')
         else:
-            return self.request(r, json=payload)
+            for index, file in enumerate(files):
+                form.add_field('file%s' % index, file.fp, filename=file.filename, content_type='application/octet-stream')
+        return self.request(r, data=form, files=files)
 
     def edit_followup_message(self, application_id, interaction_token, message_id, **payload):
         r = Route('PATCH', '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
