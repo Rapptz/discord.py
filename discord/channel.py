@@ -733,7 +733,7 @@ class VoiceChannel(VocalGuildChannel):
         await self._edit(options, reason=reason)
 
 class StageChannel(VocalGuildChannel):
-    """Represents a Discord guild stage voice channel.
+    """Represents a Discord guild stage channel.
 
     .. versionadded:: 1.7
 
@@ -764,7 +764,7 @@ class StageChannel(VocalGuildChannel):
     id: :class:`int`
         The channel ID.
     topic: Optional[:class:`str`]
-        The channel's topic. ``None`` if it doesn't exist.
+        The channel's topic. ``None`` if it isn't set.
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -773,9 +773,9 @@ class StageChannel(VocalGuildChannel):
     bitrate: :class:`int`
         The channel's preferred audio bitrate in bits per second.
     user_limit: :class:`int`
-        The channel's limit for number of members that can be in a voice channel.
+        The channel's limit for number of members that can be in a stage channel.
     rtc_region: Optional[:class:`VoiceRegion`]
-        The region for the voice channel's voice communication.
+        The region for the stage channel's voice communication.
         A value of ``None`` indicates automatic voice region detection.
     """
     __slots__ = ('topic',)
@@ -841,7 +841,7 @@ class StageChannel(VocalGuildChannel):
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
-            The new region for the voice channel's voice communication.
+            The new region for the stage channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
 
         Raises
