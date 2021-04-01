@@ -1,16 +1,16 @@
-"""Uses a messages to add and remove roles through reactions."""
+# This example requires the 'members' privileged intents
 
 import discord
 
-class RoleReactClient(discord.Client):
+class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.role_message_id = 0 # ID of message that can be reacted to to add role
+        self.role_message_id = 0 # ID of the message that can be reacted to to add/remove a role
         self.emoji_to_role = {
             discord.PartialEmoji(name='🔴'): 0, # ID of the role associated with unicode emoji '🔴'
             discord.PartialEmoji(name='🟡'): 0, # ID of the role associated with unicode emoji '🟡'
-            discord.PartialEmoji(name='indigo', id=0): 0, # ID of the role associated with a partial emoji's id.
+            discord.PartialEmoji(name='green', id=0): 0, # ID of the role associated with a partial emoji's id.
         }
 
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
@@ -25,7 +25,6 @@ class RoleReactClient(discord.Client):
             return
 
         try:
-            # If it is a unicode emoji, it should use .name, otherwise it should use .id.
             role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
@@ -37,7 +36,7 @@ class RoleReactClient(discord.Client):
             return
 
         try:
-            # Finally add the role
+            # Finally, add the role.
             await payload.member.add_roles(role)
         except discord.HTTPException:
             # If we want to do something in case of errors we'd do it here.
@@ -55,7 +54,6 @@ class RoleReactClient(discord.Client):
             return
 
         try:
-            # If it is a unicode emoji, it should use the name, otherwise it should use the ID.
             role_id = self.emoji_to_role[payload.emoji]
         except KeyError:
             # If the emoji isn't the one we care about then exit as well.
@@ -66,21 +64,22 @@ class RoleReactClient(discord.Client):
             # Make sure the role still exists and is valid.
             return
 
+        # The payload for raw_reaction_remove does not provide `.member`
+        # so we must get the member ourselves from the payload's `.user_id`.
         member = guild.get_member(payload.user_id)
         if member is None:
-            # Makes sure the member still exists and is valid
+            # Makes sure the member still exists and is valid.
             return
 
         try:
-            # Finally, remove the role
+            # Finally, remove the role.
             await member.remove_roles(role)
         except discord.HTTPException:
             # If we want to do something in case of errors we'd do it here.
             pass
 
-# This bot requires the members and reactions intents.
 intents = discord.Intents.default()
 intents.members = True
 
-client = RoleReactClient(intents=intents)
+client = MyClient(intents=intents)
 client.run('token')
