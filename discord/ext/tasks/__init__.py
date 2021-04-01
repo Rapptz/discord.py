@@ -631,8 +631,8 @@ def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True
     ValueError
         An invalid value was given.
     TypeError
-        The function was not a coroutine, or ``times`` parameter was
-        passed in conjunction with relative time parameters.
+        The function was not a coroutine, an invalid value for the ``time`` parameter was passed,
+        or ``time`` parameter was passed in conjunction with relative time parameters.
     """
     def decorator(func):
         kwargs = {
