@@ -584,6 +584,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             Indicates if the member should be suppressed in stage channels.
 
             .. versionadded:: 1.7
+
         roles: Optional[List[:class:`Role`]]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
@@ -671,6 +672,8 @@ class Member(discord.abc.Messageable, _BaseUser):
 
             It is not possible to request members that are not the bot
             user to speak.
+
+        .. versionadded:: 1.7
 
         Raises
         -------

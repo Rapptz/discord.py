@@ -375,6 +375,8 @@ class Guild(Hashable):
     def stage_channels(self):
         """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
 
+        .. versionadded:: 1.7
+
         This is sorted by the position and are in UI order from top to bottom.
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
@@ -992,6 +994,8 @@ class Guild(Hashable):
         .. note::
 
             The ``slowmode_delay`` parameter is not supported in this function.
+
+        .. versionadded:: 1.7
 
         Raises
         ------

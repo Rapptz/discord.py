@@ -1002,6 +1002,18 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
+    @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: Returns the voice channels that are under this category.
+
+        .. versionadded:: 1.7
+        """
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, StageChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
     async def create_text_channel(self, name, *, overwrites=None, reason=None, **options):
         """|coro|
 
@@ -1030,6 +1042,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
+
+        .. versionadded:: 1.7
 
         Returns
         -------

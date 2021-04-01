@@ -400,6 +400,8 @@ class VoiceChannelConverter(IDConverter):
 class StageChannelConverter(IDConverter):
     """Converts to a :class:`~discord.StageChannel`.
 
+    .. versionadded:: 1.7
+
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
 
@@ -408,9 +410,6 @@ class StageChannelConverter(IDConverter):
     1. Lookup by ID.
     2. Lookup by mention.
     3. Lookup by name
-
-    .. versionchanged:: 1.5
-         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx, argument):
         bot = ctx.bot
