@@ -840,6 +840,11 @@ class Guild(Hashable):
             perms.append(payload)
 
         try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
+
+        try:
             rtc_region = options.pop('rtc_region')
         except KeyError:
             pass
