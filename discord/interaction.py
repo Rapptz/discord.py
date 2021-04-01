@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2021-present Trainjo
+Copyright (c) 2021-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -183,9 +183,9 @@ class Interaction(Hashable):
 
     def __repr__(self):
         result = f"<Interaction id={self.id} type={self.type}"
-        if self.user != None:
+        if self.user is not None:
             result += f" user={self.user}"
-        if self.channel != None:
+        if self.channel is not None:
             result += f" channel={self.channel}"
         result += ">"
         return result
@@ -253,7 +253,7 @@ class Interaction(Hashable):
             raise InvalidArgument(f"Can not respond to {self} twice, use edit_response instead.")
         if embeds is not None and embed is not None:
             raise InvalidArgument('Cannot mix embed and embeds keyword arguments.')
-        if (embeds is not None) and len(embeds) > 10:
+        if embeds is not None and len(embeds) > 10:
             raise InvalidArgument('embeds has a maximum of 10 elements.')
 
         if embed is not None:
@@ -631,21 +631,6 @@ class InteractionMessage(Message):
             ``embeds`` was invalid.
         """
         return self._interaction.edit_message(self.id, **fields)
-
-    def _delete_delay_sync(self, delay):
-        time.sleep(delay)
-        return self._state._webhook.delete_message(self.id)
-
-    async def _delete_delay_async(self, delay):
-        async def inner_call():
-            await asyncio.sleep(delay)
-            try:
-                await self._state._webhook.delete_message(self.id)
-            except HTTPException:
-                pass
-
-        asyncio.ensure_future(inner_call(), loop=self._state.loop)
-        return await asyncio.sleep(0)
 
     def delete(self):
         """|coro|

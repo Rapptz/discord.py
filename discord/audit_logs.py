@@ -72,7 +72,7 @@ def _transform_overwrites(entry, data):
 
         ow_type = elem['type']
         ow_id = int(elem['id'])
-        if ow_type == str(0):
+        if ow_type == 'role':
             target = entry.guild.get_role(ow_id)
         else:
             target = entry._get_member(ow_id)

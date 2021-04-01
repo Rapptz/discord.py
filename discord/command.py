@@ -3,7 +3,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2021-present Trainjo
+Copyright (c) 2021-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -288,7 +288,7 @@ class ApplicationCommandOption:
         return f"<ApplicationCommandOption type={self.type} name={self.name}>"
 
     @classmethod
-    def SubCommand(cls, *, name, description, options=None):
+    def sub_command(cls, *, name, description, options=None):
         """Create a command option that is a sub command.
 
         Attributes
@@ -326,7 +326,7 @@ class ApplicationCommandOption:
                          'options' : [option.to_dict() for option in options]})
 
     @classmethod
-    def SubCommandGroup(cls, *, name, description, options=None):
+    def sub_command_group(cls, *, name, description, options=None):
         """Create a command option that is a sub command group.
 
         Attributes
@@ -363,7 +363,7 @@ class ApplicationCommandOption:
                          'options' : [option.to_dict() for option in options]})
 
     @classmethod
-    def String(cls, *, name, description, required=True, choices=None):
+    def string(cls, *, name, description, required=True, choices=None):
         """Create a command option that is a String argument.
 
         Attributes
@@ -406,7 +406,7 @@ class ApplicationCommandOption:
                          'required' : required, 'choices' : choice_list})
 
     @classmethod
-    def Integer(cls, *, name, description, required=True, choices=None):
+    def integer(cls, *, name, description, required=True, choices=None):
         """Create a command option that is a Integer argument.
 
         Attributes
@@ -449,7 +449,7 @@ class ApplicationCommandOption:
                          'required' : required, 'choices' : choice_list})
 
     @classmethod
-    def Boolean(cls, *, name, description, required=True):
+    def boolean(cls, *, name, description, required=True):
         """Create a command option that is a Boolean argument.
 
         Attributes
@@ -476,7 +476,7 @@ class ApplicationCommandOption:
         return cls(data={'type' : t, 'name' : name, 'description' : description, 'required' : required})
 
     @classmethod
-    def User(cls, *, name, description, required=True):
+    def user(cls, *, name, description, required=True):
         """Create a command option that is a User argument.
 
         Attributes
@@ -503,7 +503,7 @@ class ApplicationCommandOption:
         return cls(data={'type' : t, 'name' : name, 'description' : description, 'required' : required})
 
     @classmethod
-    def Channel(cls, *, name, description, required=True):
+    def channel(cls, *, name, description, required=True):
         """Create a command option that is a Channel argument.
 
         Attributes
@@ -530,7 +530,7 @@ class ApplicationCommandOption:
         return cls(data={'type' : t, 'name' : name, 'description' : description, 'required' : required})
 
     @classmethod
-    def Role(cls, *, name, description, required=True):
+    def role(cls, *, name, description, required=True):
         """Create a command option that is a Role argument.
 
         Attributes

@@ -470,8 +470,8 @@ class InteractionType(Enum):
 
 class InteractionResponseType(Enum):
     pong = 1
-    acknowledge = 2
-    channel_message = 3
+    acknowledge = 2 # deprecated
+    channel_message = 3 # deprecated
     channel_message_with_source = 4
     deferred_channel_message_with_source = 5
 

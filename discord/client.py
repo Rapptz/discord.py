@@ -29,7 +29,6 @@ import logging
 import signal
 import sys
 import traceback
-import re
 
 import aiohttp
 

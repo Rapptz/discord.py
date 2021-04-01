@@ -1936,7 +1936,7 @@ class Guild(Hashable):
         try:
             perms = fields.pop('permissions')
         except KeyError:
-            fields['permissions'] = str(0)
+            fields['permissions'] = "0"
         else:
             fields['permissions'] = str(perms.value)
 
