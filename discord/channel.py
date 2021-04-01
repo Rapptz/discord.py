@@ -38,6 +38,7 @@ from .errors import ClientException, NoMoreItems, InvalidArgument
 __all__ = (
     'TextChannel',
     'VoiceChannel',
+    'StageChannel',
     'DMChannel',
     'CategoryChannel',
     'StoreChannel',
@@ -537,51 +538,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
-    """Represents a Discord guild voice channel.
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two channels are equal.
-
-        .. describe:: x != y
-
-            Checks if two channels are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the channel's hash.
-
-        .. describe:: str(x)
-
-            Returns the channel's name.
-
-    Attributes
-    -----------
-    name: :class:`str`
-        The channel name.
-    guild: :class:`Guild`
-        The guild the channel belongs to.
-    id: :class:`int`
-        The channel ID.
-    category_id: Optional[:class:`int`]
-        The category channel ID this channel belongs to, if applicable.
-    position: :class:`int`
-        The position in the channel list. This is a number that starts at 0. e.g. the
-        top channel is position 0.
-    bitrate: :class:`int`
-        The channel's preferred audio bitrate in bits per second.
-    user_limit: :class:`int`
-        The channel's limit for number of members that can be in a voice channel.
-    rtc_region: Optional[:class:`VoiceRegion`]
-        The region for the voice channel's voice communication.
-        A value of ``None`` indicates automatic voice region detection.
-
-        .. versionadded:: 1.7
-    """
-
+class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
                  '_state', 'position', '_overwrites', 'category_id',
                  'rtc_region')
@@ -591,28 +548,11 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         self.id = int(data['id'])
         self._update(guild, data)
 
-    def __repr__(self):
-        attrs = [
-            ('id', self.id),
-            ('name', self.name),
-            ('rtc_region', self.rtc_region),
-            ('position', self.position),
-            ('bitrate', self.bitrate),
-            ('user_limit', self.user_limit),
-            ('category_id', self.category_id)
-        ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
-
     def _get_voice_client_key(self):
         return self.guild.id, 'guild_id'
 
     def _get_voice_state_pair(self):
         return self.guild.id, self.id
-
-    @property
-    def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
-        return ChannelType.voice
 
     def _update(self, guild, data):
         self.guild = guild
@@ -671,6 +611,70 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             base.value &= ~denied.value
         return base
 
+class VoiceChannel(VocalGuildChannel):
+    """Represents a Discord guild voice channel.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    bitrate: :class:`int`
+        The channel's preferred audio bitrate in bits per second.
+    user_limit: :class:`int`
+        The channel's limit for number of members that can be in a voice channel.
+    rtc_region: Optional[:class:`VoiceRegion`]
+        The region for the voice channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection.
+
+        .. versionadded:: 1.7
+    """
+
+    __slots__ = ()
+
+    def __repr__(self):
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('rtc_region', self.rtc_region),
+            ('position', self.position),
+            ('bitrate', self.bitrate),
+            ('user_limit', self.user_limit),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+
+    @property
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.voice
+
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
@@ -715,6 +719,129 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
             A value of ``None`` indicates automatic voice region detection.
 
             .. versionadded:: 1.7
+
+        Raises
+        ------
+        InvalidArgument
+            If the permission overwrite information is not in proper form.
+        Forbidden
+            You do not have permissions to edit the channel.
+        HTTPException
+            Editing the channel failed.
+        """
+
+        await self._edit(options, reason=reason)
+
+class StageChannel(VocalGuildChannel):
+    """Represents a Discord guild stage voice channel.
+
+    .. versionadded:: 1.7
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it doesn't exist.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    bitrate: :class:`int`
+        The channel's preferred audio bitrate in bits per second.
+    user_limit: :class:`int`
+        The channel's limit for number of members that can be in a voice channel.
+    rtc_region: Optional[:class:`VoiceRegion`]
+        The region for the voice channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection.
+    """
+    __slots__ = ('topic',)
+
+    def __repr__(self):
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('topic', self.topic),
+            ('rtc_region', self.rtc_region),
+            ('position', self.position),
+            ('bitrate', self.bitrate),
+            ('user_limit', self.user_limit),
+            ('category_id', self.category_id)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+
+    def _update(self, guild, data):
+        super()._update(guild, data)
+        self.topic = data.get('topic')
+
+    @property
+    def requests_to_speak(self):
+        return [member for member in self.members if member.voice.requested_to_speak_at]
+
+    @property
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.stage_voice
+
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'topic': self.topic,
+        }, name=name, reason=reason)
+
+    async def edit(self, *, reason=None, **options):
+        """|coro|
+
+        Edits the channel.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The new channel's name.
+        topic: :class:`str`
+            The new channel's topic.
+        position: :class:`int`
+            The new channel's position.
+        sync_permissions: :class:`bool`
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
+        reason: Optional[:class:`str`]
+            The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The new region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
 
         Raises
         ------
@@ -897,6 +1024,18 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             The channel that was just created.
         """
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+
+    async def create_stage_channel(self, name, *, overwrites=None, reason=None, **options):
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        return await self.guild.create_stage_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
 class StoreChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild store channel.
@@ -1407,5 +1546,7 @@ def _channel_factory(channel_type):
         return TextChannel, value
     elif value is ChannelType.store:
         return StoreChannel, value
+    elif value is ChannelType.stage_voice:
+        return StageChannel, value
     else:
         return None, value
