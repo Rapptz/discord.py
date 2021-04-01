@@ -31,7 +31,7 @@ import asyncio
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .enums import ChannelType
+from .enums import ChannelType, PermissionOverwriteType, try_enum
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -171,14 +171,14 @@ class _Overwrites:
         self.id = kwargs.pop('id')
         self.allow = int(kwargs.pop('allow', 0))
         self.deny = int(kwargs.pop('deny', 0))
-        self.type = int(kwargs.pop('type'))
+        self.type = try_enum(PermissionOverwriteType, kwargs.pop('type'))
 
     def _asdict(self):
         return {
             'id': self.id,
             'allow': str(self.allow),
             'deny': str(self.deny),
-            'type': self.type,
+            'type': self.type.value,
         }
 
 class GuildChannel:
@@ -290,9 +290,9 @@ class GuildChannel:
                 }
 
                 if isinstance(target, Role):
-                    payload['type'] = 0
+                    payload['type'] = PermissionOverwriteType.role.value
                 else:
-                    payload['type'] = 1
+                    payload['type'] = PermissionOverwriteType.member.value
 
                 perms.append(payload)
             options['permission_overwrites'] = perms
@@ -319,7 +319,7 @@ class GuildChannel:
             overridden_id = int(overridden.pop('id'))
             self._overwrites.append(_Overwrites(id=overridden_id, **overridden))
 
-            if overridden['type'] == 1:
+            if overridden['type'] == PermissionOverwriteType.member.value:
                 continue
 
             if overridden_id == everyone_id:
@@ -341,7 +341,7 @@ class GuildChannel:
         their default values in the :attr:`~discord.Guild.roles` attribute."""
         ret = []
         g = self.guild
-        for overwrite in filter(lambda o: o.type == 0, self._overwrites):
+        for overwrite in filter(lambda o: o.type == PermissionOverwriteType.role, self._overwrites):
             role = g.get_role(overwrite.id)
             if role is None:
                 continue
@@ -377,9 +377,9 @@ class GuildChannel:
         """
 
         if isinstance(obj, User):
-            predicate = lambda p: p.type == 1
+            predicate = lambda p: p.type == PermissionOverwriteType.member
         elif isinstance(obj, Role):
-            predicate = lambda p: p.type == 0
+            predicate = lambda p: p.type == PermissionOverwriteType.role
         else:
             predicate = lambda p: True
 
@@ -410,9 +410,9 @@ class GuildChannel:
             deny = Permissions(ow.deny)
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
-            if ow.type == 0:
+            if ow.type == PermissionOverwriteType.role:
                 target = self.guild.get_role(ow.id)
-            elif ow.type == 1:
+            elif ow.type == PermissionOverwriteType.member:
                 target = self.guild.get_member(ow.id)
 
             # TODO: There is potential data loss here in the non-chunked
@@ -514,7 +514,7 @@ class GuildChannel:
 
         # Apply channel specific role permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 0 and roles.has(overwrite.id):
+            if overwrite.type == PermissionOverwriteType.role and roles.has(overwrite.id):
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
@@ -522,7 +522,7 @@ class GuildChannel:
 
         # Apply member specific permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 1 and overwrite.id == member.id:
+            if overwrite.type == PermissionOverwriteType.member and overwrite.id == member.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
 
@@ -633,9 +633,9 @@ class GuildChannel:
         http = self._state.http
 
         if isinstance(target, User):
-            perm_type = 1
+            perm_type = PermissionOverwriteType.member
         elif isinstance(target, Role):
-            perm_type = 0
+            perm_type = PermissionOverwriteType.role
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 
