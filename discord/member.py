@@ -79,7 +79,7 @@ class VoiceState:
 
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[:class:`VoiceChannel`, :class:`StageChannel`]
+    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
         The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
