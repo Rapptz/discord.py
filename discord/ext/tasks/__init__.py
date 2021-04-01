@@ -575,9 +575,9 @@ class Loop:
                 raise ValueError('Total number of seconds cannot be less than zero.')
 
             self._sleep = sleep
-            self._seconds = seconds
-            self._hours = hours
-            self._minutes = minutes
+            self._seconds = float(seconds)
+            self._hours = float(hours)
+            self._minutes = float(minutes)
             self._time = None
         else:
             if any((seconds, minutes, hours)):
