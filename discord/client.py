@@ -1076,9 +1076,7 @@ class Client:
     # Guild stuff
 
     def fetch_guilds(self, *, limit=100, before=None, after=None):
-        """|coro|
-
-        Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
+        """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
 
