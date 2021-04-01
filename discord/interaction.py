@@ -134,7 +134,7 @@ class Interaction(Hashable):
         self._type = data['type']
         self.channel = channel
         self.guild = guild
-        if self.is_command_interaction():
+        if self.type == InteractionType.application_command:
             command_data = data['data']
             self.command_id = int(command_data['id'])
             self.command_name = command_data['name']
@@ -189,14 +189,6 @@ class Interaction(Hashable):
             result += f" channel={self.channel}"
         result += ">"
         return result
-
-    def is_ping(self):
-        """Whether this Interaction is a ping."""
-        return self.type == InteractionType.ping
-
-    def is_command_interaction(self):
-        """Whether this Interaction was invoked by a command."""
-        return self.type == InteractionType.application_command
     
     async def send_response(self, content=None, *, tts=None, embed=None, embeds=None,
                             allowed_mentions=None, ephemeral=False):
@@ -259,7 +251,7 @@ class Interaction(Hashable):
         if embed is not None:
             embeds = [embed]
 
-        if self.is_ping():
+        if self.type == InteractionType.ping:
             response = InteractionResponse(pong=True)
         else:
             response = InteractionResponse(content=content, tts=tts, embeds=embeds,
