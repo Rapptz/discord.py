@@ -142,14 +142,14 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b11111111111111111111111111111111)
+        return cls(0b111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
-        
+
         - :attr:`manage_emojis`
         - :attr:`view_audit_log`
         - :attr:`view_guild_insights`
@@ -177,7 +177,7 @@ class Permissions(BaseFlags):
            no longer part of the general permissions.
         """
         return cls(0b01110000000010000000010010110000)
-    
+
     @classmethod
     def membership(cls):
         """A factory method that creates a :class:`Permissions` with all
@@ -186,14 +186,14 @@ class Permissions(BaseFlags):
         .. versionadded:: 1.7
         """
         return cls(0b00001100000000000000000000000111)
-    
+
     @classmethod
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to ``True``.
 
         .. versionchanged:: 1.7
-           Permission :attr:`read_messages` is no longer part of the text permissions. 
+           Permission :attr:`read_messages` is no longer part of the text permissions.
            Added :attr:`use_slash_commands` permission.
         """
         return cls(0b10000000000001111111100001000000)
@@ -203,7 +203,16 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
         return cls(0b00000011111100000000001100000000)
-    
+
+    @classmethod
+    def stage(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Stage Channel" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(1 << 32)
+
     @classmethod
     def advanced(cls):
         """A factory method that creates a :class:`Permissions` with all
@@ -447,6 +456,14 @@ class Permissions(BaseFlags):
         .. versionadded:: 1.7
         """
         return 1 << 31
+
+    @flag_value
+    def request_to_speak(self):
+        """:class:`bool`: Returns ``True`` if a user can request to speak in a stage channel.
+
+        .. versionadded:: 1.7
+        """
+        return 1 << 32
 
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
