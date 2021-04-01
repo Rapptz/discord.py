@@ -29,7 +29,7 @@ import asyncio
 
 import discord.abc
 from .permissions import Permissions
-from .enums import ChannelType, try_enum
+from .enums import ChannelType, try_enum, VoiceRegion
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
@@ -615,8 +615,10 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
 
     def _update(self, guild, data):
         self.guild = guild
-        self.name = data.get('name')
-        self.rtc_region = data['rtc_region']
+        self.name = data['name']
+        self.rtc_region = data.get('rtc_region')
+        if self.rtc_region:
+            self.rtc_region = try_enum(VoiceRegion, self.rtc_region)
         self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
