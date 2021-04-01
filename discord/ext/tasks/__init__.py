@@ -531,7 +531,7 @@ class Loop:
         ret = sorted(set(ret)) # de-dupe and sort times
         return ret
 
-    def change_interval(self, *, seconds=0.0, minutes=0.0, hours=0.0, time=None):
+    def change_interval(self, *, seconds=0, minutes=0, hours=0, time=None):
         """Changes the interval for the sleep time.
 
         .. note::
