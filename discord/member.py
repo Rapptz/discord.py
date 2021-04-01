@@ -105,7 +105,7 @@ class VoiceState:
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} suppressed={0.suppressed} channel={0.channel!r}>'.format(self)
+        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} suppressed={0.suppressed} requested_to_speak_at={0.requested_to_speak_at!r} channel={0.channel!r}>'.format(self)
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
