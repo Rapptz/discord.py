@@ -257,6 +257,13 @@ class GuildChannel:
         except KeyError:
             pass
 
+        try:
+            rtc_region = options.pop('rtc_region')
+        except KeyError:
+            pass
+        else:
+            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
+
         lock_permissions = options.pop('sync_permissions', False)
 
         try:
