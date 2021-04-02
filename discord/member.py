@@ -678,8 +678,8 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         .. note::
 
-            It is not possible to request members that are not the bot
-            user to speak.
+            Requesting members that are not the client is equivalent
+            to :attr:`.edit` providing ``suppress`` as ``False``.
 
         .. versionadded:: 1.7
 
@@ -689,18 +689,17 @@ class Member(discord.abc.Messageable, _BaseUser):
             You do not have the proper permissions to the action requested.
         HTTPException
             The operation failed.
-        ClientException
-            The member was not the bot user.
         """
-        if self._state.self_id != self.id:
-            raise ClientException("The member must be the bot user.")
-
         payload = {
             'channel_id': self.voice.channel.id,
             'request_to_speak_timestamp': datetime.datetime.utcnow().isoformat(),
         }
 
-        await self._state.http.edit_my_voice_state(self.guild.id, payload)
+        if self._state.self_id != self.id:
+            payload['suppress'] = False
+            await self._state.http.edit_voice_state(self.guild.id, self.id, payload)
+        else:
+            await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
     async def move_to(self, channel, *, reason=None):
         """|coro|
