@@ -986,14 +986,14 @@ class Guild(Hashable):
         self._channels[channel.id] = channel
         return channel
 
-    async def create_stage_channel(self, name, *, overwrites=None, reason=None, position=None):
+    async def create_stage_channel(self, name, *, topic=None, overwrites=None, reason=None, position=None):
         """|coro|
 
         This is similar to :meth:`create_text_channel` except makes a :class:`StageChannel` instead.
 
         .. note::
 
-            The ``slowmode_delay`` parameter is not supported in this function.
+            The ``slowmode_delay`` and ``nsfw`` parameters are not supported in this function.
 
         .. versionadded:: 1.7
 
@@ -1011,7 +1011,7 @@ class Guild(Hashable):
         :class:`StageChannel`
             The channel that was just created.
         """
-        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, reason=reason, position=position)
+        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, reason=reason, position=position, topic=topic)
         channel = StageChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
