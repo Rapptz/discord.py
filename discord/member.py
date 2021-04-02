@@ -100,7 +100,7 @@ class VoiceState:
         self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
-        self.suppress = data.get('suppress', True)
+        self.suppress = data.get('suppress', False)
         self.requested_to_speak_at = utils.parse_time(data.get('request_to_speak_timestamp'))
         self.channel = channel
 
