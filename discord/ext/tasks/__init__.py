@@ -485,6 +485,9 @@ class Loop:
 
         if self._time_index >= len(self._time):
             self._time_index = 0
+            if self._current_loop == 0:
+                # if we're at the last index on the first iteration, we need to sleep until tomorrow
+                return datetime.datetime.combine(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1), self._time[0])
 
         next_time = self._time[self._time_index]
 
