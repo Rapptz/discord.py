@@ -36,6 +36,31 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+class SleepHandle:
+    __slots__ = ('future', 'loop', 'handle')
+
+    def __init__(self, dt, *, loop):
+        self.loop = loop
+        self.future = future = loop.create_future()
+        relative_delta = discord.utils.compute_timedelta(dt)
+        self.handle = loop.call_later(relative_delta, future.set_result, True)
+
+    def recalculate(self, dt):
+        self.handle.cancel()
+        relative_delta = discord.utils.compute_timedelta(dt)
+        self.handle = self.loop.call_later(relative_delta, self.future.set_result, True)
+
+    def wait(self):
+        return self.future
+
+    def done(self):
+        return self.future.done()
+
+    def cancel(self):
+        self.handle.cancel()
+        self.future.cancel()
+
+
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
 
@@ -47,6 +72,7 @@ class Loop:
         self.loop = loop
         self.count = count
         self._current_loop = 0
+        self._handle = None
         self._task = None
         self._injected = None
         self._valid_exception = (
@@ -84,6 +110,10 @@ class Loop:
         else:
             await coro(*args, **kwargs)
 
+    def _try_sleep_until(self, dt):
+        self._handle = SleepHandle(dt=dt, loop=self.loop)
+        return self._handle.wait()
+
     async def _loop(self, *args, **kwargs):
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
@@ -96,7 +126,7 @@ class Loop:
         else:
             self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
         try:
-            await sleep_until(self._next_iteration) # allows canceling in before_loop
+            await self._try_sleep_until(self._next_iteration)
             while True:
                 if not self._last_iteration_failed:
                     self._last_iteration = self._next_iteration
@@ -122,7 +152,7 @@ class Loop:
                     if self._current_loop == self.count:
                         break
 
-                    await sleep_until(self._next_iteration)
+                    await self._try_sleep_until(self._next_iteration)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise
@@ -132,6 +162,7 @@ class Loop:
             raise exc
         finally:
             await self._call_loop_function('after_loop')
+            self._handle.cancel()
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
@@ -537,11 +568,6 @@ class Loop:
     def change_interval(self, *, seconds=0, minutes=0, hours=0, time=None):
         """Changes the interval for the sleep time.
 
-        .. note::
-
-            This only applies on the next loop iteration. If it is desirable for the change of interval
-            to be applied right away, cancel the task with :meth:`cancel`.
-
         .. versionadded:: 1.2
 
         Parameters
@@ -587,10 +613,16 @@ class Loop:
                 raise TypeError('Cannot mix explicit time with relative time')
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = None
-            if self.is_running():
-                # if the loop is currently running the index needs to be recalculated to
-                # prepare the next time index starting from after the next iteration
-                self._prepare_time_index(now=self._next_iteration)
+
+        if self.is_running():
+            if self._time is not None:
+                # prepare the next time index starting from after the last iteration
+                self._prepare_time_index(now=self._last_iteration)
+
+            self._next_iteration = self._get_next_sleep_time()
+            if not self._handle.done():
+                # the loop is sleeping, recalculate based on new interval
+                self._handle.recalculate(self._next_iteration)
 
 
 def loop(*, seconds=0, minutes=0, hours=0, count=None, time=None, reconnect=True, loop=None):
