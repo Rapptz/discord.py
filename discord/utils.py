@@ -39,7 +39,6 @@ import warnings
 from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
-MAX_ASYNCIO_SECONDS = 3456000
 
 class cached_property:
     def __init__(self, function):
@@ -361,6 +360,12 @@ async def sane_wait_for(futures, *, timeout):
 
     return done
 
+def compute_timedelta(dt: datetime.datetime):
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return max((dt - now).total_seconds(), 0)
+
 async def sleep_until(when, result=None):
     """|coro|
 
@@ -378,14 +383,8 @@ async def sleep_until(when, result=None):
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
-    if when.tzinfo is None:
-        when = when.replace(tzinfo=datetime.timezone.utc)
-    now = datetime.datetime.now(datetime.timezone.utc)
-    delta = (when - now).total_seconds()
-    while delta > MAX_ASYNCIO_SECONDS:
-        await asyncio.sleep(MAX_ASYNCIO_SECONDS)
-        delta -= MAX_ASYNCIO_SECONDS
-    return await asyncio.sleep(max(delta, 0), result)
+    delta = compute_timedelta(when)
+    return await asyncio.sleep(delta, result)
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""
