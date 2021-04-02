@@ -49,7 +49,7 @@ async def everyone(ctx):
 # To fix this, we can use the name kwarg
 # Also notice because these are seperate subcommands, we can have multiple commands with the same name
 # Invoked with `?greet everyone hello`
-@everyone.command(name = "hello")
+@everyone.command(name="hello")
 async def everyone_hello(ctx):
     """Say hi to everyone!"""
     await ctx.send("Hello everyone!")
@@ -58,8 +58,8 @@ async def everyone_hello(ctx):
 # To do this, we can use the `invoke_without_command` kwarg
 # When set to True, the parent command will only be invoked when subcommands aren't
 # Invoked with `?role <member> <role>`
-@bot.group(invoke_without_command = True)
-@commands.has_guild_permissions(manage_roles = True)
+@bot.group(invoke_without_command=True)
+@commands.has_guild_permissions(manage_roles=True)
 async def role(ctx, member: discord.Member, role: discord.Role):
     """Add a role to a target member"""
     await member.add_roles(role)
