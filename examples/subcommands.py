@@ -27,13 +27,13 @@ async def greet(ctx):
 @commands.is_owner()
 async def hello(ctx):
     """Say hello!"""
-    await ctx.send("Hello {0.author}!".format(ctx))
+    await ctx.send('Hello {0.author}!'.format(ctx))
 
 # This would be invoked with `?greet goodbye <member>`
 @greet.command()
 async def goodbye(ctx, member: discord.Member):
     """Say goodbye to someone"""
-    await ctx.send("Goodbye {0.author}".format(member))
+    await ctx.send('Goodbye {0.author}'.format(member))
 
 # We can also nest groups!
 @greet.group()
@@ -51,7 +51,7 @@ async def everyone(ctx):
 @everyone.command(name="hello")
 async def everyone_hello(ctx):
     """Say hi to everyone!"""
-    await ctx.send("Hello everyone!")
+    await ctx.send('Hello everyone!')
 
 # Sometimes you may want a subcommand to function independently from the rest
 # To do this, we can use the `invoke_without_command` keyword argument
