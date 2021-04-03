@@ -512,7 +512,7 @@ The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sel
 ``int`` ``1`` or ``2``. If ``buy_sell`` or ``amount`` don't match any value, then a special error is raised,
 :exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
 
-Note that ``typing.Literal[True]`` or ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
+Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
 
 Greedy
 ^^^^^^^^

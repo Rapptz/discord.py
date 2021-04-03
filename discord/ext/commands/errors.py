@@ -647,7 +647,10 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
-                return x.__class__.__name__
+                pass
+            if getattr(x, '__origin__', None) is not None:
+                return repr(x)
+            return x.__class__.__name__
 
         to_string = [_get_name(x) for x in converters]
         if len(to_string) > 2:
@@ -662,6 +665,8 @@ class BadLiteralArgument(UserInputError):
     its associated values.
 
     This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 1.7
 
     Attributes
     -----------
@@ -683,7 +688,7 @@ class BadLiteralArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__('Could not convert "{0.name}" into literal {1}.'.format(param, fmt))
+        super().__init__('Could not convert "{0.name}" into the literal {1}.'.format(param, fmt))
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
