@@ -22,9 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import re
 import inspect
-import typing
+import sys
+from typing import TYPE_CHECKING, Any, Generic, List, NoReturn, TypeVar, Union, get_args, get_origin
 
 import discord
 
@@ -53,6 +56,8 @@ __all__ = (
     'clean_content',
     'Greedy',
 )
+
+T = TypeVar("T")
 
 def _get_from_guilds(bot, getter, argument):
     result = None
@@ -823,28 +828,40 @@ class clean_content(Converter):
         # Completely ensure no mentions escape:
         return discord.utils.escape_mentions(result)
 
-class _Greedy:
+
+class Greedy(Generic[T]):
     __slots__ = ('converter',)
 
-    def __init__(self, *, converter=None):
-        self.converter = converter
+    converter: T
 
-    def __getitem__(self, params):
+    def __new__(
+        cls, *args: Any, **kwargs: Any
+    ) -> NoReturn:  # give a more helpful message than typing._BaseGenericAlias.__call__
+        raise TypeError("Greedy cannot be instantiated directly, instead use Greedy[...]")
+
+    def __class_getitem__(cls, params: Union[tuple[T], T]) -> Greedy[T]:
         if not isinstance(params, tuple):
             params = (params,)
         if len(params) != 1:
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        if not (callable(converter) or isinstance(converter, Converter) or hasattr(converter, '__origin__')):
+        if not (callable(converter) or isinstance(converter, Converter) or get_origin(converter) is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
-        if converter is str or converter is type(None) or converter is _Greedy:
+        if converter is str or converter is type(None) or get_origin(converter) is Greedy:
             raise TypeError(f'Greedy[{converter.__name__}] is invalid.')
 
-        if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
+        if get_origin(converter) is Union and type(None) in get_args(converter):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
-        return self.__class__(converter=converter)
+        greedy = super().__class_getitem__(converter)
+        greedy.converter = get_args(greedy)[0]
+        return greedy
 
-Greedy = _Greedy()
+
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 9):
+        Greedy = list
+    else:
+        Greedy = List

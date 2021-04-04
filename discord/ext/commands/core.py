@@ -520,7 +520,7 @@ class Command(_BaseCommand):
 
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
-        if type(converter) is converters._Greedy:
+        if typing.get_origin(converter) is converters.Greedy:
             if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
                 return await self._transform_greedy_pos(ctx, param, required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
@@ -1005,7 +1005,7 @@ class Command(_BaseCommand):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, converters._Greedy)
+            greedy = typing.get_origin(param.annotation) is converters.Greedy
 
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
