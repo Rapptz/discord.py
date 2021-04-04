@@ -667,17 +667,16 @@ class HTTPClient:
     def delete_guild(self, guild_id):
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def create_guild(self, name, region, icon):
+    def create_guild(self, name, icon):
         payload = {
             'name': name,
             'icon': icon,
-            'region': region
         }
 
         return self.request(Route('POST', '/guilds'), json=payload)
 
     def edit_guild(self, guild_id, *, reason=None, **fields):
-        valid_keys = ('name', 'region', 'icon', 'afk_timeout', 'owner_id',
+        valid_keys = ('name', 'icon', 'afk_timeout', 'owner_id',
                       'afk_channel_id', 'splash', 'verification_level',
                       'system_channel_id', 'default_message_notifications',
                       'description', 'explicit_content_filter', 'banner',
@@ -715,11 +714,10 @@ class HTTPClient:
     def delete_template(self, guild_id, code):
         return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def create_from_template(self, code, name, region, icon):
+    def create_from_template(self, code, name, icon):
         payload = {
             'name': name,
             'icon': icon,
-            'region': region
         }
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
