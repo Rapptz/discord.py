@@ -299,12 +299,17 @@ class Command(_BaseCommand):
         signature = inspect.signature(function)
         self.params = signature.parameters.copy()
 
-        # PEP-563 allows postponing evaluation of annotations with a __future__
-        # import. When postponed, Parameter.annotation will be a string and must
-        # be replaced with the real value for the converters to work later on
+        try:
+            type_hints = typing.get_type_hints(function)
+        except NameError as e:
+            raise NameError(f'unresolved forward reference: {e.args[0]}') from None
+
         for key, value in self.params.items():
-            if isinstance(value.annotation, str):
-                self.params[key] = value = value.replace(annotation=eval(value.annotation, function.__globals__))
+            # coalesce the forward references
+            self.params[key] = value = value.replace(annotation=type_hints.get(key))
+
+            if isinstance(value, typing.ForwardRef):
+                raise TypeError('typing.ForwardRef is disallowed in signature.')
 
             # fail early for when someone passes an unparameterized Greedy type
             if value.annotation is converters.Greedy:
