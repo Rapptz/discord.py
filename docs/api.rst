@@ -2734,20 +2734,19 @@ interface, :meth:`WebhookAdapter.request`.
 Abstract Base Classes
 -----------------------
 
-An :term:`py:abstract base class` (also known as an ``abc``) is a class that models can inherit
-to get their behaviour. The Python implementation of an :doc:`abc <py:library/abc>` is
-slightly different in that you can register them at run-time. **Abstract base classes cannot be instantiated**.
-They are mainly there for usage with :func:`py:isinstance` and :func:`py:issubclass`\.
+An :term:`abstract base class` (also known as an ``abc``) is a class that models can inherit
+to get their behaviour. **Abstract base classes should not be instantiated**.
+They are mainly there for usage with :func:`isinstance` and :func:`issubclass`\.
 
-This library has a module related to abstract base classes, some of which are actually from the :doc:`abc <py:library/abc>` standard
-module, others which are not.
+This library has a module related to abstract base classes, in which all the ABCs are subclasses of
+:class:`typing.Protocol`.
 
 Snowflake
 ~~~~~~~~~~
 
 .. attributetable:: discord.abc.Snowflake
 
-.. autoclass:: discord.abc.Snowflake
+.. autoclass:: discord.abc.Snowflake()
     :members:
 
 User
@@ -2755,7 +2754,7 @@ User
 
 .. attributetable:: discord.abc.User
 
-.. autoclass:: discord.abc.User
+.. autoclass:: discord.abc.User()
     :members:
 
 PrivateChannel
@@ -2763,7 +2762,7 @@ PrivateChannel
 
 .. attributetable:: discord.abc.PrivateChannel
 
-.. autoclass:: discord.abc.PrivateChannel
+.. autoclass:: discord.abc.PrivateChannel()
     :members:
 
 GuildChannel
@@ -2771,7 +2770,7 @@ GuildChannel
 
 .. attributetable:: discord.abc.GuildChannel
 
-.. autoclass:: discord.abc.GuildChannel
+.. autoclass:: discord.abc.GuildChannel()
     :members:
 
 Messageable
@@ -2779,7 +2778,7 @@ Messageable
 
 .. attributetable:: discord.abc.Messageable
 
-.. autoclass:: discord.abc.Messageable
+.. autoclass:: discord.abc.Messageable()
     :members:
     :exclude-members: history, typing
 
@@ -2794,7 +2793,7 @@ Connectable
 
 .. attributetable:: discord.abc.Connectable
 
-.. autoclass:: discord.abc.Connectable
+.. autoclass:: discord.abc.Connectable()
 
 .. _discord_api_models:
 

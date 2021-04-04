@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import re
 import inspect
-from typing import TYPE_CHECKING, Generic, Optional, Protocol, TypeVar, Union, runtime_checkable
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, Union, runtime_checkable
 
 import discord
 from .errors import *
