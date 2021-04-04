@@ -92,22 +92,6 @@ def _cleanup_loop(loop):
         log.info('Closing the event loop.')
         loop.close()
 
-class _ClientEventTask(asyncio.Task):
-    def __init__(self, original_coro, event_name, coro, *, loop):
-        super().__init__(coro, loop=loop)
-        self.__event_name = event_name
-        self.__original_coro = original_coro
-
-    def __repr__(self):
-        info = [
-            ('state', self._state.lower()),
-            ('event', self.__event_name),
-            ('coro', repr(self.__original_coro)),
-        ]
-        if self._exception is not None:
-            info.append(('exception', repr(self._exception)))
-        return '<ClientEventTask {}>'.format(' '.join('%s=%s' % t for t in info))
-
 class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
@@ -350,7 +334,7 @@ class Client:
     def _schedule_event(self, coro, event_name, *args, **kwargs):
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return _ClientEventTask(original_coro=coro, event_name=event_name, coro=wrapped, loop=self.loop)
+        return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event, *args, **kwargs):
         log.debug('Dispatching event %s', event)
