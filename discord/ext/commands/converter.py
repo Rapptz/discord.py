@@ -858,7 +858,7 @@ class Greedy(GreedyBase[T]):
 
     converter: T
 
-    def __init__(self, *, converter=None):
+    def __init__(self, *, converter: T):
         self.converter = converter
 
     def __class_getitem__(cls, params: Union[tuple[T], T]) -> Greedy[T]:
