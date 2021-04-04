@@ -575,7 +575,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
-            if state.channel.id == self.id:
+            if state.channel and state.channel.id == self.id:
                 member = self.guild.get_member(user_id)
                 if member is not None:
                     ret.append(member)
