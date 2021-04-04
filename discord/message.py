@@ -112,7 +112,7 @@ class Attachment(Hashable):
         case of images. When the message is deleted, this URL might be valid for a few
         minutes or not valid at all.
     content_type: Optional[:class:`str`]
-        the attachment's [media type](https://en.wikipedia.org/wiki/Media_type)
+        The attachment's [media type](https://en.wikipedia.org/wiki/Media_type)
 
         .. versionadded: 1.7
     """
