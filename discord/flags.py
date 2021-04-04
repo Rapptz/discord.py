@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -48,7 +46,7 @@ class flag_value:
         instance._set_flag(self.flag, value)
 
     def __repr__(self):
-        return '<flag_value flag={.flag!r}>'.format(self)
+        return f'<flag_value flag={self.flag!r}>'
 
 class alias_flag_value(flag_value):
     pass
@@ -97,7 +95,7 @@ class BaseFlags:
         return hash(self.value)
 
     def __repr__(self):
-        return '<%s value=%s>' % (self.__class__.__name__, self.value)
+        return f'<{self.__class__.__name__} value={self.value}>'
 
     def __iter__(self):
         for name, value in self.__class__.__dict__.items():

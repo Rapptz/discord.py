@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -49,7 +47,8 @@ class EmbedProxy:
         return len(self.__dict__)
 
     def __repr__(self):
-        return 'EmbedProxy(%s)' % ', '.join(('%s=%r' % (k, v) for k, v in self.__dict__.items() if not k.startswith('_')))
+        inner = ', '.join((f'{k}={v!r}' for k, v in self.__dict__.items() if not k.startswith('_')))
+        return f'EmbedProxy({inner})'
 
     def __getattr__(self, attr):
         return EmptyEmbed

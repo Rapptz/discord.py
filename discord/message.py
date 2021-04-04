@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -58,7 +56,7 @@ def convert_emoji_reaction(emoji):
         emoji = emoji.emoji
 
     if isinstance(emoji, Emoji):
-        return '%s:%s' % (emoji.name, emoji.id)
+        return f'{emoji.name}:{emoji.id}'
     if isinstance(emoji, PartialEmoji):
         return emoji._as_reaction()
     if isinstance(emoji, str):
@@ -66,7 +64,7 @@ def convert_emoji_reaction(emoji):
         # No existing emojis have <> in them, so this should be okay.
         return emoji.strip('<>')
 
-    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+    raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
 
 class Attachment(Hashable):
     """Represents an attachment from Discord.
@@ -902,7 +900,7 @@ class Message(Hashable):
             return self.content
 
         if self.type is MessageType.pins_add:
-            return '{0.name} pinned a message to this channel.'.format(self.author)
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.recipient_add:
             return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
@@ -914,7 +912,7 @@ class Message(Hashable):
             return '{0.author.name} changed the channel name: {0.content}'.format(self)
 
         if self.type is MessageType.channel_icon_change:
-            return '{0.author.name} changed the channel icon.'.format(self)
+            return f'{self.author.name} changed the channel icon.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -946,14 +944,14 @@ class Message(Hashable):
             call_ended = self.call.ended_timestamp is not None
 
             if self.channel.me in self.call.participants:
-                return '{0.author.name} started a call.'.format(self)
+                return f'{self.author.name} started a call.'
             elif call_ended:
-                return 'You missed a call from {0.author.name}'.format(self)
+                return f'You missed a call from {self.author.name}'
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
         if self.type is MessageType.premium_guild_subscription:
-            return '{0.author.name} just boosted the server!'.format(self)
+            return f'{self.author.name} just boosted the server!'
 
         if self.type is MessageType.premium_guild_tier_1:
             return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)

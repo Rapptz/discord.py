@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -65,7 +63,7 @@ class Object(Hashable):
         try:
             id = int(id)
         except ValueError:
-            raise TypeError('id parameter must be convertable to int not {0.__class__!r}'.format(id)) from None
+            raise TypeError(f'id parameter must be convertable to int not {id.__class__!r}') from None
         else:
             self.id = id
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -109,14 +107,14 @@ class Permissions(BaseFlags):
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_superset(self, other):
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_strict_subset(self, other):
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
@@ -539,7 +537,7 @@ class PermissionOverwrite:
 
         for key, value in kwargs.items():
             if key not in self.VALID_NAMES:
-                raise ValueError('no permission called {0}.'.format(key))
+                raise ValueError(f'no permission called {key}.')
 
             setattr(self, key, value)
 
@@ -548,7 +546,7 @@ class PermissionOverwrite:
 
     def _set(self, key, value):
         if value not in (True, None, False):
-            raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
+            raise TypeError(f'Expected bool or NoneType, received {value.__class__.__name__}')
 
         if value is None:
             self._values.pop(key, None)

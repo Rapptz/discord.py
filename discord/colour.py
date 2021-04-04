@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -75,7 +73,7 @@ class Colour:
         return not self.__eq__(other)
 
     def __str__(self):
-        return '#{:0>6x}'.format(self.value)
+        return f'#{self.value:0>6x}'
 
     def __repr__(self):
         return '<Colour value=%s>' % self.value

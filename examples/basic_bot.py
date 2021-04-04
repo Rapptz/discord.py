@@ -61,7 +61,7 @@ async def cool(ctx):
     In reality this just checks if a subcommand is being invoked.
     """
     if ctx.invoked_subcommand is None:
-        await ctx.send('No, {0.subcommand_passed} is not cool'.format(ctx))
+        await ctx.send(f'No, {ctx.subcommand_passed} is not cool')
 
 @cool.command(name='bot')
 async def _bot(ctx):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -519,7 +517,7 @@ class PCMVolumeTransformer(AudioSource):
 
     def __init__(self, original, volume=1.0):
         if not isinstance(original, AudioSource):
-            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
+            raise TypeError(f'expected AudioSource not {original.__class__.__name__}.')
 
         if original.is_opus():
             raise ClientException('AudioSource must not be Opus encoded.')
@@ -619,7 +617,7 @@ class AudioPlayer(threading.Thread):
                 exc.__context__ = error
                 traceback.print_exception(type(exc), exc, exc.__traceback__)
         elif error:
-            msg = 'Exception in voice thread {}'.format(self.name)
+            msg = f'Exception in voice thread {self.name}'
             log.exception(msg, exc_info=error)
             print(msg, file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__)

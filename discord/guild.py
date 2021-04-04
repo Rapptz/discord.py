@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -209,11 +207,14 @@ class Guild(Hashable):
 
     def __repr__(self):
         attrs = (
-            'id', 'name', 'shard_id', 'chunked'
+            ('id', self.id),
+            ('name', self.name),
+            ('shard_id', self.shard_id),
+            ('chunked', self.chunked),
+            ('member_count', getattr(self, '_member_count', None)),
         )
-        resolved = ['%s=%r' % (attr, getattr(self, attr)) for attr in attrs]
-        resolved.append('member_count=%r' % getattr(self, '_member_count', None))
-        return '<Guild %s>' % ' '.join(resolved)
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<Guild {inner}>'
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -1507,7 +1508,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]
@@ -1593,7 +1594,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]

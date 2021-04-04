@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -166,7 +164,7 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def __repr__(self):
-        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
+        return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):

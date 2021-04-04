@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -236,7 +234,7 @@ class Widget:
     @property
     def json_url(self):
         """:class:`str`: The JSON URL of the widget."""
-        return "https://discord.com/api/guilds/{0.id}/widget.json".format(self)
+        return f"https://discord.com/api/guilds/{self.id}/widget.json"
 
     @property
     def invite_url(self):

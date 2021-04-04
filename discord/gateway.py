@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -162,8 +160,8 @@ class KeepAliveHandler(threading.Thread):
                         except KeyError:
                             msg = self.block_msg
                         else:
-                            stack = traceback.format_stack(frame)
-                            msg = '%s\nLoop thread traceback (most recent call last):\n%s' % (self.block_msg, ''.join(stack))
+                            stack = ''.join(traceback.format_stack(frame))
+                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
                         log.warning(msg, self.shard_id, total)
 
             except Exception:

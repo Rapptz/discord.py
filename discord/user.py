@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -199,7 +197,7 @@ class BaseUser(_BaseUser):
     @property
     def default_avatar_url(self):
         """:class:`Asset`: Returns a URL for a user's default avatar."""
-        return Asset(self._state, '/embed/avatars/{}.png'.format(self.default_avatar.value))
+        return Asset(self._state, f'/embed/avatars/{self.default_avatar.value}.png')
 
     @property
     def colour(self):
@@ -222,7 +220,7 @@ class BaseUser(_BaseUser):
     @property
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention the given user."""
-        return '<@{0.id}>'.format(self)
+        return f'<@{self.id}>'
 
     def permissions_in(self, channel):
         """An alias for :meth:`abc.GuildChannel.permissions_for`.
