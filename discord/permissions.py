@@ -214,6 +214,15 @@ class Permissions(BaseFlags):
         return cls(1 << 32)
 
     @classmethod
+    def stage_moderator(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(0b100000001010000000000000000000000)
+
+    @classmethod
     def advanced(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
@@ -221,7 +230,6 @@ class Permissions(BaseFlags):
         .. versionadded:: 1.7
         """
         return cls(1 << 3)
-
 
     def update(self, **kwargs):
         r"""Bulk updates this permission object.

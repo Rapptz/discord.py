@@ -372,6 +372,18 @@ class Guild(Hashable):
         return r
 
     @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
+
+        .. versionadded:: 1.7
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
     def me(self):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
@@ -974,6 +986,38 @@ class Guild(Hashable):
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
+    async def create_stage_channel(self, name, *, topic=None, category=None, overwrites=None, reason=None, position=None):
+        """|coro|
+
+        This is similar to :meth:`create_text_channel` except makes a :class:`StageChannel` instead.
+
+        .. note::
+
+            The ``slowmode_delay`` and ``nsfw`` parameters are not supported in this function.
+
+        .. versionadded:: 1.7
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, category, reason=reason, position=position, topic=topic)
+        channel = StageChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel

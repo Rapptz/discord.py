@@ -24,6 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import datetime
 import inspect
 import itertools
 import sys
@@ -32,6 +33,7 @@ from operator import attrgetter
 import discord.abc
 
 from . import utils
+from .errors import ClientException
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
@@ -59,15 +61,32 @@ class VoiceState:
 
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
+    suppress: :class:`bool`
+        Indicates if the user is suppressed from speaking.
+
+        Only applies to stage channels.
+
+        .. versionadded:: 1.7
+
+    requested_to_speak_at: Optional[:class:`datetime.datetime`]
+        A datetime object that specifies the date and time in UTC that the member
+        requested to speak. It will be ``None`` if they are not requesting to speak
+        anymore or have been accepted to speak.
+
+        Only applicable to stage channels.
+
+        .. versionadded:: 1.7
+
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[:class:`VoiceChannel`]
+    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
         The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
 
     __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel')
+                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel',
+                 'requested_to_speak_at', 'suppress')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -81,10 +100,20 @@ class VoiceState:
         self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
+        self.suppress = data.get('suppress', False)
+        self.requested_to_speak_at = utils.parse_time(data.get('request_to_speak_timestamp'))
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>'.format(self)
+        attrs = [
+            ('self_mute', self.self_mute),
+            ('self_deaf', self.self_deaf),
+            ('self_stream', self.self_stream),
+            ('suppress', self.suppress),
+            ('requested_to_speak_at', self.requested_to_speak_at),
+            ('channel', self.channel)
+        ]
+        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -559,6 +588,11 @@ class Member(discord.abc.Messageable, _BaseUser):
             Indicates if the member should be guild muted or un-muted.
         deafen: :class:`bool`
             Indicates if the member should be guild deafened or un-deafened.
+        suppress: :class:`bool`
+            Indicates if the member should be suppressed in stage channels.
+
+            .. versionadded:: 1.7
+
         roles: Optional[List[:class:`Role`]]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
@@ -576,6 +610,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         http = self._state.http
         guild_id = self.guild.id
+        me = self._state.self_id == self.id
         payload = {}
 
         try:
@@ -585,7 +620,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             pass
         else:
             nick = nick or ''
-            if self._state.self_id == self.id:
+            if me:
                 await http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
@@ -597,6 +632,23 @@ class Member(discord.abc.Messageable, _BaseUser):
         mute = fields.get('mute')
         if mute is not None:
             payload['mute'] = mute
+
+        suppress = fields.get('suppress')
+        if suppress is not None:
+            voice_state_payload = {
+                'channel_id': self.voice.channel.id,
+                'suppress': suppress,
+            }
+
+            if suppress or self.bot:
+                voice_state_payload['request_to_speak_timestamp'] = None
+
+            if me:
+                await http.edit_my_voice_state(guild_id, voice_state_payload)
+            else:
+                if not suppress:
+                    voice_state_payload['request_to_speak_timestamp'] = datetime.datetime.utcnow().isoformat()
+                await http.edit_voice_state(guild_id, self.id, voice_state_payload)
 
         try:
             vc = fields['voice_channel']
@@ -612,9 +664,42 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             payload['roles'] = tuple(r.id for r in roles)
 
-        await http.edit_member(guild_id, self.id, reason=reason, **payload)
+        if payload:
+            await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         # TODO: wait for WS event for modify-in-place behaviour
+
+    async def request_to_speak(self):
+        """|coro|
+
+        Request to speak in the connected channel.
+
+        Only applies to stage channels.
+
+        .. note::
+
+            Requesting members that are not the client is equivalent
+            to :attr:`.edit` providing ``suppress`` as ``False``.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to the action requested.
+        HTTPException
+            The operation failed.
+        """
+        payload = {
+            'channel_id': self.voice.channel.id,
+            'request_to_speak_timestamp': datetime.datetime.utcnow().isoformat(),
+        }
+
+        if self._state.self_id != self.id:
+            payload['suppress'] = False
+            await self._state.http.edit_voice_state(self.guild.id, self.id, payload)
+        else:
+            await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
     async def move_to(self, channel, *, reason=None):
         """|coro|

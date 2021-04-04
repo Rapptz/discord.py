@@ -46,6 +46,7 @@ __all__ = (
     'ColourConverter',
     'ColorConverter',
     'VoiceChannelConverter',
+    'StageChannelConverter',
     'EmojiConverter',
     'PartialEmojiConverter',
     'CategoryChannelConverter',
@@ -392,6 +393,46 @@ class VoiceChannelConverter(IDConverter):
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 
         if not isinstance(result, discord.VoiceChannel):
+            raise ChannelNotFound(argument)
+
+        return result
+
+class StageChannelConverter(IDConverter):
+    """Converts to a :class:`~discord.StageChannel`.
+
+    .. versionadded:: 1.7
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+    """
+    async def convert(self, ctx, argument):
+        bot = ctx.bot
+        match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        result = None
+        guild = ctx.guild
+
+        if match is None:
+            # not a mention
+            if guild:
+                result = discord.utils.get(guild.stage_channels, name=argument)
+            else:
+                def check(c):
+                    return isinstance(c, discord.StageChannel) and c.name == argument
+                result = discord.utils.find(check, bot.get_all_channels())
+        else:
+            channel_id = int(match.group(1))
+            if guild:
+                result = guild.get_channel(channel_id)
+            else:
+                result = _get_from_guilds(bot, 'get_channel', channel_id)
+
+        if not isinstance(result, discord.StageChannel):
             raise ChannelNotFound(argument)
 
         return result
