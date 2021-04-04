@@ -132,7 +132,7 @@ class Template:
         return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
                ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
 
-    async def create_guild(self, name, region=None, icon=None):
+    async def create_guild(self, name, icon=None):
         """|coro|
 
         Creates a :class:`.Guild` using the template.
@@ -143,9 +143,6 @@ class Template:
         ----------
         name: :class:`str`
             The name of the guild.
-        region: :class:`.VoiceRegion`
-            The region for the voice communication server.
-            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
@@ -166,10 +163,7 @@ class Template:
         if icon is not None:
             icon = _bytes_to_base64_data(icon)
 
-        region = region or VoiceRegion.us_west
-        region_value = region.value
-
-        data = await self._state.http.create_from_template(self.code, name, region_value, icon)
+        data = await self._state.http.create_from_template(self.code, name, icon)
         return Guild(data=data, state=self._state)
 
     async def sync(self):
