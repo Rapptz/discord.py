@@ -52,7 +52,6 @@ def core(parser, args):
         show_version()
 
 bot_template = """#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from discord.ext import commands
 import discord
@@ -108,9 +107,7 @@ var/
 config.py
 """
 
-cog_template = '''# -*- coding: utf-8 -*-
-
-from discord.ext import commands
+cog_template = '''from discord.ext import commands
 import discord
 
 class {name}(commands.Cog{attrs}):
