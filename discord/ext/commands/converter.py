@@ -111,11 +111,11 @@ class Converter(Protocol[T]):
         raise NotImplementedError('Derived classes need to implement this.')
 
 class IDConverter(Converter[T]):
-    def __init__(self) -> None:
+    def __init__(self):
         self._id_regex = re.compile(r'([0-9]{15,20})$')
         super().__init__()
 
-    def _get_id_match(self, argument: str) -> re.Match[Optional[str]]:
+    def _get_id_match(self, argument):
         return self._id_regex.match(argument)
 
 class MemberConverter(IDConverter[discord.Member]):
