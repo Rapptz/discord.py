@@ -78,11 +78,6 @@ class Guild(Hashable):
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
         All emojis that the guild owns.
-    region: :class:`VoiceRegion`
-        The region the guild belongs on. There is a chance that the region
-        will be a :class:`str` if the value is not recognised by the enumerator.
-        
-        .. deprecated:: 1.7
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
@@ -276,7 +271,6 @@ class Guild(Hashable):
             self._member_count = member_count
 
         self.name = guild.get('name')
-        self.region = None
         self.verification_level = try_enum(VerificationLevel, guild.get('verification_level'))
         self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
@@ -1122,10 +1116,6 @@ class Guild(Hashable):
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``INVITE_SPLASH``
             in :attr:`Guild.features`.
-        region: :class:`VoiceRegion`
-            The new region for the guild's voice communication.
-            
-            .. deprecated:: 1.7
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
