@@ -137,7 +137,9 @@ class PrivateChannel(Snowflake, Protocol):
         The user presenting yourself.
     """
     __slots__ = ()
+
     me: ClientUser
+
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
@@ -155,6 +157,7 @@ class _Overwrites:
             'deny': str(self.deny),
             'type': self.type,
         }
+
 
 class GuildChannel(Protocol):
     """An ABC that details the common operations on a Discord guild channel.
@@ -771,14 +774,14 @@ class GuildChannel(Protocol):
                 ch
                 for ch in self.guild.channels
                 if ch._sorting_bucket == bucket
-                   and ch.category_id == parent_id
+                and ch.category_id == parent_id
             ]
         else:
             channels = [
                 ch
                 for ch in self.guild.channels
                 if ch._sorting_bucket == bucket
-                   and ch.category_id == self.category_id
+                and ch.category_id == self.category_id
             ]
 
         channels.sort(key=lambda c: (c.position, c.id))
@@ -889,6 +892,7 @@ class GuildChannel(Protocol):
 
         return result
 
+
 class Messageable(Protocol):
     """An ABC that details the common operations on a model that can send messages.
 
@@ -914,9 +918,9 @@ class Messageable(Protocol):
         raise NotImplementedError
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
-                   files=None, delete_after=None, nonce=None,
-                   allowed_mentions=None, reference=None,
-                   mention_author=None):
+                                          files=None, delete_after=None, nonce=None,
+                                          allowed_mentions=None, reference=None,
+                                          mention_author=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1198,6 +1202,7 @@ class Messageable(Protocol):
             The message with the message data parsed.
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
+
 
 class Connectable(Protocol):
     """An ABC that details the common operations on a channel that can
