@@ -502,7 +502,7 @@ class Command(_BaseCommand):
                 # if we're here, then we failed all the converters
                 raise BadUnionArgument(param, converter.__args__, errors)
 
-            if self._is_typing_literal(converter):
+            if hasattr(typing, 'Literal') and origin is typing.Literal:
                 errors = []
                 for literal in self._flatten_typing_literal_args(converter):
                     try:
