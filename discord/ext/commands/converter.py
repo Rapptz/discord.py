@@ -479,7 +479,7 @@ class CategoryChannelConverter(IDConverter):
             raise ChannelNotFound(argument)
 
         return result
-    
+
 class StoreChannelConverter(IDConverter):
     """Converts to a :class:`~discord.StoreChannel`.
 
@@ -490,15 +490,17 @@ class StoreChannelConverter(IDConverter):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by name.
+
+    .. versionadded:: 1.7
     """
-    
+
     async def convert(self, ctx, argument):
         bot = ctx.bot
         match = self._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
         result = None
         guild = ctx.guild
-        
+
         if match is None:
             # not a mention
             if guild:
@@ -759,7 +761,7 @@ class clean_content(Converter):
         Whether to also escape special markdown characters.
     remove_markdown: :class:`bool`
         Whether to also remove special markdown characters. This option is not supported with ``escape_markdown``
-        
+
         .. versionadded:: 1.7
     """
     def __init__(self, *, fix_channel_mentions=False, use_nicknames=True, escape_markdown=False, remove_markdown=False):
