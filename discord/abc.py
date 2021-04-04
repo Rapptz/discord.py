@@ -22,10 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import abc
 import sys
 import copy
 import asyncio
+from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -39,13 +42,22 @@ from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
 
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from .user import ClientUser
+
+
 class _Undefined:
     def __repr__(self):
         return 'see-below'
 
+
 _undefined = _Undefined()
 
-class Snowflake(metaclass=abc.ABCMeta):
+
+@runtime_checkable
+class Snowflake(Protocol):
     """An ABC that details the common operations on a Discord model.
 
     Almost all :ref:`Discord models <discord_api_models>` meet this
@@ -60,27 +72,17 @@ class Snowflake(metaclass=abc.ABCMeta):
         The model's unique ID.
     """
     __slots__ = ()
+    id: int
 
     @property
     @abc.abstractmethod
-    def created_at(self):
+    def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC."""
         raise NotImplementedError
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is Snowflake:
-            mro = C.__mro__
-            for attr in ('created_at', 'id'):
-                for base in mro:
-                    if attr in base.__dict__:
-                        break
-                else:
-                    return NotImplemented
-            return True
-        return NotImplemented
 
-class User(metaclass=abc.ABCMeta):
+@runtime_checkable
+class User(Protocol, Snowflake):
     """An ABC that details the common operations on a Discord user.
 
     The following implement this ABC:
@@ -104,35 +106,26 @@ class User(metaclass=abc.ABCMeta):
     """
     __slots__ = ()
 
+    name: str
+    discriminator: str
+    avatar: Optional[str]
+    bot: bool
+
     @property
     @abc.abstractmethod
-    def display_name(self):
+    def display_name(self) -> str:
         """:class:`str`: Returns the user's display name."""
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
-    def mention(self):
+    def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given user."""
         raise NotImplementedError
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is User:
-            if Snowflake.__subclasshook__(C) is NotImplemented:
-                return NotImplemented
 
-            mro = C.__mro__
-            for attr in ('display_name', 'mention', 'name', 'avatar', 'discriminator', 'bot'):
-                for base in mro:
-                    if attr in base.__dict__:
-                        break
-                else:
-                    return NotImplemented
-            return True
-        return NotImplemented
-
-class PrivateChannel(metaclass=abc.ABCMeta):
+@runtime_checkable
+class PrivateChannel(Snowflake, Protocol):
     """An ABC that details the common operations on a private Discord channel.
 
     The following implement this ABC:
@@ -148,19 +141,7 @@ class PrivateChannel(metaclass=abc.ABCMeta):
         The user presenting yourself.
     """
     __slots__ = ()
-
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is PrivateChannel:
-            if Snowflake.__subclasshook__(C) is NotImplemented:
-                return NotImplemented
-
-            mro = C.__mro__
-            for base in mro:
-                if 'me' in base.__dict__:
-                    return True
-            return NotImplemented
-        return NotImplemented
+    me: ClientUser
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')

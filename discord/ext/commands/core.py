@@ -450,11 +450,6 @@ class Command(_BaseCommand):
                     instance = converter()
                     ret = await instance.convert(ctx, argument)
                     return ret
-                else:
-                    method = getattr(converter, 'convert', None)
-                    if method is not None and inspect.ismethod(method):
-                        ret = await method(ctx, argument)
-                        return ret
             elif isinstance(converter, converters.Converter):
                 ret = await converter.convert(ctx, argument)
                 return ret
