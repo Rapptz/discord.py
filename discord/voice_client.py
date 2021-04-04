@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -558,7 +556,7 @@ class VoiceClient(VoiceProtocol):
             raise ClientException('Already playing audio.')
 
         if not isinstance(source, AudioSource):
-            raise TypeError('source must an AudioSource not {0.__class__.__name__}'.format(source))
+            raise TypeError(f'source must an AudioSource not {source.__class__.__name__}')
 
         if not self.encoder and not source.is_opus():
             self.encoder = opus.Encoder()
@@ -601,7 +599,7 @@ class VoiceClient(VoiceProtocol):
     @source.setter
     def source(self, value):
         if not isinstance(value, AudioSource):
-            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(value))
+            raise TypeError(f'expected AudioSource not {value.__class__.__name__}.')
 
         if self._player is None:
             raise ValueError('Not playing anything.')

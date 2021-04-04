@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -57,8 +55,8 @@ __all__ = (
 
 def _create_value_cls(name):
     cls = namedtuple('_EnumValue_' + name, 'name value')
-    cls.__repr__ = lambda self: '<%s.%s: %r>' % (name, self.name, self.value)
-    cls.__str__ = lambda self: '%s.%s' % (name, self.name)
+    cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'
+    cls.__str__ = lambda self: f'{name}.{self.name}'
     return cls
 
 def _is_descriptor(obj):
@@ -112,7 +110,7 @@ class EnumMeta(type):
         return len(cls._enum_member_names_)
 
     def __repr__(cls):
-        return '<enum %r>' % cls.__name__
+        return f'<enum {cls.__name__}>'
 
     @property
     def __members__(cls):
@@ -122,7 +120,7 @@ class EnumMeta(type):
         try:
             return cls._enum_value_map_[value]
         except (KeyError, TypeError):
-            raise ValueError("%r is not a valid %s" % (value, cls.__name__))
+            raise ValueError(f"{value!r} is not a valid {cls.__name__}")
 
     def __getitem__(cls, key):
         return cls._enum_member_map_[key]

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -48,7 +46,7 @@ class flag_value:
         instance._set_flag(self.flag, value)
 
     def __repr__(self):
-        return '<flag_value flag={.flag!r}>'.format(self)
+        return f'<flag_value flag={self.flag!r}>'
 
 class alias_flag_value(flag_value):
     pass
@@ -78,7 +76,7 @@ class BaseFlags:
         self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod
@@ -97,7 +95,7 @@ class BaseFlags:
         return hash(self.value)
 
     def __repr__(self):
-        return '<%s value=%s>' % (self.__class__.__name__, self.value)
+        return f'<{self.__class__.__name__} value={self.value}>'
 
     def __iter__(self):
         for name, value in self.__class__.__dict__.items():
@@ -116,7 +114,7 @@ class BaseFlags:
         elif toggle is False:
             self.value &= ~o
         else:
-            raise TypeError('Value to set for %s must be a bool.' % self.__class__.__name__)
+            raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
 
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
@@ -399,7 +397,7 @@ class Intents(BaseFlags):
         self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod
@@ -832,7 +830,7 @@ class MemberCacheFlags(BaseFlags):
         self.value = (1 << bits) - 1
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod

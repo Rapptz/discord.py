@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -76,7 +74,7 @@ class _PartialTemplateState:
         return []
 
     def __getattr__(self, attr):
-        raise AttributeError('PartialTemplateState does not support {0!r}.'.format(attr))
+        raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
 
 class Template:
     """Represents a Discord template.

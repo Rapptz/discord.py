@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -777,7 +775,7 @@ class clean_content(Converter):
         if self.fix_channel_mentions and ctx.guild:
             def resolve_channel(id, *, _get=ctx.guild.get_channel):
                 ch = _get(id)
-                return ('<#%s>' % id), ('#' + ch.name if ch else '#deleted-channel')
+                return (f'<#{id}>'), ('#' + ch.name if ch else '#deleted-channel')
 
             transformations.update(resolve_channel(channel) for channel in message.raw_channel_mentions)
 
@@ -792,12 +790,12 @@ class clean_content(Converter):
 
 
         transformations.update(
-            ('<@%s>' % member_id, resolve_member(member_id))
+            (f'<@{member_id}>', resolve_member(member_id))
             for member_id in message.raw_mentions
         )
 
         transformations.update(
-            ('<@!%s>' % member_id, resolve_member(member_id))
+            (f'<@!{member_id}>', resolve_member(member_id))
             for member_id in message.raw_mentions
         )
 
@@ -807,7 +805,7 @@ class clean_content(Converter):
                 return '@' + r.name if r else '@deleted-role'
 
             transformations.update(
-                ('<@&%s>' % role_id, resolve_role(role_id))
+                (f'<@&{role_id}>', resolve_role(role_id))
                 for role_id in message.raw_role_mentions
             )
 
@@ -842,10 +840,10 @@ class _Greedy:
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
         if converter is str or converter is type(None) or converter is _Greedy:
-            raise TypeError('Greedy[%s] is invalid.' % converter.__name__)
+            raise TypeError(f'Greedy[{converter.__name__}] is invalid.')
 
         if getattr(converter, '__origin__', None) is typing.Union and type(None) in converter.__args__:
-            raise TypeError('Greedy[%r] is invalid.' % converter)
+            raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
         return self.__class__(converter=converter)
 

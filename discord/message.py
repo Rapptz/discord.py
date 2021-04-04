@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -58,7 +56,7 @@ def convert_emoji_reaction(emoji):
         emoji = emoji.emoji
 
     if isinstance(emoji, Emoji):
-        return '%s:%s' % (emoji.name, emoji.id)
+        return f'{emoji.name}:{emoji.id}'
     if isinstance(emoji, PartialEmoji):
         return emoji._as_reaction()
     if isinstance(emoji, str):
@@ -66,7 +64,7 @@ def convert_emoji_reaction(emoji):
         # No existing emojis have <> in them, so this should be okay.
         return emoji.strip('<>')
 
-    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+    raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
 
 class Attachment(Hashable):
     """Represents an attachment from Discord.
@@ -585,7 +583,7 @@ class Message(Hashable):
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
             try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
+                getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
                 continue
 
@@ -828,23 +826,23 @@ class Message(Hashable):
         .. note::
 
             This *does not* affect markdown. If you want to escape
-            or remove markdown then use :func:`utils.escape_markdown` or :func:`utils.remove_markdown` 
+            or remove markdown then use :func:`utils.escape_markdown` or :func:`utils.remove_markdown`
             respectively, along with this function.
         """
 
         transformations = {
-            re.escape('<#%s>' % channel.id): '#' + channel.name
+            re.escape(f'<#{channel.id}>'): '#' + channel.name
             for channel in self.channel_mentions
         }
 
         mention_transforms = {
-            re.escape('<@%s>' % member.id): '@' + member.display_name
+            re.escape(f'<@{member.id}>'): '@' + member.display_name
             for member in self.mentions
         }
 
         # add the <@!user_id> cases as well..
         second_mention_transforms = {
-            re.escape('<@!%s>' % member.id): '@' + member.display_name
+            re.escape(f'<@!{member.id}>'): '@' + member.display_name
             for member in self.mentions
         }
 
@@ -853,7 +851,7 @@ class Message(Hashable):
 
         if self.guild is not None:
             role_transforms = {
-                re.escape('<@&%s>' % role.id): '@' + role.name
+                re.escape(f'<@&{role.id}>'): '@' + role.name
                 for role in self.role_mentions
             }
             transformations.update(role_transforms)
@@ -902,7 +900,7 @@ class Message(Hashable):
             return self.content
 
         if self.type is MessageType.pins_add:
-            return '{0.name} pinned a message to this channel.'.format(self.author)
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.recipient_add:
             return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
@@ -914,7 +912,7 @@ class Message(Hashable):
             return '{0.author.name} changed the channel name: {0.content}'.format(self)
 
         if self.type is MessageType.channel_icon_change:
-            return '{0.author.name} changed the channel icon.'.format(self)
+            return f'{self.author.name} changed the channel icon.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -946,14 +944,14 @@ class Message(Hashable):
             call_ended = self.call.ended_timestamp is not None
 
             if self.channel.me in self.call.participants:
-                return '{0.author.name} started a call.'.format(self)
+                return f'{self.author.name} started a call.'
             elif call_ended:
-                return 'You missed a call from {0.author.name}'.format(self)
+                return f'You missed a call from {self.author.name}'
             else:
                 return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
         if self.type is MessageType.premium_guild_subscription:
-            return '{0.author.name} just boosted the server!'.format(self)
+            return f'{self.author.name} just boosted the server!'
 
         if self.type is MessageType.premium_guild_tier_1:
             return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
@@ -1447,7 +1445,7 @@ class PartialMessage(Hashable):
 
     def __init__(self, *, channel, id):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError('Expected TextChannel or DMChannel not %r' % type(channel))
+            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
 
         self.channel = channel
         self._state = channel._state

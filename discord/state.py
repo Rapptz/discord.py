@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -149,7 +147,7 @@ class ConnectionState:
         intents = options.get('intents', None)
         if intents is not None:
             if not isinstance(intents, Intents):
-                raise TypeError('intents parameter must be Intent not %r' % type(intents))
+                raise TypeError(f'intents parameter must be Intent not {type(intents)!r}')
         else:
             intents = Intents.default()
 
@@ -175,7 +173,7 @@ class ConnectionState:
             cache_flags = MemberCacheFlags.from_intents(intents)
         else:
             if not isinstance(cache_flags, MemberCacheFlags):
-                raise TypeError('member_cache_flags parameter must be MemberCacheFlags not %r' % type(cache_flags))
+                raise TypeError(f'member_cache_flags parameter must be MemberCacheFlags not {type(cache_flags)!r}')
 
             cache_flags._verify_intents(intents)
 

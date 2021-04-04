@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -403,7 +401,7 @@ class Client:
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
         """
-        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
+        print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
 
     @utils.deprecated('Guild.chunk')
@@ -516,7 +514,7 @@ class Client:
         """|coro|
 
         Logs out of Discord and closes all connections.
-        
+
         .. deprecated:: 1.7
 
         .. note::
@@ -660,7 +658,7 @@ class Client:
         reconnect = kwargs.pop('reconnect', True)
 
         if kwargs:
-            raise TypeError("unexpected keyword argument(s) %s" % list(kwargs.keys()))
+            raise TypeError(f"unexpected keyword argument(s) {list(kwargs.keys())}")
 
         await self.login(*args, bot=bot)
         await self.connect(reconnect=reconnect)
@@ -760,7 +758,7 @@ class Client:
         if value is None or isinstance(value, AllowedMentions):
             self._connection.allowed_mentions = value
         else:
-            raise TypeError('allowed_mentions must be AllowedMentions not {0.__class__!r}'.format(value))
+            raise TypeError(f'allowed_mentions must be AllowedMentions not {value.__class__!r}')
 
     @property
     def intents(self):
@@ -859,8 +857,7 @@ class Client:
         """
 
         for guild in self.guilds:
-            for channel in guild.channels:
-                yield channel
+            yield from guild.channels
 
     def get_all_members(self):
         """Returns a generator with every :class:`.Member` the client can see.
@@ -877,8 +874,7 @@ class Client:
             A member the client can see.
         """
         for guild in self.guilds:
-            for member in guild.members:
-                yield member
+            yield from guild.members
 
     # listeners/waiters
 

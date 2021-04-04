@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -46,7 +44,7 @@ def when_mentioned(bot, msg):
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
-    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
+    return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
@@ -114,7 +112,7 @@ class BotBase(GroupMixin):
             raise TypeError('Both owner_id and owner_ids are set.')
 
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
-            raise TypeError('owner_ids must be a collection not {0.__class__!r}'.format(self.owner_ids))
+            raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -169,7 +167,7 @@ class BotBase(GroupMixin):
         if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
             return
 
-        print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
+        print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     # global check registration
@@ -944,7 +942,7 @@ class BotBase(GroupMixin):
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound(f'Command "{ctx.invoked_with}" is not found')
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):

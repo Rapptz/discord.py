@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -404,7 +402,7 @@ class HTTPClient:
         else:
             for index, file in enumerate(files):
                 form.append({
-                    'name': 'file%s' % index,
+                    'name': f'file{index}',
                     'value': file.fp,
                     'filename': file.filename,
                     'content_type': 'application/octet-stream'

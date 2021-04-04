@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -113,7 +111,8 @@ class VoiceState:
             ('requested_to_speak_at', self.requested_to_speak_at),
             ('channel', self.channel)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {inner}>'
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -129,7 +128,7 @@ def flatten_user(cls):
         # slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
             getter = attrgetter('_user.' + attr)
-            setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
+            setattr(cls, attr, property(getter, doc=f'Equivalent to :attr:`User.{attr}`'))
         else:
             # Technically, this can also use attrgetter
             # However I'm not sure how I feel about "functions" returning properties
@@ -222,8 +221,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         return str(self._user)
 
     def __repr__(self):
-        return '<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}' \
-               ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
+        return f'<Member id={self._user.id} name={self._user.name!r} discriminator={self._user.discriminator!r}' \
+               f' bot={self._user.bot} nick={self.nick!r} guild={self.guild!r}>'
 
     def __eq__(self, other):
         return isinstance(other, _BaseUser) and other.id == self.id
@@ -422,8 +421,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention the member."""
         if self.nick:
-            return '<@!%s>' % self.id
-        return '<@%s>' % self.id
+            return f'<@!{self._user.id}>'
+        return f'<@{self._user.id}>'
 
     @property
     def display_name(self):

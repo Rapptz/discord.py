@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -48,7 +46,7 @@ class GatewayNotFound(DiscordException):
     for the :class:`Client` websocket is not found."""
     def __init__(self):
         message = 'The gateway to connect to discord was not found.'
-        super(GatewayNotFound, self).__init__(message)
+        super().__init__(message)
 
 def flatten_error_dict(d, key=''):
     items = []
@@ -174,7 +172,7 @@ class ConnectionClosed(ClientException):
         # aiohttp doesn't seem to consistently provide close reason
         self.reason = ''
         self.shard_id = shard_id
-        super().__init__('Shard ID %s WebSocket closed with %s' % (self.shard_id, self.code))
+        super().__init__(f'Shard ID {self.shard_id} WebSocket closed with {self.code}')
 
 class PrivilegedIntentsRequired(ClientException):
     """Exception that's thrown when the gateway is requesting privileged intents

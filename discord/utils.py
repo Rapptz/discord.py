@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -158,7 +156,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes
     :class:`str`
         The OAuth2 URL for inviting the bot into guilds.
     """
-    url = 'https://discord.com/oauth2/authorize?client_id={}'.format(client_id)
+    url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
     url = url + '&scope=' + '+'.join(scopes or ('bot',))
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
@@ -489,21 +487,21 @@ _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(
 
 _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON), re.MULTILINE)
+_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
-_MARKDOWN_STOCK_REGEX = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
 
 def remove_markdown(text, *, ignore_links=True):
     """A helper function that removes markdown characters.
 
     .. versionadded:: 1.7
-    
+
     .. note::
             This function is not markdown aware and may remove meaning from the original text. For example,
             if the input contains ``10 * 5`` then it will be converted into ``10  5``.
-    
+
     Parameters
     -----------
     text: :class:`str`
@@ -525,7 +523,7 @@ def remove_markdown(text, *, ignore_links=True):
 
     regex = _MARKDOWN_STOCK_REGEX
     if ignore_links:
-        regex = '(?:%s|%s)' % (_URL_REGEX, regex)
+        regex = f'(?:{_URL_REGEX}|{regex})'
     return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
@@ -563,7 +561,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
 
         regex = _MARKDOWN_STOCK_REGEX
         if ignore_links:
-            regex = '(?:%s|%s)' % (_URL_REGEX, regex)
+            regex = f'(?:{_URL_REGEX}|{regex})'
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
     else:
         text = re.sub(r'\\', r'\\\\', text)

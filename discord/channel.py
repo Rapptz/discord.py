@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -115,7 +113,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             ('news', self.is_news()),
             ('category_id', self.category_id)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -668,7 +667,8 @@ class VoiceChannel(VocalGuildChannel):
             ('user_limit', self.user_limit),
             ('category_id', self.category_id)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     @property
     def type(self):
@@ -791,7 +791,8 @@ class StageChannel(VocalGuildChannel):
             ('user_limit', self.user_limit),
             ('category_id', self.category_id)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     def _update(self, guild, data):
         super()._update(guild, data)
@@ -1219,7 +1220,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     def __str__(self):
-        return 'Direct Message with %s' % self.recipient
+        return f'Direct Message with {self.recipient}'
 
     def __repr__(self):
         return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
