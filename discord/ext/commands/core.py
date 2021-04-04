@@ -476,45 +476,42 @@ class Command(_BaseCommand):
             raise BadArgument('Converting to "{}" failed for parameter "{}".'.format(name, param.name)) from exc
 
     async def do_conversion(self, ctx, converter, argument, param):
-        try:
-            origin = converter.__origin__
-        except AttributeError:
-            pass
-        else:
-            if origin is typing.Union:
-                errors = []
-                _NoneType = type(None)
-                for conv in converter.__args__:
-                    # if we got to this part in the code, then the previous conversions have failed
-                    # so we should just undo the view, return the default, and allow parsing to continue
-                    # with the other parameters
-                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
-                        ctx.view.undo()
-                        return None if param.default is param.empty else param.default
+        origin = typing.get_origin(converter)
 
-                    try:
-                        value = await self.do_conversion(ctx, conv, argument, param)
-                    except CommandError as exc:
-                        errors.append(exc)
-                    else:
+        if origin is typing.Union:
+            errors = []
+            _NoneType = type(None)
+            for conv in typing.get_args(converter):
+                # if we got to this part in the code, then the previous conversions have failed
+                # so we should just undo the view, return the default, and allow parsing to continue
+                # with the other parameters
+                if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                    ctx.view.undo()
+                    return None if param.default is param.empty else param.default
+
+                try:
+                    value = await self.do_conversion(ctx, conv, argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                else:
+                    return value
+
+            # if we're here, then we failed all the converters
+            raise BadUnionArgument(param, typing.get_args(converter), errors)
+
+        if origin is typing.Literal:
+            errors = []
+            for literal in self._flattened_typing_literal_args(converter):
+                try:
+                    value = await self._actual_conversion(ctx, type(literal), argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                else:
+                    if value == literal:
                         return value
 
-                # if we're here, then we failed all the converters
-                raise BadUnionArgument(param, converter.__args__, errors)
-
-            if hasattr(typing, 'Literal') and origin is typing.Literal:
-                errors = []
-                for literal in self._flatten_typing_literal_args(converter):
-                    try:
-                        value = await self._actual_conversion(ctx, type(literal), argument, param)
-                    except CommandError as exc:
-                        errors.append(exc)
-                    else:
-                        if value == literal:
-                            return value
-
-                # if we're here, then we failed to match all the literals
-                raise BadLiteralArgument(param, tuple(self._flatten_typing_literal_args(converter)), errors)
+            # if we're here, then we failed to match all the literals
+            raise BadLiteralArgument(param, tuple(self._flattened_typing_literal_args(converter)), errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
@@ -998,31 +995,15 @@ class Command(_BaseCommand):
         return ''
 
     def _is_typing_optional(self, annotation):
-        try:
-            origin = annotation.__origin__
-        except AttributeError:
-            return False
-
-        if origin is not typing.Union:
-            return False
-
-        return annotation.__args__[-1] is type(None)
+        return typing.get_origin(annotation) is typing.Union and typing.get_args(annotation)[-1] is type(None)
 
     def _is_typing_literal(self, annotation):
-        try:
-            origin = annotation.__origin__
-        except AttributeError:
-            return False
+        return typing.get_origin(annotation) is typing.Literal
 
-        if hasattr(typing, 'Literal') and origin is typing.Literal:
-            return True
-
-        return False
-
-    def _flatten_typing_literal_args(self, annotation):
-        for literal in annotation.__args__:
+    def _flattened_typing_literal_args(self, annotation):
+        for literal in typing.get_args(annotation):
             if self._is_typing_literal(literal):
-                yield from self._flatten_typing_literal_args(literal)
+                yield from self._flattened_typing_literal_args(literal)
             else:
                 yield literal
 
@@ -1046,11 +1027,11 @@ class Command(_BaseCommand):
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of its values
             if self._is_typing_literal(param.annotation):
-                name = '|'.join(value_str(v) for v in self._flatten_typing_literal_args(param.annotation))
-            elif self._is_typing_optional(param.annotation) and self._is_typing_literal(param.annotation.__args__[0]):
-                name = '|'.join(value_str(v) for v in self._flatten_typing_literal_args(param.annotation.__args__[0]))
+                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(param.annotation))
+            elif self._is_typing_optional(param.annotation) and self._is_typing_literal(typing.get_args(param.annotation)[0]):
+                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(typing.get_args(param.annotation)[0]))
             elif greedy and self._is_typing_literal(param.annotation.converter):
-                name = '|'.join(value_str(v) for v in self._flatten_typing_literal_args(param.annotation.converter))
+                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(param.annotation.converter))
 
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should

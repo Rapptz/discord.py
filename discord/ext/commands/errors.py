@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
+import typing
 
 
 __all__ = (
@@ -648,7 +649,7 @@ class BadUnionArgument(UserInputError):
                 return x.__name__
             except AttributeError:
                 pass
-            if getattr(x, '__origin__', None) is not None:
+            if typing.get_origin(x) is not None:
                 return repr(x)
             return x.__class__.__name__
 
@@ -666,7 +667,7 @@ class BadLiteralArgument(UserInputError):
 
     This inherits from :exc:`UserInputError`
 
-    .. versionadded:: 1.7
+    .. versionadded:: 2.0
 
     Attributes
     -----------
