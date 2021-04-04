@@ -39,7 +39,7 @@ from .channel import _channel_factory
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
-from .enums import Status, VoiceRegion
+from .enums import Status
 from .gateway import *
 from .activity import BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -1168,7 +1168,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None, *, code=None):
+    async def create_guild(self, name, icon=None, *, code=None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1179,9 +1179,6 @@ class Client:
         ----------
         name: :class:`str`
             The name of the guild.
-        region: :class:`.VoiceRegion`
-            The region for the voice communication server.
-            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
@@ -1205,14 +1202,10 @@ class Client:
         """
         if icon is not None:
             icon = utils._bytes_to_base64_data(icon)
-
-        region = region or VoiceRegion.us_west
-        region_value = region.value
-
         if code:
-            data = await self.http.create_from_template(code, name, region_value, icon)
+            data = await self.http.create_from_template(code, name, icon)
         else:
-            data = await self.http.create_guild(name, region_value, icon)
+            data = await self.http.create_guild(name, icon)
         return Guild(data=data, state=self._connection)
 
     # Invite management
