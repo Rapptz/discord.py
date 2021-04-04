@@ -27,7 +27,7 @@ from __future__ import annotations
 import re
 import inspect
 import sys
-from typing import TYPE_CHECKING, Any, Generic, List, NoReturn, TypeVar, Union, get_args, get_origin
+from typing import List, TypeVar, Union, get_args, get_origin
 
 import discord
 
@@ -829,15 +829,37 @@ class clean_content(Converter):
         return discord.utils.escape_mentions(result)
 
 
-class Greedy(Generic[T]):
-    __slots__ = ('converter',)
+GreedyBase = list if sys.version_info >= (3, 9) else List
+
+
+class Greedy(GreedyBase[T]):
+    """A special converter that greedily consumes arguments until it can't.
+    As a consequence of this behaviour, most input errors are silently discarded,
+    since it is used as an indicator of when to stop parsing.
+
+    When a parser error is met the greedy converter stops converting, undoes the
+    internal string parsing routine, and continues parsing regularly.
+
+    For example, in the following code:
+
+    .. code-block:: python3
+
+        @commands.command()
+        async def test(ctx, numbers: Greedy[int], reason: str):
+            await ctx.send("numbers: {}, reason: {}".format(numbers, reason))
+
+    An invocation of ``[p]test 1 2 3 4 5 6 hello`` would pass ``numbers`` with
+    ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
+
+    For more information, check :ref:`ext_commands_special_converters`.
+    """
+
+    __slots__ = ("converter",)
 
     converter: T
 
-    def __new__(
-        cls, *args: Any, **kwargs: Any
-    ) -> NoReturn:  # give a more helpful message than typing._BaseGenericAlias.__call__
-        raise TypeError("Greedy cannot be instantiated directly, instead use Greedy[...]")
+    def __init__(self, *, converter=None):
+        self.converter = converter
 
     def __class_getitem__(cls, params: Union[tuple[T], T]) -> Greedy[T]:
         if not isinstance(params, tuple):
@@ -846,22 +868,15 @@ class Greedy(Generic[T]):
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        if not (callable(converter) or isinstance(converter, Converter) or get_origin(converter) is not None):
+        origin = get_origin(converter)
+
+        if not (callable(converter) or isinstance(converter, Converter) or origin is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
-        if converter is str or converter is type(None) or get_origin(converter) is Greedy:
+        if converter in (str, type(None)) or origin is Greedy:
             raise TypeError(f'Greedy[{converter.__name__}] is invalid.')
 
-        if get_origin(converter) is Union and type(None) in get_args(converter):
+        if origin is Union and type(None) in get_args(converter):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
-        greedy = super().__class_getitem__(converter)
-        greedy.converter = get_args(greedy)[0]
-        return greedy
-
-
-if TYPE_CHECKING:
-    if sys.version_info >= (3, 9):
-        Greedy = list
-    else:
-        Greedy = List
+        return cls(converter=converter)
