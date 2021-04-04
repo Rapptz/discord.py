@@ -112,7 +112,7 @@ class Attachment(Hashable):
         case of images. When the message is deleted, this URL might be valid for a few
         minutes or not valid at all.
     content_type: Optional[:class:`str`]
-        The attachment's [media type](https://en.wikipedia.org/wiki/Media_type)
+        The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
 
         .. versionadded: 1.7
     """
@@ -128,7 +128,7 @@ class Attachment(Hashable):
         self.url = data.get('url')
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
-        self.content = data.get('content_type')
+        self.content_type = data.get('content_type')
 
     def is_spoiler(self):
         """:class:`bool`: Whether this attachment contains a spoiler."""
