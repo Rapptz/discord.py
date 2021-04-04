@@ -204,7 +204,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_disconnect()
 
-    Called when the client has disconnected from Discord, or a connection attempt to Discord has failed. 
+    Called when the client has disconnected from Discord, or a connection attempt to Discord has failed.
     This could happen either through the internet being disconnected, explicit calls to close,
     or Discord terminating the connection one way or the other.
 
@@ -516,7 +516,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         To get the message being reacted, access it via :attr:`Reaction.message`.
 
     This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
-    
+
     .. note::
 
         Consider using :func:`on_raw_reaction_remove` if you need this and do not want
@@ -1160,7 +1160,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
     .. attribute:: guild_discovery_grace_period_initial_warning
-    
+
         The system message denoting that the guild has failed to meet the Server
         Discovery requirements for one week.
 
@@ -1169,7 +1169,7 @@ of :class:`enum.Enum`.
 
         The system message denoting that the guild has failed to meet the Server
         Discovery requirements for 3 weeks in a row.
-    
+
         .. versionadded:: 1.7
 
 .. class:: ActivityType
@@ -3034,6 +3034,15 @@ TextChannel
 
     .. automethod:: typing
         :async-with:
+
+StoreChannel
+~~~~~~~~~~~~~
+
+.. attributetable:: StoreChannel
+
+.. autoclass:: StoreChannel()
+    :members:
+    :inherited-members:
 
 VoiceChannel
 ~~~~~~~~~~~~~
