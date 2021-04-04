@@ -53,7 +53,7 @@ New Features
 - Add a :func:`utils.remove_markdown` helper function (:issue:`6573`)
 - Add support for passing scopes to :func:`utils.oauth_url` (:issue:`6568`)
 - |commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColourConverter <ext.commands.ColourConverter>` (:issue:`6374`)
-- |commands| Add support for converting :class:`StoreChannel`s via :class:`StoreChannelConverter <ext.commands.StoreChannelConverter>` (:issue:`6603`)
+- |commands| Add support for converting :class:`StoreChannel` s via :class:`StoreChannelConverter <ext.commands.StoreChannelConverter>` (:issue:`6603`)
 - |commands| Add support for stripping whitespace after the prefix is encountered using the ``strip_after_prefix`` :class:`~ext.commands.Bot` constructor parameter.
 - |commands| Add :attr:`Context.invoked_parents <ext.commands.Context.invoked_parents>` to get the aliases a command's parent was invoked with (:issue:`1874`, :issue:`6462`)
 - |commands| Add a converter for :class:`PartialMessage` under :class:`ext.commands.PartialMessageConverter` (:issue:`6308`)
