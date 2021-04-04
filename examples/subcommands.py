@@ -27,13 +27,13 @@ async def greet(ctx):
 @commands.is_owner()
 async def hello(ctx):
     """Say hello!"""
-    await ctx.send('Hello {0.author}!'.format(ctx))
+    await ctx.send(f'Hello {ctx.author}!')
 
 # This would be invoked with `?greet goodbye <member>`
 @greet.command()
 async def goodbye(ctx, member: discord.Member):
     """Say goodbye to someone"""
-    await ctx.send('Goodbye {0.author}'.format(member))
+    await ctx.send(f'Goodbye {member.author}')
 
 # We can also nest groups!
 @greet.group()
@@ -71,7 +71,7 @@ async def info(ctx, member: discord.Member):
     """View the roles a member has"""
     roles = '\n'.join(r.mention for r in member.roles)
     await ctx.send(
-        '{0} Currently has:\n {1}'.format(member, roles),
+        f'{member} Currently has:\n {roles}',
         # Don't want to ping anyone :^)
         allowed_mentions = discord.AllowedMentions.none()
     )
