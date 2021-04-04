@@ -42,10 +42,6 @@ class _PartialTemplateState:
         self.http = _FriendlyHttpAttributeErrorHelper()
 
     @property
-    def is_bot(self):
-        return self.__state.is_bot
-
-    @property
     def shard_count(self):
         return self.__state.shard_count
 
@@ -125,7 +121,7 @@ class Template:
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
             guild = Guild(data=source_serialised, state=state)
-        
+
         self.source_guild = guild
 
     def __repr__(self):

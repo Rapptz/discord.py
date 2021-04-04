@@ -22,19 +22,17 @@ import logging
 
 from .client import Client
 from .appinfo import AppInfo
-from .user import User, ClientUser, Profile
+from .user import User, ClientUser
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild
 from .flags import *
-from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import *
 from .asset import Asset
 from .errors import *
-from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role, RoleTags
 from .file import File

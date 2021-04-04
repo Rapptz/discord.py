@@ -31,7 +31,6 @@ from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
-from .calls import CallMessage
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
@@ -453,12 +452,6 @@ class Message(Hashable):
     channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
-    call: Optional[:class:`CallMessage`]
-        The call that the message refers to. This is only applicable to messages of type
-        :attr:`MessageType.call`.
-
-        .. deprecated:: 1.7
-
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
@@ -534,7 +527,7 @@ class Message(Hashable):
                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
 
@@ -548,7 +541,6 @@ class Message(Hashable):
         self.application = data.get('application')
         self.activity = data.get('activity')
         self.channel = channel
-        self.call = None
         self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
         self.type = try_enum(MessageType, data['type'])
         self.pinned = data['pinned']
@@ -581,7 +573,7 @@ class Message(Hashable):
 
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'flags'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -748,26 +740,6 @@ class Message(Hashable):
                 role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
-
-    def _handle_call(self, call):
-        if call is None or self.type is not MessageType.call:
-            self.call = None
-            return
-
-        # we get the participant source from the mentions array or
-        # the author
-
-        participants = []
-        for uid in map(int, call.get('participants', [])):
-            if uid == self.author.id:
-                participants.append(self.author)
-            else:
-                user = utils.find(lambda u: u.id == uid, self.mentions)
-                if user is not None:
-                    participants.append(user)
-
-        call['participants'] = participants
-        self.call = CallMessage(message=self, **call)
 
     def _rebind_channel_reference(self, new_channel):
         self.channel = new_channel
@@ -936,19 +908,6 @@ class Message(Hashable):
             # timestamp with the precision that we need
             created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
             return formats[created_at_ms % len(formats)].format(self.author.name)
-
-        if self.type is MessageType.call:
-            # we're at the call message type now, which is a bit more complicated.
-            # we can make the assumption that Message.channel is a PrivateChannel
-            # with the type ChannelType.group or ChannelType.private
-            call_ended = self.call.ended_timestamp is not None
-
-            if self.channel.me in self.call.participants:
-                return f'{self.author.name} started a call.'
-            elif call_ended:
-                return f'You missed a call from {self.author.name}'
-            else:
-                return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
 
         if self.type is MessageType.premium_guild_subscription:
             return f'{self.author.name} just boosted the server!'
@@ -1302,29 +1261,6 @@ class Message(Hashable):
             You do not have the proper permissions to remove all the reactions.
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
-
-    @utils.deprecated()
-    async def ack(self):
-        """|coro|
-
-        Marks this message as read.
-
-        The user must not be a bot user.
-
-        .. deprecated:: 1.7
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return await state.http.ack_message(self.channel.id, self.id)
 
     async def reply(self, content=None, **kwargs):
         """|coro|

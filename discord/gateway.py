@@ -378,9 +378,6 @@ class DiscordWebSocket:
             }
         }
 
-        if not self._connection.is_bot:
-            payload['d']['synced_guilds'] = []
-
         if self.shard_id is not None and self.shard_count is not None:
             payload['d']['shard'] = [self.shard_id, self.shard_count]
 
@@ -621,13 +618,6 @@ class DiscordWebSocket:
         sent = utils.to_json(payload)
         log.debug('Sending "%s" to change status', sent)
         await self.send(sent)
-
-    async def request_sync(self, guild_ids):
-        payload = {
-            'op': self.GUILD_SYNC,
-            'd': list(guild_ids)
-        }
-        await self.send_as_json(payload)
 
     async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, presences=False, nonce=None):
         payload = {

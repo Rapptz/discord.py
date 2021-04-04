@@ -404,10 +404,6 @@ class _PartialWebhookState:
         return BaseUser(state=self, data=data)
 
     @property
-    def is_bot(self):
-        return True
-
-    @property
     def http(self):
         if self.parent is not None:
             return self.parent.http

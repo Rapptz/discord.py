@@ -317,7 +317,7 @@ class AutoShardedClient(Client):
 
     def _get_state(self, **options):
         return AutoShardedConnectionState(dispatch=self.dispatch,
-                                          handlers=self._handlers, syncer=self._syncer,
+                                          handlers=self._handlers,
                                           hooks=self._hooks, http=self.http, loop=self.loop, **options)
 
     @property
