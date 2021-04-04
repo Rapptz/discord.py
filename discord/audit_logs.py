@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from functools import cached_property
+
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
@@ -297,12 +299,12 @@ class AuditLogEntry(Hashable):
     def __repr__(self):
         return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
 
-    @utils.cached_property
+    @cached_property
     def created_at(self):
         """:class:`datetime.datetime`: Returns the entry's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-    @utils.cached_property
+    @cached_property
     def target(self):
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
@@ -311,24 +313,24 @@ class AuditLogEntry(Hashable):
         else:
             return converter(self._target_id)
 
-    @utils.cached_property
+    @cached_property
     def category(self):
         """Optional[:class:`AuditLogActionCategory`]: The category of the action, if applicable."""
         return self.action.category
 
-    @utils.cached_property
+    @cached_property
     def changes(self):
         """:class:`AuditLogChanges`: The list of changes this entry has."""
         obj = AuditLogChanges(self, self._changes)
         del self._changes
         return obj
 
-    @utils.cached_property
+    @cached_property
     def before(self):
         """:class:`AuditLogDiff`: The target's prior state."""
         return self.changes.before
 
-    @utils.cached_property
+    @cached_property
     def after(self):
         """:class:`AuditLogDiff`: The target's subsequent state."""
         return self.changes.after

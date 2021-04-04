@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from functools import cached_property
+
 import discord.abc
 import discord.utils
 
@@ -210,26 +212,26 @@ class Context(discord.abc.Messageable):
             return None
         return self.command.cog
 
-    @discord.utils.cached_property
+    @cached_property
     def guild(self):
         """Optional[:class:`.Guild`]: Returns the guild associated with this context's command. None if not available."""
         return self.message.guild
 
-    @discord.utils.cached_property
+    @cached_property
     def channel(self):
         """Union[:class:`.abc.Messageable`]: Returns the channel associated with this context's command.
         Shorthand for :attr:`.Message.channel`.
         """
         return self.message.channel
 
-    @discord.utils.cached_property
+    @cached_property
     def author(self):
         """Union[:class:`~discord.User`, :class:`.Member`]:
         Returns the author associated with this context's command. Shorthand for :attr:`.Message.author`
         """
         return self.message.author
 
-    @discord.utils.cached_property
+    @cached_property
     def me(self):
         """Union[:class:`.Member`, :class:`.ClientUser`]:
         Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts.
