@@ -45,6 +45,7 @@ New Features
 - Add :attr:`RawMessageUpdateEvent.guild_id` (:issue:`6489`)
 - :class:`AuditLogEntry` is now hashable (:issue:`6495`)
 - :class:`Attachment` is now hashable
+- Add :attr:`Attachment.content_type` attribute (:issue:`6618`)
 - Add support for casting :class:`Attachment` to :class:`str` to get the URL.
 - Add ``seed`` parameter for :class:`Colour.random` (:issue:`6562`)
     - This only seeds it for one call. If seeding for multiple calls is desirable, use :func:`random.seed`.
