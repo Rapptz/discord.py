@@ -385,40 +385,6 @@ class Client:
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
 
-    @utils.deprecated('Guild.chunk')
-    async def request_offline_members(self, *guilds):
-        r"""|coro|
-
-        Requests previously offline members from the guild to be filled up
-        into the :attr:`.Guild.members` cache. This function is usually not
-        called. It should only be used if you have the ``fetch_offline_members``
-        parameter set to ``False``.
-
-        When the client logs on and connects to the websocket, Discord does
-        not provide the library with offline members if the number of members
-        in the guild is larger than 250. You can check if a guild is large
-        if :attr:`.Guild.large` is ``True``.
-
-        .. warning::
-
-            This method is deprecated. Use :meth:`Guild.chunk` instead.
-
-        Parameters
-        -----------
-        \*guilds: :class:`.Guild`
-            An argument list of guilds to request offline members for.
-
-        Raises
-        -------
-        :exc:`.InvalidArgument`
-            If any guild is unavailable in the collection.
-        """
-        if any(g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable guild was passed.')
-
-        for guild in guilds:
-            await self._connection.chunk_guild(guild)
-
     # hooks
 
     async def _call_before_identify_hook(self, shard_id, *, initial=False):
@@ -483,22 +449,6 @@ class Client:
 
         log.info('logging in using static token')
         await self.http.static_login(token.strip())
-
-    @utils.deprecated('Client.close')
-    async def logout(self):
-        """|coro|
-
-        Logs out of Discord and closes all connections.
-
-        .. deprecated:: 1.7
-
-        .. note::
-
-            This is just an alias to :meth:`close`. If you want
-            to do extraneous cleanup when subclassing, it is suggested
-            to override :meth:`close` instead.
-        """
-        await self.close()
 
     async def connect(self, *, reconnect=True):
         """|coro|
