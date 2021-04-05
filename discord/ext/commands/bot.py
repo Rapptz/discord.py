@@ -93,7 +93,7 @@ class _DefaultRepr:
 
 _default = _DefaultRepr()
 
-class BotBase(GroupMixin):
+class BoxMixin(GroupMixin):
     def __init__(self, command_prefix, help_command=_default, description=None, **options):
         super().__init__(**options)
         self.command_prefix = command_prefix
@@ -978,7 +978,7 @@ class BotBase(GroupMixin):
     async def on_message(self, message):
         await self.process_commands(message)
 
-class Bot(BotBase, discord.Client):
+class Bot(BoxMixin, discord.Client):
     """Represents a discord bot.
 
     This class is a subclass of :class:`discord.Client` and as a result
