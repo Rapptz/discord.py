@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from .message import Message
     from .audit_logs import AuditLogEntry
     from .guild import Guild
-    from .member import Member
 
 if sys.version_info >= (3, 9):
     from collections.abc import AsyncIterator, Coroutine
