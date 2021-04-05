@@ -456,7 +456,7 @@ class ConnectionState:
             self._add_guild_from_data(guild_data)
 
         self.dispatch('connect')
-        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
@@ -828,7 +828,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if self._guild_needs_chunking(guild):
-            asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+            asyncio.create_task(self._chunk_and_dispatch(guild, unavailable))
             return
 
         # Dispatch available if newly available
@@ -968,7 +968,7 @@ class ConnectionState:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
                     coro = voice.on_voice_state_update(data)
-                    asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
+                    asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
             member, before, after = guild._update_voice_state(data, channel_id)
             if member is not None:
@@ -992,7 +992,7 @@ class ConnectionState:
         vc = self._get_voice_client(key_id)
         if vc is not None:
             coro = vc.on_voice_server_update(data)
-            asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
+            asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data):
         channel, guild = self._get_guild_channel(data)
@@ -1104,7 +1104,7 @@ class AutoShardedConnectionState(ConnectionState):
                             current_bucket = []
 
                     # Chunk the guild in the background while we wait for GUILD_CREATE streaming
-                    future = asyncio.ensure_future(self.chunk_guild(guild))
+                    future = asyncio.create_task(self.chunk_guild(guild))
                     current_bucket.append(future)
                 else:
                     future = self.loop.create_future()
@@ -1171,7 +1171,7 @@ class AutoShardedConnectionState(ConnectionState):
         gc.collect()
 
         if self._ready_task is None:
-            self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+            self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
