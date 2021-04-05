@@ -842,7 +842,7 @@ class Message(Hashable):
 
     @property
     def edited_at(self):
-        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property
@@ -903,10 +903,7 @@ class Message(Hashable):
                 "Yay you made it, {0}!",
             ]
 
-            # manually reconstruct the epoch with millisecond precision, because
-            # datetime.datetime.timestamp() doesn't return the exact posix
-            # timestamp with the precision that we need
-            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            created_at_ms = int(self.created_at.timestamp() * 1000)
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.premium_guild_subscription:

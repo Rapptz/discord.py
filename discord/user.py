@@ -192,7 +192,8 @@ class BaseUser(_BaseUser):
     def created_at(self):
         """:class:`datetime.datetime`: Returns the user's creation time in UTC.
 
-        This is when the user's Discord account was created."""
+        This is when the user's Discord account was created.
+        """
         return snowflake_time(self.id)
 
     @property

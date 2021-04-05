@@ -91,7 +91,7 @@ class Sticker(Hashable):
 
     @property
     def created_at(self):
-        """:class:`datetime.datetime`: Returns the sticker's creation time in UTC as a naive datetime."""
+        """:class:`datetime.datetime`: Returns the sticker's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property

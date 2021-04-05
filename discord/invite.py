@@ -265,7 +265,7 @@ class Invite(Hashable):
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
     created_at: :class:`datetime.datetime`
-        A datetime object denoting the time the invite was created.
+        An aware UTC datetime object denoting the time the invite was created.
     temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
         If ``True``, members who joined via this invite will be kicked upon disconnect.

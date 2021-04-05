@@ -87,7 +87,9 @@ class Embed:
         The URL of the embed.
         This can be set during initialisation.
     timestamp: :class:`datetime.datetime`
-        The timestamp of the embed content. This could be a naive or aware datetime.
+        The timestamp of the embed content. This is an aware datetime.
+        If a naive datetime is passed, it is converted to an aware
+        datetime with the local timezone.
     colour: Union[:class:`Colour`, :class:`int`]
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
@@ -129,6 +131,8 @@ class Embed:
         except KeyError:
             pass
         else:
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.astimezone()
             self.timestamp = timestamp
 
     @classmethod

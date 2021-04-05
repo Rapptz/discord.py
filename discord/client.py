@@ -1076,10 +1076,12 @@ class Client:
             Defaults to ``100``.
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve guilds after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------
