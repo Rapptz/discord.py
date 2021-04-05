@@ -1442,4 +1442,4 @@ class AutoShardedClient(AutoShardedMixin, Client):
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
-    
+    pass
