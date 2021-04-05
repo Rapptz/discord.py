@@ -27,7 +27,7 @@ from __future__ import annotations
 import sys
 import copy
 import asyncio
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, AbstractAsyncContextManager
 from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
@@ -1070,7 +1070,7 @@ class Messageable(Protocol):
         await self._state.http.send_typing(channel.id)
 
     @asynccontextmanager
-    async def typing(self):
+    async def typing(self) -> AbstractAsyncContextManager[None, None]:
         """Returns an async context manager that allows you to type
         for an indefinite period of time.
 
