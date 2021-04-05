@@ -225,17 +225,21 @@ class Activity(BaseActivity):
     def start(self):
         """Optional[:class:`datetime.datetime`]: When the user started doing this activity in UTC, if applicable."""
         try:
-            return datetime.datetime.utcfromtimestamp(self.timestamps['start'] / 1000)
+            timestamp = self.timestamps['start'] / 1000
         except KeyError:
             return None
+        else:
+            return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
 
     @property
     def end(self):
         """Optional[:class:`datetime.datetime`]: When the user will stop doing this activity in UTC, if applicable."""
         try:
-            return datetime.datetime.utcfromtimestamp(self.timestamps['end'] / 1000)
+            timestamp = self.timestamps['end'] / 1000
         except KeyError:
             return None
+        else:
+            return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
 
     @property
     def large_image_url(self):
@@ -300,10 +304,6 @@ class Game(BaseActivity):
     -----------
     name: :class:`str`
         The game's name.
-    start: Optional[:class:`datetime.datetime`]
-        A naive UTC timestamp representing when the game started. Keyword-only parameter. Ignored for bots.
-    end: Optional[:class:`datetime.datetime`]
-        A naive UTC timestamp representing when the game ends. Keyword-only parameter. Ignored for bots.
 
     Attributes
     -----------
@@ -320,19 +320,11 @@ class Game(BaseActivity):
         try:
             timestamps = extra['timestamps']
         except KeyError:
-            self._extract_timestamp(extra, 'start')
-            self._extract_timestamp(extra, 'end')
+            self._start = 0
+            self._end = 0
         else:
             self._start = timestamps.get('start', 0)
             self._end = timestamps.get('end', 0)
-
-    def _extract_timestamp(self, data, key):
-        try:
-            dt = data[key]
-        except KeyError:
-            setattr(self, '_' + key, 0)
-        else:
-            setattr(self, '_' + key, dt.timestamp() * 1000.0)
 
     @property
     def type(self):
@@ -346,14 +338,14 @@ class Game(BaseActivity):
     def start(self):
         """Optional[:class:`datetime.datetime`]: When the user started playing this game in UTC, if applicable."""
         if self._start:
-            return datetime.datetime.utcfromtimestamp(self._start / 1000)
+            return datetime.datetime.utcfromtimestamp(self._start / 1000).replace(tzinfo=datetime.timezone.utc)
         return None
 
     @property
     def end(self):
         """Optional[:class:`datetime.datetime`]: When the user will stop playing this game in UTC, if applicable."""
         if self._end:
-            return datetime.datetime.utcfromtimestamp(self._end / 1000)
+            return datetime.datetime.utcfromtimestamp(self._end / 1000).replace(tzinfo=datetime.timezone.utc)
         return None
 
     def __str__(self):

@@ -82,7 +82,7 @@ class Integration:
     account: :class:`IntegrationAccount`
         The integration account information.
     synced_at: :class:`datetime.datetime`
-        When the integration was last synced.
+        An aware UTC datetime representing when the integration was last synced.
     """
 
     __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
@@ -184,7 +184,7 @@ class Integration:
             Syncing the integration failed.
         """
         await self._state.http.sync_integration(self.guild.id, self.id)
-        self.synced_at = datetime.datetime.utcnow()
+        self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
     async def delete(self):
         """|coro|

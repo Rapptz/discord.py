@@ -340,7 +340,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type channel: :class:`abc.Messageable`
     :param user: The user that started typing.
     :type user: Union[:class:`User`, :class:`Member`]
-    :param when: When the typing started as a naive datetime in UTC.
+    :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
 
 .. function:: on_message(message)
@@ -612,7 +612,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param channel: The private channel that had its pins updated.
     :type channel: :class:`abc.PrivateChannel`
-    :param last_pin: The latest message that was pinned as a naive datetime in UTC. Could be ``None``.
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_guild_channel_delete(channel)
@@ -646,7 +646,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param channel: The guild channel that had its pins updated.
     :type channel: :class:`abc.GuildChannel`
-    :param last_pin: The latest message that was pinned as a naive datetime in UTC. Could be ``None``.
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_guild_integrations_update(guild)
@@ -921,6 +921,8 @@ Utility Functions
 .. autofunction:: discord.utils.resolve_template
 
 .. autofunction:: discord.utils.sleep_until
+
+.. autofunction:: discord.utils.utcnow
 
 .. _discord-api-enums:
 

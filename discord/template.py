@@ -90,9 +90,10 @@ class Template:
     creator: :class:`User`
         The creator of the template.
     created_at: :class:`datetime.datetime`
-        When the template was created.
+        An aware datetime in UTC representing when the template was created.
     updated_at: :class:`datetime.datetime`
-        When the template was last updated (referred to as "last synced" in the client).
+        An aware datetime in UTC representing when the template was last updated.
+        This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
         The source guild.
     """

@@ -67,7 +67,7 @@ class VoiceState:
         .. versionadded:: 1.7
 
     requested_to_speak_at: Optional[:class:`datetime.datetime`]
-        A datetime object that specifies the date and time in UTC that the member
+        An aware datetime object that specifies the date and time in UTC that the member
         requested to speak. It will be ``None`` if they are not requesting to speak
         anymore or have been accepted to speak.
 
@@ -183,7 +183,7 @@ class Member(discord.abc.Messageable, _BaseUser):
     Attributes
     ----------
     joined_at: Optional[:class:`datetime.datetime`]
-        A datetime object that specifies the date and time in UTC that the member joined the guild.
+        An aware datetime object that specifies the date and time in UTC that the member joined the guild.
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
@@ -196,7 +196,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
-        A datetime object that specifies the date and time in UTC when the member used their
+        An aware datetime object that specifies the date and time in UTC when the member used their
         Nitro boost on the guild, if available. This could be ``None``.
     """
 

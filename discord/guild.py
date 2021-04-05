@@ -1336,7 +1336,8 @@ class Guild(Hashable):
             Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------
@@ -2119,10 +2120,12 @@ class Guild(Hashable):
             The number of entries to retrieve. If ``None`` retrieve all entries.
         before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries before this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries after this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         oldest_first: :class:`bool`
             If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.

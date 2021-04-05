@@ -1013,6 +1013,7 @@ class ConnectionState:
 
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
+                timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
 
     def _get_reaction_user(self, channel, user_id):

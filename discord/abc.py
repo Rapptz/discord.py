@@ -75,7 +75,7 @@ class Snowflake(Protocol):
 
     @property
     def created_at(self) -> datetime:
-        """:class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC."""
+        """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
 
 
@@ -1176,13 +1176,16 @@ class Messageable(Protocol):
             that this would make it a slow operation.
         before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages before this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages after this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         around: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages around this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
         oldest_first: Optional[:class:`bool`]
