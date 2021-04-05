@@ -552,14 +552,14 @@ class Loop:
             ret = time if time.tzinfo is not None else time.replace(tzinfo=utc)
             return [ret]
         if not inst(time, Sequence):
-            raise TypeError('Expected datetime.time or a sequence of datetime.time for ``time``, received {0.__name__!r} instead.'.format(type(time)))
+            raise TypeError(f'Expected datetime.time or a sequence of datetime.time for ``time``, received {type(time)!r} instead.')
         if not time:
             raise ValueError('time parameter must not be an empty sequence.')
 
         ret = []
         for index, t in enumerate(time):
             if not inst(t, dt):
-                raise TypeError('Expected a sequence of {0!r} for ``time``, received {1.__name__!r} at index {2} instead.'.format(dt, type(t), index))
+                raise TypeError(f'Expected a sequence of {dt!r} for ``time``, received {type(t).__name__!r} at index {index} instead.')
             ret.append(t if t.tzinfo is not None else t.replace(tzinfo=utc))
 
         ret = sorted(set(ret)) # de-dupe and sort times
