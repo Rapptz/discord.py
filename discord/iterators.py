@@ -95,9 +95,6 @@ class _AsyncIterator(AsyncIterator[T]):
     async def flatten(self) -> List[T]:
         return [element async for element in self]
 
-    def __aiter__(self):
-        return self
-
     async def __anext__(self) -> T:
         try:
             msg = await self.next()
