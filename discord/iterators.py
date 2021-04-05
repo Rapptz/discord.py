@@ -44,9 +44,8 @@ if TYPE_CHECKING:
 
 if sys.version_info >= (3, 9):
     from collections.abc import AsyncIterator, Coroutine
-    List = list
 else:
-    from typing import AsyncIterator, List, Coroutine
+    from typing import AsyncIterator, Coroutine
 
 T = TypeVar("T")
 _Predicate = Callable[[T], Union[T, Coroutine[Any, Any, T]]]
@@ -92,7 +91,7 @@ class _AsyncIterator(AsyncIterator[T]):
     def filter(self, predicate: _Predicate[T]) -> _FilteredAsyncIterator[T]:
         return _FilteredAsyncIterator(self, predicate)
 
-    async def flatten(self) -> List[T]:
+    async def flatten(self) -> list[T]:
         return [element async for element in self]
 
     async def __anext__(self) -> T:
