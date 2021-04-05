@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import datetime
 import sys
@@ -79,15 +81,15 @@ class _AsyncIterator(AsyncIterator[T]):
             if ret:
                 return elem
 
-    def chunk(self, max_size: int) -> '_ChunkedAsyncIterator[T]':
+    def chunk(self, max_size: int) -> _ChunkedAsyncIterator[T]:
         if max_size <= 0:
             raise ValueError('async iterator chunk sizes must be greater than 0.')
         return _ChunkedAsyncIterator(self, max_size)
 
-    def map(self, predicate: _Predicate[T]) -> '_MappedAsyncIterator[T]':
+    def map(self, predicate: _Predicate[T]) -> _MappedAsyncIterator[T]:
         return _MappedAsyncIterator(self, predicate)
 
-    def filter(self, predicate: _Predicate[T]) -> '_FilteredAsyncIterator[T]':
+    def filter(self, predicate: _Predicate[T]) -> _FilteredAsyncIterator[T]:
         return _FilteredAsyncIterator(self, predicate)
 
     async def flatten(self) -> List[T]:
