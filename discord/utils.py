@@ -379,16 +379,20 @@ async def sane_wait_for(futures, *, timeout):
     return done
 
 def compute_timedelta(dt: datetime.datetime):
-    if when.tzinfo is None:
-        when = when.astimezone()
+    if dt.tzinfo is None:
+        when = dt.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
-    return max(0, (when - now).total_seconds())
+    return max((dt - now).total_seconds(), 0)
 
 async def sleep_until(when, result=None):
     """|coro|
+
     Sleep until a specified time.
+
     If the time supplied is in the past this function will yield instantly.
+
     .. versionadded:: 1.3
+
     Parameters
     -----------
     when: :class:`datetime.datetime`
