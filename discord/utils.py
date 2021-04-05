@@ -104,9 +104,7 @@ class SequenceProxy(collections.abc.Sequence):
         return self.__proxied.count(value)
 
 def parse_time(timestamp):
-    if timestamp:
-        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
-    return None
+    return timestamp and datetime.datetime.fromisoformat(timestamp)
 
 def copy_doc(original):
     def decorator(overriden):
