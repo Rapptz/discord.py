@@ -2596,14 +2596,6 @@ ClientUser
     :members:
     :inherited-members:
 
-Relationship
-~~~~~~~~~~~~~~
-
-.. attributetable:: Relationship
-
-.. autoclass:: Relationship()
-    :members:
-
 User
 ~~~~~
 
@@ -2664,22 +2656,6 @@ Reaction
 
     .. automethod:: users
         :async-for:
-
-CallMessage
-~~~~~~~~~~~~
-
-.. attributetable:: CallMessage
-
-.. autoclass:: CallMessage()
-    :members:
-
-GroupCall
-~~~~~~~~~~
-
-.. attributetable:: GroupCall
-
-.. autoclass:: GroupCall()
-    :members:
 
 Guild
 ~~~~~~
