@@ -86,8 +86,7 @@ def _cancel_tasks(loop):
 def _cleanup_loop(loop):
     try:
         _cancel_tasks(loop)
-        if sys.version_info >= (3, 6):
-            loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         log.info('Closing the event loop.')
         loop.close()
