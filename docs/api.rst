@@ -922,6 +922,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.sleep_until
 
+.. autofunction:: discord.utils.utcnow
+
 .. _discord-api-enums:
 
 Enumerations

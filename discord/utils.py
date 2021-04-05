@@ -401,6 +401,21 @@ async def sleep_until(when, result=None):
     delta = (when - now).total_seconds()
     return await asyncio.sleep(max(delta, 0), result)
 
+def utcnow() -> datetime.datetime:
+    """A helper function to return an aware UTC datetime representing the current time.
+
+    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    datetime, compared to the naive datetime in the standard library.
+
+    .. versionadded:: 2.0
+
+    Returns
+    --------
+    :class:`datetime.datetime`
+        The current aware datetime in UTC.
+    """
+    return datetime.datetime.now(datetime.timezone.utc)
+
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""
     return not size & (size - 1) and size in range(16, 4097)
