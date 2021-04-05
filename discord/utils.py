@@ -40,7 +40,6 @@ import warnings
 from .errors import InvalidArgument
 
 DISCORD_EPOCH = 1420070400000
-MAX_ASYNCIO_SECONDS = 3456000
 
 class cached_property:
     def __init__(self, function):
@@ -400,9 +399,6 @@ async def sleep_until(when, result=None):
         when = when.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
     delta = (when - now).total_seconds()
-    while delta > MAX_ASYNCIO_SECONDS:
-        await asyncio.sleep(MAX_ASYNCIO_SECONDS)
-        delta -= MAX_ASYNCIO_SECONDS
     return await asyncio.sleep(max(delta, 0), result)
 
 def valid_icon_size(size):
