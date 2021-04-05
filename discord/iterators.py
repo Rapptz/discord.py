@@ -95,11 +95,9 @@ class _AsyncIterator(AsyncIterator[T]):
 
     async def __anext__(self) -> T:
         try:
-            msg = await self.next()
+            return await self.next()
         except NoMoreItems:
             raise StopAsyncIteration()
-        else:
-            return msg
 
 def _identity(x):
     return x
