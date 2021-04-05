@@ -2547,13 +2547,10 @@ Messageable
 
 .. autoclass:: discord.abc.Messageable()
     :members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: discord.abc.Messageable.history
         :async-for:
-
-    .. automethod:: discord.abc.Messageable.typing
-        :async-with:
 
 Connectable
 ~~~~~~~~~~~~
@@ -2606,13 +2603,10 @@ User
 .. autoclass:: User()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: history
         :async-for:
-
-    .. automethod:: typing
-        :async-with:
 
 Attachment
 ~~~~~~~~~~~
@@ -2707,13 +2701,10 @@ Member
 .. autoclass:: Member()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: history
         :async-for:
-
-    .. automethod:: typing
-        :async-with:
 
 Spotify
 ~~~~~~~~
@@ -2769,13 +2760,10 @@ TextChannel
 .. autoclass:: TextChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: history
         :async-for:
-
-    .. automethod:: typing
-        :async-with:
 
 StoreChannel
 ~~~~~~~~~~~~~
@@ -2821,13 +2809,10 @@ DMChannel
 .. autoclass:: DMChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: history
         :async-for:
-
-    .. automethod:: typing
-        :async-with:
 
 GroupChannel
 ~~~~~~~~~~~~
@@ -2837,13 +2822,10 @@ GroupChannel
 .. autoclass:: GroupChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
+    :exclude-members: history
 
     .. automethod:: history
         :async-for:
-
-    .. automethod:: typing
-        :async-with:
 
 PartialInviteGuild
 ~~~~~~~~~~~~~~~~~~~
