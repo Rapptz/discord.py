@@ -868,7 +868,7 @@ class Greedy(GreedyBase[T]):
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        origin = get_origin(converter)
+        origin = getattr(converter, "__origin__", None)
 
         if not (callable(converter) or isinstance(converter, Converter) or origin is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
