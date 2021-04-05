@@ -20,7 +20,7 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 from collections import namedtuple
 import logging
 
-from .client import Client
+from .client import Client, AutoShardedClient
 from .appinfo import AppInfo
 from .user import User, ClientUser
 from .emoji import Emoji
@@ -47,7 +47,7 @@ from . import utils, opus, abc
 from .enums import *
 from .embeds import Embed
 from .mentions import AllowedMentions
-from .shard import AutoShardedClient, ShardInfo
+from .shard import ShardInfo
 from .player import *
 from .webhook import *
 from .voice_client import VoiceClient, VoiceProtocol

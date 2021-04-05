@@ -39,6 +39,8 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+from ...shard import AutoShardedMixin
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
 
@@ -1052,7 +1054,7 @@ class Bot(BotBase, discord.Client):
     """
     pass
 
-class AutoShardedBot(BotBase, discord.AutoShardedClient):
+class AutoShardedBot(AutoShardedMixin, Bot):
     """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """

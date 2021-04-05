@@ -29,20 +29,17 @@ import logging
 import aiohttp
 
 from .state import AutoShardedConnectionState
-from .client import Client
 from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import (
     ClientException,
-    InvalidArgument,
     HTTPException,
     GatewayNotFound,
     ConnectionClosed,
     PrivilegedIntentsRequired,
 )
-
-from . import utils
 from .enums import Status
+from . import utils
 
 log = logging.getLogger(__name__)
 
@@ -266,32 +263,8 @@ class ShardInfo:
         """
         return self._parent.ws.is_ratelimited()
 
-class AutoShardedClient(Client):
-    """A client similar to :class:`Client` except it handles the complications
-    of sharding for the user into a more manageable and transparent single
-    process bot.
+class AutoShardedMixin:
 
-    When using this client, you will be able to use it as-if it was a regular
-    :class:`Client` with a single shard when implementation wise internally it
-    is split up into multiple shards. This allows you to not have to deal with
-    IPC or other complicated infrastructure.
-
-    It is recommended to use this client only if you have surpassed at least
-    1000 guilds.
-
-    If no :attr:`.shard_count` is provided, then the library will use the
-    Bot Gateway endpoint call to figure out how many shards to use.
-
-    If a ``shard_ids`` parameter is given, then those shard IDs will be used
-    to launch the internal shards. Note that :attr:`.shard_count` must be provided
-    if this is used. By default, when omitted, the client will launch shards from
-    0 to ``shard_count - 1``.
-
-    Attributes
-    ------------
-    shard_ids: Optional[List[:class:`int`]]
-        An optional list of shard_ids to launch the shards with.
-    """
     def __init__(self, *args, loop=None, **kwargs):
         kwargs.pop('shard_id', None)
         self.shard_ids = kwargs.pop('shard_ids', None)
@@ -445,10 +418,6 @@ class AutoShardedClient(Client):
                 return
 
     async def close(self):
-        """|coro|
-
-        Closes the connection to Discord.
-        """
         if self.is_closed():
             return
 

@@ -52,6 +52,7 @@ AutoShardedClient
 
 .. autoclass:: AutoShardedClient
     :members:
+    :inherited-members: Client
 
 Application Info
 ------------------
