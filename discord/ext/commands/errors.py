@@ -689,7 +689,7 @@ class BadLiteralArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__('Could not convert "{0.name}" into the literal {1}.'.format(param, fmt))
+        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
