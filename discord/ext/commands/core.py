@@ -25,8 +25,8 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 import functools
 import inspect
-import typing
 import datetime
+from typing import Union, get_args, get_origin
 
 import discord
 
@@ -469,31 +469,27 @@ class Command(_BaseCommand):
             raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
     async def do_conversion(self, ctx, converter, argument, param):
-        try:
-            origin = converter.__origin__
-        except AttributeError:
-            pass
-        else:
-            if origin is typing.Union:
-                errors = []
-                _NoneType = type(None)
-                for conv in converter.__args__:
-                    # if we got to this part in the code, then the previous conversions have failed
-                    # so we should just undo the view, return the default, and allow parsing to continue
-                    # with the other parameters
-                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
-                        ctx.view.undo()
-                        return None if param.default is param.empty else param.default
+        if get_origin(converter) is Union:
+            errors = []
+            _NoneType = type(None)
+            args = get_args(converter)
+            for conv in args:
+                # if we got to this part in the code, then the previous conversions have failed
+                # so we should just undo the view, return the default, and allow parsing to continue
+                # with the other parameters
+                if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                    ctx.view.undo()
+                    return None if param.default is param.empty else param.default
 
-                    try:
-                        value = await self._actual_conversion(ctx, conv, argument, param)
-                    except CommandError as exc:
-                        errors.append(exc)
-                    else:
-                        return value
+                try:
+                    value = await self._actual_conversion(ctx, conv, argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                else:
+                    return value
 
-                # if we're  here, then we failed all the converters
-                raise BadUnionArgument(param, converter.__args__, errors)
+            # if we're  here, then we failed all the converters
+            raise BadUnionArgument(param, args, errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
@@ -977,15 +973,10 @@ class Command(_BaseCommand):
         return ''
 
     def _is_typing_optional(self, annotation):
-        try:
-            origin = annotation.__origin__
-        except AttributeError:
+        if get_origin(annotation) is not Union:
             return False
 
-        if origin is not typing.Union:
-            return False
-
-        return annotation.__args__[-1] is type(None)
+        return get_args(annotation)[-1] is type(None)
 
     @property
     def signature(self):
