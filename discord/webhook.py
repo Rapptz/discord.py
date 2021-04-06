@@ -76,7 +76,9 @@ class PartialWebhookChannel(Hashable):
         return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
 
 class PartialWebhookGuild(Hashable):
-    """Partial guild for webhooks for when they are channel following webhooks for news channels.
+    """Represents a partial guild for webhooks.
+
+    These are typically given for channel follower webhooks.
 
     .. versionadded:: 2.0
 
@@ -683,13 +685,15 @@ class Webhook(Hashable):
         The default name of the webhook.
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
-    source_guild: Optional[:class:`PartialGuild`]
-        The guild of the channel that this webhook is following. Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+    source_guild: Optional[:class:`PartialWebhookGuild`]
+        The guild of the channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
 
         .. versionadded:: 2.0
 
-    source_channel: Optional[:class:`PartialChannel`]
-        The channel that this webhook is following. Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+    source_channel: Optional[:class:`PartialWebhookChannel`]
+        The channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
 
         .. versionadded:: 2.0
     """
