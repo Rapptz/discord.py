@@ -288,17 +288,6 @@ class Client:
         return utils.SequenceProxy(self._connection._messages or [])
 
     @property
-    def private_channels(self):
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
-
-        .. note::
-
-            This returns only up to 128 most recent private channels due to an internal working
-            on how Discord deals with private channels.
-        """
-        return self._connection.private_channels
-
-    @property
     def voice_clients(self):
         """List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
 
