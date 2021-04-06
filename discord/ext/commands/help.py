@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -132,7 +130,7 @@ class Paginator:
         """
         max_page_size = self.max_size - self._prefix_len - self._suffix_len - 2 * self._linesep_len
         if len(line) > max_page_size:
-            raise RuntimeError('Line exceeds maximum page size %s' % (max_page_size))
+            raise RuntimeError(f'Line exceeds maximum page size {max_page_size}')
 
         if self._count + len(line) + self._linesep_len > self.max_size - self._suffix_len:
             self.close_page()
@@ -386,8 +384,9 @@ class HelpCommand:
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
         # odd one.
-        pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.context.prefix)
+        pattern = re.compile(fr"<@!?{user.id}>")
+        display_name = user.display_name.replace('\\', r'\\')
+        return pattern.sub('@' + display_name, self.context.prefix)
 
     @property
     def invoked_with(self):
@@ -436,14 +435,14 @@ class HelpCommand:
 
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
-            fmt = '[%s|%s]' % (command.name, aliases)
+            fmt = f'[{command.name}|{aliases}]'
             if parent_sig:
                 fmt = parent_sig + ' ' + fmt
             alias = fmt
         else:
             alias = command.name if not parent_sig else parent_sig + ' ' + command.name
 
-        return '%s%s %s' % (self.clean_prefix, alias, command.signature)
+        return f'{self.clean_prefix}{alias} {command.signature}'
 
     def remove_mentions(self, string):
         """Removes mentions from the string to prevent abuse.
@@ -506,7 +505,7 @@ class HelpCommand:
         :class:`str`
             The string to use when a command has not been found.
         """
-        return 'No command called "{}" found.'.format(string)
+        return f'No command called "{string}" found.'
 
     def subcommand_not_found(self, command, string):
         """|maybecoro|
@@ -535,8 +534,8 @@ class HelpCommand:
             The string to use when the command did not have the subcommand requested.
         """
         if isinstance(command, Group) and len(command.all_commands) > 0:
-            return 'Command "{0.qualified_name}" has no subcommand named {1}'.format(command, string)
-        return 'Command "{0.qualified_name}" has no subcommands.'.format(command)
+            return f'Command "{command.qualified_name}" has no subcommand named {string}'
+        return f'Command "{command.qualified_name}" has no subcommands.'
 
     async def filter_commands(self, commands, *, sort=False, key=None):
         """|coro|
@@ -941,8 +940,8 @@ class DefaultHelpCommand(HelpCommand):
     def get_ending_note(self):
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
-        return "Type {0}{1} command for more info on a command.\n" \
-               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
+        return f"Type {self.clean_prefix}{command_name} command for more info on a command.\n" \
+               f"You can also type {self.clean_prefix}{command_name} category for more info on a category."
 
     def add_indented_commands(self, commands, *, heading, max_size=None):
         """Indents a list of commands after the specified heading.
@@ -977,7 +976,7 @@ class DefaultHelpCommand(HelpCommand):
         for command in commands:
             name = command.name
             width = max_size - (get_width(name) - len(name))
-            entry = '{0}{1:<{width}} {2}'.format(self.indent * ' ', name, command.short_doc, width=width)
+            entry = f'{self.indent * " "}{name:<{width}} {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
     async def send_pages(self):
@@ -1030,7 +1029,7 @@ class DefaultHelpCommand(HelpCommand):
             # <description> portion
             self.paginator.add_line(bot.description, empty=True)
 
-        no_category = '\u200b{0.no_category}:'.format(self)
+        no_category = f'\u200b{self.no_category}:'
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name + ':' if cog is not None else no_category
@@ -1154,7 +1153,7 @@ class MinimalHelpCommand(HelpCommand):
                "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
 
     def get_command_signature(self, command):
-        return '%s%s %s' % (self.clean_prefix, command.qualified_name, command.signature)
+        return f'{self.clean_prefix}{command.qualified_name} {command.signature}'
 
     def get_ending_note(self):
         """Return the help command's ending note. This is mainly useful to override for i18n purposes.
@@ -1186,7 +1185,7 @@ class MinimalHelpCommand(HelpCommand):
         if commands:
             # U+2002 Middle Dot
             joined = '\u2002'.join(c.name for c in commands)
-            self.paginator.add_line('__**%s**__' % heading)
+            self.paginator.add_line(f'__**{heading}**__')
             self.paginator.add_line(joined)
 
     def add_subcommand_formatting(self, command):
@@ -1220,7 +1219,7 @@ class MinimalHelpCommand(HelpCommand):
         aliases: Sequence[:class:`str`]
             A list of aliases to format.
         """
-        self.paginator.add_line('**%s** %s' % (self.aliases_heading, ', '.join(aliases)), empty=True)
+        self.paginator.add_line(f'**{self.aliases_heading}** {", ".join(aliases)}', empty=True)
 
     def add_command_formatting(self, command):
         """A utility function to format commands and groups.
@@ -1273,7 +1272,7 @@ class MinimalHelpCommand(HelpCommand):
         if note:
             self.paginator.add_line(note, empty=True)
 
-        no_category = '\u200b{0.no_category}'.format(self)
+        no_category = f'\u200b{self.no_category}'
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name if cog is not None else no_category
@@ -1306,7 +1305,7 @@ class MinimalHelpCommand(HelpCommand):
 
         filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
         if filtered:
-            self.paginator.add_line('**%s %s**' % (cog.qualified_name, self.commands_heading))
+            self.paginator.add_line(f'**{cog.qualified_name} {self.commands_heading}**')
             for command in filtered:
                 self.add_subcommand_formatting(command)
 
@@ -1326,7 +1325,7 @@ class MinimalHelpCommand(HelpCommand):
             if note:
                 self.paginator.add_line(note, empty=True)
 
-            self.paginator.add_line('**%s**' % self.commands_heading)
+            self.paginator.add_line(f'**{self.commands_heading}**')
             for command in filtered:
                 self.add_subcommand_formatting(command)
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -289,9 +287,9 @@ class Loop:
 
         for exc in exceptions:
             if not inspect.isclass(exc):
-                raise TypeError('{0!r} must be a class.'.format(exc))
+                raise TypeError(f'{exc!r} must be a class.')
             if not issubclass(exc, BaseException):
-                raise TypeError('{0!r} must inherit from BaseException.'.format(exc))
+                raise TypeError(f'{exc!r} must inherit from BaseException.')
 
         self._valid_exception = (*self._valid_exception, *exceptions)
 
@@ -345,7 +343,7 @@ class Loop:
 
     async def _error(self, *args):
         exception = args[-1]
-        print('Unhandled exception in internal background task {0.__name__!r}.'.format(self.coro), file=sys.stderr)
+        print(f'Unhandled exception in internal background task {self.coro.__name__!r}.', file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     def before_loop(self, coro):

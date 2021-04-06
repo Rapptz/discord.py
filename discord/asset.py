@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -74,11 +72,11 @@ class Asset:
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+            raise InvalidArgument(f"format must be None or one of {VALID_AVATAR_FORMATS}")
         if format == "gif" and not user.is_avatar_animated():
             raise InvalidArgument("non animated avatars do not support gif format")
         if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"static_format must be one of {VALID_STATIC_FORMATS}")
 
         if user.avatar is None:
             return user.default_avatar_url
@@ -96,7 +94,7 @@ class Asset:
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"format must be None or one of {VALID_STATIC_FORMATS}")
 
         url = '/{0}-icons/{1.id}/{1.icon}.{2}?size={3}'.format(path, object, format, size)
         return cls(state, url)
@@ -109,7 +107,7 @@ class Asset:
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"format must be None or one of {VALID_STATIC_FORMATS}")
 
         url = '/app-assets/{0.id}/store/{0.cover_image}.{1}?size={2}'.format(obj, format, size)
         return cls(state, url)
@@ -119,7 +117,7 @@ class Asset:
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"format must be one of {VALID_STATIC_FORMATS}")
 
         if hash is None:
             return cls(state)
@@ -132,11 +130,11 @@ class Asset:
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
         if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_AVATAR_FORMATS))
+            raise InvalidArgument(f"format must be one of {VALID_AVATAR_FORMATS}")
         if format == "gif" and not guild.is_icon_animated():
             raise InvalidArgument("non animated guild icons do not support gif format")
         if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"static_format must be one of {VALID_STATIC_FORMATS}")
 
         if guild.icon is None:
             return cls(state)
@@ -156,15 +154,15 @@ class Asset:
     @classmethod
     def _from_emoji(cls, state, emoji, *, format=None, static_format='png'):
         if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
+            raise InvalidArgument(f"format must be None or one of {VALID_AVATAR_FORMATS}")
         if format == "gif" and not emoji.animated:
             raise InvalidArgument("non animated emoji's do not support gif format")
         if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
+            raise InvalidArgument(f"static_format must be one of {VALID_STATIC_FORMATS}")
         if format is None:
             format = 'gif' if emoji.animated else static_format
 
-        return cls(state, '/emojis/{0.id}.{1}'.format(emoji, format))
+        return cls(state, f'/emojis/{emoji.id}.{format}')
 
     def __str__(self):
         return self.BASE + self._url if self._url is not None else ''
@@ -178,7 +176,7 @@ class Asset:
         return self._url is not None
 
     def __repr__(self):
-        return '<Asset url={0._url!r}>'.format(self)
+        return f'<Asset url={self._url!r}>'
 
     def __eq__(self, other):
         return isinstance(other, Asset) and self._url == other._url

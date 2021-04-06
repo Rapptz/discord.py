@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -96,12 +94,12 @@ class Permissions(BaseFlags):
 
     def __init__(self, permissions=0, **kwargs):
         if not isinstance(permissions, int):
-            raise TypeError('Expected int parameter, received %s instead.' % permissions.__class__.__name__)
+            raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
         self.value = permissions
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid permission name.' % key)
+                raise TypeError(f'{key!r} is not a valid permission name.')
             setattr(self, key, value)
 
     def is_subset(self, other):
@@ -109,14 +107,14 @@ class Permissions(BaseFlags):
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_superset(self, other):
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_strict_subset(self, other):
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
@@ -214,6 +212,15 @@ class Permissions(BaseFlags):
         return cls(1 << 32)
 
     @classmethod
+    def stage_moderator(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(0b100000001010000000000000000000000)
+
+    @classmethod
     def advanced(cls):
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
@@ -221,7 +228,6 @@ class Permissions(BaseFlags):
         .. versionadded:: 1.7
         """
         return cls(1 << 3)
-
 
     def update(self, **kwargs):
         r"""Bulk updates this permission object.
@@ -531,7 +537,7 @@ class PermissionOverwrite:
 
         for key, value in kwargs.items():
             if key not in self.VALID_NAMES:
-                raise ValueError('no permission called {0}.'.format(key))
+                raise ValueError(f'no permission called {key}.')
 
             setattr(self, key, value)
 
@@ -540,7 +546,7 @@ class PermissionOverwrite:
 
     def _set(self, key, value):
         if value not in (True, None, False):
-            raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
+            raise TypeError(f'Expected bool or NoneType, received {value.__class__.__name__}')
 
         if value is None:
             self._values.pop(key, None)

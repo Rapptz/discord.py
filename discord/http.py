@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -149,7 +147,7 @@ class HTTPClient:
         }
 
         if self.token is not None:
-            headers['Authorization'] = 'Bot ' + self.token if self.bot_token else self.token
+            headers['Authorization'] = 'Bot ' + self.token
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
@@ -283,23 +281,18 @@ class HTTPClient:
         if self.__session:
             await self.__session.close()
 
-    def _token(self, token, *, bot=True):
-        self.token = token
-        self.bot_token = bot
-        self._ack_token = None
-
     # login management
 
-    async def static_login(self, token, *, bot):
+    async def static_login(self, token):
         # Necessary to get aiohttp to stop complaining about session creation
         self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
-        old_token, old_bot = self.token, self.bot_token
-        self._token(token, bot=bot)
+        old_token = self.token
+        self.token = token
 
         try:
             data = await self.request(Route('GET', '/users/@me'))
         except HTTPException as exc:
-            self._token(old_token, bot=old_bot)
+            self.token = old_token
             if exc.response.status == 401:
                 raise LoginFailure('Improper token has been passed.') from exc
             raise
@@ -320,25 +313,6 @@ class HTTPClient:
 
     def leave_group(self, channel_id):
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
-
-    def add_group_recipient(self, channel_id, user_id):
-        r = Route('PUT', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)
-        return self.request(r)
-
-    def remove_group_recipient(self, channel_id, user_id):
-        r = Route('DELETE', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)
-        return self.request(r)
-
-    def edit_group(self, channel_id, **options):
-        valid_keys = ('name', 'icon')
-        payload = {
-            k: v for k, v in options.items() if k in valid_keys
-        }
-
-        return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
-
-    def convert_group(self, channel_id):
-        return self.request(Route('POST', '/channels/{channel_id}/convert', channel_id=channel_id))
 
     # Message management
 
@@ -404,21 +378,13 @@ class HTTPClient:
         else:
             for index, file in enumerate(files):
                 form.append({
-                    'name': 'file%s' % index,
+                    'name': f'file{index}',
                     'value': file.fp,
                     'filename': file.filename,
                     'content_type': 'application/octet-stream'
                 })
 
         return self.request(r, form=form, files=files)
-
-    async def ack_message(self, channel_id, message_id):
-        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
-        data = await self.request(r, json={'token': self._ack_token})
-        self._ack_token = data['token']
-
-    def ack_guild(self, guild_id):
-        return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
     def delete_message(self, channel_id, message_id, *, reason=None):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
@@ -545,18 +511,12 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_profile(self, password, username, avatar, **fields):
-        payload = {
-            'password': password,
-            'username': username,
-            'avatar': avatar
-        }
-
-        if 'email' in fields:
-            payload['email'] = fields['email']
-
-        if 'new_password' in fields:
-            payload['new_password'] = fields['new_password']
+    def edit_profile(self, username, avatar):
+        payload = {}
+        if avatar is not None:
+            payload['avatar'] = avatar
+        if username is not None:
+            payload['username'] = username
 
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
@@ -573,6 +533,14 @@ class HTTPClient:
             'nick': nickname
         }
         return self.request(r, json=payload, reason=reason)
+
+    def edit_my_voice_state(self, guild_id, payload):
+        r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
+        return self.request(r, json=payload)
+
+    def edit_voice_state(self, guild_id, user_id, payload):
+        r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
+        return self.request(r, json=payload)
 
     def edit_member(self, guild_id, user_id, *, reason=None, **fields):
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
@@ -927,28 +895,6 @@ class HTTPClient:
     def move_member(self, user_id, guild_id, channel_id, *, reason=None):
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
-    # Relationship related
-
-    def remove_relationship(self, user_id):
-        r = Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id)
-        return self.request(r)
-
-    def add_relationship(self, user_id, type=None):
-        r = Route('PUT', '/users/@me/relationships/{user_id}', user_id=user_id)
-        payload = {}
-        if type is not None:
-            payload['type'] = type
-
-        return self.request(r, json=payload)
-
-    def send_friend_request(self, username, discriminator):
-        r = Route('POST', '/users/@me/relationships')
-        payload = {
-            'username': username,
-            'discriminator': int(discriminator)
-        }
-        return self.request(r, json=payload)
-
     # Misc
 
     def application_info(self):
@@ -979,19 +925,3 @@ class HTTPClient:
 
     def get_user(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
-
-    def get_user_profile(self, user_id):
-        return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id))
-
-    def get_mutual_friends(self, user_id):
-        return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
-
-    def change_hypesquad_house(self, house_id):
-        payload = {'house_id': house_id}
-        return self.request(Route('POST', '/hypesquad/online'), json=payload)
-
-    def leave_hypesquad_house(self):
-        return self.request(Route('DELETE', '/hypesquad/online'))
-
-    def edit_settings(self, **payload):
-        return self.request(Route('PATCH', '/users/@me/settings'), json=payload)

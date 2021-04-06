@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -74,14 +72,7 @@ class _AsyncIterator:
         return _FilteredAsyncIterator(self, predicate)
 
     async def flatten(self):
-        ret = []
-        while True:
-            try:
-                item = await self.next()
-            except NoMoreItems:
-                return ret
-            else:
-                ret.append(item)
+        return [element async for element in self]
 
     def __aiter__(self):
         return self
@@ -297,26 +288,6 @@ class HistoryIterator(_AsyncIterator):
             r = l
         self.retrieve = r
         return r > 0
-
-    async def flatten(self):
-        # this is similar to fill_messages except it uses a list instead
-        # of a queue to place the messages in.
-        result = []
-        channel = await self.messageable._get_channel()
-        self.channel = channel
-        while self._get_retrieve():
-            data = await self._retrieve_messages(self.retrieve)
-            if len(data) < 100:
-                self.limit = 0 # terminate the infinite loop
-
-            if self.reverse:
-                data = reversed(data)
-            if self._filter:
-                data = filter(self._filter, data)
-
-            for element in data:
-                result.append(self.state.create_message(channel=channel, data=element))
-        return result
 
     async def fill_messages(self):
         if not hasattr(self, 'channel'):
@@ -551,20 +522,6 @@ class GuildIterator(_AsyncIterator):
     def create_guild(self, data):
         from .guild import Guild
         return Guild(state=self.state, data=data)
-
-    async def flatten(self):
-        result = []
-        while self._get_retrieve():
-            data = await self._retrieve_guilds(self.retrieve)
-            if len(data) < 100:
-                self.limit = 0
-
-            if self._filter:
-                data = filter(self._filter, data)
-
-            for element in data:
-                result.append(self.create_guild(element))
-        return result
 
     async def fill_guilds(self):
         if self._get_retrieve():

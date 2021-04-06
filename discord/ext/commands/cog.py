@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -120,7 +118,7 @@ class CogMeta(type):
                     value = value.__func__
                 if isinstance(value, _BaseCommand):
                     if is_static_method:
-                        raise TypeError('Command in method {0}.{1!r} must not be staticmethod.'.format(base, elem))
+                        raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
@@ -275,7 +273,7 @@ class Cog(metaclass=CogMeta):
         """
 
         if name is not None and not isinstance(name, str):
-            raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
+            raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__!r} instead.')
 
         def decorator(func):
             actual = func
@@ -301,7 +299,7 @@ class Cog(metaclass=CogMeta):
 
         .. versionadded:: 1.7
         """
-        return hasattr(self.cog_command_error.__func__, '__cog_special_method__')
+        return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
     def cog_unload(self):

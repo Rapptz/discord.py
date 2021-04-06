@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -313,7 +311,7 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-c:a', codec,
                      '-ar', '48000',
                      '-ac', '2',
-                     '-b:a', '%sk' % bitrate,
+                     '-b:a', f'{bitrate}k',
                      '-loglevel', 'warning'))
 
         if isinstance(options, str):
@@ -421,7 +419,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         if isinstance(method, str):
             probefunc = getattr(cls, '_probe_codec_' + method, None)
             if probefunc is None:
-                raise AttributeError("Invalid probe method '%s'" % method)
+                raise AttributeError(f"Invalid probe method {method!r}")
 
             if probefunc is cls._probe_codec_native:
                 fallback = cls._probe_codec_fallback
@@ -431,7 +429,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             fallback = cls._probe_codec_fallback
         else:
             raise TypeError("Expected str or callable for parameter 'probe', " \
-                            "not '{0.__class__.__name__}'" .format(method))
+                            f"not '{method.__class__.__name__}'")
 
         codec = bitrate = None
         loop = asyncio.get_event_loop()
@@ -519,7 +517,7 @@ class PCMVolumeTransformer(AudioSource):
 
     def __init__(self, original, volume=1.0):
         if not isinstance(original, AudioSource):
-            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
+            raise TypeError(f'expected AudioSource not {original.__class__.__name__}.')
 
         if original.is_opus():
             raise ClientException('AudioSource must not be Opus encoded.')
@@ -619,7 +617,7 @@ class AudioPlayer(threading.Thread):
                 exc.__context__ = error
                 traceback.print_exception(type(exc), exc, exc.__traceback__)
         elif error:
-            msg = 'Exception in voice thread {}'.format(self.name)
+            msg = f'Exception in voice thread {self.name}'
             log.exception(msg, exc_info=error)
             print(msg, file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__)

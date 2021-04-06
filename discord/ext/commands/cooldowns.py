@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -255,7 +253,7 @@ class MaxConcurrency:
             raise ValueError('max_concurrency \'number\' cannot be less than 1')
 
         if not isinstance(per, BucketType):
-            raise TypeError('max_concurrency \'per\' must be of type BucketType not %r' % type(per))
+            raise TypeError(f'max_concurrency \'per\' must be of type BucketType not {type(per)!r}')
 
     def copy(self):
         return self.__class__(self.number, per=self.per, wait=self.wait)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -49,7 +47,8 @@ class EmbedProxy:
         return len(self.__dict__)
 
     def __repr__(self):
-        return 'EmbedProxy(%s)' % ', '.join(('%s=%r' % (k, v) for k, v in self.__dict__.items() if not k.startswith('_')))
+        inner = ', '.join((f'{k}={v!r}' for k, v in self.__dict__.items() if not k.startswith('_')))
+        return f'EmbedProxy({inner})'
 
     def __getattr__(self, attr):
         return EmptyEmbed
@@ -88,7 +87,9 @@ class Embed:
         The URL of the embed.
         This can be set during initialisation.
     timestamp: :class:`datetime.datetime`
-        The timestamp of the embed content. This could be a naive or aware datetime.
+        The timestamp of the embed content. This is an aware datetime.
+        If a naive datetime is passed, it is converted to an aware
+        datetime with the local timezone.
     colour: Union[:class:`Colour`, :class:`int`]
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
@@ -130,6 +131,8 @@ class Embed:
         except KeyError:
             pass
         else:
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.astimezone()
             self.timestamp = timestamp
 
     @classmethod
@@ -225,7 +228,7 @@ class Embed:
         elif isinstance(value, int):
             self._colour = Colour(value=value)
         else:
-            raise TypeError('Expected discord.Colour, int, or Embed.Empty but received %s instead.' % value.__class__.__name__)
+            raise TypeError(f'Expected discord.Colour, int, or Embed.Empty but received {value.__class__.__name__} instead.')
 
     color = colour
 
@@ -238,7 +241,7 @@ class Embed:
         if isinstance(value, (datetime.datetime, _EmptyEmbed)):
             self._timestamp = value
         else:
-            raise TypeError("Expected datetime.datetime or Embed.Empty received %s instead" % value.__class__.__name__)
+            raise TypeError(f"Expected datetime.datetime or Embed.Empty received {value.__class__.__name__} instead")
 
     @property
     def footer(self):

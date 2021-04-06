@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Discord API Wrapper
 ~~~~~~~~~~~~~~~~~~~
@@ -15,7 +13,7 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-present Rapptz'
-__version__ = '1.7.0a'
+__version__ = '2.0.0a'
 
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
@@ -24,19 +22,17 @@ import logging
 
 from .client import Client
 from .appinfo import AppInfo
-from .user import User, ClientUser, Profile
+from .user import User, ClientUser
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .activity import *
 from .channel import *
 from .guild import Guild
 from .flags import *
-from .relationship import Relationship
 from .member import Member, VoiceState
 from .message import *
 from .asset import Asset
 from .errors import *
-from .calls import CallMessage, GroupCall
 from .permissions import Permissions, PermissionOverwrite
 from .role import Role, RoleTags
 from .file import File
@@ -62,6 +58,6 @@ from .sticker import Sticker
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=1, minor=7, micro=0, releaselevel='alpha', serial=0)
+version_info = VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

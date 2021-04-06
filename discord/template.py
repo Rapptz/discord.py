@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -44,10 +42,6 @@ class _PartialTemplateState:
         self.http = _FriendlyHttpAttributeErrorHelper()
 
     @property
-    def is_bot(self):
-        return self.__state.is_bot
-
-    @property
     def shard_count(self):
         return self.__state.shard_count
 
@@ -76,7 +70,7 @@ class _PartialTemplateState:
         return []
 
     def __getattr__(self, attr):
-        raise AttributeError('PartialTemplateState does not support {0!r}.'.format(attr))
+        raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
 
 class Template:
     """Represents a Discord template.
@@ -96,9 +90,10 @@ class Template:
     creator: :class:`User`
         The creator of the template.
     created_at: :class:`datetime.datetime`
-        When the template was created.
+        An aware datetime in UTC representing when the template was created.
     updated_at: :class:`datetime.datetime`
-        When the template was last updated (referred to as "last synced" in the client).
+        An aware datetime in UTC representing when the template was last updated.
+        This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
         The source guild.
     """
@@ -127,7 +122,7 @@ class Template:
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
             guild = Guild(data=source_serialised, state=state)
-        
+
         self.source_guild = guild
 
     def __repr__(self):

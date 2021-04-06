@@ -11,6 +11,99 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p7p1:
+
+v1.7.1
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- |commands| Fix :meth:`Cog.has_error_handler <ext.commands.Cog.has_error_handler>` not working as intended.
+
+.. _vp1p7p0:
+
+v1.7.0
+--------
+
+This version is mainly for improvements and bug fixes. This is more than likely the last major version in the 1.x series.
+Work after this will be spent on v2.0. As a result, **this is the last version to support Python 3.5**.
+Likewise, **this is the last version to support user bots**.
+
+Development of v2.0 will have breaking changes and support for newer API features.
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add support for stage channels via :class:`StageChannel` (:issue:`6602`, :issue:`6608`)
+- Add support for :attr:`MessageReference.fail_if_not_exists` (:issue:`6484`)
+    - By default, if the message you're replying to doesn't exist then the API errors out.
+      This attribute tells the Discord API that it's okay for that message to be missing.
+
+- Add support for Discord's new permission serialisation scheme.
+- Add an easier way to move channels using :meth:`abc.GuildChannel.move`
+- Add :attr:`Permissions.use_slash_commands`
+- Add :attr:`Permissions.request_to_speak`
+- Add support for voice regions in voice channels via :attr:`VoiceChannel.rtc_region` (:issue:`6606`)
+- Add support for :meth:`PartialEmoji.url_as` (:issue:`6341`)
+- Add :attr:`MessageReference.jump_url` (:issue:`6318`)
+- Add :attr:`File.spoiler` (:issue:`6317`)
+- Add support for passing ``roles`` to :meth:`Guild.estimate_pruned_members` (:issue:`6538`)
+- Allow callable class factories to be used in :meth:`abc.Connectable.play` (:issue:`6478`)
+- Add a way to get mutual guilds from the client's cache via :attr:`User.mutual_guilds` (:issue:`2539`, :issue:`6444`)
+- :meth:`PartialMessage.edit` now returns a full :class:`Message` upon success (:issue:`6309`)
+- Add :attr:`RawMessageUpdateEvent.guild_id` (:issue:`6489`)
+- :class:`AuditLogEntry` is now hashable (:issue:`6495`)
+- :class:`Attachment` is now hashable
+- Add :attr:`Attachment.content_type` attribute (:issue:`6618`)
+- Add support for casting :class:`Attachment` to :class:`str` to get the URL.
+- Add ``seed`` parameter for :class:`Colour.random` (:issue:`6562`)
+    - This only seeds it for one call. If seeding for multiple calls is desirable, use :func:`random.seed`.
+
+- Add a :func:`utils.remove_markdown` helper function (:issue:`6573`)
+- Add support for passing scopes to :func:`utils.oauth_url` (:issue:`6568`)
+- |commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColourConverter <ext.commands.ColourConverter>` (:issue:`6374`)
+- |commands| Add support for converting :class:`StoreChannel` via :class:`StoreChannelConverter <ext.commands.StoreChannelConverter>` (:issue:`6603`)
+- |commands| Add support for stripping whitespace after the prefix is encountered using the ``strip_after_prefix`` :class:`~ext.commands.Bot` constructor parameter.
+- |commands| Add :attr:`Context.invoked_parents <ext.commands.Context.invoked_parents>` to get the aliases a command's parent was invoked with (:issue:`1874`, :issue:`6462`)
+- |commands| Add a converter for :class:`PartialMessage` under :class:`ext.commands.PartialMessageConverter` (:issue:`6308`)
+- |commands| Add a converter for :class:`Guild` under :class:`ext.commands.GuildConverter` (:issue:`6016`, :issue:`6365`)
+- |commands| Add :meth:`Command.has_error_handler <ext.commands.Command.has_error_handler>`
+    - This is also adds :meth:`Cog.has_error_handler <ext.commands.Cog.has_error_handler>`
+- |commands| Allow callable types to act as a bucket key for cooldowns (:issue:`6563`)
+- |commands| Add ``linesep`` keyword argument to :class:`Paginator <ext.commands.Paginator>` (:issue:`5975`)
+- |commands| Allow ``None`` to be passed to :attr:`HelpCommand.verify_checks <ext.commands.HelpCommand.verify_checks>` to only verify in a guild context (:issue:`2008`, :issue:`6446`)
+- |commands| Allow relative paths when loading extensions via a ``package`` keyword argument (:issue:`2465`, :issue:`6445`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix mentions not working if ``mention_author`` is passed in :meth:`abc.Messageable.send` without :attr:`Client.allowed_mentions` set (:issue:`6192`, :issue:`6458`)
+- Fix user created instances of :class:`CustomActivity` triggering an error (:issue:`4049`)
+    - Note that currently, bot users still cannot set a custom activity due to a Discord limitation.
+- Fix :exc:`ZeroDivisionError` being raised from :attr:`VoiceClient.average_latency` (:issue:`6430`, :issue:`6436`)
+- Fix :attr:`User.public_flags` not updating upon edit (:issue:`6315`)
+- Fix :attr:`Message.call` sometimes causing attribute errors (:issue:`6390`)
+- Fix issue resending a file during request retries on newer versions of ``aiohttp`` (:issue:`6531`)
+- Raise an error when ``user_ids`` is empty in :meth:`Guild.query_members`
+- Fix ``__str__`` magic method raising when a :class:`Guild` is unavailable.
+- Fix potential :exc:`AttributeError` when accessing :attr:`VoiceChannel.members` (:issue:`6602`)
+- :class:`Embed` constructor parameters now implicitly convert to :class:`str` (:issue:`6574`)
+- Ensure ``discord`` package is only run if executed as a script (:issue:`6483`)
+- |commands| Fix irrelevant commands potentially being unloaded during cog unload due to failure.
+- |commands| Fix attribute errors when setting a cog to :class:`~.ext.commands.HelpCommand` (:issue:`5154`)
+- |commands| Fix :attr:`Context.invoked_with <ext.commands.Context.invoked_with>` being improperly reassigned during a :meth:`~ext.commands.Context.reinvoke` (:issue:`6451`, :issue:`6462`)
+- |commands| Remove duplicates from :meth:`HelpCommand.get_bot_mapping <ext.commands.HelpCommand.get_bot_mapping>` (:issue:`6316`)
+- |commands| Properly handle positional-only parameters in bot command signatures (:issue:`6431`)
+- |commands| Group signatures now properly show up in :attr:`Command.signature <ext.commands.Command.signature>` (:issue:`6529`, :issue:`6530`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- User endpoints and all userbot related functionality has been deprecated and will be removed in the next major version of the library.
+- :class:`Permission` class methods were updated to match the UI of the Discord client (:issue:`6476`)
+- ``_`` and ``-`` characters are now stripped when making a new cog using the ``discord`` package (:issue:`6313`)
+
 .. _vp1p6p0:
 
 v1.6.0
