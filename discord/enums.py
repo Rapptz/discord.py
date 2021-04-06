@@ -426,14 +426,14 @@ class InteractionType(Enum):
     ping = 1
     application_command = 2
 
-_T = TypeVar('_T')
+T = TypeVar('T')
 
-def create_unknown_value(cls: Type[_T], val: Any) -> _T:
+def create_unknown_value(cls: Type[T], val: Any) -> T:
     value_cls = cls._enum_value_cls_ # type: ignore
     name = f'unknown_{val}'
     return value_cls(name=name, value=val)
 
-def try_enum(cls: Type[_T], val: Any) -> _T:
+def try_enum(cls: Type[T], val: Any) -> T:
     """A function that tries to turn the value into enum ``cls``.
 
     If it fails it returns a proxy invalid value instead.
