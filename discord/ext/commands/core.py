@@ -444,14 +444,13 @@ class Command(_BaseCommand):
 
         try:
             if inspect.isclass(converter):
-                if inspect.ismethod(getattr(converter, 'convert', None)):
-                    if converter.convert.__self__ is converter:
-                        # class method
-                        func = converter.convert
-                    else:
-                        # instance method
-                        func = converter().convert
-                    return await func.convert(ctx, argument)
+                if issubclass(converter, converters.Converter):
+                    instance = converter()
+                    return await instance.convert(ctx, argument)
+                else:
+                    method = getattr(converter, 'convert', None)
+                    if method is not None and inspect.ismethod(method):
+                        return await method(ctx, argument)
             elif isinstance(converter, converters.Converter):
                 return await converter.convert(ctx, argument)
         except CommandError:
