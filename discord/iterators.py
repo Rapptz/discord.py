@@ -33,6 +33,14 @@ from .utils import time_snowflake, maybe_coroutine
 from .object import Object
 from .audit_logs import AuditLogEntry
 
+__all__ = (
+    'ReactionIterator',
+    'HistoryIterator',
+    'AuditLogIterator',
+    'GuildIterator',
+    'MemberIterator',
+)
+
 if TYPE_CHECKING:
     from .member import Member
     from .user import User
