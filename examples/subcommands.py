@@ -77,4 +77,3 @@ async def info(ctx, member: discord.Member):
     )
 
 bot.run('token')
-
