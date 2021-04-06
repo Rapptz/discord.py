@@ -45,14 +45,14 @@ __all__ = (
     'RequestsWebhookAdapter',
     'Webhook',
     'WebhookMessage',
-    'PartialChannel',
-    'PartialGuild'
+    'PartialWebhookChannel',
+    'PartialWebhookGuild'
 )
 
 log = logging.getLogger(__name__)
 
 class PartialWebhookChannel(Hashable):
-    """Partial channel for webhooks
+    """Partial channel for webhooks for when they are channel following webhooks for news channels.
 
     .. versionadded:: 2.0
 
@@ -74,7 +74,7 @@ class PartialWebhookChannel(Hashable):
         return f'<PartialChannel name=\'{self.name}\' id={self.id}>'
 
 class PartialWebhookGuild(Hashable):
-    """Partial guild for webhooks
+    """Partial guild for webhooks for when they are channel following webhooks for news channels.
 
     .. versionadded:: 2.0
 
@@ -717,14 +717,14 @@ class Webhook(Hashable):
 
         source_channel = data.get('source_channel')
         if source_channel:
-            source_channel = PartialChannel(data=source_channel)
+            source_channel = PartialWebhookChannel(data=source_channel)
         else:
             source_channel = None
         self.source_channel = source_channel
 
         source_guild = data.get('source_guild')
         if source_guild:
-            source_guild = PartialGuild(data=source_guild, state=state)
+            source_guild = PartialWebhookGuild(data=source_guild, state=state)
         else:
             source_guild = None
         self.source_guild = source_guild
