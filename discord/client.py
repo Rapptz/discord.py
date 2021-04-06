@@ -55,13 +55,7 @@ from .appinfo import AppInfo
 log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop):
-    try:
-        task_retriever = asyncio.Task.all_tasks
-    except AttributeError:
-        # future proofing for 3.9 I guess
-        task_retriever = asyncio.all_tasks
-
-    tasks = {t for t in task_retriever(loop=loop) if not t.done()}
+    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
 
     if not tasks:
         return
