@@ -444,7 +444,7 @@ class Command(_BaseCommand):
 
         try:
             if inspect.isclass(converter):
-                if inspect.ismethod(converter.convert):
+                if inspect.ismethod(getattr(converter, 'convert', None)):
                     if converter.convert.__self__ is converter:
                         # class method
                         func = converter.convert
