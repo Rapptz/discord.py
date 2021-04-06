@@ -114,7 +114,7 @@ class Attachment(Hashable):
     content_type: Optional[:class:`str`]
         The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
 
-        .. versionadded: 1.7
+        .. versionadded:: 1.7
     """
 
     __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
