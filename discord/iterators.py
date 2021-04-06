@@ -26,8 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import sys
-from typing import TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union
+from typing import TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union, List, AsyncIterator, Coroutine
 
 from .errors import NoMoreItems
 from .utils import time_snowflake, maybe_coroutine
@@ -41,12 +40,9 @@ if TYPE_CHECKING:
     from .audit_logs import AuditLogEntry
     from .guild import Guild
 
-if sys.version_info >= (3, 9):
-    from collections.abc import AsyncIterator, Coroutine
-else:
-    from typing import AsyncIterator, Coroutine
-
-T = TypeVar("T")
+T = TypeVar('T')
+OT = TypeVar('OT')
+_Func = Callable[[T], Union[OT, Coroutine[Any, Any, OT]]]
 _Predicate = Callable[[T], Union[T, Coroutine[Any, Any, T]]]
 
 OLDEST_OBJECT = Object(id=0)
@@ -84,13 +80,13 @@ class _AsyncIterator(AsyncIterator[T]):
             raise ValueError('async iterator chunk sizes must be greater than 0.')
         return _ChunkedAsyncIterator(self, max_size)
 
-    def map(self, predicate: _Predicate[T]) -> _MappedAsyncIterator[T]:
-        return _MappedAsyncIterator(self, predicate)
+    def map(self, func: _Func[T, OT]) -> _MappedAsyncIterator[OT]:
+        return _MappedAsyncIterator(self, func)
 
     def filter(self, predicate: _Predicate[T]) -> _FilteredAsyncIterator[T]:
         return _FilteredAsyncIterator(self, predicate)
 
-    async def flatten(self) -> list[T]:
+    async def flatten(self) -> List[T]:
         return [element async for element in self]
 
     async def __anext__(self) -> T:
