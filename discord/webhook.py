@@ -51,7 +51,7 @@ __all__ = (
 
 log = logging.getLogger(__name__)
 
-class PartialChannel(Hashable):
+class PartialWebhookChannel(Hashable):
     """Partial channel for webhooks
 
     .. versionadded:: 2.0
@@ -73,7 +73,7 @@ class PartialChannel(Hashable):
     def __repr__(self):
         return f'<PartialChannel name=\'{self.name}\' id={self.id}>'
 
-class PartialGuild(Hashable):
+class PartialWebhookGuild(Hashable):
     """Partial guild for webhooks
 
     .. versionadded:: 2.0
@@ -97,7 +97,7 @@ class PartialGuild(Hashable):
         self.icon = data['icon']
 
     def __repr__(self):
-        return f'<PartialGuild name=\'{self.name}\' id={self.id}>'
+        return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
     def icon_url(self):
