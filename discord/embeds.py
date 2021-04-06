@@ -123,7 +123,7 @@ class Embed:
         if self.description is not EmptyEmbed:
             self.description = str(self.description)
 
-        if self.url is not EmptyEmbed:
+        if self.url:
             self.url = str(self.url)
 
         try:
@@ -167,7 +167,7 @@ class Embed:
         if self.description is not EmptyEmbed:
             self.description = str(self.description)
 
-        if self.url is not EmptyEmbed:
+        if self.url:
             self.url = str(self.url)
 
         # try to fill in the more rich fields
