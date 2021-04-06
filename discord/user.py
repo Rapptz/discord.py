@@ -29,6 +29,11 @@ from .enums import DefaultAvatar, try_enum
 from .colour import Colour
 from .asset import Asset
 
+__all__ = (
+    'User',
+    'ClientUser',
+)
+
 _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):

@@ -28,6 +28,12 @@ from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
+__all__ = (
+    'WidgetChannel',
+    'WidgetMember',
+    'Widget',
+)
+
 class WidgetChannel:
     """Represents a "partial" widget channel.
 

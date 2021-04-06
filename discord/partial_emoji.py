@@ -25,6 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from .asset import Asset
 from . import utils
 
+__all__ = (
+    'PartialEmoji',
+)
 
 class _EmojiTag:
     __slots__ = ()

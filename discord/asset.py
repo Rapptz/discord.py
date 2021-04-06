@@ -27,6 +27,10 @@ from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
 
+__all__ = (
+    'Asset',
+)
+
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 

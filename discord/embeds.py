@@ -27,6 +27,10 @@ import datetime
 from . import utils
 from .colour import Colour
 
+__all__ = (
+    'Embed',
+)
+
 class _EmptyEmbed:
     def __bool__(self):
         return False

@@ -24,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from .iterators import ReactionIterator
 
+__all__ = (
+    'Reaction',
+)
+
 class Reaction:
     """Represents a reaction to a message.
 

@@ -39,6 +39,11 @@ from .enums import Status, try_enum
 from .colour import Colour
 from .object import Object
 
+__all__ = (
+    'VoiceState',
+    'Member',
+)
+
 class VoiceState:
     """Represents a Discord user's voice state.
 
