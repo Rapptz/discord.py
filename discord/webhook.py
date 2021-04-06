@@ -59,9 +59,9 @@ class PartialWebhookChannel(Hashable):
     Attributes
     -----------
     id: :class:`int`
-        The channel's ID.
+        The partial channel's ID.
     name: :class:`str`
-        The channel's name.
+        The partial channel's name.
     """
 
     __slots__ = ('id', 'name')
@@ -81,11 +81,11 @@ class PartialWebhookGuild(Hashable):
     Attributes
     -----------
     id: :class:`int`
-        The guild's ID.
+        The partial guild's ID.
     name: :class:`str`
-        The guild's name.
+        The partial guild's name.
     icon: :class:`str`
-        The guild's icon
+        The partial guild's icon
     """
 
     __slots__ = ('id', 'name', 'icon', '_state')
