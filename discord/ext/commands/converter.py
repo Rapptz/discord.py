@@ -263,7 +263,7 @@ class UserConverter(IDConverter[discord.User]):
 
         return result
 
-class PartialMessageConverter(IDConverter[discord.PartialMessage], Generic[T]):
+class PartialMessageConverter(Converter[discord.PartialMessage]):
     """Converts to a :class:`discord.PartialMessage`.
 
     .. versionadded:: 1.7
@@ -274,7 +274,8 @@ class PartialMessageConverter(IDConverter[discord.PartialMessage], Generic[T]):
     2. By message ID (The message is assumed to be in the context channel.)
     3. By message URL
     """
-    def _get_id_matches(self, argument):
+    @staticmethod
+    def _get_id_matches(argument):
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,20})-)?(?P<message_id>[0-9]{15,20})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
@@ -294,7 +295,7 @@ class PartialMessageConverter(IDConverter[discord.PartialMessage], Generic[T]):
             raise ChannelNotFound(channel_id)
         return discord.PartialMessage(channel=channel, id=message_id)
 
-class MessageConverter(PartialMessageConverter[discord.Message]):
+class MessageConverter(IDConverter[discord.Message]):
     """Converts to a :class:`discord.Message`.
 
     .. versionadded:: 1.1
@@ -309,7 +310,7 @@ class MessageConverter(PartialMessageConverter[discord.Message]):
          Raise :exc:`.ChannelNotFound`, :exc:`.MessageNotFound` or :exc:`.ChannelNotReadable` instead of generic :exc:`.BadArgument`
     """
     async def convert(self, ctx: Context, argument: str) -> discord.Message:
-        message_id, channel_id = self._get_id_matches(argument)
+        message_id, channel_id = PartialMessageConverter._get_id_matches(argument)
         message = ctx.bot._connection._get_message(message_id)
         if message:
             return message
