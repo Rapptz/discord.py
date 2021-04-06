@@ -52,7 +52,9 @@ __all__ = (
 log = logging.getLogger(__name__)
 
 class PartialWebhookChannel(Hashable):
-    """Partial channel for webhooks for when they are channel following webhooks for news channels.
+    """Represents a partial channel for webhooks.
+
+    These are typically given for channel follower webhooks.
 
     .. versionadded:: 2.0
 
@@ -71,7 +73,7 @@ class PartialWebhookChannel(Hashable):
         self.name = data['name']
 
     def __repr__(self):
-        return f'<PartialChannel name=\'{self.name}\' id={self.id}>'
+        return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
 
 class PartialWebhookGuild(Hashable):
     """Partial guild for webhooks for when they are channel following webhooks for news channels.
@@ -682,12 +684,12 @@ class Webhook(Hashable):
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
     source_guild: Optional[:class:`PartialGuild`]
-        The guild of the channel that this webhook is following (returned for Channel Follower Webhooks).
+        The guild of the channel that this webhook is following. Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
 
         .. versionadded:: 2.0
 
     source_channel: Optional[:class:`PartialChannel`]
-        The channel that this webhook is following (returned for Channel Follower Webhooks).
+        The channel that this webhook is following. Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
 
         .. versionadded:: 2.0
     """
