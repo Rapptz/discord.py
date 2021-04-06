@@ -369,7 +369,7 @@ async def async_all(gen, *, check=_isawaitable):
 
 async def sane_wait_for(futures, *, timeout):
     ensured = [
-        asyncio.create_task(fut) for fut in futures
+        asyncio.ensure_future(fut) for fut in futures
     ]
     done, pending = await asyncio.wait(ensured, timeout=timeout, return_when=asyncio.ALL_COMPLETED)
 

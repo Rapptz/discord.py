@@ -1118,7 +1118,7 @@ class AutoShardedConnectionState(ConnectionState):
                             current_bucket = []
 
                     # Chunk the guild in the background while we wait for GUILD_CREATE streaming
-                    future = asyncio.create_task(self.chunk_guild(guild))
+                    future = asyncio.ensure_future(self.chunk_guild(guild))
                     current_bucket.append(future)
                 else:
                     future = self.loop.create_future()
