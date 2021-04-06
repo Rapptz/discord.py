@@ -70,7 +70,7 @@ def _get_from_guilds(bot, getter, argument):
 
 
 _utils_get = discord.utils.get
-T = TypeVar("T", covariant=True)
+T = TypeVar('T', covariant=True)
 
 
 @runtime_checkable
