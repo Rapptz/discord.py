@@ -301,7 +301,7 @@ class Cog(metaclass=CogMeta):
 
         .. versionadded:: 1.7
         """
-        return hasattr(self.cog_command_error.__func__, '__cog_special_method__')
+        return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
     def cog_unload(self):
