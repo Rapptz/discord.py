@@ -687,7 +687,7 @@ class Webhook(Hashable):
         .. versionadded:: 2.0
 
     source_channel: Optional[:class:`PartialChannel`]
-        the channel that this webhook is following (returned for Channel Follower Webhooks)
+        The channel that this webhook is following (returned for Channel Follower Webhooks)
 
         .. versionadded:: 2.0
     """
