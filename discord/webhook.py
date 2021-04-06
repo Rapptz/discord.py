@@ -682,12 +682,12 @@ class Webhook(Hashable):
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
     source_guild: Optional[:class:`PartialGuild`]
-        The guild of the channel that this webhook is following (returned for Channel Follower Webhooks)
+        The guild of the channel that this webhook is following (returned for Channel Follower Webhooks).
 
         .. versionadded:: 2.0
 
     source_channel: Optional[:class:`PartialChannel`]
-        The channel that this webhook is following (returned for Channel Follower Webhooks)
+        The channel that this webhook is following (returned for Channel Follower Webhooks).
 
         .. versionadded:: 2.0
     """
