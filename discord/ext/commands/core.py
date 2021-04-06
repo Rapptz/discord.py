@@ -443,14 +443,11 @@ class Command(_BaseCommand):
                 converter = getattr(converters, converter.__name__ + 'Converter', converter)
 
         try:
-            if inspect.isclass(converter):
-                if issubclass(converter, converters.Converter):
-                    instance = converter()
-                    return await instance.convert(ctx, argument)
+            if inspect.isclass(converter) and issubclass(converter, converters.Converter):
+                if inspect.ismethod(converter.convert):
+                    return await converter.convert(ctx, argument)
                 else:
-                    method = getattr(converter, 'convert', None)
-                    if method is not None and inspect.ismethod(method):
-                        return await method(ctx, argument)
+                    return await converter().convert(ctx, argument)
             elif isinstance(converter, converters.Converter):
                 return await converter.convert(ctx, argument)
         except CommandError:
