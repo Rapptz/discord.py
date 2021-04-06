@@ -33,7 +33,7 @@ async def hello(ctx):
 @greet.command()
 async def goodbye(ctx, member: discord.Member):
     """Say goodbye to someone"""
-    await ctx.send(f'Goodbye {member.author}')
+    await ctx.send(f'Goodbye {member}')
 
 # We can also nest groups!
 @greet.group()
