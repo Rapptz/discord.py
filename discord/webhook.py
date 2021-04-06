@@ -724,15 +724,13 @@ class Webhook(Hashable):
         source_channel = data.get('source_channel')
         if source_channel:
             source_channel = PartialWebhookChannel(data=source_channel)
-        else:
-            source_channel = None
+            
         self.source_channel = source_channel
 
         source_guild = data.get('source_guild')
         if source_guild:
             source_guild = PartialWebhookGuild(data=source_guild, state=state)
-        else:
-            source_guild = None
+            
         self.source_guild = source_guild
 
     def __repr__(self):
