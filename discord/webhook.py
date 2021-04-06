@@ -45,9 +45,99 @@ __all__ = (
     'RequestsWebhookAdapter',
     'Webhook',
     'WebhookMessage',
+    'PartialChannel',
+    'PartialGuild'
 )
 
 log = logging.getLogger(__name__)
+
+class PartialChannel(Hashable):
+    """Partial channel for webhooks
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The channel's ID.
+    name: :class:`str`
+        The channel's name.
+    """
+
+    __slots__ = ('id', 'name')
+
+    def __init__(self, *, data):
+        self.id = int(data['id'])
+        self.name = data['name']
+
+    def __repr__(self):
+        return f'<PartialChannel name=\'{self.name}\' id={self.id}>'
+
+class PartialGuild(Hashable):
+    """Partial guild for webhooks
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The guild's ID.
+    name: :class:`str`
+        The guild's name.
+    icon: :class:`str`
+        The guild's icon
+    """
+
+    __slots__ = ('id', 'name', 'icon', '_state')
+
+    def __init__(self, *, data, state):
+        self._state = state
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.icon = data['icon']
+
+    def __repr__(self):
+        return f'<PartialGuild name=\'{self.name}\' id={self.id}>'
+
+    @property
+    def icon_url(self):
+        """:class:`Asset`: Returns the guild's icon asset."""
+        return self.icon_url_as() 
+
+    def is_icon_animated(self):
+        """:class:`bool`: Returns True if the guild has an animated icon."""
+        return bool(self.icon and self.icon.startswith('a_'))
+
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
+        """Returns an :class:`Asset` for the guild's icon.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 4096.
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the icon to.
+            If the format is ``None``, then it is automatically
+            detected into either 'gif' or static_format depending on the
+            icon being animated or not.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated icons to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -591,10 +681,19 @@ class Webhook(Hashable):
         The default name of the webhook.
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
+    source_guild: Optional[:class:`PartialGuild`]
+        The guild of the channel that this webhook is following (returned for Channel Follower Webhooks)
+
+        .. versionadded:: 2.0
+
+    source_channel: Optional[:class:`PartialChannel`]
+        the channel that this webhook is following (returned for Channel Follower Webhooks)
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
-                 'avatar', 'token', '_state', '_adapter')
+                 'avatar', 'token', '_state', '_adapter', 'source_channel', 'source_guild')
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
@@ -615,6 +714,20 @@ class Webhook(Hashable):
             self.user = BaseUser(state=None, data=user)
         else:
             self.user = User(state=state, data=user)
+
+        source_channel = data.get('source_channel')
+        if source_channel:
+            source_channel = PartialChannel(data=source_channel)
+        else:
+            source_channel = None
+        self.source_channel = source_channel
+
+        source_guild = data.get('source_guild')
+        if source_guild:
+            source_guild = PartialGuild(data=source_guild, state=state)
+        else:
+            source_guild = None
+        self.source_guild = source_guild
 
     def __repr__(self):
         return f'<Webhook id={self.id!r}>'
