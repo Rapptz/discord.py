@@ -40,35 +40,17 @@ import warnings
 from .errors import InvalidArgument
 
 __all__ = (
-    'cached_property',
-    'cached_slot_property',
-    'SequenceProxy',
-    'parse_time',
-    'copy_doc',
-    'deprecated',
     'oauth_uri',
     'snowflake_time',
     'time_snowflake',
     'find',
     'get',
-    '_get_as_snowflake',
-    '_bytes_to_base64_data',
-    'to_json',
-    'maybe_coroutine',
-    'async_all',
-    'sane_wait_for',
     'sleep_until',
     'utcnow',
-    'valid_icon_size',
-    'SnowflakeList',
-    '_string_width',
-    'resolve_invite',
-    'resolve_template',
     'remove_markdown',
     'escape_markdown',
     'escape_mentions',
 )
-
 DISCORD_EPOCH = 1420070400000
 
 class cached_property:
