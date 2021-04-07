@@ -2991,6 +2991,21 @@ RawReactionClearEmojiEvent
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
 
+PartialWebhookGuild
+~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookGuild
+
+.. autoclass:: PartialWebhookGuild()
+    :members:
+
+PartialWebhookChannel
+~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookChannel
+
+.. autoclass:: PartialWebhookChannel()
+    :members:
 
 .. _discord_api_data:
 
