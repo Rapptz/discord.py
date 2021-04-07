@@ -136,6 +136,12 @@ class Embed:
     type: :class:`str`
         The type of embed. Usually "rich".
         This can be set during initialisation.
+
+        .. note::
+
+            Possible strings for embed types can be found on discord's
+            `api docs <https://discord.com/developers/docs/resources/channel#embed-object-embed-types>`_
+
     description: :class:`str`
         The description of the embed.
         This can be set during initialisation.
