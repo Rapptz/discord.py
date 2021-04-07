@@ -310,7 +310,9 @@ class Command(_BaseCommand):
 
         for key, value in self.params.items():
             # coalesce the forward references
-            self.params[key] = value = value.replace(annotation=type_hints.get(key))
+            if key in type_hints:
+                self.params[key] = value = value.replace(annotation=type_hints[key])
+
             # fail early for when someone passes an unparameterized Greedy type
             if value.annotation is converters.Greedy:
                 raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
