@@ -409,7 +409,7 @@ class HTTPClient:
 
         return self.request(route, form=form, files=files)
 
-    def send_file(
+    def send_files(
         self,
         channel_id,
         *,
