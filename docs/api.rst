@@ -2992,7 +2992,7 @@ RawReactionClearEmojiEvent
     :members:
 
 PartialWebhookGuild
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: PartialWebhookGuild
 
@@ -3000,7 +3000,7 @@ PartialWebhookGuild
     :members:
 
 PartialWebhookChannel
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: PartialWebhookChannel
 
