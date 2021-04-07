@@ -23,9 +23,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .user import PartialUser
-from .permissions import Overwrite
 from .snowflake import Snowflake
 from typing import List, Literal, Optional, TypedDict
+
+
+class PermissionOverwrite(TypedDict):
+    id: Snowflake
+    type: Literal[0, 1]
+    allow: str
+    deny: str
+
 
 ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 13]
 
@@ -69,7 +76,7 @@ class GuildChannel(
 ):
     guild_id: Snowflake
     position: int
-    permission_overwrites: List[Overwrite]
+    permission_overwrites: List[PermissionOverwrite]
     nsfw: bool
     parent_id: Optional[Snowflake]
 
