@@ -310,6 +310,18 @@ class HTTPClient:
     def logout(self):
         return self.request(Route('POST', '/auth/logout'))
 
+    # Group functionality
+
+    def start_group(self, user_id, recipients):
+        payload = {
+            'recipients': recipients,
+        }
+
+        return self.request(Route('POST', '/users/{user_id}/channels', user_id=user_id), json=payload)
+
+    def leave_group(self, channel_id):
+        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
+
     # Message management
 
     def start_private_message(self, user_id):
