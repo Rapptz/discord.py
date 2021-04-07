@@ -384,6 +384,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Emoji`
 - :class:`PartialEmoji`
 - :class:`Colour`
+- :class:`Guild` (since v1.7)
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
 specify.
@@ -419,6 +420,8 @@ converter is given below:
 | :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`Guild`           | :class:`~ext.commands.GuildConverter`           |
 +--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
