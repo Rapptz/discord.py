@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-from typing import TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union, List, AsyncIterator, Coroutine
+from typing import Awaitable, TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union, List, AsyncIterator
 
 from .errors import NoMoreItems
 from .utils import time_snowflake, maybe_coroutine
@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 
 T = TypeVar('T')
 OT = TypeVar('OT')
-_Func = Callable[[T], Union[OT, Coroutine[Any, Any, OT]]]
+_Func = Callable[[T], Union[OT, Awaitable[OT]]]
 
 OLDEST_OBJECT = Object(id=0)
 
@@ -60,7 +60,7 @@ class _AsyncIterator(AsyncIterator[T]):
     async def next(self) -> T:
         raise NotImplementedError
 
-    def get(self, **attrs: Any) -> Coroutine[Any, Any, Optional[T]]:
+    def get(self, **attrs: Any) -> Awaitable[Optional[T]]:
         def predicate(elem: T):
             for attr, val in attrs.items():
                 nested = attr.split('__')
