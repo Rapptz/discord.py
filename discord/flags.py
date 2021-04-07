@@ -38,8 +38,6 @@ __all__ = (
 
 FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
-I = TypeVar('I', bound='Intents')
-MCF = TypeVar('MCF', bound='MemberCacheFlags')
 
 class flag_value:
     def __init__(self, func: Callable[[Any], int]):
@@ -425,7 +423,7 @@ class Intents(BaseFlags):
             setattr(self, key, value)
 
     @classmethod
-    def all(cls: Type[I]) -> I:
+    def all(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled."""
         bits = max(cls.VALID_FLAGS.values()).bit_length()
         value = (1 << bits) - 1
@@ -434,14 +432,14 @@ class Intents(BaseFlags):
         return self
 
     @classmethod
-    def none(cls: Type[I]) -> I:
+    def none(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything disabled."""
         self = cls.__new__(cls)
         self.value = self.DEFAULT_VALUE
         return self
 
     @classmethod
-    def default(cls: Type[I]) -> I:
+    def default(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled
         except :attr:`presences` and :attr:`members`.
         """
@@ -858,7 +856,7 @@ class MemberCacheFlags(BaseFlags):
             setattr(self, key, value)
 
     @classmethod
-    def all(cls: Type[MCF]) -> MCF:
+    def all(cls: Type[MemberCacheFlags]) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` with everything enabled."""
         bits = max(cls.VALID_FLAGS.values()).bit_length()
         value = (1 << bits) - 1
@@ -867,7 +865,7 @@ class MemberCacheFlags(BaseFlags):
         return self
 
     @classmethod
-    def none(cls: Type[MCF]) -> MCF:
+    def none(cls: Type[MemberCacheFlags]) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` with everything disabled."""
         self = cls.__new__(cls)
         self.value = self.DEFAULT_VALUE
@@ -910,7 +908,7 @@ class MemberCacheFlags(BaseFlags):
         return 4
 
     @classmethod
-    def from_intents(cls: Type[MCF], intents: Intents) -> MCF:
+    def from_intents(cls: Type[MemberCacheFlags], intents: Intents) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` based on
         the currently selected :class:`Intents`.
 
