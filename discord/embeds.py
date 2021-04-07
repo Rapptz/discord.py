@@ -63,6 +63,12 @@ class Embed:
             Returns the total size of the embed.
             Useful for checking if it's within the 6000 character limit.
 
+        .. describe:: bool(b)
+
+            Returns whether the embed has any data set.
+
+            .. versionadded:: 2.0
+
     Certain properties return an ``EmbedProxy``, a type
     that acts similar to a regular :class:`dict` except using dotted access,
     e.g. ``embed.author.icon_url``. If the attribute
@@ -216,6 +222,22 @@ class Embed:
             total += len(author['name'])
 
         return total
+
+    def __bool__(self):
+        return any((
+            self.title,
+            self.url,
+            self.description,
+            self.colour,
+            self.fields,
+            self.timestamp,
+            self.author,
+            self.thumbnail,
+            self.footer,
+            self.image,
+            self.provider,
+            self.video,
+        ))
 
     @property
     def colour(self):
