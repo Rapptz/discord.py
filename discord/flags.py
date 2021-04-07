@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
 
@@ -39,7 +39,7 @@ __all__ = (
 FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
 
-class flag_value:
+class flag_value(Generic[BF]):
     def __init__(self, func: Callable[[Any], int]):
         self.flag = func(None)
         self.__doc__ = func.__doc__
@@ -57,7 +57,7 @@ class flag_value:
             return self
         return instance._has_flag(self.flag)
 
-    def __set__(self, instance: Any, value: bool) -> None:
+    def __set__(self, instance: BF, value: bool) -> None:
         instance._set_flag(self.flag, value)
 
     def __repr__(self):
@@ -114,7 +114,7 @@ class BaseFlags:
     def __hash__(self) -> int:
         return hash(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} value={self.value}>'
 
     def __iter__(self) -> Iterator[Tuple[str, bool]]:
