@@ -67,7 +67,7 @@ class EmbedProxy:
 E = TypeVar('E', bound='Embed')
 
 if TYPE_CHECKING:
-    from discord.types.common import Embed as EmbedData, EmbedType
+    from discord.types.embed import Embed as EmbedData, EmbedType
 
     T = TypeVar('T')
     MaybeEmpty = Union[T, _EmptyEmbed]

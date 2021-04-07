@@ -22,8 +22,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-# This file provides typings for shared entities between the Gateway and HTTP API
-
 from typing import List, Literal, TypedDict
 
 class _EmbedFooterOptional(TypedDict, total=False):
