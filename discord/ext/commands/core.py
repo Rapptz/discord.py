@@ -501,14 +501,24 @@ class Command(_BaseCommand):
 
         if origin is typing.Literal:
             errors = []
-            for literal in self._flattened_typing_literal_args(converter):
+            conversions = {}
+            literal_args = self._flattened_typing_literal_args(converter)
+            for literal in literal_args:
+                literal_type = type(literal)
                 try:
-                    value = await self._actual_conversion(ctx, type(literal), argument, param)
-                except CommandError as exc:
-                    errors.append(exc)
-                else:
-                    if value == literal:
-                        return value
+                    value = conversions[literal_type]
+                except KeyError:
+                    try:
+                        value = await self._actual_conversion(ctx, literal_type, argument, param)
+                    except CommandError as exc:
+                        errors.append(exc)
+                        conversions[literal_type] = object()
+                        continue
+                    else:
+                        conversions[literal_type] = value
+                    
+                if conversions[literal_type] == literal:
+                    return value
 
             # if we're here, then we failed to match all the literals
             raise BadLiteralArgument(param, tuple(self._flattened_typing_literal_args(converter)), errors)
