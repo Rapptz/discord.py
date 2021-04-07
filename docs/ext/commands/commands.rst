@@ -193,6 +193,8 @@ Converters come in a few flavours:
 
 - A custom class that inherits from :class:`~ext.commands.Converter`.
 
+.. _ext_commands_basic_converters:
+
 Basic Converters
 ++++++++++++++++++
 
