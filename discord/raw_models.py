@@ -22,6 +22,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'RawMessageDeleteEvent',
+    'RawBulkMessageDeleteEvent',
+    'RawMessageUpdateEvent',
+    'RawReactionActionEvent',
+    'RawReactionClearEvent',
+    'RawReactionClearEmojiEvent',
+)
+
 class _RawReprMixin:
     def __repr__(self):
         value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)

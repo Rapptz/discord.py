@@ -28,6 +28,11 @@ from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _get_as_snowflake
 
+__all__ = (
+    'RoleTags',
+    'Role',
+)
+
 class RoleTags:
     """Represents tags on a role.
 

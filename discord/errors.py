@@ -22,6 +22,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'DiscordException',
+    'ClientException',
+    'NoMoreItems',
+    'GatewayNotFound',
+    'HTTPException',
+    'Forbidden',
+    'NotFound',
+    'DiscordServerError',
+    'InvalidData',
+    'InvalidArgument',
+    'LoginFailure',
+    'ConnectionClosed',
+    'PrivilegedIntentsRequired',
+)
+
 class DiscordException(Exception):
     """Base exception class for discord.py
 

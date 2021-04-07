@@ -35,6 +35,10 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+__all__ = (
+    'loop',
+)
+
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
 

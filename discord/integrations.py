@@ -28,6 +28,11 @@ from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
+__all__ = (
+    'IntegrationAccount',
+    'Integration',
+)
+
 class IntegrationAccount:
     """Represents an integration account.
 

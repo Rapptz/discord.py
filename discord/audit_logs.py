@@ -29,6 +29,12 @@ from .colour import Colour
 from .invite import Invite
 from .mixins import Hashable
 
+__all__ = (
+    'AuditLogDiff',
+    'AuditLogChanges',
+    'AuditLogEntry',
+)
+
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 

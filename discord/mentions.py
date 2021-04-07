@@ -22,6 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'AllowedMentions',
+)
+
 class _FakeBool:
     def __repr__(self):
         return 'True'

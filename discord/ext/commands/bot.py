@@ -39,6 +39,13 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+__all__ = (
+    'when_mentioned',
+    'when_mentioned_or',
+    'Bot',
+    'AutoShardedBot',
+)
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
 
