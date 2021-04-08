@@ -584,7 +584,7 @@ class Spotify:
         return 'Spotify'
 
     def __repr__(self):
-        return '<Spotify title={0.title!r} artist={0.artist!r} track_id={0.track_id!r}>'.format(self)
+        return f'<Spotify title={self.title!r} artist={self.artist!r} track_id={self.track_id!r}>'
 
     @property
     def title(self):
@@ -738,7 +738,7 @@ class CustomActivity(BaseActivity):
             return str(self.name)
 
     def __repr__(self):
-        return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
+        return f'<CustomActivity name={self.name!r} emoji={self.emoji!r}>'
 
 
 def create_activity(data):

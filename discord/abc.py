@@ -279,7 +279,7 @@ class GuildChannel(Protocol):
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
-                    raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                    raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
                 allow, deny = perm.pair()
                 payload = {

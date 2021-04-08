@@ -695,15 +695,13 @@ class Command(_BaseCommand):
             try:
                 next(iterator)
             except StopIteration:
-                fmt = 'Callback for {0.name} command is missing "self" parameter.'
-                raise discord.ClientException(fmt.format(self))
+                raise discord.ClientException(f'Callback for {self.name} command is missing "self" parameter.')
 
         # next we have the 'ctx' as the next parameter
         try:
             next(iterator)
         except StopIteration:
-            fmt = 'Callback for {0.name} command is missing "ctx" parameter.'
-            raise discord.ClientException(fmt.format(self))
+            raise discord.ClientException(f'Callback for {self.name} command is missing "ctx" parameter.')
 
         for name, param in iterator:
             if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
@@ -2046,7 +2044,7 @@ def before_invoke(coro):
             @commands.before_invoke(record_usage)
             @commands.command()
             async def when(self, ctx): # Output: <User> used when at <Time>
-                await ctx.send('and i have existed since {}'.format(ctx.bot.user.created_at))
+                await ctx.send(f'and i have existed since {ctx.bot.user.created_at}')
 
             @commands.command()
             async def where(self, ctx): # Output: <Nothing>

@@ -587,7 +587,7 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r)
 
@@ -599,7 +599,7 @@ class HTTPClient:
 
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r, params=params)
 

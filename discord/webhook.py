@@ -106,7 +106,7 @@ class PartialWebhookGuild(Hashable):
     @property
     def icon_url(self):
         """:class:`Asset`: Returns the guild's icon asset."""
-        return self.icon_url_as() 
+        return self.icon_url_as()
 
     def is_icon_animated(self):
         """:class:`bool`: Returns True if the guild has an animated icon."""
@@ -724,13 +724,13 @@ class Webhook(Hashable):
         source_channel = data.get('source_channel')
         if source_channel:
             source_channel = PartialWebhookChannel(data=source_channel)
-            
+
         self.source_channel = source_channel
 
         source_guild = data.get('source_guild')
         if source_guild:
             source_guild = PartialWebhookGuild(data=source_guild, state=state)
-            
+
         self.source_guild = source_guild
 
     def __repr__(self):
@@ -904,7 +904,7 @@ class Webhook(Hashable):
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = f'/avatars/{self.id}/{self.avatar}.{format}?size={size}'
         return Asset(self._state, url)
 
     def delete(self, *, reason=None):

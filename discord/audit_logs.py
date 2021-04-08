@@ -301,7 +301,7 @@ class AuditLogEntry(Hashable):
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self):
-        return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
+        return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
     @utils.cached_property
     def created_at(self):

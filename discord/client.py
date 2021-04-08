@@ -849,7 +849,7 @@ class Client:
                         return m.content == 'hello' and m.channel == channel
 
                     msg = await client.wait_for('message', check=check)
-                    await channel.send('Hello {.author}!'.format(msg))
+                    await channel.send(f'Hello {msg.author}!')
 
         Waiting for a thumbs up reaction from the message author: ::
 

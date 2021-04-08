@@ -424,7 +424,7 @@ class CommandInvokeError(CommandError):
     """
     def __init__(self, e):
         self.original = e
-        super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
+        super().__init__(f'Command raised an exception: {e.__class__.__name__}: {e}')
 
 class CommandOnCooldown(CommandError):
     """Exception raised when the command being invoked is on cooldown.
@@ -764,8 +764,8 @@ class ExtensionFailed(ExtensionError):
     """
     def __init__(self, name, original):
         self.original = original
-        fmt = 'Extension {0!r} raised an error: {1.__class__.__name__}: {1}'
-        super().__init__(fmt.format(name, original), name=name)
+        msg = f'Extension {name!r} raised an error: {original.__class__.__name__}: {original}'
+        super().__init__(msg, name=name)
 
 class ExtensionNotFound(ExtensionError):
     """An exception raised when an extension is not found.
@@ -784,8 +784,8 @@ class ExtensionNotFound(ExtensionError):
     """
     def __init__(self, name, original=None):
         self.original = None
-        fmt = 'Extension {0!r} could not be loaded.'
-        super().__init__(fmt.format(name), name=name)
+        msg = f'Extension {name!r} could not be loaded.'
+        super().__init__(msg, name=name)
 
 class CommandRegistrationError(ClientException):
     """An exception raised when the command can't be added
