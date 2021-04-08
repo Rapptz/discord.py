@@ -26,8 +26,7 @@ from __future__ import annotations
 
 import re
 import inspect
-import sys
-from typing import TYPE_CHECKING, List, TypeVar, Union, get_args, get_origin, runtime_checkable
+from typing import TYPE_CHECKING, List, Protocol, TypeVar, Union, runtime_checkable
 
 import discord
 from .errors import *
@@ -836,11 +835,8 @@ class clean_content(Converter[str]):
         return discord.utils.escape_mentions(result)
 
 
-GreedyBase = list if sys.version_info >= (3, 9) else List
-
-
-class Greedy(GreedyBase[T]):
-    """A special converter that greedily consumes arguments until it can't.
+class Greedy(List[T]):
+    r"""A special converter that greedily consumes arguments until it can't.
     As a consequence of this behaviour, most input errors are silently discarded,
     since it is used as an indicator of when to stop parsing.
 
@@ -861,9 +857,7 @@ class Greedy(GreedyBase[T]):
     For more information, check :ref:`ext_commands_special_converters`.
     """
 
-    __slots__ = ("converter",)
-
-    converter: T
+    __slots__ = ('converter',)
 
     def __init__(self, *, converter: T):
         self.converter = converter
@@ -875,8 +869,8 @@ class Greedy(GreedyBase[T]):
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        origin = getattr(converter, "__origin__", None)
-        args = getattr(converter, "__args__", ())
+        origin = getattr(converter, '__origin__', None)
+        args = getattr(converter, '__args__', ())
 
         if not (callable(converter) or isinstance(converter, Converter) or origin is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
