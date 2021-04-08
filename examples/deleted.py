@@ -3,7 +3,7 @@ import discord
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Connected!')
-        print('Username: {0.name}\nID: {0.id}'.format(self.user))
+        print(f'Username: {self.user.name}\nID: {self.user.id}')
 
     async def on_message(self, message):
         if message.content.startswith('!deleteme'):
@@ -14,8 +14,8 @@ class MyClient(discord.Client):
             await message.channel.send('Goodbye in 3 seconds...', delete_after=3.0)
 
     async def on_message_delete(self, message):
-        fmt = '{0.author} has deleted the message: {0.content}'
-        await message.channel.send(fmt.format(message))
+        fmt = f'{message.author} has deleted the message: {message.content}'
+        await message.channel.send(fmt)
 
 client = MyClient()
 client.run('token')
