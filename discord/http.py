@@ -113,8 +113,7 @@ class HTTPClient:
         self.proxy_auth = proxy_auth
         self.use_clock = not unsync_clock
 
-        user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
-        self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+        self.user_agent = f'DiscordBot (https://github.com/Rapptz/discord.py {__version__}) Python/{sys.version_info[0]}.{sys.version_info[1]} aiohttp/{aiohttp.__version__}'
 
     def recreate(self):
         if self.__session.closed:
@@ -587,7 +586,7 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r)
 
@@ -599,7 +598,7 @@ class HTTPClient:
 
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r, params=params)
 
@@ -1285,10 +1284,10 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
+            value = f'{data["url"]}?encoding={encoding}&v={v}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, v)
+            value = f'{data["url"]}?encoding={encoding}&v={v}'
+        return value
 
     async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
         try:
@@ -1297,10 +1296,10 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
+            value = f'{data["url"]}?encoding={encoding}&v={v}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return data['shards'], value.format(data['url'], encoding, v)
+            value = f'{data["url"]}?encoding={encoding}&v={v}'
+        return data['shards'], value
 
     def get_user(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
