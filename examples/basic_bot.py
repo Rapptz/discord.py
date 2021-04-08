@@ -52,7 +52,7 @@ async def repeat(ctx, times: int, content='repeating...'):
 @bot.command()
 async def joined(ctx, member: discord.Member):
     """Says when a member joined."""
-    await ctx.send('{0.name} joined in {0.joined_at}'.format(member))
+    await ctx.send(f'{member.name} joined in {member.joined_at}')
 
 @bot.group()
 async def cool(ctx):
