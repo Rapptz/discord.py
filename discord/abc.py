@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .enums import ChannelType
+from .enums import ChannelType, VideoQualityMode
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -255,6 +255,15 @@ class GuildChannel(Protocol):
             pass
         else:
             options['rtc_region'] = None if rtc_region is None else str(rtc_region)
+
+        try:
+            video_quality_mode = options.pop('video_quality_mode')
+        except KeyError:
+            pass
+        else:
+            if not isinstance(video_quality_mode, VideoQualityMode):
+                raise InvalidArgument('type video_quality_mode must be of type VideoQualityMode')
+            options['video_quality_mode'] = video_quality_mode.value
 
         lock_permissions = options.pop('sync_permissions', False)
 

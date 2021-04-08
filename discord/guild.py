@@ -973,6 +973,9 @@ class Guild(Hashable):
             A value of ``None`` indicates automatic voice region detection.
 
             .. versionadded:: 1.7
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the voice channel's participants.
+            .. versionadded:: 2.0
 
         Raises
         ------

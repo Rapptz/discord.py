@@ -669,6 +669,7 @@ class HTTPClient:
             'rate_limit_per_user',
             'type',
             'rtc_region',
+            'video_quality_mode',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
@@ -693,6 +694,7 @@ class HTTPClient:
             'permission_overwrites',
             'rate_limit_per_user',
             'rtc_region',
+            'video_quality_mode',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
 
