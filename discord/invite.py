@@ -28,6 +28,12 @@ from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 
+__all__ = (
+    'PartialInviteChannel',
+    'PartialInviteGuild',
+    'Invite',
+)
+
 class PartialInviteChannel:
     """Represents a "partial" invite channel.
 

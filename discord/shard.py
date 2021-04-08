@@ -44,6 +44,11 @@ from .errors import (
 from . import utils
 from .enums import Status
 
+__all__ = (
+    'AutoShardedClient',
+    'ShardInfo',
+)
+
 log = logging.getLogger(__name__)
 
 class EventType:

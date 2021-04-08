@@ -25,6 +25,10 @@ DEALINGS IN THE SOFTWARE.
 import os.path
 import io
 
+__all__ = (
+    'File',
+)
+
 class File:
     r"""A parameter object used for :meth:`abc.Messageable.send`
     for sending file objects.

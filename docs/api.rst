@@ -585,6 +585,17 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
 
+.. function:: on_interaction(interaction)
+
+    Called when an interaction happened.
+
+    This currently happens due to slash command invocations.
+
+    .. versionadded:: 2.0
+
+    :param interaction: The interaction data.
+    :type interaction: :class:`Interaction`
+
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
 
@@ -1088,6 +1099,20 @@ of :class:`enum.Enum`.
         A competing activity type.
 
         .. versionadded:: 1.5
+
+.. class:: InteractionType
+
+    Specifies the type of :class:`Interaction`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: ping
+
+        Represents Discord pinging to see if the interaction response server is alive.
+
+    .. attribute:: application_command
+
+        Represents a slash command interaction.
 
 .. class:: HypeSquadHouse
 
@@ -2699,6 +2724,14 @@ Integration
 .. autoclass:: IntegrationAccount()
     :members:
 
+Interaction
+~~~~~~~~~~~~
+
+.. attributetable:: Interaction
+
+.. autoclass:: Interaction()
+    :members:
+
 Member
 ~~~~~~
 
@@ -2958,6 +2991,21 @@ RawReactionClearEmojiEvent
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
 
+PartialWebhookGuild
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookGuild
+
+.. autoclass:: PartialWebhookGuild()
+    :members:
+
+PartialWebhookChannel
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookChannel
+
+.. autoclass:: PartialWebhookChannel()
+    :members:
 
 .. _discord_api_data:
 

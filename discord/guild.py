@@ -44,6 +44,9 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+__all__ = (
+    'Guild',
+)
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')

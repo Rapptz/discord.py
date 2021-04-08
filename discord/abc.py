@@ -41,6 +41,15 @@ from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
 
+__all__ = (
+    'Snowflake',
+    'User',
+    'PrivateChannel',
+    'GuildChannel',
+    'Messageable',
+    'Connectable',
+)
+
 if TYPE_CHECKING:
     from datetime import datetime
 

@@ -27,6 +27,9 @@ from .user import User
 from .asset import Asset
 from .team import Team
 
+__all__ = (
+    'AppInfo',
+)
 
 class AppInfo:
     """Represents the application info for the bot provided by Discord.

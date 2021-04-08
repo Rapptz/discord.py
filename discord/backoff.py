@@ -25,6 +25,10 @@ DEALINGS IN THE SOFTWARE.
 import time
 import random
 
+__all__ = (
+    'ExponentialBackoff',
+)
+
 class ExponentialBackoff:
     """An implementation of the exponential backoff algorithm
 

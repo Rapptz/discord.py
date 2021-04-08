@@ -51,6 +51,7 @@ from . import utils
 from .flags import Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .interactions import Interaction
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -113,6 +114,7 @@ class ConnectionState:
         self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
+        self.application_id = utils._get_as_snowflake(options, 'application_id')
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -452,6 +454,14 @@ class ConnectionState:
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
 
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
+
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
 
@@ -576,6 +586,10 @@ class ConnectionState:
             else:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
+
+    def parse_interaction_create(self, data):
+        interaction = Interaction(data=data, state=self)
+        self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data):
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -1104,7 +1118,7 @@ class AutoShardedConnectionState(ConnectionState):
                             current_bucket = []
 
                     # Chunk the guild in the background while we wait for GUILD_CREATE streaming
-                    future = asyncio.create_task(self.chunk_guild(guild))
+                    future = asyncio.ensure_future(self.chunk_guild(guild))
                     current_bucket.append(future)
                 else:
                     future = self.loop.create_future()
@@ -1152,6 +1166,14 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
+
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)

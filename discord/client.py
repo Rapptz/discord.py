@@ -52,6 +52,10 @@ from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
 
+__all__ = (
+    'Client',
+)
+
 log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop):
@@ -113,6 +117,8 @@ class Client:
         Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
+    application_id: :class:`int`
+        The client's application ID.
     intents: :class:`Intents`
         The intents that you want to enable for the session. This is a way of
         disabling and enabling certain gateway events from triggering and being sent.
@@ -294,6 +300,16 @@ class Client:
         These are usually :class:`.VoiceClient` instances.
         """
         return self._connection.voice_clients
+
+    @property
+    def application_id(self):
+        """Optional[:class:`int`]: The client's application ID.
+
+        If this is not passed via ``__init__`` then this is retrieved
+        through the gateway when an event contains the data. Usually
+        after :func:`on_connect` is called.
+        """
+        return self._connection.application_id
 
     def is_ready(self):
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""

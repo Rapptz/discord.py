@@ -43,6 +43,7 @@ extensions = [
 ]
 
 autodoc_member_order = 'bysource'
+autodoc_typehints = 'none'
 
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),

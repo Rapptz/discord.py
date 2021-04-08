@@ -25,6 +25,11 @@ DEALINGS IN THE SOFTWARE.
 import colorsys
 import random
 
+__all__ = (
+    'Colour',
+    'Color',
+)
+
 class Colour:
     """Represents a Discord role colour. This class is similar
     to a (red, green, blue) :class:`tuple`.
