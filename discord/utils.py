@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 import array
 import asyncio
 import collections.abc
-from typing import Optional, overload
+from typing import Optional, Protocol, overload
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -52,6 +52,10 @@ __all__ = (
     'escape_mentions',
 )
 DISCORD_EPOCH = 1420070400000
+
+class SupportsStr(Protocol):
+    def __str__(self) -> str:
+        ...
 
 class cached_property:
     def __init__(self, function):

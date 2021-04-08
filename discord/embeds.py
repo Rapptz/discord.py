@@ -67,7 +67,8 @@ class EmbedProxy:
 E = TypeVar('E', bound='Embed')
 
 if TYPE_CHECKING:
-    from discord.types.embed import Embed as EmbedData, EmbedType
+    from .types.embed import Embed as EmbedData, EmbedType
+    from .utils import SupportsStr
 
     T = TypeVar('T')
     MaybeEmpty = Union[T, _EmptyEmbed]
@@ -342,7 +343,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_footer', {}))  # type: ignore
 
-    def set_footer(self: E, *, text: MaybeEmpty[str] = EmptyEmbed, icon_url: MaybeEmpty[str] = EmptyEmbed) -> E:
+    def set_footer(self: E, *, text: MaybeEmpty[SupportsStr] = EmptyEmbed, icon_url: MaybeEmpty[SupportsStr] = EmptyEmbed) -> E:
         """Sets the footer for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -380,7 +381,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
 
-    def set_image(self: E, *, url: MaybeEmpty[str]) -> E:
+    def set_image(self: E, *, url: MaybeEmpty[SupportsStr]) -> E:
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -422,7 +423,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
-    def set_thumbnail(self: E, *, url: MaybeEmpty[str]) -> E:
+    def set_thumbnail(self: E, *, url: MaybeEmpty[SupportsStr]) -> E:
         """Sets the thumbnail for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -483,7 +484,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
 
-    def set_author(self: E, *, name: str, url: MaybeEmpty[str] = EmptyEmbed, icon_url: MaybeEmpty[str] = EmptyEmbed) -> E:
+    def set_author(self: E, *, name: SupportsStr, url: MaybeEmpty[SupportsStr] = EmptyEmbed, icon_url: MaybeEmpty[str] = EmptyEmbed) -> E:
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -536,7 +537,7 @@ class Embed:
         """
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore
 
-    def add_field(self: E, *, name: str, value: str, inline: bool = True) -> E:
+    def add_field(self: E, *, name: SupportsStr, value: SupportsStr, inline: bool = True) -> E:
         """Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
@@ -565,7 +566,7 @@ class Embed:
 
         return self
 
-    def insert_field_at(self: E, index: int, *, name: str, value: str, inline: bool = True) -> E:
+    def insert_field_at(self: E, index: int, *, name: SupportsStr, value: SupportsStr, inline: bool = True) -> E:
         """Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
@@ -626,7 +627,7 @@ class Embed:
         except (AttributeError, IndexError):
             pass
 
-    def set_field_at(self: E, index: int, *, name: str, value: str, inline: bool = True) -> E:
+    def set_field_at(self: E, index: int, *, name: SupportsStr, value: SupportsStr, inline: bool = True) -> E:
         """Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field.
