@@ -1007,12 +1007,9 @@ class Command(_BaseCommand):
     def _is_typing_optional(self, annotation):
         return typing.get_origin(annotation) is typing.Union and typing.get_args(annotation)[-1] is type(None)
 
-    def _is_typing_literal(self, annotation):
-        return typing.get_origin(annotation) is typing.Literal
-
     def _flattened_typing_literal_args(self, annotation):
         for literal in typing.get_args(annotation):
-            if self._is_typing_literal(literal):
+            if typing.get_origin(literal) is typing.Literal:
                 yield from self._flattened_typing_literal_args(literal)
             else:
                 yield literal
@@ -1027,21 +1024,29 @@ class Command(_BaseCommand):
         if not params:
             return ''
 
-        def value_str(value):
-            return f'"{value}"' if isinstance(value, str) else str(value)
+        def literal_values_repr(annotation):
+            return '|'.join(f'"{v}"' if isinstance(v, str) else str(v)
+                            for v in self._flattened_typing_literal_args(annotation))
 
         result = []
         for name, param in params.items():
+            annotation = param.annotation
+            origin = typing.get_origin(annotation)
+
             greedy = isinstance(param.annotation, converters._Greedy)
+            optional = False  # postpone evaluation of if its an optional argument
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of its values
-            if self._is_typing_literal(param.annotation):
-                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(param.annotation))
-            elif self._is_typing_optional(param.annotation) and self._is_typing_literal(typing.get_args(param.annotation)[0]):
-                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(typing.get_args(param.annotation)[0]))
-            elif greedy and self._is_typing_literal(param.annotation.converter):
-                name = '|'.join(value_str(v) for v in self._flattened_typing_literal_args(param.annotation.converter))
+            if origin is typing.Literal:
+                name = literal_values_repr(annotation)
+            elif greedy and typing.get_origin(annotation.converter) is typing.Literal:
+                name = literal_values_repr(annotation.converter)
+            elif origin is typing.Union:
+                union_args = typing.get_args(annotation)
+                optional = union_args[-1] is type(None)
+                if optional and typing.get_origin(union_args[0]) is typing.Literal:
+                    name = literal_values_repr(union_args[0])
 
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
@@ -1061,7 +1066,7 @@ class Command(_BaseCommand):
                     result.append('[%s...]' % name)
             elif greedy:
                 result.append('[%s]...' % name)
-            elif self._is_typing_optional(param.annotation):
+            elif optional:
                 result.append('[%s]' % name)
             else:
                 result.append('<%s>' % name)
