@@ -28,6 +28,13 @@ from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
 
+__all__ = (
+    'PartialInviteChannel',
+    'PartialInviteGuild',
+    'Invite',
+)
+
+
 class PartialInviteChannel:
     """Represents a "partial" invite channel.
 
@@ -73,7 +80,7 @@ class PartialInviteChannel:
         return self.name
 
     def __repr__(self):
-        return '<PartialInviteChannel id={0.id} name={0.name} type={0.type!r}>'.format(self)
+        return f'<PartialInviteChannel id={self.id} name={self.name} type={self.type!r}>'
 
     @property
     def mention(self):
@@ -84,6 +91,7 @@ class PartialInviteChannel:
     def created_at(self):
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
+
 
 class PartialInviteGuild:
     """Represents a "partial" invite guild.
@@ -129,8 +137,7 @@ class PartialInviteGuild:
         The partial guild's description.
     """
 
-    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
-                 'verification_level', 'description')
+    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash', 'verification_level', 'description')
 
     def __init__(self, state, data, id):
         self._state = state
@@ -147,8 +154,10 @@ class PartialInviteGuild:
         return self.name
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} ' \
-               'description={0.description!r}>'.format(self)
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} features={self.features} '
+            f'description={self.description!r}>'
+        )
 
     @property
     def created_at(self):
@@ -206,6 +215,7 @@ class PartialInviteGuild:
             The resulting CDN asset.
         """
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+
 
 class Invite(Hashable):
     r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -285,9 +295,21 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-    __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
-                 'approximate_member_count', 'approximate_presence_count' )
+    __slots__ = (
+        'max_age',
+        'code',
+        'guild',
+        'revoked',
+        'created_at',
+        'uses',
+        'temporary',
+        'max_uses',
+        'inviter',
+        'channel',
+        '_state',
+        'approximate_member_count',
+        'approximate_presence_count',
+    )
 
     BASE = 'https://discord.gg'
 
@@ -355,9 +377,11 @@ class Invite(Hashable):
         return self.url
 
     def __repr__(self):
-        return '<Invite code={0.code!r} guild={0.guild!r} ' \
-                'online={0.approximate_presence_count} ' \
-                'members={0.approximate_member_count}>'.format(self)
+        return (
+            f'<Invite code={self.code!r} guild={self.guild!r} '
+            f'online={self.approximate_presence_count} '
+            f'members={self.approximate_member_count}>'
+        )
 
     def __hash__(self):
         return hash(self.code)

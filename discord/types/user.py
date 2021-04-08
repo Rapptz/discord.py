@@ -22,24 +22,27 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-__all__ = (
-    'EqualityComparable',
-    'Hashable',
-)
+from .snowflake import Snowflake
+from typing import Literal, Optional, TypedDict
 
-class EqualityComparable:
-    __slots__ = ()
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and other.id == self.id
+class PartialUser(TypedDict):
+    id: Snowflake
+    username: str
+    discriminator: str
+    avatar: Optional[str]
 
-    def __ne__(self, other):
-        if isinstance(other, self.__class__):
-            return other.id != self.id
-        return True
 
-class Hashable(EqualityComparable):
-    __slots__ = ()
+PremiumType = Literal[0, 1, 2]
 
-    def __hash__(self):
-        return self.id >> 22
+
+class User(PartialUser, total=False):
+    bot: bool
+    system: bool
+    mfa_enabled: bool
+    local: str
+    verified: bool
+    email: Optional[str]
+    flags: int
+    premium_type: PremiumType
+    public_flags: int

@@ -30,11 +30,13 @@ __all__ = (
     'Template',
 )
 
+
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
     def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support http methods.')
+
 
 class _PartialTemplateState:
     def __init__(self, *, state):
@@ -72,6 +74,7 @@ class _PartialTemplateState:
     def __getattr__(self, attr):
         raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
 
+
 class Template:
     """Represents a Discord template.
 
@@ -105,7 +108,7 @@ class Template:
     def _store(self, data):
         self.code = data['code']
         self.uses = data['usage_count']
-        self.name =  data['name']
+        self.name = data['name']
         self.description = data['description']
         creator_data = data.get('creator')
         self.creator = None if creator_data is None else self._state.store_user(creator_data)
@@ -126,8 +129,10 @@ class Template:
         self.source_guild = guild
 
     def __repr__(self):
-        return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
-               ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
+        return (
+            f'<Template code={self.code!r} uses={self.uses} name={self.name!r}'
+            f' creator={self.creator!r} source_guild={self.source_guild!r}>'
+        )
 
     async def create_guild(self, name, region=None, icon=None):
         """|coro|

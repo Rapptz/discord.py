@@ -28,6 +28,11 @@ from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
+__all__ = (
+    'IntegrationAccount',
+    'Integration',
+)
+
 class IntegrationAccount:
     """Represents an integration account.
 
@@ -48,7 +53,7 @@ class IntegrationAccount:
         self.name = kwargs.pop('name')
 
     def __repr__(self):
-        return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
+        return f'<IntegrationAccount id={self.id} name={self.name!r}>'
 
 class Integration:
     """Represents a guild integration.
@@ -96,7 +101,7 @@ class Integration:
         self._from_data(data)
 
     def __repr__(self):
-        return '<Integration id={0.id} name={0.name!r} type={0.type!r}>'.format(self)
+        return f'<Integration id={self.id} name={self.name!r} type={self.type!r}>'
 
     def _from_data(self, integ):
         self.id = _get_as_snowflake(integ, 'id')

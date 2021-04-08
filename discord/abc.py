@@ -41,6 +41,15 @@ from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
 
+__all__ = (
+    'Snowflake',
+    'User',
+    'PrivateChannel',
+    'GuildChannel',
+    'Messageable',
+    'Connectable',
+)
+
 if TYPE_CHECKING:
     from datetime import datetime
 
@@ -270,7 +279,7 @@ class GuildChannel(Protocol):
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
-                    raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                    raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
                 allow, deny = perm.pair()
                 payload = {

@@ -36,6 +36,10 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+__all__ = (
+    'loop',
+)
+
 class SleepHandle:
     __slots__ = ('future', 'loop', 'handle')
 
@@ -451,7 +455,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {type(coro).__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._before_loop = coro
         return coro
@@ -479,7 +483,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {type(coro).__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._after_loop = coro
         return coro
@@ -505,7 +509,7 @@ class Loop:
             The function was not a coroutine.
         """
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {type(coro).__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._error = coro
         return coro

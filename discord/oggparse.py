@@ -26,6 +26,12 @@ import struct
 
 from .errors import DiscordException
 
+__all__ = (
+    'OggError',
+    'OggPage',
+    'OggStream',
+)
+
 class OggError(DiscordException):
     """An exception that is thrown for Ogg stream parsing errors."""
     pass

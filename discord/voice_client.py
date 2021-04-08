@@ -55,6 +55,11 @@ try:
 except ImportError:
     has_nacl = False
 
+__all__ = (
+    'VoiceProtocol',
+    'VoiceClient',
+)
+
 log = logging.getLogger(__name__)
 
 class VoiceProtocol:

@@ -51,6 +51,7 @@ from . import utils
 from .flags import Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .interactions import Interaction
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -113,6 +114,7 @@ class ConnectionState:
         self.hooks = hooks
         self.shard_count = None
         self._ready_task = None
+        self.application_id = utils._get_as_snowflake(options, 'application_id')
         self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
@@ -452,11 +454,19 @@ class ConnectionState:
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
 
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
+
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
 
         self.dispatch('connect')
-        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data):
         self.dispatch('resumed')
@@ -576,6 +586,10 @@ class ConnectionState:
             else:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
+
+    def parse_interaction_create(self, data):
+        interaction = Interaction(data=data, state=self)
+        self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data):
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -828,7 +842,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if self._guild_needs_chunking(guild):
-            asyncio.ensure_future(self._chunk_and_dispatch(guild, unavailable), loop=self.loop)
+            asyncio.create_task(self._chunk_and_dispatch(guild, unavailable))
             return
 
         # Dispatch available if newly available
@@ -968,7 +982,7 @@ class ConnectionState:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
                     coro = voice.on_voice_state_update(data)
-                    asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
+                    asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
             member, before, after = guild._update_voice_state(data, channel_id)
             if member is not None:
@@ -992,7 +1006,7 @@ class ConnectionState:
         vc = self._get_voice_client(key_id)
         if vc is not None:
             coro = vc.on_voice_server_update(data)
-            asyncio.ensure_future(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
+            asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data):
         channel, guild = self._get_guild_channel(data)
@@ -1153,6 +1167,14 @@ class AutoShardedConnectionState(ConnectionState):
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user
 
+        if self.application_id is None:
+            try:
+                application = data['application']
+            except KeyError:
+                pass
+            else:
+                self.application_id = utils._get_as_snowflake(application, 'id')
+
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
 
@@ -1171,7 +1193,7 @@ class AutoShardedConnectionState(ConnectionState):
         gc.collect()
 
         if self._ready_task is None:
-            self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+            self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data):
         self.dispatch('resumed')

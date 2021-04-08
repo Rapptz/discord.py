@@ -33,6 +33,12 @@ import sys
 
 from .errors import DiscordException
 
+__all__ = (
+    'Encoder',
+    'OpusError',
+    'OpusNotLoaded',
+)
+
 log = logging.getLogger(__name__)
 
 c_int_ptr   = ctypes.POINTER(ctypes.c_int)

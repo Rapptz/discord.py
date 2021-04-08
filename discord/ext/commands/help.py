@@ -60,6 +60,7 @@ __all__ = (
 # Type <prefix>help command for more info on a command.
 # You can also type <prefix>help category for more info on a category.
 
+
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
 
@@ -81,6 +82,7 @@ class Paginator:
         The character string inserted between lines. e.g. a newline character.
             .. versionadded:: 1.7
     """
+
     def __init__(self, prefix='```', suffix='```', max_size=2000, linesep='\n'):
         self.prefix = prefix
         self.suffix = suffix
@@ -92,7 +94,7 @@ class Paginator:
         """Clears the paginator to have no pages."""
         if self.prefix is not None:
             self._current_page = [self.prefix]
-            self._count = len(self.prefix) + self._linesep_len # prefix + newline
+            self._count = len(self.prefix) + self._linesep_len  # prefix + newline
         else:
             self._current_page = []
             self._count = 0
@@ -150,7 +152,7 @@ class Paginator:
 
         if self.prefix is not None:
             self._current_page = [self.prefix]
-            self._count = len(self.prefix) + self._linesep_len # prefix + linesep
+            self._count = len(self.prefix) + self._linesep_len  # prefix + linesep
         else:
             self._current_page = []
             self._count = 0
@@ -171,9 +173,11 @@ class Paginator:
         fmt = '<Paginator prefix: {0.prefix!r} suffix: {0.suffix!r} linesep: {0.linesep!r} max_size: {0.max_size} count: {0._count}>'
         return fmt.format(self)
 
+
 def _not_overriden(f):
     f.__help_command_not_overriden__ = True
     return f
+
 
 class _HelpCommandImpl(Command):
     def __init__(self, inject, *args, **kwargs):
@@ -250,6 +254,7 @@ class _HelpCommandImpl(Command):
         cog.walk_commands = cog.walk_commands.__wrapped__
         self.cog = None
 
+
 class HelpCommand:
     r"""The base implementation for help command formatting.
 
@@ -288,7 +293,7 @@ class HelpCommand:
         '@everyone': '@\u200beveryone',
         '@here': '@\u200bhere',
         r'<@!?[0-9]{17,22}>': '@deleted-user',
-        r'<@&[0-9]{17,22}>': '@deleted-role'
+        r'<@&[0-9]{17,22}>': '@deleted-role',
     }
 
     MENTION_PATTERN = re.compile('|'.join(MENTION_TRANSFORMS.keys()))
@@ -305,10 +310,7 @@ class HelpCommand:
         # The keys can be safely copied as-is since they're 99.99% certain of being
         # string keys
         deepcopy = copy.deepcopy
-        self.__original_kwargs__ = {
-            k: deepcopy(v)
-            for k, v in kwargs.items()
-        }
+        self.__original_kwargs__ = {k: deepcopy(v) for k, v in kwargs.items()}
         self.__original_args__ = deepcopy(args)
         return self
 
@@ -369,10 +371,7 @@ class HelpCommand:
     def get_bot_mapping(self):
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
         bot = self.context.bot
-        mapping = {
-            cog: cog.get_commands()
-            for cog in bot.cogs.values()
-        }
+        mapping = {cog: cog.get_commands() for cog in bot.cogs.values()}
         mapping[None] = [c for c in bot.commands if c.cog is None]
         return mapping
 
@@ -607,10 +606,7 @@ class HelpCommand:
             The maximum width of the commands.
         """
 
-        as_lengths = (
-            discord.utils._string_width(c.name)
-            for c in commands
-        )
+        as_lengths = (discord.utils._string_width(c.name) for c in commands)
         return max(as_lengths, default=0)
 
     def get_destination(self):
@@ -880,6 +876,7 @@ class HelpCommand:
         else:
             return await self.send_command_help(cmd)
 
+
 class DefaultHelpCommand(HelpCommand):
     """The implementation of the default help command.
 
@@ -940,8 +937,10 @@ class DefaultHelpCommand(HelpCommand):
     def get_ending_note(self):
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
-        return f"Type {self.clean_prefix}{command_name} command for more info on a command.\n" \
-               f"You can also type {self.clean_prefix}{command_name} category for more info on a category."
+        return (
+            f"Type {self.clean_prefix}{command_name} command for more info on a command.\n"
+            f"You can also type {self.clean_prefix}{command_name} category for more info on a category."
+        )
 
     def add_indented_commands(self, commands, *, heading, max_size=None):
         """Indents a list of commands after the specified heading.
@@ -1030,6 +1029,7 @@ class DefaultHelpCommand(HelpCommand):
             self.paginator.add_line(bot.description, empty=True)
 
         no_category = f'\u200b{self.no_category}:'
+
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name + ':' if cog is not None else no_category
@@ -1082,6 +1082,7 @@ class DefaultHelpCommand(HelpCommand):
             self.paginator.add_line(note)
 
         await self.send_pages()
+
 
 class MinimalHelpCommand(HelpCommand):
     """An implementation of a help command with minimal output.
@@ -1149,8 +1150,10 @@ class MinimalHelpCommand(HelpCommand):
             The help command opening note.
         """
         command_name = self.invoked_with
-        return "Use `{0}{1} [command]` for more info on a command.\n" \
-               "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
+        return (
+            f"Use `{self.clean_prefix}{command_name} [command]` for more info on a command.\n"
+            f"You can also use `{self.clean_prefix}{command_name} [category]` for more info on a category."
+        )
 
     def get_command_signature(self, command):
         return f'{self.clean_prefix}{command.qualified_name} {command.signature}'
@@ -1273,6 +1276,7 @@ class MinimalHelpCommand(HelpCommand):
             self.paginator.add_line(note, empty=True)
 
         no_category = f'\u200b{self.no_category}'
+
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name if cog is not None else no_category

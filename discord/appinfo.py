@@ -27,6 +27,10 @@ from .user import User
 from .asset import Asset
 from .team import Team
 
+__all__ = (
+    'AppInfo',
+)
+
 
 class AppInfo:
     """Represents the application info for the bot provided by Discord.
@@ -92,10 +96,25 @@ class AppInfo:
 
         .. versionadded:: 1.3
     """
-    __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
-                 'bot_public', 'bot_require_code_grant', 'owner', 'icon',
-                 'summary', 'verify_key', 'team', 'guild_id', 'primary_sku_id',
-                  'slug', 'cover_image')
+
+    __slots__ = (
+        '_state',
+        'description',
+        'id',
+        'name',
+        'rpc_origins',
+        'bot_public',
+        'bot_require_code_grant',
+        'owner',
+        'icon',
+        'summary',
+        'verify_key',
+        'team',
+        'guild_id',
+        'primary_sku_id',
+        'slug',
+        'cover_image',
+    )
 
     def __init__(self, state, data):
         self._state = state
@@ -122,8 +141,11 @@ class AppInfo:
         self.cover_image = data.get('cover_image')
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
-               'owner={0.owner!r}>'.format(self)
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
+            f'description={self.description!r} public={self.bot_public} '
+            f'owner={self.owner!r}>'
+        )
 
     @property
     def icon_url(self):
@@ -162,7 +184,6 @@ class AppInfo:
             The resulting CDN asset.
         """
         return Asset._from_icon(self._state, self, 'app', format=format, size=size)
-
 
     @property
     def cover_image_url(self):
