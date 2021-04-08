@@ -22,27 +22,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
+from typing import TypedDict
+from .snowflake import SnowflakeList
+from .user import User
 
 
-class PartialUser(TypedDict):
-    id: Snowflake
-    username: str
-    discriminator: str
-    avatar: Optional[str]
+class PartialMember(TypedDict):
+    roles: SnowflakeList
+    joined_at: str
+    deaf: str
+    mute: str
 
 
-PremiumType = Literal[0, 1, 2]
-
-
-class User(PartialUser, total=False):
-    bot: bool
-    system: bool
-    mfa_enabled: bool
-    local: str
-    verified: bool
-    email: Optional[str]
-    flags: int
-    premium_type: PremiumType
-    public_flags: int
+class Member(PartialMember, total=False):
+    user: User
+    nick: str
+    premium_since: str
+    pending: bool
+    permissions: str

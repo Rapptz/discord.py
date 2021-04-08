@@ -46,7 +46,7 @@ class PartialChannel(TypedDict):
 class _TextChannelOptional(PartialChannel, total=False):
     topic: str
     last_message_id: Optional[Snowflake]
-    last_pin_timestamp: int
+    last_pin_timestamp: str
     rate_limit_per_user: int
 
 
