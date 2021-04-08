@@ -431,6 +431,9 @@ class VideoQualityMode(Enum):
     auto = 1
     full = 2
 
+    def __int__(self):
+        return self.value
+
 T = TypeVar('T')
 
 def create_unknown_value(cls: Type[T], val: Any) -> T:
