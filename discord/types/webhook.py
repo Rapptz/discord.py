@@ -37,10 +37,22 @@ class _WebhookOptional(TypedDict, total=False):
 WebhookType = Literal[1, 2]
 
 
-class Webhook(_WebhookOptional):
+class FollowerWebhookData(TypedDict):
+    channel_id: Snowflake
+    webhook_id: Snowflake
+
+
+class PartialWebhook(_WebhookOptional):
     id: Snowflake
     type: WebhookType
-    channel_id: Snowflake
+
+
+class _FullWebhook(TypedDict, total=False):
     name: Optional[str]
     avatar: Optional[str]
+    channel_id: Snowflake
     application_id: Optional[Snowflake]
+
+
+class Webhook(PartialWebhook, _FullWebhook):
+    ...
