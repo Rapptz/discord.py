@@ -69,11 +69,11 @@ AuditLogEvent = Literal[
 ]
 
 
-
 class AuditLogChange(TypedDict):
     key: str
     new_value: Any
     old_value: Any
+
 
 class AuditEntryInfo(TypedDict):
     delete_member_days: str

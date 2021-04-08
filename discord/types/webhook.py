@@ -27,12 +27,15 @@ from typing import Literal, Optional, TypedDict
 from .snowflake import Snowflake
 from .user import User
 
+
 class _WebhookOptional(TypedDict, total=False):
     guild_id: Snowflake
     user: User
     token: str
 
+
 WebhookType = Literal[1, 2]
+
 
 class Webhook(_WebhookOptional):
     id: Snowflake
