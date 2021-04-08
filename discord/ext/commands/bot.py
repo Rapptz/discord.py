@@ -167,11 +167,12 @@ class BotBase(GroupMixin):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, 'on_error'):
+        command = context.command
+        if command and command.has_error_handler():
             return
 
         cog = context.cog
-        if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
+        if cog and cog.has_error_handler():
             return
 
         print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
