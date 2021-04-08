@@ -338,7 +338,7 @@ Converters
 
         @commands.command()
         async def test(ctx, numbers: Greedy[int], reason: str):
-            await ctx.send("numbers: {}, reason: {}".format(numbers, reason))
+            await ctx.send(f"numbers: {numbers}, reason: {reason}")
 
     An invocation of ``[p]test 1 2 3 4 5 6 hello`` would pass ``numbers`` with
     ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
