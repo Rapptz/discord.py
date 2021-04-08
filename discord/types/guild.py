@@ -29,6 +29,8 @@ from .voice import PartialVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
 from .role import Role
+from .member import Member
+from .emoji import Emoji
 
 
 class _UnavailableGuildOptional(TypedDict, total=False):
@@ -49,7 +51,7 @@ class _GuildOptional(TypedDict, total=False):
     large: bool
     member_count: int
     voice_states: List[PartialVoiceState]
-    members: List[Member]  # type: ignore
+    members: List[Member]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
     max_presences: Optional[int]
@@ -87,7 +89,7 @@ class _BaseGuildPreview(UnavailableGuild):
     icon: Optional[str]
     splash: Optional[str]
     discovery_splash: Optional[str]
-    emojis: List[Emoji]  # type: ignore
+    emojis: List[Emoji]
     features: List[GuildFeature]
     description: Optional[str]
 

@@ -24,10 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import Optional, TypedDict
 from .snowflake import Snowflake
+from .member import Member
 
 
 class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member  # type: ignore
+    member: Member
     self_stream: bool
 
 
