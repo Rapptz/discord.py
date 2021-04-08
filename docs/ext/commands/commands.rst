@@ -501,11 +501,11 @@ after being converted to the same type. For example, given the following:
 
 .. code-block:: python3
 
-    import typing
+    from typing import Literal
 
     @bot.command()
-    async def shop(ctx, buy_sell: typing.Literal["buy", "sell"], amount: typing.Literal[1, 2], *, item: str):
-        await ctx.send('{}ing {} {}(s)!'.format(buy_sell.capitalize(), amount, item))
+    async def shop(ctx, buy_sell: Literal['buy', 'sell'], amount: Literal[1, 2], *, item: str):
+        await ctx.send(f'{buy_sell.capitalize()}ing {amount} {item}(s)!')
 
 
 The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sell"`` and ``amount`` must convert to the
