@@ -46,14 +46,18 @@ class Reaction(TypedDict):
     emoji: PartialEmoji
 
 
-class Attachment(TypedDict):
+class _AttachmentOptional(TypedDict, total=False):
+    height: Optional[int]
+    width: Optional[int]
+    content_type: str
+
+
+class Attachment(_AttachmentOptional):
     id: Snowflake
     filename: str
     size: int
     url: str
     proxy_url: str
-    height: Optional[int]
-    width: Optional[int]
 
 
 MessageActivityType = Literal[1, 2, 3, 5]
@@ -105,7 +109,7 @@ class _MessageOptional(TypedDict, total=False):
     mention_channels: List[ChannelMention]
     reactions: List[Reaction]
     nonce: Union[int, str]
-    webhook_id: int
+    webhook_id: Snowflake
     activity: MessageActivity
     application: MessageApplication
     message_reference: MessageReference
