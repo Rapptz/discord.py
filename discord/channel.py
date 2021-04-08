@@ -783,7 +783,7 @@ class StageChannel(VocalGuildChannel):
         The region for the stage channel's voice communication.
         A value of ``None`` indicates automatic voice region detection.
     video_quality_mode: :class:`VideoQualityMode`
-        The camera video quality for the voice channel's participants.
+        The camera video quality for the stage channel's participants.
         .. versionadded:: 2.0
     """
     __slots__ = ('topic',)
@@ -854,7 +854,7 @@ class StageChannel(VocalGuildChannel):
             The new region for the stage channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
         video_quality_mode: :class:`VideoQualityMode`
-            The camera video quality for the voice channel's participants.
+            The camera video quality for the stage channel's participants.
 
             .. versionadded:: 2.0
 
