@@ -136,3 +136,13 @@ class Message(_MessageOptional):
     embeds: List[Embed]
     pinned: bool
     type: MessageType
+
+
+AllowedMentionType = Literal['roles', 'users', 'everyone']
+
+
+class AllowedMentions(TypedDict):
+    parse: List[AllowedMentionType]
+    roles: SnowflakeList
+    users: SnowflakeList
+    replied_user: bool
