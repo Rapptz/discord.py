@@ -28,6 +28,11 @@ from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
+__all__ = (
+    'IntegrationAccount',
+    'Integration',
+)
+
 class IntegrationAccount:
     """Represents an integration account.
 
@@ -48,7 +53,7 @@ class IntegrationAccount:
         self.name = kwargs.pop('name')
 
     def __repr__(self):
-        return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
+        return f'<IntegrationAccount id={self.id} name={self.name!r}>'
 
 class Integration:
     """Represents a guild integration.
@@ -82,7 +87,7 @@ class Integration:
     account: :class:`IntegrationAccount`
         The integration account information.
     synced_at: :class:`datetime.datetime`
-        When the integration was last synced.
+        An aware UTC datetime representing when the integration was last synced.
     """
 
     __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
@@ -96,7 +101,7 @@ class Integration:
         self._from_data(data)
 
     def __repr__(self):
-        return '<Integration id={0.id} name={0.name!r} type={0.type!r}>'.format(self)
+        return f'<Integration id={self.id} name={self.name!r} type={self.type!r}>'
 
     def _from_data(self, integ):
         self.id = _get_as_snowflake(integ, 'id')
@@ -184,7 +189,7 @@ class Integration:
             Syncing the integration failed.
         """
         await self._state.http.sync_integration(self.guild.id, self.id)
-        self.synced_at = datetime.datetime.utcnow()
+        self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
     async def delete(self):
         """|coro|

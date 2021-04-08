@@ -29,7 +29,13 @@ from .enums import DefaultAvatar, try_enum
 from .colour import Colour
 from .asset import Asset
 
+__all__ = (
+    'User',
+    'ClientUser',
+)
+
 _BaseUser = discord.abc.User
+
 
 class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
@@ -39,7 +45,7 @@ class BaseUser(_BaseUser):
         self._update(data)
 
     def __str__(self):
-        return '{0.name}#{0.discriminator}'.format(self)
+        return f'{self.name}#{self.discriminator}'
 
     def __eq__(self, other):
         return isinstance(other, _BaseUser) and other.id == self.id
@@ -61,7 +67,7 @@ class BaseUser(_BaseUser):
 
     @classmethod
     def _copy(cls, user):
-        self = cls.__new__(cls) # bypass __init__
+        self = cls.__new__(cls)  # bypass __init__
 
         self.name = user.name
         self.id = user.id
@@ -192,7 +198,8 @@ class BaseUser(_BaseUser):
     def created_at(self):
         """:class:`datetime.datetime`: Returns the user's creation time in UTC.
 
-        This is when the user's Discord account was created."""
+        This is when the user's Discord account was created.
+        """
         return snowflake_time(self.id)
 
     @property
@@ -223,6 +230,7 @@ class BaseUser(_BaseUser):
             return True
 
         return any(user.id == self.id for user in message.mentions)
+
 
 class ClientUser(BaseUser):
     """Represents your Discord user.
@@ -269,15 +277,17 @@ class ClientUser(BaseUser):
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     """
-    __slots__ = BaseUser.__slots__ + \
-                ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
+
+    __slots__ = BaseUser.__slots__ + ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
 
     def __repr__(self):
-        return '<ClientUser id={0.id} name={0.name!r} discriminator={0.discriminator!r}' \
-               ' bot={0.bot} verified={0.verified} mfa_enabled={0.mfa_enabled}>'.format(self)
+        return (
+            f'<ClientUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}'
+            f' bot={self.bot} verified={self.verified} mfa_enabled={self.mfa_enabled}>'
+        )
 
     def _update(self, data):
         super()._update(data)
@@ -286,7 +296,6 @@ class ClientUser(BaseUser):
         self.locale = data.get('locale')
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
-
 
     async def edit(self, *, username=None, avatar=None):
         """|coro|
@@ -323,6 +332,7 @@ class ClientUser(BaseUser):
 
         data = await self._state.http.edit_profile(username=username, avatar=avatar)
         self._update(data)
+
 
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
@@ -364,7 +374,7 @@ class User(BaseUser, discord.abc.Messageable):
     __slots__ = BaseUser.__slots__ + ('__weakref__',)
 
     def __repr__(self):
-        return '<User id={0.id} name={0.name!r} discriminator={0.discriminator!r} bot={0.bot}>'.format(self)
+        return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
 
     async def _get_channel(self):
         ch = await self.create_dm()

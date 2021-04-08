@@ -111,7 +111,7 @@ class Attachment(Hashable):
     content_type: Optional[:class:`str`]
         The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
 
-        .. versionadded: 1.7
+        .. versionadded:: 1.7
     """
 
     __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
@@ -132,7 +132,7 @@ class Attachment(Hashable):
         return self.filename.startswith('SPOILER_')
 
     def __repr__(self):
-        return '<Attachment id={0.id} filename={0.filename!r} url={0.url!r}>'.format(self)
+        return f'<Attachment id={self.id} filename={self.filename!r} url={self.url!r}>'
 
     def __str__(self):
         return self.url or ''
@@ -380,10 +380,10 @@ class MessageReference:
         .. versionadded:: 1.7
         """
         guild_id = self.guild_id if self.guild_id is not None else '@me'
-        return 'https://discord.com/channels/{0}/{1.channel_id}/{1.message_id}'.format(guild_id, self)
+        return f'https://discord.com/channels/{guild_id}/{self.channel_id}/{self.message_id}'
 
     def __repr__(self):
-        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
+        return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self):
         result = {'message_id': self.message_id} if self.message_id is not None else {}
@@ -580,7 +580,7 @@ class Message(Hashable):
                 continue
 
     def __repr__(self):
-        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
+        return f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
 
     def _try_patch(self, data, key, transform=None):
         try:
@@ -842,14 +842,14 @@ class Message(Hashable):
 
     @property
     def edited_at(self):
-        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+        return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
@@ -875,13 +875,13 @@ class Message(Hashable):
             return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.recipient_add:
-            return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
+            return f'{self.author.name} added {self.mentions[0].name} to the group.'
 
         if self.type is MessageType.recipient_remove:
-            return '{0.name} removed {1.name} from the group.'.format(self.author, self.mentions[0])
+            return f'{self.author.name} removed {self.mentions[0].name} from the group.'
 
         if self.type is MessageType.channel_name_change:
-            return '{0.author.name} changed the channel name: {0.content}'.format(self)
+            return f'{self.author.name} changed the channel name: {self.content}'
 
         if self.type is MessageType.channel_icon_change:
             return f'{self.author.name} changed the channel icon.'
@@ -903,29 +903,26 @@ class Message(Hashable):
                 "Yay you made it, {0}!",
             ]
 
-            # manually reconstruct the epoch with millisecond precision, because
-            # datetime.datetime.timestamp() doesn't return the exact posix
-            # timestamp with the precision that we need
-            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            created_at_ms = int(self.created_at.timestamp() * 1000)
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.premium_guild_subscription:
             return f'{self.author.name} just boosted the server!'
 
         if self.type is MessageType.premium_guild_tier_1:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
 
         if self.type is MessageType.premium_guild_tier_2:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 2!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
 
         if self.type is MessageType.premium_guild_tier_3:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return '{0.author.name} has added {0.content} to this channel'.format(self)
+            return f'{self.author.name} has added {self.content} to this channel'
 
         if self.type is MessageType.guild_stream:
-            return '{0.author.name} is live! Now streaming {0.author.activity.name}'.format(self)
+            return f'{self.author.name} is live! Now streaming {self.author.activity.name}'
 
         if self.type is MessageType.guild_discovery_disqualified:
             return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.'
@@ -974,7 +971,7 @@ class Message(Hashable):
                 except HTTPException:
                     pass
 
-            asyncio.ensure_future(delete(), loop=self._state.loop)
+            asyncio.create_task(delete())
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
@@ -1397,7 +1394,7 @@ class PartialMessage(Hashable):
     pinned = property(None, lambda x, y: ...)
 
     def __repr__(self):
-        return '<PartialMessage id={0.id} channel={0.channel!r}>'.format(self)
+        return f'<PartialMessage id={self.id} channel={self.channel!r}>'
 
     @property
     def created_at(self):

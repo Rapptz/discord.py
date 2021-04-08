@@ -52,16 +52,14 @@ from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
 
+__all__ = (
+    'Client',
+)
+
 log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop):
-    try:
-        task_retriever = asyncio.Task.all_tasks
-    except AttributeError:
-        # future proofing for 3.9 I guess
-        task_retriever = asyncio.all_tasks
-
-    tasks = {t for t in task_retriever(loop=loop) if not t.done()}
+    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
 
     if not tasks:
         return
@@ -86,8 +84,7 @@ def _cancel_tasks(loop):
 def _cleanup_loop(loop):
     try:
         _cancel_tasks(loop)
-        if sys.version_info >= (3, 6):
-            loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
         log.info('Closing the event loop.')
         loop.close()
@@ -120,6 +117,8 @@ class Client:
         Integer starting at ``0`` and less than :attr:`.shard_count`.
     shard_count: Optional[:class:`int`]
         The total number of shards.
+    application_id: :class:`int`
+        The client's application ID.
     intents: :class:`Intents`
         The intents that you want to enable for the session. This is a way of
         disabling and enabling certain gateway events from triggering and being sent.
@@ -313,6 +312,16 @@ class Client:
         """
         return self._connection.voice_clients
 
+    @property
+    def application_id(self):
+        """Optional[:class:`int`]: The client's application ID.
+
+        If this is not passed via ``__init__`` then this is retrieved
+        through the gateway when an event contains the data. Usually
+        after :func:`on_connect` is called.
+        """
+        return self._connection.application_id
+
     def is_ready(self):
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready.is_set()
@@ -385,40 +394,6 @@ class Client:
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
 
-    @utils.deprecated('Guild.chunk')
-    async def request_offline_members(self, *guilds):
-        r"""|coro|
-
-        Requests previously offline members from the guild to be filled up
-        into the :attr:`.Guild.members` cache. This function is usually not
-        called. It should only be used if you have the ``fetch_offline_members``
-        parameter set to ``False``.
-
-        When the client logs on and connects to the websocket, Discord does
-        not provide the library with offline members if the number of members
-        in the guild is larger than 250. You can check if a guild is large
-        if :attr:`.Guild.large` is ``True``.
-
-        .. warning::
-
-            This method is deprecated. Use :meth:`Guild.chunk` instead.
-
-        Parameters
-        -----------
-        \*guilds: :class:`.Guild`
-            An argument list of guilds to request offline members for.
-
-        Raises
-        -------
-        :exc:`.InvalidArgument`
-            If any guild is unavailable in the collection.
-        """
-        if any(g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable guild was passed.')
-
-        for guild in guilds:
-            await self._connection.chunk_guild(guild)
-
     # hooks
 
     async def _call_before_identify_hook(self, shard_id, *, initial=False):
@@ -483,22 +458,6 @@ class Client:
 
         log.info('logging in using static token')
         await self.http.static_login(token.strip())
-
-    @utils.deprecated('Client.close')
-    async def logout(self):
-        """|coro|
-
-        Logs out of Discord and closes all connections.
-
-        .. deprecated:: 1.7
-
-        .. note::
-
-            This is just an alias to :meth:`close`. If you want
-            to do extraneous cleanup when subclassing, it is suggested
-            to override :meth:`close` instead.
-        """
-        await self.close()
 
     async def connect(self, *, reconnect=True):
         """|coro|
@@ -890,7 +849,7 @@ class Client:
                         return m.content == 'hello' and m.channel == channel
 
                     msg = await client.wait_for('message', check=check)
-                    await channel.send('Hello {.author}!'.format(msg))
+                    await channel.send(f'Hello {msg.author}!')
 
         Waiting for a thumbs up reaction from the message author: ::
 
@@ -1076,10 +1035,12 @@ class Client:
             Defaults to ``100``.
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve guilds after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------

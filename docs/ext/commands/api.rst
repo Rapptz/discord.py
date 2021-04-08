@@ -293,6 +293,9 @@ Converters
 .. autoclass:: discord.ext.commands.StoreChannelConverter
     :members:
 
+.. autoclass:: discord.ext.commands.StageChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
     :members:
 

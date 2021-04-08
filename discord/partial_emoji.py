@@ -25,6 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from .asset import Asset
 from . import utils
 
+__all__ = (
+    'PartialEmoji',
+)
 
 class _EmojiTag:
     __slots__ = ()
@@ -105,7 +108,7 @@ class PartialEmoji(_EmojiTag):
         return f'<:{self.name}:{self.id}>'
 
     def __repr__(self):
-        return '<{0.__class__.__name__} animated={0.animated} name={0.name!r} id={0.id}>'.format(self)
+        return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
     def __eq__(self, other):
         if self.is_unicode_emoji():

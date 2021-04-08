@@ -28,6 +28,12 @@ from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
+__all__ = (
+    'WidgetChannel',
+    'WidgetMember',
+    'Widget',
+)
+
 class WidgetChannel:
     """Represents a "partial" widget channel.
 
@@ -70,7 +76,7 @@ class WidgetChannel:
         return self.name
 
     def __repr__(self):
-        return '<WidgetChannel id={0.id} name={0.name!r} position={0.position!r}>'.format(self)
+        return f'<WidgetChannel id={self.id} name={self.name!r} position={self.position!r}>'
 
     @property
     def mention(self):
@@ -224,7 +230,7 @@ class Widget:
         return self.id == other.id
 
     def __repr__(self):
-        return '<Widget id={0.id} name={0.name!r} invite_url={0.invite_url!r}>'.format(self)
+        return f'<Widget id={self.id} name={self.name!r} invite_url={self.invite_url!r}>'
 
     @property
     def created_at(self):

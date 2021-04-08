@@ -39,6 +39,13 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+__all__ = (
+    'when_mentioned',
+    'when_mentioned_or',
+    'Bot',
+    'AutoShardedBot',
+)
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
 
@@ -160,11 +167,12 @@ class BotBase(GroupMixin):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, 'on_error'):
+        command = context.command
+        if command and command.has_error_handler():
             return
 
         cog = context.cog
-        if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
+        if cog and cog.has_error_handler():
             return
 
         print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
@@ -838,7 +846,7 @@ class BotBase(GroupMixin):
                     raise
 
                 raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
-                                "returning either of these, not {}".format(ret.__class__.__name__))
+                                f"returning either of these, not {ret.__class__.__name__}")
 
             if not ret:
                 raise ValueError("Iterable command_prefix must contain at least one prefix")
@@ -899,13 +907,13 @@ class BotBase(GroupMixin):
             except TypeError:
                 if not isinstance(prefix, list):
                     raise TypeError("get_prefix must return either a string or a list of string, "
-                                    "not {}".format(prefix.__class__.__name__))
+                                    f"not {prefix.__class__.__name__}")
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError("Iterable command_prefix or list returned from get_prefix must "
-                                        "contain only strings, not {}".format(value.__class__.__name__))
+                                        f"contain only strings, not {value.__class__.__name__}")
 
                 # Getting here shouldn't happen
                 raise

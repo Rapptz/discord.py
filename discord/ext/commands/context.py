@@ -25,6 +25,10 @@ DEALINGS IN THE SOFTWARE.
 import discord.abc
 import discord.utils
 
+__all__ = (
+    'Context',
+)
+
 class Context(discord.abc.Messageable):
     r"""Represents the context in which a command is being invoked under.
 

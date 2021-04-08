@@ -25,6 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from . import utils
 from .mixins import Hashable
 
+__all__ = (
+    'Object',
+)
+
 class Object(Hashable):
     """Represents a generic Discord object.
 

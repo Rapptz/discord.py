@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p7p1:
+
+v1.7.1
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- |commands| Fix :meth:`Cog.has_error_handler <ext.commands.Cog.has_error_handler>` not working as intended.
+
 .. _vp1p7p0:
 
 v1.7.0

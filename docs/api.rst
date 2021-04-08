@@ -340,7 +340,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type channel: :class:`abc.Messageable`
     :param user: The user that started typing.
     :type user: Union[:class:`User`, :class:`Member`]
-    :param when: When the typing started as a naive datetime in UTC.
+    :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
 
 .. function:: on_message(message)
@@ -585,6 +585,17 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
 
+.. function:: on_interaction(interaction)
+
+    Called when an interaction happened.
+
+    This currently happens due to slash command invocations.
+
+    .. versionadded:: 2.0
+
+    :param interaction: The interaction data.
+    :type interaction: :class:`Interaction`
+
 .. function:: on_private_channel_delete(channel)
               on_private_channel_create(channel)
 
@@ -612,7 +623,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param channel: The private channel that had its pins updated.
     :type channel: :class:`abc.PrivateChannel`
-    :param last_pin: The latest message that was pinned as a naive datetime in UTC. Could be ``None``.
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_guild_channel_delete(channel)
@@ -646,7 +657,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param channel: The guild channel that had its pins updated.
     :type channel: :class:`abc.GuildChannel`
-    :param last_pin: The latest message that was pinned as a naive datetime in UTC. Could be ``None``.
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_guild_integrations_update(guild)
@@ -922,6 +933,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.sleep_until
 
+.. autofunction:: discord.utils.utcnow
+
 .. _discord-api-enums:
 
 Enumerations
@@ -1086,6 +1099,20 @@ of :class:`enum.Enum`.
         A competing activity type.
 
         .. versionadded:: 1.5
+
+.. class:: InteractionType
+
+    Specifies the type of :class:`Interaction`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: ping
+
+        Represents Discord pinging to see if the interaction response server is alive.
+
+    .. attribute:: application_command
+
+        Represents a slash command interaction.
 
 .. class:: HypeSquadHouse
 
@@ -2499,20 +2526,19 @@ interface, :meth:`WebhookAdapter.request`.
 Abstract Base Classes
 -----------------------
 
-An :term:`py:abstract base class` (also known as an ``abc``) is a class that models can inherit
-to get their behaviour. The Python implementation of an :doc:`abc <py:library/abc>` is
-slightly different in that you can register them at run-time. **Abstract base classes cannot be instantiated**.
-They are mainly there for usage with :func:`py:isinstance` and :func:`py:issubclass`\.
+An :term:`abstract base class` (also known as an ``abc``) is a class that models can inherit
+to get their behaviour. **Abstract base classes should not be instantiated**.
+They are mainly there for usage with :func:`isinstance` and :func:`issubclass`\.
 
-This library has a module related to abstract base classes, some of which are actually from the :doc:`abc <py:library/abc>` standard
-module, others which are not.
+This library has a module related to abstract base classes, in which all the ABCs are subclasses of
+:class:`typing.Protocol`.
 
 Snowflake
 ~~~~~~~~~~
 
 .. attributetable:: discord.abc.Snowflake
 
-.. autoclass:: discord.abc.Snowflake
+.. autoclass:: discord.abc.Snowflake()
     :members:
 
 User
@@ -2520,7 +2546,7 @@ User
 
 .. attributetable:: discord.abc.User
 
-.. autoclass:: discord.abc.User
+.. autoclass:: discord.abc.User()
     :members:
 
 PrivateChannel
@@ -2528,7 +2554,7 @@ PrivateChannel
 
 .. attributetable:: discord.abc.PrivateChannel
 
-.. autoclass:: discord.abc.PrivateChannel
+.. autoclass:: discord.abc.PrivateChannel()
     :members:
 
 GuildChannel
@@ -2536,7 +2562,7 @@ GuildChannel
 
 .. attributetable:: discord.abc.GuildChannel
 
-.. autoclass:: discord.abc.GuildChannel
+.. autoclass:: discord.abc.GuildChannel()
     :members:
 
 Messageable
@@ -2544,7 +2570,7 @@ Messageable
 
 .. attributetable:: discord.abc.Messageable
 
-.. autoclass:: discord.abc.Messageable
+.. autoclass:: discord.abc.Messageable()
     :members:
     :exclude-members: history, typing
 
@@ -2559,7 +2585,7 @@ Connectable
 
 .. attributetable:: discord.abc.Connectable
 
-.. autoclass:: discord.abc.Connectable
+.. autoclass:: discord.abc.Connectable()
 
 .. _discord_api_models:
 
@@ -2596,14 +2622,6 @@ ClientUser
 .. autoclass:: ClientUser()
     :members:
     :inherited-members:
-
-Relationship
-~~~~~~~~~~~~~~
-
-.. attributetable:: Relationship
-
-.. autoclass:: Relationship()
-    :members:
 
 User
 ~~~~~
@@ -2666,22 +2684,6 @@ Reaction
     .. automethod:: users
         :async-for:
 
-CallMessage
-~~~~~~~~~~~~
-
-.. attributetable:: CallMessage
-
-.. autoclass:: CallMessage()
-    :members:
-
-GroupCall
-~~~~~~~~~~
-
-.. attributetable:: GroupCall
-
-.. autoclass:: GroupCall()
-    :members:
-
 Guild
 ~~~~~~
 
@@ -2720,6 +2722,14 @@ Integration
     :members:
 
 .. autoclass:: IntegrationAccount()
+    :members:
+
+Interaction
+~~~~~~~~~~~~
+
+.. attributetable:: Interaction
+
+.. autoclass:: Interaction()
     :members:
 
 Member
@@ -2981,6 +2991,21 @@ RawReactionClearEmojiEvent
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
 
+PartialWebhookGuild
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookGuild
+
+.. autoclass:: PartialWebhookGuild()
+    :members:
+
+PartialWebhookChannel
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookChannel
+
+.. autoclass:: PartialWebhookChannel()
+    :members:
 
 .. _discord_api_data:
 
