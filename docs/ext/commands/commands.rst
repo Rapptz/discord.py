@@ -99,7 +99,7 @@ Since positional arguments are just regular Python arguments, you can have as ma
 
     @bot.command()
     async def test(ctx, arg1, arg2):
-        await ctx.send('You passed {} and {}'.format(arg1, arg2))
+        await ctx.send(f'You passed {arg1} and {arg2}')
 
 Variable
 ++++++++++
@@ -111,7 +111,8 @@ similar to how variable list parameters are done in Python:
 
     @bot.command()
     async def test(ctx, *args):
-        await ctx.send('{} arguments: {}'.format(len(args), ', '.join(args)))
+        arguments = ', '.join(args)
+        await ctx.send(f'{len(args)} arguments: {arguments}')
 
 This allows our user to accept either one or many arguments as they please. This works similar to positional arguments,
 so multi-word parameters should be quoted.
@@ -256,7 +257,7 @@ An example converter:
     class Slapper(commands.Converter):
         async def convert(self, ctx, argument):
             to_slap = random.choice(ctx.guild.members)
-            return '{0.author} slapped {1} because *{2}*'.format(ctx, to_slap, argument)
+            return f'{ctx.author} slapped {to_slap} because *{argument}*'
 
     @bot.command()
     async def slap(ctx, *, reason: Slapper):
@@ -365,7 +366,7 @@ For example, to receive a :class:`Member` you can just pass it as a converter:
 
     @bot.command()
     async def joined(ctx, *, member: discord.Member):
-        await ctx.send('{0} joined on {0.joined_at}'.format(member))
+        await ctx.send(f'{member} joined on {member.joined_at}')
 
 When this command is executed, it attempts to convert the string given into a :class:`Member` and then passes it as a
 parameter for the function. This works by checking if the string is a mention, an ID, a nickname, a username + discriminator,
@@ -489,7 +490,7 @@ Consider the following example:
 
     @bot.command()
     async def bottles(ctx, amount: typing.Optional[int] = 99, *, liquid="beer"):
-        await ctx.send('{} bottles of {} on the wall!'.format(amount, liquid))
+        await ctx.send(f'{amount} bottles of {liquid} on the wall!')
 
 
 .. image:: /images/commands/optional1.png
@@ -515,7 +516,7 @@ Consider the following example:
     @bot.command()
     async def slap(ctx, members: commands.Greedy[discord.Member], *, reason='no reason'):
         slapped = ", ".join(x.name for x in members)
-        await ctx.send('{} just got slapped for {}'.format(slapped, reason))
+        await ctx.send(f'{slapped} just got slapped for {reason}')
 
 When invoked, it allows for any number of members to be passed in:
 
@@ -586,8 +587,8 @@ handlers that allow us to do just that. First we decorate an error handler funct
     @bot.command()
     async def info(ctx, *, member: discord.Member):
         """Tells you some info about the member."""
-        fmt = '{0} joined on {0.joined_at} and has {1} roles.'
-        await ctx.send(fmt.format(member, len(member.roles)))
+        msg = f'{member} joined on {member.joined_at} and has {len(member.roles)} roles.'
+        await ctx.send(msg)
 
     @info.error
     async def info_error(ctx, error):

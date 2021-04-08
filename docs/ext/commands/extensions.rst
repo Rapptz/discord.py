@@ -22,7 +22,7 @@ An example extension looks like this:
 
     @commands.command()
     async def hello(ctx):
-        await ctx.send('Hello {0.display_name}.'.format(ctx.author))
+        await ctx.send(f'Hello {ctx.author.display_name}.')
 
     def setup(bot):
         bot.add_command(hello)
