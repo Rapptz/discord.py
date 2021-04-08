@@ -262,7 +262,7 @@ class GuildChannel(Protocol):
             pass
         else:
             if not isinstance(video_quality_mode, VideoQualityMode):
-                raise InvalidArgument('type video_quality_mode must be of type VideoQualityMode')
+                raise InvalidArgument('video_quality_mode field must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
 
         lock_permissions = options.pop('sync_permissions', False)
