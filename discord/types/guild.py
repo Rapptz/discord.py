@@ -128,5 +128,5 @@ class InviteGuild(Guild, total=False):
     welcome_screen: WelcomeScreen
 
 
-class WithCountsGuild(Guild, _GuildPreviewUnique):
+class GuildWithCounts(Guild, _GuildPreviewUnique):
     ...
