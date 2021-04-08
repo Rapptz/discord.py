@@ -22,7 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import datetime
+from typing import TYPE_CHECKING
 from .utils import _get_as_snowflake, get, parse_time
 from .user import User
 from .errors import InvalidArgument
@@ -32,6 +35,12 @@ __all__ = (
     'IntegrationAccount',
     'Integration',
 )
+
+if TYPE_CHECKING:
+    from .types.integration import (
+        IntegrationAccount as IntegrationAccountPayload,
+        Integration as IntegrationPayload,
+    )
 
 class IntegrationAccount:
     """Represents an integration account.
@@ -48,9 +57,9 @@ class IntegrationAccount:
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, **kwargs):
-        self.id = kwargs.pop('id')
-        self.name = kwargs.pop('name')
+    def __init__(self, data: IntegrationAccountPayload):
+        self.id = data.pop('id')
+        self.name = data.pop('name')
 
     def __repr__(self):
         return f'<IntegrationAccount id={self.id} name={self.name!r}>'
@@ -95,7 +104,7 @@ class Integration:
                  'expire_grace_period', 'synced_at', 'user', 'account',
                  'enable_emoticons', '_role_id')
 
-    def __init__(self, *, data, guild):
+    def __init__(self, *, data: IntegrationPayload, guild):
         self.guild = guild
         self._state = guild._state
         self._from_data(data)
@@ -103,7 +112,7 @@ class Integration:
     def __repr__(self):
         return f'<Integration id={self.id} name={self.name!r} type={self.type!r}>'
 
-    def _from_data(self, integ):
+    def _from_data(self, integ: IntegrationPayload):
         self.id = _get_as_snowflake(integ, 'id')
         self.name = integ['name']
         self.type = integ['type']
@@ -118,7 +127,7 @@ class Integration:
         self.synced_at = parse_time(integ['synced_at'])
 
         self.user = User(state=self._state, data=integ['user'])
-        self.account = IntegrationAccount(**integ['account'])
+        self.account = IntegrationAccount(integ['account'])
 
     async def edit(self, **fields):
         """|coro|

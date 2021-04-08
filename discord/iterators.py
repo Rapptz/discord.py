@@ -42,6 +42,10 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from .types.audit_log import (
+        AuditLog as AuditLogPayload,
+    )
+
     from .member import Member
     from .user import User
     from .message import Message
@@ -403,7 +407,7 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
 
     async def _before_strategy(self, retrieve):
         before = self.before.id if self.before else None
-        data = await self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
+        data: AuditLogPayload = await self.request(self.guild.id, limit=retrieve, user_id=self.user_id,
                                   action_type=self.action_type, before=before)
 
         entries = data.get('audit_log_entries', [])

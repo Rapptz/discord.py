@@ -22,11 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import logging
 import asyncio
 import json
 import time
 import re
+from typing import Optional, Protocol, TYPE_CHECKING, Union, runtime_checkable
 from urllib.parse import quote as _uriquote
 
 import aiohttp
@@ -48,6 +51,11 @@ __all__ = (
     'PartialWebhookChannel',
     'PartialWebhookGuild'
 )
+
+if TYPE_CHECKING:
+    from .types.webhook import (
+        Webhook as WebhookPayload,
+    )
 
 log = logging.getLogger(__name__)
 
@@ -143,7 +151,8 @@ class PartialWebhookGuild(Hashable):
         """
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
-class WebhookAdapter:
+@runtime_checkable
+class WebhookAdapter(Protocol):
     """Base class for all webhook adapters.
 
     Attributes
@@ -152,9 +161,14 @@ class WebhookAdapter:
         The webhook that owns this adapter.
     """
 
+    _webhook_id: int
+    _webhook_token: Optional[str]
+    _request_url: str
+    webhook: Webhook
+
     BASE = 'https://discord.com/api/v7'
 
-    def _prepare(self, webhook):
+    def _prepare(self, webhook: Webhook):
         self._webhook_id = webhook.id
         self._webhook_token = webhook.token
         self._request_url = f'{self.BASE}/webhooks/{webhook.id}/{webhook.token}'
@@ -163,7 +177,7 @@ class WebhookAdapter:
     def is_async(self):
         return False
 
-    def request(self, verb, url, payload=None, multipart=None):
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, reason=None):
         """Actually does the request.
 
         Subclasses must implement this.
@@ -701,7 +715,7 @@ class Webhook(Hashable):
     __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
                  'avatar', 'token', '_state', '_adapter', 'source_channel', 'source_guild')
 
-    def __init__(self, data, *, adapter, state=None):
+    def __init__(self, data: WebhookPayload, *, adapter, state=None):
         self.id = int(data['id'])
         self.type = try_enum(WebhookType, int(data['type']))
         self.channel_id = utils._get_as_snowflake(data, 'channel_id')
@@ -742,7 +756,7 @@ class Webhook(Hashable):
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id, token, *, adapter):
+    def partial(cls, id: int, token: str, *, adapter: WebhookAdapter):
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -772,10 +786,10 @@ class Webhook(Hashable):
             'token': token
         }
 
-        return cls(data, adapter=adapter)
+        return cls(data, adapter=adapter)  # type: ignore
 
     @classmethod
-    def from_url(cls, url, *, adapter):
+    def from_url(cls, url: str, *, adapter: WebhookAdapter):
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -803,8 +817,8 @@ class Webhook(Hashable):
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         data = m.groupdict()
-        data['type'] = 1
-        return cls(data, adapter=adapter)
+        data['type'] = 1  # type: ignore
+        return cls(data, adapter=adapter)  # type: ignore
 
     @classmethod
     def _as_follower(cls, data, *, channel, user):
@@ -824,7 +838,7 @@ class Webhook(Hashable):
         }
 
         session = channel._state.http._HTTPClient__session
-        return cls(feed, adapter=AsyncWebhookAdapter(session=session))
+        return cls(feed, adapter=AsyncWebhookAdapter(session=session))  # type: ignore
 
     @classmethod
     def from_state(cls, data, state):
