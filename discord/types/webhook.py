@@ -28,6 +28,7 @@ from .snowflake import Snowflake
 from .user import User
 from .channel import PartialChannel
 
+
 class SourceGuild(TypedDict):
     id: int
     name: str
@@ -46,6 +47,7 @@ WebhookType = Literal[1, 2]
 class _FollowerWebhookOptional(TypedDict, total=False):
     source_channel: PartialChannel
     source_guild: SourceGuild
+
 
 class FollowerWebhook(_FollowerWebhookOptional):
     channel_id: Snowflake

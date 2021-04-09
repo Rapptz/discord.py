@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from .types.webhook import (
         Webhook as WebhookPayload,
         FollowerWebhook as FollowerWebhookPayload,
-        SourceGuild as SourceGuildPayload
+        SourceGuild as SourceGuildPayload,
     )
     from .types.channel import (
         PartialChannel as SourceChannelPayload,
@@ -153,7 +153,13 @@ class PartialWebhookGuild(Hashable):
         """:class:`bool`: Returns True if the guild has an animated icon."""
         return bool(self.icon and self.icon.startswith('a_'))
 
-    def icon_url_as(self, *, format: Optional[ValidAvatarFormatTypes] = None, static_format: ValidStaticFormatTypes = 'webp', size: int = 1024) -> Asset:
+    def icon_url_as(
+        self,
+        *,
+        format: Optional[ValidAvatarFormatTypes] = None,
+        static_format: ValidStaticFormatTypes = 'webp',
+        size: int = 1024,
+    ) -> Asset:
         """Returns an :class:`Asset` for the guild's icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
@@ -832,7 +838,7 @@ class Webhook(Hashable, Generic[N, M]):
         self.id: int = int(data['id'])
         self.type: WebhookType = try_enum(WebhookType, int(data['type']))
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
-        self.guild_id: Optional[int]  = utils._get_as_snowflake(data, 'guild_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.name: Optional[str] = data.get('name')
         self.avatar: Optional[str] = data.get('avatar')
         self.token: Optional[str] = data.get('token')
@@ -1078,7 +1084,7 @@ class Webhook(Hashable, Generic[N, M]):
     ) -> N:
         ...
 
-    def edit(self, *, reason = None, **kwargs):
+    def edit(self, *, reason=None, **kwargs):
         """|maybecoro|
 
         Edits this Webhook.
