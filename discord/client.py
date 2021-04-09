@@ -431,14 +431,6 @@ class Client:
 
         Logs in the client with the specified credentials.
 
-        This function can be used in two different ways.
-
-        .. warning::
-
-            Logging on with a user token is against the Discord
-            `Terms of Service <https://support.discord.com/hc/en-us/articles/115002192352>`_
-            and doing so might potentially get your account banned.
-            Use this at your own risk.
 
         Parameters
         -----------
