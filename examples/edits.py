@@ -3,8 +3,10 @@ import asyncio
 
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Connected!')
-        print(f'Username: {self.user.name}\nID: {self.user.id}')
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('------')
 
     async def on_message(self, message):
         if message.content.startswith('!editme'):
