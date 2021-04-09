@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import re
 import inspect
-from typing import TYPE_CHECKING, List, Protocol, TypeVar, Union, runtime_checkable
+from typing import TYPE_CHECKING, List, Protocol, TypeVar, Tuple, Union, runtime_checkable
 
 import discord
 from .errors import *
@@ -847,9 +847,17 @@ class clean_content(Converter[str]):
                 m = _get(id)
                 return '@' + m.name if m else '@deleted-user'
 
-        transformations.update((f'<@{member_id}>', resolve_member(member_id)) for member_id in message.raw_mentions)
+        # fmt: off
+        transformations.update(
+            (f'<@{member_id}>', resolve_member(member_id))
+            for member_id in message.raw_mentions
+        )
 
-        transformations.update((f'<@!{member_id}>', resolve_member(member_id)) for member_id in message.raw_mentions)
+        transformations.update(
+            (f'<@!{member_id}>', resolve_member(member_id))
+            for member_id in message.raw_mentions
+        )
+        # fmt: on
 
         if ctx.guild:
 
@@ -901,7 +909,7 @@ class Greedy(List[T]):
     def __init__(self, *, converter: T):
         self.converter = converter
 
-    def __class_getitem__(cls, params: Union[tuple[T], T]) -> Greedy[T]:
+    def __class_getitem__(cls, params: Union[Tuple[T], T]) -> Greedy[T]:
         if not isinstance(params, tuple):
             params = (params,)
         if len(params) != 1:
