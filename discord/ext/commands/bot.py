@@ -522,7 +522,7 @@ class BotBase(GroupMixin):
 
         if existing is not None:
             if not override:
-                raise discord.ClientException('Cog named %r already loaded' % cog_name)
+                raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
             self.remove_cog(cog_name)
 
         cog = cog._inject(self)
