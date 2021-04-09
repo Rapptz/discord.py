@@ -2,8 +2,8 @@ import discord
 
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Connected!')
-        print(f'Username: {self.user.name}\nID: {self.user.id}')
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
 
     async def on_message(self, message):
         if message.content.startswith('!deleteme'):
