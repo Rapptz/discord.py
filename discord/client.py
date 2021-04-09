@@ -27,6 +27,7 @@ import logging
 import signal
 import sys
 import traceback
+from typing import Any, Optional, Union
 
 import aiohttp
 
@@ -1070,7 +1071,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection)
+        return Template(data=data, state=self._connection) # type: ignore
 
     async def fetch_guild(self, guild_id):
         """|coro|
@@ -1106,7 +1107,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None, *, code=None):
+    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None, *, code: str = None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1155,7 +1156,7 @@ class Client:
 
     # Invite management
 
-    async def fetch_invite(self, url, *, with_counts=True):
+    async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True) -> Invite:
         """|coro|
 
         Gets an :class:`.Invite` from a discord.gg URL or ID.
@@ -1192,7 +1193,7 @@ class Client:
         data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite):
+    async def delete_invite(self, invite: Union[Invite, str]) -> None:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
