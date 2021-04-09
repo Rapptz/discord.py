@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -32,20 +30,18 @@ __all__ = (
     'Template',
 )
 
+
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
     def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support http methods.')
 
+
 class _PartialTemplateState:
     def __init__(self, *, state):
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
-
-    @property
-    def is_bot(self):
-        return self.__state.is_bot
 
     @property
     def shard_count(self):
@@ -76,7 +72,8 @@ class _PartialTemplateState:
         return []
 
     def __getattr__(self, attr):
-        raise AttributeError('PartialTemplateState does not support {0!r}.'.format(attr))
+        raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
+
 
 class Template:
     """Represents a Discord template.
@@ -96,9 +93,10 @@ class Template:
     creator: :class:`User`
         The creator of the template.
     created_at: :class:`datetime.datetime`
-        When the template was created.
+        An aware datetime in UTC representing when the template was created.
     updated_at: :class:`datetime.datetime`
-        When the template was last updated (referred to as "last synced" in the client).
+        An aware datetime in UTC representing when the template was last updated.
+        This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
         The source guild.
     """
@@ -110,7 +108,7 @@ class Template:
     def _store(self, data):
         self.code = data['code']
         self.uses = data['usage_count']
-        self.name =  data['name']
+        self.name = data['name']
         self.description = data['description']
         creator_data = data.get('creator')
         self.creator = None if creator_data is None else self._state.store_user(creator_data)
@@ -127,12 +125,14 @@ class Template:
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
             guild = Guild(data=source_serialised, state=state)
-        
+
         self.source_guild = guild
 
     def __repr__(self):
-        return '<Template code={0.code!r} uses={0.uses} name={0.name!r}' \
-               ' creator={0.creator!r} source_guild={0.source_guild!r}>'.format(self)
+        return (
+            f'<Template code={self.code!r} uses={self.uses} name={self.name!r}'
+            f' creator={self.creator!r} source_guild={self.source_guild!r}>'
+        )
 
     async def create_guild(self, name, region=None, icon=None):
         """|coro|

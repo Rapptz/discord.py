@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -45,6 +43,11 @@ from .errors import (
 
 from . import utils
 from .enums import Status
+
+__all__ = (
+    'AutoShardedClient',
+    'ShardInfo',
+)
 
 log = logging.getLogger(__name__)
 
@@ -319,7 +322,7 @@ class AutoShardedClient(Client):
 
     def _get_state(self, **options):
         return AutoShardedConnectionState(dispatch=self.dispatch,
-                                          handlers=self._handlers, syncer=self._syncer,
+                                          handlers=self._handlers,
                                           hooks=self._hooks, http=self.http, loop=self.loop, **options)
 
     @property

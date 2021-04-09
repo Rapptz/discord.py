@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -133,7 +131,7 @@ class Cooldown:
         return Cooldown(self.rate, self.per, self.type)
 
     def __repr__(self):
-        return '<Cooldown rate: {0.rate} per: {0.per} window: {0._window} tokens: {0._tokens}>'.format(self)
+        return f'<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>'
 
 class CooldownMapping:
     def __init__(self, original):
@@ -204,7 +202,7 @@ class _Semaphore:
         self._waiters = deque()
 
     def __repr__(self):
-        return '<_Semaphore value={0.value} waiters={1}>'.format(self, len(self._waiters))
+        return f'<_Semaphore value={self.value} waiters={len(self._waiters)}>'
 
     def locked(self):
         return self.value == 0
@@ -255,13 +253,13 @@ class MaxConcurrency:
             raise ValueError('max_concurrency \'number\' cannot be less than 1')
 
         if not isinstance(per, BucketType):
-            raise TypeError('max_concurrency \'per\' must be of type BucketType not %r' % type(per))
+            raise TypeError(f'max_concurrency \'per\' must be of type BucketType not {type(per)!r}')
 
     def copy(self):
         return self.__class__(self.number, per=self.per, wait=self.wait)
 
     def __repr__(self):
-        return '<MaxConcurrency per={0.per!r} number={0.number} wait={0.wait}>'.format(self)
+        return f'<MaxConcurrency per={self.per!r} number={self.number} wait={self.wait}>'
 
     def get_key(self, message):
         return self.per.get_key(message)

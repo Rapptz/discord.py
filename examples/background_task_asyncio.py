@@ -9,9 +9,7 @@ class MyClient(discord.Client):
         self.bg_task = self.loop.create_task(self.my_background_task())
 
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
     async def my_background_task(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -41,12 +39,19 @@ from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+__all__ = (
+    'when_mentioned',
+    'when_mentioned_or',
+    'Bot',
+    'AutoShardedBot',
+)
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
-    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
+    return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
@@ -114,7 +119,7 @@ class BotBase(GroupMixin):
             raise TypeError('Both owner_id and owner_ids are set.')
 
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
-            raise TypeError('owner_ids must be a collection not {0.__class__!r}'.format(self.owner_ids))
+            raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -162,14 +167,15 @@ class BotBase(GroupMixin):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, 'on_error'):
+        command = context.command
+        if command and command.has_error_handler():
             return
 
         cog = context.cog
-        if cog and Cog._get_overridden_method(cog.cog_command_error) is not None:
+        if cog and cog.has_error_handler():
             return
 
-        print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
+        print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     # global check registration
@@ -483,15 +489,25 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog):
+    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
+
+        .. versionchanged:: 2.0
+
+            :exc:`.ClientException` is raised when a cog with the same name
+            is already loaded.
 
         Parameters
         -----------
         cog: :class:`.Cog`
             The cog to register to the bot.
+        override: :class:`bool`
+            If a previously loaded cog with the same name should be ejected
+            instead of raising an error.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -499,13 +515,23 @@ class BotBase(GroupMixin):
             The cog does not inherit from :class:`.Cog`.
         CommandError
             An error happened during loading.
+        .ClientException
+            A cog with the same name is already loaded.
         """
 
         if not isinstance(cog, Cog):
             raise TypeError('cogs must derive from Cog')
 
+        cog_name = cog.__cog_name__
+        existing = self.__cogs.get(cog_name)
+
+        if existing is not None:
+            if not override:
+                raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
+            self.remove_cog(cog_name)
+
         cog = cog._inject(self)
-        self.__cogs[cog.__cog_name__] = cog
+        self.__cogs[cog_name] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -840,7 +866,7 @@ class BotBase(GroupMixin):
                     raise
 
                 raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
-                                "returning either of these, not {}".format(ret.__class__.__name__))
+                                f"returning either of these, not {ret.__class__.__name__}")
 
             if not ret:
                 raise ValueError("Iterable command_prefix must contain at least one prefix")
@@ -901,13 +927,13 @@ class BotBase(GroupMixin):
             except TypeError:
                 if not isinstance(prefix, list):
                     raise TypeError("get_prefix must return either a string or a list of string, "
-                                    "not {}".format(prefix.__class__.__name__))
+                                    f"not {prefix.__class__.__name__}")
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError("Iterable command_prefix or list returned from get_prefix must "
-                                        "contain only strings, not {}".format(value.__class__.__name__))
+                                        f"contain only strings, not {value.__class__.__name__}")
 
                 # Getting here shouldn't happen
                 raise
@@ -944,7 +970,7 @@ class BotBase(GroupMixin):
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound(f'Command "{ctx.invoked_with}" is not found')
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):

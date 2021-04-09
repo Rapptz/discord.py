@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -46,6 +44,9 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+__all__ = (
+    'Guild',
+)
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -209,11 +210,14 @@ class Guild(Hashable):
 
     def __repr__(self):
         attrs = (
-            'id', 'name', 'shard_id', 'chunked'
+            ('id', self.id),
+            ('name', self.name),
+            ('shard_id', self.shard_id),
+            ('chunked', self.chunked),
+            ('member_count', getattr(self, '_member_count', None)),
         )
-        resolved = ['%s=%r' % (attr, getattr(self, attr)) for attr in attrs]
-        resolved.append('member_count=%r' % getattr(self, '_member_count', None))
-        return '<Guild %s>' % ' '.join(resolved)
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<Guild {inner}>'
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -368,6 +372,18 @@ class Guild(Hashable):
         This is sorted by the position and are in UI order from top to bottom.
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
+
+        .. versionadded:: 1.7
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
@@ -823,7 +839,7 @@ class Guild(Hashable):
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
             allow, deny = perm.pair()
             payload = {
@@ -843,6 +859,13 @@ class Guild(Hashable):
             options['rate_limit_per_user'] = options.pop('slowmode_delay')
         except KeyError:
             pass
+
+        try:
+            rtc_region = options.pop('rtc_region')
+        except KeyError:
+            pass
+        else:
+            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
 
         parent_id = category.id if category else None
         return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
@@ -945,6 +968,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 1.7
 
         Raises
         ------
@@ -962,6 +990,38 @@ class Guild(Hashable):
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
+    async def create_stage_channel(self, name, *, topic=None, category=None, overwrites=None, reason=None, position=None):
+        """|coro|
+
+        This is similar to :meth:`create_text_channel` except makes a :class:`StageChannel` instead.
+
+        .. note::
+
+            The ``slowmode_delay`` and ``nsfw`` parameters are not supported in this function.
+
+        .. versionadded:: 1.7
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, category, reason=reason, position=position, topic=topic)
+        channel = StageChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
@@ -1261,9 +1321,7 @@ class Guild(Hashable):
         return [convert(d) for d in data]
 
     def fetch_members(self, *, limit=1000, after=None):
-        """|coro|
-
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
         .. note::
@@ -1281,7 +1339,8 @@ class Guild(Hashable):
             Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------
@@ -1453,7 +1512,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]
@@ -1539,7 +1598,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]
@@ -1842,7 +1901,7 @@ class Guild(Hashable):
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         for key in fields:
             if key not in valid_keys:
-                raise InvalidArgument('%r is not a valid field.' % key)
+                raise InvalidArgument(f'{key!r} is not a valid field.')
 
         data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
@@ -2035,29 +2094,6 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
-    @utils.deprecated()
-    def ack(self):
-        """|coro|
-
-        Marks every message in this guild as read.
-
-        The user must not be a bot user.
-
-        .. deprecated:: 1.7
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_guild(self.id)
-
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
         """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
@@ -2069,17 +2105,17 @@ class Guild(Hashable):
         Getting the first 100 entries: ::
 
             async for entry in guild.audit_logs(limit=100):
-                print('{0.user} did {0.action} to {0.target}'.format(entry))
+                print(f'{entry.user} did {entry.action} to {entry.target}')
 
         Getting entries for a specific action: ::
 
             async for entry in guild.audit_logs(action=discord.AuditLogAction.ban):
-                print('{0.user} banned {0.target}'.format(entry))
+                print(f'{entry.user} banned {entry.target}')
 
         Getting entries made by a specific user: ::
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
-            await channel.send('I made {} moderation actions.'.format(len(entries)))
+            await channel.send(f'I made {len(entries)} moderation actions.')
 
         Parameters
         -----------
@@ -2087,10 +2123,12 @@ class Guild(Hashable):
             The number of entries to retrieve. If ``None`` retrieve all entries.
         before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries before this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries after this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         oldest_first: :class:`bool`
             If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.

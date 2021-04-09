@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -30,6 +28,12 @@ from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
 from .mixins import Hashable
+
+__all__ = (
+    'AuditLogDiff',
+    'AuditLogChanges',
+    'AuditLogEntry',
+)
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
@@ -94,7 +98,7 @@ class AuditLogDiff:
 
     def __repr__(self):
         values = ' '.join('%s=%r' % item for item in self.__dict__.items())
-        return '<AuditLogDiff %s>' % values
+        return f'<AuditLogDiff {values}>'
 
 class AuditLogChanges:
     TRANSFORMERS = {
@@ -166,7 +170,7 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def __repr__(self):
-        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
+        return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):
@@ -297,7 +301,7 @@ class AuditLogEntry(Hashable):
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self):
-        return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
+        return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
     @utils.cached_property
     def created_at(self):
