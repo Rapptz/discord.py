@@ -26,6 +26,12 @@ from __future__ import annotations
 from typing import Literal, Optional, TypedDict
 from .snowflake import Snowflake
 from .user import User
+from .channel import PartialChannel
+
+class SourceGuild(TypedDict):
+    id: int
+    name: str
+    icon: str
 
 
 class _WebhookOptional(TypedDict, total=False):
@@ -37,7 +43,11 @@ class _WebhookOptional(TypedDict, total=False):
 WebhookType = Literal[1, 2]
 
 
-class FollowerWebhookData(TypedDict):
+class _FollowerWebhookOptional(TypedDict, total=False):
+    source_channel: PartialChannel
+    source_guild: SourceGuild
+
+class FollowerWebhook(_FollowerWebhookOptional):
     channel_id: Snowflake
     webhook_id: Snowflake
 
