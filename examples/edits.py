@@ -3,9 +3,7 @@ import asyncio
 
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Logged in as')
-        print(self.user.name)
-        print(self.user.id)
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
     async def on_message(self, message):
