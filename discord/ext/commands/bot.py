@@ -489,15 +489,25 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog):
+    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
+
+        .. versionchanged:: 2.0
+
+            :exc:`.ClientException` is raised when a cog with the same name
+            is already loaded.
 
         Parameters
         -----------
         cog: :class:`.Cog`
             The cog to register to the bot.
+        override: :class:`bool`
+            If a previously loaded cog with the same name should be ejected
+            instead of raising an error.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -505,13 +515,23 @@ class BotBase(GroupMixin):
             The cog does not inherit from :class:`.Cog`.
         CommandError
             An error happened during loading.
+        .ClientException
+            A cog with the same name is already loaded.
         """
 
         if not isinstance(cog, Cog):
             raise TypeError('cogs must derive from Cog')
 
+        cog_name = cog.__cog_name__
+        existing = self.__cogs.get(cog_name)
+
+        if existing is not None:
+            if not override:
+                raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
+            self.remove_cog(cog_name)
+
         cog = cog._inject(self)
-        self.__cogs[cog.__cog_name__] = cog
+        self.__cogs[cog_name] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
