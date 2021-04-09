@@ -411,7 +411,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                     await asyncio.sleep(delta)
 
                 if 300 > r.status >= 200:
-                    return response
+                    return response  # type: ignore
 
                 # we are being rate limited
                 if r.status == 429:
@@ -436,9 +436,9 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                     raise HTTPException(r, response)
 
         # no more retries
-        if r.status >= 500:
-            raise DiscordServerError(r, response)
-        raise HTTPException(r, response)
+        if r.status >= 500:  # type: ignore
+            raise DiscordServerError(r, response)  # type: ignore
+        raise HTTPException(r, response)  # type: ignore
 
     async def handle_execution_response(self, response: Any, *, wait: bool) -> WebhookMessage:
         data = await response
@@ -524,7 +524,7 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
                 time.sleep(delta)
 
             if 300 > r.status >= 200:
-                return response
+                return response  # type: ignore
 
             # we are being rate limited
             if r.status == 429:
@@ -552,9 +552,9 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
                 raise HTTPException(r, response)
 
         # no more retries
-        if r.status >= 500:
-            raise DiscordServerError(r, response)
-        raise HTTPException(r, response)
+        if r.status >= 500:  # type: ignore
+            raise DiscordServerError(r, response)  # type: ignore
+        raise HTTPException(r, response)  # type: ignore
 
     def handle_execution_response(self, response: Any, *, wait: bool) -> WebhookMessage:
         if not wait:
