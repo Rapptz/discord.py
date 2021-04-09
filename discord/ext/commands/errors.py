@@ -648,10 +648,9 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
-                pass
-            if typing.get_origin(x) is not None:
-                return repr(x)
-            return x.__class__.__name__
+                if typing.get_origin(x) is not None:
+                    return repr(x)
+                return x.__class__.__name__
 
         to_string = [_get_name(x) for x in converters]
         if len(to_string) > 2:
