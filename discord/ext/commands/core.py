@@ -259,10 +259,8 @@ class Command(_BaseCommand):
         finally:
             if cooldown is None:
                 self._buckets = CooldownMapping(cooldown, BucketType.default)
-            elif callable(cooldown[0]):
-                self._buckets = DynamicCooldownMapping(*cooldown)
-            else:
-                self._buckets = CooldownMapping(*cooldown)
+            elif isinstance(cooldown, CooldownMapping):
+                self._buckets = cooldown
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -1988,7 +1986,7 @@ def cooldown(rate, per, type=BucketType.default):
         if isinstance(func, Command):
             func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per), type
+            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)
         return func
     return decorator
 
@@ -2027,7 +2025,7 @@ def dynamic_cooldown(cooldown, type=BucketType.default):
         if isinstance(func, Command):
             func._buckets = DynamicCooldownMapping(cooldown, type)
         else:
-            func.__commands_cooldown__ = cooldown, type
+            func.__commands_cooldown__ = DynamicCooldownMapping(cooldown, type)
         return func
     return decorator
 

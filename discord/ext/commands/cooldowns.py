@@ -188,8 +188,20 @@ class CooldownMapping:
 
 class DynamicCooldownMapping(CooldownMapping):
 
+    def __init__(self, factory, type):
+        if not callable(type):
+            raise TypeError('Cooldown type must be a BucketType or callable')
+
+        self._cache = {}
+        self._factory = factory
+        self._type = type
+
+    @property
+    def valid(self):
+        return True
+
     def create_bucket(self, message):
-        return self._cooldown(message)
+        return self._factory(message)
 
 class _Semaphore:
     """This class is a version of a semaphore.
