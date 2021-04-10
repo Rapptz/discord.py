@@ -1072,9 +1072,9 @@ class Command(_BaseCommand):
                 else:
                     result.append(f'[{name}...]')
             elif greedy:
-                result.append('[%s]...' % name)
+                result.append(f'[{name}]...')
             elif optional:
-                result.append('[%s]' % name)
+                result.append(f'[{name}]')
             else:
                 result.append(f'<{name}>')
 
