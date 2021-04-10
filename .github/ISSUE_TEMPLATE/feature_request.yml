@@ -1,7 +1,6 @@
 name: Feature Request
 description: Suggest a feature for this library
 labels: feature request
-issue_body: true
 body:
   - type: input
     attributes:
@@ -44,3 +43,7 @@ body:
         What is the current solution to the problem, if any?
     validations:
       required: false
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.

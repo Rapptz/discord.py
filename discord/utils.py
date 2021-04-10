@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 import array
 import asyncio
 import collections.abc
-from typing import Optional, overload
+from typing import Any, Optional, overload
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -325,7 +325,7 @@ def _unique(iterable):
     adder = seen.add
     return [x for x in iterable if not (x in seen or adder(x))]
 
-def _get_as_snowflake(data, key):
+def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     try:
         value = data[key]
     except KeyError:

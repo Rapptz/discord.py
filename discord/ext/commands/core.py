@@ -32,7 +32,7 @@ import sys
 import discord
 
 from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency
+from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -54,6 +54,7 @@ __all__ = (
     'bot_has_permissions',
     'bot_has_any_role',
     'cooldown',
+    'dynamic_cooldown',
     'max_concurrency',
     'dm_only',
     'guild_only',
@@ -256,7 +257,10 @@ class Command(_BaseCommand):
         except AttributeError:
             cooldown = kwargs.get('cooldown')
         finally:
-            self._buckets = CooldownMapping(cooldown)
+            if cooldown is None:
+                self._buckets = CooldownMapping(cooldown, BucketType.default)
+            elif isinstance(cooldown, CooldownMapping):
+                self._buckets = cooldown
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -489,31 +493,52 @@ class Command(_BaseCommand):
             raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
     async def do_conversion(self, ctx, converter, argument, param):
-        try:
-            origin = converter.__origin__
-        except AttributeError:
-            pass
-        else:
-            if origin is typing.Union:
-                errors = []
-                _NoneType = type(None)
-                for conv in converter.__args__:
-                    # if we got to this part in the code, then the previous conversions have failed
-                    # so we should just undo the view, return the default, and allow parsing to continue
-                    # with the other parameters
-                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
-                        ctx.view.undo()
-                        return None if param.default is param.empty else param.default
+        origin = typing.get_origin(converter)
 
+        if origin is typing.Union:
+            errors = []
+            _NoneType = type(None)
+            for conv in typing.get_args(converter):
+                # if we got to this part in the code, then the previous conversions have failed
+                # so we should just undo the view, return the default, and allow parsing to continue
+                # with the other parameters
+                if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                    ctx.view.undo()
+                    return None if param.default is param.empty else param.default
+
+                try:
+                    value = await self.do_conversion(ctx, conv, argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                else:
+                    return value
+
+            # if we're here, then we failed all the converters
+            raise BadUnionArgument(param, typing.get_args(converter), errors)
+
+        if origin is typing.Literal:
+            errors = []
+            conversions = {}
+            literal_args = tuple(self._flattened_typing_literal_args(converter))
+            for literal in literal_args:
+                literal_type = type(literal)
+                try:
+                    value = conversions[literal_type]
+                except KeyError:
                     try:
-                        value = await self._actual_conversion(ctx, conv, argument, param)
+                        value = await self._actual_conversion(ctx, literal_type, argument, param)
                     except CommandError as exc:
                         errors.append(exc)
+                        conversions[literal_type] = object()
+                        continue
                     else:
-                        return value
+                        conversions[literal_type] = value
 
-                # if we're  here, then we failed all the converters
-                raise BadUnionArgument(param, converter.__args__, errors)
+                if value == literal:
+                    return value
+
+            # if we're here, then we failed to match all the literals
+            raise BadLiteralArgument(param, literal_args, errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
@@ -778,9 +803,10 @@ class Command(_BaseCommand):
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             bucket = self._buckets.get_bucket(ctx.message, current)
-            retry_after = bucket.update_rate_limit(current)
-            if retry_after:
-                raise CommandOnCooldown(bucket, retry_after)
+            if bucket is not None:
+                retry_after = bucket.update_rate_limit(current)
+                if retry_after:
+                    raise CommandOnCooldown(bucket, retry_after)
 
     async def prepare(self, ctx):
         ctx.command = self
@@ -995,22 +1021,20 @@ class Command(_BaseCommand):
         return ''
 
     def _is_typing_optional(self, annotation):
-        try:
-            origin = annotation.__origin__
-        except AttributeError:
-            return False
+        return typing.get_origin(annotation) is typing.Union and typing.get_args(annotation)[-1] is type(None)
 
-        if origin is not typing.Union:
-            return False
-
-        return annotation.__args__[-1] is type(None)
+    def _flattened_typing_literal_args(self, annotation):
+        for literal in typing.get_args(annotation):
+            if typing.get_origin(literal) is typing.Literal:
+                yield from self._flattened_typing_literal_args(literal)
+            else:
+                yield literal
 
     @property
     def signature(self):
         """:class:`str`: Returns a POSIX-like signature useful for help command output."""
         if self.usage is not None:
             return self.usage
-
 
         params = self.clean_params
         if not params:
@@ -1019,7 +1043,22 @@ class Command(_BaseCommand):
         result = []
         for name, param in params.items():
             greedy = isinstance(param.annotation, converters.Greedy)
+            optional = False  # postpone evaluation of if it's an optional argument
 
+            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+            # parameter signature is a literal list of it's values
+            annotation = param.annotation.converter if greedy else param.annotation
+            origin = typing.get_origin(annotation)
+            if not greedy and origin is typing.Union:
+                union_args = typing.get_args(annotation)
+                optional = union_args[-1] is type(None)
+                if optional:
+                    annotation = union_args[0]
+                    origin = typing.get_origin(annotation)
+
+            if origin is typing.Literal:
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v)
+                                for v in self._flattened_typing_literal_args(annotation))
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
@@ -1038,7 +1077,7 @@ class Command(_BaseCommand):
                     result.append(f'[{name}...]')
             elif greedy:
                 result.append(f'[{name}]...')
-            elif self._is_typing_optional(param.annotation):
+            elif optional:
                 result.append(f'[{name}]')
             else:
                 result.append(f'<{name}>')
@@ -1979,9 +2018,48 @@ def cooldown(rate, per, type=BucketType.default):
 
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type))
+            func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type)
+            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)
+        return func
+    return decorator
+
+def dynamic_cooldown(cooldown, type=BucketType.default):
+    """A decorator that adds a dynamic cooldown to a :class:`.Command`
+
+    This differs from :func:`.cooldown` in that it takes a function that
+    accepts a single parameter of type :class:`.discord.Message` and must
+    return a :class:`.Cooldown`
+
+    A cooldown allows a command to only be used a specific amount
+    of times in a specific time frame. These cooldowns can be based
+    either on a per-guild, per-channel, per-user, per-role or global basis.
+    Denoted by the third argument of ``type`` which must be of enum
+    type :class:`.BucketType`.
+
+    If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
+    :func:`.on_command_error` and the local error handler.
+
+    A command can only have a single cooldown.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    ------------
+    cooldown: Callable[[:class:`.discord.Message`], :class:`.Cooldown`]
+        A function that takes a message and returns a cooldown that will
+        apply to this invocation
+    type: :class:`.BucketType`
+        The type of cooldown to have.
+    """
+    if not callable(cooldown):
+        raise TypeError("A callable must be provided")
+
+    def decorator(func):
+        if isinstance(func, Command):
+            func._buckets = DynamicCooldownMapping(cooldown, type)
+        else:
+            func.__commands_cooldown__ = DynamicCooldownMapping(cooldown, type)
         return func
     return decorator
 

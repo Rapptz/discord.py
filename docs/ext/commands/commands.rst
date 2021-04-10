@@ -502,6 +502,27 @@ resumes handling, which in this case would be to pass it into the ``liquid`` par
 
     This converter only works in regular positional parameters, not variable parameters or keyword-only parameters.
 
+typing.Literal
+^^^^^^^^^^^^^^^^
+
+A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
+after being converted to the same type. For example, given the following:
+
+.. code-block:: python3
+
+    from typing import Literal
+
+    @bot.command()
+    async def shop(ctx, buy_sell: Literal['buy', 'sell'], amount: Literal[1, 2], *, item: str):
+        await ctx.send(f'{buy_sell.capitalize()}ing {amount} {item}(s)!')
+
+
+The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sell"`` and ``amount`` must convert to the
+``int`` ``1`` or ``2``. If ``buy_sell`` or ``amount`` don't match any value, then a special error is raised,
+:exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
+
+Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
+
 Greedy
 ^^^^^^^^
 

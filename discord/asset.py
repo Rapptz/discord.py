@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import io
+from typing import Literal, TYPE_CHECKING
 from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
@@ -30,6 +31,10 @@ from . import utils
 __all__ = (
     'Asset',
 )
+
+if TYPE_CHECKING:
+    ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
+    ValidAvatarFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png', 'gif']
 
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}

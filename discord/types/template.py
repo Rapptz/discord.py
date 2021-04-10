@@ -22,7 +22,23 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
-Snowflake = Union[str, int]
-SnowflakeList = List[Snowflake]
+from typing import Optional, TypedDict
+from .snowflake import Snowflake
+from .user import User
+from .guild import Guild
+
+
+class Template(TypedDict):
+    code: str
+    name: str
+    description: Optional[str]
+    usage_count: int
+    creator_id: Snowflake
+    creator: User
+    created_at: str
+    updated_at: str
+    source_guild_id: Snowflake
+    serialized_source_guild: Guild
+    is_dirty: Optional[bool]
