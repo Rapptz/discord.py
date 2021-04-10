@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -27,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 import array
 import asyncio
 import collections.abc
+from typing import Optional, overload
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -40,8 +39,19 @@ import warnings
 
 from .errors import InvalidArgument
 
+__all__ = (
+    'oauth_uri',
+    'snowflake_time',
+    'time_snowflake',
+    'find',
+    'get',
+    'sleep_until',
+    'utcnow',
+    'remove_markdown',
+    'escape_markdown',
+    'escape_mentions',
+)
 DISCORD_EPOCH = 1420070400000
-MAX_ASYNCIO_SECONDS = 3456000
 
 class cached_property:
     def __init__(self, function):
@@ -105,9 +115,17 @@ class SequenceProxy(collections.abc.Sequence):
     def count(self, value):
         return self.__proxied.count(value)
 
-def parse_time(timestamp):
+@overload
+def parse_time(timestamp: None) -> None:
+    ...
+
+@overload
+def parse_time(timestamp: str) -> datetime.datetime:
+    ...
+
+def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
-        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
+        return datetime.datetime.fromisoformat(timestamp)
     return None
 
 def copy_doc(original):
@@ -158,7 +176,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes
     :class:`str`
         The OAuth2 URL for inviting the bot into guilds.
     """
-    url = 'https://discord.com/oauth2/authorize?client_id={}'.format(client_id)
+    url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
     url = url + '&scope=' + '+'.join(scopes or ('bot',))
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
@@ -170,7 +188,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes
     return url
 
 
-def snowflake_time(id):
+def snowflake_time(id: int) -> datetime.datetime:
     """
     Parameters
     -----------
@@ -180,25 +198,34 @@ def snowflake_time(id):
     Returns
     --------
     :class:`datetime.datetime`
-        The creation date in UTC of a Discord snowflake ID."""
-    return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
+        An aware datetime in UTC representing the creation time of the snowflake.
+    """
+    timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
+    return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
 
-def time_snowflake(datetime_obj, high=False):
+def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
 
-    When using as the lower end of a range, use ``time_snowflake(high=False) - 1`` to be inclusive, ``high=True`` to be exclusive
-    When using as the higher end of a range, use ``time_snowflake(high=True)`` + 1 to be inclusive, ``high=False`` to be exclusive
+    When using as the lower end of a range, use ``time_snowflake(high=False) - 1``
+    to be inclusive, ``high=True`` to be exclusive.
+
+    When using as the higher end of a range, use ``time_snowflake(high=True) + 1``
+    to be inclusive, ``high=False`` to be exclusive
 
     Parameters
     -----------
-    datetime_obj: :class:`datetime.datetime`
-        A timezone-naive datetime object representing UTC time.
+    dt: :class:`datetime.datetime`
+        A datetime object to convert to a snowflake.
+        If naive, the timezone is assumed to be local time.
     high: :class:`bool`
         Whether or not to set the lower 22 bit to high or low.
-    """
-    unix_seconds = (datetime_obj - type(datetime_obj)(1970, 1, 1)).total_seconds()
-    discord_millis = int(unix_seconds * 1000 - DISCORD_EPOCH)
 
+    Returns
+    --------
+    :class:`int`
+        The snowflake representing the time given.
+    """
+    discord_millis = int(dt.timestamp() * 1000 - DISCORD_EPOCH)
     return (discord_millis << 22) + (2**22-1 if high else 0)
 
 def find(predicate, seq):
@@ -376,18 +403,30 @@ async def sleep_until(when, result=None):
     -----------
     when: :class:`datetime.datetime`
         The timestamp in which to sleep until. If the datetime is naive then
-        it is assumed to be in UTC.
+        it is assumed to be local time.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
     if when.tzinfo is None:
-        when = when.replace(tzinfo=datetime.timezone.utc)
+        when = when.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
     delta = (when - now).total_seconds()
-    while delta > MAX_ASYNCIO_SECONDS:
-        await asyncio.sleep(MAX_ASYNCIO_SECONDS)
-        delta -= MAX_ASYNCIO_SECONDS
     return await asyncio.sleep(max(delta, 0), result)
+
+def utcnow() -> datetime.datetime:
+    """A helper function to return an aware UTC datetime representing the current time.
+
+    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    datetime, compared to the naive datetime in the standard library.
+
+    .. versionadded:: 2.0
+
+    Returns
+    --------
+    :class:`datetime.datetime`
+        The current aware datetime in UTC.
+    """
+    return datetime.datetime.now(datetime.timezone.utc)
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""
@@ -489,21 +528,21 @@ _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(
 
 _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s|%s)' % (_MARKDOWN_ESCAPE_SUBREGEX, _MARKDOWN_ESCAPE_COMMON), re.MULTILINE)
+_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
-_MARKDOWN_STOCK_REGEX = r'(?P<markdown>[_\\~|\*`]|%s)' % _MARKDOWN_ESCAPE_COMMON
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
 
 def remove_markdown(text, *, ignore_links=True):
     """A helper function that removes markdown characters.
 
     .. versionadded:: 1.7
-    
+
     .. note::
             This function is not markdown aware and may remove meaning from the original text. For example,
             if the input contains ``10 * 5`` then it will be converted into ``10  5``.
-    
+
     Parameters
     -----------
     text: :class:`str`
@@ -525,7 +564,7 @@ def remove_markdown(text, *, ignore_links=True):
 
     regex = _MARKDOWN_STOCK_REGEX
     if ignore_links:
-        regex = '(?:%s|%s)' % (_URL_REGEX, regex)
+        regex = f'(?:{_URL_REGEX}|{regex})'
     return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
@@ -563,7 +602,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
 
         regex = _MARKDOWN_STOCK_REGEX
         if ignore_links:
-            regex = '(?:%s|%s)' % (_URL_REGEX, regex)
+            regex = f'(?:{_URL_REGEX}|{regex})'
         return re.sub(regex, replacement, text, 0, re.MULTILINE)
     else:
         text = re.sub(r'\\', r'\\\\', text)

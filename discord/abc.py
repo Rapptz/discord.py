@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,10 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import abc
+from __future__ import annotations
+
 import sys
 import copy
 import asyncio
+from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -41,13 +41,31 @@ from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from . import utils
 
+__all__ = (
+    'Snowflake',
+    'User',
+    'PrivateChannel',
+    'GuildChannel',
+    'Messageable',
+    'Connectable',
+)
+
+if TYPE_CHECKING:
+    from datetime import datetime
+
+    from .user import ClientUser
+
+
 class _Undefined:
     def __repr__(self):
         return 'see-below'
 
+
 _undefined = _Undefined()
 
-class Snowflake(metaclass=abc.ABCMeta):
+
+@runtime_checkable
+class Snowflake(Protocol):
     """An ABC that details the common operations on a Discord model.
 
     Almost all :ref:`Discord models <discord_api_models>` meet this
@@ -62,27 +80,16 @@ class Snowflake(metaclass=abc.ABCMeta):
         The model's unique ID.
     """
     __slots__ = ()
+    id: int
 
     @property
-    @abc.abstractmethod
-    def created_at(self):
-        """:class:`datetime.datetime`: Returns the model's creation time as a naive datetime in UTC."""
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is Snowflake:
-            mro = C.__mro__
-            for attr in ('created_at', 'id'):
-                for base in mro:
-                    if attr in base.__dict__:
-                        break
-                else:
-                    return NotImplemented
-            return True
-        return NotImplemented
 
-class User(metaclass=abc.ABCMeta):
+@runtime_checkable
+class User(Snowflake, Protocol):
     """An ABC that details the common operations on a Discord user.
 
     The following implement this ABC:
@@ -106,35 +113,24 @@ class User(metaclass=abc.ABCMeta):
     """
     __slots__ = ()
 
+    name: str
+    discriminator: str
+    avatar: Optional[str]
+    bot: bool
+
     @property
-    @abc.abstractmethod
-    def display_name(self):
+    def display_name(self) -> str:
         """:class:`str`: Returns the user's display name."""
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
-    def mention(self):
+    def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given user."""
         raise NotImplementedError
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is User:
-            if Snowflake.__subclasshook__(C) is NotImplemented:
-                return NotImplemented
 
-            mro = C.__mro__
-            for attr in ('display_name', 'mention', 'name', 'avatar', 'discriminator', 'bot'):
-                for base in mro:
-                    if attr in base.__dict__:
-                        break
-                else:
-                    return NotImplemented
-            return True
-        return NotImplemented
-
-class PrivateChannel(metaclass=abc.ABCMeta):
+@runtime_checkable
+class PrivateChannel(Snowflake, Protocol):
     """An ABC that details the common operations on a private Discord channel.
 
     The following implement this ABC:
@@ -151,18 +147,8 @@ class PrivateChannel(metaclass=abc.ABCMeta):
     """
     __slots__ = ()
 
-    @classmethod
-    def __subclasshook__(cls, C):
-        if cls is PrivateChannel:
-            if Snowflake.__subclasshook__(C) is NotImplemented:
-                return NotImplemented
+    me: ClientUser
 
-            mro = C.__mro__
-            for base in mro:
-                if 'me' in base.__dict__:
-                    return True
-            return NotImplemented
-        return NotImplemented
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
@@ -181,7 +167,8 @@ class _Overwrites:
             'type': self.type,
         }
 
-class GuildChannel:
+
+class GuildChannel(Protocol):
     """An ABC that details the common operations on a Discord guild channel.
 
     The following implement this ABC:
@@ -191,6 +178,11 @@ class GuildChannel:
     - :class:`~discord.CategoryChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
+
+    Note
+    ----
+    This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
+    checks.
 
     Attributes
     -----------
@@ -257,6 +249,13 @@ class GuildChannel:
         except KeyError:
             pass
 
+        try:
+            rtc_region = options.pop('rtc_region')
+        except KeyError:
+            pass
+        else:
+            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
+
         lock_permissions = options.pop('sync_permissions', False)
 
         try:
@@ -280,7 +279,7 @@ class GuildChannel:
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
-                    raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                    raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
                 allow, deny = perm.pair()
                 payload = {
@@ -354,7 +353,7 @@ class GuildChannel:
     @property
     def mention(self):
         """:class:`str`: The string that allows you to mention the channel."""
-        return '<#%s>' % self.id
+        return f'<#{self.id}>'
 
     @property
     def created_at(self):
@@ -821,13 +820,12 @@ class GuildChannel:
         lock_permissions = kwargs.get('sync_permissions', False)
         reason = kwargs.get('reason')
         for index, channel in enumerate(channels):
-            d = { 'id': channel.id, 'position': index }
+            d = {'id': channel.id, 'position': index}
             if parent_id is not ... and channel.id == self.id:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)
 
         await self._state.http.bulk_channel_update(self.guild.id, payload, reason=reason)
-
 
     async def create_invite(self, *, reason=None, **fields):
         """|coro|
@@ -903,7 +901,8 @@ class GuildChannel:
 
         return result
 
-class Messageable(metaclass=abc.ABCMeta):
+
+class Messageable(Protocol):
     """An ABC that details the common operations on a model that can send messages.
 
     The following implement this ABC:
@@ -914,11 +913,16 @@ class Messageable(metaclass=abc.ABCMeta):
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
+
+
+    Note
+    ----
+    This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
+    checks.
     """
 
     __slots__ = ()
 
-    @abc.abstractmethod
     async def _get_channel(self):
         raise NotImplementedError
 
@@ -1055,8 +1059,8 @@ class Messageable(metaclass=abc.ABCMeta):
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
-                                                                      nonce=nonce, allowed_mentions=allowed_mentions,
-                                                                      message_reference=reference)
+                                                 nonce=nonce, allowed_mentions=allowed_mentions,
+                                                 message_reference=reference)
 
         ret = state.create_message(channel=channel, data=data)
         if delete_after is not None:
@@ -1181,13 +1185,16 @@ class Messageable(metaclass=abc.ABCMeta):
             that this would make it a slow operation.
         before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages before this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages after this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         around: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve messages around this date or message.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
             When using this argument, the maximum limit is 101. Note that if the limit is an
             even number then this will return at most limit + 1 messages.
         oldest_first: Optional[:class:`bool`]
@@ -1208,21 +1215,25 @@ class Messageable(metaclass=abc.ABCMeta):
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
 
-class Connectable(metaclass=abc.ABCMeta):
+
+class Connectable(Protocol):
     """An ABC that details the common operations on a channel that can
     connect to a voice server.
 
     The following implement this ABC:
 
     - :class:`~discord.VoiceChannel`
+
+    Note
+    ----
+    This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
+    checks.
     """
     __slots__ = ()
 
-    @abc.abstractmethod
     def _get_voice_client_key(self):
         raise NotImplementedError
 
-    @abc.abstractmethod
     def _get_voice_state_pair(self):
         raise NotImplementedError
 
@@ -1281,6 +1292,6 @@ class Connectable(metaclass=abc.ABCMeta):
             except Exception:
                 # we don't care if disconnect failed because connection failed
                 pass
-            raise # re-raise
+            raise  # re-raise
 
         return voice

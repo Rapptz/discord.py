@@ -29,7 +29,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
     user_id = user.id
     username = user.name
     avatar = user.avatar_url
-    await ctx.send('User found: {} -- {}\n{}'.format(user_id, username, avatar))
+    await ctx.send(f'User found: {user_id} -- {username}\n{avatar}')
 
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
@@ -70,7 +70,7 @@ class ChannelOrMemberConverter(commands.Converter):
         # If the value could not be converted we can raise an error
         # so our error handlers can deal with it in one place.
         # The error has to be CommandError derived, so BadArgument works fine here.
-        raise commands.BadArgument('No Member or TextChannel could be converted from "{}"'.format(argument))
+        raise commands.BadArgument(f'No Member or TextChannel could be converted from "{argument}"')
 
 
 
@@ -81,7 +81,7 @@ async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
     # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and 
     # the conversion will go through the process defined there.
 
-    await target.send('Hello, {}!'.format(target.name))
+    await target.send(f'Hello, {target.name}!')
 
 @bot.command()
 async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
@@ -95,9 +95,9 @@ async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, dis
 
     # To check the resulting type, `isinstance` is used
     if isinstance(target, discord.Member):
-        await ctx.send('Member found: {}, adding them to the ignore list.'.format(target.mention))
+        await ctx.send(f'Member found: {target.mention}, adding them to the ignore list.')
     elif isinstance(target, discord.TextChannel): # this could be an `else` but for completeness' sake.
-        await ctx.send('Channel found: {}, adding it to the ignore list.'.format(target.mention))
+        await ctx.send(f'Channel found: {target.mention}, adding it to the ignore list.')
 
 # Built-in type converters.
 @bot.command()

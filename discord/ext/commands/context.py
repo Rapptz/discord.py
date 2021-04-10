@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -26,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 import discord.abc
 import discord.utils
+
+__all__ = (
+    'Context',
+)
 
 class Context(discord.abc.Messageable):
     r"""Represents the context in which a command is being invoked under.
@@ -93,7 +95,7 @@ class Context(discord.abc.Messageable):
         self.command_failed = attrs.pop('command_failed', False)
         self._state = self.message._state
 
-    async def invoke(self, *args, **kwargs):
+    async def invoke(self, command, /, *args, **kwargs):
         r"""|coro|
 
         Calls a command with the arguments given.
@@ -110,10 +112,6 @@ class Context(discord.abc.Messageable):
             You must take care in passing the proper arguments when
             using this function.
 
-        .. warning::
-
-            The first parameter passed **must** be the command being invoked.
-
         Parameters
         -----------
         command: :class:`.Command`
@@ -128,18 +126,12 @@ class Context(discord.abc.Messageable):
         TypeError
             The command argument to invoke is missing.
         """
-
-        try:
-            command = args[0]
-        except IndexError:
-            raise TypeError('Missing command to invoke.') from None
-
         arguments = []
         if command.cog is not None:
             arguments.append(command.cog)
 
         arguments.append(self)
-        arguments.extend(args[1:])
+        arguments.extend(args)
 
         ret = await command.callback(*arguments, **kwargs)
         return ret

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,10 +22,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'RawMessageDeleteEvent',
+    'RawBulkMessageDeleteEvent',
+    'RawMessageUpdateEvent',
+    'RawReactionActionEvent',
+    'RawReactionClearEvent',
+    'RawReactionClearEmojiEvent',
+)
+
 class _RawReprMixin:
     def __repr__(self):
-        value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
-        return '<%s %s>' % (self.__class__.__name__, value)
+        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
+        return f'<{self.__class__.__name__} {value}>'
 
 class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.

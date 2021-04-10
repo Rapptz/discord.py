@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -47,9 +45,103 @@ __all__ = (
     'RequestsWebhookAdapter',
     'Webhook',
     'WebhookMessage',
+    'PartialWebhookChannel',
+    'PartialWebhookGuild'
 )
 
 log = logging.getLogger(__name__)
+
+class PartialWebhookChannel(Hashable):
+    """Represents a partial channel for webhooks.
+
+    These are typically given for channel follower webhooks.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The partial channel's ID.
+    name: :class:`str`
+        The partial channel's name.
+    """
+
+    __slots__ = ('id', 'name')
+
+    def __init__(self, *, data):
+        self.id = int(data['id'])
+        self.name = data['name']
+
+    def __repr__(self):
+        return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
+
+class PartialWebhookGuild(Hashable):
+    """Represents a partial guild for webhooks.
+
+    These are typically given for channel follower webhooks.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The partial guild's ID.
+    name: :class:`str`
+        The partial guild's name.
+    icon: :class:`str`
+        The partial guild's icon
+    """
+
+    __slots__ = ('id', 'name', 'icon', '_state')
+
+    def __init__(self, *, data, state):
+        self._state = state
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.icon = data['icon']
+
+    def __repr__(self):
+        return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
+
+    @property
+    def icon_url(self):
+        """:class:`Asset`: Returns the guild's icon asset."""
+        return self.icon_url_as()
+
+    def is_icon_animated(self):
+        """:class:`bool`: Returns True if the guild has an animated icon."""
+        return bool(self.icon and self.icon.startswith('a_'))
+
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
+        """Returns an :class:`Asset` for the guild's icon.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 4096.
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the icon to.
+            If the format is ``None``, then it is automatically
+            detected into either 'gif' or static_format depending on the
+            icon being animated or not.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated icons to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -65,7 +157,7 @@ class WebhookAdapter:
     def _prepare(self, webhook):
         self._webhook_id = webhook.id
         self._webhook_token = webhook.token
-        self._request_url = '{0.BASE}/webhooks/{1}/{2}'.format(self, webhook.id, webhook.token)
+        self._request_url = f'{self.BASE}/webhooks/{webhook.id}/{webhook.token}'
         self.webhook = webhook
 
     def is_async(self):
@@ -100,10 +192,10 @@ class WebhookAdapter:
         return self.request('PATCH', self._request_url, payload=payload, reason=reason)
 
     def edit_webhook_message(self, message_id, payload):
-        return self.request('PATCH', '{}/messages/{}'.format(self._request_url, message_id), payload=payload)
+        return self.request('PATCH', f'{self._request_url}/messages/{message_id}', payload=payload)
 
     def delete_webhook_message(self, message_id):
-        return self.request('DELETE', '{}/messages/{}'.format(self._request_url, message_id))
+        return self.request('DELETE', f'{self._request_url}/messages/{message_id}')
 
     def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
@@ -158,7 +250,7 @@ class WebhookAdapter:
             multipart = None
             files_to_pass = None
 
-        url = '%s?wait=%d' % (self._request_url, wait)
+        url = f'{self._request_url}?wait={int(wait)}'
         maybe_coro = None
         try:
             maybe_coro = self.request('POST', url, multipart=multipart, payload=data, files=files_to_pass)
@@ -406,10 +498,6 @@ class _PartialWebhookState:
         return BaseUser(state=self, data=data)
 
     @property
-    def is_bot(self):
-        return True
-
-    @property
     def http(self):
         if self.parent is not None:
             return self.parent.http
@@ -422,7 +510,7 @@ class _PartialWebhookState:
         if self.parent is not None:
             return getattr(self.parent, attr)
 
-        raise AttributeError('PartialWebhookState does not support {0!r}.'.format(attr))
+        raise AttributeError(f'PartialWebhookState does not support {attr!r}.')
 
 class WebhookMessage(Message):
     """Represents a message sent from your webhook.
@@ -483,7 +571,7 @@ class WebhookMessage(Message):
             except HTTPException:
                 pass
 
-        asyncio.ensure_future(inner_call(), loop=self._state.loop)
+        asyncio.create_task(inner_call())
         return await asyncio.sleep(0)
 
     def delete(self, *, delay=None):
@@ -597,10 +685,21 @@ class Webhook(Hashable):
         The default name of the webhook.
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
+    source_guild: Optional[:class:`PartialWebhookGuild`]
+        The guild of the channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+
+        .. versionadded:: 2.0
+
+    source_channel: Optional[:class:`PartialWebhookChannel`]
+        The channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
-                 'avatar', 'token', '_state', '_adapter')
+                 'avatar', 'token', '_state', '_adapter', 'source_channel', 'source_guild')
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
@@ -622,13 +721,25 @@ class Webhook(Hashable):
         else:
             self.user = User(state=state, data=user)
 
+        source_channel = data.get('source_channel')
+        if source_channel:
+            source_channel = PartialWebhookChannel(data=source_channel)
+
+        self.source_channel = source_channel
+
+        source_guild = data.get('source_guild')
+        if source_guild:
+            source_guild = PartialWebhookGuild(data=source_guild, state=state)
+
+        self.source_guild = source_guild
+
     def __repr__(self):
-        return '<Webhook id=%r>' % self.id
+        return f'<Webhook id={self.id!r}>'
 
     @property
     def url(self):
         """:class:`str` : Returns the webhook's url."""
-        return 'https://discord.com/api/webhooks/{}/{}'.format(self.id, self.token)
+        return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
     def partial(cls, id, token, *, adapter):
@@ -697,7 +808,7 @@ class Webhook(Hashable):
 
     @classmethod
     def _as_follower(cls, data, *, channel, user):
-        name = "{} #{}".format(channel.guild, channel)
+        name = f"{channel.guild} #{channel}"
         feed = {
             'id': data['webhook_id'],
             'type': 2,
@@ -793,7 +904,7 @@ class Webhook(Hashable):
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = f'/avatars/{self.id}/{self.avatar}.{format}?size={size}'
         return Asset(self._state, url)
 
     def delete(self, *, reason=None):
