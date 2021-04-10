@@ -157,13 +157,7 @@ class Integration:
         ...
 
     @overload
-    async def edit(
-        self,
-        *,
-        expire_behavior: Optional[ExpireBehaviour] = ...,
-        expire_grace_period: Optional[int] = ...,
-        enable_emoticons: Optional[bool] = ...,
-    ) -> None:
+    async def edit(self, **fields) -> None:
         ...
 
     async def edit(self, **fields) -> None:

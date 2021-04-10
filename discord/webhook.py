@@ -22,26 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from __future__ import annotations
-
 import logging
 import asyncio
 import json
 import time
 import re
-from typing import (
-    Any,
-    Coroutine,
-    Dict,
-    Generic,
-    Iterable,
-    Literal,
-    Optional,
-    TYPE_CHECKING,
-    TypeVar,
-    Union,
-    overload,
-)
 from urllib.parse import quote as _uriquote
 
 import aiohttp
@@ -61,35 +46,10 @@ __all__ = (
     'Webhook',
     'WebhookMessage',
     'PartialWebhookChannel',
-    'PartialWebhookGuild',
+    'PartialWebhookGuild'
 )
 
-if TYPE_CHECKING:
-    from .types.webhook import (
-        Webhook as WebhookPayload,
-        FollowerWebhook as FollowerWebhookPayload,
-        SourceGuild as SourceGuildPayload,
-    )
-    from .types.channel import (
-        PartialChannel as SourceChannelPayload,
-    )
-    from .guild import Guild
-    from .channel import TextChannel
-    from .file import File
-    from .embeds import Embed
-    from .mentions import AllowedMentions
-    from .asset import ValidStaticFormatTypes, ValidAvatarFormatTypes
-    import datetime
-
-    _AsyncNone = Coroutine[Any, Any, None]
-    _AsyncMessage = Coroutine[Any, Any, 'WebhookMessage[_AsyncNone]']
-
-    N = TypeVar('N', bound=Union[_AsyncNone, None])
-    M = TypeVar('M', bound=Union[_AsyncMessage, 'WebhookMessage[None]'])
-
-
 log = logging.getLogger(__name__)
-
 
 class PartialWebhookChannel(Hashable):
     """Represents a partial channel for webhooks.
@@ -108,13 +68,12 @@ class PartialWebhookChannel(Hashable):
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, *, data: SourceChannelPayload):
+    def __init__(self, *, data):
         self.id = int(data['id'])
         self.name = data['name']
 
     def __repr__(self):
         return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
-
 
 class PartialWebhookGuild(Hashable):
     """Represents a partial guild for webhooks.
@@ -135,7 +94,7 @@ class PartialWebhookGuild(Hashable):
 
     __slots__ = ('id', 'name', 'icon', '_state')
 
-    def __init__(self, *, data: SourceGuildPayload, state):
+    def __init__(self, *, data, state):
         self._state = state
         self.id = int(data['id'])
         self.name = data['name']
@@ -145,21 +104,15 @@ class PartialWebhookGuild(Hashable):
         return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
-    def icon_url(self) -> Asset:
+    def icon_url(self):
         """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
-    def is_icon_animated(self) -> bool:
+    def is_icon_animated(self):
         """:class:`bool`: Returns True if the guild has an animated icon."""
         return bool(self.icon and self.icon.startswith('a_'))
 
-    def icon_url_as(
-        self,
-        *,
-        format: Optional[ValidAvatarFormatTypes] = None,
-        static_format: ValidStaticFormatTypes = 'webp',
-        size: int = 1024,
-    ) -> Asset:
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
         """Returns an :class:`Asset` for the guild's icon.
 
         The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
@@ -190,8 +143,7 @@ class PartialWebhookGuild(Hashable):
         """
         return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
-
-class WebhookAdapter(Generic[N, M]):
+class WebhookAdapter:
     """Base class for all webhook adapters.
 
     Attributes
@@ -200,32 +152,18 @@ class WebhookAdapter(Generic[N, M]):
         The webhook that owns this adapter.
     """
 
-    _webhook_id: int
-    _webhook_token: Optional[str]
-    _request_url: str
-    webhook: Webhook[N, M]
-
     BASE = 'https://discord.com/api/v7'
 
-    def _prepare(self, webhook: Webhook):
+    def _prepare(self, webhook):
         self._webhook_id = webhook.id
         self._webhook_token = webhook.token
         self._request_url = f'{self.BASE}/webhooks/{webhook.id}/{webhook.token}'
         self.webhook = webhook
 
-    def is_async(self) -> bool:
+    def is_async(self):
         return False
 
-    def request(
-        self,
-        verb: str,
-        url: str,
-        payload: Optional[Dict[str, Any]] = None,
-        multipart: Optional[Dict[str, Any]] = None,
-        *,
-        files: Optional[Iterable[File]] = ...,
-        reason: Optional[str] = ...,
-    ) -> Any:
+    def request(self, verb, url, payload=None, multipart=None):
         """Actually does the request.
 
         Subclasses must implement this.
@@ -247,29 +185,19 @@ class WebhookAdapter(Generic[N, M]):
         """
         raise NotImplementedError()
 
-    def delete_webhook(self, *, reason: Optional[str] = ...) -> N:
+    def delete_webhook(self, *, reason=None):
         return self.request('DELETE', self._request_url, reason=reason)
 
-    def edit_webhook(
-        self,
-        *,
-        reason: Optional[str] = ...,
-        **payload: Any,
-    ) -> N:
+    def edit_webhook(self, *, reason=None, **payload):
         return self.request('PATCH', self._request_url, payload=payload, reason=reason)
 
-    def edit_webhook_message(self, message_id: int, payload: Any) -> N:
+    def edit_webhook_message(self, message_id, payload):
         return self.request('PATCH', f'{self._request_url}/messages/{message_id}', payload=payload)
 
-    def delete_webhook_message(self, message_id: int) -> N:
+    def delete_webhook_message(self, message_id):
         return self.request('DELETE', f'{self._request_url}/messages/{message_id}')
 
-    def handle_execution_response(
-        self,
-        response: Any,
-        *,
-        wait: bool,
-    ) -> M:
+    def handle_execution_response(self, data, *, wait):
         """Transforms the webhook execution response into something
         more meaningful.
 
@@ -293,27 +221,22 @@ class WebhookAdapter(Generic[N, M]):
         finally:
             cleanup()
 
-    def execute_webhook(
-        self,
-        *,
-        payload: Dict[str, Any],
-        wait: bool = ...,
-        file: Optional[File] = ...,
-        files: Optional[Iterable[File]] = ...,
-    ) -> M:
+    def execute_webhook(self, *, payload, wait=False, file=None, files=None):
         cleanup = None
         if file is not None:
             multipart = {
                 'file': (file.filename, file.fp, 'application/octet-stream'),
-                'payload_json': utils.to_json(payload),
+                'payload_json': utils.to_json(payload)
             }
             data = None
             cleanup = file.close
             files_to_pass = [file]
         elif files is not None:
-            multipart: Dict[str, Any] = {'payload_json': utils.to_json(payload)}
+            multipart = {
+                'payload_json': utils.to_json(payload)
+            }
             for i, file in enumerate(files):
-                multipart[f'file{i}'] = (file.filename, file.fp, 'application/octet-stream')
+                multipart['file%i' % i] = (file.filename, file.fp, 'application/octet-stream')
             data = None
 
             def _anon():
@@ -324,7 +247,7 @@ class WebhookAdapter(Generic[N, M]):
             files_to_pass = files
         else:
             data = payload
-            multipart = {}
+            multipart = None
             files_to_pass = None
 
         url = f'{self._request_url}?wait={int(wait)}'
@@ -341,8 +264,7 @@ class WebhookAdapter(Generic[N, M]):
         # if request raises up there then this should never be `None`
         return self.handle_execution_response(maybe_coro, wait=wait)
 
-
-class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
+class AsyncWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with aiohttp.
 
     .. note::
@@ -356,22 +278,13 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
     """
 
     def __init__(self, session):
-        self.session: aiohttp.ClientSession = session
+        self.session = session
         self.loop = asyncio.get_event_loop()
 
-    def is_async(self) -> Literal[True]:
+    def is_async(self):
         return True
 
-    async def request(
-        self,
-        verb: str,
-        url: str,
-        payload: Optional[Dict[str, Any]] = ...,
-        multipart: Optional[Dict[str, Any]] = ...,
-        *,
-        files: Optional[Iterable[File]] = ...,
-        reason: Optional[str] = ...,
-    ) -> WebhookMessage[_AsyncNone]:
+    async def request(self, verb, url, payload=None, multipart=None, *, files=None, reason=None):
         headers = {}
         data = None
         files = files or []
@@ -381,6 +294,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
 
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
+
 
         base_url = url.replace(self._request_url, '/') or '/'
         _id = self._webhook_id
@@ -401,7 +315,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                 # Coerce empty strings to return None for hygiene purposes
                 response = (await r.text(encoding='utf-8')) or None
                 if r.headers['Content-Type'] == 'application/json':
-                    response = json.loads(response)  # type: ignore
+                    response = json.loads(response)
 
                 # check if we have rate limit header information
                 remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -411,7 +325,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                     await asyncio.sleep(delta)
 
                 if 300 > r.status >= 200:
-                    return response  # type: ignore
+                    return response
 
                 # we are being rate limited
                 if r.status == 429:
@@ -419,7 +333,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                         # Banned by Cloudflare more than likely.
                         raise HTTPException(r, data)
 
-                    retry_after = response['retry_after'] / 1000.0  # type: ignore
+                    retry_after = response['retry_after'] / 1000.0
                     log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', _id, retry_after)
                     await asyncio.sleep(retry_after)
                     continue
@@ -436,11 +350,11 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
                     raise HTTPException(r, response)
 
         # no more retries
-        if r.status >= 500:  # type: ignore
-            raise DiscordServerError(r, response)  # type: ignore
-        raise HTTPException(r, response)  # type: ignore
+        if r.status >= 500:
+            raise DiscordServerError(r, response)
+        raise HTTPException(r, response)
 
-    async def handle_execution_response(self, response: Any, *, wait: bool) -> WebhookMessage:
+    async def handle_execution_response(self, response, *, wait):
         data = await response
         if not wait:
             return data
@@ -450,8 +364,7 @@ class AsyncWebhookAdapter(WebhookAdapter[_AsyncNone, _AsyncMessage]):
         state = _PartialWebhookState(self, self.webhook, parent=self.webhook._state)
         return WebhookMessage(data=data, state=state, channel=self.webhook.channel)
 
-
-class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
+class RequestsWebhookAdapter(WebhookAdapter):
     """A webhook adapter suited for use with ``requests``.
 
     Only versions of :doc:`req:index` higher than 2.13.0 are supported.
@@ -471,20 +384,10 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
 
     def __init__(self, session=None, *, sleep=True):
         import requests
-
-        self.session: Any = session or requests
+        self.session = session or requests
         self.sleep = sleep
 
-    def request(
-        self,
-        verb: str,
-        url: str,
-        payload: Optional[Dict[str, Any]] = ...,
-        multipart: Optional[Dict[str, Any]] = ...,
-        *,
-        files: Optional[Iterable[File]] = ...,
-        reason: Optional[str] = ...,
-    ) -> WebhookMessage[None]:
+    def request(self, verb, url, payload=None, multipart=None, *, files=None, reason=None):
         headers = {}
         data = None
         files = files or []
@@ -514,7 +417,7 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
 
             log.debug('Webhook ID %s with %s %s has returned status code %s', _id, verb, base_url, r.status)
             if r.headers['Content-Type'] == 'application/json':
-                response = json.loads(response)  # type: ignore
+                response = json.loads(response)
 
             # check if we have rate limit header information
             remaining = r.headers.get('X-Ratelimit-Remaining')
@@ -524,7 +427,7 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
                 time.sleep(delta)
 
             if 300 > r.status >= 200:
-                return response  # type: ignore
+                return response
 
             # we are being rate limited
             if r.status == 429:
@@ -552,11 +455,11 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
                 raise HTTPException(r, response)
 
         # no more retries
-        if r.status >= 500:  # type: ignore
-            raise DiscordServerError(r, response)  # type: ignore
-        raise HTTPException(r, response)  # type: ignore
+        if r.status >= 500:
+            raise DiscordServerError(r, response)
+        raise HTTPException(r, response)
 
-    def handle_execution_response(self, response: Any, *, wait: bool) -> WebhookMessage:
+    def handle_execution_response(self, response, *, wait):
         if not wait:
             return response
 
@@ -565,13 +468,11 @@ class RequestsWebhookAdapter(WebhookAdapter[None, 'WebhookMessage[None]']):
         state = _PartialWebhookState(self, self.webhook, parent=self.webhook._state)
         return WebhookMessage(data=response, state=state, channel=self.webhook.channel)
 
-
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
     def __getattr__(self, attr):
         raise AttributeError('PartialWebhookState does not support http methods.')
-
 
 class _PartialWebhookState:
     __slots__ = ('loop', 'parent', '_webhook')
@@ -611,8 +512,7 @@ class _PartialWebhookState:
 
         raise AttributeError(f'PartialWebhookState does not support {attr!r}.')
 
-
-class WebhookMessage(Message, Generic[N]):
+class WebhookMessage(Message):
     """Represents a message sent from your webhook.
 
     This allows you to edit or delete a message sent by your
@@ -624,27 +524,7 @@ class WebhookMessage(Message, Generic[N]):
     .. versionadded:: 1.6
     """
 
-    @overload
-    def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
-
-    @overload
-    def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
-
-    def edit(self, **fields: Any) -> N:
+    def edit(self, **fields):
         """|maybecoro|
 
         Edits the message.
@@ -683,7 +563,7 @@ class WebhookMessage(Message, Generic[N]):
         time.sleep(delay)
         return self._state._webhook.delete_message(self.id)
 
-    async def _delete_delay_async(self, delay: int):
+    async def _delete_delay_async(self, delay):
         async def inner_call():
             await asyncio.sleep(delay)
             try:
@@ -694,7 +574,7 @@ class WebhookMessage(Message, Generic[N]):
         asyncio.create_task(inner_call())
         return await asyncio.sleep(0)
 
-    def delete(self, *, delay: Optional[int] = None):
+    def delete(self, *, delay=None):
         """|coro|
 
         Deletes the message.
@@ -724,8 +604,7 @@ class WebhookMessage(Message, Generic[N]):
 
         return self._state._webhook.delete_message(self.id)
 
-
-class Webhook(Hashable, Generic[N, M]):
+class Webhook(Hashable):
     """Represents a Discord webhook.
 
     Webhooks are a form to send messages to channels in Discord without a
@@ -819,29 +698,17 @@ class Webhook(Hashable, Generic[N, M]):
         .. versionadded:: 2.0
     """
 
-    __slots__ = (
-        'id',
-        'type',
-        'guild_id',
-        'channel_id',
-        'user',
-        'name',
-        'avatar',
-        'token',
-        '_state',
-        '_adapter',
-        'source_channel',
-        'source_guild',
-    )
+    __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
+                 'avatar', 'token', '_state', '_adapter', 'source_channel', 'source_guild')
 
-    def __init__(self, data: WebhookPayload, *, adapter: WebhookAdapter[N, M], state=None):
-        self.id: int = int(data['id'])
-        self.type: WebhookType = try_enum(WebhookType, int(data['type']))
-        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.name: Optional[str] = data.get('name')
-        self.avatar: Optional[str] = data.get('avatar')
-        self.token: Optional[str] = data.get('token')
+    def __init__(self, data, *, adapter, state=None):
+        self.id = int(data['id'])
+        self.type = try_enum(WebhookType, int(data['type']))
+        self.channel_id = utils._get_as_snowflake(data, 'channel_id')
+        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.name = data.get('name')
+        self.avatar = data.get('avatar')
+        self.token = data.get('token')
         self._state = state or _PartialWebhookState(adapter, self, parent=state)
         self._adapter = adapter
         self._adapter._prepare(self)
@@ -858,24 +725,24 @@ class Webhook(Hashable, Generic[N, M]):
         if source_channel:
             source_channel = PartialWebhookChannel(data=source_channel)
 
-        self.source_channel: Optional[PartialWebhookChannel] = source_channel
+        self.source_channel = source_channel
 
         source_guild = data.get('source_guild')
         if source_guild:
             source_guild = PartialWebhookGuild(data=source_guild, state=state)
 
-        self.source_guild: Optional[PartialWebhookGuild] = source_guild
+        self.source_guild = source_guild
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f'<Webhook id={self.id!r}>'
 
     @property
-    def url(self) -> str:
+    def url(self):
         """:class:`str` : Returns the webhook's url."""
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, adapter: WebhookAdapter[N, M]) -> Webhook[N, M]:
+    def partial(cls, id, token, *, adapter):
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -899,12 +766,16 @@ class Webhook(Hashable, Generic[N, M]):
         if not isinstance(adapter, WebhookAdapter):
             raise TypeError('adapter must be a subclass of WebhookAdapter')
 
-        data: WebhookPayload = {'id': id, 'type': 1, 'token': token}  # type: ignore
+        data = {
+            'id': id,
+            'type': 1,
+            'token': token
+        }
 
         return cls(data, adapter=adapter)
 
     @classmethod
-    def from_url(cls, url: str, *, adapter: WebhookAdapter[N, M]) -> Webhook[N, M]:
+    def from_url(cls, url, *, adapter):
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -932,33 +803,36 @@ class Webhook(Hashable, Generic[N, M]):
         if m is None:
             raise InvalidArgument('Invalid webhook URL given.')
         data = m.groupdict()
-        data['type'] = 1  # type: ignore
-        return cls(data, adapter=adapter)  # type: ignore
+        data['type'] = 1
+        return cls(data, adapter=adapter)
 
     @classmethod
-    def _as_follower(cls, data: FollowerWebhookPayload, *, channel: TextChannel, user: User) -> _AsyncWebhook:
+    def _as_follower(cls, data, *, channel, user):
         name = f"{channel.guild} #{channel}"
-        feed: WebhookPayload = {
+        feed = {
             'id': data['webhook_id'],
             'type': 2,
             'name': name,
             'channel_id': channel.id,
             'guild_id': channel.guild.id,
-            'user': {'username': user.name, 'discriminator': user.discriminator, 'id': user.id, 'avatar': user.avatar},
-            'application_id': None,
-            'avatar': channel.guild.hash,
+            'user': {
+                'username': user.name,
+                'discriminator': user.discriminator,
+                'id': user.id,
+                'avatar': user.avatar
+            }
         }
 
         session = channel._state.http._HTTPClient__session
         return cls(feed, adapter=AsyncWebhookAdapter(session=session))
 
     @classmethod
-    def from_state(cls, data: WebhookPayload, state):
+    def from_state(cls, data, state):
         session = state.http._HTTPClient__session
         return cls(data, adapter=AsyncWebhookAdapter(session=session), state=state)
 
     @property
-    def guild(self) -> Optional[Guild]:
+    def guild(self):
         """Optional[:class:`Guild`]: The guild this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
@@ -966,7 +840,7 @@ class Webhook(Hashable, Generic[N, M]):
         return self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[TextChannel]:
+    def channel(self):
         """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
@@ -975,12 +849,12 @@ class Webhook(Hashable, Generic[N, M]):
         return guild and guild.get_channel(self.channel_id)
 
     @property
-    def created_at(self) -> datetime.datetime:
+    def created_at(self):
         """:class:`datetime.datetime`: Returns the webhook's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     @property
-    def avatar_url(self) -> Asset:
+    def avatar_url(self):
         """:class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
@@ -991,7 +865,7 @@ class Webhook(Hashable, Generic[N, M]):
         """
         return self.avatar_url_as()
 
-    def avatar_url_as(self, *, format: Optional[Literal['jpeg', 'jpg', 'png']] = None, size: int = 1024) -> Asset:
+    def avatar_url_as(self, *, format=None, size=1024):
         """Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
@@ -1033,7 +907,7 @@ class Webhook(Hashable, Generic[N, M]):
         url = f'/avatars/{self.id}/{self.avatar}.{format}?size={size}'
         return Asset(self._state, url)
 
-    def delete(self, *, reason: Optional[str] = None) -> N:
+    def delete(self, *, reason=None):
         """|maybecoro|
 
         Deletes this Webhook.
@@ -1063,26 +937,6 @@ class Webhook(Hashable, Generic[N, M]):
             raise InvalidArgument('This webhook does not have a token associated with it')
 
         return self._adapter.delete_webhook(reason=reason)
-
-    @overload
-    def edit(
-        self,
-        *,
-        reason: Optional[str] = ...,
-        name: Optional[str] = ...,
-        avatar: Optional[bytes] = ...,
-    ) -> N:
-        ...
-
-    @overload
-    def edit(
-        self,
-        *,
-        reason: Optional[str] = ...,
-        name: Optional[str] = ...,
-        avatar: Optional[bytes] = ...,
-    ) -> N:
-        ...
 
     def edit(self, *, reason=None, **kwargs):
         """|maybecoro|
@@ -1139,50 +993,8 @@ class Webhook(Hashable, Generic[N, M]):
 
         return self._adapter.edit_webhook(reason=reason, **payload)
 
-    @overload
-    def send(
-        self,
-        content: str,
-        *,
-        wait: Literal[True] = True,
-        username: Optional[str] = ...,
-        avatar_url: Optional[Union[str, Asset]] = ...,
-        tts: bool = ...,
-        file: Optional[File] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> M:
-        ...
-
-    @overload
-    def send(
-        self,
-        content: str,
-        *,
-        wait: Literal[False] = False,
-        username: Optional[str] = ...,
-        avatar_url: Optional[Union[str, Asset]] = ...,
-        tts: bool = ...,
-        file: Optional[File] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
-
-    def send(
-        self,
-        content=None,
-        *,
-        wait=False,
-        username=None,
-        avatar_url=None,
-        tts=False,
-        file=None,
-        files=None,
-        embed=None,
-        embeds=None,
-        allowed_mentions=None,
-    ) -> Union[N, M]:
+    def send(self, content=None, *, wait=False, username=None, avatar_url=None, tts=False,
+                                    file=None, files=None, embed=None, embeds=None, allowed_mentions=None):
         """|maybecoro|
 
         Sends a message using the webhook.
@@ -1287,61 +1099,9 @@ class Webhook(Hashable, Generic[N, M]):
 
         return self._adapter.execute_webhook(wait=wait, file=file, files=files, payload=payload)
 
-    @overload
-    def execute(
-        self,
-        content: str,
-        *,
-        wait: Literal[True] = True,
-        username: Optional[str] = ...,
-        avatar_url: Optional[Union[str, Asset]] = ...,
-        tts: bool = ...,
-        file: Optional[File] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> M:
-        ...
-
-    @overload
-    def execute(
-        self,
-        content: str,
-        *,
-        wait: Literal[False] = False,
-        username: Optional[str] = ...,
-        avatar_url: Optional[Union[str, Asset]] = ...,
-        tts: bool = ...,
-        file: Optional[File] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
-
-    def execute(self, *args, **kwargs) -> Union[N, M]:
+    def execute(self, *args, **kwargs):
         """An alias for :meth:`~.Webhook.send`."""
         return self.send(*args, **kwargs)
-
-    @overload
-    def edit_message(
-        self,
-        message_id: int,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
-
-    @overload
-    def edit_message(
-        self,
-        message_id: int,
-        *,
-        content: Optional[str] = ...,
-        embeds: Optional[Embed] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-    ) -> N:
-        ...
 
     def edit_message(self, message_id, **fields):
         """|maybecoro|
@@ -1431,7 +1191,7 @@ class Webhook(Hashable, Generic[N, M]):
 
         return self._adapter.edit_webhook_message(message_id, payload=payload)
 
-    def delete_message(self, message_id: int) -> N:
+    def delete_message(self, message_id):
         """|maybecoro|
 
         Deletes a message owned by this webhook.
@@ -1454,7 +1214,3 @@ class Webhook(Hashable, Generic[N, M]):
             Deleted a message that is not yours.
         """
         return self._adapter.delete_webhook_message(message_id)
-
-
-if TYPE_CHECKING:
-    _AsyncWebhook = Webhook[_AsyncNone, _AsyncMessage]
