@@ -560,7 +560,7 @@ class Command(_BaseCommand):
 
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
-        if type(converter) is converters._Greedy:
+        if isinstance(converter, converters.Greedy):
             if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
                 return await self._transform_greedy_pos(ctx, param, required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
@@ -1042,7 +1042,7 @@ class Command(_BaseCommand):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, converters._Greedy)
+            greedy = isinstance(param.annotation, converters.Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
@@ -1059,7 +1059,6 @@ class Command(_BaseCommand):
             if origin is typing.Literal:
                 name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v)
                                 for v in self._flattened_typing_literal_args(annotation))
-
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
