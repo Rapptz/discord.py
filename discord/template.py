@@ -211,12 +211,7 @@ class Template:
         ...
 
     @overload
-    async def edit(
-        self,
-        *,
-        name: Optional[str] = ...,
-        description: Optional[str] = ...,
-    ) -> None:
+    async def edit(self, **kwargs) -> None:
         ...
 
     async def edit(self, **kwargs) -> None:
