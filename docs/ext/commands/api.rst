@@ -323,7 +323,7 @@ Converters
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
-.. autoclass:: ext.commands.Greedy()
+.. autoclass:: discord.ext.commands.Greedy()
 
 .. _ext_commands_api_errors:
 

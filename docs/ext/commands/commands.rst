@@ -526,7 +526,7 @@ Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow th
 Greedy
 ^^^^^^^^
 
-The :data:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
+The :class:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
 to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert
 any further.
 
@@ -547,9 +547,9 @@ The type passed when using this converter depends on the parameter type that it 
 
 - Positional parameter types will receive either the default parameter or a :class:`list` of the converted values.
 - Variable parameter types will be a :class:`tuple` as usual.
-- Keyword-only parameter types will be the same as if :data:`~ext.commands.Greedy` was not passed at all.
+- Keyword-only parameter types will be the same as if :class:`~ext.commands.Greedy` was not passed at all.
 
-:data:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
+:class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
 
 When mixed with the :data:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
 
@@ -576,7 +576,7 @@ This command can be invoked any of the following ways:
 
 .. warning::
 
-    The usage of :data:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
+    The usage of :class:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
     price, they open you up to some parsing ambiguities that might surprise some people.
 
     For example, a signature expecting a :data:`typing.Optional` of a :class:`discord.Member` followed by a
@@ -586,7 +586,7 @@ This command can be invoked any of the following ways:
     allowed through custom converters or reordering the parameters to minimise clashes.
 
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
-    :data:`~ext.commands.Greedy` are forbidden as parameters for the :data:`~ext.commands.Greedy` converter.
+    :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
 
 .. _ext_commands_error_handler:
 
