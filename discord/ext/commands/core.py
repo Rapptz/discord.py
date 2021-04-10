@@ -32,7 +32,7 @@ import sys
 import discord
 
 from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency
+from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -54,6 +54,7 @@ __all__ = (
     'bot_has_permissions',
     'bot_has_any_role',
     'cooldown',
+    'dynamic_cooldown',
     'max_concurrency',
     'dm_only',
     'guild_only',
@@ -256,7 +257,12 @@ class Command(_BaseCommand):
         except AttributeError:
             cooldown = kwargs.get('cooldown')
         finally:
-            self._buckets = CooldownMapping(cooldown)
+            if cooldown is None:
+                self._buckets = CooldownMapping(cooldown, BucketType.default)
+            elif callable(cooldown[0]):
+                self._buckets = DynamicCooldownMapping(*cooldown)
+            else:
+                self._buckets = CooldownMapping(*cooldown)
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -778,9 +784,10 @@ class Command(_BaseCommand):
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             bucket = self._buckets.get_bucket(ctx.message, current)
-            retry_after = bucket.update_rate_limit(current)
-            if retry_after:
-                raise CommandOnCooldown(bucket, retry_after)
+            if bucket is not None:
+                retry_after = bucket.update_rate_limit(current)
+                if retry_after:
+                    raise CommandOnCooldown(bucket, retry_after)
 
     async def prepare(self, ctx):
         ctx.command = self
@@ -1979,9 +1986,48 @@ def cooldown(rate, per, type=BucketType.default):
 
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type))
+            func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type)
+            func.__commands_cooldown__ = Cooldown(rate, per), type
+        return func
+    return decorator
+
+def dynamic_cooldown(cooldown, type=BucketType.default):
+    """A decorator that adds a dynamic cooldown to a :class:`.Command`
+
+    This differs from :func:`.cooldown` in that it takes a function that
+    accepts a single parameter of type :class:`.discord.Message` and must
+    return a :class:`.Cooldown`
+
+    A cooldown allows a command to only be used a specific amount
+    of times in a specific time frame. These cooldowns can be based
+    either on a per-guild, per-channel, per-user, per-role or global basis.
+    Denoted by the third argument of ``type`` which must be of enum
+    type :class:`.BucketType`.
+
+    If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
+    :func:`.on_command_error` and the local error handler.
+
+    A command can only have a single cooldown.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    ------------
+    cooldown: Callable[[:class:`.discord.Message`], :class:`.Cooldown`]
+        A function that takes a message and returns a cooldown that will
+        apply to this invocation
+    type: :class:`.BucketType`
+        The type of cooldown to have.
+    """
+    if not callable(cooldown):
+        raise TypeError("A callable must be provided")
+
+    def decorator(func):
+        if isinstance(func, Command):
+            func._buckets = DynamicCooldownMapping(cooldown, type)
+        else:
+            func.__commands_cooldown__ = cooldown, type
         return func
     return decorator
 
