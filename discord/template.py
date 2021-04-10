@@ -211,7 +211,7 @@ class Template:
         ...
 
     @overload
-    async def edit(self, **kwargs) -> None:
+    async def edit(self) -> None:
         ...
 
     async def edit(self, **kwargs) -> None:
