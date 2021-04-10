@@ -769,9 +769,12 @@ class clean_content(Converter[str]):
                 r = _find(_id)
                 return '@' + r.name if r else '@deleted-role'
 
+            # fmt: off
             transformations.update(
-                (f'<@&{role_id}>', resolve_role(role_id)) for role_id in message.raw_role_mentions
-            )  # fmt: off
+                (f'<@&{role_id}>', resolve_role(role_id))
+                for role_id in message.raw_role_mentions
+            )
+            # fmt: on
 
         def repl(obj):
             return transformations.get(obj.group(0), '')
