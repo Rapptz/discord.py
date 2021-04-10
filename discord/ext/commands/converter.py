@@ -864,6 +864,7 @@ class clean_content(Converter[str]):
             def resolve_role(_id, *, _find=ctx.guild.get_role):
                 r = _find(_id)
                 return '@' + r.name if r else '@deleted-role'
+
             transformations.update(
                 (f'<@&{role_id}>', resolve_role(role_id))
                 for role_id in message.raw_role_mentions
