@@ -1,5 +1,3 @@
-.. currentmodule:: discord
-
 API Reference
 ===============
 
