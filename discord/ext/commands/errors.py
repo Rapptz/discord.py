@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
+import typing
 
 
 __all__ = (
@@ -62,6 +63,7 @@ __all__ = (
     'NSFWChannelRequired',
     'ConversionError',
     'BadUnionArgument',
+    'BadLiteralArgument',
     'ArgumentParsingError',
     'UnexpectedQuoteError',
     'InvalidEndOfQuotedStringError',
@@ -644,6 +646,8 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
+                if typing.get_origin(x) is not None:
+                    return repr(x)
                 return x.__class__.__name__
 
         to_string = [_get_name(x) for x in converters]
@@ -653,6 +657,36 @@ class BadUnionArgument(UserInputError):
             fmt = ' or '.join(to_string)
 
         super().__init__(f'Could not convert "{param.name}" into {fmt}.')
+
+class BadLiteralArgument(UserInputError):
+    """Exception raised when a :data:`typing.Literal` converter fails for all
+    its associated values.
+
+    This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    param: :class:`inspect.Parameter`
+        The parameter that failed being converted.
+    literals: Tuple[Any, ...]
+        A tuple of values compared against in conversion, in order of failure.
+    errors: List[:class:`CommandError`]
+        A list of errors that were caught from failing the conversion.
+    """
+    def __init__(self, param, literals, errors):
+        self.param = param
+        self.literals = literals
+        self.errors = errors
+
+        to_string = [repr(l) for l in literals]
+        if len(to_string) > 2:
+            fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
+        else:
+            fmt = ' or '.join(to_string)
+
+        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
