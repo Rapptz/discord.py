@@ -1,3 +1,5 @@
+.. currentmodule:: discord
+
 API Reference
 ===============
 
@@ -174,7 +176,8 @@ Paginator
 Enums
 ------
 
-.. class:: discord.ext.commands.BucketType
+.. class:: BucketType
+    :module: discord.ext.commands
 
     Specifies a type of bucket for, e.g. a cooldown.
 
