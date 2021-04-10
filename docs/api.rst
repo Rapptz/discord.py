@@ -3016,6 +3016,8 @@ Role
 RoleTags
 ~~~~~~~~~~
 
+.. attributetable:: RoleTags
+
 .. autoclass:: RoleTags()
     :members:
 
@@ -3261,11 +3263,15 @@ AllowedMentions
 MessageReference
 ~~~~~~~~~~~~~~~~~
 
+.. attributetable:: MessageReference
+
 .. autoclass:: MessageReference
     :members:
 
 PartialMessage
 ~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialMessage
 
 .. autoclass:: PartialMessage
     :members:
@@ -3273,11 +3279,15 @@ PartialMessage
 Intents
 ~~~~~~~~~~
 
+.. attributetable:: Intents
+
 .. autoclass:: Intents
     :members:
 
 MemberCacheFlags
 ~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MemberCacheFlags
 
 .. autoclass:: MemberCacheFlags
     :members:
@@ -3357,11 +3367,15 @@ PermissionOverwrite
 ShardInfo
 ~~~~~~~~~~~
 
+.. attributetable:: ShardInfo
+
 .. autoclass:: ShardInfo()
     :members:
 
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SystemChannelFlags
 
 .. autoclass:: SystemChannelFlags()
     :members:
@@ -3369,11 +3383,15 @@ SystemChannelFlags
 MessageFlags
 ~~~~~~~~~~~~
 
+.. attributetable:: MessageFlags
+
 .. autoclass:: MessageFlags()
     :members:
 
 PublicUserFlags
 ~~~~~~~~~~~~~~~
+
+.. attributetable:: PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
