@@ -189,12 +189,8 @@ class CooldownMapping:
 class DynamicCooldownMapping(CooldownMapping):
 
     def __init__(self, factory, type):
-        if not callable(type):
-            raise TypeError('Cooldown type must be a BucketType or callable')
-
-        self._cache = {}
+        super().__init__(None, type)
         self._factory = factory
-        self._type = type
 
     @property
     def valid(self):
