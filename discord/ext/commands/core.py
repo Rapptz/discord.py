@@ -1024,29 +1024,25 @@ class Command(_BaseCommand):
         if not params:
             return ''
 
-        def literal_values_repr(annotation):
-            return '|'.join(f'"{v}"' if isinstance(v, str) else str(v)
-                            for v in self._flattened_typing_literal_args(annotation))
-
         result = []
         for name, param in params.items():
-            annotation = param.annotation
-            origin = typing.get_origin(annotation)
-
             greedy = isinstance(param.annotation, converters._Greedy)
-            optional = False  # postpone evaluation of if its an optional argument
+            optional = False  # postpone evaluation of if it's an optional argument
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
-            # parameter signature is a literal list of its values
-            if origin is typing.Literal:
-                name = literal_values_repr(annotation)
-            elif greedy and typing.get_origin(annotation.converter) is typing.Literal:
-                name = literal_values_repr(annotation.converter)
-            elif origin is typing.Union:
+            # parameter signature is a literal list of it's values
+            annotation = param.annotation.converter if greedy else param.annotation
+            origin = typing.get_origin(annotation)
+            if not greedy and origin is typing.Union:
                 union_args = typing.get_args(annotation)
                 optional = union_args[-1] is type(None)
-                if optional and typing.get_origin(union_args[0]) is typing.Literal:
-                    name = literal_values_repr(union_args[0])
+                if optional:
+                    annotation = union_args[0]
+                    origin = typing.get_origin(annotation)
+
+            if origin is typing.Literal:
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v)
+                                for v in self._flattened_typing_literal_args(annotation))
 
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
