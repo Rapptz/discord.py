@@ -1223,6 +1223,7 @@ class Connectable(Protocol):
     The following implement this ABC:
 
     - :class:`~discord.VoiceChannel`
+    - :class:`~discord.StageChannel`
 
     Note
     ----
