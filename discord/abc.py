@@ -734,10 +734,10 @@ class GuildChannel(Protocol):
             Whether to move the channel to the end of the
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
-        before: :class:`abc.Snowflake`
+        before: :class:`~discord.abc.Snowflake`
             The channel that should be before our current channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
-        after: :class:`abc.Snowflake`
+        after: :class:`~discord.abc.Snowflake`
             The channel that should be after our current channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
@@ -747,7 +747,7 @@ class GuildChannel(Protocol):
             while a negative number moves it above. Note that this
             number is relative and computed after the ``beginning``,
             ``end``, ``before``, and ``after`` parameters.
-        category: Optional[:class:`abc.Snowflake`]
+        category: Optional[:class:`~discord.abc.Snowflake`]
             The category to move this channel under.
             If ``None`` is given then it moves it out of the category.
             This parameter is ignored if moving a category channel.
