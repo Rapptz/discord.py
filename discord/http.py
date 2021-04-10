@@ -58,7 +58,7 @@ class Route:
         self.method = method
         url = self.BASE + self.path
         if parameters:
-            self.url = url.format(**{k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+            self.url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
         else:
             self.url = url
 
@@ -310,6 +310,18 @@ class HTTPClient:
     def logout(self):
         return self.request(Route('POST', '/auth/logout'))
 
+    # Group functionality
+
+    def start_group(self, user_id, recipients):
+        payload = {
+            'recipients': recipients,
+        }
+
+        return self.request(Route('POST', '/users/{user_id}/channels', user_id=user_id), json=payload)
+
+    def leave_group(self, channel_id):
+        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
+
     # Message management
 
     def start_private_message(self, user_id):
@@ -409,7 +421,7 @@ class HTTPClient:
 
         return self.request(route, form=form, files=files)
 
-    def send_file(
+    def send_files(
         self,
         channel_id,
         *,
@@ -575,7 +587,7 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r)
 
@@ -587,7 +599,7 @@ class HTTPClient:
 
         if reason:
             # thanks aiohttp
-            r.url = '{0.url}?reason={1}'.format(r, _uriquote(reason))
+            r.url = f'{r.url}?reason={_uriquote(reason)}'
 
         return self.request(r, params=params)
 

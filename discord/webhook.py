@@ -45,9 +45,103 @@ __all__ = (
     'RequestsWebhookAdapter',
     'Webhook',
     'WebhookMessage',
+    'PartialWebhookChannel',
+    'PartialWebhookGuild'
 )
 
 log = logging.getLogger(__name__)
+
+class PartialWebhookChannel(Hashable):
+    """Represents a partial channel for webhooks.
+
+    These are typically given for channel follower webhooks.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The partial channel's ID.
+    name: :class:`str`
+        The partial channel's name.
+    """
+
+    __slots__ = ('id', 'name')
+
+    def __init__(self, *, data):
+        self.id = int(data['id'])
+        self.name = data['name']
+
+    def __repr__(self):
+        return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
+
+class PartialWebhookGuild(Hashable):
+    """Represents a partial guild for webhooks.
+
+    These are typically given for channel follower webhooks.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The partial guild's ID.
+    name: :class:`str`
+        The partial guild's name.
+    icon: :class:`str`
+        The partial guild's icon
+    """
+
+    __slots__ = ('id', 'name', 'icon', '_state')
+
+    def __init__(self, *, data, state):
+        self._state = state
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.icon = data['icon']
+
+    def __repr__(self):
+        return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
+
+    @property
+    def icon_url(self):
+        """:class:`Asset`: Returns the guild's icon asset."""
+        return self.icon_url_as()
+
+    def is_icon_animated(self):
+        """:class:`bool`: Returns True if the guild has an animated icon."""
+        return bool(self.icon and self.icon.startswith('a_'))
+
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
+        """Returns an :class:`Asset` for the guild's icon.
+
+        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
+        'gif' is only valid for animated avatars. The size must be a power of 2
+        between 16 and 4096.
+
+        Parameters
+        -----------
+        format: Optional[:class:`str`]
+            The format to attempt to convert the icon to.
+            If the format is ``None``, then it is automatically
+            detected into either 'gif' or static_format depending on the
+            icon being animated or not.
+        static_format: Optional[:class:`str`]
+            Format to attempt to convert only non-animated icons to.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
 class WebhookAdapter:
     """Base class for all webhook adapters.
@@ -591,10 +685,21 @@ class Webhook(Hashable):
         The default name of the webhook.
     avatar: Optional[:class:`str`]
         The default avatar of the webhook.
+    source_guild: Optional[:class:`PartialWebhookGuild`]
+        The guild of the channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+
+        .. versionadded:: 2.0
+
+    source_channel: Optional[:class:`PartialWebhookChannel`]
+        The channel that this webhook is following.
+        Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('id', 'type', 'guild_id', 'channel_id', 'user', 'name',
-                 'avatar', 'token', '_state', '_adapter')
+                 'avatar', 'token', '_state', '_adapter', 'source_channel', 'source_guild')
 
     def __init__(self, data, *, adapter, state=None):
         self.id = int(data['id'])
@@ -615,6 +720,18 @@ class Webhook(Hashable):
             self.user = BaseUser(state=None, data=user)
         else:
             self.user = User(state=state, data=user)
+
+        source_channel = data.get('source_channel')
+        if source_channel:
+            source_channel = PartialWebhookChannel(data=source_channel)
+
+        self.source_channel = source_channel
+
+        source_guild = data.get('source_guild')
+        if source_guild:
+            source_guild = PartialWebhookGuild(data=source_guild, state=state)
+
+        self.source_guild = source_guild
 
     def __repr__(self):
         return f'<Webhook id={self.id!r}>'
@@ -787,7 +904,7 @@ class Webhook(Hashable):
         if format not in ('png', 'jpg', 'jpeg'):
             raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
 
-        url = '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(self, format, size)
+        url = f'/avatars/{self.id}/{self.avatar}.{format}?size={size}'
         return Asset(self._state, url)
 
     def delete(self, *, reason=None):

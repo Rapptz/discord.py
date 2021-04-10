@@ -320,7 +320,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 return m.author == client.user
 
             deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send('Deleted {} message(s)'.format(len(deleted)))
+            await channel.send(f'Deleted {len(deleted)} message(s)')
 
         Parameters
         -----------
@@ -504,7 +504,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             raise ClientException('The channel must be a news channel.')
 
         if not isinstance(destination, TextChannel):
-            raise InvalidArgument('Expected TextChannel received {0.__name__}'.format(type(destination)))
+            raise InvalidArgument(f'Expected TextChannel received {destination.__class__.__name__}')
 
         from .webhook import Webhook
         data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id, reason=reason)
@@ -896,7 +896,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
+        return f'<CategoryChannel id={self.id} name={self.name!r} position={self.position} nsfw={self.nsfw}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -1092,7 +1092,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<StoreChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
+        return f'<StoreChannel id={self.id} name={self.name!r} position={self.position} nsfw={self.nsfw}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -1218,7 +1218,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return f'Direct Message with {self.recipient}'
 
     def __repr__(self):
-        return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
+        return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @property
     def type(self):
@@ -1354,7 +1354,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return ', '.join(map(lambda x: x.name, self.recipients))
 
     def __repr__(self):
-        return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
+        return f'<GroupChannel id={self.id} name={self.name!r}>'
 
     @property
     def type(self):

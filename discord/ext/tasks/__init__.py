@@ -35,6 +35,10 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+__all__ = (
+    'loop',
+)
+
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
 
@@ -71,7 +75,7 @@ class Loop:
         self._next_iteration = None
 
         if not inspect.iscoroutinefunction(self.coro):
-            raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
+            raise TypeError(f'Expected coroutine function, not {type(self.coro).__name__!r}.')
 
     async def _call_loop_function(self, name, *args, **kwargs):
         coro = getattr(self, '_' + name)
@@ -366,7 +370,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._before_loop = coro
         return coro
@@ -394,7 +398,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._after_loop = coro
         return coro
@@ -420,7 +424,7 @@ class Loop:
             The function was not a coroutine.
         """
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._error = coro
         return coro

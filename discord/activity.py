@@ -185,7 +185,10 @@ class Activity(BaseActivity):
         self.flags = kwargs.pop('flags', 0)
         self.sync_id = kwargs.pop('sync_id', None)
         self.session_id = kwargs.pop('session_id', None)
-        self.type = try_enum(ActivityType, kwargs.pop('type', -1))
+
+        activity_type = kwargs.pop('type', -1)
+        self.type = activity_type if isinstance(activity_type, ActivityType) else try_enum(ActivityType, activity_type)
+
         emoji = kwargs.pop('emoji', None)
         if emoji is not None:
             self.emoji = PartialEmoji.from_dict(emoji)
@@ -581,7 +584,7 @@ class Spotify:
         return 'Spotify'
 
     def __repr__(self):
-        return '<Spotify title={0.title!r} artist={0.artist!r} track_id={0.track_id!r}>'.format(self)
+        return f'<Spotify title={self.title!r} artist={self.artist!r} track_id={self.track_id!r}>'
 
     @property
     def title(self):
@@ -735,7 +738,7 @@ class CustomActivity(BaseActivity):
             return str(self.name)
 
     def __repr__(self):
-        return '<CustomActivity name={0.name!r} emoji={0.emoji!r}>'.format(self)
+        return f'<CustomActivity name={self.name!r} emoji={self.emoji!r}>'
 
 
 def create_activity(data):

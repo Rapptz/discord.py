@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
+from typing import List, TYPE_CHECKING
 
 from . import utils
 from .role import Role
@@ -44,6 +45,14 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+__all__ = (
+    'Guild',
+)
+
+if TYPE_CHECKING:
+    from .types.guild import (
+        Ban as BanPayload
+    )
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -836,7 +845,7 @@ class Guild(Hashable):
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
             allow, deny = perm.pair()
             payload = {
@@ -1426,7 +1435,7 @@ class Guild(Hashable):
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
-        data = await self._state.http.get_ban(user.id, self.id)
+        data: BanPayload = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
             reason=data['reason']
@@ -1453,7 +1462,7 @@ class Guild(Hashable):
             A list of :class:`BanEntry` objects.
         """
 
-        data = await self._state.http.get_bans(self.id)
+        data: List[BanPayload] = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']),
                          reason=e['reason'])
                 for e in data]
@@ -1603,7 +1612,7 @@ class Guild(Hashable):
         data = await self._state.http.estimate_pruned_members(self.id, days, roles)
         return data['pruned']
 
-    async def invites(self):
+    async def invites(self) -> List[Invite]:
         """|coro|
 
         Returns a list of all active instant invites from the guild.
@@ -2053,7 +2062,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self):
+    async def vanity_invite(self) -> Invite:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -2102,17 +2111,17 @@ class Guild(Hashable):
         Getting the first 100 entries: ::
 
             async for entry in guild.audit_logs(limit=100):
-                print('{0.user} did {0.action} to {0.target}'.format(entry))
+                print(f'{entry.user} did {entry.action} to {entry.target}')
 
         Getting entries for a specific action: ::
 
             async for entry in guild.audit_logs(action=discord.AuditLogAction.ban):
-                print('{0.user} banned {0.target}'.format(entry))
+                print(f'{entry.user} banned {entry.target}')
 
         Getting entries made by a specific user: ::
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
-            await channel.send('I made {} moderation actions.'.format(len(entries)))
+            await channel.send(f'I made {len(entries)} moderation actions.')
 
         Parameters
         -----------

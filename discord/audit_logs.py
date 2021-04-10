@@ -22,12 +22,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Dict, List, TYPE_CHECKING
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
 from .mixins import Hashable
+
+__all__ = (
+    'AuditLogDiff',
+    'AuditLogChanges',
+    'AuditLogEntry',
+)
+
+if TYPE_CHECKING:
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
+    from .guild import Guild
+    from .user import User
+
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
@@ -117,7 +135,7 @@ class AuditLogChanges:
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
     }
 
-    def __init__(self, entry, data):
+    def __init__(self, entry, data: List[AuditLogChangePayload]):
         self.before = AuditLogDiff()
         self.after = AuditLogDiff()
 
@@ -171,7 +189,7 @@ class AuditLogChanges:
             setattr(first, 'roles', [])
 
         data = []
-        g = entry.guild
+        g: Guild = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
@@ -179,7 +197,7 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']
+                role.name = e['name'] # type: ignore
 
             data.append(role)
 
@@ -228,7 +246,7 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users, data, guild):
+    def __init__(self, *, users: Dict[str, User], data: AuditLogEntryPayload, guild: Guild):
         self._state = guild._state
         self.guild = guild
         self._users = users
@@ -278,7 +296,7 @@ class AuditLogEntry(Hashable):
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')
+                        role.name = self.extra.get('role_name')  # type: ignore
                     self.extra = role
 
         # this key is not present when the above is present, typically.
@@ -295,7 +313,7 @@ class AuditLogEntry(Hashable):
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self):
-        return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
+        return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
     @utils.cached_property
     def created_at(self):

@@ -27,6 +27,7 @@ import logging
 import signal
 import sys
 import traceback
+from typing import Any, Optional, Union
 
 import aiohttp
 
@@ -51,6 +52,10 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
+
+__all__ = (
+    'Client',
+)
 
 log = logging.getLogger(__name__)
 
@@ -427,14 +432,6 @@ class Client:
 
         Logs in the client with the specified credentials.
 
-        This function can be used in two different ways.
-
-        .. warning::
-
-            Logging on with a user token is against the Discord
-            `Terms of Service <https://support.discord.com/hc/en-us/articles/115002192352>`_
-            and doing so might potentially get your account banned.
-            Use this at your own risk.
 
         Parameters
         -----------
@@ -845,7 +842,7 @@ class Client:
                         return m.content == 'hello' and m.channel == channel
 
                     msg = await client.wait_for('message', check=check)
-                    await channel.send('Hello {.author}!'.format(msg))
+                    await channel.send(f'Hello {msg.author}!')
 
         Waiting for a thumbs up reaction from the message author: ::
 
@@ -1074,7 +1071,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection)
+        return Template(data=data, state=self._connection) # type: ignore
 
     async def fetch_guild(self, guild_id):
         """|coro|
@@ -1110,7 +1107,7 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name, region=None, icon=None, *, code=None):
+    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None, *, code: str = None):
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1159,7 +1156,7 @@ class Client:
 
     # Invite management
 
-    async def fetch_invite(self, url, *, with_counts=True):
+    async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True) -> Invite:
         """|coro|
 
         Gets an :class:`.Invite` from a discord.gg URL or ID.
@@ -1196,7 +1193,7 @@ class Client:
         data = await self.http.get_invite(invite_id, with_counts=with_counts)
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite):
+    async def delete_invite(self, invite: Union[Invite, str]) -> None:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.

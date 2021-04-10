@@ -23,9 +23,18 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import io
+from typing import Literal, TYPE_CHECKING
 from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
+
+__all__ = (
+    'Asset',
+)
+
+if TYPE_CHECKING:
+    ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
+    ValidAvatarFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png', 'gif']
 
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
@@ -84,7 +93,7 @@ class Asset:
         if format is None:
             format = 'gif' if user.is_avatar_animated() else static_format
 
-        return cls(state, '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
+        return cls(state, f'/avatars/{user.id}/{user.avatar}.{format}?size={size}')
 
     @classmethod
     def _from_icon(cls, state, object, path, *, format='webp', size=1024):
@@ -96,7 +105,7 @@ class Asset:
         if format not in VALID_STATIC_FORMATS:
             raise InvalidArgument(f"format must be None or one of {VALID_STATIC_FORMATS}")
 
-        url = '/{0}-icons/{1.id}/{1.icon}.{2}?size={3}'.format(path, object, format, size)
+        url = f'/{path}-icons/{object.id}/{object.icon}.{format}?size={size}'
         return cls(state, url)
 
     @classmethod
@@ -109,7 +118,7 @@ class Asset:
         if format not in VALID_STATIC_FORMATS:
             raise InvalidArgument(f"format must be None or one of {VALID_STATIC_FORMATS}")
 
-        url = '/app-assets/{0.id}/store/{0.cover_image}.{1}?size={2}'.format(obj, format, size)
+        url = f'/app-assets/{obj.id}/store/{obj.cover_image}.{format}?size={size}'
         return cls(state, url)
 
     @classmethod
@@ -122,8 +131,7 @@ class Asset:
         if hash is None:
             return cls(state)
 
-        url = '/{key}/{0}/{1}.{2}?size={3}'
-        return cls(state, url.format(id, hash, format, size, key=key))
+        return cls(state, f'/{key}/{id}/{hash}.{format}?size={size}')
 
     @classmethod
     def _from_guild_icon(cls, state, guild, *, format=None, static_format='webp', size=1024):
@@ -142,14 +150,14 @@ class Asset:
         if format is None:
             format = 'gif' if guild.is_icon_animated() else static_format
 
-        return cls(state, '/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
+        return cls(state, f'/icons/{guild.id}/{guild.icon}.{format}?size={size}')
 
     @classmethod
     def _from_sticker_url(cls, state, sticker, *, size=1024):
         if not utils.valid_icon_size(size):
             raise InvalidArgument("size must be a power of 2 between 16 and 4096")
 
-        return cls(state, '/stickers/{0.id}/{0.image}.png?size={2}'.format(sticker, format, size))
+        return cls(state, f'/stickers/{sticker.id}/{sticker.image}.png?size={size}')
 
     @classmethod
     def _from_emoji(cls, state, emoji, *, format=None, static_format='png'):

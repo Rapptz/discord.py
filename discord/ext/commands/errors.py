@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
+import typing
 
 
 __all__ = (
@@ -62,6 +63,7 @@ __all__ = (
     'NSFWChannelRequired',
     'ConversionError',
     'BadUnionArgument',
+    'BadLiteralArgument',
     'ArgumentParsingError',
     'UnexpectedQuoteError',
     'InvalidEndOfQuotedStringError',
@@ -424,7 +426,7 @@ class CommandInvokeError(CommandError):
     """
     def __init__(self, e):
         self.original = e
-        super().__init__('Command raised an exception: {0.__class__.__name__}: {0}'.format(e))
+        super().__init__(f'Command raised an exception: {e.__class__.__name__}: {e}')
 
 class CommandOnCooldown(CommandError):
     """Exception raised when the command being invoked is on cooldown.
@@ -644,6 +646,8 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
+                if typing.get_origin(x) is not None:
+                    return repr(x)
                 return x.__class__.__name__
 
         to_string = [_get_name(x) for x in converters]
@@ -653,6 +657,36 @@ class BadUnionArgument(UserInputError):
             fmt = ' or '.join(to_string)
 
         super().__init__(f'Could not convert "{param.name}" into {fmt}.')
+
+class BadLiteralArgument(UserInputError):
+    """Exception raised when a :data:`typing.Literal` converter fails for all
+    its associated values.
+
+    This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    param: :class:`inspect.Parameter`
+        The parameter that failed being converted.
+    literals: Tuple[Any, ...]
+        A tuple of values compared against in conversion, in order of failure.
+    errors: List[:class:`CommandError`]
+        A list of errors that were caught from failing the conversion.
+    """
+    def __init__(self, param, literals, errors):
+        self.param = param
+        self.literals = literals
+        self.errors = errors
+
+        to_string = [repr(l) for l in literals]
+        if len(to_string) > 2:
+            fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
+        else:
+            fmt = ' or '.join(to_string)
+
+        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
@@ -764,8 +798,8 @@ class ExtensionFailed(ExtensionError):
     """
     def __init__(self, name, original):
         self.original = original
-        fmt = 'Extension {0!r} raised an error: {1.__class__.__name__}: {1}'
-        super().__init__(fmt.format(name, original), name=name)
+        msg = f'Extension {name!r} raised an error: {original.__class__.__name__}: {original}'
+        super().__init__(msg, name=name)
 
 class ExtensionNotFound(ExtensionError):
     """An exception raised when an extension is not found.
@@ -784,8 +818,8 @@ class ExtensionNotFound(ExtensionError):
     """
     def __init__(self, name, original=None):
         self.original = None
-        fmt = 'Extension {0!r} could not be loaded.'
-        super().__init__(fmt.format(name), name=name)
+        msg = f'Extension {name!r} could not be loaded.'
+        super().__init__(msg, name=name)
 
 class CommandRegistrationError(ClientException):
     """An exception raised when the command can't be added

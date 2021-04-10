@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+from typing import Optional, TYPE_CHECKING
 
 from . import utils
 from .enums import try_enum, InteractionType
@@ -32,6 +33,14 @@ from .enums import try_enum, InteractionType
 __all__ = (
     'Interaction',
 )
+
+if TYPE_CHECKING:
+    from .types.interactions import (
+        Interaction as InteractionPayload,
+    )
+    from .guild import Guild
+    from .abc import GuildChannel
+
 
 class Interaction:
     """Represents a Discord interaction.
@@ -60,6 +69,7 @@ class Interaction:
         The token to continue the interaction. These are valid
         for 15 minutes.
     """
+
     __slots__ = (
         'id',
         'type',
@@ -73,11 +83,11 @@ class Interaction:
         '_state',
     )
 
-    def __init__(self, *, data, state=None):
+    def __init__(self, *, data: InteractionPayload, state=None):
         self._state = state
         self._from_data(data)
 
-    def _from_data(self, data):
+    def _from_data(self, data: InteractionPayload):
         self.id = int(data['id'])
         self.type = try_enum(InteractionType, data['type'])
         self.data = data.get('data')
@@ -88,12 +98,12 @@ class Interaction:
         self.application_id = utils._get_as_snowflake(data, 'application_id')
 
     @property
-    def guild(self):
+    def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
         return self._state and self._state.get_guild(self.guild_id)
 
     @property
-    def channel(self):
+    def channel(self) -> Optional[GuildChannel]:
         """Optional[:class:`abc.GuildChannel`]: The channel the interaction was sent from.
 
         Note that due to a Discord limitation, DM channels are not resolved since there is
@@ -101,4 +111,3 @@ class Interaction:
         """
         guild = self.guild
         return guild and guild.get_channel(self.channel_id)
-

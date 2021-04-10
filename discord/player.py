@@ -144,7 +144,7 @@ class FFmpegAudio(AudioSource):
             executable = args.partition(' ')[0] if isinstance(args, str) else args[0]
             raise ClientException(executable + ' was not found.') from None
         except subprocess.SubprocessError as exc:
-            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+            raise ClientException(f'Popen failed: {exc.__class__.__name__}: {exc}') from exc
         else:
             return process
 
