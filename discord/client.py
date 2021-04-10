@@ -683,7 +683,7 @@ class Client:
 
     @property
     def intents(self):
-        """:class:`Intents`: The intents configured for this connection.
+        """:class:`~discord.Intents`: The intents configured for this connection.
 
         .. versionadded:: 1.5
         """
