@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
+from typing import List, TYPE_CHECKING
 
 from . import utils
 from .role import Role
@@ -47,6 +48,11 @@ from .integrations import Integration
 __all__ = (
     'Guild',
 )
+
+if TYPE_CHECKING:
+    from .types.guild import (
+        Ban as BanPayload
+    )
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -1429,7 +1435,7 @@ class Guild(Hashable):
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
-        data = await self._state.http.get_ban(user.id, self.id)
+        data: BanPayload = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
             reason=data['reason']
@@ -1456,7 +1462,7 @@ class Guild(Hashable):
             A list of :class:`BanEntry` objects.
         """
 
-        data = await self._state.http.get_bans(self.id)
+        data: List[BanPayload] = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']),
                          reason=e['reason'])
                 for e in data]
@@ -1606,7 +1612,7 @@ class Guild(Hashable):
         data = await self._state.http.estimate_pruned_members(self.id, days, roles)
         return data['pruned']
 
-    async def invites(self):
+    async def invites(self) -> List[Invite]:
         """|coro|
 
         Returns a list of all active instant invites from the guild.
@@ -2056,7 +2062,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self):
+    async def vanity_invite(self) -> Invite:
         """|coro|
 
         Returns the guild's special vanity invite.

@@ -31,6 +31,12 @@ from .activity import PartialPresenceUpdate
 from .role import Role
 from .member import Member
 from .emoji import Emoji
+from .user import User
+
+
+class Ban(TypedDict):
+    reason: Optional[str]
+    user: User
 
 
 class _UnavailableGuildOptional(TypedDict, total=False):
