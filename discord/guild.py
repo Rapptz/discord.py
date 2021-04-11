@@ -26,7 +26,7 @@ import copy
 from collections import namedtuple
 from typing import List, TYPE_CHECKING
 
-from . import utils
+from . import utils, abc
 from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
@@ -854,9 +854,9 @@ class Guild(Hashable):
             }
 
             if isinstance(target, Role):
-                payload['type'] = 'role'
+                payload['type'] = abc._Overwrites.ROLE
             else:
-                payload['type'] = 'member'
+                payload['type'] = abc._Overwrites.MEMBER
 
             perms.append(payload)
 
