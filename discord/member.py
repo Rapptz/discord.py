@@ -263,17 +263,6 @@ class Member(discord.abc.Messageable, _BaseUser):
             return cls(data=member_data, guild=guild, state=state)
 
     @classmethod
-    def _from_presence_update(cls, *, data, guild, state):
-        clone = cls(data=data, guild=guild, state=state)
-        to_return = cls(data=data, guild=guild, state=state)
-        to_return._client_status = {
-            sys.intern(key): sys.intern(value)
-            for key, value in data.get('client_status', {}).items()
-        }
-        to_return._client_status[None] = sys.intern(data['status'])
-        return to_return, clone
-
-    @classmethod
     def _copy(cls, member):
         self = cls.__new__(cls) # to bypass __init__
 
