@@ -290,9 +290,9 @@ class AuditLogEntry(Hashable):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
-                if the_type == 'member':
+                if the_type == '1':
                     self.extra = self._get_member(instance_id)
-                else:
+                elif the_type == '0':
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
