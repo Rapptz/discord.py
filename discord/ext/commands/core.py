@@ -35,6 +35,7 @@ import asyncio
 import functools
 import inspect
 import datetime
+import types
 import sys
 
 import discord
@@ -104,6 +105,12 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
     if hasattr(tp, '__args__'):
         implicit_str = True
         args = tp.__args__
+        if not hasattr(tp, '__origin__'):
+            if PY_310 and tp.__class__ is types.Union:
+                converted = Union[args]  # type: ignore
+                return _evaluate_annotation(converted, globals, cache)
+
+            return tp
         if tp.__origin__ is Union:
             try:
                 if args.index(type(None)) != len(args) - 1:
@@ -136,7 +143,7 @@ def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[st
         annotation = ForwardRef(annotation)
     return _evaluate_annotation(annotation, globalns, cache)
 
-def get_signature_parameters(function) -> Dict[str, inspect.Parameter]:
+def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
     globalns = function.__globals__
     signature = inspect.signature(function)
     params = {}
