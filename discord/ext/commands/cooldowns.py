@@ -140,7 +140,7 @@ class CooldownMapping:
         self._type = type
 
     def copy(self):
-        ret = CooldownMapping(self._cooldown)
+        ret = CooldownMapping(self._cooldown, self._type)
         ret._cache = self._cache.copy()
         return ret
 
@@ -150,7 +150,7 @@ class CooldownMapping:
 
     @classmethod
     def from_cooldown(cls, rate, per, type):
-        return cls(Cooldown(rate, per, type))
+        return cls(Cooldown(rate, per), type)
 
     def _bucket_key(self, msg):
         return self._type(msg)
@@ -191,6 +191,11 @@ class DynamicCooldownMapping(CooldownMapping):
     def __init__(self, factory, type):
         super().__init__(None, type)
         self._factory = factory
+
+    def copy(self):
+        ret = DynamicCooldownMapping(self._factory, self._type)
+        ret._cache = self._cache.copy()
+        return ret
 
     @property
     def valid(self):
