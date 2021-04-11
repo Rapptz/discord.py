@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,11 +22,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Dict, List, TYPE_CHECKING
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
+from .mixins import Hashable
+
+__all__ = (
+    'AuditLogDiff',
+    'AuditLogChanges',
+    'AuditLogEntry',
+)
+
+if TYPE_CHECKING:
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
+    from .guild import Guild
+    from .user import User
+
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
@@ -40,7 +57,7 @@ def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
 def _transform_permissions(entry, data):
-    return Permissions(data)
+    return Permissions(int(data))
 
 def _transform_color(entry, data):
     return Colour(data)
@@ -51,8 +68,7 @@ def _transform_snowflake(entry, data):
 def _transform_channel(entry, data):
     if data is None:
         return None
-    channel = entry.guild.get_channel(int(data)) or Object(id=data)
-    return channel
+    return entry.guild.get_channel(int(data)) or Object(id=data)
 
 def _transform_owner_id(entry, data):
     if data is None:
@@ -73,9 +89,10 @@ def _transform_overwrites(entry, data):
 
         ow_type = elem['type']
         ow_id = int(elem['id'])
-        if ow_type == 'role':
+        target = None
+        if ow_type == '0':
             target = entry.guild.get_role(ow_id)
-        else:
+        elif ow_type == '1':
             target = entry._get_member(ow_id)
 
         if target is None:
@@ -94,7 +111,7 @@ class AuditLogDiff:
 
     def __repr__(self):
         values = ' '.join('%s=%r' % item for item in self.__dict__.items())
-        return '<AuditLogDiff %s>' % values
+        return f'<AuditLogDiff {values}>'
 
 class AuditLogChanges:
     TRANSFORMERS = {
@@ -119,7 +136,7 @@ class AuditLogChanges:
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
     }
 
-    def __init__(self, entry, data):
+    def __init__(self, entry, data: List[AuditLogChangePayload]):
         self.before = AuditLogDiff()
         self.after = AuditLogDiff()
 
@@ -166,14 +183,14 @@ class AuditLogChanges:
             self.before.color = self.before.colour
 
     def __repr__(self):
-        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
+        return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):
             setattr(first, 'roles', [])
 
         data = []
-        g = entry.guild
+        g: Guild = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
@@ -181,16 +198,33 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']
+                role.name = e['name'] # type: ignore
 
             data.append(role)
 
         setattr(second, 'roles', data)
 
-class AuditLogEntry:
+class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
     You retrieve these via :meth:`Guild.audit_logs`.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two entries are equal.
+
+        .. describe:: x != y
+
+            Checks if two entries are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the entry's hash.
+
+    .. versionchanged:: 1.7
+        Audit log entries are now comparable and hashable.
 
     Attributes
     -----------
@@ -213,7 +247,7 @@ class AuditLogEntry:
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users, data, guild):
+    def __init__(self, *, users: Dict[str, User], data: AuditLogEntryPayload, guild: Guild):
         self._state = guild._state
         self.guild = guild
         self._users = users
@@ -257,13 +291,13 @@ class AuditLogEntry:
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
-                if the_type == 'member':
+                if the_type == '1':
                     self.extra = self._get_member(instance_id)
-                else:
+                elif the_type == '0':
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')
+                        role.name = self.extra.get('role_name')  # type: ignore
                     self.extra = role
 
         # this key is not present when the above is present, typically.
@@ -280,7 +314,7 @@ class AuditLogEntry:
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self):
-        return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
+        return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
     @utils.cached_property
     def created_at(self):

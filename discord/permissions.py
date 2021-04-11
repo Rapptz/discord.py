@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -96,12 +94,12 @@ class Permissions(BaseFlags):
 
     def __init__(self, permissions=0, **kwargs):
         if not isinstance(permissions, int):
-            raise TypeError('Expected int parameter, received %s instead.' % permissions.__class__.__name__)
+            raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
         self.value = permissions
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid permission name.' % key)
+                raise TypeError(f'{key!r} is not a valid permission name.')
             setattr(self, key, value)
 
     def is_subset(self, other):
@@ -109,14 +107,14 @@ class Permissions(BaseFlags):
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_superset(self, other):
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
-            raise TypeError("cannot compare {} with {}".format(self.__class__.__name__, other.__class__.__name__))
+            raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
     def is_strict_subset(self, other):
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
@@ -140,8 +138,9 @@ class Permissions(BaseFlags):
     @classmethod
     def all(cls):
         """A factory method that creates a :class:`Permissions` with all
-        permissions set to ``True``."""
-        return cls(0b01111111111111111111111111111111)
+        permissions set to ``True``.
+        """
+        return cls(0b111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
@@ -149,26 +148,53 @@ class Permissions(BaseFlags):
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
 
-        - manage_guild
-        - kick_members
-        - ban_members
-        - administrator
-        - change_nickname
-        - manage_nicknames
+        - :attr:`manage_emojis`
+        - :attr:`view_audit_log`
+        - :attr:`view_guild_insights`
+        - :attr:`manage_guild`
+        - :attr:`change_nickname`
+        - :attr:`manage_nicknames`
+        - :attr:`kick_members`
+        - :attr:`ban_members`
+        - :attr:`administrator`
+
+        .. versionchanged:: 1.7
+           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
         """
-        return cls(0b00110011111101111111110001010001)
+        return cls(0b10110011111101111111111101010001)
 
     @classmethod
     def general(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "General" permissions from the official Discord UI set to ``True``."""
-        return cls(0b01111100000010000000000010111111)
+        "General" permissions from the official Discord UI set to ``True``.
+
+        .. versionchanged:: 1.7
+           Permission :attr:`read_messages` is now included in the general permissions, but
+           permissions :attr:`administrator`, :attr:`create_instant_invite`, :attr:`kick_members`,
+           :attr:`ban_members`, :attr:`change_nickname` and :attr:`manage_nicknames` are
+           no longer part of the general permissions.
+        """
+        return cls(0b01110000000010000000010010110000)
+
+    @classmethod
+    def membership(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Membership" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(0b00001100000000000000000000000111)
 
     @classmethod
     def text(cls):
         """A factory method that creates a :class:`Permissions` with all
-        "Text" permissions from the official Discord UI set to ``True``."""
-        return cls(0b00000000000001111111110001000000)
+        "Text" permissions from the official Discord UI set to ``True``.
+
+        .. versionchanged:: 1.7
+           Permission :attr:`read_messages` is no longer part of the text permissions.
+           Added :attr:`use_slash_commands` permission.
+        """
+        return cls(0b10000000000001111111100001000000)
 
     @classmethod
     def voice(cls):
@@ -176,6 +202,32 @@ class Permissions(BaseFlags):
         "Voice" permissions from the official Discord UI set to ``True``."""
         return cls(0b00000011111100000000001100000000)
 
+    @classmethod
+    def stage(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Stage Channel" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(1 << 32)
+
+    @classmethod
+    def stage_moderator(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(0b100000001010000000000000000000000)
+
+    @classmethod
+    def advanced(cls):
+        """A factory method that creates a :class:`Permissions` with all
+        "Advanced" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 1.7
+        """
+        return cls(1 << 3)
 
     def update(self, **kwargs):
         r"""Bulk updates this permission object.
@@ -411,6 +463,14 @@ class Permissions(BaseFlags):
         """
         return 1 << 31
 
+    @flag_value
+    def request_to_speak(self):
+        """:class:`bool`: Returns ``True`` if a user can request to speak in a stage channel.
+
+        .. versionadded:: 1.7
+        """
+        return 1 << 32
+
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
     aliases = set()
@@ -477,7 +537,7 @@ class PermissionOverwrite:
 
         for key, value in kwargs.items():
             if key not in self.VALID_NAMES:
-                raise ValueError('no permission called {0}.'.format(key))
+                raise ValueError(f'no permission called {key}.')
 
             setattr(self, key, value)
 
@@ -486,7 +546,7 @@ class PermissionOverwrite:
 
     def _set(self, key, value):
         if value not in (True, None, False):
-            raise TypeError('Expected bool or NoneType, received {0.__class__.__name__}'.format(value))
+            raise TypeError(f'Expected bool or NoneType, received {value.__class__.__name__}')
 
         if value is None:
             self._values.pop(key, None)

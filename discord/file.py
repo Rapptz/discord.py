@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -26,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 import os.path
 import io
+
+__all__ = (
+    'File',
+)
 
 class File:
     r"""A parameter object used for :meth:`abc.Messageable.send`
@@ -65,7 +67,7 @@ class File:
 
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
-                raise ValueError('File buffer {!r} must be seekable and readable'.format(fp))
+                raise ValueError(f'File buffer {fp!r} must be seekable and readable')
             self.fp = fp
             self._original_pos = fp.tell()
             self._owner = False

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,11 +22,27 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import datetime
+from typing import Optional, TYPE_CHECKING, overload
 from .utils import _get_as_snowflake, get, parse_time
 from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
+
+__all__ = (
+    'IntegrationAccount',
+    'Integration',
+)
+
+if TYPE_CHECKING:
+    from .types.integration import (
+        IntegrationAccount as IntegrationAccountPayload,
+        Integration as IntegrationPayload,
+    )
+    from .guild import Guild
+
 
 class IntegrationAccount:
     """Represents an integration account.
@@ -45,47 +59,13 @@ class IntegrationAccount:
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, **kwargs):
-        self.id = kwargs.pop('id')
-        self.name = kwargs.pop('name')
+    def __init__(self, data: IntegrationAccountPayload) -> None:
+        self.id: Optional[int] = _get_as_snowflake(data, 'id')
+        self.name: str = data.pop('name')
 
-    def __repr__(self):
-        return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
+    def __repr__(self) -> str:
+        return f'<IntegrationAccount id={self.id} name={self.name!r}>'
 
-class Application:
-    """Represents a bot integration application.
-
-    .. versionadded:: 2.0
-
-    Attributes
-    -----------
-    id: :class:`int`
-        The application ID.
-    name: :class:`str`
-        The application name.
-    icon: :class:`str`
-        The icon hash of this application.
-    description: :class:`str`
-        The application's description.
-    summary: :class:`str`
-        The application's summary.
-    bot: :class:`User`
-        The bot that belongs to this application.
-    """
-    __slots__ = ('id', 'name', 'icon', 'description', 'summary', 'bot', '_state')
-
-    def __init__(self, *, state, data):
-        self._state = state
-        self.id = _get_as_snowflake(data, 'id')
-        self.name = data['name']
-        self.icon = data['icon']
-        self.description = data['description']
-        self.summary = data['summary']
-
-        self.bot = User(state=state, data=data['bot'])
-
-    def __repr__(self):
-        return '<Application id={0.id} name={0.name!r} bot={0.bot!r}>'.format(self)
 
 class Integration:
     """Represents a guild integration.
@@ -114,33 +94,45 @@ class Integration:
         The behaviour of expiring subscribers. Aliased to ``expire_behavior`` as well.
     expire_grace_period: :class:`int`
         The grace period (in days) for expiring subscribers.
-    user: Optional[:class:`User`]
-        The user for the integration. In the case of a bot application, this is the person who invited it.
+    user: :class:`User`
+        The user for the integration.
     account: :class:`IntegrationAccount`
         The integration account information.
     synced_at: :class:`datetime.datetime`
-        When the integration was last synced.
-    application: Optional[:class:`Application`]
-        The application this integration belongs to. Can be ``None`` if it is not a bot integration.
+        An aware UTC datetime representing when the integration was last synced.
     """
 
-    __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
-                 'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account',
-                 'enable_emoticons', '_role_id', 'application')
+    __slots__ = (
+        'id',
+        '_state',
+        'guild',
+        'name',
+        'enabled',
+        'type',
+        'syncing',
+        'role',
+        'expire_behaviour',
+        'expire_behavior',
+        'expire_grace_period',
+        'synced_at',
+        'user',
+        'account',
+        'enable_emoticons',
+        '_role_id',
+    )
 
-    def __init__(self, *, data, guild):
+    def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
         self.guild = guild
         self._state = guild._state
         self._from_data(data)
 
-    def __repr__(self):
-        return '<Integration id={0.id} name={0.name!r} type={0.type!r}>'.format(self)
+    def __repr__(self) -> str:
+        return f'<Integration id={self.id} name={self.name!r} type={self.type!r}>'
 
-    def _from_data(self, integ):
+    def _from_data(self, integ: IntegrationPayload):
         self.id = _get_as_snowflake(integ, 'id')
         self.name = integ['name']
-        self.type = integration_type = integ['type']
+        self.type = integ['type']
         self.enabled = integ['enabled']
         self.syncing = integ['syncing']
         self._role_id = _get_as_snowflake(integ, 'role_id')
@@ -151,22 +143,24 @@ class Integration:
         self.expire_grace_period = integ['expire_grace_period']
         self.synced_at = parse_time(integ['synced_at'])
 
-        application = integ.get('application')
+        self.user = User(state=self._state, data=integ['user'])
+        self.account = IntegrationAccount(integ['account'])
 
-        user = integ.get('user')
-        if user is not None:
-            self.user = User(state=self._state, data=user)
-        else:
-            self.user = None
+    @overload
+    async def edit(
+        self,
+        *,
+        expire_behaviour: Optional[ExpireBehaviour] = ...,
+        expire_grace_period: Optional[int] = ...,
+        enable_emoticons: Optional[bool] = ...,
+    ) -> None:
+        ...
 
-        self.account = IntegrationAccount(**integ['account'])
+    @overload
+    async def edit(self, **fields) -> None:
+        ...
 
-        if application is not None:
-            self.application = Application(**application)
-        else:
-            self.application = None
-
-    async def edit(self, **fields):
+    async def edit(self, **fields) -> None:
         """|coro|
 
         Edits the integration.
@@ -219,7 +213,7 @@ class Integration:
         self.expire_grace_period = expire_grace_period
         self.enable_emoticons = enable_emoticons
 
-    async def sync(self):
+    async def sync(self) -> None:
         """|coro|
 
         Syncs the integration.
@@ -235,9 +229,9 @@ class Integration:
             Syncing the integration failed.
         """
         await self._state.http.sync_integration(self.guild.id, self.id)
-        self.synced_at = datetime.datetime.utcnow()
+        self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
-    async def delete(self):
+    async def delete(self) -> None:
         """|coro|
 
         Deletes the integration.

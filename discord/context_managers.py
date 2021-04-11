@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -25,6 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import asyncio
+
+__all__ = (
+    'Typing',
+)
 
 def _typing_done_callback(fut):
     # just retrieve any exception and call it a day

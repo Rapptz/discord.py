@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -29,7 +27,7 @@ import asyncio
 
 import discord.abc
 from .permissions import Permissions
-from .enums import ChannelType, try_enum
+from .enums import ChannelType, try_enum, VoiceRegion
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
@@ -38,6 +36,7 @@ from .errors import ClientException, NoMoreItems, InvalidArgument
 __all__ = (
     'TextChannel',
     'VoiceChannel',
+    'StageChannel',
     'DMChannel',
     'CategoryChannel',
     'StoreChannel',
@@ -114,7 +113,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             ('news', self.is_news()),
             ('category_id', self.category_id)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -141,6 +141,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self):
         return ChannelType.text.value
 
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -148,8 +149,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         denied = Permissions.voice()
         base.value &= ~denied.value
         return base
-
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
 
     @property
     def members(self):
@@ -240,14 +239,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         await self._edit(options, reason=reason)
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'topic': self.topic,
             'nsfw': self.nsfw,
             'rate_limit_per_user': self.slowmode_delay
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def delete_messages(self, messages):
         """|coro|
@@ -313,10 +311,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         account). The :attr:`~Permissions.read_message_history` permission is
         also needed to retrieve message history.
 
-        Internally, this employs a different number of strategies depending
-        on the conditions met such as if a bulk delete is possible or if
-        the account is a user bot or not.
-
         Examples
         ---------
 
@@ -326,7 +320,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 return m.author == client.user
 
             deleted = await channel.purge(limit=100, check=is_me)
-            await channel.send('Deleted {} message(s)'.format(len(deleted)))
+            await channel.send(f'Deleted {len(deleted)} message(s)')
 
         Parameters
         -----------
@@ -347,8 +341,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         bulk: :class:`bool`
             If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
             a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if current account is a user bot, or if messages are
-            older than two weeks.
+            fall back to single delete if messages are older than two weeks.
 
         Raises
         -------
@@ -371,7 +364,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         count = 0
 
         minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if self._state.is_bot and bulk else _single_delete_strategy
+        strategy = self.delete_messages if bulk else _single_delete_strategy
 
         while True:
             try:
@@ -511,7 +504,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             raise ClientException('The channel must be a news channel.')
 
         if not isinstance(destination, TextChannel):
-            raise InvalidArgument('Expected TextChannel received {0.__name__}'.format(type(destination)))
+            raise InvalidArgument(f'Expected TextChannel received {destination.__class__.__name__}')
 
         from .webhook import Webhook
         data = await self._state.http.follow_webhook(self.id, webhook_channel_id=destination.id, reason=reason)
@@ -539,7 +532,80 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
+class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
+    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
+                 '_state', 'position', '_overwrites', 'category_id',
+                 'rtc_region')
+
+    def __init__(self, *, state, guild, data):
+        self._state = state
+        self.id = int(data['id'])
+        self._update(guild, data)
+
+    def _get_voice_client_key(self):
+        return self.guild.id, 'guild_id'
+
+    def _get_voice_state_pair(self):
+        return self.guild.id, self.id
+
+    def _update(self, guild, data):
+        self.guild = guild
+        self.name = data['name']
+        self.rtc_region = data.get('rtc_region')
+        if self.rtc_region:
+            self.rtc_region = try_enum(VoiceRegion, self.rtc_region)
+        self.category_id = utils._get_as_snowflake(data, 'parent_id')
+        self.position = data['position']
+        self.bitrate = data.get('bitrate')
+        self.user_limit = data.get('user_limit')
+        self._fill_overwrites(data)
+
+    @property
+    def _sorting_bucket(self):
+        return ChannelType.voice.value
+
+    @property
+    def members(self):
+        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
+        ret = []
+        for user_id, state in self.guild._voice_states.items():
+            if state.channel and state.channel.id == self.id:
+                member = self.guild.get_member(user_id)
+                if member is not None:
+                    ret.append(member)
+        return ret
+
+    @property
+    def voice_states(self):
+        """Returns a mapping of member IDs who have voice states in this channel.
+
+        .. versionadded:: 1.3
+
+        .. note::
+
+            This function is intentionally low level to replace :attr:`members`
+            when the member cache is unavailable.
+
+        Returns
+        --------
+        Mapping[:class:`int`, :class:`VoiceState`]
+            The mapping of member ID to a voice state.
+        """
+        return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
+
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
+    def permissions_for(self, member):
+        base = super().permissions_for(member)
+
+        # voice channels cannot be edited by people who can't connect to them
+        # It also implicitly denies all other voice perms
+        if not base.connect:
+            denied = Permissions.voice()
+            denied.update(manage_channels=True, manage_roles=True)
+            base.value &= ~denied.value
+        return base
+
+class VoiceChannel(VocalGuildChannel):
     """Represents a Discord guild voice channel.
 
     .. container:: operations
@@ -577,100 +643,39 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         The channel's preferred audio bitrate in bits per second.
     user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
+    rtc_region: Optional[:class:`VoiceRegion`]
+        The region for the voice channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection.
+
+        .. versionadded:: 1.7
     """
 
-    __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
-                 '_state', 'position', '_overwrites', 'category_id')
-
-    def __init__(self, *, state, guild, data):
-        self._state = state
-        self.id = int(data['id'])
-        self._update(guild, data)
+    __slots__ = ()
 
     def __repr__(self):
         attrs = [
             ('id', self.id),
             ('name', self.name),
+            ('rtc_region', self.rtc_region),
             ('position', self.position),
             ('bitrate', self.bitrate),
             ('user_limit', self.user_limit),
             ('category_id', self.category_id)
         ]
-        return '<%s %s>' % (self.__class__.__name__, ' '.join('%s=%r' % t for t in attrs))
-
-    def _get_voice_client_key(self):
-        return self.guild.id, 'guild_id'
-
-    def _get_voice_state_pair(self):
-        return self.guild.id, self.id
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
 
     @property
     def type(self):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
 
-    def _update(self, guild, data):
-        self.guild = guild
-        self.name = data['name']
-        self.category_id = utils._get_as_snowflake(data, 'parent_id')
-        self.position = data['position']
-        self.bitrate = data.get('bitrate')
-        self.user_limit = data.get('user_limit')
-        self._fill_overwrites(data)
-
-    @property
-    def _sorting_bucket(self):
-        return ChannelType.voice.value
-
-    @property
-    def members(self):
-        """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
-        ret = []
-        for user_id, state in self.guild._voice_states.items():
-            if state.channel.id == self.id:
-                member = self.guild.get_member(user_id)
-                if member is not None:
-                    ret.append(member)
-        return ret
-
-    @property
-    def voice_states(self):
-        """Returns a mapping of member IDs who have voice states in this channel.
-
-        .. versionadded:: 1.3
-
-        .. note::
-
-            This function is intentionally low level to replace :attr:`members`
-            when the member cache is unavailable.
-
-        Returns
-        --------
-        Mapping[:class:`int`, :class:`VoiceState`]
-            The mapping of member ID to a voice state.
-        """
-        return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
-
-    def permissions_for(self, member):
-        base = super().permissions_for(member)
-
-        # voice channels cannot be edited by people who can't connect to them
-        # It also implicitly denies all other voice perms
-        if not base.connect:
-            denied = Permissions.voice()
-            denied.update(manage_channels=True, manage_roles=True)
-            base.value &= ~denied.value
-        return base
-
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
-
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'bitrate': self.bitrate,
             'user_limit': self.user_limit
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -704,6 +709,136 @@ class VoiceChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`dict`
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The new region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 1.7
+
+        Raises
+        ------
+        InvalidArgument
+            If the permission overwrite information is not in proper form.
+        Forbidden
+            You do not have permissions to edit the channel.
+        HTTPException
+            Editing the channel failed.
+        """
+
+        await self._edit(options, reason=reason)
+
+class StageChannel(VocalGuildChannel):
+    """Represents a Discord guild stage channel.
+
+    .. versionadded:: 1.7
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it isn't set.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    bitrate: :class:`int`
+        The channel's preferred audio bitrate in bits per second.
+    user_limit: :class:`int`
+        The channel's limit for number of members that can be in a stage channel.
+    rtc_region: Optional[:class:`VoiceRegion`]
+        The region for the stage channel's voice communication.
+        A value of ``None`` indicates automatic voice region detection.
+    """
+    __slots__ = ('topic',)
+
+    def __repr__(self):
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('topic', self.topic),
+            ('rtc_region', self.rtc_region),
+            ('position', self.position),
+            ('bitrate', self.bitrate),
+            ('user_limit', self.user_limit),
+            ('category_id', self.category_id)
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, guild, data):
+        super()._update(guild, data)
+        self.topic = data.get('topic')
+
+    @property
+    def requesting_to_speak(self):
+        """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
+        return [member for member in self.members if member.voice.requested_to_speak_at is not None]
+
+    @property
+    def type(self):
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.stage_voice
+
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
+    async def clone(self, *, name=None, reason=None):
+        return await self._clone_impl({
+            'topic': self.topic,
+        }, name=name, reason=reason)
+
+    async def edit(self, *, reason=None, **options):
+        """|coro|
+
+        Edits the channel.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The new channel's name.
+        topic: :class:`str`
+            The new channel's topic.
+        position: :class:`int`
+            The new channel's position.
+        sync_permissions: :class:`bool`
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
+        reason: Optional[:class:`str`]
+            The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`dict`
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The new region for the stage channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
 
         Raises
         ------
@@ -761,7 +896,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<CategoryChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
+        return f'<CategoryChannel id={self.id} name={self.name!r} position={self.position} nsfw={self.nsfw}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -784,12 +919,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """:class:`bool`: Checks if the category is NSFW."""
         return self.nsfw
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -828,6 +962,11 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         await self._edit(options=options, reason=reason)
 
+    @utils.copy_doc(discord.abc.GuildChannel.move)
+    async def move(self, **kwargs):
+        kwargs.pop('category', None)
+        await super().move(**kwargs)
+
     @property
     def channels(self):
         """List[:class:`abc.GuildChannel`]: Returns the channels that are under this category.
@@ -859,6 +998,18 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
+    @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: Returns the voice channels that are under this category.
+
+        .. versionadded:: 1.7
+        """
+        ret = [c for c in self.guild.channels
+            if c.category_id == self.id
+            and isinstance(c, StageChannel)]
+        ret.sort(key=lambda c: (c.position, c.id))
+        return ret
+
     async def create_text_channel(self, name, *, overwrites=None, reason=None, **options):
         """|coro|
 
@@ -882,6 +1033,20 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             The channel that was just created.
         """
         return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+
+    async def create_stage_channel(self, name, *, overwrites=None, reason=None, **options):
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
+
+        .. versionadded:: 1.7
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        return await self.guild.create_stage_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
 
 class StoreChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild store channel.
@@ -927,7 +1092,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         self._update(guild, data)
 
     def __repr__(self):
-        return '<StoreChannel id={0.id} name={0.name!r} position={0.position} nsfw={0.nsfw}>'.format(self)
+        return f'<StoreChannel id={self.id} name={self.name!r} position={self.position} nsfw={self.nsfw}>'
 
     def _update(self, guild, data):
         self.guild = guild
@@ -946,6 +1111,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.store
 
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, member):
         base = super().permissions_for(member)
 
@@ -954,18 +1120,15 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         base.value &= ~denied.value
         return base
 
-    permissions_for.__doc__ = discord.abc.GuildChannel.permissions_for.__doc__
-
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
-
-    clone.__doc__ = discord.abc.GuildChannel.clone.__doc__
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -1052,10 +1215,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     def __str__(self):
-        return 'Direct Message with %s' % self.recipient
+        return f'Direct Message with {self.recipient}'
 
     def __repr__(self):
-        return '<DMChannel id={0.id} recipient={0.recipient!r}>'.format(self)
+        return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @property
     def type(self):
@@ -1191,7 +1354,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return ', '.join(map(lambda x: x.name, self.recipients))
 
     def __repr__(self):
-        return '<GroupChannel id={0.id} name={0.name!r}>'.format(self)
+        return f'<GroupChannel id={self.id} name={self.name!r}>'
 
     @property
     def type(self):
@@ -1274,86 +1437,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         return base
 
-    async def add_recipients(self, *recipients):
-        r"""|coro|
-
-        Adds recipients to this group.
-
-        A group can only have a maximum of 10 members.
-        Attempting to add more ends up in an exception. To
-        add a recipient to the group, you must have a relationship
-        with the user of type :attr:`RelationshipType.friend`.
-
-        Parameters
-        -----------
-        \*recipients: :class:`User`
-            An argument list of users to add to this group.
-
-        Raises
-        -------
-        HTTPException
-            Adding a recipient to this group failed.
-        """
-
-        # TODO: wait for the corresponding WS event
-
-        req = self._state.http.add_group_recipient
-        for recipient in recipients:
-            await req(self.id, recipient.id)
-
-    async def remove_recipients(self, *recipients):
-        r"""|coro|
-
-        Removes recipients from this group.
-
-        Parameters
-        -----------
-        \*recipients: :class:`User`
-            An argument list of users to remove from this group.
-
-        Raises
-        -------
-        HTTPException
-            Removing a recipient from this group failed.
-        """
-
-        # TODO: wait for the corresponding WS event
-
-        req = self._state.http.remove_group_recipient
-        for recipient in recipients:
-            await req(self.id, recipient.id)
-
-    async def edit(self, **fields):
-        """|coro|
-
-        Edits the group.
-
-        Parameters
-        -----------
-        name: Optional[:class:`str`]
-            The new name to change the group to.
-            Could be ``None`` to remove the name.
-        icon: Optional[:class:`bytes`]
-            A :term:`py:bytes-like object` representing the new icon.
-            Could be ``None`` to remove the icon.
-
-        Raises
-        -------
-        HTTPException
-            Editing the group failed.
-        """
-
-        try:
-            icon_bytes = fields['icon']
-        except KeyError:
-            pass
-        else:
-            if icon_bytes is not None:
-                fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
-
-        data = await self._state.http.edit_group(self.id, **fields)
-        self._update_group(data)
-
     async def leave(self):
         """|coro|
 
@@ -1385,5 +1468,7 @@ def _channel_factory(channel_type):
         return TextChannel, value
     elif value is ChannelType.store:
         return StoreChannel, value
+    elif value is ChannelType.stage_voice:
+        return StageChannel, value
     else:
         return None, value
