@@ -37,6 +37,7 @@ import inspect
 import datetime
 import types
 import sys
+import collections
 
 import discord
 
@@ -143,10 +144,10 @@ def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[st
         annotation = ForwardRef(annotation)
     return _evaluate_annotation(annotation, globalns, cache)
 
-def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
+def get_signature_parameters(function: types.FunctionType) -> collections.OrderedDict[str, inspect.Parameter]:
     globalns = function.__globals__
     signature = inspect.signature(function)
-    params = {}
+    params = collections.OrderedDict()
     cache: Dict[str, Any] = {}
     for name, parameter in signature.parameters.items():
         annotation = parameter.annotation
