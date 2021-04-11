@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
-import typing
 
 
 __all__ = (
