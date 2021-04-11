@@ -931,7 +931,7 @@ class DefaultHelpCommand(HelpCommand):
     def shorten_text(self, text):
         """:class:`str`: Shortens text to fit into the :attr:`width`."""
         if len(text) > self.width:
-            return text[:self.width - 3] + '...'
+            return text[:self.width - 3].rstrip() + '...'
         return text
 
     def get_ending_note(self):
