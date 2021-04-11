@@ -30,6 +30,7 @@ from typing import (
     Literal,
     Tuple,
     Union,
+    OrderedDict
 )
 import asyncio
 import functools
@@ -144,7 +145,7 @@ def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[st
         annotation = ForwardRef(annotation)
     return _evaluate_annotation(annotation, globalns, cache)
 
-def get_signature_parameters(function: types.FunctionType) -> collections.OrderedDict[str, inspect.Parameter]:
+def get_signature_parameters(function: types.FunctionType) -> OrderedDict[str, inspect.Parameter]:
     globalns = function.__globals__
     signature = inspect.signature(function)
     params = collections.OrderedDict()
