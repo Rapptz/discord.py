@@ -693,22 +693,25 @@ class Command(_BaseCommand):
             return value
 
     @property
-    def clean_params(self):
-        """OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
-        Retrieves the parameter OrderedDict without the context or self parameters.
+    def clean_params(self) -> Dict[str, inspect.Parameter]:
+        """Dict[:class:`str`, :class:`inspect.Parameter`]:
+        Retrieves the parameter dictionary without the context or self parameters.
 
         Useful for inspecting signature.
         """
         result = self.params.copy()
         if self.cog is not None:
             # first parameter is self
-            result.popitem(last=False)
+            try:
+                del result[next(iter(result))]
+            except StopIteration:
+                raise ValueError("missing 'self' parameter") from None
 
         try:
             # first/second parameter is context
-            result.popitem(last=False)
-        except Exception:
-            raise ValueError('Missing context parameter') from None
+            del result[next(iter(result))]
+        except StopIteration:
+            raise ValueError("missing 'context' parameter") from None
 
         return result
 
