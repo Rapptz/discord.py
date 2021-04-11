@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
-import typing
 
 
 __all__ = (
@@ -646,7 +645,7 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
-                if typing.get_origin(x) is not None:
+                if hasattr(x, '__origin__'):
                     return repr(x)
                 return x.__class__.__name__
 
