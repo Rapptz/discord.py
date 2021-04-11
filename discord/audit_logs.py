@@ -57,7 +57,7 @@ def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
 def _transform_permissions(entry, data):
-    return Permissions(data)
+    return Permissions(int(data))
 
 def _transform_color(entry, data):
     return Colour(data)
@@ -89,9 +89,10 @@ def _transform_overwrites(entry, data):
 
         ow_type = elem['type']
         ow_id = int(elem['id'])
-        if ow_type == 'role':
+        target = None
+        if ow_type == '0':
             target = entry.guild.get_role(ow_id)
-        else:
+        elif ow_type == '1':
             target = entry._get_member(ow_id)
 
         if target is None:
