@@ -627,7 +627,6 @@ class Intents(BaseFlags):
         - :func:`on_message_delete` (both guilds and DMs)
         - :func:`on_raw_message_delete` (both guilds and DMs)
         - :func:`on_raw_message_edit` (both guilds and DMs)
-        - :func:`on_private_channel_create`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -682,7 +681,6 @@ class Intents(BaseFlags):
         - :func:`on_message_delete` (only for DMs)
         - :func:`on_raw_message_delete` (only for DMs)
         - :func:`on_raw_message_edit` (only for DMs)
-        - :func:`on_private_channel_create`
 
         This also corresponds to the following attributes and classes in terms of cache:
 

@@ -596,16 +596,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param interaction: The interaction data.
     :type interaction: :class:`Interaction`
 
-.. function:: on_private_channel_delete(channel)
-              on_private_channel_create(channel)
-
-    Called whenever a private channel is deleted or created.
-
-    This requires :attr:`Intents.messages` to be enabled.
-
-    :param channel: The private channel that got created or deleted.
-    :type channel: :class:`abc.PrivateChannel`
-
 .. function:: on_private_channel_update(before, after)
 
     Called whenever a private group DM is updated. e.g. changed name or topic.
