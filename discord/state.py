@@ -631,13 +631,6 @@ class ConnectionState:
             if channel is not None:
                 guild._remove_channel(channel)
                 self.dispatch('guild_channel_delete', channel)
-        else:
-            # the reason we're doing this is so it's also removed from the
-            # private channel by user cache as well
-            channel = self._get_private_channel(channel_id)
-            if channel is not None:
-                self._remove_private_channel(channel)
-                self.dispatch('private_channel_delete', channel)
 
     def parse_channel_update(self, data):
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -668,22 +661,15 @@ class ConnectionState:
             log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
 
-        if ch_type in (ChannelType.group, ChannelType.private):
-            channel_id = int(data['id'])
-            if self._get_private_channel(channel_id) is None:
-                channel = factory(me=self.user, data=data, state=self)
-                self._add_private_channel(channel)
-                self.dispatch('private_channel_create', channel)
+        guild_id = utils._get_as_snowflake(data, 'guild_id')
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            channel = factory(guild=guild, state=self, data=data)
+            guild._add_channel(channel)
+            self.dispatch('guild_channel_create', channel)
         else:
-            guild_id = utils._get_as_snowflake(data, 'guild_id')
-            guild = self._get_guild(guild_id)
-            if guild is not None:
-                channel = factory(guild=guild, state=self, data=data)
-                guild._add_channel(channel)
-                self.dispatch('guild_channel_create', channel)
-            else:
-                log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
-                return
+            log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+            return
 
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
