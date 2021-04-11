@@ -894,10 +894,14 @@ dl.field-list {
   display: block;
 }
 
-/* internal references are forced to bold for some reason */
-a.reference.internal > strong {
+/* cross-references are forced to bold for some reason */
+a.reference > strong {
   font-weight: unset;
   font-family: var(--monospace-font-family);
+}
+a.reference.pep > strong,
+a.reference.rfc > strong {
+  font-family: inherit;
 }
 
 /* exception hierarchy */

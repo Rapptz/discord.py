@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -37,6 +35,10 @@ from discord.backoff import ExponentialBackoff
 
 log = logging.getLogger(__name__)
 
+__all__ = (
+    'loop',
+)
+
 class Loop:
     """A background task helper that abstracts the loop and reconnection logic for you.
 
@@ -73,7 +75,7 @@ class Loop:
         self._next_iteration = None
 
         if not inspect.iscoroutinefunction(self.coro):
-            raise TypeError('Expected coroutine function, not {0.__name__!r}.'.format(type(self.coro)))
+            raise TypeError(f'Expected coroutine function, not {type(self.coro).__name__!r}.')
 
     async def _call_loop_function(self, name, *args, **kwargs):
         coro = getattr(self, '_' + name)
@@ -103,7 +105,7 @@ class Loop:
                     now = datetime.datetime.now(datetime.timezone.utc)
                     if now > self._next_iteration:
                         self._next_iteration = now
-                except self._valid_exception as exc:
+                except self._valid_exception:
                     self._last_iteration_failed = True
                     if not self.reconnect:
                         raise
@@ -154,7 +156,7 @@ class Loop:
 
         .. versionadded:: 1.3
         """
-        if self._task is None and self._sleep:
+        if self._task is None:
             return None
         elif self._task and self._task.done() or self._stop_next_iteration:
             return None
@@ -289,9 +291,9 @@ class Loop:
 
         for exc in exceptions:
             if not inspect.isclass(exc):
-                raise TypeError('{0!r} must be a class.'.format(exc))
+                raise TypeError(f'{exc!r} must be a class.')
             if not issubclass(exc, BaseException):
-                raise TypeError('{0!r} must inherit from BaseException.'.format(exc))
+                raise TypeError(f'{exc!r} must inherit from BaseException.')
 
         self._valid_exception = (*self._valid_exception, *exceptions)
 
@@ -345,7 +347,7 @@ class Loop:
 
     async def _error(self, *args):
         exception = args[-1]
-        print('Unhandled exception in internal background task {0.__name__!r}.'.format(self.coro), file=sys.stderr)
+        print(f'Unhandled exception in internal background task {self.coro.__name__!r}.', file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     def before_loop(self, coro):
@@ -368,7 +370,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._before_loop = coro
         return coro
@@ -396,7 +398,7 @@ class Loop:
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._after_loop = coro
         return coro
@@ -422,7 +424,7 @@ class Loop:
             The function was not a coroutine.
         """
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('Expected coroutine function, received {0.__name__!r}.'.format(type(coro)))
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._error = coro
         return coro

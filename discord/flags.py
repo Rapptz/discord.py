@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+
 from .enums import UserFlags
 
 __all__ = (
@@ -34,27 +36,38 @@ __all__ = (
     'MemberCacheFlags',
 )
 
-class flag_value:
-    def __init__(self, func):
+FV = TypeVar('FV', bound='flag_value')
+BF = TypeVar('BF', bound='BaseFlags')
+
+class flag_value(Generic[BF]):
+    def __init__(self, func: Callable[[Any], int]):
         self.flag = func(None)
         self.__doc__ = func.__doc__
 
-    def __get__(self, instance, owner):
+    @overload
+    def __get__(self: FV, instance: None, owner: Type[BF]) -> FV:
+        ...
+
+    @overload
+    def __get__(self, instance: BF, owner: Type[BF]) -> bool:
+        ...
+
+    def __get__(self, instance: Optional[BF], owner: Type[BF]) -> Any:
         if instance is None:
             return self
         return instance._has_flag(self.flag)
 
-    def __set__(self, instance, value):
+    def __set__(self, instance: BF, value: bool) -> None:
         instance._set_flag(self.flag, value)
 
     def __repr__(self):
-        return '<flag_value flag={.flag!r}>'.format(self)
+        return f'<flag_value flag={self.flag!r}>'
 
 class alias_flag_value(flag_value):
     pass
 
-def fill_with_flags(*, inverted=False):
-    def decorator(cls):
+def fill_with_flags(*, inverted: bool = False):
+    def decorator(cls: Type[BF]):
         cls.VALID_FLAGS = {
             name: value.flag
             for name, value in cls.__dict__.items()
@@ -72,13 +85,18 @@ def fill_with_flags(*, inverted=False):
 
 # n.b. flags must inherit from this and use the decorator above
 class BaseFlags:
+    VALID_FLAGS: ClassVar[Dict[str, int]]
+    DEFAULT_VALUE: ClassVar[int]
+
+    value: int
+
     __slots__ = ('value',)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: bool):
         self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod
@@ -87,19 +105,19 @@ class BaseFlags:
         self.value = value
         return self
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.value)
 
-    def __repr__(self):
-        return '<%s value=%s>' % (self.__class__.__name__, self.value)
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} value={self.value}>'
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[str, bool]]:
         for name, value in self.__class__.__dict__.items():
             if isinstance(value, alias_flag_value):
                 continue
@@ -107,16 +125,16 @@ class BaseFlags:
             if isinstance(value, flag_value):
                 yield (name, self._has_flag(value.flag))
 
-    def _has_flag(self, o):
+    def _has_flag(self, o: int) -> bool:
         return (self.value & o) == o
 
-    def _set_flag(self, o, toggle):
+    def _set_flag(self, o: int, toggle: bool) -> None:
         if toggle is True:
             self.value |= o
         elif toggle is False:
             self.value &= ~o
         else:
-            raise TypeError('Value to set for %s must be a bool.' % self.__class__.__name__)
+            raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
 
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
@@ -152,6 +170,7 @@ class SystemChannelFlags(BaseFlags):
         representing the currently available flags. You should query
         flags via the properties rather than using this raw value.
     """
+
     __slots__ = ()
 
     # For some reason the flags for system channels are "inverted"
@@ -159,10 +178,10 @@ class SystemChannelFlags(BaseFlags):
     # Since this is counter-intuitive from an API perspective and annoying
     # these will be inverted automatically
 
-    def _has_flag(self, o):
+    def _has_flag(self, o: int) -> bool:
         return (self.value & o) != o
 
-    def _set_flag(self, o, toggle):
+    def _set_flag(self, o: int, toggle: bool) -> None:
         if toggle is True:
             self.value &= ~o
         elif toggle is False:
@@ -212,6 +231,7 @@ class MessageFlags(BaseFlags):
         representing the currently available flags. You should query
         flags via the properties rather than using this raw value.
     """
+
     __slots__ = ()
 
     @flag_value
@@ -348,7 +368,7 @@ class PublicUserFlags(BaseFlags):
         """
         return UserFlags.verified_bot_developer.value
 
-    def all(self):
+    def all(self) -> List[UserFlags]:
         """List[:class:`UserFlags`]: Returns all public flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
 
@@ -395,15 +415,15 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: bool):
         self.value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod
-    def all(cls):
+    def all(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled."""
         bits = max(cls.VALID_FLAGS.values()).bit_length()
         value = (1 << bits) - 1
@@ -412,14 +432,14 @@ class Intents(BaseFlags):
         return self
 
     @classmethod
-    def none(cls):
+    def none(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything disabled."""
         self = cls.__new__(cls)
         self.value = self.DEFAULT_VALUE
         return self
 
     @classmethod
-    def default(cls):
+    def default(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled
         except :attr:`presences` and :attr:`members`.
         """
@@ -476,7 +496,7 @@ class Intents(BaseFlags):
         - :attr:`Member.nick`
         - :attr:`Member.premium_since`
         - :attr:`User.name`
-        - :attr:`User.avatar` (:meth:`User.avatar_url` and :meth:`User.avatar_url_as`)
+        - :attr:`User.avatar` (:attr:`User.avatar_url` and :meth:`User.avatar_url_as`)
         - :attr:`User.discriminator`
 
         For more information go to the :ref:`member intent documentation <need_members_intent>`.
@@ -827,16 +847,16 @@ class MemberCacheFlags(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: bool):
         bits = max(self.VALID_FLAGS.values()).bit_length()
         self.value = (1 << bits) - 1
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
-                raise TypeError('%r is not a valid flag name.' % key)
+                raise TypeError(f'{key!r} is not a valid flag name.')
             setattr(self, key, value)
 
     @classmethod
-    def all(cls):
+    def all(cls: Type[MemberCacheFlags]) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` with everything enabled."""
         bits = max(cls.VALID_FLAGS.values()).bit_length()
         value = (1 << bits) - 1
@@ -845,7 +865,7 @@ class MemberCacheFlags(BaseFlags):
         return self
 
     @classmethod
-    def none(cls):
+    def none(cls: Type[MemberCacheFlags]) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` with everything disabled."""
         self = cls.__new__(cls)
         self.value = self.DEFAULT_VALUE
@@ -888,7 +908,7 @@ class MemberCacheFlags(BaseFlags):
         return 4
 
     @classmethod
-    def from_intents(cls, intents):
+    def from_intents(cls: Type[MemberCacheFlags], intents: Intents) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` based on
         the currently selected :class:`Intents`.
 
@@ -916,7 +936,7 @@ class MemberCacheFlags(BaseFlags):
 
         return self
 
-    def _verify_intents(self, intents):
+    def _verify_intents(self, intents: Intents):
         if self.online and not intents.presences:
             raise ValueError('MemberCacheFlags.online requires Intents.presences enabled')
 

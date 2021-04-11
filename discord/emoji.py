@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -28,6 +26,10 @@ from .asset import Asset
 from . import utils
 from .partial_emoji import _EmojiTag
 from .user import User
+
+__all__ = (
+    'Emoji',
+)
 
 class Emoji(_EmojiTag):
     """Represents a custom emoji.
@@ -109,11 +111,11 @@ class Emoji(_EmojiTag):
 
     def __str__(self):
         if self.animated:
-            return '<a:{0.name}:{0.id}>'.format(self)
-        return "<:{0.name}:{0.id}>".format(self)
+            return f'<a:{self.name}:{self.id}>'
+        return f'<:{self.name}:{self.id}>'
 
     def __repr__(self):
-        return '<Emoji id={0.id} name={0.name!r} animated={0.animated} managed={0.managed}>'.format(self)
+        return f'<Emoji id={self.id} name={self.name!r} animated={self.animated} managed={self.managed}>'
 
     def __eq__(self, other):
         return isinstance(other, _EmojiTag) and self.id == other.id

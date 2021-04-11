@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -191,4 +189,4 @@ class StringView:
 
 
     def __repr__(self):
-        return '<StringView pos: {0.index} prev: {0.previous} end: {0.end} eof: {0.eof}>'.format(self)
+        return f'<StringView pos: {self.index} prev: {self.previous} end: {self.end} eof: {self.eof}>'

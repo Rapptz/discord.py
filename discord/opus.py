@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -34,6 +32,12 @@ import struct
 import sys
 
 from .errors import DiscordException
+
+__all__ = (
+    'Encoder',
+    'OpusError',
+    'OpusNotLoaded',
+)
 
 log = logging.getLogger(__name__)
 
@@ -185,7 +189,7 @@ def _load_default():
             _basedir = os.path.dirname(os.path.abspath(__file__))
             _bitness = struct.calcsize('P') * 8
             _target = 'x64' if _bitness > 32 else 'x86'
-            _filename = os.path.join(_basedir, 'bin', 'libopus-0.{}.dll'.format(_target))
+            _filename = os.path.join(_basedir, 'bin', f'libopus-0.{_target}.dll')
             _lib = libopus_loader(_filename)
         else:
             _lib = libopus_loader(ctypes.util.find_library('opus'))
@@ -276,17 +280,14 @@ class _OpusStruct:
 
     @staticmethod
     def get_opus_version() -> str:
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        if not is_loaded() and not _load_default():
+            raise OpusNotLoaded()
 
         return _lib.opus_get_version_string().decode('utf-8')
 
 class Encoder(_OpusStruct):
     def __init__(self, application=APPLICATION_AUDIO):
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        _OpusStruct.get_opus_version()
 
         self.application = application
         self._state = self._create_state()
@@ -313,14 +314,14 @@ class Encoder(_OpusStruct):
 
     def set_bandwidth(self, req):
         if req not in band_ctl:
-            raise KeyError('%r is not a valid bandwidth setting. Try one of: %s' % (req, ','.join(band_ctl)))
+            raise KeyError(f'{req!r} is not a valid bandwidth setting. Try one of: {",".join(band_ctl)}')
 
         k = band_ctl[req]
         _lib.opus_encoder_ctl(self._state, CTL_SET_BANDWIDTH, k)
 
     def set_signal_type(self, req):
         if req not in signal_ctl:
-            raise KeyError('%r is not a valid signal setting. Try one of: %s' % (req, ','.join(signal_ctl)))
+            raise KeyError(f'{req!r} is not a valid bandwidth setting. Try one of: {",".join(signal_ctl)}')
 
         k = signal_ctl[req]
         _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k)
@@ -342,9 +343,7 @@ class Encoder(_OpusStruct):
 
 class Decoder(_OpusStruct):
     def __init__(self):
-        if not is_loaded():
-            if not _load_default():
-                raise OpusNotLoaded()
+        _OpusStruct.get_opus_version()
 
         self._state = self._create_state()
 

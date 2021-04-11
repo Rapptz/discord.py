@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -27,6 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from .asset import Asset
 from . import utils
 
+__all__ = (
+    'PartialEmoji',
+)
 
 class _EmojiTag:
     __slots__ = ()
@@ -103,11 +104,11 @@ class PartialEmoji(_EmojiTag):
         if self.id is None:
             return self.name
         if self.animated:
-            return '<a:%s:%s>' % (self.name, self.id)
-        return '<:%s:%s>' % (self.name, self.id)
+            return f'<a:{self.name}:{self.id}>'
+        return f'<:{self.name}:{self.id}>'
 
     def __repr__(self):
-        return '<{0.__class__.__name__} animated={0.animated} name={0.name!r} id={0.id}>'.format(self)
+        return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
     def __eq__(self, other):
         if self.is_unicode_emoji():
@@ -134,7 +135,7 @@ class PartialEmoji(_EmojiTag):
     def _as_reaction(self):
         if self.id is None:
             return self.name
-        return '%s:%s' % (self.name, self.id)
+        return f'{self.name}:{self.id}'
 
     @property
     def created_at(self):

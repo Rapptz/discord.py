@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -26,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
+from typing import List, TYPE_CHECKING
 
 from . import utils
 from .role import Role
@@ -46,6 +45,14 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+__all__ = (
+    'Guild',
+)
+
+if TYPE_CHECKING:
+    from .types.guild import (
+        Ban as BanPayload
+    )
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -205,15 +212,18 @@ class Guild(Hashable):
         self._members.pop(member.id, None)
 
     def __str__(self):
-        return self.name
+        return self.name or ''
 
     def __repr__(self):
         attrs = (
-            'id', 'name', 'shard_id', 'chunked'
+            ('id', self.id),
+            ('name', self.name),
+            ('shard_id', self.shard_id),
+            ('chunked', self.chunked),
+            ('member_count', getattr(self, '_member_count', None)),
         )
-        resolved = ['%s=%r' % (attr, getattr(self, attr)) for attr in attrs]
-        resolved.append('member_count=%r' % getattr(self, '_member_count', None))
-        return '<Guild %s>' % ' '.join(resolved)
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<Guild {inner}>'
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -368,6 +378,18 @@ class Guild(Hashable):
         This is sorted by the position and are in UI order from top to bottom.
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
+
+        .. versionadded:: 1.7
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
@@ -823,7 +845,7 @@ class Guild(Hashable):
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
             allow, deny = perm.pair()
             payload = {
@@ -843,6 +865,13 @@ class Guild(Hashable):
             options['rate_limit_per_user'] = options.pop('slowmode_delay')
         except KeyError:
             pass
+
+        try:
+            rtc_region = options.pop('rtc_region')
+        except KeyError:
+            pass
+        else:
+            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
 
         parent_id = category.id if category else None
         return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
@@ -945,6 +974,11 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 1.7
 
         Raises
         ------
@@ -962,6 +996,38 @@ class Guild(Hashable):
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
+    async def create_stage_channel(self, name, *, topic=None, category=None, overwrites=None, reason=None, position=None):
+        """|coro|
+
+        This is similar to :meth:`create_text_channel` except makes a :class:`StageChannel` instead.
+
+        .. note::
+
+            The ``slowmode_delay`` and ``nsfw`` parameters are not supported in this function.
+
+        .. versionadded:: 1.7
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, category, reason=reason, position=position, topic=topic)
+        channel = StageChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
@@ -1261,9 +1327,7 @@ class Guild(Hashable):
         return [convert(d) for d in data]
 
     def fetch_members(self, *, limit=1000, after=None):
-        """|coro|
-
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
         .. note::
@@ -1281,7 +1345,8 @@ class Guild(Hashable):
             Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------
@@ -1370,7 +1435,7 @@ class Guild(Hashable):
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
-        data = await self._state.http.get_ban(user.id, self.id)
+        data: BanPayload = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
             reason=data['reason']
@@ -1397,7 +1462,7 @@ class Guild(Hashable):
             A list of :class:`BanEntry` objects.
         """
 
-        data = await self._state.http.get_bans(self.id)
+        data: List[BanPayload] = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']),
                          reason=e['reason'])
                 for e in data]
@@ -1453,13 +1518,36 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]
 
         data = await self._state.http.prune_members(self.id, days, compute_prune_count=compute_prune_count, roles=roles, reason=reason)
         return data['pruned']
+
+    async def templates(self):
+        """|coro|
+
+        Gets the list of templates from this guild.
+
+        Requires :attr:`~.Permissions.manage_guild` permissions.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the templates.
+
+        Returns
+        --------
+        List[:class:`Template`]
+            The templates for this guild.
+        """
+        from .template import Template
+        data = await self._state.http.guild_templates(self.id)
+        return [Template(data=d, state=self._state) for d in data]
 
     async def webhooks(self):
         """|coro|
@@ -1483,7 +1571,7 @@ class Guild(Hashable):
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def estimate_pruned_members(self, *, days):
+    async def estimate_pruned_members(self, *, days, roles=None):
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -1494,6 +1582,11 @@ class Guild(Hashable):
         -----------
         days: :class:`int`
             The number of days before counting as inactive.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the estimate. If a member
+            has a role that is not specified, they'll be excluded.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
@@ -1511,12 +1604,15 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
-        data = await self._state.http.estimate_pruned_members(self.id, days)
+        if roles:
+            roles = [str(role.id) for role in roles]
+
+        data = await self._state.http.estimate_pruned_members(self.id, days, roles)
         return data['pruned']
 
-    async def invites(self):
+    async def invites(self) -> List[Invite]:
         """|coro|
 
         Returns a list of all active instant invites from the guild.
@@ -1546,6 +1642,36 @@ class Guild(Hashable):
             result.append(Invite(state=self._state, data=invite))
 
         return result
+
+    async def create_template(self, *, name, description=None):
+        """|coro|
+
+        Creates a template for the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. versionadded:: 1.7
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the template.
+        description: Optional[:class:`str`]
+            The description of the template.
+        """
+        from .template import Template
+
+        payload = {
+            'name': name
+        }
+
+        if description:
+            payload['description'] = description
+
+        data = await self._state.http.create_template(self.id, payload)
+
+        return Template(state=self._state, data=data)
 
     async def create_integration(self, *, type, id):
         """|coro|
@@ -1726,7 +1852,7 @@ class Guild(Hashable):
         You must have the :attr:`~Permissions.manage_roles` permission to
         do this.
 
-        ..versionchanged:: 1.6
+        .. versionchanged:: 1.6
             Can now pass ``int`` to ``colour`` keyword-only parameter.
 
         Parameters
@@ -1781,7 +1907,7 @@ class Guild(Hashable):
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         for key in fields:
             if key not in valid_keys:
-                raise InvalidArgument('%r is not a valid field.' % key)
+                raise InvalidArgument(f'{key!r} is not a valid field.')
 
         data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
@@ -1936,7 +2062,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self):
+    async def vanity_invite(self) -> Invite:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -1974,26 +2100,6 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
-    def ack(self):
-        """|coro|
-
-        Marks every message in this guild as read.
-
-        The user must not be a bot user.
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_guild(self.id)
-
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
         """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
@@ -2005,17 +2111,17 @@ class Guild(Hashable):
         Getting the first 100 entries: ::
 
             async for entry in guild.audit_logs(limit=100):
-                print('{0.user} did {0.action} to {0.target}'.format(entry))
+                print(f'{entry.user} did {entry.action} to {entry.target}')
 
         Getting entries for a specific action: ::
 
             async for entry in guild.audit_logs(action=discord.AuditLogAction.ban):
-                print('{0.user} banned {0.target}'.format(entry))
+                print(f'{entry.user} banned {entry.target}')
 
         Getting entries made by a specific user: ::
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
-            await channel.send('I made {} moderation actions.'.format(len(entries)))
+            await channel.send(f'I made {len(entries)} moderation actions.')
 
         Parameters
         -----------
@@ -2023,10 +2129,12 @@ class Guild(Hashable):
             The number of entries to retrieve. If ``None`` retrieve all entries.
         before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries before this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries after this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         oldest_first: :class:`bool`
             If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.
@@ -2166,6 +2274,9 @@ class Guild(Hashable):
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
+
+        if user_ids is not None and not user_ids:
+            raise ValueError('user_ids must contain at least 1 value')
 
         limit = min(100, limit or 5)
         return await self._state.query_members(self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache)

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -23,6 +21,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
+__all__ = (
+    'DiscordException',
+    'ClientException',
+    'NoMoreItems',
+    'GatewayNotFound',
+    'HTTPException',
+    'Forbidden',
+    'NotFound',
+    'DiscordServerError',
+    'InvalidData',
+    'InvalidArgument',
+    'LoginFailure',
+    'ConnectionClosed',
+    'PrivilegedIntentsRequired',
+)
 
 class DiscordException(Exception):
     """Base exception class for discord.py
@@ -48,7 +62,7 @@ class GatewayNotFound(DiscordException):
     for the :class:`Client` websocket is not found."""
     def __init__(self):
         message = 'The gateway to connect to discord was not found.'
-        super(GatewayNotFound, self).__init__(message)
+        super().__init__(message)
 
 def flatten_error_dict(d, key=''):
     items = []
@@ -104,7 +118,7 @@ class HTTPException(DiscordException):
 
         fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
-            fmt = fmt + ': {2}'
+            fmt += ': {2}'
 
         super().__init__(fmt.format(self.response, self.code, self.text))
 
@@ -174,7 +188,7 @@ class ConnectionClosed(ClientException):
         # aiohttp doesn't seem to consistently provide close reason
         self.reason = ''
         self.shard_id = shard_id
-        super().__init__('Shard ID %s WebSocket closed with %s' % (self.shard_id, self.code))
+        super().__init__(f'Shard ID {self.shard_id} WebSocket closed with {self.code}')
 
 class PrivilegedIntentsRequired(ClientException):
     """Exception that's thrown when the gateway is requesting privileged intents
