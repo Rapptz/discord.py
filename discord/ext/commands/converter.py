@@ -818,6 +818,10 @@ class Greedy(List[T]):
     def __init__(self, *, converter: T):
         self.converter = converter
 
+    def __repr__(self):
+        converter = getattr(self.converter, '__name__', repr(self.converter))
+        return f'Greedy[{converter}]'
+
     def __class_getitem__(cls, params: Union[Tuple[T], T]) -> Greedy[T]:
         if not isinstance(params, tuple):
             params = (params,)
