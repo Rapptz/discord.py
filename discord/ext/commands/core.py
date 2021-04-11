@@ -29,7 +29,7 @@ from typing import (
     Iterable,
     Literal,
     Tuple,
-    Union
+    Union,
 )
 import asyncio
 import functools
@@ -84,6 +84,10 @@ def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
             params.append(p)
     return tuple(params)
 
+def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
+    none_cls = type(None)
+    return tuple(p for p in parameters if p is not none_cls) + (none_cls,)
+
 def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any] = {}, *, implicit_str=True):
     if isinstance(tp, ForwardRef):
         tp = tp.__forward_arg__
@@ -100,6 +104,12 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
     if hasattr(tp, '__args__'):
         implicit_str = True
         args = tp.__args__
+        if tp.__origin__ is Union:
+            try:
+                if args.index(type(None)) != len(args) - 1:
+                    args = normalise_optional_params(tp.__args__)
+            except ValueError:
+                pass
         if tp.__origin__ is Literal:
             if not PY_310:
                 args = flatten_literal_params(tp.__args__)
@@ -1098,9 +1108,9 @@ class Command(_BaseCommand):
             if not greedy and origin is Union:
                 none_cls = type(None)
                 union_args = annotation.__args__
-                optional = none_cls in union_args
+                optional = union_args[-1] is none_cls
                 if optional:
-                    annotation = union_args[not union_args.index(none_cls)]
+                    annotation = union_args[0]
                     origin = getattr(annotation, '__origin__', None)
 
             if origin is Literal:
