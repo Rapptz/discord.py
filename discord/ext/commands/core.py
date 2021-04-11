@@ -1109,7 +1109,7 @@ class Command(_BaseCommand):
                 none_cls = type(None)
                 union_args = annotation.__args__
                 optional = union_args[-1] is none_cls
-                if optional:
+                if len(union_args) == 2 and optional:
                     annotation = union_args[0]
                     origin = getattr(annotation, '__origin__', None)
 
