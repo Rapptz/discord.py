@@ -70,6 +70,24 @@ class IntegrationAccount:
 
 
 class Integration:
+    """Represents a guild integration.
+
+    .. versionadded:: 1.4
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The integration ID.
+    name: :class:`str`
+        The integration name.
+    guild: :class:`Guild`
+        The guild of the integration.
+    type: :class:`str`
+        The integration type (i.e. Twitch).
+    enabled: :class:`bool`
+        Whether the integration is currently enabled.
+    """
+
     __slots__ = ('guild', 'id', '_state', 'type', 'name', 'account', 'user', 'enabled')
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
