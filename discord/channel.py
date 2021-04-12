@@ -1195,8 +1195,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipient: :class:`User`
+    recipient: Optional[:class:`User`]
         The user you are participating with in the direct message channel.
+        If this channel is received through the gateway, the recipient information
+        may not be always available.
     me: :class:`ClientUser`
         The user presenting yourself.
     id: :class:`int`
@@ -1215,10 +1217,25 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     def __str__(self):
-        return f'Direct Message with {self.recipient}'
+        if self.recipient:
+            return f'Direct Message with {self.recipient}'
+        return 'Direct Message with Unknown User'
 
     def __repr__(self):
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
+
+    @classmethod
+    def _from_message(cls, state, channel_id, payload):
+        # The MESSAGE_CREATE payload no longer gives bots
+        # an appropriate CHANNEL_CREATE.
+        # However, it has enough data for us to pretend since
+        # bots can no longer be in a group DM.
+        self = cls.__new__(cls)
+        self._state = state
+        self.id = channel_id
+        self.recipient = None
+        self.me = state.user
+        return self
 
     @property
     def type(self):

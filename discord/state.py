@@ -338,10 +338,10 @@ class ConnectionState:
 
         if len(self._private_channels) > 128:
             _, to_remove = self._private_channels.popitem(last=False)
-            if isinstance(to_remove, DMChannel):
+            if isinstance(to_remove, DMChannel) and to_remove.recipient:
                 self._private_channels_by_user.pop(to_remove.recipient.id, None)
 
-        if isinstance(channel, DMChannel):
+        if isinstance(channel, DMChannel) and channel.recipient:
             self._private_channels_by_user[channel.recipient.id] = channel
 
     def add_dm_channel(self, data):
@@ -371,7 +371,7 @@ class ConnectionState:
         try:
             guild = self._get_guild(int(data['guild_id']))
         except KeyError:
-            channel = self.get_channel(channel_id)
+            channel = DMChannel._from_message(self, channel_id, data)
             guild = None
         else:
             channel = guild and guild.get_channel(channel_id)
