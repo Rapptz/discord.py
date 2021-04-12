@@ -452,8 +452,9 @@ class GuildChannel(Protocol):
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
-    def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`~discord.Member`.
+    def permissions_for(self, obj, /):
+        """Handles permission resolution for the :class:`~discord.Member`
+        or :class:`~discord.Role`.
 
         This function takes into consideration the following cases:
 
@@ -462,15 +463,27 @@ class GuildChannel(Protocol):
         - Channel overrides
         - Member overrides
 
+        If a :class:`~discord.Role` is passed, then it checks the permissions
+        someone with that role would have, which is essentially:
+
+        - The default role permissions
+        - The default role permission overwrites
+        - The permission overwrites of the role used as a parameter
+
+        .. versionchanged:: 2.0
+            The object passed in can now be a role object.
+
         Parameters
         ----------
-        member: :class:`~discord.Member`
-            The member to resolve permissions for.
+        obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]
+            The object to resolve permissions for. This could be either
+            a member or a role. If it's a role then member overwrites
+            are not computed.
 
         Returns
         -------
         :class:`~discord.Permissions`
-            The resolved permissions for the member.
+            The resolved permissions for the member or role.
         """
 
         # The current cases can be explained as:
@@ -487,12 +500,35 @@ class GuildChannel(Protocol):
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if self.guild.owner_id == member.id:
+        if self.guild.owner_id == obj.id:
             return Permissions.all()
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
-        roles = member._roles
+
+        # Handle the role case first
+        if isinstance(obj, Role):
+            if obj.is_default():
+                overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
+                if overwrite is not None:
+                    base.handle_overwrite(overwrite.allow, overwrite.deny)
+                return base
+
+            denies = 0
+            allows = 0
+            guild_id = self.guild.id
+            for overwrite in self._overwrites:
+                if not overwrite.is_role():
+                    continue
+
+                if overwrite.id in (obj.id, guild_id):
+                    denies |= overwrite.deny
+                    allows |= overwrite.allow
+
+            base.handle_overwrite(allows, denies)
+            return base
+
+        roles = obj._roles
         get_role = self.guild.get_role
 
         # Apply guild roles that the member has.
@@ -530,7 +566,7 @@ class GuildChannel(Protocol):
 
         # Apply member specific permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.is_member() and overwrite.id == member.id:
+            if overwrite.is_member() and overwrite.id == obj.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
 

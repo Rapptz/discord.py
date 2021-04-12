@@ -461,27 +461,6 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         return any(self._roles.has(role.id) for role in message.role_mentions)
 
-    def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-
-        Returns
-        -------
-        :class:`Permissions`
-            The resolved permissions for the member.
-        """
-        return channel.permissions_for(self)
-
     @property
     def top_role(self):
         """:class:`Role`: Returns the member's highest role.
@@ -502,8 +481,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
-        calculation, please use either :meth:`permissions_in` or
-        :meth:`abc.GuildChannel.permissions_for`.
+        calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
         This does take into consideration guild ownership and the
         administrator implication.
