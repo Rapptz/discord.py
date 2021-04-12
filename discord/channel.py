@@ -1225,7 +1225,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @classmethod
-    def _from_message(cls, state, channel_id, payload):
+    def _from_message(cls, state, channel_id):
         # The MESSAGE_CREATE payload no longer gives bots
         # an appropriate CHANNEL_CREATE.
         # However, it has enough data for us to pretend since

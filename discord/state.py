@@ -371,7 +371,7 @@ class ConnectionState:
         try:
             guild = self._get_guild(int(data['guild_id']))
         except KeyError:
-            channel = DMChannel._from_message(self, channel_id, data)
+            channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
             channel = guild and guild.get_channel(channel_id)
