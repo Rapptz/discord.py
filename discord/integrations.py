@@ -40,7 +40,8 @@ __all__ = (
 if TYPE_CHECKING:
     from .types.integration import (
         IntegrationAccount as IntegrationAccountPayload,
-        Integration as IntegrationPayload, IntegrationType,
+        Integration as IntegrationPayload,
+        IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload
 )
     from .guild import Guild
@@ -86,9 +87,22 @@ class Integration:
         The integration type (i.e. Twitch).
     enabled: :class:`bool`
         Whether the integration is currently enabled.
+    account: :class:`IntegrationAccount`
+        The account linked to this integration.
+    user: :class:`User`
+        The user that added this integration.
     """
 
-    __slots__ = ('guild', 'id', '_state', 'type', 'name', 'account', 'user', 'enabled')
+    __slots__ = (
+        'guild',
+        'id',
+        '_state',
+        'type',
+        'name',
+        'account',
+        'user',
+        'enabled'
+    )
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
         self.guild = guild
@@ -157,15 +171,7 @@ class StreamIntegration(Integration):
         An aware UTC datetime representing when the integration was last synced.
     """
 
-    __slots__ = (
-        'guild',
-        'id',
-        '_state',
-        'type',
-        'name',
-        'account',
-        'user',
-        'enabled',
+    __slots__ = Integration.__slots__ + (
         'revoked',
         'expire_behaviour',
         'expire_behavior',
@@ -331,17 +337,7 @@ class BotIntegration(Integration):
     application: :class:`IntegrationApplication`
     """
 
-    __slots__ = (
-        'guild',
-        'id',
-        '_state',
-        'type',
-        'name',
-        'account',
-        'user',
-        'enabled',
-        'application'
-    )
+    __slots__ = Integration.__slots__ + ('application',)
 
     def _from_data(self, data: IntegrationPayload) -> None:
         super()._from_data(data)
