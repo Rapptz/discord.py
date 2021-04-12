@@ -1226,10 +1226,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     @classmethod
     def _from_message(cls, state, channel_id):
-        # The MESSAGE_CREATE payload no longer gives bots
-        # an appropriate CHANNEL_CREATE.
-        # However, it has enough data for us to pretend since
-        # bots can no longer be in a group DM.
         self = cls.__new__(cls)
         self._state = state
         self.id = channel_id
