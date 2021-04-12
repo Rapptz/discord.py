@@ -178,22 +178,6 @@ class BaseUser(_BaseUser):
         """:class:`str`: Returns a string that allows you to mention the given user."""
         return f'<@{self.id}>'
 
-    def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-        """
-        return channel.permissions_for(self)
-
     @property
     def created_at(self):
         """:class:`datetime.datetime`: Returns the user's creation time in UTC.
