@@ -896,7 +896,7 @@ class HTTPClient:
         return self.request(r, json=payload, reason=reason)
 
     def get_all_integrations(self, guild_id):
-        r = Route('GET', '/guilds/{guild_id}/integrations?include_applications=True', guild_id=guild_id)
+        r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
 
         return self.request(r)
 
