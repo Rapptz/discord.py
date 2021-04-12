@@ -40,7 +40,7 @@ import warnings
 from .errors import InvalidArgument
 
 __all__ = (
-    'oauth_uri',
+    'oauth_url',
     'snowflake_time',
     'time_snowflake',
     'find',
