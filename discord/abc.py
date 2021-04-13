@@ -189,6 +189,7 @@ class GuildChannel:
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.CategoryChannel`
+    - :class:`~discord.StageChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 
