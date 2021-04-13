@@ -170,7 +170,7 @@ class Guild(Hashable):
         .. versionadded:: 1.3
 
     nsfw: :class:`bool`
-        If the channel is marked as "not safe for work".
+        If the guild is marked as "not safe for work".
 
         .. versionadded:: 2.0
     """
