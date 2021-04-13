@@ -179,7 +179,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', 'discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id')
+                 '_public_updates_channel_id', 'nsfw')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -314,6 +314,7 @@ class Guild(Hashable):
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self.nsfw = guild.get('nsfw')
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
@@ -788,6 +789,10 @@ class Guild(Hashable):
     def created_at(self):
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    def is_nsfw(self):
+        """:class:`bool`: Checks if the guild is NSFW."""
+        return self.nsfw
 
     def get_member_named(self, name):
         """Returns the first member found that matches the name provided.

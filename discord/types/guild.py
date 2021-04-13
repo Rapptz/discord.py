@@ -119,6 +119,7 @@ class Guild(_BaseGuildPreview, _GuildOptional):
     explicit_content_filter: ExplicitContentFilterLevel
     roles: List[Role]
     mfa_level: MFALevel
+    nsfw: bool
     application_id: Optional[Snowflake]
     system_channel_id: Optional[Snowflake]
     system_channel_flags: int
