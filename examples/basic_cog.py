@@ -55,7 +55,6 @@ class Miscellaneous(commands.Cog, name='Misc'):
         await ctx.send("Hello am I an example bot!")
 
     # A command group within a Cog.
-    # The `invoke_without_command` flag for the group allows us to use the parent of the group as a command.
     @commands.group(invoke_without_command=True)
     async def afk(self, ctx, *, reason: str):
         """Set your afk status"""
