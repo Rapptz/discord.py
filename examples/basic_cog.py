@@ -37,7 +37,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # This lets us access the bot parameter throughout our methods.
         self.bot = bot
         # You can also add other attributes to the class.
-        self.afk = {}
+        self.afk_reasons = {}
 
     # Cogs also have the capability to define checks that apply to every command in the Cog.
     # They work similarly to regular checks elsewhere in the framework.
@@ -58,29 +58,28 @@ class Miscellaneous(commands.Cog, name='Misc'):
     # The `invoke_without_command` flag for the group allows us to use the parent of the group as a command.
     @commands.group(invoke_without_command=True)
     async def afk(self, ctx, *, reason: str):
-        """
-        Set your afk status
-        """
-        u_id = ctx.author.id
-        # Simply check if they exist in our afk dictionary aldready.
-        # If they exist then tell them they are afk, or let them set a new afk status.
-        rating = self.afk.get(u_id)
-        if not rating:
-            self.afk[u_id] = reason
-            await ctx.send(f"{ctx.author.mention} I have set your afk status as `{reason}`.")
+        """Set your afk status"""
+        user_id = ctx.author.id
+        if user_id not in self.afk_reasons:
+            self.afk_reasons[user_id] = reason
+            mentions = discord.AllowedMentions.none()
+            await ctx.send(f"I've set your afk status to `{reason}`", allowed_mentions=mentions)
         else:
-            await ctx.send(f"{ctx.author.mdention} you are aldready afk.")
+            await ctx.send("You are already afk.")
 
     # Subcommand for the group
     @afk.command(name='user')
-    async def _user(self, ctx, *, user: discord.User = None):
+    async def _user(self, ctx, *, user: discord.User):
         """Check a user's afk status"""
-        if not user:
-            return await ctx.send("I need a user to check the afk status")
-        afk = self.afk.get(user.id)
+        # If a user isn't found an error will be thrown Handle that in an error handler.
+        # If the user input isn't present `MissingRequiredArgument` will be thrown
+        # If a value that cannot be parsed to a member is present, `UserNotFound` will be thrown.
+        # Look at the error handling example
+        mentions = discord.AllowedMentions.none()
+        afk = self.afk_reasons.get(user.id)
         if afk:
-            return await ctx.send(f"{user.name} is afk with reason `{afk}`")
-        return await ctx.send(f'{user.name} is currently not afk')
+            return await ctx.send(f"{user.name} is afk with reason `{afk}`", allowed_mentions=mentions)
+        return await ctx.send(f'{user.name} is currently not afk', allowed_mentions=mentions)
 
     # Listening to events within a cog requires the `commands.Cog.listener` decorator.
     # Note that `self` has to be passed for these as well.
@@ -91,24 +90,24 @@ class Miscellaneous(commands.Cog, name='Misc'):
             return
         # Ensure that the message wasn't the afk command
         ctx = await self.bot.get_context(message)
-        if ctx.invoked_with == "afk":
+        if ctx.valid:
             return
 
         # If an afk user has sent a message, remove their afk
-        m_id = message.author.id
-        afk_status = self.afk.get(m_id)
+        message_id = message.author.id
+        afk_status = self.afk_reasons.get(message_id)
         if afk_status:
             await message.channel.send(f"Welcome back {message.author.mention}! I have removed your afk status.")
-            self.afk.pop(m_id)
+            self.afk_reasons.pop(message_id)
             return
 
         # If an afk user is mentioned in a message, let the author of the message know they are afk
-        mentions = [user.id for user in message.mentions]
-        common = [afk_user for afk_user in self.afk.keys()
-                  if afk_user in mentions]
-        if len(common) != 0:
-            akf_users = ",".join(str(self.bot.get_user(c)) for c in common)
-            await message.channel.send(f"{akf_users} {'is' if len(common) == 1 else 'are'} afk.")
+        mentions = {user.id: user for user in message.mentions}
+        mentioned_afk_users = [user_id for user_id in self.afk_reasons.keys() if user_id in mentions]
+        if mentioned_afk_users:
+            plural_or_singular = "is" if len(mentioned_afk_users) == 1 else "are"
+            akf_users = ",".join(str(self.bot.get_user(c)) for c in mentioned_afk_users)
+            await message.channel.send(f"{akf_users} {plural_or_singular} afk.")
 
 
 # Cogs have to be explicitly added.
