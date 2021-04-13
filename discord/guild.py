@@ -95,7 +95,7 @@ class Guild(Hashable):
         The guild owner's ID. Use :attr:`Guild.owner` instead.
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
-        reliability of other attributes outside of :meth:`Guild.id` is slim and they might
+        reliability of other attributes outside of :attr:`Guild.id` is slim and they might
         all be ``None``. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
