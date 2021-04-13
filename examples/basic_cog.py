@@ -76,10 +76,11 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # If a value that cannot be parsed to a member is present, `UserNotFound` will be thrown.
         # Look at the error handling example
         mentions = discord.AllowedMentions.none()
-        afk = self.afk_reasons.get(user.id)
-        if afk:
+        try:
+            afk = self.afk_reasons[user.id]
             return await ctx.send(f"{user.name} is afk with reason `{afk}`", allowed_mentions=mentions)
-        return await ctx.send(f'{user.name} is currently not afk', allowed_mentions=mentions)
+        except KeyError:
+            return await ctx.send(f'{user.name} is currently not afk', allowed_mentions=mentions)
 
     # Listening to events within a cog requires the `commands.Cog.listener` decorator.
     # Note that `self` has to be passed for these as well.
