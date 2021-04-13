@@ -168,6 +168,11 @@ class Guild(Hashable):
         The guild's discovery splash.
 
         .. versionadded:: 1.3
+
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work".
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -314,7 +319,7 @@ class Guild(Hashable):
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
-        self.nsfw = guild.get('nsfw')
+        self.nsfw = guild.get('nsfw', False)
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
@@ -789,10 +794,6 @@ class Guild(Hashable):
     def created_at(self):
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
-
-    def is_nsfw(self):
-        """:class:`bool`: Checks if the guild is NSFW."""
-        return self.nsfw
 
     def get_member_named(self, name):
         """Returns the first member found that matches the name provided.
