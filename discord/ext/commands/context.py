@@ -212,11 +212,7 @@ class Context(discord.abc.Messageable):
 
     @property
     def clean_prefix(self):
-        """clean_prefix: :class:`str`
-        The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
-        
-        .. versionadded:: 2.0
-        """
+        """:class:`str`The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
         user = self.context.guild.me if self.context.guild else self.context.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
