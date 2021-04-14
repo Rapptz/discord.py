@@ -785,11 +785,17 @@ class HTTPClient:
         route = Route('DELETE', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
         return self.request(route)
 
-    def get_archived_threads(self, channel_id: int, before=None, limit: int = 50, public: bool = True):
-        if public:
-            route = Route('GET', '/channels/{channel_id}/threads/archived/public', channel_id=channel_id)
-        else:
-            route = Route('GET', '/channels/{channel_id}/threads/archived/private', channel_id=channel_id)
+    def get_public_archived_threads(self, channel_id: int, before=None, limit: int = 50):
+        route = Route('GET', '/channels/{channel_id}/threads/archived/public', channel_id=channel_id)
+
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
+
+    def get_private_archived_threads(self, channel_id: int, before=None, limit: int = 50):
+        route = Route('GET', '/channels/{channel_id}/threads/archived/private', channel_id=channel_id)
 
         params = {}
         if before:
