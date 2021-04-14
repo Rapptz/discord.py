@@ -168,6 +168,11 @@ class Guild(Hashable):
         The guild's discovery splash.
 
         .. versionadded:: 1.3
+
+    nsfw: :class:`bool`
+        If the guild is marked as "not safe for work".
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
@@ -179,7 +184,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', 'discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id')
+                 '_public_updates_channel_id', 'nsfw')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -314,6 +319,7 @@ class Guild(Hashable):
         self.discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self.nsfw = guild.get('nsfw', False)
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
