@@ -1193,6 +1193,8 @@ class HTTPClient:
         )
         return self.request(r)
 
+    # Congratulations hunter, you found the secret message!
+
     def edit_original_interaction_response(
         self,
         application_id,
