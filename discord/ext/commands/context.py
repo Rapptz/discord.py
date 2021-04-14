@@ -54,10 +54,6 @@ class Context(discord.abc.Messageable):
         :func:`on_command_error` event then this dict could be incomplete.
     prefix: :class:`str`
         The prefix that was used to invoke the command.
-    clean_prefix: :class:`str`
-        The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
-        
-        .. versionadded:: 2.0
     command: :class:`Command`
         The command that is being invoked currently.
     invoked_with: :class:`str`
@@ -219,7 +215,7 @@ class Context(discord.abc.Messageable):
         # for this common use case rather than waste performance for the
         # odd one.
         pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.context.prefix)
+        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.prefix)
 
     @property
     def cog(self):
