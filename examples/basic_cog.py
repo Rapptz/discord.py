@@ -51,7 +51,7 @@ class Miscellaneous(commands.Cog, name="Misc"):
     # They must also pass a `self` parameter since it"s within a class.
     @commands.command()
     async def hello(self, ctx):
-        """Adds two numbers together"""
+        """Have the bot greet you."""
         await ctx.send("Hello am I an example bot!")
 
     # A command group within a Cog.
@@ -73,7 +73,7 @@ class Miscellaneous(commands.Cog, name="Misc"):
         # If a user isn"t found an error will be thrown Handle that in an error handler.
         # If the user input isn"t present `MissingRequiredArgument` will be thrown
         # If a value that cannot be parsed to a member is present, `UserNotFound` will be thrown.
-        # Look at the error handling example
+        # See the error handling example for how it will be handled.
         mentions = discord.AllowedMentions.none()
         try:
             reason = self.afk_reasons[user.id]
