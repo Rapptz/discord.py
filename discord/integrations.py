@@ -34,6 +34,7 @@ from .enums import try_enum, ExpireBehaviour
 
 __all__ = (
     'IntegrationAccount',
+    'IntegrationApplication',
     'Integration',
     'StreamIntegration',
     'BotIntegration',
@@ -46,7 +47,7 @@ if TYPE_CHECKING:
         Integration as IntegrationPayload,
         IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload
-)
+    )
     from .guild import Guild
 
 
@@ -341,6 +342,7 @@ class BotIntegration(Integration):
     account: :class:`IntegrationAccount`
         The integration account information.
     application: :class:`IntegrationApplication`
+        The application tied to this integration.
     """
 
     __slots__ = Integration.__slots__ + ('application',)
