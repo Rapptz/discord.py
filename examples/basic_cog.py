@@ -2,11 +2,11 @@ import discord
 from discord.ext import commands
 import random
 
-description = '''An example bot to showcase the discord.ext.commands extension
+description = """An example bot to showcase the discord.ext.commands extension
 module.
 There are a number of utility commands being showcased here.
 The example uses cogs to organize the code
-'''
+"""
 
 # The intents chosen are the default intents which allow us to get all but presence and member intents.
 # We use the member intent for the `on_member_join` event.
@@ -14,7 +14,7 @@ The example uses cogs to organize the code
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix='?', description=description, intents=intents)
+bot = commands.Bot(command_prefix="?", description=description, intents=intents)
 
 
 # This defines a class that contains commands in a "Miscellaneous" category.
@@ -26,7 +26,7 @@ bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 # Read more here: https://discordpy.readthedocs.io/en/latest/ext/commands/cogs.html.
 
 
-class Miscellaneous(commands.Cog, name='Misc'):
+class Miscellaneous(commands.Cog, name="Misc"):
     """
     A simple Miscellaneous cog.
     """
@@ -48,7 +48,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
 
     # Commands within a Cog are defined using the commands.command decorator
     # instead of the bot.command decorator.
-    # They must also pass a `self` parameter since it's within a class.
+    # They must also pass a `self` parameter since it"s within a class.
     @commands.command()
     async def hello(self, ctx):
         """Adds two numbers together"""
@@ -67,11 +67,11 @@ class Miscellaneous(commands.Cog, name='Misc'):
             await ctx.send("You are already afk.")
 
     # Subcommand for the group
-    @afk.command(name='user')
+    @afk.command(name="user")
     async def _user(self, ctx, *, user: discord.User):
-        """Check a user's afk status"""
-        # If a user isn't found an error will be thrown Handle that in an error handler.
-        # If the user input isn't present `MissingRequiredArgument` will be thrown
+        """Check a user"s afk status"""
+        # If a user isn"t found an error will be thrown Handle that in an error handler.
+        # If the user input isn"t present `MissingRequiredArgument` will be thrown
         # If a value that cannot be parsed to a member is present, `UserNotFound` will be thrown.
         # Look at the error handling example
         mentions = discord.AllowedMentions.none()
@@ -79,21 +79,21 @@ class Miscellaneous(commands.Cog, name='Misc'):
             reason = self.afk_reasons[user.id]
             return await ctx.send(f"{user.name} is afk with reason `{reason}`", allowed_mentions=mentions)
         except KeyError:
-            return await ctx.send(f'{user.name} is currently not afk', allowed_mentions=mentions)
+            return await ctx.send(f"{user.name} is currently not afk", allowed_mentions=mentions)
 
     # Listening to events within a cog requires the `commands.Cog.listener` decorator.
     # Note that `self` has to be passed for these as well.
     @commands.Cog.listener()
     async def on_message(self, message):
-        # Don't want to reply to bots
+        # Don"t want to reply to bots
         if message.author.bot:
             return
-        # Ensure that the message wasn't the afk command
+        # Ensure that the message wasn"t the afk command:
         ctx = await self.bot.get_context(message)
         if ctx.valid:
             return
 
-        # If an afk user has sent a message, remove their afk
+        # If an afk user has sent a message, remove their afk:
         user_id = message.author.id
         if user_id in self.afk_reasons:
             await message.channel.send(f"Welcome back {message.author.mention}! I have removed your afk status.")
@@ -110,4 +110,4 @@ class Miscellaneous(commands.Cog, name='Misc'):
 
 # Cogs have to be explicitly added.
 bot.add_cog(Miscellaneous(bot))
-bot.run('token')
+bot.run("token")
