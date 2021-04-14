@@ -213,7 +213,7 @@ class Context(discord.abc.Messageable):
     @property
     def clean_prefix(self):
         """:class:`str`The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
-        user = self.context.guild.me if self.context.guild else self.context.bot.user
+        user = self.guild.me if self.guild else self.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
