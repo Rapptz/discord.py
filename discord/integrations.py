@@ -35,6 +35,8 @@ from .enums import try_enum, ExpireBehaviour
 __all__ = (
     'IntegrationAccount',
     'Integration',
+    'StreamIntegration',
+    'BotIntegration',
     '_integration_factory'
 )
 
