@@ -1309,7 +1309,7 @@ class Guild(Hashable):
         def convert(d):
             factory, ch_type = _channel_factory(d['type'])
             if factory is None:
-                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(d))
 
             channel = factory(guild=self, state=self._state, data=d)
             return channel
