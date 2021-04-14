@@ -35,6 +35,7 @@ from .enums import try_enum, ExpireBehaviour
 __all__ = (
     'IntegrationAccount',
     'Integration',
+    '_integration_factory'
 )
 
 if TYPE_CHECKING:
@@ -108,6 +109,9 @@ class Integration:
         self.guild = guild
         self._state = guild._state
         self._from_data(data)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
 
     def _from_data(self, data: IntegrationPayload) -> None:
         self.id: int = _get_as_snowflake(data, 'id')
@@ -342,3 +346,12 @@ class BotIntegration(Integration):
     def _from_data(self, data: IntegrationPayload) -> None:
         super()._from_data(data)
         self.application = IntegrationApplication(data=data['application'], state=self._state)
+
+
+def _integration_factory(value):
+    if value == 'discord':
+        return BotIntegration, value
+    elif value in {'twitch', 'youtube'}:
+        return StreamIntegration, value
+    else:
+        return None, value
