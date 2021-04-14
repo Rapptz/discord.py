@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import PartialUser
 from .snowflake import Snowflake
+from .threads import ThreadMetadata, ThreadMember
 from typing import List, Literal, Optional, TypedDict
 
 
@@ -34,7 +35,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 11, 12, 13]
 
 
 class PartialChannel(TypedDict):
@@ -71,8 +72,20 @@ class _StageChannelOptional(PartialChannel, total=False):
     topic: str
 
 
+class _ThreadChannelOptional(PartialChannel, total=False):
+    message_count: int
+    member_count: int
+    thread_metadata: ThreadMetadata
+    member: ThreadMember
+
+
 class GuildChannel(
-    _TextChannelOptional, _VoiceChannelOptional, _CategoryChannelOptional, _StoreChannelOptional, _StageChannelOptional
+    _TextChannelOptional,
+    _VoiceChannelOptional,
+    _CategoryChannelOptional,
+    _StoreChannelOptional,
+    _StageChannelOptional,
+    _ThreadChannelOptional,
 ):
     guild_id: Snowflake
     position: int
