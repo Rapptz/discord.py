@@ -140,7 +140,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b111111111111111111111111111111111)
+        return cls(0b11111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
@@ -161,7 +161,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
         """
-        return cls(0b10110011111101111111111101010001)
+        return cls(0b11010110011111101111111111101010001)
 
     @classmethod
     def general(cls):
@@ -194,7 +194,7 @@ class Permissions(BaseFlags):
            Permission :attr:`read_messages` is no longer part of the text permissions.
            Added :attr:`use_slash_commands` permission.
         """
-        return cls(0b10000000000001111111100001000000)
+        return cls(0b11010000000000001111111100001000000)
 
     @classmethod
     def voice(cls):
@@ -470,6 +470,23 @@ class Permissions(BaseFlags):
         .. versionadded:: 1.7
         """
         return 1 << 32
+
+    @flag_value
+    def use_threads(self):
+        """:class:`bool`: Returns ``True`` if a user can create and participate in public threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 33
+
+    @flag_value
+    def use_private_threads(self):
+        """:class:`bool`: Returns ``True`` if a user can create and participate in private threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 34
+
 
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
