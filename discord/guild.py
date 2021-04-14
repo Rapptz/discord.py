@@ -44,6 +44,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
+from .threads import Thread
 
 __all__ = (
     'Guild',
@@ -174,7 +175,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', '_discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id', 'nsfw')
+                 '_public_updates_channel_id', 'nsfw', '_threads')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -188,6 +189,7 @@ class Guild(Hashable):
         self._channels = {}
         self._members = {}
         self._voice_states = {}
+        self._threads = {}
         self._state = state
         self._from_data(data)
 
@@ -205,6 +207,12 @@ class Guild(Hashable):
 
     def _remove_member(self, member):
         self._members.pop(member.id, None)
+
+    def _add_thread(self, thread):
+        self._threads[thread.id] = thread
+
+    def _remove_thread(self, thread):
+        self._threads.pop(thread.id, None)
 
     def __str__(self):
         return self.name or ''
@@ -347,10 +355,23 @@ class Guild(Hashable):
                 if factory:
                     self._add_channel(factory(guild=self, data=c, state=self._state))
 
+        if 'threads' in data:
+            threads = data['threads']
+            for thread in threads:
+                self._add_thread(Thread(guild=self, data=thread))
+
     @property
     def channels(self):
         """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
         return list(self._channels.values())
+
+    @property
+    def threads(self):
+        """List[:class:`Thread`]: A list of threads that you have permission to view.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._threads.values())
 
     @property
     def large(self):
@@ -470,6 +491,23 @@ class Guild(Hashable):
             The returned channel or ``None`` if not found.
         """
         return self._channels.get(channel_id)
+
+    def get_thread(self, thread_id):
+        """Returns a thread with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        thread_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Thread`]
+            The returned thread or ``None`` if not found.
+        """
+        return self._threads.get(thread_id)
 
     @property
     def system_channel(self):

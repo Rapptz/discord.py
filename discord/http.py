@@ -682,6 +682,8 @@ class HTTPClient:
             'type',
             'rtc_region',
             'video_quality_mode',
+            'archived',
+            'auto_archive_duration',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
@@ -707,6 +709,7 @@ class HTTPClient:
             'rate_limit_per_user',
             'rtc_region',
             'video_quality_mode',
+            'auto_archive_duration',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
 
@@ -714,6 +717,80 @@ class HTTPClient:
 
     def delete_channel(self, channel_id, *, reason=None):
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
+
+    # Thread management
+
+    def start_public_thread(
+        self,
+        channel_id: int,
+        message_id: int,
+        *,
+        name: str,
+        auto_archive_duration: int,
+        type: int,
+    ):
+        payload = {
+            'name': name,
+            'auto_archive_duration': auto_archive_duration,
+            'type': type,
+        }
+
+        route = Route(
+            'POST', '/channels/{channel_id}/messages/{message_id}/threads', channel_id=channel_id, message_id=message_id
+        )
+        return self.request(route, json=payload)
+
+    def start_private_thread(
+        self,
+        channel_id: int,
+        *,
+        name: str,
+        auto_archive_duration: int,
+        type: int,
+    ):
+        payload = {
+            'name': name,
+            'auto_archive_duration': auto_archive_duration,
+            'type': type,
+        }
+
+        route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
+        return self.request(route, json=payload)
+
+    def join_thread(self, channel_id: int):
+        return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
+
+    def add_user_to_thread(self, channel_id: int, user_id: int):
+        return self.request(
+            Route('POST', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
+        )
+
+    def leave_thread(self, channel_id: int):
+        return self.request(Route('DELETE', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
+
+    def remove_user_from_thread(self, channel_id: int, user_id: int):
+        route = Route('DELETE', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
+        return self.request(route)
+
+    def get_archived_threads(self, channel_id: int, before=None, limit: int = 50, public: bool = True):
+        if public:
+            route = Route('GET', '/channels/{channel_id}/threads/archived/public', channel_id=channel_id)
+        else:
+            route = Route('GET', '/channels/{channel_id}/threads/archived/private', channel_id=channel_id)
+
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
+
+    def get_joined_private_archived_threads(self, channel_id, before=None, limit: int = 50):
+        route = Route('GET', '/channels/{channel_id}/users/@me/threads/archived/private', channel_id=channel_id)
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
 
     # Webhook management
 

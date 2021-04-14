@@ -52,6 +52,7 @@ from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
 from .interactions import Interaction
+from .threads import Thread, ThreadMember
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -469,7 +470,7 @@ class ConnectionState:
         self.dispatch('message', message)
         if self._messages is not None:
             self._messages.append(message)
-        if channel and channel.__class__ is TextChannel:
+        if channel and channel.__class__ in (TextChannel, Thread):
             channel.last_message_id = message.id
 
     def parse_message_delete(self, data):
@@ -681,6 +682,44 @@ class ConnectionState:
             self.dispatch('private_channel_pins_update', channel, last_pin)
         else:
             self.dispatch('guild_channel_pins_update', channel, last_pin)
+
+    def parse_thread_create(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread = Thread(guild=guild, data=data)
+        guild._add_thread(thread)
+        self.dispatch('thread_create', thread)
+
+    def parse_thread_update(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread = guild._get_thread(thread_id)
+        if thread is not None:
+            old = copy.copy(thread)
+            thread._update(data)
+            self.dispatch('thread_update', old, thread)
+
+    def parse_thread_delete(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread = guild._get_thread(thread_id)
+        if thread is not None:
+            guild._remove_thread(thread)
+            self.dispatch('thread_delete', thread)
 
     def parse_guild_member_add(self, data):
         guild = self._get_guild(int(data['guild_id']))

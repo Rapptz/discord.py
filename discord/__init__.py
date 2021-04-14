@@ -56,6 +56,7 @@ from .raw_models import *
 from .team import *
 from .sticker import *
 from .interactions import *
+from .threads import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
