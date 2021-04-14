@@ -132,8 +132,6 @@ class Client:
         currently selected intents.
 
         .. versionadded:: 1.5
-    fetch_offline_members: :class:`bool`
-        A deprecated alias of ``chunk_guilds_at_startup``.
     chunk_guilds_at_startup: :class:`bool`
         Indicates if :func:`.on_ready` should be delayed to chunk all guilds
         at start-up if necessary. This operation is incredibly slow for large

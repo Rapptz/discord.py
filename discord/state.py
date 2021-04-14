@@ -152,15 +152,7 @@ class ConnectionState:
         if not intents.guilds:
             log.warning('Guilds intent seems to be disabled. This may cause state related issues.')
 
-        try:
-            chunk_guilds = options['fetch_offline_members']
-        except KeyError:
-            chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
-        else:
-            msg = 'fetch_offline_members is deprecated, use chunk_guilds_at_startup instead'
-            warnings.warn(msg, DeprecationWarning, stacklevel=4)
-
-        self._chunk_guilds = chunk_guilds
+        self._chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
 
         # Ensure these two are set properly
         if not intents.members and self._chunk_guilds:
