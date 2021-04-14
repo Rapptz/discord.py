@@ -76,8 +76,8 @@ class Miscellaneous(commands.Cog, name='Misc'):
         # Look at the error handling example
         mentions = discord.AllowedMentions.none()
         try:
-            afk = self.afk_reasons[user.id]
-            return await ctx.send(f"{user.name} is afk with reason `{afk}`", allowed_mentions=mentions)
+            reason = self.afk_reasons[user.id]
+            return await ctx.send(f"{user.name} is afk with reason `{reason}`", allowed_mentions=mentions)
         except KeyError:
             return await ctx.send(f'{user.name} is currently not afk', allowed_mentions=mentions)
 
@@ -94,21 +94,19 @@ class Miscellaneous(commands.Cog, name='Misc'):
             return
 
         # If an afk user has sent a message, remove their afk
-        message_id = message.author.id
-        afk_status = self.afk_reasons.get(message_id)
-        if afk_status:
+        user_id = message.author.id
+        if user_id in self.afk_reasons:
             await message.channel.send(f"Welcome back {message.author.mention}! I have removed your afk status.")
-            self.afk_reasons.pop(message_id)
-            return
-
+            del self.afk_reasons[user_id]
         # If an afk user is mentioned in a message, let the author of the message know they are afk
         mentions = {user.id: user for user in message.mentions}
-        mentioned_afk_users = [user_id for user_id in self.afk_reasons.keys() if user_id in mentions]
+        mentioned_afk_users = [user_id for user_id in self.afk_reasons if user_id in mentions]
         if mentioned_afk_users:
             plural_or_singular = "is" if len(mentioned_afk_users) == 1 else "are"
-            akf_users = ",".join(str(self.bot.get_user(c)) for c in mentioned_afk_users)
-            await message.channel.send(f"{akf_users} {plural_or_singular} afk.")
-
+            # formats each user as Username#0000
+            formatted_users = [str(bot.get_user(user)) for user in mentioned_afk_users]
+            afk_users = ",".join(formatted_users)
+            await message.channel.send(f"{afk_users} {plural_or_singular} afk.")
 
 # Cogs have to be explicitly added.
 bot.add_cog(Miscellaneous(bot))
