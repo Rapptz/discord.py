@@ -120,7 +120,6 @@ class ConnectionState:
         if self.guild_ready_timeout < 0:
             raise ValueError('guild_ready_timeout cannot be negative')
 
-        self.guild_subscriptions = options.get('guild_subscriptions', True)
         allowed_mentions = options.get('allowed_mentions')
 
         if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
