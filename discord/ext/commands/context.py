@@ -54,6 +54,10 @@ class Context(discord.abc.Messageable):
         :func:`on_command_error` event then this dict could be incomplete.
     prefix: :class:`str`
         The prefix that was used to invoke the command.
+    clean_prefix: :class:`str`
+        The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
+        
+        .. versionadded:: 2.0
     command: :class:`Command`
         The command that is being invoked currently.
     invoked_with: :class:`str`
@@ -205,6 +209,17 @@ class Context(discord.abc.Messageable):
 
     async def _get_channel(self):
         return self.channel
+
+    @property
+    def clean_prefix(self):
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
+        user = self.context.guild.me if self.context.guild else self.context.bot.user
+        # this breaks if the prefix mention is not the bot itself but I
+        # consider this to be an *incredibly* strange use case. I'd rather go
+        # for this common use case rather than waste performance for the
+        # odd one.
+        pattern = re.compile(r"<@!?%s>" % user.id)
+        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.context.prefix)
 
     @property
     def cog(self):
