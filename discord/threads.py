@@ -40,10 +40,13 @@ if TYPE_CHECKING:
         Thread as ThreadPayload,
         ThreadMember as ThreadMemberPayload,
         ThreadMetadata,
+        ThreadArchiveDuration,
     )
     from .guild import Guild
     from .channel import TextChannel
     from .member import Member
+    from .message import Message
+    from .abc import Snowflake
 
 
 class Thread(Messageable, Hashable):
@@ -171,7 +174,7 @@ class Thread(Messageable, Hashable):
         return self.guild.get_member(self.owner_id)
 
     @property
-    def last_message(self):
+    def last_message(self) -> Optional[Message]:
         """Fetches the last message from this channel in cache.
 
         The message might not be valid or point to an existing message.
@@ -191,6 +194,140 @@ class Thread(Messageable, Hashable):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    def is_private(self) -> bool:
+        """:class:`bool`: Whether the thread is a private thread."""
+        return self.type is ChannelType.private_thread
+
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        archived: bool = ...,
+        auto_archive_duration: ThreadArchiveDuration = ...,
+    ):
+        """|coro|
+
+        Edits the thread.
+
+        To unarchive a thread :attr:`~.Permissions.send_messages` is required. Otherwise,
+        :attr:`~.Permissions.manage_messages` is required to edit the thread.
+
+        Parameters
+        ------------
+        name: :class:`str`
+            The new name of the thread.
+        archived: :class:`bool`
+            Whether to archive the thread or not.
+        auto_archive_duration: :class:`int`
+            The new duration to auto archive threads for inactivity.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit the thread.
+        HTTPException
+            Editing the thread failed.
+        """
+        payload = {}
+        if name is not ...:
+            payload['name'] = str(name)
+        if archived is not ...:
+            payload['archived'] = archived
+        if auto_archive_duration is not ...:
+            payload['auto_archive_duration'] = auto_archive_duration
+        await self._state.http.edit_channel(self.id, **payload)
+
+    async def join(self):
+        """|coro|
+
+        Joins this thread.
+
+        You must have :attr:`~Permissions.send_messages` and :attr:`~Permissions.use_threads`
+        to join a public thread. If the thread is private then :attr:`~Permissions.send_messages`
+        and either :attr:`~Permissions.use_private_threads` or :attr:`~Permissions.manage_messages`
+        is required to join the thread.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to join the thread.
+        HTTPException
+            Joining the thread failed.
+        """
+        await self._state.http.join_thread(self.id)
+
+    async def leave(self):
+        """|coro|
+
+        Leaves this thread.
+
+        Raises
+        -------
+        HTTPException
+            Leaving the thread failed.
+        """
+        await self._state.http.leave_thread(self.id)
+
+    async def add_user(self, user: Snowflake):
+        """|coro|
+
+        Adds a user to this thread.
+
+        You must have :attr:`~Permissions.send_messages` and :attr:`~Permissions.use_threads`
+        to add a user to a public thread. If the thread is private then :attr:`~Permissions.send_messages`
+        and either :attr:`~Permissions.use_private_threads` or :attr:`~Permissions.manage_messages`
+        is required to add a user to the thread.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to add to the thread.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add the user to the thread.
+        HTTPException
+            Adding the user to the thread failed.
+        """
+        await self._state.http.add_user_to_thread(self.id, user.id)
+
+    async def remove_user(self, user: Snowflake):
+        """|coro|
+
+        Removes a user from this thread.
+
+        You must have :attr:`~Permissions.manage_messages` or be the creator of the thread to remove a user.
+
+        Parameters
+        -----------
+        user: :class:`abc.Snowflake`
+            The user to add to the thread.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove the user from the thread.
+        HTTPException
+            Removing the user from the thread failed.
+        """
+        await self._state.http.remove_user_from_thread(self.id, user.id)
+
+    async def delete(self):
+        """|coro|
+
+        Deletes this thread.
+
+        You must have :attr:`~Permissions.manage_channels` to delete threads.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to delete this thread.
+        HTTPException
+            Deleting the thread failed.
+        """
+        await self._state.http.delete_channel(self.id)
 
 class ThreadMember(Hashable):
     """Represents a Discord thread member.

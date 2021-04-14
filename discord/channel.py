@@ -22,8 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import time
 import asyncio
+from typing import Optional, TYPE_CHECKING, Union
+import datetime
 
 import discord.abc
 from .permissions import Permissions
@@ -32,6 +36,8 @@ from .mixins import Hashable
 from . import utils
 from .asset import Asset
 from .errors import ClientException, NoMoreItems, InvalidArgument
+from .threads import Thread
+from .iterators import ArchivedThreadIterator
 
 __all__ = (
     'TextChannel',
@@ -43,6 +49,10 @@ __all__ = (
     'GroupChannel',
     '_channel_factory',
 )
+
+if TYPE_CHECKING:
+    from .types.threads import ThreadArchiveDuration
+    from .abc import Snowflake
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -545,6 +555,80 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
+
+    async def start_private_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+        """|coro|
+
+        Starts a private thread in this text channel.
+
+        You must have :attr:`~discord.Permissions.send_messages` and
+        :attr:`~discord.Permissions.use_private_threads` in order to start a thread.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the thread.
+        auto_archive_duration: :class:`int`
+            The duration in minutes before a thread is automatically archived for inactivity.
+            Defaults to ``1440`` or 24 hours.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to start a thread.
+        HTTPException
+            Starting the thread failed.
+        """
+
+        data = await self._state.http.start_public_thread(
+            self.id,
+            name=name,
+            auto_archive_duration=auto_archive_duration,
+            type=ChannelType.private_thread.value,
+        )
+        return Thread(guild=self.guild, data=data)
+
+    async def archive_threads(
+        self,
+        *,
+        private: bool = True,
+        joined: bool = False,
+        limit: Optional[int] = 50,
+        before: Optional[Union[Snowflake, datetime.datetime]] = None,
+    ) -> ArchivedThreadIterator:
+        """Returns an :class:`~discord.AsyncIterator` that iterates over all archived threads in the guild.
+
+        You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
+        then :attr:`~Permissions.manage_messages` is also required.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`bool`]
+            The number of threads to retrieve.
+            If ``None``, retrieves every archived thread in the channel. Note, however,
+            that this would make it a slow operation.
+        before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve archived channels before the given date or ID.
+        private: :class:`bool`
+            Whether to retrieve private archived threads.
+        joined: :class:`bool`
+            Whether to retrieve private archived threads that you've joined.
+            You cannot set ``joined`` to ``True`` and ``private`` to ``False``.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to get archived threads.
+        HTTPException
+            The request to get the archived threads failed.
+
+        Yields
+        -------
+        :class:`Thread`
+            The archived threads.
+        """
+        return ArchivedThreadIterator(self.id, self.guild, limit=limit, joined=joined, private=private, before=before)
+
 
 class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
