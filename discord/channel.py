@@ -173,6 +173,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """List[:class:`Member`]: Returns all members that can see this channel."""
         return [m for m in self.guild.members if self.permissions_for(m).read_messages]
 
+    @property
+    def threads(self):
+        """List[:class:`Thread`]: Returns all the threads that you can see.
+
+        .. versionadded:: 2.0
+        """
+        return [thread for thread in self.guild.threads if thread.parent_id == self.id]
+
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw

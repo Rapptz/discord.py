@@ -658,6 +658,33 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
+.. function:: on_thread_delete(thread)
+              on_thread_create(thread)
+
+    Called whenever a thread is deleted or created.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got created or deleted.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_update(before, after)
+
+    Called whenever a thread is updated.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param before: The updated thread's old info.
+    :type before: :class:`Thread`
+    :param after: The updated thread's new info.
+    :type after: :class:`Thread`
+
 .. function:: on_guild_integrations_update(guild)
 
     Called whenever an integration is created, modified, or removed from a guild.
@@ -1038,6 +1065,18 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
 
+    .. attribute:: public_thread
+
+        A public thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: private_thread
+
+        A private thread
+
+        .. versionadded:: 1.8
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -1129,9 +1168,14 @@ of :class:`enum.Enum`.
         Discovery requirements for 3 weeks in a row.
 
         .. versionadded:: 1.7
+    .. attribute:: thread_created
+
+        The system message denoting that a thread has been created
+
+        .. versionadded:: 2.0
     .. attribute:: reply
 
-        The message type denoting that the author is replying to a message.
+        The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
     .. attribute:: application_command
@@ -1142,6 +1186,12 @@ of :class:`enum.Enum`.
     .. attribute:: guild_invite_reminder
 
         The system message sent as a reminder to invite people to the guild.
+
+        .. versionadded:: 2.0
+    .. attribute:: thread_starter_message
+
+        The system message denoting that this message is the one that started a thread's
+        conversation topic.
 
         .. versionadded:: 2.0
 
@@ -3196,6 +3246,30 @@ TextChannel
 
     .. automethod:: typing
         :async-with:
+
+Thread
+~~~~~~~~
+
+.. attributetable:: Thread
+
+.. autoclass:: Thread()
+    :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. automethod:: history
+        :async-for:
+
+    .. automethod:: typing
+        :async-with:
+
+ThreadMember
+~~~~~~~~~~~~~
+
+.. attributetable:: ThreadMember
+
+.. autoclass:: ThreadMember()
+    :members:
 
 StoreChannel
 ~~~~~~~~~~~~~
