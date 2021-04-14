@@ -202,7 +202,7 @@ class SystemChannelFlags(BaseFlags):
     @flag_value
     def helpful_tips(self):
         """:class:`bool`: Returns ``True`` if the system channel is used for server setup helpful tips notifications."""
-        return 3
+        return 4
 
 
 @fill_with_flags()
