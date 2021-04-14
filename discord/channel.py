@@ -92,6 +92,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         in this channel. A value of `0` denotes that it is disabled.
         Bots and users with :attr:`~Permissions.manage_channels` or
         :attr:`~Permissions.manage_messages` bypass slowmode.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work".
+        
+        .. note::
+        
+            To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
@@ -157,7 +163,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
-        return self.nsfw
+        return self.nsfw or self.guild.nsfw
 
     def is_news(self):
         """:class:`bool`: Checks if the channel is a news channel."""
@@ -886,6 +892,12 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the category list. This is a number that starts at 0. e.g. the
         top category is position 0.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work".
+        
+        .. note::
+        
+            To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
 
     __slots__ = ('name', 'id', 'guild', 'nsfw', '_state', 'position', '_overwrites', 'category_id')
@@ -917,7 +929,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """:class:`bool`: Checks if the category is NSFW."""
-        return self.nsfw
+        return self.nsfw or self.guild.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
@@ -1082,6 +1094,12 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work".
+        
+        .. note::
+        
+            To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
     """
     __slots__ = ('name', 'id', 'guild', '_state', 'nsfw',
                  'category_id', 'position', '_overwrites',)
@@ -1122,7 +1140,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 
     def is_nsfw(self):
         """:class:`bool`: Checks if the channel is NSFW."""
-        return self.nsfw
+        return self.nsfw or self.guild.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name=None, reason=None):
