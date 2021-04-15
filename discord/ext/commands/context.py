@@ -207,6 +207,20 @@ class Context(discord.abc.Messageable):
         return self.channel
 
     @property
+    def clean_prefix(self):
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
+
+        .. versionadded:: 2.0
+        """
+        user = self.guild.me if self.guild else self.bot.user
+        # this breaks if the prefix mention is not the bot itself but I
+        # consider this to be an *incredibly* strange use case. I'd rather go
+        # for this common use case rather than waste performance for the
+        # odd one.
+        pattern = re.compile(r"<@!?%s>" % user.id)
+        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.prefix)
+
+    @property
     def cog(self):
         """Optional[:class:`.Cog`]: Returns the cog associated with this context's command. None if it does not exist."""
 
