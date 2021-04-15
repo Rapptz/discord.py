@@ -827,6 +827,9 @@ class ConnectionState:
 
         return self._add_guild_from_data(data)
 
+    def is_guild_evicted(self, guild) -> bool:
+        return guild.id not in self._guilds
+
     async def chunk_guild(self, guild, *, wait=True, cache=None):
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)

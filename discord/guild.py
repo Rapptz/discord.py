@@ -2223,7 +2223,8 @@ class Guild(Hashable):
         if not self._state._intents.members:
             raise ClientException('Intents.members must be enabled to use this.')
 
-        return await self._state.chunk_guild(self, cache=cache)
+        if not self._state.is_guild_evicted(self):
+            return await self._state.chunk_guild(self, cache=cache)
 
     async def query_members(self, query=None, *, limit=5, user_ids=None, presences=False, cache=True):
         """|coro|
