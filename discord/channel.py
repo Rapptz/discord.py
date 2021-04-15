@@ -126,6 +126,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
+    def __contains__(self, item):
+        from .message import Message
+        if isinstance(item, Message):
+            return item.channel == self
+        else:
+            raise TypeError("in of TextChannel must be Message.")
+
     def _update(self, guild, data):
         self.guild = guild
         self.name = data['name']
@@ -1238,6 +1245,13 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.recipient = state.store_user(data['recipients'][0])
         self.me = me
         self.id = int(data['id'])
+
+    async def __contains__(self, item):
+        from .message import Message
+        if isinstance(item, Message):
+            return item.channel == self
+        else:
+            raise TypeError("in of DMChannel must be Message.")
 
     async def _get_channel(self):
         return self
