@@ -452,7 +452,7 @@ class Message(Hashable):
         A list of embeds the message has.
     channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
-        Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
+        Could be a :class:`DMChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
