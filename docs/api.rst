@@ -328,7 +328,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when someone begins typing a message.
 
     The ``channel`` parameter can be a :class:`abc.Messageable` instance.
-    Which could either be :class:`TextChannel`, :class:`GroupChannel`, or
+    Which could either be :class:`TextChannel` or
     :class:`DMChannel`.
 
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
@@ -595,17 +595,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     :param interaction: The interaction data.
     :type interaction: :class:`Interaction`
-
-.. function:: on_private_channel_update(before, after)
-
-    Called whenever a private group DM is updated. e.g. changed name or topic.
-
-    This requires :attr:`Intents.messages` to be enabled.
-
-    :param before: The updated group channel's old info.
-    :type before: :class:`GroupChannel`
-    :param after: The updated group channel's new info.
-    :type after: :class:`GroupChannel`
 
 .. function:: on_private_channel_pins_update(channel, last_pin)
 
