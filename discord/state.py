@@ -626,12 +626,6 @@ class ConnectionState:
     def parse_channel_update(self, data):
         channel_type = try_enum(ChannelType, data.get('type'))
         channel_id = int(data['id'])
-        if channel_type is ChannelType.group:
-            channel = self._get_private_channel(channel_id)
-            old_channel = copy.copy(channel)
-            channel._update_group(data)
-            self.dispatch('private_channel_update', old_channel, channel)
-            return
 
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         guild = self._get_guild(guild_id)
