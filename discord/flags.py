@@ -200,8 +200,10 @@ class SystemChannelFlags(BaseFlags):
         return 2
 
     @flag_value
-    def helpful_tips(self):
-        """:class:`bool`: Returns ``True`` if the system channel is used for server setup helpful tips notifications."""
+    def guild_reminder_notifications(self):
+        """:class:`bool`: Returns ``True`` if the system channel is used for server setup helpful tips notifications.
+
+        .. versionadded:: 2.0"""
         return 4
 
 
