@@ -1155,7 +1155,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        wait: Literal[False],
+        wait: Literal[False] = ...,
     ) -> None:
         ...
 
