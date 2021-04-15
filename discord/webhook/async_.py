@@ -577,17 +577,12 @@ class WebhookMessage(Message):
     ):
         """|coro|
 
-        Edits a message owned by this webhook.
-
-        This is a lower level interface to :meth:`WebhookMessage.edit` in case
-        you only have an ID.
+        Edits the message.
 
         .. versionadded:: 1.6
 
         Parameters
         ------------
-        message_id: :class:`int`
-            The message ID to edit.
         content: Optional[:class:`str`]
             The content to edit the message with or ``None`` to clear it.
         embeds: List[:class:`Embed`]
