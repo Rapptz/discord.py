@@ -34,7 +34,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelType = Literal[0, 1, 2, 3, 4, 5, 13]
 
 
 class PartialChannel(TypedDict):
@@ -84,8 +84,3 @@ class GuildChannel(
 class DMChannel(PartialChannel):
     last_message_id: Optional[Snowflake]
     recipients: List[PartialUser]
-
-
-class GroupDMChannel(DMChannel):
-    icon: Optional[str]
-    owner_id: Snowflake
