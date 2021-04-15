@@ -72,7 +72,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. describe:: y in x
 
             Checks if message is in the channel.
-
+            .. versionadded:: 2.0
     Attributes
     -----------
     name: :class:`str`
