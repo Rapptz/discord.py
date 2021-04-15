@@ -188,6 +188,13 @@ class Member(discord.abc.Messageable, _BaseUser):
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
+
+        .. note::
+
+            Due to a Discord API limitation, a user's Spotify activity may not appear
+            if they are listening to a song with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
@@ -439,6 +446,12 @@ class Member(discord.abc.Messageable, _BaseUser):
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
         activity the user is currently doing. Could be ``None`` if no activity is being done.
+
+        .. note::
+
+            Due to a Discord API limitation, this may be ``None`` if 
+            the user is listening to a song on Spotify with a title longer
+            than 128 characters. See :issue:`1738` for more information.
 
         .. note::
 
