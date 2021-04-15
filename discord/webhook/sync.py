@@ -156,7 +156,7 @@ class WebhookAdapter:
 
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status_code != 429:
-                            delta = utils._parse_ratelimit_header(response.headers)
+                            delta = utils._parse_ratelimit_header(response)
                             log.debug(
                                 'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', webhook_id, delta
                             )
@@ -169,9 +169,10 @@ class WebhookAdapter:
                             if not response.headers.get('Via'):
                                 raise HTTPException(response, data)
 
-                            retry_after = data['retry_after'] / 1000.0  # type: ignore
+                            retry_after: float = data['retry_after']  # type: ignore
                             log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
                             time.sleep(retry_after)
+                            continue
 
                         if response.status_code >= 500:
                             time.sleep(1 + attempt * 2)
@@ -186,6 +187,7 @@ class WebhookAdapter:
 
                 except OSError as e:
                     if attempt < 4 and e.errno in (54, 10054):
+                        time.sleep(1 + attempt * 2)
                         continue
                     raise
 

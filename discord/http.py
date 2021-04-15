@@ -224,7 +224,7 @@ class HTTPClient:
                             fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
 
                             # sleep a bit
-                            retry_after = data['retry_after'] / 1000.0
+                            retry_after: float = data['retry_after']  # type: ignore
                             log.warning(fmt, retry_after, bucket)
 
                             # check if it's a global rate limit
@@ -263,6 +263,7 @@ class HTTPClient:
                 except OSError as e:
                     # Connection reset by peer
                     if tries < 4 and e.errno in (54, 10054):
+                        await asyncio.sleep(1 + tries * 2)
                         continue
                     raise
 
