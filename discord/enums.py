@@ -150,10 +150,9 @@ class ChannelType(Enum):
     text     = 0
     private  = 1
     voice    = 2
-    group    = 3
-    category = 4
-    news     = 5
-    store    = 6
+    category = 3
+    news     = 4
+    store    = 5
     stage_voice = 13
 
     def __str__(self):
