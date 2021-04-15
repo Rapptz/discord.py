@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -34,6 +32,7 @@ __all__ = (
     'TeamMember',
 )
 
+
 class Team:
     """Represents an application team for a bot provided by Discord.
 
@@ -52,6 +51,7 @@ class Team:
 
         .. versionadded:: 1.3
     """
+
     __slots__ = ('_state', 'id', 'name', 'icon', 'owner_id', 'members')
 
     def __init__(self, state, data):
@@ -64,17 +64,49 @@ class Team:
         self.members = [TeamMember(self, self._state, member) for member in data['members']]
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name}>'.format(self)
+        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
 
     @property
     def icon_url(self):
-        """:class:`.Asset`: Retrieves the team's icon asset."""
-        return Asset._from_icon(self._state, self, 'team')
+        """:class:`.Asset`: Retrieves the team's icon asset.
+
+        This is equivalent to calling :meth:`icon_url_as` with
+        the default parameters ('webp' format and a size of 1024).
+        """
+        return self.icon_url_as()
+
+    def icon_url_as(self, *, format='webp', size=1024):
+        """Returns an :class:`Asset` for the icon the team has.
+
+        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
+        The size must be a power of 2 between 16 and 4096.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        format: :class:`str`
+            The format to attempt to convert the icon to. Defaults to 'webp'.
+        size: :class:`int`
+            The size of the image to display.
+
+        Raises
+        ------
+        InvalidArgument
+            Bad image format passed to ``format`` or invalid ``size``.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_icon(self._state, self, 'team', format=format, size=size)
 
     @property
     def owner(self):
         """Optional[:class:`TeamMember`]: The team's owner."""
         return utils.get(self.members, id=self.owner_id)
+
 
 class TeamMember(BaseUser):
     """Represents a team member in a team.
@@ -116,6 +148,7 @@ class TeamMember(BaseUser):
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
     """
+
     __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
 
     def __init__(self, team, state, data):
@@ -125,5 +158,7 @@ class TeamMember(BaseUser):
         super().__init__(state=state, data=data['user'])
 
     def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} ' \
-               'discriminator={0.discriminator!r} membership_state={0.membership_state!r}>'.format(self)
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
+            f'discriminator={self.discriminator!r} membership_state={self.membership_state!r}>'
+        )

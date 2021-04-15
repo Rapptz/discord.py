@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import types
 from collections import namedtuple
+from typing import Any, TYPE_CHECKING, Type, TypeVar
 
 __all__ = (
     'Enum',
@@ -37,25 +36,22 @@ __all__ = (
     'ContentFilter',
     'Status',
     'DefaultAvatar',
-    'RelationshipType',
     'AuditLogAction',
     'AuditLogActionCategory',
     'UserFlags',
     'ActivityType',
-    'HypeSquadHouse',
     'NotificationLevel',
-    'PremiumType',
-    'UserContentFilter',
-    'FriendFlags',
     'TeamMembershipState',
-    'Theme',
     'WebhookType',
+    'ExpireBehaviour',
+    'ExpireBehavior',
+    'StickerType',
 )
 
 def _create_value_cls(name):
     cls = namedtuple('_EnumValue_' + name, 'name value')
-    cls.__repr__ = lambda self: '<%s.%s: %r>' % (name, self.name, self.value)
-    cls.__str__ = lambda self: '%s.%s' % (name, self.name)
+    cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'
+    cls.__str__ = lambda self: f'{name}.{self.name}'
     return cls
 
 def _is_descriptor(obj):
@@ -95,6 +91,7 @@ class EnumMeta(type):
         attrs['_enum_value_map_'] = value_mapping
         attrs['_enum_member_map_'] = member_mapping
         attrs['_enum_member_names_'] = member_names
+        attrs['_enum_value_cls_'] = value_cls
         actual_cls = super().__new__(cls, name, bases, attrs)
         value_cls._actual_enum_cls_ = actual_cls
         return actual_cls
@@ -109,7 +106,7 @@ class EnumMeta(type):
         return len(cls._enum_member_names_)
 
     def __repr__(cls):
-        return '<enum %r>' % cls.__name__
+        return f'<enum {cls.__name__}>'
 
     @property
     def __members__(cls):
@@ -119,7 +116,7 @@ class EnumMeta(type):
         try:
             return cls._enum_value_map_[value]
         except (KeyError, TypeError):
-            raise ValueError("%r is not a valid %s" % (value, cls.__name__))
+            raise ValueError(f"{value!r} is not a valid {cls.__name__}")
 
     def __getitem__(cls, key):
         return cls._enum_member_map_[key]
@@ -138,14 +135,16 @@ class EnumMeta(type):
         except AttributeError:
             return False
 
-class Enum(metaclass=EnumMeta):
-    @classmethod
-    def try_value(cls, value):
-        try:
-            return cls._enum_value_map_[value]
-        except (KeyError, TypeError):
-            return value
-
+if TYPE_CHECKING:
+    from enum import Enum
+else:
+    class Enum(metaclass=EnumMeta):
+        @classmethod
+        def try_value(cls, value):
+            try:
+                return cls._enum_value_map_[value]
+            except (KeyError, TypeError):
+                return value
 
 class ChannelType(Enum):
     text     = 0
@@ -155,24 +154,32 @@ class ChannelType(Enum):
     category = 4
     news     = 5
     store    = 6
+    stage_voice = 13
 
     def __str__(self):
         return self.name
 
 class MessageType(Enum):
-    default                    = 0
-    recipient_add              = 1
-    recipient_remove           = 2
-    call                       = 3
-    channel_name_change        = 4
-    channel_icon_change        = 5
-    pins_add                   = 6
-    new_member                 = 7
-    premium_guild_subscription = 8
-    premium_guild_tier_1       = 9
-    premium_guild_tier_2       = 10
-    premium_guild_tier_3       = 11
-    channel_follow_add         = 12
+    default                                      = 0
+    recipient_add                                = 1
+    recipient_remove                             = 2
+    call                                         = 3
+    channel_name_change                          = 4
+    channel_icon_change                          = 5
+    pins_add                                     = 6
+    new_member                                   = 7
+    premium_guild_subscription                   = 8
+    premium_guild_tier_1                         = 9
+    premium_guild_tier_2                         = 10
+    premium_guild_tier_3                         = 11
+    channel_follow_add                           = 12
+    guild_stream                                 = 13
+    guild_discovery_disqualified                 = 14
+    guild_discovery_requalified                  = 15
+    guild_discovery_grace_period_initial_warning = 16
+    guild_discovery_grace_period_final_warning   = 17
+    reply                                        = 19
+    application_command                          = 20
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
@@ -191,6 +198,7 @@ class VoiceRegion(Enum):
     russia        = 'russia'
     japan         = 'japan'
     southafrica   = 'southafrica'
+    south_korea   = 'south-korea'
     india         = 'india'
     europe        = 'europe'
     dubai         = 'dubai'
@@ -221,6 +229,7 @@ class VerificationLevel(Enum):
     table_flip        = 3
     extreme           = 4
     double_table_flip = 4
+    very_high         = 4
 
     def __str__(self):
         return self.name
@@ -232,22 +241,6 @@ class ContentFilter(Enum):
 
     def __str__(self):
         return self.name
-
-class UserContentFilter(Enum):
-    disabled    = 0
-    friends     = 1
-    all_messages = 2
-
-class FriendFlags(Enum):
-    noone = 0
-    mutual_guilds = 1
-    mutual_friends = 2
-    guild_and_friends = 3
-    everyone = 4
-
-class Theme(Enum):
-    light = 'light'
-    dark = 'dark'
 
 class Status(Enum):
     online = 'online'
@@ -270,12 +263,6 @@ class DefaultAvatar(Enum):
 
     def __str__(self):
         return self.name
-
-class RelationshipType(Enum):
-    friend           = 1
-    blocked          = 2
-    incoming_request = 3
-    outgoing_request = 4
 
 class NotificationLevel(Enum):
     all_messages  = 0
@@ -393,12 +380,18 @@ class UserFlags(Enum):
     partner = 2
     hypesquad = 4
     bug_hunter = 8
+    mfa_sms = 16
+    premium_promo_dismissed = 32
     hypesquad_bravery = 64
     hypesquad_brilliance = 128
     hypesquad_balance = 256
     early_supporter = 512
     team_user = 1024
     system = 4096
+    has_unread_urgent_messages = 8192
+    bug_hunter_level_2 = 16384
+    verified_bot = 65536
+    verified_bot_developer = 131072
 
 class ActivityType(Enum):
     unknown = -1
@@ -407,18 +400,10 @@ class ActivityType(Enum):
     listening = 2
     watching = 3
     custom = 4
+    competing = 5
 
     def __int__(self):
         return self.value
-
-class HypeSquadHouse(Enum):
-    bravery = 1
-    brilliance = 2
-    balance = 3
-
-class PremiumType(Enum):
-    nitro_classic = 1
-    nitro = 2
 
 class TeamMembershipState(Enum):
     invited = 1
@@ -428,13 +413,35 @@ class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
 
-def try_enum(cls, val):
+class ExpireBehaviour(Enum):
+    remove_role = 0
+    kick = 1
+
+ExpireBehavior = ExpireBehaviour
+
+class StickerType(Enum):
+    png = 1
+    apng = 2
+    lottie = 3
+
+class InteractionType(Enum):
+    ping = 1
+    application_command = 2
+
+T = TypeVar('T')
+
+def create_unknown_value(cls: Type[T], val: Any) -> T:
+    value_cls = cls._enum_value_cls_ # type: ignore
+    name = f'unknown_{val}'
+    return value_cls(name=name, value=val)
+
+def try_enum(cls: Type[T], val: Any) -> T:
     """A function that tries to turn the value into enum ``cls``.
 
-    If it fails it returns the value instead.
+    If it fails it returns a proxy invalid value instead.
     """
 
     try:
-        return cls._enum_value_map_[val]
+        return cls._enum_value_map_[val] # type: ignore
     except (KeyError, TypeError, AttributeError):
-        return val
+        return create_unknown_value(cls, val)

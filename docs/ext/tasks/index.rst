@@ -135,7 +135,10 @@ Doing something during cancellation:
 API Reference
 ---------------
 
+.. attributetable:: discord.ext.tasks.Loop
+
 .. autoclass:: discord.ext.tasks.Loop()
     :members:
+    :special-members: __call__
 
 .. autofunction:: discord.ext.tasks.loop

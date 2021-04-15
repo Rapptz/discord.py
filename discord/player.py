@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -50,6 +48,11 @@ __all__ = (
     'FFmpegOpusAudio',
     'PCMVolumeTransformer',
 )
+
+if sys.platform != 'win32':
+    CREATE_NO_WINDOW = 0
+else:
+    CREATE_NO_WINDOW = 0x08000000
 
 class AudioSource:
     """Represents an audio stream.
@@ -136,12 +139,12 @@ class FFmpegAudio(AudioSource):
     def _spawn_process(self, args, **subprocess_kwargs):
         process = None
         try:
-            process = subprocess.Popen(args, **subprocess_kwargs)
+            process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, **subprocess_kwargs)
         except FileNotFoundError:
             executable = args.partition(' ')[0] if isinstance(args, str) else args[0]
             raise ClientException(executable + ' was not found.') from None
         except subprocess.SubprocessError as exc:
-            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+            raise ClientException(f'Popen failed: {exc.__class__.__name__}: {exc}') from exc
         else:
             return process
 
@@ -180,7 +183,7 @@ class FFmpegPCMAudio(FFmpegAudio):
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
         The input that ffmpeg will take and convert to PCM bytes.
-        If ``pipe`` is True then this is a file-like object that is
+        If ``pipe`` is ``True`` then this is a file-like object that is
         passed to the stdin of ffmpeg.
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
@@ -203,7 +206,7 @@ class FFmpegPCMAudio(FFmpegAudio):
 
     def __init__(self, source, *, executable='ffmpeg', pipe=False, stderr=None, before_options=None, options=None):
         args = []
-        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -233,14 +236,14 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     This launches a sub-process to a specific input file given.  However, rather than
     producing PCM packets like :class:`FFmpegPCMAudio` does that need to be encoded to
-    opus, this class produces opus packets, skipping the encoding step done by the library.
+    Opus, this class produces Opus packets, skipping the encoding step done by the library.
 
     Alternatively, instead of instantiating this class directly, you can use
     :meth:`FFmpegOpusAudio.from_probe` to probe for bitrate and codec information.  This
-    can be used to opportunistically skip pointless re-encoding of existing opus audio data
+    can be used to opportunistically skip pointless re-encoding of existing Opus audio data
     for a boost in performance at the cost of a short initial delay to gather the information.
     The same can be achieved by passing ``copy`` to the ``codec`` parameter, but only if you
-    know that the input source is opus encoded beforehand.
+    know that the input source is Opus encoded beforehand.
 
     .. versionadded:: 1.3
 
@@ -252,22 +255,22 @@ class FFmpegOpusAudio(FFmpegAudio):
     Parameters
     ------------
     source: Union[:class:`str`, :class:`io.BufferedIOBase`]
-        The input that ffmpeg will take and convert to PCM bytes.
-        If ``pipe`` is True then this is a file-like object that is
+        The input that ffmpeg will take and convert to Opus bytes.
+        If ``pipe`` is ``True`` then this is a file-like object that is
         passed to the stdin of ffmpeg.
     bitrate: :class:`int`
         The bitrate in kbps to encode the output to.  Defaults to ``128``.
     codec: Optional[:class:`str`]
         The codec to use to encode the audio data.  Normally this would be
         just ``libopus``, but is used by :meth:`FFmpegOpusAudio.from_probe` to
-        opportunistically skip pointlessly re-encoding opus audio data by passing
+        opportunistically skip pointlessly re-encoding Opus audio data by passing
         ``copy`` as the codec value.  Any values other than ``copy``, ``opus``, or
         ``libopus`` will be considered ``libopus``.  Defaults to ``libopus``.
 
         .. warning::
 
             Do not provide this parameter unless you are certain that the audio input is
-            already opus encoded.  For typical use :meth:`FFmpegOpusAudio.from_probe`
+            already Opus encoded.  For typical use :meth:`FFmpegOpusAudio.from_probe`
             should be used to determine the proper value for this parameter.
 
     executable: :class:`str`
@@ -293,7 +296,7 @@ class FFmpegOpusAudio(FFmpegAudio):
                  pipe=False, stderr=None, before_options=None, options=None):
 
         args = []
-        subprocess_kwargs = {'stdin': source if pipe else None, 'stderr': stderr}
+        subprocess_kwargs = {'stdin': source if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
         if isinstance(before_options, str):
             args.extend(shlex.split(before_options))
@@ -308,7 +311,7 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-c:a', codec,
                      '-ar', '48000',
                      '-ac', '2',
-                     '-b:a', '%sk' % bitrate,
+                     '-b:a', f'{bitrate}k',
                      '-loglevel', 'warning'))
 
         if isinstance(options, str):
@@ -416,7 +419,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         if isinstance(method, str):
             probefunc = getattr(cls, '_probe_codec_' + method, None)
             if probefunc is None:
-                raise AttributeError("Invalid probe method '%s'" % method)
+                raise AttributeError(f"Invalid probe method {method!r}")
 
             if probefunc is cls._probe_codec_native:
                 fallback = cls._probe_codec_fallback
@@ -426,7 +429,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             fallback = cls._probe_codec_fallback
         else:
             raise TypeError("Expected str or callable for parameter 'probe', " \
-                            "not '{0.__class__.__name__}'" .format(method))
+                            f"not '{method.__class__.__name__}'")
 
         codec = bitrate = None
         loop = asyncio.get_event_loop()
@@ -469,7 +472,7 @@ class FFmpegOpusAudio(FFmpegAudio):
     @staticmethod
     def _probe_codec_fallback(source, executable='ffmpeg'):
         args = [executable, '-hide_banner', '-i',  source]
-        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        proc = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, _ = proc.communicate(timeout=20)
         output = out.decode('utf8')
         codec = bitrate = None
@@ -514,7 +517,7 @@ class PCMVolumeTransformer(AudioSource):
 
     def __init__(self, original, volume=1.0):
         if not isinstance(original, AudioSource):
-            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(original))
+            raise TypeError(f'expected AudioSource not {original.__class__.__name__}.')
 
         if original.is_opus():
             raise ClientException('AudioSource must not be Opus encoded.')
@@ -524,7 +527,7 @@ class PCMVolumeTransformer(AudioSource):
 
     @property
     def volume(self):
-        """Retrieves or sets the volume as a floating point percentage (e.g. 1.0 for 100%)."""
+        """Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%)."""
         return self._volume
 
     @volume.setter
@@ -614,7 +617,7 @@ class AudioPlayer(threading.Thread):
                 exc.__context__ = error
                 traceback.print_exception(type(exc), exc, exc.__traceback__)
         elif error:
-            msg = 'Exception in voice thread {}'.format(self.name)
+            msg = f'Exception in voice thread {self.name}'
             log.exception(msg, exc_info=error)
             print(msg, file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__)

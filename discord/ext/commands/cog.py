@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -70,9 +68,14 @@ class CogMeta(type):
     -----------
     name: :class:`str`
         The cog name. By default, it is the name of the class with no modification.
+    description: :class:`str`
+        The cog description. By default, it is the cleaned docstring of the class.
+
+        .. versionadded:: 1.6
+
     command_attrs: :class:`dict`
         A list of attributes to apply to every command inside this cog. The dictionary
-        is passed into the :class:`Command` (or its subclass) options at ``__init__``.
+        is passed into the :class:`Command` options at ``__init__``.
         If you specify attributes inside the command attribute in the class, it will
         override the one specified inside this attribute. For example:
 
@@ -91,7 +94,12 @@ class CogMeta(type):
     def __new__(cls, *args, **kwargs):
         name, bases, attrs = args
         attrs['__cog_name__'] = kwargs.pop('name', name)
-        attrs['__cog_settings__'] = command_attrs = kwargs.pop('command_attrs', {})
+        attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
+
+        description = kwargs.pop('description', None)
+        if description is None:
+            description = inspect.cleandoc(attrs.get('__doc__', ''))
+        attrs['__cog_description__'] = description
 
         commands = {}
         listeners = {}
@@ -110,13 +118,13 @@ class CogMeta(type):
                     value = value.__func__
                 if isinstance(value, _BaseCommand):
                     if is_static_method:
-                        raise TypeError('Command in method {0}.{1!r} must not be staticmethod.'.format(base, elem))
+                        raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
-                        is_listener = getattr(value, '__cog_listener__')
+                        getattr(value, '__cog_listener__')
                     except AttributeError:
                         continue
                     else:
@@ -182,18 +190,22 @@ class Cog(metaclass=CogMeta):
                 parent = lookup[parent.qualified_name]
 
                 # Update our parent's reference to our self
-                removed = parent.remove_command(command.name)
+                parent.remove_command(command.name)
                 parent.add_command(command)
 
         return self
 
     def get_commands(self):
-        r"""Returns a :class:`list` of :class:`.Command`\s that are
-        defined inside this cog.
+        r"""
+        Returns
+        --------
+        List[:class:`.Command`]
+            A :class:`list` of :class:`.Command`\s that are
+            defined inside this cog.
 
-        .. note::
+            .. note::
 
-            This does not include subcommands.
+                This does not include subcommands.
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
 
@@ -205,14 +217,20 @@ class Cog(metaclass=CogMeta):
     @property
     def description(self):
         """:class:`str`: Returns the cog's description, typically the cleaned docstring."""
-        try:
-            return self.__cog_cleaned_doc__
-        except AttributeError:
-            self.__cog_cleaned_doc__ = cleaned = inspect.getdoc(self)
-            return cleaned
+        return self.__cog_description__
+
+    @description.setter
+    def description(self, description):
+        self.__cog_description__ = description
 
     def walk_commands(self):
-        """An iterator that recursively walks through this cog's commands and subcommands."""
+        """An iterator that recursively walks through this cog's commands and subcommands.
+
+        Yields
+        ------
+        Union[:class:`.Command`, :class:`.Group`]
+            A command or group from the cog.
+        """
         from .core import GroupMixin
         for command in self.__cog_commands__:
             if command.parent is None:
@@ -221,7 +239,13 @@ class Cog(metaclass=CogMeta):
                     yield from command.walk_commands()
 
     def get_listeners(self):
-        """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog."""
+        """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog.
+
+        Returns
+        --------
+        List[Tuple[:class:`str`, :ref:`coroutine <coroutine>`]]
+            The listeners defined in this cog.
+        """
         return [(name, getattr(self, method_name)) for name, method_name in self.__cog_listeners__]
 
     @classmethod
@@ -249,7 +273,7 @@ class Cog(metaclass=CogMeta):
         """
 
         if name is not None and not isinstance(name, str):
-            raise TypeError('Cog.listener expected str but received {0.__class__.__name__!r} instead.'.format(name))
+            raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__!r} instead.')
 
         def decorator(func):
             actual = func
@@ -269,6 +293,13 @@ class Cog(metaclass=CogMeta):
             # thus the assignments need to be on the actual function
             return func
         return decorator
+
+    def has_error_handler(self):
+        """:class:`bool`: Checks whether the cog has an error handler.
+
+        .. versionadded:: 1.7
+        """
+        return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
     def cog_unload(self):
@@ -312,14 +343,14 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
         This is similar to :func:`.on_command_error` except only applying
         to the commands inside this cog.
 
-        This function **can** be a coroutine.
+        This **must** be a coroutine.
 
         Parameters
         -----------
@@ -375,7 +406,8 @@ class Cog(metaclass=CogMeta):
                 except Exception as e:
                     # undo our additions
                     for to_undo in self.__cog_commands__[:index]:
-                        bot.remove_command(to_undo)
+                        if to_undo.parent is None:
+                            bot.remove_command(to_undo.name)
                     raise e
 
         # check if we're overriding the default
@@ -411,4 +443,7 @@ class Cog(metaclass=CogMeta):
             if cls.bot_check_once is not Cog.bot_check_once:
                 bot.remove_check(self.bot_check_once, call_once=True)
         finally:
-            self.cog_unload()
+            try:
+                self.cog_unload()
+            except Exception:
+                pass

@@ -1,3 +1,5 @@
+:orphan:
+
 .. _quickstart:
 
 .. currentmodule:: discord
@@ -11,7 +13,7 @@ if you don't check the :ref:`installing` portion.
 A Minimal Bot
 ---------------
 
-Let's make a bot that replies to a specific message and walk you through it.
+Let's make a bot that responds to a specific message and walk you through it.
 
 It looks something like this:
 
@@ -23,7 +25,7 @@ It looks something like this:
 
     @client.event
     async def on_ready():
-        print('We have logged in as {0.user}'.format(client))
+        print(f'We have logged in as {client.user}')
 
     @client.event
     async def on_message(message):
@@ -53,7 +55,7 @@ There's a lot going on here, so let's walk you through it step by step.
    sure that we ignore messages from ourselves. We do this by checking if the :attr:`Message.author`
    is the same as the :attr:`Client.user`.
 5. Afterwards, we check if the :class:`Message.content` starts with ``'$hello'``. If it is,
-   then we reply in the channel it was used in with ``'Hello!'``.
+   then we send a message in the channel it was used in with ``'Hello!'``.
 6. Finally, we run the bot with our login token. If you need help getting your token or creating a bot,
    look in the :ref:`discord-intro` section.
 

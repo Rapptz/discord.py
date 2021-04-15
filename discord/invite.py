@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,14 +22,33 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Optional, TYPE_CHECKING
 from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, try_enum
-from collections import namedtuple
 
-class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
+__all__ = (
+    'PartialInviteChannel',
+    'PartialInviteGuild',
+    'Invite',
+)
+
+if TYPE_CHECKING:
+    from .types.invite import (
+        Invite as InvitePayload,
+        InviteGuild as InviteGuildPayload,
+    )
+    from .types.channel import (
+        PartialChannel as PartialChannelPayload,
+    )
+    import datetime
+
+
+class PartialInviteChannel:
     """Represents a "partial" invite channel.
 
     This model will be given when the user is not part of the
@@ -65,20 +82,29 @@ class PartialInviteChannel(namedtuple('PartialInviteChannel', 'id name type')):
         The partial channel's type.
     """
 
-    __slots__ = ()
+    __slots__ = ('id', 'name', 'type')
+
+    def __init__(self, **kwargs):
+        self.id = int(kwargs.pop('id'))
+        self.name = kwargs.pop('name')
+        self.type = kwargs.pop('type')
 
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return f'<PartialInviteChannel id={self.id} name={self.name} type={self.type!r}>'
+
     @property
     def mention(self):
         """:class:`str`: The string that allows you to mention the channel."""
-        return '<#%s>' % self.id
+        return f'<#{self.id}>'
 
     @property
     def created_at(self):
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
+
 
 class PartialInviteGuild:
     """Represents a "partial" invite guild.
@@ -124,10 +150,9 @@ class PartialInviteGuild:
         The partial guild's description.
     """
 
-    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash',
-                 'verification_level', 'description')
+    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash', 'verification_level', 'description')
 
-    def __init__(self, state, data, id):
+    def __init__(self, state, data: InviteGuildPayload, id: int):
         self._state = state
         self.id = id
         self.name = data['name']
@@ -138,44 +163,72 @@ class PartialInviteGuild:
         self.verification_level = try_enum(VerificationLevel, data.get('verification_level'))
         self.description = data.get('description')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} features={0.features} ' \
-               'description={0.description!r}>'.format(self)
+    def __repr__(self) -> str:
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} features={self.features} '
+            f'description={self.description!r}>'
+        )
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
-    def icon_url(self):
+    def icon_url(self) -> Asset:
         """:class:`Asset`: Returns the guild's icon asset."""
         return self.icon_url_as()
 
-    def icon_url_as(self, *, format='webp', size=1024):
-        """The same operation as :meth:`Guild.icon_url_as`."""
-        return Asset._from_guild_image(self._state, self.id, self.icon, 'icons', format=format, size=size)
+    def is_icon_animated(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the guild has an animated icon.
+
+        .. versionadded:: 1.4
+        """
+        return bool(self.icon and self.icon.startswith('a_'))
+
+    def icon_url_as(self, *, format=None, static_format='webp', size=1024) -> Asset:
+        """The same operation as :meth:`Guild.icon_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
+        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
 
     @property
-    def banner_url(self):
+    def banner_url(self) -> Asset:
         """:class:`Asset`: Returns the guild's banner asset."""
         return self.banner_url_as()
 
-    def banner_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.banner_url_as`."""
+    def banner_url_as(self, *, format='webp', size=2048) -> Asset:
+        """The same operation as :meth:`Guild.banner_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
         return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
 
     @property
-    def splash_url(self):
+    def splash_url(self) -> Asset:
         """:class:`Asset`: Returns the guild's invite splash asset."""
         return self.splash_url_as()
 
-    def splash_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.splash_url_as`."""
+    def splash_url_as(self, *, format='webp', size=2048) -> Asset:
+        """The same operation as :meth:`Guild.splash_url_as`.
+
+        Returns
+        --------
+        :class:`Asset`
+            The resulting CDN asset.
+        """
         return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+
 
 class Invite(Hashable):
     r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -226,7 +279,8 @@ class Invite(Hashable):
     Attributes
     -----------
     max_age: :class:`int`
-        How long the before the invite expires in seconds. A value of 0 indicates that it doesn't expire.
+        How long the before the invite expires in seconds.
+        A value of ``0`` indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
     guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
@@ -234,7 +288,7 @@ class Invite(Hashable):
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
     created_at: :class:`datetime.datetime`
-        A datetime object denoting the time the invite was created.
+        An aware UTC datetime object denoting the time the invite was created.
     temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
         If ``True``, members who joined via this invite will be kicked upon disconnect.
@@ -242,6 +296,7 @@ class Invite(Hashable):
         How many times the invite has been used.
     max_uses: :class:`int`
         How many times the invite can be used.
+        A value of ``0`` indicates that it has unlimited uses.
     inviter: :class:`User`
         The user who created the invite.
     approximate_member_count: Optional[:class:`int`]
@@ -253,19 +308,31 @@ class Invite(Hashable):
         The channel the invite is for.
     """
 
-    __slots__ = ('max_age', 'code', 'guild', 'revoked', 'created_at', 'uses',
-                 'temporary', 'max_uses', 'inviter', 'channel', '_state',
-                 'approximate_member_count', 'approximate_presence_count' )
+    __slots__ = (
+        'max_age',
+        'code',
+        'guild',
+        'revoked',
+        'created_at',
+        'uses',
+        'temporary',
+        'max_uses',
+        'inviter',
+        'channel',
+        '_state',
+        'approximate_member_count',
+        'approximate_presence_count',
+    )
 
     BASE = 'https://discord.gg'
 
-    def __init__(self, *, state, data):
+    def __init__(self, *, state, data: InvitePayload):
         self._state = state
         self.max_age = data.get('max_age')
-        self.code = data.get('code')
+        self.code = data['code']
         self.guild = data.get('guild')
         self.revoked = data.get('revoked')
-        self.created_at = parse_time(data.get('created_at'))
+        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))  # type: ignore
         self.temporary = data.get('temporary')
         self.uses = data.get('uses')
         self.max_uses = data.get('max_uses')
@@ -292,7 +359,7 @@ class Invite(Hashable):
 
         # As far as I know, invites always need a channel
         # So this should never raise.
-        channel_data = data['channel']
+        channel_data: PartialChannelPayload = data['channel']
         channel_id = int(channel_data['id'])
         channel_type = try_enum(ChannelType, channel_data['type'])
         channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
@@ -319,28 +386,30 @@ class Invite(Hashable):
         data['channel'] = channel
         return cls(state=state, data=data)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.url
 
-    def __repr__(self):
-        return '<Invite code={0.code!r} guild={0.guild!r} ' \
-                'online={0.approximate_presence_count} ' \
-                'members={0.approximate_member_count}>'.format(self)
+    def __repr__(self) -> str:
+        return (
+            f'<Invite code={self.code!r} guild={self.guild!r} '
+            f'online={self.approximate_presence_count} '
+            f'members={self.approximate_member_count}>'
+        )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.code)
 
     @property
-    def id(self):
+    def id(self) -> str:
         """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str`: A property that retrieves the invite URL."""
         return self.BASE + '/' + self.code
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None):
         """|coro|
 
         Revokes the instant invite.

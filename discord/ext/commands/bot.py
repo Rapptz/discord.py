@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -30,24 +28,30 @@ import inspect
 import importlib.util
 import sys
 import traceback
-import re
 import types
 
 import discord
 
-from .core import GroupMixin, Command
+from .core import GroupMixin
 from .view import StringView
 from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
+__all__ = (
+    'when_mentioned',
+    'when_mentioned_or',
+    'Bot',
+    'AutoShardedBot',
+)
+
 def when_mentioned(bot, msg):
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
-    return [bot.user.mention + ' ', '<@!%s> ' % bot.user.id]
+    return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']
 
 def when_mentioned_or(*prefixes):
     """A callable that implements when mentioned or other prefixes provided.
@@ -109,12 +113,13 @@ class BotBase(GroupMixin):
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
+        self.strip_after_prefix = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')
 
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
-            raise TypeError('owner_ids must be a collection not {0.__class__!r}'.format(self.owner_ids))
+            raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
 
         if options.pop('self_bot', False):
             self._skip_check = lambda x, y: x != y
@@ -162,15 +167,15 @@ class BotBase(GroupMixin):
         if self.extra_events.get('on_command_error', None):
             return
 
-        if hasattr(context.command, 'on_error'):
+        command = context.command
+        if command and command.has_error_handler():
             return
 
         cog = context.cog
-        if cog:
-            if Cog._get_overridden_method(cog.cog_command_error) is not None:
-                return
+        if cog and cog.has_error_handler():
+            return
 
-        print('Ignoring exception in command {}:'.format(context.command), file=sys.stderr)
+        print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     # global check registration
@@ -215,7 +220,7 @@ class BotBase(GroupMixin):
             The function that was used as a global check.
         call_once: :class:`bool`
             If the function should only be called once per
-            :meth:`Command.invoke` call.
+            :meth:`.Command.invoke` call.
         """
 
         if call_once:
@@ -248,12 +253,18 @@ class BotBase(GroupMixin):
         r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
-        per :meth:`Command.invoke` call.
+        per :meth:`.Command.invoke` call.
 
         Regular global checks are called whenever a command is called
         or :meth:`.Command.can_run` is called. This type of check
         bypasses that and ensures that it's called only once, even inside
         the default help command.
+
+        .. note::
+
+            When using this function the :class:`.Context` sent to a group subcommand
+            may only parse the parent command and not the subcommands due to it
+            being invoked once per :meth:`.Bot.invoke` call.
 
         .. note::
 
@@ -478,15 +489,25 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog):
+    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
+
+        .. versionchanged:: 2.0
+
+            :exc:`.ClientException` is raised when a cog with the same name
+            is already loaded.
 
         Parameters
         -----------
         cog: :class:`.Cog`
             The cog to register to the bot.
+        override: :class:`bool`
+            If a previously loaded cog with the same name should be ejected
+            instead of raising an error.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -494,13 +515,23 @@ class BotBase(GroupMixin):
             The cog does not inherit from :class:`.Cog`.
         CommandError
             An error happened during loading.
+        .ClientException
+            A cog with the same name is already loaded.
         """
 
         if not isinstance(cog, Cog):
             raise TypeError('cogs must derive from Cog')
 
+        cog_name = cog.__cog_name__
+        existing = self.__cogs.get(cog_name)
+
+        if existing is not None:
+            if not override:
+                raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
+            self.remove_cog(cog_name)
+
         cog = cog._inject(self)
-        self.__cogs[cog.__cog_name__] = cog
+        self.__cogs[cog_name] = cog
 
     def get_cog(self, name):
         """Gets the cog instance requested.
@@ -513,6 +544,11 @@ class BotBase(GroupMixin):
             The name of the cog you are requesting.
             This is equivalent to the name passed via keyword
             argument in class creation or the class name if unspecified.
+
+        Returns
+        --------
+        Optional[:class:`Cog`]
+            The cog that was requested. If not found, returns ``None``.
         """
         return self.__cogs.get(name)
 
@@ -614,7 +650,13 @@ class BotBase(GroupMixin):
         else:
             self.__extensions[key] = lib
 
-    def load_extension(self, name):
+    def _resolve_name(self, name, package):
+        try:
+            return importlib.util.resolve_name(name, package)
+        except ImportError:
+            raise errors.ExtensionNotFound(name)
+
+    def load_extension(self, name, *, package=None):
         """Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
@@ -630,11 +672,19 @@ class BotBase(GroupMixin):
             The extension name to load. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when loading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         --------
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionAlreadyLoaded
             The extension is already loaded.
         NoEntryPointError
@@ -643,6 +693,7 @@ class BotBase(GroupMixin):
             The extension or its setup function had an execution error.
         """
 
+        name = self._resolve_name(name, package)
         if name in self.__extensions:
             raise errors.ExtensionAlreadyLoaded(name)
 
@@ -652,7 +703,7 @@ class BotBase(GroupMixin):
 
         self._load_from_module_spec(spec, name)
 
-    def unload_extension(self, name):
+    def unload_extension(self, name, *, package=None):
         """Unloads an extension.
 
         When the extension is unloaded, all commands, listeners, and cogs are
@@ -669,13 +720,23 @@ class BotBase(GroupMixin):
             The extension name to unload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when unloading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
+        ExtensionNotFound
+            The name of the extension could not
+            be resolved using the provided ``package`` parameter.
         ExtensionNotLoaded
             The extension was not loaded.
         """
 
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -683,7 +744,7 @@ class BotBase(GroupMixin):
         self._remove_module_references(lib.__name__)
         self._call_module_finalizers(lib, name)
 
-    def reload_extension(self, name):
+    def reload_extension(self, name, *, package=None):
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -697,6 +758,12 @@ class BotBase(GroupMixin):
             The extension name to reload. It must be dot separated like
             regular Python imports if accessing a sub-module. e.g.
             ``foo.test`` if you want to import ``foo/test.py``.
+        package: Optional[:class:`str`]
+            The package name to resolve relative imports with.
+            This is required when reloading an extension using a relative path, e.g ``.foo.test``.
+            Defaults to ``None``.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
@@ -704,12 +771,15 @@ class BotBase(GroupMixin):
             The extension was not loaded.
         ExtensionNotFound
             The extension could not be imported.
+            This is also raised if the name of the extension could not
+            be resolved using the provided ``package`` parameter.
         NoEntryPointError
             The extension does not have a setup function.
         ExtensionFailed
             The extension setup function had an execution error.
         """
 
+        name = self._resolve_name(name, package)
         lib = self.__extensions.get(name)
         if lib is None:
             raise errors.ExtensionNotLoaded(name)
@@ -726,7 +796,7 @@ class BotBase(GroupMixin):
             self._remove_module_references(lib.__name__)
             self._call_module_finalizers(lib, name)
             self.load_extension(name)
-        except Exception as e:
+        except Exception:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
@@ -796,7 +866,7 @@ class BotBase(GroupMixin):
                     raise
 
                 raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
-                                "returning either of these, not {}".format(ret.__class__.__name__))
+                                f"returning either of these, not {ret.__class__.__name__}")
 
             if not ret:
                 raise ValueError("Iterable command_prefix must contain at least one prefix")
@@ -857,16 +927,19 @@ class BotBase(GroupMixin):
             except TypeError:
                 if not isinstance(prefix, list):
                     raise TypeError("get_prefix must return either a string or a list of string, "
-                                    "not {}".format(prefix.__class__.__name__))
+                                    f"not {prefix.__class__.__name__}")
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError("Iterable command_prefix or list returned from get_prefix must "
-                                        "contain only strings, not {}".format(value.__class__.__name__))
+                                        f"contain only strings, not {value.__class__.__name__}")
 
                 # Getting here shouldn't happen
                 raise
+
+        if self.strip_after_prefix:
+            view.skip_ws()
 
         invoker = view.get_word()
         ctx.invoked_with = invoker
@@ -890,12 +963,14 @@ class BotBase(GroupMixin):
             try:
                 if await self.can_run(ctx, call_once=True):
                     await ctx.command.invoke(ctx)
+                else:
+                    raise errors.CheckFailure('The global check once functions failed.')
             except errors.CommandError as exc:
                 await ctx.command.dispatch_error(ctx, exc)
             else:
                 self.dispatch('command_completion', ctx)
         elif ctx.invoked_with:
-            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
+            exc = errors.CommandNotFound(f'Command "{ctx.invoked_with}" is not found')
             self.dispatch('command_error', ctx, exc)
 
     async def process_commands(self, message):
@@ -989,13 +1064,19 @@ class Bot(BotBase, discord.Client):
         :meth:`.is_owner` then it is fetched automatically using
         :meth:`~.Bot.application_info`.
     owner_ids: Optional[Collection[:class:`int`]]
-        The user IDs that owns the bot. This is similar to `owner_id`.
+        The user IDs that owns the bot. This is similar to :attr:`owner_id`.
         If this is not set and the application is team based, then it is
         fetched automatically using :meth:`~.Bot.application_info`.
         For performance reasons it is recommended to use a :class:`set`
-        for the collection. You cannot set both `owner_id` and `owner_ids`.
+        for the collection. You cannot set both ``owner_id`` and ``owner_ids``.
 
         .. versionadded:: 1.3
+    strip_after_prefix: :class:`bool`
+        Whether to strip whitespace characters after encountering the command
+        prefix. This allows for ``!   hello`` and ``!hello`` to both work if
+        the ``command_prefix`` is set to ``!``. Defaults to ``False``.
+
+        .. versionadded:: 1.7
     """
     pass
 

@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -27,23 +25,33 @@ DEALINGS IN THE SOFTWARE.
 import array
 import asyncio
 import collections.abc
+from typing import Any, Optional, overload
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
 import datetime
-from email.utils import parsedate_to_datetime
 import functools
-from inspect import isawaitable as _isawaitable
+from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
 import json
 import re
 import warnings
 
 from .errors import InvalidArgument
-from .object import Object
 
+__all__ = (
+    'oauth_url',
+    'snowflake_time',
+    'time_snowflake',
+    'find',
+    'get',
+    'sleep_until',
+    'utcnow',
+    'remove_markdown',
+    'escape_markdown',
+    'escape_mentions',
+)
 DISCORD_EPOCH = 1420070400000
-MAX_ASYNCIO_SECONDS = 3456000
 
 class cached_property:
     def __init__(self, function):
@@ -107,10 +115,25 @@ class SequenceProxy(collections.abc.Sequence):
     def count(self, value):
         return self.__proxied.count(value)
 
-def parse_time(timestamp):
+@overload
+def parse_time(timestamp: None) -> None:
+    ...
+
+@overload
+def parse_time(timestamp: str) -> datetime.datetime:
+    ...
+
+def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
-        return datetime.datetime(*map(int, re.split(r'[^\d]', timestamp.replace('+00:00', ''))))
+        return datetime.datetime.fromisoformat(timestamp)
     return None
+
+def copy_doc(original):
+    def decorator(overriden):
+        overriden.__doc__ = original.__doc__
+        overriden.__signature__ = _signature(original)
+        return overriden
+    return decorator
 
 def deprecated(instead=None):
     def actual_decorator(func):
@@ -128,7 +151,7 @@ def deprecated(instead=None):
         return decorated
     return actual_decorator
 
-def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
+def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes=None):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
@@ -143,8 +166,18 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
+    scopes: Iterable[:class:`str`]
+        An optional valid list of scopes. Defaults to ``('bot',)``.
+
+        .. versionadded:: 1.7
+
+    Returns
+    --------
+    :class:`str`
+        The OAuth2 URL for inviting the bot into guilds.
     """
-    url = 'https://discordapp.com/oauth2/authorize?client_id={}&scope=bot'.format(client_id)
+    url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
+    url = url + '&scope=' + '+'.join(scopes or ('bot',))
     if permissions is not None:
         url = url + '&permissions=' + str(permissions.value)
     if guild is not None:
@@ -155,26 +188,44 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None):
     return url
 
 
-def snowflake_time(id):
-    """Returns the creation date in UTC of a Discord snowflake ID."""
-    return datetime.datetime.utcfromtimestamp(((id >> 22) + DISCORD_EPOCH) / 1000)
+def snowflake_time(id: int) -> datetime.datetime:
+    """
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
 
-def time_snowflake(datetime_obj, high=False):
+    Returns
+    --------
+    :class:`datetime.datetime`
+        An aware datetime in UTC representing the creation time of the snowflake.
+    """
+    timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
+    return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+
+def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
 
-    When using as the lower end of a range, use ``time_snowflake(high=False) - 1`` to be inclusive, ``high=True`` to be exclusive
-    When using as the higher end of a range, use ``time_snowflake(high=True)`` + 1 to be inclusive, ``high=False`` to be exclusive
+    When using as the lower end of a range, use ``time_snowflake(high=False) - 1``
+    to be inclusive, ``high=True`` to be exclusive.
+
+    When using as the higher end of a range, use ``time_snowflake(high=True) + 1``
+    to be inclusive, ``high=False`` to be exclusive
 
     Parameters
     -----------
-    datetime_obj: :class:`datetime.datetime`
-        A timezone-naive datetime object representing UTC time.
+    dt: :class:`datetime.datetime`
+        A datetime object to convert to a snowflake.
+        If naive, the timezone is assumed to be local time.
     high: :class:`bool`
         Whether or not to set the lower 22 bit to high or low.
-    """
-    unix_seconds = (datetime_obj - type(datetime_obj)(1970, 1, 1)).total_seconds()
-    discord_millis = int(unix_seconds * 1000 - DISCORD_EPOCH)
 
+    Returns
+    --------
+    :class:`int`
+        The snowflake representing the time given.
+    """
+    discord_millis = int(dt.timestamp() * 1000 - DISCORD_EPOCH)
     return (discord_millis << 22) + (2**22-1 if high else 0)
 
 def find(predicate, seq):
@@ -274,7 +325,7 @@ def _unique(iterable):
     adder = seen.add
     return [x for x in iterable if not (x in seen or adder(x))]
 
-def _get_as_snowflake(data, key):
+def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     try:
         value = data[key]
     except KeyError:
@@ -285,7 +336,7 @@ def _get_as_snowflake(data, key):
 def _get_mime_type_for_image(data):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
-    elif data[6:10] in (b'JFIF', b'Exif'):
+    elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
         return 'image/jpeg'
     elif data.startswith((b'\x47\x49\x46\x38\x37\x61', b'\x47\x49\x46\x38\x39\x61')):
         return 'image/gif'
@@ -351,18 +402,31 @@ async def sleep_until(when, result=None):
     Parameters
     -----------
     when: :class:`datetime.datetime`
-        The timestamp in which to sleep until.
+        The timestamp in which to sleep until. If the datetime is naive then
+        it is assumed to be local time.
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
     if when.tzinfo is None:
-        when = when.replace(tzinfo=datetime.timezone.utc)
+        when = when.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
     delta = (when - now).total_seconds()
-    while delta > MAX_ASYNCIO_SECONDS:
-        await asyncio.sleep(MAX_ASYNCIO_SECONDS)
-        delta -= MAX_ASYNCIO_SECONDS
     return await asyncio.sleep(max(delta, 0), result)
+
+def utcnow() -> datetime.datetime:
+    """A helper function to return an aware UTC datetime representing the current time.
+
+    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    datetime, compared to the naive datetime in the standard library.
+
+    .. versionadded:: 2.0
+
+    Returns
+    --------
+    :class:`datetime.datetime`
+        The current aware datetime in UTC.
+    """
+    return datetime.datetime.now(datetime.timezone.utc)
 
 def valid_icon_size(size):
     """Icons must be power of 2 within [16, 4096]."""
@@ -406,19 +470,16 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
         return match.endpos
 
     UNICODE_WIDE_CHAR_TYPE = 'WFA'
-    width = 0
     func = unicodedata.east_asian_width
-    for char in string:
-        width += 2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1
-    return width
+    return sum(2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1 for char in string)
 
 def resolve_invite(invite):
     """
-    Resolves an invite from a :class:`~discord.Invite`, URL or ID
+    Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
     Parameters
     -----------
-    invite: Union[:class:`~discord.Invite`, :class:`~discord.Object`, :class:`str`]
+    invite: Union[:class:`~discord.Invite`, :class:`str`]
         The invite.
 
     Returns
@@ -427,19 +488,84 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
-    if isinstance(invite, Invite) or isinstance(invite, Object):
-        return invite.id
+    if isinstance(invite, Invite):
+        return invite.code
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|app\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
         m = re.match(rx, invite)
         if m:
             return m.group(1)
     return invite
 
+def resolve_template(code):
+    """
+    Resolves a template code from a :class:`~discord.Template`, URL or code.
+
+    .. versionadded:: 1.4
+
+    Parameters
+    -----------
+    code: Union[:class:`~discord.Template`, :class:`str`]
+        The code.
+
+    Returns
+    --------
+    :class:`str`
+        The template code.
+    """
+    from .template import Template # circular import
+    if isinstance(code, Template):
+        return code.code
+    else:
+        rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
+        m = re.match(rx, code)
+        if m:
+            return m.group(1)
+    return code
+
 _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
                                      for c in ('*', '`', '_', '~', '|'))
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(r'(?P<markdown>%s)' % _MARKDOWN_ESCAPE_SUBREGEX)
+_MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
+
+_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
+
+_URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
+
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
+
+def remove_markdown(text, *, ignore_links=True):
+    """A helper function that removes markdown characters.
+
+    .. versionadded:: 1.7
+
+    .. note::
+            This function is not markdown aware and may remove meaning from the original text. For example,
+            if the input contains ``10 * 5`` then it will be converted into ``10  5``.
+
+    Parameters
+    -----------
+    text: :class:`str`
+        The text to remove markdown from.
+    ignore_links: :class:`bool`
+        Whether to leave links alone when removing markdown. For example,
+        if a URL in the text contains characters such as ``_`` then it will
+        be left alone. Defaults to ``True``.
+
+    Returns
+    --------
+    :class:`str`
+        The text with the markdown special characters removed.
+    """
+
+    def replacement(match):
+        groupdict = match.groupdict()
+        return groupdict.get('url', '')
+
+    regex = _MARKDOWN_STOCK_REGEX
+    if ignore_links:
+        regex = f'(?:{_URL_REGEX}|{regex})'
+    return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
 def escape_markdown(text, *, as_needed=False, ignore_links=True):
     r"""A helper function that escapes Discord's markdown.
@@ -467,7 +593,6 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
     """
 
     if not as_needed:
-        url_regex = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
         def replacement(match):
             groupdict = match.groupdict()
             is_url = groupdict.get('url')
@@ -475,10 +600,10 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
                 return is_url
             return '\\' + groupdict['markdown']
 
-        regex = r'(?P<markdown>[_\\~|\*`]|>(?:>>)?\s)'
+        regex = _MARKDOWN_STOCK_REGEX
         if ignore_links:
-            regex = '(?:%s|%s)' % (url_regex, regex)
-        return re.sub(regex, replacement, text)
+            regex = f'(?:{_URL_REGEX}|{regex})'
+        return re.sub(regex, replacement, text, 0, re.MULTILINE)
     else:
         text = re.sub(r'\\', r'\\\\', text)
         return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
@@ -490,6 +615,12 @@ def escape_mentions(text):
 
         This does not include channel mentions.
 
+    .. note::
+
+        For more granular control over what mentions should be escaped
+        within messages, refer to the :class:`~discord.AllowedMentions`
+        class.
+
     Parameters
     -----------
     text: :class:`str`
@@ -500,4 +631,4 @@ def escape_mentions(text):
     :class:`str`
         The text with the mentions removed.
     """
-    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,21})', '@\u200b\\1', text)
+    return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)

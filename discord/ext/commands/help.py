@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -62,6 +60,7 @@ __all__ = (
 # Type <prefix>help command for more info on a command.
 # You can also type <prefix>help category for more info on a category.
 
+
 class Paginator:
     """A class that aids in paginating code blocks for Discord messages.
 
@@ -79,18 +78,23 @@ class Paginator:
         The suffix appended at the end of every page. e.g. three backticks.
     max_size: :class:`int`
         The maximum amount of codepoints allowed in a page.
+    linesep: :class:`str`
+        The character string inserted between lines. e.g. a newline character.
+            .. versionadded:: 1.7
     """
-    def __init__(self, prefix='```', suffix='```', max_size=2000):
+
+    def __init__(self, prefix='```', suffix='```', max_size=2000, linesep='\n'):
         self.prefix = prefix
         self.suffix = suffix
         self.max_size = max_size
+        self.linesep = linesep
         self.clear()
 
     def clear(self):
         """Clears the paginator to have no pages."""
         if self.prefix is not None:
             self._current_page = [self.prefix]
-            self._count = len(self.prefix) + 1 # prefix + newline
+            self._count = len(self.prefix) + self._linesep_len  # prefix + newline
         else:
             self._current_page = []
             self._count = 0
@@ -103,6 +107,10 @@ class Paginator:
     @property
     def _suffix_len(self):
         return len(self.suffix) if self.suffix else 0
+
+    @property
+    def _linesep_len(self):
+        return len(self.linesep)
 
     def add_line(self, line='', *, empty=False):
         """Adds a line to the current page.
@@ -122,29 +130,29 @@ class Paginator:
         RuntimeError
             The line was too big for the current :attr:`max_size`.
         """
-        max_page_size = self.max_size - self._prefix_len - self._suffix_len - 2
+        max_page_size = self.max_size - self._prefix_len - self._suffix_len - 2 * self._linesep_len
         if len(line) > max_page_size:
-            raise RuntimeError('Line exceeds maximum page size %s' % (max_page_size))
+            raise RuntimeError(f'Line exceeds maximum page size {max_page_size}')
 
-        if self._count + len(line) + 1 > self.max_size - self._suffix_len:
+        if self._count + len(line) + self._linesep_len > self.max_size - self._suffix_len:
             self.close_page()
 
-        self._count += len(line) + 1
+        self._count += len(line) + self._linesep_len
         self._current_page.append(line)
 
         if empty:
             self._current_page.append('')
-            self._count += 1
+            self._count += self._linesep_len
 
     def close_page(self):
         """Prematurely terminate a page."""
         if self.suffix is not None:
             self._current_page.append(self.suffix)
-        self._pages.append('\n'.join(self._current_page))
+        self._pages.append(self.linesep.join(self._current_page))
 
         if self.prefix is not None:
             self._current_page = [self.prefix]
-            self._count = len(self.prefix) + 1 # prefix + newline
+            self._count = len(self.prefix) + self._linesep_len  # prefix + linesep
         else:
             self._current_page = []
             self._count = 0
@@ -155,19 +163,21 @@ class Paginator:
 
     @property
     def pages(self):
-        """Returns the rendered list of pages."""
+        """List[:class:`str`]: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             self.close_page()
         return self._pages
 
     def __repr__(self):
-        fmt = '<Paginator prefix: {0.prefix} suffix: {0.suffix} max_size: {0.max_size} count: {0._count}>'
+        fmt = '<Paginator prefix: {0.prefix!r} suffix: {0.suffix!r} linesep: {0.linesep!r} max_size: {0.max_size} count: {0._count}>'
         return fmt.format(self)
+
 
 def _not_overriden(f):
     f.__help_command_not_overriden__ = True
     return f
+
 
 class _HelpCommandImpl(Command):
     def __init__(self, inject, *args, **kwargs):
@@ -244,6 +254,7 @@ class _HelpCommandImpl(Command):
         cog.walk_commands = cog.walk_commands.__wrapped__
         self.cog = None
 
+
 class HelpCommand:
     r"""The base implementation for help command formatting.
 
@@ -264,9 +275,13 @@ class HelpCommand:
     show_hidden: :class:`bool`
         Specifies if hidden commands should be shown in the output.
         Defaults to ``False``.
-    verify_checks: :class:`bool`
+    verify_checks: Optional[:class:`bool`]
         Specifies if commands should have their :attr:`.Command.checks` called
-        and verified. Defaults to ``True``.
+        and verified. If ``True``, always calls :attr:`.Commands.checks`.
+        If ``None``, only calls :attr:`.Commands.checks` in a guild setting.
+        If ``False``, never calls :attr:`.Commands.checks`. Defaults to ``True``.
+
+        ..versionchanged:: 1.7
     command_attrs: :class:`dict`
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing
@@ -278,7 +293,7 @@ class HelpCommand:
         '@everyone': '@\u200beveryone',
         '@here': '@\u200bhere',
         r'<@!?[0-9]{17,22}>': '@deleted-user',
-        r'<@&[0-9]{17,22}>': '@deleted-role'
+        r'<@&[0-9]{17,22}>': '@deleted-role',
     }
 
     MENTION_PATTERN = re.compile('|'.join(MENTION_TRANSFORMS.keys()))
@@ -295,10 +310,7 @@ class HelpCommand:
         # The keys can be safely copied as-is since they're 99.99% certain of being
         # string keys
         deepcopy = copy.deepcopy
-        self.__original_kwargs__ = {
-            k: deepcopy(v)
-            for k, v in kwargs.items()
-        }
+        self.__original_kwargs__ = {k: deepcopy(v) for k, v in kwargs.items()}
         self.__original_args__ = deepcopy(args)
         return self
 
@@ -309,7 +321,7 @@ class HelpCommand:
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
         self.context = None
-        self._command_impl = None
+        self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self):
         obj = self.__class__(*self.__original_args__, **self.__original_kwargs__)
@@ -324,28 +336,56 @@ class HelpCommand:
     def _remove_from_bot(self, bot):
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
-        self._command_impl = None
+
+    def add_check(self, func):
+        """
+        Adds a check to the help command.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ----------
+        func
+            The function that will be used as a check.
+        """
+
+        self._command_impl.add_check(func)
+
+    def remove_check(self, func):
+        """
+        Removes a check from the help command.
+
+        This function is idempotent and will not raise an exception if
+        the function is not in the command's checks.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        ----------
+        func
+            The function to remove from the checks.
+        """
+
+        self._command_impl.remove_check(func)
 
     def get_bot_mapping(self):
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
         bot = self.context.bot
-        mapping = {
-            cog: cog.get_commands()
-            for cog in bot.cogs.values()
-        }
-        mapping[None] = [c for c in bot.all_commands.values() if c.cog is None]
+        mapping = {cog: cog.get_commands() for cog in bot.cogs.values()}
+        mapping[None] = [c for c in bot.commands if c.cog is None]
         return mapping
 
     @property
     def clean_prefix(self):
-        """The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
         user = self.context.guild.me if self.context.guild else self.context.bot.user
         # this breaks if the prefix mention is not the bot itself but I
         # consider this to be an *incredibly* strange use case. I'd rather go
         # for this common use case rather than waste performance for the
         # odd one.
-        pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name, self.context.prefix)
+        pattern = re.compile(fr"<@!?{user.id}>")
+        display_name = user.display_name.replace('\\', r'\\')
+        return pattern.sub('@' + display_name, self.context.prefix)
 
     @property
     def invoked_with(self):
@@ -382,22 +422,36 @@ class HelpCommand:
             The signature for the command.
         """
 
-        parent = command.full_parent_name
+        parent = command.parent
+        entries = []
+        while parent is not None:
+            if not parent.signature or parent.invoke_without_command:
+                entries.append(parent.name)
+            else:
+                entries.append(parent.name + ' ' + parent.signature)
+            parent = parent.parent
+        parent_sig = ' '.join(reversed(entries))
+
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
-            fmt = '[%s|%s]' % (command.name, aliases)
-            if parent:
-                fmt = parent + ' ' + fmt
+            fmt = f'[{command.name}|{aliases}]'
+            if parent_sig:
+                fmt = parent_sig + ' ' + fmt
             alias = fmt
         else:
-            alias = command.name if not parent else parent + ' ' + command.name
+            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
 
-        return '%s%s %s' % (self.clean_prefix, alias, command.signature)
+        return f'{self.clean_prefix}{alias} {command.signature}'
 
     def remove_mentions(self, string):
         """Removes mentions from the string to prevent abuse.
 
         This includes ``@everyone``, ``@here``, member mentions and role mentions.
+
+        Returns
+        -------
+        :class:`str`
+            The string with mentions removed.
         """
 
         def replace(obj, *, transforms=self.MENTION_TRANSFORMS):
@@ -450,7 +504,7 @@ class HelpCommand:
         :class:`str`
             The string to use when a command has not been found.
         """
-        return 'No command called "{}" found.'.format(string)
+        return f'No command called "{string}" found.'
 
     def subcommand_not_found(self, command, string):
         """|maybecoro|
@@ -479,8 +533,8 @@ class HelpCommand:
             The string to use when the command did not have the subcommand requested.
         """
         if isinstance(command, Group) and len(command.all_commands) > 0:
-            return 'Command "{0.qualified_name}" has no subcommand named {1}'.format(command, string)
-        return 'Command "{0.qualified_name}" has no subcommands.'.format(command)
+            return f'Command "{command.qualified_name}" has no subcommand named {string}'
+        return f'Command "{command.qualified_name}" has no subcommands.'
 
     async def filter_commands(self, commands, *, sort=False, key=None):
         """|coro|
@@ -512,9 +566,13 @@ class HelpCommand:
 
         iterator = commands if self.show_hidden else filter(lambda c: not c.hidden, commands)
 
-        if not self.verify_checks:
+        if self.verify_checks is False:
             # if we do not need to verify the checks then we can just
             # run it straight through normally without using await.
+            return sorted(iterator, key=key) if sort else list(iterator)
+
+        if self.verify_checks is None and not self.context.guild:
+            # if verify_checks is None and we're in a DM, don't verify
             return sorted(iterator, key=key) if sort else list(iterator)
 
         # if we're here then we need to check every command if it can run
@@ -548,10 +606,7 @@ class HelpCommand:
             The maximum width of the commands.
         """
 
-        as_lengths = (
-            discord.utils._string_width(c.name)
-            for c in commands
-        )
+        as_lengths = (discord.utils._string_width(c.name) for c in commands)
         return max(as_lengths, default=0)
 
     def get_destination(self):
@@ -560,6 +615,11 @@ class HelpCommand:
         You can override this method to customise the behaviour.
 
         By default this returns the context's channel.
+
+        Returns
+        -------
+        :class:`.abc.Messageable`
+            The destination where the help command will be output.
         """
         return self.context.channel
 
@@ -816,6 +876,7 @@ class HelpCommand:
         else:
             return await self.send_command_help(cmd)
 
+
 class DefaultHelpCommand(HelpCommand):
     """The implementation of the default help command.
 
@@ -868,16 +929,18 @@ class DefaultHelpCommand(HelpCommand):
         super().__init__(**options)
 
     def shorten_text(self, text):
-        """Shortens text to fit into the :attr:`width`."""
+        """:class:`str`: Shortens text to fit into the :attr:`width`."""
         if len(text) > self.width:
-            return text[:self.width - 3] + '...'
+            return text[:self.width - 3].rstrip() + '...'
         return text
 
     def get_ending_note(self):
-        """Returns help command's ending note. This is mainly useful to override for i18n purposes."""
+        """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
-        return "Type {0}{1} command for more info on a command.\n" \
-               "You can also type {0}{1} category for more info on a category.".format(self.clean_prefix, command_name)
+        return (
+            f"Type {self.clean_prefix}{command_name} command for more info on a command.\n"
+            f"You can also type {self.clean_prefix}{command_name} category for more info on a category."
+        )
 
     def add_indented_commands(self, commands, *, heading, max_size=None):
         """Indents a list of commands after the specified heading.
@@ -912,7 +975,7 @@ class DefaultHelpCommand(HelpCommand):
         for command in commands:
             name = command.name
             width = max_size - (get_width(name) - len(name))
-            entry = '{0}{1:<{width}} {2}'.format(self.indent * ' ', name, command.short_doc, width=width)
+            entry = f'{self.indent * " "}{name:<{width}} {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
     async def send_pages(self):
@@ -965,7 +1028,8 @@ class DefaultHelpCommand(HelpCommand):
             # <description> portion
             self.paginator.add_line(bot.description, empty=True)
 
-        no_category = '\u200b{0.no_category}:'.format(self)
+        no_category = f'\u200b{self.no_category}:'
+
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name + ':' if cog is not None else no_category
@@ -1018,6 +1082,7 @@ class DefaultHelpCommand(HelpCommand):
             self.paginator.add_line(note)
 
         await self.send_pages()
+
 
 class MinimalHelpCommand(HelpCommand):
     """An implementation of a help command with minimal output.
@@ -1079,18 +1144,29 @@ class MinimalHelpCommand(HelpCommand):
             Use `{prefix}{command_name} [command]` for more info on a command.
             You can also use `{prefix}{command_name} [category]` for more info on a category.
 
+        Returns
+        -------
+        :class:`str`
+            The help command opening note.
         """
         command_name = self.invoked_with
-        return "Use `{0}{1} [command]` for more info on a command.\n" \
-               "You can also use `{0}{1} [category]` for more info on a category.".format(self.clean_prefix, command_name)
+        return (
+            f"Use `{self.clean_prefix}{command_name} [command]` for more info on a command.\n"
+            f"You can also use `{self.clean_prefix}{command_name} [category]` for more info on a category."
+        )
 
     def get_command_signature(self, command):
-        return '%s%s %s' % (self.clean_prefix, command.qualified_name, command.signature)
+        return f'{self.clean_prefix}{command.qualified_name} {command.signature}'
 
     def get_ending_note(self):
         """Return the help command's ending note. This is mainly useful to override for i18n purposes.
 
         The default implementation does nothing.
+
+        Returns
+        -------
+        :class:`str`
+            The help command ending note.
         """
         return None
 
@@ -1112,7 +1188,7 @@ class MinimalHelpCommand(HelpCommand):
         if commands:
             # U+2002 Middle Dot
             joined = '\u2002'.join(c.name for c in commands)
-            self.paginator.add_line('__**%s**__' % heading)
+            self.paginator.add_line(f'__**{heading}**__')
             self.paginator.add_line(joined)
 
     def add_subcommand_formatting(self, command):
@@ -1146,7 +1222,7 @@ class MinimalHelpCommand(HelpCommand):
         aliases: Sequence[:class:`str`]
             A list of aliases to format.
         """
-        self.paginator.add_line('**%s** %s' % (self.aliases_heading, ', '.join(aliases)), empty=True)
+        self.paginator.add_line(f'**{self.aliases_heading}** {", ".join(aliases)}', empty=True)
 
     def add_command_formatting(self, command):
         """A utility function to format commands and groups.
@@ -1199,7 +1275,8 @@ class MinimalHelpCommand(HelpCommand):
         if note:
             self.paginator.add_line(note, empty=True)
 
-        no_category = '\u200b{0.no_category}'.format(self)
+        no_category = f'\u200b{self.no_category}'
+
         def get_category(command, *, no_category=no_category):
             cog = command.cog
             return cog.qualified_name if cog is not None else no_category
@@ -1232,7 +1309,7 @@ class MinimalHelpCommand(HelpCommand):
 
         filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
         if filtered:
-            self.paginator.add_line('**%s %s**' % (cog.qualified_name, self.commands_heading))
+            self.paginator.add_line(f'**{cog.qualified_name} {self.commands_heading}**')
             for command in filtered:
                 self.add_subcommand_formatting(command)
 
@@ -1252,7 +1329,7 @@ class MinimalHelpCommand(HelpCommand):
             if note:
                 self.paginator.add_line(note, empty=True)
 
-            self.paginator.add_line('**%s**' % self.commands_heading)
+            self.paginator.add_line(f'**{self.commands_heading}**')
             for command in filtered:
                 self.add_subcommand_formatting(command)
 

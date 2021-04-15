@@ -11,6 +11,416 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p7p1:
+
+v1.7.1
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- |commands| Fix :meth:`Cog.has_error_handler <ext.commands.Cog.has_error_handler>` not working as intended.
+
+.. _vp1p7p0:
+
+v1.7.0
+--------
+
+This version is mainly for improvements and bug fixes. This is more than likely the last major version in the 1.x series.
+Work after this will be spent on v2.0. As a result, **this is the last version to support Python 3.5**.
+Likewise, **this is the last version to support user bots**.
+
+Development of v2.0 will have breaking changes and support for newer API features.
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add support for stage channels via :class:`StageChannel` (:issue:`6602`, :issue:`6608`)
+- Add support for :attr:`MessageReference.fail_if_not_exists` (:issue:`6484`)
+    - By default, if the message you're replying to doesn't exist then the API errors out.
+      This attribute tells the Discord API that it's okay for that message to be missing.
+
+- Add support for Discord's new permission serialisation scheme.
+- Add an easier way to move channels using :meth:`abc.GuildChannel.move`
+- Add :attr:`Permissions.use_slash_commands`
+- Add :attr:`Permissions.request_to_speak`
+- Add support for voice regions in voice channels via :attr:`VoiceChannel.rtc_region` (:issue:`6606`)
+- Add support for :meth:`PartialEmoji.url_as` (:issue:`6341`)
+- Add :attr:`MessageReference.jump_url` (:issue:`6318`)
+- Add :attr:`File.spoiler` (:issue:`6317`)
+- Add support for passing ``roles`` to :meth:`Guild.estimate_pruned_members` (:issue:`6538`)
+- Allow callable class factories to be used in :meth:`abc.Connectable.play` (:issue:`6478`)
+- Add a way to get mutual guilds from the client's cache via :attr:`User.mutual_guilds` (:issue:`2539`, :issue:`6444`)
+- :meth:`PartialMessage.edit` now returns a full :class:`Message` upon success (:issue:`6309`)
+- Add :attr:`RawMessageUpdateEvent.guild_id` (:issue:`6489`)
+- :class:`AuditLogEntry` is now hashable (:issue:`6495`)
+- :class:`Attachment` is now hashable
+- Add :attr:`Attachment.content_type` attribute (:issue:`6618`)
+- Add support for casting :class:`Attachment` to :class:`str` to get the URL.
+- Add ``seed`` parameter for :class:`Colour.random` (:issue:`6562`)
+    - This only seeds it for one call. If seeding for multiple calls is desirable, use :func:`random.seed`.
+
+- Add a :func:`utils.remove_markdown` helper function (:issue:`6573`)
+- Add support for passing scopes to :func:`utils.oauth_url` (:issue:`6568`)
+- |commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColourConverter <ext.commands.ColourConverter>` (:issue:`6374`)
+- |commands| Add support for converting :class:`StoreChannel` via :class:`StoreChannelConverter <ext.commands.StoreChannelConverter>` (:issue:`6603`)
+- |commands| Add support for stripping whitespace after the prefix is encountered using the ``strip_after_prefix`` :class:`~ext.commands.Bot` constructor parameter.
+- |commands| Add :attr:`Context.invoked_parents <ext.commands.Context.invoked_parents>` to get the aliases a command's parent was invoked with (:issue:`1874`, :issue:`6462`)
+- |commands| Add a converter for :class:`PartialMessage` under :class:`ext.commands.PartialMessageConverter` (:issue:`6308`)
+- |commands| Add a converter for :class:`Guild` under :class:`ext.commands.GuildConverter` (:issue:`6016`, :issue:`6365`)
+- |commands| Add :meth:`Command.has_error_handler <ext.commands.Command.has_error_handler>`
+    - This is also adds :meth:`Cog.has_error_handler <ext.commands.Cog.has_error_handler>`
+- |commands| Allow callable types to act as a bucket key for cooldowns (:issue:`6563`)
+- |commands| Add ``linesep`` keyword argument to :class:`Paginator <ext.commands.Paginator>` (:issue:`5975`)
+- |commands| Allow ``None`` to be passed to :attr:`HelpCommand.verify_checks <ext.commands.HelpCommand.verify_checks>` to only verify in a guild context (:issue:`2008`, :issue:`6446`)
+- |commands| Allow relative paths when loading extensions via a ``package`` keyword argument (:issue:`2465`, :issue:`6445`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix mentions not working if ``mention_author`` is passed in :meth:`abc.Messageable.send` without :attr:`Client.allowed_mentions` set (:issue:`6192`, :issue:`6458`)
+- Fix user created instances of :class:`CustomActivity` triggering an error (:issue:`4049`)
+    - Note that currently, bot users still cannot set a custom activity due to a Discord limitation.
+- Fix :exc:`ZeroDivisionError` being raised from :attr:`VoiceClient.average_latency` (:issue:`6430`, :issue:`6436`)
+- Fix :attr:`User.public_flags` not updating upon edit (:issue:`6315`)
+- Fix :attr:`Message.call` sometimes causing attribute errors (:issue:`6390`)
+- Fix issue resending a file during request retries on newer versions of ``aiohttp`` (:issue:`6531`)
+- Raise an error when ``user_ids`` is empty in :meth:`Guild.query_members`
+- Fix ``__str__`` magic method raising when a :class:`Guild` is unavailable.
+- Fix potential :exc:`AttributeError` when accessing :attr:`VoiceChannel.members` (:issue:`6602`)
+- :class:`Embed` constructor parameters now implicitly convert to :class:`str` (:issue:`6574`)
+- Ensure ``discord`` package is only run if executed as a script (:issue:`6483`)
+- |commands| Fix irrelevant commands potentially being unloaded during cog unload due to failure.
+- |commands| Fix attribute errors when setting a cog to :class:`~.ext.commands.HelpCommand` (:issue:`5154`)
+- |commands| Fix :attr:`Context.invoked_with <ext.commands.Context.invoked_with>` being improperly reassigned during a :meth:`~ext.commands.Context.reinvoke` (:issue:`6451`, :issue:`6462`)
+- |commands| Remove duplicates from :meth:`HelpCommand.get_bot_mapping <ext.commands.HelpCommand.get_bot_mapping>` (:issue:`6316`)
+- |commands| Properly handle positional-only parameters in bot command signatures (:issue:`6431`)
+- |commands| Group signatures now properly show up in :attr:`Command.signature <ext.commands.Command.signature>` (:issue:`6529`, :issue:`6530`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- User endpoints and all userbot related functionality has been deprecated and will be removed in the next major version of the library.
+- :class:`Permission` class methods were updated to match the UI of the Discord client (:issue:`6476`)
+- ``_`` and ``-`` characters are now stripped when making a new cog using the ``discord`` package (:issue:`6313`)
+
+.. _vp1p6p0:
+
+v1.6.0
+--------
+
+This version comes with support for replies and stickers.
+
+New Features
+~~~~~~~~~~~~~~
+
+- An entirely redesigned documentation. This was the cumulation of multiple months of effort.
+    - There's now a dark theme, feel free to navigate to the cog on the screen to change your setting, though this should be automatic.
+- Add support for :meth:`AppInfo.icon_url_as` and :meth:`AppInfo.cover_image_url_as` (:issue:`5888`)
+- Add :meth:`Colour.random` to get a random colour (:issue:`6067`)
+- Add support for stickers via :class:`Sticker` (:issue:`5946`)
+- Add support for replying via :meth:`Message.reply` (:issue:`6061`)
+    - This also comes with the :attr:`AllowedMentions.replied_user` setting.
+    - :meth:`abc.Messageable.send` can now accept a :class:`MessageReference`.
+    - :class:`MessageReference` can now be constructed by users.
+    - :meth:`Message.to_reference` can now convert a message to a :class:`MessageReference`.
+- Add support for getting the replied to resolved message through :attr:`MessageReference.resolved`.
+- Add support for role tags.
+    - :attr:`Guild.premium_subscriber_role` to get the "Nitro Booster" role (if available).
+    - :attr:`Guild.self_role` to get the bot's own role (if available).
+    - :attr:`Role.tags` to get the role's tags.
+    - :meth:`Role.is_premium_subscriber` to check if a role is the "Nitro Booster" role.
+    - :meth:`Role.is_bot_managed` to check if a role is a bot role (i.e. the automatically created role for bots).
+    - :meth:`Role.is_integration` to check if a role is role created by an integration.
+- Add :meth:`Client.is_ws_ratelimited` to check if the websocket is rate limited.
+    - :meth:`ShardInfo.is_ws_ratelimited` is the equivalent for checking a specific shard.
+- Add support for chunking an :class:`AsyncIterator` through :meth:`AsyncIterator.chunk` (:issue:`6100`, :issue:`6082`)
+- Add :attr:`PartialEmoji.created_at` (:issue:`6128`)
+- Add support for editing and deleting webhook sent messages (:issue:`6058`)
+    - This adds :class:`WebhookMessage` as well to power this behaviour.
+- Add :class:`PartialMessage` to allow working with a message via channel objects and just a message_id (:issue:`5905`)
+    - This is useful if you don't want to incur an extra API call to fetch the message.
+- Add :meth:`Emoji.url_as` (:issue:`6162`)
+- Add support for :attr:`Member.pending` for the membership gating feature.
+- Allow ``colour`` parameter to take ``int`` in :meth:`Guild.create_role` (:issue:`6195`)
+- Add support for ``presences`` in :meth:`Guild.query_members` (:issue:`2354`)
+- |commands| Add support for ``description`` keyword argument in :class:`commands.Cog <ext.commands.Cog>` (:issue:`6028`)
+- |tasks| Add support for calling the wrapped coroutine as a function via ``__call__``.
+
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Raise :exc:`DiscordServerError` when reaching 503s repeatedly (:issue:`6044`)
+- Fix :exc:`AttributeError` when :meth:`Client.fetch_template` is called (:issue:`5986`)
+- Fix errors when playing audio and moving to another channel (:issue:`5953`)
+- Fix :exc:`AttributeError` when voice channels disconnect too fast (:issue:`6039`)
+- Fix stale :class:`User` references when the members intent is off.
+- Fix :func:`on_user_update` not dispatching in certain cases when a member is not cached but the user somehow is.
+- Fix :attr:`Message.author` being overwritten in certain cases during message update.
+    - This would previously make it so :attr:`Message.author` is a :class:`User`.
+- Fix :exc:`UnboundLocalError` for editing ``public_updates_channel`` in :meth:`Guild.edit` (:issue:`6093`)
+- Fix uninitialised :attr:`CustomActivity.created_at` (:issue:`6095`)
+- |commands| Errors during cog unload no longer stops module cleanup (:issue:`6113`)
+- |commands| Properly cleanup lingering commands when a conflicting alias is found when adding commands (:issue:`6217`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- ``ffmpeg`` spawned processes no longer open a window in Windows (:issue:`6038`)
+- Update dependencies to allow the library to work on Python 3.9+ without requiring build tools. (:issue:`5984`, :issue:`5970`)
+- Fix docstring issue leading to a SyntaxError in 3.9 (:issue:`6153`)
+- Update Windows opus binaries from 1.2.1 to 1.3.1 (:issue:`6161`)
+- Allow :meth:`Guild.create_role` to accept :class:`int` as the ``colour`` parameter (:issue:`6195`)
+- |commands| :class:`MessageConverter <ext.commands.MessageConverter>` regex got updated to support ``www.`` prefixes (:issue:`6002`)
+- |commands| :class:`UserConverter <ext.commands.UserConverter>` now fetches the API if an ID is passed and the user is not cached.
+- |commands| :func:`max_concurrency <ext.commands.max_concurrency>` is now called before cooldowns (:issue:`6172`)
+
+.. _vp1p5p1:
+
+v1.5.1
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix :func:`utils.escape_markdown` not escaping quotes properly (:issue:`5897`)
+- Fix :class:`Message` not being hashable (:issue:`5901`, :issue:`5866`)
+- Fix moving channels to the end of the channel list (:issue:`5923`)
+- Fix seemingly strange behaviour in ``__eq__`` for :class:`PermissionOverwrite` (:issue:`5929`)
+- Fix aliases showing up in ``__iter__`` for :class:`Intents` (:issue:`5945`)
+- Fix the bot disconnecting from voice when moving them to another channel (:issue:`5904`)
+- Fix attribute errors when chunking times out sometimes during delayed on_ready dispatching.
+- Ensure that the bot's own member is not evicted from the cache (:issue:`5949`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Members are now loaded during ``GUILD_MEMBER_UPDATE`` events if :attr:`MemberCacheFlags.joined` is set. (:issue:`5930`)
+- |commands| :class:`MemberConverter <ext.commands.MemberConverter>` now properly lazily fetches members if not available from cache.
+    - This is the same as having ``discord.Member`` as the type-hint.
+- :meth:`Guild.chunk` now allows concurrent calls without spamming the gateway with requests.
+
+.. _vp1p5p0:
+
+v1.5.0
+--------
+
+This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`intents_primer`.
+
+API Changes
+~~~~~~~~~~~~~
+
+- Members and presences will no longer be retrieved due to an API change. See :ref:`privileged_intents` for more info.
+- As a consequence, fetching offline members is disabled if the members intent is not enabled.
+
+New Features
+~~~~~~~~~~~~~~
+
+- Support for gateway intents, passed via ``intents`` in :class:`Client` using :class:`Intents`.
+- Add :attr:`VoiceRegion.south_korea` (:issue:`5233`)
+- Add support for ``__eq__`` for :class:`Message` (:issue:`5789`)
+- Add :meth:`Colour.dark_theme` factory method (:issue:`1584`)
+- Add :meth:`AllowedMentions.none` and :meth:`AllowedMentions.all` (:issue:`5785`)
+- Add more concrete exceptions for 500 class errors under :class:`DiscordServerError` (:issue:`5797`)
+- Implement :class:`VoiceProtocol` to better intersect the voice flow.
+- Add :meth:`Guild.chunk` to fully chunk a guild.
+- Add :class:`MemberCacheFlags` to better control member cache. See :ref:`intents_member_cache` for more info.
+- Add support for :attr:`ActivityType.competing` (:issue:`5823`)
+    - This seems currently unused API wise.
+
+- Add support for message references, :attr:`Message.reference` (:issue:`5754`, :issue:`5832`)
+- Add alias for :class:`ColourConverter` under ``ColorConverter`` (:issue:`5773`)
+- Add alias for :attr:`PublicUserFlags.verified_bot_developer` under :attr:`PublicUserFlags.early_verified_bot_developer` (:issue:`5849`)
+- |commands| Add support for ``require_var_positional`` for :class:`Command` (:issue:`5793`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix issue with :meth:`Guild.by_category` not showing certain channels.
+- Fix :attr:`abc.GuildChannel.permissions_synced` always being ``False`` (:issue:`5772`)
+- Fix handling of cloudflare bans on webhook related requests (:issue:`5221`)
+- Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
+- Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
+- Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
+- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
+- |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
+- |commands| Fix cooldown timing ignoring edited timestamps.
+- |tasks| Fix tasks extending the next iteration on handled exceptions (:issue:`5762`, :issue:`5763`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Webhook requests are now logged (:issue:`5798`)
+- Remove caching layer from :attr:`AutoShardedClient.shards`. This was causing issues if queried before launching shards.
+- Gateway rate limits are now handled.
+- Warnings logged due to missed caches are now changed to DEBUG log level.
+- Some strings are now explicitly interned to reduce memory usage.
+- Usage of namedtuples has been reduced to avoid potential breaking changes in the future (:issue:`5834`)
+- |commands| All :class:`BadArgument` exceptions from the built-in converters now raise concrete exceptions to better tell them apart (:issue:`5748`)
+- |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
+
+.. _vp1p4p2:
+
+v1.4.2
+--------
+
+This is a maintenance release with backports from :ref:`vp1p5p0`.
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix issue with :meth:`Guild.by_category` not showing certain channels.
+- Fix :attr:`abc.GuildChannel.permissions_synced` always being ``False`` (:issue:`5772`)
+- Fix handling of cloudflare bans on webhook related requests (:issue:`5221`)
+- Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
+- Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
+- Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
+- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
+- |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
+- |commands| Fix cooldown timing ignoring edited timestamps.
+- |tasks| Fix tasks extending the next iteration on handled exceptions (:issue:`5762`, :issue:`5763`)
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- Remove caching layer from :attr:`AutoShardedClient.shards`. This was causing issues if queried before launching shards.
+- |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
+
+.. _vp1p4p1:
+
+v1.4.1
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Properly terminate the connection when :meth:`Client.close` is called (:issue:`5207`)
+- Fix error being raised when clearing embed author or image when it was already cleared (:issue:`5210`, :issue:`5212`)
+- Fix ``__path__`` to allow editable extensions (:issue:`5213`)
+
+.. _vp1p4p0:
+
+v1.4.0
+--------
+
+Another version with a long development time. Features like Intents are slated to be released in a v1.5 release. Thank you for your patience!
+
+New Features
+~~~~~~~~~~~~~~
+
+- Add support for :class:`AllowedMentions` to have more control over what gets mentioned.
+    - This can be set globally through :attr:`Client.allowed_mentions`
+    - This can also be set on a per message basis via :meth:`abc.Messageable.send`
+
+- :class:`AutoShardedClient` has been completely redesigned from the ground up to better suit multi-process clusters (:issue:`2654`)
+    - Add :class:`ShardInfo` which allows fetching specific information about a shard.
+    - The :class:`ShardInfo` allows for reconnecting and disconnecting of a specific shard as well.
+    - Add :meth:`AutoShardedClient.get_shard` and :attr:`AutoShardedClient.shards` to get information about shards.
+    - Rework the entire connection flow to better facilitate the ``IDENTIFY`` rate limits.
+    - Add a hook :meth:`Client.before_identify_hook` to have better control over what happens before an ``IDENTIFY`` is done.
+    - Add more shard related events such as :func:`on_shard_connect`, :func:`on_shard_disconnect` and :func:`on_shard_resumed`.
+
+- Add support for guild templates (:issue:`2652`)
+    - This adds :class:`Template` to read a template's information.
+    - :meth:`Client.fetch_template` can be used to fetch a template's information from the API.
+    - :meth:`Client.create_guild` can now take an optional template to base the creation from.
+    - Note that fetching a guild's template is currently restricted for bot accounts.
+
+- Add support for guild integrations (:issue:`2051`, :issue:`1083`)
+    - :class:`Integration` is used to read integration information.
+    - :class:`IntegrationAccount` is used to read integration account information.
+    - :meth:`Guild.integrations` will fetch all integrations in a guild.
+    - :meth:`Guild.create_integration` will create an integration.
+    - :meth:`Integration.edit` will edit an existing integration.
+    - :meth:`Integration.delete` will delete an integration.
+    - :meth:`Integration.sync` will sync an integration.
+    - There is currently no support in the audit log for this.
+
+- Add an alias for :attr:`VerificationLevel.extreme` under :attr:`VerificationLevel.very_high` (:issue:`2650`)
+- Add various grey to gray aliases for :class:`Colour` (:issue:`5130`)
+- Added :attr:`VoiceClient.latency` and :attr:`VoiceClient.average_latency` (:issue:`2535`)
+- Add ``use_cached`` and ``spoiler`` parameters to :meth:`Attachment.to_file` (:issue:`2577`, :issue:`4095`)
+- Add ``position`` parameter support to :meth:`Guild.create_category` (:issue:`2623`)
+- Allow passing ``int`` for the colour in :meth:`Role.edit` (:issue:`4057`)
+- Add :meth:`Embed.remove_author` to clear author information from an embed (:issue:`4068`)
+- Add the ability to clear images and thumbnails in embeds using :attr:`Embed.Empty` (:issue:`4053`)
+- Add :attr:`Guild.max_video_channel_users` (:issue:`4120`)
+- Add :attr:`Guild.public_updates_channel` (:issue:`4120`)
+- Add ``guild_ready_timeout`` parameter to :class:`Client` and subclasses to control timeouts when the ``GUILD_CREATE`` stream takes too long (:issue:`4112`)
+- Add support for public user flags via :attr:`User.public_flags` and :class:`PublicUserFlags` (:issue:`3999`)
+- Allow changing of channel types via :meth:`TextChannel.edit` to and from a news channel (:issue:`4121`)
+- Add :meth:`Guild.edit_role_positions` to bulk edit role positions in a single API call (:issue:`2501`, :issue:`2143`)
+- Add :meth:`Guild.change_voice_state` to change your voice state in a guild (:issue:`5088`)
+- Add :meth:`PartialInviteGuild.is_icon_animated` for checking if the invite guild has animated icon (:issue:`4180`, :issue:`4181`)
+- Add :meth:`PartialInviteGuild.icon_url_as` now supports ``static_format`` for consistency (:issue:`4180`, :issue:`4181`)
+- Add support for ``user_ids`` in :meth:`Guild.query_members`
+- Add support for pruning members by roles in :meth:`Guild.prune_members` (:issue:`4043`)
+- |commands| Implement :func:`~ext.commands.before_invoke` and :func:`~ext.commands.after_invoke` decorators (:issue:`1986`, :issue:`2502`)
+- |commands| Add a way to retrieve ``retry_after`` from a cooldown in a command via :meth:`Command.get_cooldown_retry_after <.ext.commands.Command.get_cooldown_retry_after>` (:issue:`5195`)
+- |commands| Add a way to dynamically add and remove checks from a :class:`HelpCommand <.ext.commands.HelpCommand>` (:issue:`5197`)
+- |tasks| Add :meth:`Loop.is_running <.ext.tasks.Loop.is_running>` method to the task objects (:issue:`2540`)
+- |tasks| Allow usage of custom error handlers similar to the command extensions to tasks using :meth:`Loop.error <.ext.tasks.Loop.error>` decorator (:issue:`2621`)
+
+
+Bug Fixes
+~~~~~~~~~~~~
+
+- Fix issue with :attr:`PartialEmoji.url` reads leading to a failure (:issue:`4015`, :issue:`4016`)
+- Allow :meth:`abc.Messageable.history` to take a limit of ``1`` even if ``around`` is passed (:issue:`4019`)
+- Fix :attr:`Guild.member_count` not updating in certain cases when a member has left the guild (:issue:`4021`)
+- Fix the type of :attr:`Object.id` not being validated. For backwards compatibility ``str`` is still allowed but is converted to ``int`` (:issue:`4002`)
+- Fix :meth:`Guild.edit` not allowing editing of notification settings (:issue:`4074`, :issue:`4047`)
+- Fix crash when the guild widget contains channels that aren't in the payload (:issue:`4114`, :issue:`4115`)
+- Close ffmpeg stdin handling from spawned processes with :class:`FFmpegOpusAudio` and :class:`FFmpegPCMAudio` (:issue:`4036`)
+- Fix :func:`utils.escape_markdown` not escaping masked links (:issue:`4206`, :issue:`4207`)
+- Fix reconnect loop due to failed handshake on region change (:issue:`4210`, :issue:`3996`)
+- Fix :meth:`Guild.by_category` not returning empty categories (:issue:`4186`)
+- Fix certain JPEG images not being identified as JPEG (:issue:`5143`)
+- Fix a crash when an incomplete guild object is used when fetching reaction information (:issue:`5181`)
+- Fix a timeout issue when fetching members using :meth:`Guild.query_members`
+- Fix an issue with domain resolution in voice (:issue:`5188`, :issue:`5191`)
+- Fix an issue where :attr:`PartialEmoji.id` could be a string (:issue:`4153`, :issue:`4152`)
+- Fix regression where :attr:`Member.activities` would not clear.
+- |commands| A :exc:`TypeError` is now raised when :obj:`typing.Optional` is used within :data:`commands.Greedy <.ext.commands.Greedy>` (:issue:`2253`, :issue:`5068`)
+- |commands| :meth:`Bot.walk_commands <.ext.commands.Bot.walk_commands>` no longer yields duplicate commands due to aliases (:issue:`2591`)
+- |commands| Fix regex characters not being escaped in :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` (:issue:`4058`, :issue:`4071`)
+- |commands| Fix :meth:`Bot.get_command <.ext.commands.Bot.get_command>` from raising errors when a name only has whitespace (:issue:`5124`)
+- |commands| Fix issue with :attr:`Context.subcommand_passed <.ext.commands.Context.subcommand_passed>` not functioning as expected (:issue:`5198`)
+- |tasks| Task objects are no longer stored globally so two class instances can now start two separate tasks (:issue:`2294`)
+- |tasks| Allow cancelling the loop within :meth:`before_loop <.ext.tasks.Loop.before_loop>` (:issue:`4082`)
+
+
+Miscellaneous
+~~~~~~~~~~~~~~~
+
+- The :attr:`Member.roles` cache introduced in v1.3 was reverted due to issues caused (:issue:`4087`, :issue:`4157`)
+- :class:`Webhook` objects are now comparable and hashable (:issue:`4182`)
+- Some more API requests got a ``reason`` parameter for audit logs (:issue:`5086`)
+    - :meth:`TextChannel.follow`
+    - :meth:`Message.pin` and :meth:`Message.unpin`
+    - :meth:`Webhook.delete` and :meth:`Webhook.edit`
+
+- For performance reasons ``websockets`` has been dropped in favour of ``aiohttp.ws``.
+- The blocking logging message now shows the stack trace of where the main thread was blocking
+- The domain name was changed from ``discordapp.com`` to ``discord.com`` to prepare for the required domain migration
+- Reduce memory usage when reconnecting due to stale references being held by the message cache (:issue:`5133`)
+- Optimize :meth:`abc.GuildChannel.permissions_for` by not creating as many temporary objects (20-32% savings).
+- |commands| Raise :exc:`~ext.commands.CommandRegistrationError` instead of :exc:`ClientException` when a duplicate error is registered (:issue:`4217`)
+- |tasks| No longer handle :exc:`HTTPException` by default in the task reconnect loop (:issue:`5193`)
+
+.. _vp1p3p4:
+
+v1.3.4
+--------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix an issue with channel overwrites causing multiple issues including crashes (:issue:`5109`)
+
 .. _vp1p3p3:
 
 v1.3.3

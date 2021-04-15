@@ -1,0 +1,49 @@
+name: Feature Request
+description: Suggest a feature for this library
+labels: feature request
+body:
+  - type: input
+    attributes:
+      label: Summary
+      description: >
+        A short summary of what your feature request is.
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      multiple: false
+      label: What is the feature request for?
+      options:
+        - The core library
+        - discord.ext.commands
+        - discord.ext.tasks
+        - The documentation
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Problem
+      description: >
+        What problem is your feature trying to solve?
+        What becomes easier or possible when this feature is implemented?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Ideal Solution
+      description: >
+        What is your ideal solution to the problem?
+        What would you like this feature to do?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: The Current Solution
+      description: >
+        What is the current solution to the problem, if any?
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.

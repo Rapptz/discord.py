@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 
 .. _intro:
@@ -52,7 +54,7 @@ Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
 Sometimes you want to keep libraries from polluting system installs or use a different version of
-libraries than the ones installed on the system. You might also not have permissions to install libaries system-wide.
+libraries than the ones installed on the system. You might also not have permissions to install libraries system-wide.
 For this purpose, the standard library as of Python 3.3 comes with a concept called "Virtual Environment"s to
 help maintain these separate versions.
 
@@ -102,10 +104,10 @@ A quick example to showcase how events work:
 
     class MyClient(discord.Client):
         async def on_ready(self):
-            print('Logged on as {0}!'.format(self.user))
+            print(f'Logged on as {self.user}!')
 
         async def on_message(self, message):
-            print('Message from {0.author}: {0.content}'.format(message))
+            print(f'Message from {messsage.author}: {message.content}')
 
     client = MyClient()
     client.run('my token goes here')

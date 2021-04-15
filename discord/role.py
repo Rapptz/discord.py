@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -28,7 +26,66 @@ from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
-from .utils import snowflake_time
+from .utils import snowflake_time, _get_as_snowflake
+
+__all__ = (
+    'RoleTags',
+    'Role',
+)
+
+
+class RoleTags:
+    """Represents tags on a role.
+
+    A role tag is a piece of extra information attached to a managed role
+    that gives it context for the reason the role is managed.
+
+    While this can be accessed, a useful interface is also provided in the
+    :class:`Role` and :class:`Guild` classes as well.
+
+    .. versionadded:: 1.6
+
+    Attributes
+    ------------
+    bot_id: Optional[:class:`int`]
+        The bot's user ID that manages this role.
+    integration_id: Optional[:class:`int`]
+        The integration ID that manages the role.
+    """
+
+    __slots__ = (
+        'bot_id',
+        'integration_id',
+        '_premium_subscriber',
+    )
+
+    def __init__(self, data):
+        self.bot_id = _get_as_snowflake(data, 'bot_id')
+        self.integration_id = _get_as_snowflake(data, 'integration_id')
+        # NOTE: The API returns "null" for this if it's valid, which corresponds to None.
+        # This is different from other fields where "null" means "not there".
+        # So in this case, a value of None is the same as True.
+        # Which means we would need a different sentinel. For this purpose I used ellipsis.
+        self._premium_subscriber = data.get('premium_subscriber', ...)
+
+    def is_bot_managed(self):
+        """:class:`bool`: Whether the role is associated with a bot."""
+        return self.bot_id is not None
+
+    def is_premium_subscriber(self):
+        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
+        return self._premium_subscriber is None
+
+    def is_integration(self):
+        """:class:`bool`: Whether the role is managed by an integration."""
+        return self.integration_id is not None
+
+    def __repr__(self):
+        return (
+            f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
+            f'premium_subscriber={self.is_premium_subscriber()}>'
+        )
+
 
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
@@ -85,10 +142,23 @@ class Role(Hashable):
         integrations such as Twitch.
     mentionable: :class:`bool`
         Indicates if the role can be mentioned by users.
+    tags: Optional[:class:`RoleTags`]
+        The role tags associated with this role.
     """
 
-    __slots__ = ('id', 'name', '_permissions', '_colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', '_state')
+    __slots__ = (
+        'id',
+        'name',
+        '_permissions',
+        '_colour',
+        'position',
+        'managed',
+        'mentionable',
+        'hoist',
+        'guild',
+        'tags',
+        '_state',
+    )
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
@@ -100,7 +170,7 @@ class Role(Hashable):
         return self.name
 
     def __repr__(self):
-        return '<Role id={0.id} name={0.name!r}>'.format(self)
+        return f'<Role id={self.id} name={self.name!r}>'
 
     def __lt__(self, other):
         if not isinstance(other, Role) or not isinstance(self, Role):
@@ -140,16 +210,42 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self._permissions = data.get('permissions', 0)
+        self._permissions = int(data.get('permissions', 0))
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
         self.managed = data.get('managed', False)
         self.mentionable = data.get('mentionable', False)
 
+        try:
+            self.tags = RoleTags(data['tags'])
+        except KeyError:
+            self.tags = None
+
     def is_default(self):
-        """Checks if the role is the default role."""
+        """:class:`bool`: Checks if the role is the default role."""
         return self.guild.id == self.id
+
+    def is_bot_managed(self):
+        """:class:`bool`: Whether the role is associated with a bot.
+
+        .. versionadded:: 1.6
+        """
+        return self.tags is not None and self.tags.is_bot_managed()
+
+    def is_premium_subscriber(self):
+        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild.
+
+        .. versionadded:: 1.6
+        """
+        return self.tags is not None and self.tags.is_premium_subscriber()
+
+    def is_integration(self):
+        """:class:`bool`: Whether the role is managed by an integration.
+
+        .. versionadded:: 1.6
+        """
+        return self.tags is not None and self.tags.is_integration()
 
     @property
     def permissions(self):
@@ -174,7 +270,7 @@ class Role(Hashable):
     @property
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention a role."""
-        return '<@&%s>' % self.id
+        return f'<@&{self.id}>'
 
     @property
     def members(self):
@@ -219,13 +315,16 @@ class Role(Hashable):
 
         All fields are optional.
 
+        .. versionchanged:: 1.4
+            Can now pass ``int`` to ``colour`` keyword-only parameter.
+
         Parameters
         -----------
         name: :class:`str`
             The new role name to change to.
         permissions: :class:`Permissions`
             The new permissions to change to.
-        colour: :class:`Colour`
+        colour: Union[:class:`Colour`, :class:`int`]
             The new colour to change to. (aliased to color as well)
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
@@ -258,12 +357,15 @@ class Role(Hashable):
         except KeyError:
             colour = fields.get('color', self.colour)
 
+        if isinstance(colour, int):
+            colour = Colour(value=colour)
+
         payload = {
             'name': fields.get('name', self.name),
-            'permissions': fields.get('permissions', self.permissions).value,
+            'permissions': str(fields.get('permissions', self.permissions).value),
             'color': colour.value,
             'hoist': fields.get('hoist', self.hoist),
-            'mentionable': fields.get('mentionable', self.mentionable)
+            'mentionable': fields.get('mentionable', self.mentionable),
         }
 
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)

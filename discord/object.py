@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from . import utils
 from .mixins import Hashable
+
+__all__ = (
+    'Object',
+)
 
 class Object(Hashable):
     """Represents a generic Discord object.
@@ -62,10 +64,15 @@ class Object(Hashable):
     """
 
     def __init__(self, id):
-        self.id = id
+        try:
+            id = int(id)
+        except ValueError:
+            raise TypeError(f'id parameter must be convertable to int not {id.__class__!r}') from None
+        else:
+            self.id = id
 
     def __repr__(self):
-        return '<Object id=%r>' % self.id
+        return f'<Object id={self.id!r}>'
 
     @property
     def created_at(self):

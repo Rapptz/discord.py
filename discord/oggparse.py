@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -27,6 +25,12 @@ DEALINGS IN THE SOFTWARE.
 import struct
 
 from .errors import DiscordException
+
+__all__ = (
+    'OggError',
+    'OggPage',
+    'OggStream',
+)
 
 class OggError(DiscordException):
     """An exception that is thrown for Ogg stream parsing errors."""

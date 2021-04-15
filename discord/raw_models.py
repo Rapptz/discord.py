@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,10 +22,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'RawMessageDeleteEvent',
+    'RawBulkMessageDeleteEvent',
+    'RawMessageUpdateEvent',
+    'RawReactionActionEvent',
+    'RawReactionClearEvent',
+    'RawReactionClearEmojiEvent',
+)
+
 class _RawReprMixin:
     def __repr__(self):
-        value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
-        return '<%s %s>' % (self.__class__.__name__, value)
+        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
+        return f'<{self.__class__.__name__} {value}>'
 
 class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.
@@ -93,20 +100,30 @@ class RawMessageUpdateEvent(_RawReprMixin):
         The channel ID where the update took place.
 
         .. versionadded:: 1.3
+    guild_id: Optional[:class:`int`]
+        The guild ID where the message got updated, if applicable.
+
+        .. versionadded:: 1.7
 
     data: :class:`dict`
-        The raw data given by the `gateway <https://discordapp.com/developers/docs/topics/gateway#message-update>`_
+        The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
     cached_message: Optional[:class:`Message`]
-        The cached message, if found in the internal message cache.
+        The cached message, if found in the internal message cache. Represents the message before
+        it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
     """
 
-    __slots__ = ('message_id', 'channel_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
 
     def __init__(self, data):
         self.message_id = int(data['id'])
         self.channel_id = int(data['channel_id'])
         self.data = data
         self.cached_message = None
+
+        try:
+            self.guild_id = int(data['guild_id'])
+        except KeyError:
+            self.guild_id = None
 
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
@@ -125,7 +142,7 @@ class RawReactionActionEvent(_RawReprMixin):
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
     member: Optional[:class:`Member`]
-        The member who added the reaction. Only available if `event_type` is `REACTION_ADD`.
+        The member who added the reaction. Only available if `event_type` is `REACTION_ADD` and the reaction is inside a guild.
 
         .. versionadded:: 1.3
 

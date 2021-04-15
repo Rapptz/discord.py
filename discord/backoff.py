@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-2020 Rapptz
+Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -26,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 import time
 import random
+
+__all__ = (
+    'ExponentialBackoff',
+)
 
 class ExponentialBackoff:
     """An implementation of the exponential backoff algorithm
