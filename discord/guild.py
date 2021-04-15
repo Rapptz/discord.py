@@ -73,6 +73,10 @@ class Guild(Hashable):
 
             Checks if two guilds are not equal.
 
+        .. describe:: y in x
+
+            Checks if channel is in the guild.
+
         .. describe:: hash(x)
 
             Returns the guild's hash.
@@ -229,6 +233,12 @@ class Guild(Hashable):
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
+
+    def __contains__(self, item):
+        if isinstance(item, abc.GuildChannel):
+            return item.guild == self
+        else:
+            raise TypeError("in of Guild must be abc.GuildChannel.")
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])

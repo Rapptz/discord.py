@@ -69,6 +69,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
             Returns the channel's name.
 
+        .. describe:: y in x
+
+            Checks if message is in the channel.
+
     Attributes
     -----------
     name: :class:`str`
@@ -1210,6 +1214,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         .. describe:: str(x)
 
             Returns a string representation of the channel
+
+        .. describe:: y in x
+
+            Checks if message is in the channel.
 
     Attributes
     ----------

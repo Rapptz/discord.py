@@ -34,6 +34,7 @@ from .context_managers import Typing
 from .enums import ChannelType
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
+from .message import Message
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
@@ -971,6 +972,12 @@ class Messageable(Protocol):
 
     async def _get_channel(self):
         raise NotImplementedError
+
+    async def __contains__(self, item):
+        if isinstance(item, Message):
+            return item.channel == self
+        else:
+            raise TypeError("in of Messageable must be Message.")
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
