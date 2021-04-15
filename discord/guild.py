@@ -76,7 +76,7 @@ class Guild(Hashable):
         .. describe:: y in x
 
             Checks if channel is in the guild.
-
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
             Returns the guild's hash.
