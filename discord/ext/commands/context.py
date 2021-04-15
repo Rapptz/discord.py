@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import discord.abc
 import discord.utils
+import re
 
 __all__ = (
     'Context',
