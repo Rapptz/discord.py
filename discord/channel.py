@@ -40,7 +40,6 @@ __all__ = (
     'DMChannel',
     'CategoryChannel',
     'StoreChannel',
-    'GroupChannel',
     '_channel_factory',
 )
 
@@ -1312,177 +1311,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-class GroupChannel(discord.abc.Messageable, Hashable):
-    """Represents a Discord group channel.
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two channels are equal.
-
-        .. describe:: x != y
-
-            Checks if two channels are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the channel's hash.
-
-        .. describe:: str(x)
-
-            Returns a string representation of the channel
-
-    Attributes
-    ----------
-    recipients: List[:class:`User`]
-        The users you are participating with in the group channel.
-    me: :class:`ClientUser`
-        The user presenting yourself.
-    id: :class:`int`
-        The group channel ID.
-    owner: :class:`User`
-        The user that owns the group channel.
-    icon: Optional[:class:`str`]
-        The group channel's icon hash if provided.
-    name: Optional[:class:`str`]
-        The group channel's name if provided.
-    """
-
-    __slots__ = ('id', 'recipients', 'owner', 'icon', 'name', 'me', '_state')
-
-    def __init__(self, *, me, state, data):
-        self._state = state
-        self.id = int(data['id'])
-        self.me = me
-        self._update_group(data)
-
-    def _update_group(self, data):
-        owner_id = utils._get_as_snowflake(data, 'owner_id')
-        self.icon = data.get('icon')
-        self.name = data.get('name')
-
-        try:
-            self.recipients = [self._state.store_user(u) for u in data['recipients']]
-        except KeyError:
-            pass
-
-        if owner_id == self.me.id:
-            self.owner = self.me
-        else:
-            self.owner = utils.find(lambda u: u.id == owner_id, self.recipients)
-
-    async def _get_channel(self):
-        return self
-
-    def __str__(self):
-        if self.name:
-            return self.name
-
-        if len(self.recipients) == 0:
-            return 'Unnamed'
-
-        return ', '.join(map(lambda x: x.name, self.recipients))
-
-    def __repr__(self):
-        return f'<GroupChannel id={self.id} name={self.name!r}>'
-
-    @property
-    def type(self):
-        """:class:`ChannelType`: The channel's Discord type."""
-        return ChannelType.group
-
-    @property
-    def icon_url(self):
-        """:class:`Asset`: Returns the channel's icon asset if available.
-
-        This is equivalent to calling :meth:`icon_url_as` with
-        the default parameters ('webp' format and a size of 1024).
-        """
-        return self.icon_url_as()
-
-    def icon_url_as(self, *, format='webp', size=1024):
-        """Returns an :class:`Asset` for the icon the channel has.
-
-        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
-        The size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the icon to. Defaults to 'webp'.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_icon(self._state, self, 'channel', format=format, size=size)
-
-    @property
-    def created_at(self):
-        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
-        return utils.snowflake_time(self.id)
-
-    def permissions_for(self, user):
-        """Handles permission resolution for a :class:`User`.
-
-        This function is there for compatibility with other channel types.
-
-        Actual direct messages do not really have the concept of permissions.
-
-        This returns all the Text related permissions set to ``True`` except:
-
-        - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
-        - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
-
-        This also checks the kick_members permission if the user is the owner.
-
-        Parameters
-        -----------
-        user: :class:`User`
-            The user to check permissions for.
-
-        Returns
-        --------
-        :class:`Permissions`
-            The resolved permissions for the user.
-        """
-
-        base = Permissions.text()
-        base.send_tts_messages = False
-        base.manage_messages = False
-        base.mention_everyone = True
-
-        if user.id == self.owner.id:
-            base.kick_members = True
-
-        return base
-
-    async def leave(self):
-        """|coro|
-
-        Leave the group.
-
-        If you are the only one in the group, this deletes it as well.
-
-        Raises
-        -------
-        HTTPException
-            Leaving the group failed.
-        """
-
-        await self._state.http.leave_group(self.id)
-
 def _channel_factory(channel_type):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -1493,8 +1321,6 @@ def _channel_factory(channel_type):
         return DMChannel, value
     elif value is ChannelType.category:
         return CategoryChannel, value
-    elif value is ChannelType.group:
-        return GroupChannel, value
     elif value is ChannelType.news:
         return TextChannel, value
     elif value is ChannelType.store:
