@@ -1246,7 +1246,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me = me
         self.id = int(data['id'])
 
-    async def __contains__(self, item):
+    def __contains__(self, item):
         from .message import Message
         if isinstance(item, Message):
             return item.channel == self
