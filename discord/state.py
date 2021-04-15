@@ -992,9 +992,6 @@ class ConnectionState:
                     if member_data:
                         member = Member(data=member_data, state=self, guild=guild)
 
-            elif isinstance(channel, GroupChannel):
-                member = utils.find(lambda x: x.id == user_id, channel.recipients)
-
             if member is not None:
                 timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
                 timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
