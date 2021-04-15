@@ -2495,7 +2495,7 @@ Webhook
 
 .. attributetable:: Webhook
 
-.. autoclass:: Webhook
+.. autoclass:: Webhook()
     :members:
 
 WebhookMessage
@@ -2503,22 +2503,23 @@ WebhookMessage
 
 .. attributetable:: WebhookMessage
 
-.. autoclass:: WebhookMessage
+.. autoclass:: WebhookMessage()
     :members:
 
-Adapters
-~~~~~~~~~
+SyncWebhook
+~~~~~~~~~~~~
 
-Adapters allow you to change how the request should be handled. They all build on a single
-interface, :meth:`WebhookAdapter.request`.
+.. attributetable:: SyncWebhook
 
-.. autoclass:: WebhookAdapter
+.. autoclass:: SyncWebhook()
     :members:
 
-.. autoclass:: AsyncWebhookAdapter
-    :members:
+SyncWebhookMessage
+~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: RequestsWebhookAdapter
+.. attributetable:: SyncWebhookMessage
+
+.. autoclass:: SyncWebhookMessage()
     :members:
 
 .. _discord_api_abcs:

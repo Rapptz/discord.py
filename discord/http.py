@@ -65,12 +65,13 @@ class Route:
         # major parameters:
         self.channel_id = parameters.get('channel_id')
         self.guild_id = parameters.get('guild_id')
-        self.interaction_token = parameters.get('interaction_token')
+        self.webhook_id = parameters.get('webhook_id')
+        self.webhook_token = parameters.get('webhook_token')
 
     @property
     def bucket(self):
         # the bucket is just method + path w/ major parameters
-        return f'{self.channel_id}:{self.guild_id}:{self.interaction_token}:{self.path}'
+        return f'{self.channel_id}:{self.guild_id}:{self.path}'
 
 
 class MaybeUnlock:
