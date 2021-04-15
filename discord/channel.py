@@ -1225,7 +1225,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         .. describe:: y in x
 
             Checks if message is in the channel.
-
+            .. versionadded:: 2.0
     Attributes
     ----------
     recipient: Optional[:class:`User`]
