@@ -199,6 +199,14 @@ class SystemChannelFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the system channel is used for Nitro boosting notifications."""
         return 2
 
+    @flag_value
+    def guild_reminder_notifications(self):
+        """:class:`bool`: Returns ``True`` if the system channel is used for server setup helpful tips notifications.
+
+        .. versionadded:: 2.0
+        """
+        return 4
+
 
 @fill_with_flags()
 class MessageFlags(BaseFlags):
