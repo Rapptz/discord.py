@@ -136,7 +136,6 @@ class PrivateChannel(Snowflake, Protocol):
     The following implement this ABC:
 
     - :class:`~discord.DMChannel`
-    - :class:`~discord.GroupChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 
@@ -955,7 +954,6 @@ class Messageable(Protocol):
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.DMChannel`
-    - :class:`~discord.GroupChannel`
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
