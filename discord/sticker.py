@@ -66,10 +66,8 @@ class Sticker(Hashable):
         The sticker's image
     tags: List[:class:`str`]
         A list of tags for the sticker
-    preview_image: Optional[:class:`str`]
-        The sticker's preview asset hash
     """
-    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags', 'preview_image')
+    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -84,8 +82,6 @@ class Sticker(Hashable):
             self.tags = [tag.strip() for tag in data['tags'].split(',')]
         except KeyError:
             self.tags = []
-
-        self.preview_image = data.get('preview_asset')
 
     def __repr__(self):
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
