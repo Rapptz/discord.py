@@ -580,7 +580,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Starting the thread failed.
         """
 
-        data = await self._state.http.start_public_thread(
+        data = await self._state.http.start_private_thread(
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration,
@@ -588,7 +588,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         )
         return Thread(guild=self.guild, data=data)
 
-    async def archive_threads(
+    async def archived_threads(
         self,
         *,
         private: bool = True,
