@@ -374,6 +374,7 @@ or just a regular username. The default set of converters have been written to b
 
 A lot of discord models work out of the gate as a parameter:
 
+- :class:`Object` (since v2.0)
 - :class:`Member`
 - :class:`User`
 - :class:`Message` (since v1.1)
@@ -399,6 +400,8 @@ converter is given below:
 
 +--------------------------+-------------------------------------------------+
 |     Discord Class        |                    Converter                    |
++--------------------------+-------------------------------------------------+
+| :class:`Object`          | :class:`~ext.commands.ObjectConverter`          |
 +--------------------------+-------------------------------------------------+
 | :class:`Member`          | :class:`~ext.commands.MemberConverter`          |
 +--------------------------+-------------------------------------------------+

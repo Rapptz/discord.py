@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'Converter',
+    'ObjectConverter',
     'MemberConverter',
     'UserConverter',
     'MessageConverter',
@@ -120,6 +121,30 @@ class IDConverter(Converter[T_co]):
     @staticmethod
     def _get_id_match(argument):
         return _ID_REGEX.match(argument)
+
+
+class ObjectConverter(IDConverter[discord.Object]):
+    """Converts to a :class:`~discord.Object`.
+
+    The argument must follow the valid ID or mention formats (e.g. `<@80088516616269824>`).
+
+    .. versionadded:: 2.0
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by member, role, or channel mention.
+    """
+
+    async def convert(self, ctx: Context, argument: str) -> discord.Object:
+        match = self._get_id_match(argument) or re.match(r'<(?:@(?:!|&)?|#)([0-9]{15,20})>$', argument)
+
+        if match is None:
+            raise ObjectNotFound(argument)
+
+        result = int(match.group(1))
+
+        return discord.Object(id=result)
 
 
 class MemberConverter(IDConverter[discord.Member]):
