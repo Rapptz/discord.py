@@ -228,7 +228,7 @@ class MemberNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Member "{argument}" not found.')
+        super().__init__(f'Member {argument!r} not found.')
 
 class GuildNotFound(BadArgument):
     """Exception raised when the guild provided was not found in the bot's cache.
@@ -244,7 +244,7 @@ class GuildNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Guild "{argument}" not found.')
+        super().__init__(f'Guild {argument!r} not found.')
 
 class UserNotFound(BadArgument):
     """Exception raised when the user provided was not found in the bot's
@@ -261,7 +261,7 @@ class UserNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'User "{argument}" not found.')
+        super().__init__(f'User {argument!r} not found.')
 
 class MessageNotFound(BadArgument):
     """Exception raised when the message provided was not found in the channel.
@@ -277,7 +277,7 @@ class MessageNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Message "{argument}" not found.')
+        super().__init__(f'Message {argument!r} not found.')
 
 class ChannelNotReadable(BadArgument):
     """Exception raised when the bot does not have permission to read messages
@@ -310,7 +310,7 @@ class ChannelNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Channel "{argument}" not found.')
+        super().__init__(f'Channel {argument!r} not found.')
 
 class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.
@@ -326,7 +326,7 @@ class BadColourArgument(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Colour "{argument}" is invalid.')
+        super().__init__(f'Colour {argument!r} is invalid.')
 
 BadColorArgument = BadColourArgument
 
@@ -344,7 +344,7 @@ class RoleNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Role "{argument}" not found.')
+        super().__init__(f'Role {argument!r} not found.')
 
 class BadInviteArgument(BadArgument):
     """Exception raised when the invite is invalid or expired.
@@ -370,7 +370,7 @@ class EmojiNotFound(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Emoji "{argument}" not found.')
+        super().__init__(f'Emoji {argument!r} not found.')
 
 class PartialEmojiConversionFailure(BadArgument):
     """Exception raised when the emoji provided does not match the correct
@@ -387,7 +387,7 @@ class PartialEmojiConversionFailure(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Couldn\'t convert "{argument}" to PartialEmoji.')
+        super().__init__(f'Couldn\'t convert {argument!r} to PartialEmoji.')
 
 class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
@@ -403,7 +403,7 @@ class BadBoolArgument(BadArgument):
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'{argument} is not a recognised boolean option')
+        super().__init__(f'{argument!r} is not a recognised boolean option')
 
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled.
@@ -573,7 +573,7 @@ class NSFWChannelRequired(CheckFailure):
     """
     def __init__(self, channel):
         self.channel = channel
-        super().__init__(f"Channel '{channel}' needs to be NSFW for this command to work.")
+        super().__init__(f"Channel {channel.name!r} needs to be NSFW for this command to work.")
 
 class MissingPermissions(CheckFailure):
     """Exception raised when the command invoker lacks permissions to run a
@@ -655,7 +655,7 @@ class BadUnionArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__(f'Could not convert "{param.name}" into {fmt}.')
+        super().__init__(f'Could not convert {param.name!r} into {fmt}.')
 
 class BadLiteralArgument(UserInputError):
     """Exception raised when a :data:`typing.Literal` converter fails for all
@@ -685,7 +685,7 @@ class BadLiteralArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
+        super().__init__(f'Could not convert {param.name!r} into the literal {fmt}.')
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
