@@ -22,10 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
 import sys
+from typing import Any, Coroutine, List, TYPE_CHECKING, TypeVar
 from urllib.parse import quote as _uriquote
 import weakref
 
@@ -36,6 +39,14 @@ from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 
 log = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .types import (
+        interactions,
+    )
+
+    T = TypeVar('T')
+    Response = Coroutine[Any, Any, T]
 
 
 async def json_or_text(response):
@@ -138,7 +149,7 @@ class HTTPClient:
 
         return await self.__session.ws_connect(url, **kwargs)
 
-    async def request(self, route, *, files=None, form=None, **kwargs):
+    async def request(self, route, *, files=None, form=None, **kwargs) -> Any:
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -1039,10 +1050,10 @@ class HTTPClient:
 
     # Application commands (global)
 
-    def get_global_commands(self, application_id):
+    def get_global_commands(self, application_id) -> Response[List[interactions.ApplicationCommand]]:
         return self.request(Route('GET', '/applications/{application_id}/commands', application_id=application_id))
 
-    def get_global_command(self, application_id, command_id):
+    def get_global_command(self, application_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/commands/{command_id}',
@@ -1051,11 +1062,11 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id, payload):
+    def upsert_global_command(self, application_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
-    def edit_global_command(self, application_id, command_id, payload):
+    def edit_global_command(self, application_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1079,13 +1090,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id, payload):
+    def bulk_upsert_global_commands(self, application_id, payload) -> Response[List[interactions.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
     # Application commands (guild)
 
-    def get_guild_commands(self, application_id, guild_id):
+    def get_guild_commands(self, application_id, guild_id) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
             '/applications/{application_id}/{guild_id}/commands',
@@ -1094,7 +1105,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_guild_command(self, application_id, guild_id, command_id):
+    def get_guild_command(self, application_id, guild_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/{guild_id}/commands/{command_id}',
@@ -1104,7 +1115,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_guild_command(self, application_id, guild_id, payload):
+    def upsert_guild_command(self, application_id, guild_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
             '/applications/{application_id}/{guild_id}/commands',
@@ -1113,7 +1124,7 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def edit_guild_command(self, application_id, guild_id, command_id, payload):
+    def edit_guild_command(self, application_id, guild_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1139,7 +1150,9 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_guild_commands(self, application_id, guild_id, payload):
+    def bulk_upsert_guild_commands(
+        self, application_id, guild_id, payload
+    ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
             '/applications/{application_id}/{guild_id}/commands',
