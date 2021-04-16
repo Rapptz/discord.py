@@ -325,12 +325,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _update_inner_user(self, user):
         u = self._user
-        original = (u.name, u.avatar, u.discriminator, u._public_flags)
+        original = (u.name, u._avatar, u.discriminator, u._public_flags)
         # These keys seem to always be available
         modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.avatar, u.discriminator, u._public_flags = modified
+            u.name, u._avatar, u.discriminator, u._public_flags = modified
             # Signal to dispatch on_user_update
             return to_return, u
 
@@ -442,7 +442,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         .. note::
 
-            Due to a Discord API limitation, this may be ``None`` if 
+            Due to a Discord API limitation, this may be ``None`` if
             the user is listening to a song on Spotify with a title longer
             than 128 characters. See :issue:`1738` for more information.
 

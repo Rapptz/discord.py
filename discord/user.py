@@ -38,7 +38,7 @@ _BaseUser = discord.abc.User
 
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', 'avatar', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -60,7 +60,7 @@ class BaseUser(_BaseUser):
         self.name = data['username']
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
-        self.avatar = data['avatar']
+        self._avatar = data['avatar']
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
@@ -72,7 +72,7 @@ class BaseUser(_BaseUser):
         self.name = user.name
         self.id = user.id
         self.discriminator = user.discriminator
-        self.avatar = user.avatar
+        self._avatar = user._avatar
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
@@ -83,7 +83,7 @@ class BaseUser(_BaseUser):
         return {
             'username': self.name,
             'id': self.id,
-            'avatar': self.avatar,
+            'avatar': self._avatar,
             'discriminator': self.discriminator,
             'bot': self.bot,
         }
@@ -94,66 +94,20 @@ class BaseUser(_BaseUser):
         return PublicUserFlags._from_value(self._public_flags)
 
     @property
-    def avatar_url(self):
+    def avatar(self):
         """:class:`Asset`: Returns an :class:`Asset` for the avatar the user has.
 
         If the user does not have a traditional avatar, an asset for
         the default avatar is returned instead.
-
-        This is equivalent to calling :meth:`avatar_url_as` with
-        the default parameters (i.e. webp/gif detection and a size of 1024).
         """
-        return self.avatar_url_as(format=None, size=1024)
-
-    def is_avatar_animated(self):
-        """:class:`bool`: Indicates if the user has an animated avatar."""
-        return bool(self.avatar and self.avatar.startswith('a_'))
-
-    def avatar_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns an :class:`Asset` for the avatar the user has.
-
-        If the user does not have a traditional avatar, an asset for
-        the default avatar is returned instead.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
-        'gif' is only valid for animated avatars. The size must be a power of 2
-        between 16 and 4096.
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the avatar to.
-            If the format is ``None``, then it is automatically
-            detected into either 'gif' or static_format depending on the
-            avatar being animated or not.
-        static_format: Optional[:class:`str`]
-            Format to attempt to convert only non-animated avatars to.
-            Defaults to 'webp'
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or ``static_format``, or
-            invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_avatar(self._state, self, format=format, static_format=static_format, size=size)
-
+        if self._avatar is None:
+            return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+        else:
+            return Asset._from_avatar(self._state, self.id, self._avatar)
     @property
     def default_avatar(self):
-        """:class:`DefaultAvatar`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
-        return try_enum(DefaultAvatar, int(self.discriminator) % len(DefaultAvatar))
-
-    @property
-    def default_avatar_url(self):
-        """:class:`Asset`: Returns a URL for a user's default avatar."""
-        return Asset(self._state, f'/embed/avatars/{self.default_avatar.value}.png')
+        """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
 
     @property
     def colour(self):

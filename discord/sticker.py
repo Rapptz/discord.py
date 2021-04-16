@@ -62,12 +62,10 @@ class Sticker(Hashable):
         The id of the sticker's pack.
     format: :class:`StickerType`
         The format for the sticker's image.
-    image: :class:`str`
-        The sticker's image.
     tags: List[:class:`str`]
         A list of tags for the sticker.
     """
-    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags')
+    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', '_image', 'tags')
 
     def __init__(self, *, state, data):
         self._state = state
@@ -76,7 +74,7 @@ class Sticker(Hashable):
         self.description = data['description']
         self.pack_id = int(data['pack_id'])
         self.format = try_enum(StickerType, data['format_type'])
-        self.image = data['asset']
+        self._image = data['asset']
 
         try:
             self.tags = [tag.strip() for tag in data['tags'].split(',')]
@@ -95,7 +93,7 @@ class Sticker(Hashable):
         return snowflake_time(self.id)
 
     @property
-    def image_url(self):
+    def image(self):
         """Returns an :class:`Asset` for the sticker's image.
 
         .. note::
@@ -106,32 +104,7 @@ class Sticker(Hashable):
         Optional[:class:`Asset`]
             The resulting CDN asset.
         """
-        return self.image_url_as()
-
-    def image_url_as(self, *, size=1024):
-        """Optionally returns an :class:`Asset` for the sticker's image.
-
-        The size must be a power of 2 between 16 and 4096.
-
-        .. note::
-            This will return ``None`` if the format is ``StickerType.lottie``.
-
-        Parameters
-        -----------
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Invalid ``size``.
-
-        Returns
-        -------
-        Optional[:class:`Asset`]
-            The resulting CDN asset or ``None``.
-        """
         if self.format is StickerType.lottie:
             return None
 
-        return Asset._from_sticker_url(self._state, self, size=size)
+        return Asset._from_sticker_url(self._state, self.id, self._image)

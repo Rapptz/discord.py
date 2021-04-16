@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import io
+
 from .asset import Asset
 from . import utils
 from .partial_emoji import _EmojiTag
@@ -132,13 +134,10 @@ class Emoji(_EmojiTag):
         return utils.snowflake_time(self.id)
 
     @property
-    def url(self):
-        """:class:`Asset`: Returns the asset of the emoji.
-
-        This is equivalent to calling :meth:`url_as` with
-        the default parameters (i.e. png/gif detection).
-        """
-        return self.url_as(format=None)
+    def url(self) -> str:
+        """:class:`str`: Returns the URL of the emoji."""
+        fmt = 'gif' if self.animated else 'png'
+        return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     @property
     def roles(self):
@@ -156,39 +155,6 @@ class Emoji(_EmojiTag):
     def guild(self):
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
-
-
-    def url_as(self, *, format=None, static_format="png"):
-        """Returns an :class:`Asset` for the emoji's url.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif'.
-        'gif' is only valid for animated emojis.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the emojis to.
-            If the format is ``None``, then it is automatically
-            detected as either 'gif' or static_format, depending on whether the
-            emoji is animated or not.
-        static_format: Optional[:class:`str`]
-            Format to attempt to convert only non-animated emoji's to.
-            Defaults to 'png'
-
-        Raises
-        -------
-        InvalidArgument
-            Bad image format passed to ``format`` or ``static_format``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_emoji(self._state, self, format=format, static_format=static_format)
-
 
     def is_usable(self):
         """:class:`bool`: Whether the bot can use this emoji.
@@ -254,3 +220,61 @@ class Emoji(_EmojiTag):
         if roles:
             roles = [role.id for role in roles]
         await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)
+
+    async def read(self):
+        """|coro|
+
+        Retrieves the content of this emoji as a :class:`bytes` object.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Downloading the emoji failed.
+        NotFound
+            The emoji was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the emoji.
+        """
+        return await self._state.http.get_from_cdn(self.url)
+
+    async def save(self, fp, *, seek_begin=True):
+        """|coro|
+
+        Saves this emoji into a file-like object.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ----------
+        fp: Union[BinaryIO, :class:`os.PathLike`]
+            Same as in :meth:`Attachment.save`.
+        seek_begin: :class:`bool`
+            Same as in :meth:`Attachment.save`.
+
+        Raises
+        ------
+        HTTPException
+            Downloading the emoji failed.
+        NotFound
+            The emoji was deleted.
+
+        Returns
+        --------
+        :class:`int`
+            The number of bytes written.
+        """
+
+        data = await self.read()
+        if isinstance(fp, io.IOBase) and fp.writable():
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)

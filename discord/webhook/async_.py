@@ -475,56 +475,23 @@ class PartialWebhookGuild(Hashable):
         The partial guild's icon
     """
 
-    __slots__ = ('id', 'name', 'icon', '_state')
+    __slots__ = ('id', 'name', '_icon', '_state')
 
     def __init__(self, *, data, state):
         self._state = state
         self.id = int(data['id'])
         self.name = data['name']
-        self.icon = data['icon']
+        self._icon = data['icon']
 
     def __repr__(self):
         return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
-    def icon_url(self) -> Asset:
-        """:class:`Asset`: Returns the guild's icon asset."""
-        return self.icon_url_as()
-
-    def is_icon_animated(self) -> bool:
-        """:class:`bool`: Returns True if the guild has an animated icon."""
-        return bool(self.icon and self.icon.startswith('a_'))
-
-    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns an :class:`Asset` for the guild's icon.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
-        'gif' is only valid for animated avatars. The size must be a power of 2
-        between 16 and 4096.
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the icon to.
-            If the format is ``None``, then it is automatically
-            detected into either 'gif' or static_format depending on the
-            icon being animated or not.
-        static_format: Optional[:class:`str`]
-            Format to attempt to convert only non-animated icons to.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
+    def icon_url(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
 
 
 class _FriendlyHttpAttributeErrorHelper:
@@ -684,7 +651,7 @@ class BaseWebhook(Hashable):
         'auth_token',
         'user',
         'name',
-        'avatar',
+        '_avatar',
         'source_channel',
         'source_guild',
         '_state',
@@ -701,7 +668,7 @@ class BaseWebhook(Hashable):
         self.channel_id = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.name = data.get('name')
-        self.avatar = data.get('avatar')
+        self._avatar = data.get('avatar')
         self.token = data.get('token')
 
         user = data.get('user')
@@ -755,59 +722,16 @@ class BaseWebhook(Hashable):
         return utils.snowflake_time(self.id)
 
     @property
-    def avatar_url(self) -> Asset:
+    def avatar(self) -> Asset:
         """:class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
 
         If the webhook does not have a traditional avatar, an asset for
         the default avatar is returned instead.
-
-        This is equivalent to calling :meth:`avatar_url_as` with the
-        default parameters.
         """
-        return self.avatar_url_as()
-
-    def avatar_url_as(self, *, format: Optional[Literal['png', 'jpg', 'jpeg']] = None, size: int = 1024) -> Asset:
-        """Returns an :class:`Asset` for the avatar the webhook has.
-
-        If the webhook does not have a traditional avatar, an asset for
-        the default avatar is returned instead.
-
-        The format must be one of 'jpeg', 'jpg', or 'png'.
-        The size must be a power of 2 between 16 and 1024.
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the avatar to.
-            If the format is ``None``, then it is equivalent to png.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        if self.avatar is None:
+        if self._avatar is None:
             # Default is always blurple apparently
-            return Asset(self._state, '/embed/avatars/0.png')
-
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 1024")
-
-        format = format or 'png'
-
-        if format not in ('png', 'jpg', 'jpeg'):
-            raise InvalidArgument("format must be one of 'png', 'jpg', or 'jpeg'.")
-
-        url = f'/avatars/{self.id}/{self.avatar}.{format}?size={size}'
-        return Asset(self._state, url)
-
+            return Asset._from_default_avatar(self._state, 0)
+        return Asset._from_avatar(self._state, self.id, self._avatar)
 
 class Webhook(BaseWebhook):
     """Represents an asynchronous Discord webhook.
@@ -980,7 +904,7 @@ class Webhook(BaseWebhook):
             'name': name,
             'channel_id': channel.id,
             'guild_id': channel.guild.id,
-            'user': {'username': user.name, 'discriminator': user.discriminator, 'id': user.id, 'avatar': user.avatar},
+            'user': {'username': user.name, 'discriminator': user.discriminator, 'id': user.id, 'avatar': user._avatar},
         }
 
         state = channel._state
