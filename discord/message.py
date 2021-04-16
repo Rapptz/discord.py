@@ -172,11 +172,11 @@ class Attachment(Hashable):
             The number of bytes written.
         """
         data = await self.read(use_cached=use_cached)
-        if isinstance(fp, io.RawIOBase):
+        if isinstance(fp, io.IOBase) and fp.writable():
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
-            return written or 0
+            return written
         else:
             with open(fp, 'wb') as f:
                 return f.write(data)
