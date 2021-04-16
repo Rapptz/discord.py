@@ -871,7 +871,7 @@ class SyncWebhook(BaseWebhook):
             return self._create_message(data)
 
     def fetch_message(self, id: int) -> SyncWebhookMessage:
-        """Retrieves a single :class:`~discord.Message` owned by this webhook.
+        """Retrieves a single :class:`~discord.SyncWebhookMessage` owned by this webhook.
 
         .. versionadded:: 2.0
 
