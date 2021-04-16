@@ -268,6 +268,23 @@ class AsyncWebhookAdapter:
         route = Route('POST', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
+    def get_webhook_message(
+        self,
+        webhook_id: int,
+        token: str,
+        message_id: int,
+        *,
+        session: aiohttp.ClientSession,
+    ):
+        route = Route(
+            'GET',
+            '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
+            webhook_id=webhook_id,
+            webhook_token=token,
+            message_id=message_id,
+        )
+        return self.request(route, session)
+
     def edit_webhook_message(
         self,
         webhook_id: int,
@@ -1125,6 +1142,11 @@ class Webhook(BaseWebhook):
             )
             self._update(data)
 
+    def _create_message(self, data):
+        state = _WebhookState(self, parent=self._state)
+        channel = self.channel or Object(id=int(data['channel_id']))
+        return WebhookMessage(data=data, state=state, channel=channel)
+
     @overload
     async def send(
         self,
@@ -1269,9 +1291,48 @@ class Webhook(BaseWebhook):
             wait=wait,
         )
         if wait:
-            state = _WebhookState(self, parent=self._state)
-            channel = self.channel or Object(id=int(data['channel_id']))
-            return WebhookMessage(data=data, state=state, channel=channel)
+            return self._create_message(data)
+
+    async def fetch_message(self, id: int) -> WebhookMessage:
+        """|coro|
+
+        Retrieves a single :class:`~discord.Message` owned by this webhook.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        id: :class:`int`
+            The message ID to look for.
+
+        Raises
+        --------
+        ~discord.NotFound
+            The specified message was not found.
+        ~discord.Forbidden
+            You do not have the permissions required to get a message.
+        ~discord.HTTPException
+            Retrieving the message failed.
+        InvalidArgument
+            There was no token associated with this webhook.
+
+        Returns
+        --------
+        :class:`~discord.Message`
+            The message asked for.
+        """
+
+        if self.token is None:
+            raise InvalidArgument('This webhook does not have a token associated with it')
+
+        adapter = async_context.get()
+        data = await adapter.get_webhook_message(
+            self.id,
+            self.token,
+            id,
+            session=self.session,
+        )
+        return self._create_message(data)
 
     async def edit_message(
         self,

@@ -1195,6 +1195,19 @@ class HTTPClient:
         )
         return self.request(r)
 
+    def get_original_interaction_response(
+        self,
+        application_id,
+        token,
+    ):
+        r = Route(
+            'GET',
+            '/webhooks/{application_id}/{interaction_token}/messages/@original',
+            application_id=application_id,
+            interaction_token=token,
+        )
+        return self.request(r)
+
     def edit_original_interaction_response(
         self,
         application_id,
