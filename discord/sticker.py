@@ -32,7 +32,7 @@ __all__ = (
 )
 
 class Sticker(Hashable):
-    """Represents a sticker
+    """Represents a sticker.
 
     .. versionadded:: 1.6
 
@@ -40,34 +40,34 @@ class Sticker(Hashable):
 
         .. describe:: str(x)
 
-            Returns the name of the sticker
+            Returns the name of the sticker.
 
         .. describe:: x == y
 
-           Checks if the sticker is equal to another sticker
+           Checks if the sticker is equal to another sticker.
 
         .. describe:: x != y
 
-           Checks if the sticker is not equal to another sticker
+           Checks if the sticker is not equal to another sticker.
 
     Attributes
     ----------
     name: :class:`str`
-        The sticker's name
+        The sticker's name.
     id: :class:`int`
-        The id of the sticker
+        The id of the sticker.
     description: :class:`str`
-        The description of the sticker
+        The description of the sticker.
     pack_id: :class:`int`
-        The id of the sticker's pack
+        The id of the sticker's pack.
     format: :class:`StickerType`
-        The format for the sticker's image
+        The format for the sticker's image.
     image: :class:`str`
-        The sticker's image
+        The sticker's image.
     tags: List[:class:`str`]
-        A list of tags for the sticker
+        A list of tags for the sticker.
     preview_image: Optional[:class:`str`]
-        The sticker's preview asset hash
+        The sticker's preview asset hash.
     """
     __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', 'image', 'tags', 'preview_image')
 
@@ -103,7 +103,7 @@ class Sticker(Hashable):
         """Returns an :class:`Asset` for the sticker's image.
 
         .. note::
-            This will return ``None`` if the format is ``StickerType.lottie``
+            This will return ``None`` if the format is ``StickerType.lottie``.
 
         Returns
         -------
