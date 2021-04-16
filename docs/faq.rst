@@ -234,7 +234,7 @@ technically in another thread, we must take caution in calling thread-safe opera
 us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` function that allows us to call
 a coroutine from another thread.
 
-However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
+However, this function returns a :class:`~concurrent.futures.Future` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::
 
     def my_after(error):
@@ -295,7 +295,7 @@ How do I make a web request?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To make a request, you should use a non-blocking library.
-This library already uses and requires a 3rd party library for making requests, ``aiohttp``.
+This library already uses and requires a 3rd party library for making requests, :doc:`aiohttp <aio:index>`.
 
 Quick example: ::
 
@@ -393,7 +393,7 @@ Example: ::
 How do I make a subcommand?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``group`` decorator. This will transform the callback into a ``Group`` which will allow you to add commands into
+Use the :func:`~ext.commands.group` decorator. This will transform the callback into a :class:`~ext.commands.Group` which will allow you to add commands into
 the group operating as "subcommands". These groups can be arbitrarily nested as well.
 
 Example: ::

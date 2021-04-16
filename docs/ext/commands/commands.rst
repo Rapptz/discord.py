@@ -327,7 +327,7 @@ For example, a common idiom would be to have a class and a converter for that cl
         else:
             await ctx.send("Hm you're not so new.")
 
-This can get tedious, so an inline advanced converter is possible through a ``classmethod`` inside the type:
+This can get tedious, so an inline advanced converter is possible through a :func:`classmethod` inside the type:
 
 .. code-block:: python3
 
@@ -379,6 +379,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`PartialMessage` (since v1.7)
 - :class:`TextChannel`
 - :class:`VoiceChannel`
+- :class:`StageChannel` (since v1.7)
 - :class:`StoreChannel` (since v1.7)
 - :class:`CategoryChannel`
 - :class:`Invite`
@@ -409,6 +410,8 @@ converter is given below:
 | :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
 +--------------------------+-------------------------------------------------+
 | :class:`VoiceChannel`    | :class:`~ext.commands.VoiceChannelConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`StageChannel`    | :class:`~ext.commands.StageChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`StoreChannel`    | :class:`~ext.commands.StoreChannelConverter`    |
 +--------------------------+-------------------------------------------------+

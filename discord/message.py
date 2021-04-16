@@ -1332,8 +1332,8 @@ class Message(Hashable):
     async def reply(self, content=None, **kwargs):
         """|coro|
 
-        A shortcut method to :meth:`abc.Messageable.send` to reply to the
-        :class:`Message`.
+        A shortcut method to :meth:`.abc.Messageable.send` to reply to the
+        :class:`.Message`.
 
         .. versionadded:: 1.6
 
@@ -1349,7 +1349,7 @@ class Message(Hashable):
 
         Returns
         ---------
-        :class:`Message`
+        :class:`.Message`
             The message that was sent.
         """
 

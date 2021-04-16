@@ -438,7 +438,7 @@ class Embed:
 
     @property
     def fields(self):
-        """Union[List[:class:`EmbedProxy`], :attr:`Empty`]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
+        """List[Union[``EmbedProxy``, :attr:`Empty`]]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 

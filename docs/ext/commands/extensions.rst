@@ -27,7 +27,7 @@ An example extension looks like this:
     def setup(bot):
         bot.add_command(hello)
 
-In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.commands.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``.
+In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``.
 
 .. admonition:: Cogs
     :class: helpful
@@ -41,7 +41,7 @@ In this example we define a simple command, and when the extension is loaded thi
 Reloading
 -----------
 
-When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`Bot.reload_extension`.
+When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`.Bot.reload_extension`.
 
 .. code-block:: python3
 
