@@ -273,6 +273,9 @@ Converters
 .. autoclass:: discord.ext.commands.Converter
     :members:
 
+.. autoclass:: discord.ext.commands.ObjectConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.MemberConverter
     :members:
 

@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'Converter',
+    'ObjectConverter',
     'MemberConverter',
     'UserConverter',
     'MessageConverter',
@@ -132,7 +133,7 @@ class ObjectConverter(IDConverter[discord.Object]):
     The lookup strategy is as follows (in order):
 
     1. Lookup by ID.
-    2. Lookup by mention.
+    2. Lookup by member, role, or channel mention.
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.Object:
