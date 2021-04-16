@@ -893,7 +893,7 @@ class SyncWebhook(BaseWebhook):
 
         Returns
         --------
-        :class:`~discord.Message`
+        :class:`~discord.SyncWebhookMessage`
             The message asked for.
         """
 

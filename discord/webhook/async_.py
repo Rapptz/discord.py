@@ -1318,7 +1318,7 @@ class Webhook(BaseWebhook):
 
         Returns
         --------
-        :class:`~discord.Message`
+        :class:`~discord.WebhookMessage`
             The message asked for.
         """
 
