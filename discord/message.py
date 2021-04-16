@@ -763,21 +763,21 @@ class Message(Hashable):
         This allows you to receive the user IDs of mentioned users
         even in a private message context.
         """
-        return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<@!?([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
         """List[:class:`int`]: A property that returns an array of channel IDs matched with
         the syntax of ``<#channel_id>`` in the message content.
         """
-        return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<#([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
         """List[:class:`int`]: A property that returns an array of role IDs matched with
         the syntax of ``<@&role_id>`` in the message content.
         """
-        return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self):
@@ -1263,8 +1263,8 @@ class Message(Hashable):
     async def reply(self, content=None, **kwargs):
         """|coro|
 
-        A shortcut method to :meth:`abc.Messageable.send` to reply to the
-        :class:`Message`.
+        A shortcut method to :meth:`.abc.Messageable.send` to reply to the
+        :class:`.Message`.
 
         .. versionadded:: 1.6
 
@@ -1280,7 +1280,7 @@ class Message(Hashable):
 
         Returns
         ---------
-        :class:`Message`
+        :class:`.Message`
             The message that was sent.
         """
 
