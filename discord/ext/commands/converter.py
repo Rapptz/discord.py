@@ -121,23 +121,30 @@ class IDConverter(Converter[T_co]):
     def _get_id_match(argument):
         return _ID_REGEX.match(argument)
 
+
 class ObjectConverter(IDConverter[discord.Object]):
     """Converts to a :class:`~discord.Object`.
 
+    The argument must follow the valid ID or mention formats (e.g. `<@80088516616269824>`).
+
     .. versionadded:: 2.0
 
-    The argument must follow the valid ID or mention formats (e.g. `<@80088516616269824>`)
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.Object:
         match = self._get_id_match(argument) or re.match(r'<(?:@(?:!|&)?|#)([0-9]{15,20})>$', argument)
 
         if match is None:
-            raise BadArgument(f'{argument!r} does not follow a valid ID or mention format.')
+            raise ObjectNotFound(argument)
 
-        result = match.group(1)
+        result = int(match.group(1))
 
         return discord.Object(id=result)
+
 
 class MemberConverter(IDConverter[discord.Member]):
     """Converts to a :class:`~discord.Member`.
