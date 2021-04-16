@@ -177,7 +177,7 @@ class MemberConverter(IDConverter[discord.Member]):
 
     async def convert(self, ctx: Context, argument: str) -> discord.Member:
         bot = ctx.bot
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]{15,20})>$', argument)
         guild = ctx.guild
         result = None
         user_id = None
@@ -230,7 +230,7 @@ class UserConverter(IDConverter[discord.User]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.User:
-        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<@!?([0-9]{15,20})>$', argument)
         result = None
         state = ctx._state
 
@@ -358,7 +358,7 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
     def _resolve_channel(ctx: Context, argument: str, iterable: Iterable[CT], type: Type[CT]) -> CT:
         bot = ctx.bot
 
-        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]+)>$', argument)
+        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
         result = None
         guild = ctx.guild
 
@@ -570,7 +570,7 @@ class RoleConverter(IDConverter[discord.Role]):
         if not guild:
             raise NoPrivateMessage()
 
-        match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<@&([0-9]{15,20})>$', argument)
         if match:
             result = guild.get_role(int(match.group(1)))
         else:
@@ -649,7 +649,7 @@ class EmojiConverter(IDConverter[discord.Emoji]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.Emoji:
-        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r'<a?:[a-zA-Z0-9\_]{1,32}:([0-9]{15,20})>$', argument)
         result = None
         bot = ctx.bot
         guild = ctx.guild
@@ -687,7 +687,7 @@ class PartialEmojiConverter(Converter[discord.PartialEmoji]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.PartialEmoji:
-        match = re.match(r'<(a?):([a-zA-Z0-9\_]+):([0-9]+)>$', argument)
+        match = re.match(r'<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>$', argument)
 
         if match:
             emoji_animated = bool(match.group(1))
