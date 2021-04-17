@@ -46,6 +46,7 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
+    'VideoQualityMode',
 )
 
 def _create_value_cls(name):
@@ -427,6 +428,13 @@ class StickerType(Enum):
 class InteractionType(Enum):
     ping = 1
     application_command = 2
+
+class VideoQualityMode(Enum):
+    auto = 1
+    full = 2
+
+    def __int__(self):
+        return self.value
 
 T = TypeVar('T')
 

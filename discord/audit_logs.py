@@ -102,6 +102,12 @@ def _transform_overwrites(entry, data):
 
     return overwrites
 
+def _transform_voiceregion(entry, data):
+    return enums.try_enum(enums.VoiceRegion, data)
+
+def _transform_video_quality_mode(entry, data):
+    return enums.try_enum(enums.VideoQualityMode, data)
+
 class AuditLogDiff:
     def __len__(self):
         return len(self.__dict__)
@@ -134,6 +140,9 @@ class AuditLogChanges:
         'avatar_hash':                   ('avatar', None),
         'rate_limit_per_user':           ('slowmode_delay', None),
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
+        'region':                        (None, _transform_voiceregion),
+        'rtc_region':                    (None, _transform_voiceregion),
+        'video_quality_mode':            (None, _transform_video_quality_mode),
     }
 
     def __init__(self, entry, data: List[AuditLogChangePayload]):
