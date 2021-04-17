@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 .. versionadded:: 1.5
 .. _intents_primer:

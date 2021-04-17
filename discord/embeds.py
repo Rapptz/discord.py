@@ -179,10 +179,10 @@ class Embed:
         *,
         colour: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
         color: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
-        title: MaybeEmpty[str] = EmptyEmbed,
+        title: MaybeEmpty[Any] = EmptyEmbed,
         type: EmbedType = 'rich',
-        url: MaybeEmpty[str] = EmptyEmbed,
-        description: MaybeEmpty[str] = EmptyEmbed,
+        url: MaybeEmpty[Any] = EmptyEmbed,
+        description: MaybeEmpty[Any] = EmptyEmbed,
         timestamp: datetime.datetime = None,
     ):
 
@@ -342,7 +342,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_footer', {}))  # type: ignore
 
-    def set_footer(self: E, *, text: MaybeEmpty[str] = EmptyEmbed, icon_url: MaybeEmpty[str] = EmptyEmbed) -> E:
+    def set_footer(self: E, *, text: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> E:
         """Sets the footer for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -380,7 +380,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
 
-    def set_image(self: E, *, url: MaybeEmpty[str]) -> E:
+    def set_image(self: E, *, url: MaybeEmpty[Any]) -> E:
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -422,7 +422,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
-    def set_thumbnail(self: E, *, url: MaybeEmpty[str]) -> E:
+    def set_thumbnail(self: E, *, url: MaybeEmpty[Any]) -> E:
         """Sets the thumbnail for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -483,7 +483,7 @@ class Embed:
         """
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
 
-    def set_author(self: E, *, name: str, url: MaybeEmpty[str] = EmptyEmbed, icon_url: MaybeEmpty[str] = EmptyEmbed) -> E:
+    def set_author(self: E, *, name: Any, url: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> E:
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -528,7 +528,7 @@ class Embed:
 
     @property
     def fields(self) -> List[_EmbedFieldProxy]:
-        """Union[List[:class:`EmbedProxy`], :attr:`Empty`]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
+        """List[Union[``EmbedProxy``, :attr:`Empty`]]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 
@@ -536,7 +536,7 @@ class Embed:
         """
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore
 
-    def add_field(self: E, *, name: str, value: str, inline: bool = True) -> E:
+    def add_field(self: E, *, name: Any, value: Any, inline: bool = True) -> E:
         """Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
@@ -565,7 +565,7 @@ class Embed:
 
         return self
 
-    def insert_field_at(self: E, index: int, *, name: str, value: str, inline: bool = True) -> E:
+    def insert_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = True) -> E:
         """Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
@@ -626,7 +626,7 @@ class Embed:
         except (AttributeError, IndexError):
             pass
 
-    def set_field_at(self: E, index: int, *, name: str, value: str, inline: bool = True) -> E:
+    def set_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = True) -> E:
         """Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field.

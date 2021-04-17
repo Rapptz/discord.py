@@ -22,6 +22,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Optional, TYPE_CHECKING
 from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
@@ -33,6 +36,16 @@ __all__ = (
     'PartialInviteGuild',
     'Invite',
 )
+
+if TYPE_CHECKING:
+    from .types.invite import (
+        Invite as InvitePayload,
+        InviteGuild as InviteGuildPayload,
+    )
+    from .types.channel import (
+        PartialChannel as PartialChannelPayload,
+    )
+    import datetime
 
 
 class PartialInviteChannel:
@@ -72,7 +85,7 @@ class PartialInviteChannel:
     __slots__ = ('id', 'name', 'type')
 
     def __init__(self, **kwargs):
-        self.id = kwargs.pop('id')
+        self.id = int(kwargs.pop('id'))
         self.name = kwargs.pop('name')
         self.type = kwargs.pop('type')
 
@@ -127,94 +140,57 @@ class PartialInviteGuild:
         The partial guild's verification level.
     features: List[:class:`str`]
         A list of features the guild has. See :attr:`Guild.features` for more information.
-    icon: Optional[:class:`str`]
-        The partial guild's icon.
-    banner: Optional[:class:`str`]
-        The partial guild's banner.
-    splash: Optional[:class:`str`]
-        The partial guild's invite splash.
     description: Optional[:class:`str`]
         The partial guild's description.
     """
 
-    __slots__ = ('_state', 'features', 'icon', 'banner', 'id', 'name', 'splash', 'verification_level', 'description')
+    __slots__ = ('_state', 'features', '_icon', '_banner', 'id', 'name', '_splash', 'verification_level', 'description')
 
-    def __init__(self, state, data, id):
+    def __init__(self, state, data: InviteGuildPayload, id: int):
         self._state = state
         self.id = id
         self.name = data['name']
         self.features = data.get('features', [])
-        self.icon = data.get('icon')
-        self.banner = data.get('banner')
-        self.splash = data.get('splash')
+        self._icon = data.get('icon')
+        self._banner = data.get('banner')
+        self._splash = data.get('splash')
         self.verification_level = try_enum(VerificationLevel, data.get('verification_level'))
         self.description = data.get('description')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} features={self.features} '
             f'description={self.description!r}>'
         )
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
-    def icon_url(self):
-        """:class:`Asset`: Returns the guild's icon asset."""
-        return self.icon_url_as()
-
-    def is_icon_animated(self):
-        """:class:`bool`: Returns ``True`` if the guild has an animated icon.
-
-        .. versionadded:: 1.4
-        """
-        return bool(self.icon and self.icon.startswith('a_'))
-
-    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """The same operation as :meth:`Guild.icon_url_as`.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
+    def icon_url(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
 
     @property
-    def banner_url(self):
-        """:class:`Asset`: Returns the guild's banner asset."""
-        return self.banner_url_as()
-
-    def banner_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.banner_url_as`.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
+    def banner(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's banner asset, if available."""
+        if self._banner is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._banner, path='banners')
 
     @property
-    def splash_url(self):
-        """:class:`Asset`: Returns the guild's invite splash asset."""
-        return self.splash_url_as()
-
-    def splash_url_as(self, *, format='webp', size=2048):
-        """The same operation as :meth:`Guild.splash_url_as`.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's invite splash asset, if available."""
+        if self._splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
 
 
 class Invite(Hashable):
@@ -313,13 +289,13 @@ class Invite(Hashable):
 
     BASE = 'https://discord.gg'
 
-    def __init__(self, *, state, data):
+    def __init__(self, *, state, data: InvitePayload):
         self._state = state
         self.max_age = data.get('max_age')
-        self.code = data.get('code')
+        self.code = data['code']
         self.guild = data.get('guild')
         self.revoked = data.get('revoked')
-        self.created_at = parse_time(data.get('created_at'))
+        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))  # type: ignore
         self.temporary = data.get('temporary')
         self.uses = data.get('uses')
         self.max_uses = data.get('max_uses')
@@ -346,7 +322,7 @@ class Invite(Hashable):
 
         # As far as I know, invites always need a channel
         # So this should never raise.
-        channel_data = data['channel']
+        channel_data: PartialChannelPayload = data['channel']
         channel_id = int(channel_data['id'])
         channel_type = try_enum(ChannelType, channel_data['type'])
         channel = PartialInviteChannel(id=channel_id, name=channel_data['name'], type=channel_type)
@@ -373,30 +349,30 @@ class Invite(Hashable):
         data['channel'] = channel
         return cls(state=state, data=data)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.url
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'<Invite code={self.code!r} guild={self.guild!r} '
             f'online={self.approximate_presence_count} '
             f'members={self.approximate_member_count}>'
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.code)
 
     @property
-    def id(self):
+    def id(self) -> str:
         """:class:`str`: Returns the proper code portion of the invite."""
         return self.code
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str`: A property that retrieves the invite URL."""
         return self.BASE + '/' + self.code
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None):
         """|coro|
 
         Revokes the instant invite.

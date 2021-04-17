@@ -42,6 +42,7 @@ __all__ = (
     'MaxConcurrencyReached',
     'NotOwner',
     'MessageNotFound',
+    'ObjectNotFound',
     'MemberNotFound',
     'GuildNotFound',
     'UserNotFound',
@@ -62,6 +63,7 @@ __all__ = (
     'NSFWChannelRequired',
     'ConversionError',
     'BadUnionArgument',
+    'BadLiteralArgument',
     'ArgumentParsingError',
     'UnexpectedQuoteError',
     'InvalidEndOfQuotedStringError',
@@ -211,6 +213,23 @@ class NotOwner(CheckFailure):
     This inherits from :exc:`CheckFailure`
     """
     pass
+
+class ObjectNotFound(BadArgument):
+    """Exception raised when the argument provided did not match the format
+    of an ID or a mention.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The argument supplied by the caller that was not matched
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'{argument!r} does not follow a valid ID or mention format.')
 
 class MemberNotFound(BadArgument):
     """Exception raised when the member provided was not found in the bot's
@@ -644,6 +663,8 @@ class BadUnionArgument(UserInputError):
             try:
                 return x.__name__
             except AttributeError:
+                if hasattr(x, '__origin__'):
+                    return repr(x)
                 return x.__class__.__name__
 
         to_string = [_get_name(x) for x in converters]
@@ -653,6 +674,36 @@ class BadUnionArgument(UserInputError):
             fmt = ' or '.join(to_string)
 
         super().__init__(f'Could not convert "{param.name}" into {fmt}.')
+
+class BadLiteralArgument(UserInputError):
+    """Exception raised when a :data:`typing.Literal` converter fails for all
+    its associated values.
+
+    This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    param: :class:`inspect.Parameter`
+        The parameter that failed being converted.
+    literals: Tuple[Any, ...]
+        A tuple of values compared against in conversion, in order of failure.
+    errors: List[:class:`CommandError`]
+        A list of errors that were caught from failing the conversion.
+    """
+    def __init__(self, param, literals, errors):
+        self.param = param
+        self.literals = literals
+        self.errors = errors
+
+        to_string = [repr(l) for l in literals]
+        if len(to_string) > 2:
+            fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
+        else:
+            fmt = ' or '.join(to_string)
+
+        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
 
 class ArgumentParsingError(UserInputError):
     """An exception raised when the parser fails to parse a user's input.
@@ -779,11 +830,8 @@ class ExtensionNotFound(ExtensionError):
     -----------
     name: :class:`str`
         The extension that had the error.
-    original: :class:`NoneType`
-        Always ``None`` for backwards compatibility.
     """
-    def __init__(self, name, original=None):
-        self.original = None
+    def __init__(self, name):
         msg = f'Extension {name!r} could not be loaded.'
         super().__init__(msg, name=name)
 

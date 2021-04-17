@@ -22,7 +22,55 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
-Snowflake = Union[str, int]
-SnowflakeList = List[Snowflake]
+from typing import Literal, Optional, TypedDict
+from .snowflake import Snowflake
+from .user import User
+
+
+class _IntegrationApplicationOptional(TypedDict, total=False):
+    bot: User
+
+
+class IntegrationApplication(_IntegrationApplicationOptional):
+    id: Snowflake
+    name: str
+    icon: Optional[str]
+    description: str
+    summary: str
+
+
+class IntegrationAccount(TypedDict):
+    id: str
+    name: str
+
+
+IntegrationExpireBehavior = Literal[0, 1]
+
+
+class PartialIntegration(TypedDict):
+    id: Snowflake
+    name: str
+    type: IntegrationType
+    account: IntegrationAccount
+
+
+class _IntegrationOptional(TypedDict, total=False):
+    role_id: Snowflake
+    enable_emoticons: bool
+    subscriber_count: int
+    revoked: bool
+    application: IntegrationApplication
+
+
+IntegrationType = Literal['twitch', 'youtube', 'discord']
+
+
+class Integration(PartialIntegration, _IntegrationOptional):
+    enabled: bool
+    syncing: bool
+    synced_at: str
+    user: User
+    expire_behavior: IntegrationExpireBehavior
+    expire_grace_period: int

@@ -36,7 +36,7 @@ with open('README.rst') as f:
 extras_require = {
     'voice': ['PyNaCl>=1.3.0,<1.5'],
     'docs': [
-        'sphinx==3.0.3',
+        'sphinx==3.5.3',
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
     ]
@@ -50,7 +50,7 @@ setup(name='discord.py',
         "Issue tracker": "https://github.com/Rapptz/discord.py/issues",
       },
       version=version,
-      packages=['discord', 'discord.types', 'discord.ext.commands', 'discord.ext.tasks'],
+      packages=['discord', 'discord.types', 'discord.webhook', 'discord.ext.commands', 'discord.ext.tasks'],
       license='MIT',
       description='A Python wrapper for the Discord API',
       long_description=readme,

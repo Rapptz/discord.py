@@ -596,16 +596,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param interaction: The interaction data.
     :type interaction: :class:`Interaction`
 
-.. function:: on_private_channel_delete(channel)
-              on_private_channel_create(channel)
-
-    Called whenever a private channel is deleted or created.
-
-    This requires :attr:`Intents.messages` to be enabled.
-
-    :param channel: The private channel that got created or deleted.
-    :type channel: :class:`abc.PrivateChannel`
-
 .. function:: on_private_channel_update(before, after)
 
     Called whenever a private group DM is updated. e.g. changed name or topic.
@@ -1070,6 +1060,16 @@ of :class:`enum.Enum`.
         Discovery requirements for 3 weeks in a row.
 
         .. versionadded:: 1.7
+    .. attribute:: reply
+
+        The message type denoting that the author is replying to a message.
+
+        .. versionadded:: 2.0
+    .. attribute:: application_command
+
+        The system message denoting that an application (or "slash") command was executed.
+
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 
@@ -2495,7 +2495,7 @@ Webhook
 
 .. attributetable:: Webhook
 
-.. autoclass:: Webhook
+.. autoclass:: Webhook()
     :members:
 
 WebhookMessage
@@ -2503,22 +2503,23 @@ WebhookMessage
 
 .. attributetable:: WebhookMessage
 
-.. autoclass:: WebhookMessage
+.. autoclass:: WebhookMessage()
     :members:
 
-Adapters
-~~~~~~~~~
+SyncWebhook
+~~~~~~~~~~~~
 
-Adapters allow you to change how the request should be handled. They all build on a single
-interface, :meth:`WebhookAdapter.request`.
+.. attributetable:: SyncWebhook
 
-.. autoclass:: WebhookAdapter
+.. autoclass:: SyncWebhook()
     :members:
 
-.. autoclass:: AsyncWebhookAdapter
-    :members:
+SyncWebhookMessage
+~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: RequestsWebhookAdapter
+.. attributetable:: SyncWebhookMessage
+
+.. autoclass:: SyncWebhookMessage()
     :members:
 
 .. _discord_api_abcs:
@@ -2791,6 +2792,8 @@ Role
 RoleTags
 ~~~~~~~~~~
 
+.. attributetable:: RoleTags
+
 .. autoclass:: RoleTags()
     :members:
 
@@ -3051,11 +3054,15 @@ AllowedMentions
 MessageReference
 ~~~~~~~~~~~~~~~~~
 
+.. attributetable:: MessageReference
+
 .. autoclass:: MessageReference
     :members:
 
 PartialMessage
 ~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialMessage
 
 .. autoclass:: PartialMessage
     :members:
@@ -3063,11 +3070,15 @@ PartialMessage
 Intents
 ~~~~~~~~~~
 
+.. attributetable:: Intents
+
 .. autoclass:: Intents
     :members:
 
 MemberCacheFlags
 ~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MemberCacheFlags
 
 .. autoclass:: MemberCacheFlags
     :members:
@@ -3147,11 +3158,15 @@ PermissionOverwrite
 ShardInfo
 ~~~~~~~~~~~
 
+.. attributetable:: ShardInfo
+
 .. autoclass:: ShardInfo()
     :members:
 
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SystemChannelFlags
 
 .. autoclass:: SystemChannelFlags()
     :members:
@@ -3159,11 +3174,15 @@ SystemChannelFlags
 MessageFlags
 ~~~~~~~~~~~~
 
+.. attributetable:: MessageFlags
+
 .. autoclass:: MessageFlags()
     :members:
 
 PublicUserFlags
 ~~~~~~~~~~~~~~~
+
+.. attributetable:: PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:

@@ -22,7 +22,36 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Union
+from typing import Optional, TypedDict
+from .snowflake import Snowflake
+from .member import Member
 
-Snowflake = Union[str, int]
-SnowflakeList = List[Snowflake]
+
+class _PartialVoiceStateOptional(TypedDict, total=False):
+    member: Member
+    self_stream: bool
+
+
+class PartialVoiceState(_PartialVoiceStateOptional):
+    channel_id: Optional[Snowflake]
+    user_id: Snowflake
+    session_id: str
+    deaf: bool
+    mute: bool
+    self_deaf: bool
+    self_mute: bool
+    self_video: bool
+    suppress: bool
+
+
+class VoiceState(PartialVoiceState, total=False):
+    guild_id: Snowflake
+
+
+class VoiceRegion(TypedDict):
+    id: str
+    name: str
+    vip: bool
+    optimal: bool
+    deprecated: bool
+    custom: bool

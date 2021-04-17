@@ -22,17 +22,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import (
+    Any,
+    Dict,
+    ForwardRef,
+    Iterable,
+    Literal,
+    Tuple,
+    Union,
+)
 import asyncio
 import functools
 import inspect
-import typing
 import datetime
+import types
 import sys
 
 import discord
 
 from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency
+from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
 from . import converter as converters
 from ._types import _BaseCommand
 from .cog import Cog
@@ -54,6 +63,7 @@ __all__ = (
     'bot_has_permissions',
     'bot_has_any_role',
     'cooldown',
+    'dynamic_cooldown',
     'max_concurrency',
     'dm_only',
     'guild_only',
@@ -62,6 +72,99 @@ __all__ = (
     'has_guild_permissions',
     'bot_has_guild_permissions'
 )
+
+PY_310 = sys.version_info >= (3, 10)
+
+def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
+    params = []
+    literal_cls = type(Literal[0])
+    for p in parameters:
+        if isinstance(p, literal_cls):
+            params.extend(p.__args__)
+        else:
+            params.append(p)
+    return tuple(params)
+
+def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
+    none_cls = type(None)
+    return tuple(p for p in parameters if p is not none_cls) + (none_cls,)
+
+def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any] = {}, *, implicit_str=True):
+    if isinstance(tp, ForwardRef):
+        tp = tp.__forward_arg__
+        # ForwardRefs always evaluate their internals
+        implicit_str = True
+
+    if implicit_str and isinstance(tp, str):
+        if tp in cache:
+            return cache[tp]
+        evaluated = eval(tp, globals)
+        cache[tp] = evaluated
+        return _evaluate_annotation(evaluated, globals, cache)
+
+    if hasattr(tp, '__args__'):
+        implicit_str = True
+        args = tp.__args__
+        if not hasattr(tp, '__origin__'):
+            if PY_310 and tp.__class__ is types.Union:
+                converted = Union[args]  # type: ignore
+                return _evaluate_annotation(converted, globals, cache)
+
+            return tp
+        if tp.__origin__ is Union:
+            try:
+                if args.index(type(None)) != len(args) - 1:
+                    args = normalise_optional_params(tp.__args__)
+            except ValueError:
+                pass
+        if tp.__origin__ is Literal:
+            if not PY_310:
+                args = flatten_literal_params(tp.__args__)
+            implicit_str = False
+
+        evaluated_args = tuple(
+            _evaluate_annotation(arg, globals, cache, implicit_str=implicit_str) for arg in args
+        )
+
+        if evaluated_args == args:
+            return tp
+
+        try:
+            return tp.copy_with(evaluated_args)
+        except AttributeError:
+            return tp.__origin__[evaluated_args]
+
+    return tp
+
+def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[str, Any] = {}) -> Any:
+    if annotation is None:
+        return type(None)
+    if isinstance(annotation, str):
+        annotation = ForwardRef(annotation)
+    return _evaluate_annotation(annotation, globalns, cache)
+
+def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
+    globalns = function.__globals__
+    signature = inspect.signature(function)
+    params = {}
+    cache: Dict[str, Any] = {}
+    for name, parameter in signature.parameters.items():
+        annotation = parameter.annotation
+        if annotation is parameter.empty:
+            params[name] = parameter
+            continue
+        if annotation is None:
+            params[name] = parameter.replace(annotation=type(None))
+            continue
+
+        annotation = _evaluate_annotation(annotation, globalns, cache)
+        if annotation is converters.Greedy:
+            raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
+
+        params[name] = parameter.replace(annotation=annotation)
+
+    return params
+
 
 def wrap_callback(coro):
     @functools.wraps(coro)
@@ -256,7 +359,10 @@ class Command(_BaseCommand):
         except AttributeError:
             cooldown = kwargs.get('cooldown')
         finally:
-            self._buckets = CooldownMapping(cooldown)
+            if cooldown is None:
+                self._buckets = CooldownMapping(cooldown, BucketType.default)
+            elif isinstance(cooldown, CooldownMapping):
+                self._buckets = cooldown
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -296,40 +402,7 @@ class Command(_BaseCommand):
     def callback(self, function):
         self._callback = function
         self.module = function.__module__
-
-        signature = inspect.signature(function)
-        self.params = signature.parameters.copy()
-
-        # see: https://bugs.python.org/issue41341
-        resolve = self._recursive_resolve if sys.version_info < (3, 9) else self._return_resolved
-
-        try:
-            type_hints = {k: resolve(v) for k, v in typing.get_type_hints(function).items()}
-        except NameError as e:
-            raise NameError(f'unresolved forward reference: {e.args[0]}') from None
-
-        for key, value in self.params.items():
-            # coalesce the forward references
-            if key in type_hints:
-                self.params[key] = value = value.replace(annotation=type_hints[key])
-
-            # fail early for when someone passes an unparameterized Greedy type
-            if value.annotation is converters.Greedy:
-                raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
-
-    def _return_resolved(self, type, **kwargs):
-        return type
-
-    def _recursive_resolve(self, type, *, globals=None):
-        if not isinstance(type, typing.ForwardRef):
-            return type
-
-        resolved = eval(type.__forward_arg__, globals)
-        args = typing.get_args(resolved)
-        for index, arg in enumerate(args):
-            inner_resolve_result = self._recursive_resolve(arg, globals=globals)
-            resolved[index] = inner_resolve_result
-        return resolved
+        self.params = get_signature_parameters(function)
 
     def add_check(self, func):
         """Adds a check to the command.
@@ -489,31 +562,53 @@ class Command(_BaseCommand):
             raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
     async def do_conversion(self, ctx, converter, argument, param):
-        try:
-            origin = converter.__origin__
-        except AttributeError:
-            pass
-        else:
-            if origin is typing.Union:
-                errors = []
-                _NoneType = type(None)
-                for conv in converter.__args__:
-                    # if we got to this part in the code, then the previous conversions have failed
-                    # so we should just undo the view, return the default, and allow parsing to continue
-                    # with the other parameters
-                    if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
-                        ctx.view.undo()
-                        return None if param.default is param.empty else param.default
+        origin = getattr(converter, '__origin__', None)
 
+        if origin is Union:
+            errors = []
+            _NoneType = type(None)
+            union_args = converter.__args__
+            for conv in union_args:
+                # if we got to this part in the code, then the previous conversions have failed
+                # so we should just undo the view, return the default, and allow parsing to continue
+                # with the other parameters
+                if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                    ctx.view.undo()
+                    return None if param.default is param.empty else param.default
+
+                try:
+                    value = await self.do_conversion(ctx, conv, argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                else:
+                    return value
+
+            # if we're here, then we failed all the converters
+            raise BadUnionArgument(param, union_args, errors)
+
+        if origin is Literal:
+            errors = []
+            conversions = {}
+            literal_args = converter.__args__
+            for literal in literal_args:
+                literal_type = type(literal)
+                try:
+                    value = conversions[literal_type]
+                except KeyError:
                     try:
-                        value = await self._actual_conversion(ctx, conv, argument, param)
+                        value = await self._actual_conversion(ctx, literal_type, argument, param)
                     except CommandError as exc:
                         errors.append(exc)
+                        conversions[literal_type] = object()
+                        continue
                     else:
-                        return value
+                        conversions[literal_type] = value
 
-                # if we're  here, then we failed all the converters
-                raise BadUnionArgument(param, converter.__args__, errors)
+                if value == literal:
+                    return value
+
+            # if we're here, then we failed to match all the literals
+            raise BadLiteralArgument(param, literal_args, errors)
 
         return await self._actual_conversion(ctx, converter, argument, param)
 
@@ -535,8 +630,8 @@ class Command(_BaseCommand):
 
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
-        if type(converter) is converters._Greedy:
-            if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
+        if isinstance(converter, converters.Greedy):
+            if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 return await self._transform_greedy_pos(ctx, param, required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
                 return await self._transform_greedy_var_pos(ctx, param, converter.converter)
@@ -598,22 +693,25 @@ class Command(_BaseCommand):
             return value
 
     @property
-    def clean_params(self):
-        """OrderedDict[:class:`str`, :class:`inspect.Parameter`]:
-        Retrieves the parameter OrderedDict without the context or self parameters.
+    def clean_params(self) -> Dict[str, inspect.Parameter]:
+        """Dict[:class:`str`, :class:`inspect.Parameter`]:
+        Retrieves the parameter dictionary without the context or self parameters.
 
         Useful for inspecting signature.
         """
         result = self.params.copy()
         if self.cog is not None:
             # first parameter is self
-            result.popitem(last=False)
+            try:
+                del result[next(iter(result))]
+            except StopIteration:
+                raise ValueError("missing 'self' parameter") from None
 
         try:
             # first/second parameter is context
-            result.popitem(last=False)
-        except Exception:
-            raise ValueError('Missing context parameter') from None
+            del result[next(iter(result))]
+        except StopIteration:
+            raise ValueError("missing 'context' parameter") from None
 
         return result
 
@@ -704,7 +802,7 @@ class Command(_BaseCommand):
             raise discord.ClientException(f'Callback for {self.name} command is missing "ctx" parameter.')
 
         for name, param in iterator:
-            if param.kind == param.POSITIONAL_OR_KEYWORD or param.kind == param.POSITIONAL_ONLY:
+            if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 transformed = await self.transform(ctx, param)
                 args.append(transformed)
             elif param.kind == param.KEYWORD_ONLY:
@@ -778,9 +876,10 @@ class Command(_BaseCommand):
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             bucket = self._buckets.get_bucket(ctx.message, current)
-            retry_after = bucket.update_rate_limit(current)
-            if retry_after:
-                raise CommandOnCooldown(bucket, retry_after)
+            if bucket is not None:
+                retry_after = bucket.update_rate_limit(current)
+                if retry_after:
+                    raise CommandOnCooldown(bucket, retry_after)
 
     async def prepare(self, ctx):
         ctx.command = self
@@ -995,15 +1094,7 @@ class Command(_BaseCommand):
         return ''
 
     def _is_typing_optional(self, annotation):
-        try:
-            origin = annotation.__origin__
-        except AttributeError:
-            return False
-
-        if origin is not typing.Union:
-            return False
-
-        return annotation.__args__[-1] is type(None)
+        return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__
 
     @property
     def signature(self):
@@ -1011,15 +1102,29 @@ class Command(_BaseCommand):
         if self.usage is not None:
             return self.usage
 
-
         params = self.clean_params
         if not params:
             return ''
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, converters._Greedy)
+            greedy = isinstance(param.annotation, converters.Greedy)
+            optional = False  # postpone evaluation of if it's an optional argument
 
+            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+            # parameter signature is a literal list of it's values
+            annotation = param.annotation.converter if greedy else param.annotation
+            origin = getattr(annotation, '__origin__', None)
+            if not greedy and origin is Union:
+                none_cls = type(None)
+                union_args = annotation.__args__
+                optional = union_args[-1] is none_cls
+                if len(union_args) == 2 and optional:
+                    annotation = union_args[0]
+                    origin = getattr(annotation, '__origin__', None)
+
+            if origin is Literal:
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
             if param.default is not param.empty:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
@@ -1038,7 +1143,7 @@ class Command(_BaseCommand):
                     result.append(f'[{name}...]')
             elif greedy:
                 result.append(f'[{name}]...')
-            elif self._is_typing_optional(param.annotation):
+            elif optional:
                 result.append(f'[{name}]')
             else:
                 result.append(f'<{name}>')
@@ -1979,9 +2084,48 @@ def cooldown(rate, per, type=BucketType.default):
 
     def decorator(func):
         if isinstance(func, Command):
-            func._buckets = CooldownMapping(Cooldown(rate, per, type))
+            func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = Cooldown(rate, per, type)
+            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)
+        return func
+    return decorator
+
+def dynamic_cooldown(cooldown, type=BucketType.default):
+    """A decorator that adds a dynamic cooldown to a :class:`.Command`
+
+    This differs from :func:`.cooldown` in that it takes a function that
+    accepts a single parameter of type :class:`.discord.Message` and must
+    return a :class:`.Cooldown`
+
+    A cooldown allows a command to only be used a specific amount
+    of times in a specific time frame. These cooldowns can be based
+    either on a per-guild, per-channel, per-user, per-role or global basis.
+    Denoted by the third argument of ``type`` which must be of enum
+    type :class:`.BucketType`.
+
+    If a cooldown is triggered, then :exc:`.CommandOnCooldown` is triggered in
+    :func:`.on_command_error` and the local error handler.
+
+    A command can only have a single cooldown.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    ------------
+    cooldown: Callable[[:class:`.discord.Message`], :class:`.Cooldown`]
+        A function that takes a message and returns a cooldown that will
+        apply to this invocation
+    type: :class:`.BucketType`
+        The type of cooldown to have.
+    """
+    if not callable(cooldown):
+        raise TypeError("A callable must be provided")
+
+    def decorator(func):
+        if isinstance(func, Command):
+            func._buckets = DynamicCooldownMapping(cooldown, type)
+        else:
+            func.__commands_cooldown__ = DynamicCooldownMapping(cooldown, type)
         return func
     return decorator
 

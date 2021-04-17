@@ -192,6 +192,13 @@ class Member(discord.abc.Messageable, _BaseUser):
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
+
+        .. note::
+
+            Due to a Discord API limitation, a user's Spotify activity may not appear
+            if they are listening to a song with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
@@ -263,17 +270,6 @@ class Member(discord.abc.Messageable, _BaseUser):
             return cls(data=member_data, guild=guild, state=state)
 
     @classmethod
-    def _from_presence_update(cls, *, data, guild, state):
-        clone = cls(data=data, guild=guild, state=state)
-        to_return = cls(data=data, guild=guild, state=state)
-        to_return._client_status = {
-            sys.intern(key): sys.intern(value)
-            for key, value in data.get('client_status', {}).items()
-        }
-        to_return._client_status[None] = sys.intern(data['status'])
-        return to_return, clone
-
-    @classmethod
     def _copy(cls, member):
         self = cls.__new__(cls) # to bypass __init__
 
@@ -329,12 +325,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _update_inner_user(self, user):
         u = self._user
-        original = (u.name, u.avatar, u.discriminator, u._public_flags)
+        original = (u.name, u._avatar, u.discriminator, u._public_flags)
         # These keys seem to always be available
         modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.avatar, u.discriminator, u._public_flags = modified
+            u.name, u._avatar, u.discriminator, u._public_flags = modified
             # Signal to dispatch on_user_update
             return to_return, u
 
@@ -446,6 +442,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         .. note::
 
+            Due to a Discord API limitation, this may be ``None`` if
+            the user is listening to a song on Spotify with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
+        .. note::
+
             A user may have multiple activities, these can be accessed under :attr:`activities`.
         """
         if self.activities:
@@ -472,27 +474,6 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         return any(self._roles.has(role.id) for role in message.role_mentions)
 
-    def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-
-        Returns
-        -------
-        :class:`Permissions`
-            The resolved permissions for the member.
-        """
-        return channel.permissions_for(self)
-
     @property
     def top_role(self):
         """:class:`Role`: Returns the member's highest role.
@@ -513,8 +494,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
-        calculation, please use either :meth:`permissions_in` or
-        :meth:`abc.GuildChannel.permissions_for`.
+        calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
         This does take into consideration guild ownership and the
         administrator implication.

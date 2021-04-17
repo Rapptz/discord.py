@@ -49,8 +49,6 @@ class AppInfo:
 
         .. versionadded:: 1.3
 
-    icon: Optional[:class:`str`]
-        The icon hash, if it exists.
     description: Optional[:class:`str`]
         The application description.
     bot_public: :class:`bool`
@@ -89,12 +87,6 @@ class AppInfo:
         this field will be the URL slug that links to the store page
 
         .. versionadded:: 1.3
-
-    cover_image: Optional[:class:`str`]
-        If this application is a game sold on Discord,
-        this field will be the hash of the image on store embeds
-
-        .. versionadded:: 1.3
     """
 
     __slots__ = (
@@ -106,14 +98,14 @@ class AppInfo:
         'bot_public',
         'bot_require_code_grant',
         'owner',
-        'icon',
+        '_icon',
         'summary',
         'verify_key',
         'team',
         'guild_id',
         'primary_sku_id',
         'slug',
-        'cover_image',
+        '_cover_image',
     )
 
     def __init__(self, state, data):
@@ -122,7 +114,7 @@ class AppInfo:
         self.id = int(data['id'])
         self.name = data['name']
         self.description = data['description']
-        self.icon = data['icon']
+        self._icon = data['icon']
         self.rpc_origins = data['rpc_origins']
         self.bot_public = data['bot_public']
         self.bot_require_code_grant = data['bot_require_code_grant']
@@ -138,7 +130,7 @@ class AppInfo:
 
         self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
         self.slug = data.get('slug')
-        self.cover_image = data.get('cover_image')
+        self._cover_image = data.get('cover_image')
 
     def __repr__(self):
         return (
@@ -148,81 +140,21 @@ class AppInfo:
         )
 
     @property
-    def icon_url(self):
-        """:class:`.Asset`: Retrieves the application's icon asset.
-
-        This is equivalent to calling :meth:`icon_url_as` with
-        the default parameters ('webp' format and a size of 1024).
-
-        .. versionadded:: 1.3
-        """
-        return self.icon_url_as()
-
-    def icon_url_as(self, *, format='webp', size=1024):
-        """Returns an :class:`Asset` for the icon the application has.
-
-        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
-        The size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the icon to. Defaults to 'webp'.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_icon(self._state, self, 'app', format=format, size=size)
+    def icon(self):
+        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='app')
 
     @property
-    def cover_image_url(self):
-        """:class:`.Asset`: Retrieves the cover image on a store embed.
+    def cover_image(self):
+        """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
 
-        This is equivalent to calling :meth:`cover_image_url_as` with
-        the default parameters ('webp' format and a size of 1024).
-
-        .. versionadded:: 1.3
+        This is only available if the application is a game sold on Discord.
         """
-        return self.cover_image_url_as()
-
-    def cover_image_url_as(self, *, format='webp', size=1024):
-        """Returns an :class:`Asset` for the image on store embeds
-        if this application is a game sold on Discord.
-
-        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
-        The size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the image to. Defaults to 'webp'.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_cover_image(self._state, self, format=format, size=size)
+        if self._cover_image is None:
+            return None
+        return Asset._from_cover_image(self._state, self.id, self._cover_image)
 
     @property
     def guild(self):

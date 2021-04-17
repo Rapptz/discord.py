@@ -34,6 +34,7 @@ __all__ = (
     'BucketType',
     'Cooldown',
     'CooldownMapping',
+    'DynamicCooldownMapping',
     'MaxConcurrency',
 )
 
@@ -69,18 +70,14 @@ class BucketType(Enum):
 
 
 class Cooldown:
-    __slots__ = ('rate', 'per', 'type', '_window', '_tokens', '_last')
+    __slots__ = ('rate', 'per', '_window', '_tokens', '_last')
 
-    def __init__(self, rate, per, type):
+    def __init__(self, rate, per):
         self.rate = int(rate)
         self.per = float(per)
-        self.type = type
         self._window = 0.0
         self._tokens = self.rate
         self._last = 0.0
-
-        if not callable(self.type):
-            raise TypeError('Cooldown type must be a BucketType or callable')
 
     def get_tokens(self, current=None):
         if not current:
@@ -128,18 +125,22 @@ class Cooldown:
         self._last = 0.0
 
     def copy(self):
-        return Cooldown(self.rate, self.per, self.type)
+        return Cooldown(self.rate, self.per)
 
     def __repr__(self):
         return f'<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>'
 
 class CooldownMapping:
-    def __init__(self, original):
+    def __init__(self, original, type):
+        if not callable(type):
+            raise TypeError('Cooldown type must be a BucketType or callable')
+
         self._cache = {}
         self._cooldown = original
+        self._type = type
 
     def copy(self):
-        ret = CooldownMapping(self._cooldown)
+        ret = CooldownMapping(self._cooldown, self._type)
         ret._cache = self._cache.copy()
         return ret
 
@@ -149,10 +150,10 @@ class CooldownMapping:
 
     @classmethod
     def from_cooldown(cls, rate, per, type):
-        return cls(Cooldown(rate, per, type))
+        return cls(Cooldown(rate, per), type)
 
     def _bucket_key(self, msg):
-        return self._cooldown.type(msg)
+        return self._type(msg)
 
     def _verify_cache_integrity(self, current=None):
         # we want to delete all cache objects that haven't been used
@@ -163,15 +164,19 @@ class CooldownMapping:
         for k in dead_keys:
             del self._cache[k]
 
+    def create_bucket(self, message):
+        return self._cooldown.copy()
+
     def get_bucket(self, message, current=None):
-        if self._cooldown.type is BucketType.default:
+        if self._type is BucketType.default:
             return self._cooldown
 
         self._verify_cache_integrity(current)
         key = self._bucket_key(message)
         if key not in self._cache:
-            bucket = self._cooldown.copy()
-            self._cache[key] = bucket
+            bucket = self.create_bucket(message)
+            if bucket is not None:
+                self._cache[key] = bucket
         else:
             bucket = self._cache[key]
 
@@ -180,6 +185,24 @@ class CooldownMapping:
     def update_rate_limit(self, message, current=None):
         bucket = self.get_bucket(message, current)
         return bucket.update_rate_limit(current)
+
+class DynamicCooldownMapping(CooldownMapping):
+
+    def __init__(self, factory, type):
+        super().__init__(None, type)
+        self._factory = factory
+
+    def copy(self):
+        ret = DynamicCooldownMapping(self._factory, self._type)
+        ret._cache = self._cache.copy()
+        return ret
+
+    @property
+    def valid(self):
+        return True
+
+    def create_bucket(self, message):
+        return self._factory(message)
 
 class _Semaphore:
     """This class is a version of a semaphore.

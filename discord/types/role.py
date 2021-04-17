@@ -22,7 +22,28 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
-Snowflake = Union[str, int]
-SnowflakeList = List[Snowflake]
+from typing import TypedDict
+from .snowflake import Snowflake
+
+
+class _RoleOptional(TypedDict, total=False):
+    tags: RoleTags
+
+
+class Role(_RoleOptional):
+    id: Snowflake
+    name: str
+    color: int
+    hoist: bool
+    position: int
+    permissions: str
+    managed: bool
+    mentionable: bool
+
+
+class RoleTags(TypedDict, total=False):
+    bot_id: Snowflake
+    integration_id: Snowflake
+    premium_subscriber: None

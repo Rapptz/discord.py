@@ -22,10 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
 import sys
+from typing import Any, Coroutine, List, TYPE_CHECKING, TypeVar
 from urllib.parse import quote as _uriquote
 import weakref
 
@@ -36,6 +39,14 @@ from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 
 log = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from .types import (
+        interactions,
+    )
+
+    T = TypeVar('T')
+    Response = Coroutine[Any, Any, T]
 
 
 async def json_or_text(response):
@@ -51,7 +62,7 @@ async def json_or_text(response):
 
 
 class Route:
-    BASE = 'https://discord.com/api/v7'
+    BASE = 'https://discord.com/api/v8'
 
     def __init__(self, method, path, **parameters):
         self.path = path
@@ -65,12 +76,13 @@ class Route:
         # major parameters:
         self.channel_id = parameters.get('channel_id')
         self.guild_id = parameters.get('guild_id')
-        self.interaction_token = parameters.get('interaction_token')
+        self.webhook_id = parameters.get('webhook_id')
+        self.webhook_token = parameters.get('webhook_token')
 
     @property
     def bucket(self):
         # the bucket is just method + path w/ major parameters
-        return f'{self.channel_id}:{self.guild_id}:{self.interaction_token}:{self.path}'
+        return f'{self.channel_id}:{self.guild_id}:{self.path}'
 
 
 class MaybeUnlock:
@@ -137,7 +149,7 @@ class HTTPClient:
 
         return await self.__session.ws_connect(url, **kwargs)
 
-    async def request(self, route, *, files=None, form=None, **kwargs):
+    async def request(self, route, *, files=None, form=None, **kwargs) -> Any:
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -151,7 +163,6 @@ class HTTPClient:
         # header creation
         headers = {
             'User-Agent': self.user_agent,
-            'X-Ratelimit-Precision': 'millisecond',
         }
 
         if self.token is not None:
@@ -224,7 +235,7 @@ class HTTPClient:
                             fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
 
                             # sleep a bit
-                            retry_after = data['retry_after'] / 1000.0
+                            retry_after: float = data['retry_after']  # type: ignore
                             log.warning(fmt, retry_after, bucket)
 
                             # check if it's a global rate limit
@@ -263,6 +274,7 @@ class HTTPClient:
                 except OSError as e:
                     # Connection reset by peer
                     if tries < 4 and e.errno in (54, 10054):
+                        await asyncio.sleep(1 + tries * 2)
                         continue
                     raise
 
@@ -450,7 +462,7 @@ class HTTPClient:
         return self.request(r, reason=reason)
 
     def delete_messages(self, channel_id, message_ids, *, reason=None):
-        r = Route('POST', '/channels/{channel_id}/messages/bulk_delete', channel_id=channel_id)
+        r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
             'messages': message_ids,
         }
@@ -1038,10 +1050,10 @@ class HTTPClient:
 
     # Application commands (global)
 
-    def get_global_commands(self, application_id):
+    def get_global_commands(self, application_id) -> Response[List[interactions.ApplicationCommand]]:
         return self.request(Route('GET', '/applications/{application_id}/commands', application_id=application_id))
 
-    def get_global_command(self, application_id, command_id):
+    def get_global_command(self, application_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/commands/{command_id}',
@@ -1050,11 +1062,11 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id, payload):
+    def upsert_global_command(self, application_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
-    def edit_global_command(self, application_id, command_id, payload):
+    def edit_global_command(self, application_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1078,13 +1090,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id, payload):
+    def bulk_upsert_global_commands(self, application_id, payload) -> Response[List[interactions.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
     # Application commands (guild)
 
-    def get_guild_commands(self, application_id, guild_id):
+    def get_guild_commands(self, application_id, guild_id) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
             '/applications/{application_id}/{guild_id}/commands',
@@ -1093,7 +1105,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_guild_command(self, application_id, guild_id, command_id):
+    def get_guild_command(self, application_id, guild_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/{guild_id}/commands/{command_id}',
@@ -1103,7 +1115,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_guild_command(self, application_id, guild_id, payload):
+    def upsert_guild_command(self, application_id, guild_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
             '/applications/{application_id}/{guild_id}/commands',
@@ -1112,7 +1124,7 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def edit_guild_command(self, application_id, guild_id, command_id, payload):
+    def edit_guild_command(self, application_id, guild_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1138,7 +1150,9 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_guild_commands(self, application_id, guild_id, payload):
+    def bulk_upsert_guild_commands(
+        self, application_id, guild_id, payload
+    ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
             '/applications/{application_id}/{guild_id}/commands',
@@ -1190,6 +1204,19 @@ class HTTPClient:
             'POST',
             '/interactions/{interaction_id}/{interaction_token}/callback',
             interaction_id=interaction_id,
+            interaction_token=token,
+        )
+        return self.request(r)
+
+    def get_original_interaction_response(
+        self,
+        application_id,
+        token,
+    ):
+        r = Route(
+            'GET',
+            '/webhooks/{application_id}/{interaction_token}/messages/@original',
+            application_id=application_id,
             interaction_token=token,
         )
         return self.request(r)
@@ -1279,28 +1306,28 @@ class HTTPClient:
     def application_info(self):
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
-    async def get_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_gateway(self, *, encoding='json', zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, v)
+            value = '{0}?encoding={1}&v=8'
+        return value.format(data['url'], encoding)
 
-    async def get_bot_gateway(self, *, encoding='json', v=6, zlib=True):
+    async def get_bot_gateway(self, *, encoding='json', zlib=True):
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return data['shards'], value.format(data['url'], encoding, v)
+            value = '{0}?encoding={1}&v=8'
+        return data['shards'], value.format(data['url'], encoding)
 
     def get_user(self, user_id):
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

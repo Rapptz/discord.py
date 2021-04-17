@@ -22,7 +22,39 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Union
+from __future__ import annotations
 
-Snowflake = Union[str, int]
-SnowflakeList = List[Snowflake]
+from typing import Literal, TypedDict
+
+from .guild import InviteGuild, _GuildPreviewUnique
+from .channel import PartialChannel
+from .user import PartialUser
+
+TargetUserType = Literal[1]
+
+
+class _InviteOptional(TypedDict, total=False):
+    guild: InviteGuild
+    inviter: PartialUser
+    target_user: PartialUser
+    target_user_type: TargetUserType
+
+
+class _InviteMetadata(TypedDict, total=False):
+    uses: int
+    max_uses: int
+    temporary: bool
+    created_at: str
+
+
+class IncompleteInvite(_InviteMetadata):
+    code: str
+    channel: PartialChannel
+
+
+class Invite(IncompleteInvite, _InviteOptional):
+    ...
+
+
+class InviteWithCounts(Invite, _GuildPreviewUnique):
+    ...

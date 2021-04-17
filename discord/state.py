@@ -120,7 +120,6 @@ class ConnectionState:
         if self.guild_ready_timeout < 0:
             raise ValueError('guild_ready_timeout cannot be negative')
 
-        self.guild_subscriptions = options.get('guild_subscriptions', True)
         allowed_mentions = options.get('allowed_mentions')
 
         if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
@@ -153,15 +152,7 @@ class ConnectionState:
         if not intents.guilds:
             log.warning('Guilds intent seems to be disabled. This may cause state related issues.')
 
-        try:
-            chunk_guilds = options['fetch_offline_members']
-        except KeyError:
-            chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
-        else:
-            msg = 'fetch_offline_members is deprecated, use chunk_guilds_at_startup instead'
-            warnings.warn(msg, DeprecationWarning, stacklevel=4)
-
-        self._chunk_guilds = chunk_guilds
+        self._chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
 
         # Ensure these two are set properly
         if not intents.members and self._chunk_guilds:
@@ -338,10 +329,10 @@ class ConnectionState:
 
         if len(self._private_channels) > 128:
             _, to_remove = self._private_channels.popitem(last=False)
-            if isinstance(to_remove, DMChannel):
+            if isinstance(to_remove, DMChannel) and to_remove.recipient:
                 self._private_channels_by_user.pop(to_remove.recipient.id, None)
 
-        if isinstance(channel, DMChannel):
+        if isinstance(channel, DMChannel) and channel.recipient:
             self._private_channels_by_user[channel.recipient.id] = channel
 
     def add_dm_channel(self, data):
@@ -371,7 +362,7 @@ class ConnectionState:
         try:
             guild = self._get_guild(int(data['guild_id']))
         except KeyError:
-            channel = self.get_channel(channel_id)
+            channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
             channel = guild and guild.get_channel(channel_id)
@@ -601,24 +592,14 @@ class ConnectionState:
         user = data['user']
         member_id = int(user['id'])
         member = guild.get_member(member_id)
-        flags = self.member_cache_flags
         if member is None:
-            if 'username' not in user:
-                # sometimes we receive 'incomplete' member data post-removal.
-                # skip these useless cases.
-                return
+            log.debug('PRESENCE_UPDATE referencing an unknown member ID: %s. Discarding', member_id)
+            return
 
-            member, old_member = Member._from_presence_update(guild=guild, data=data, state=self)
-            if flags.online or (flags._online_only and member.raw_status != 'offline'):
-                guild._add_member(member)
-        else:
-            old_member = Member._copy(member)
-            user_update = member._presence_update(data=data, user=user)
-            if user_update:
-                self.dispatch('user_update', user_update[0], user_update[1])
-
-            if member.id != self.self_id and flags._online_only and member.raw_status == 'offline':
-                guild._remove_member(member)
+        old_member = Member._copy(member)
+        user_update = member._presence_update(data=data, user=user)
+        if user_update:
+            self.dispatch('user_update', user_update[0], user_update[1])
 
         self.dispatch('member_update', old_member, member)
 
@@ -641,13 +622,6 @@ class ConnectionState:
             if channel is not None:
                 guild._remove_channel(channel)
                 self.dispatch('guild_channel_delete', channel)
-        else:
-            # the reason we're doing this is so it's also removed from the
-            # private channel by user cache as well
-            channel = self._get_private_channel(channel_id)
-            if channel is not None:
-                self._remove_private_channel(channel)
-                self.dispatch('private_channel_delete', channel)
 
     def parse_channel_update(self, data):
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -678,22 +652,15 @@ class ConnectionState:
             log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
 
-        if ch_type in (ChannelType.group, ChannelType.private):
-            channel_id = int(data['id'])
-            if self._get_private_channel(channel_id) is None:
-                channel = factory(me=self.user, data=data, state=self)
-                self._add_private_channel(channel)
-                self.dispatch('private_channel_create', channel)
+        guild_id = utils._get_as_snowflake(data, 'guild_id')
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            channel = factory(guild=guild, state=self, data=data)
+            guild._add_channel(channel)
+            self.dispatch('guild_channel_create', channel)
         else:
-            guild_id = utils._get_as_snowflake(data, 'guild_id')
-            guild = self._get_guild(guild_id)
-            if guild is not None:
-                channel = factory(guild=guild, state=self, data=data)
-                guild._add_channel(channel)
-                self.dispatch('guild_channel_create', channel)
-            else:
-                log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
-                return
+            log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+            return
 
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
@@ -800,6 +767,9 @@ class ConnectionState:
                 return guild
 
         return self._add_guild_from_data(data)
+
+    def is_guild_evicted(self, guild) -> bool:
+        return guild.id not in self._guilds
 
     async def chunk_guild(self, guild, *, wait=True, cache=None):
         cache = cache or self.member_cache_flags.joined

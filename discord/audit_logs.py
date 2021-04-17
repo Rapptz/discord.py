@@ -22,6 +22,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Dict, List, TYPE_CHECKING
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
@@ -35,6 +38,15 @@ __all__ = (
     'AuditLogEntry',
 )
 
+if TYPE_CHECKING:
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
+    from .guild import Guild
+    from .user import User
+
+
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 
@@ -45,7 +57,7 @@ def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
 def _transform_permissions(entry, data):
-    return Permissions(data)
+    return Permissions(int(data))
 
 def _transform_color(entry, data):
     return Colour(data)
@@ -77,9 +89,10 @@ def _transform_overwrites(entry, data):
 
         ow_type = elem['type']
         ow_id = int(elem['id'])
-        if ow_type == 'role':
+        target = None
+        if ow_type == '0':
             target = entry.guild.get_role(ow_id)
-        else:
+        elif ow_type == '1':
             target = entry._get_member(ow_id)
 
         if target is None:
@@ -123,7 +136,7 @@ class AuditLogChanges:
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
     }
 
-    def __init__(self, entry, data):
+    def __init__(self, entry, data: List[AuditLogChangePayload]):
         self.before = AuditLogDiff()
         self.after = AuditLogDiff()
 
@@ -177,7 +190,7 @@ class AuditLogChanges:
             setattr(first, 'roles', [])
 
         data = []
-        g = entry.guild
+        g: Guild = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
@@ -185,7 +198,7 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']
+                role.name = e['name'] # type: ignore
 
             data.append(role)
 
@@ -234,7 +247,7 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users, data, guild):
+    def __init__(self, *, users: Dict[str, User], data: AuditLogEntryPayload, guild: Guild):
         self._state = guild._state
         self.guild = guild
         self._users = users
@@ -278,13 +291,13 @@ class AuditLogEntry(Hashable):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
-                if the_type == 'member':
+                if the_type == '1':
                     self.extra = self._get_member(instance_id)
-                else:
+                elif the_type == '0':
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')
+                        role.name = self.extra.get('role_name')  # type: ignore
                     self.extra = role
 
         # this key is not present when the above is present, typically.

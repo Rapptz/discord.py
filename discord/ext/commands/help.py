@@ -376,18 +376,6 @@ class HelpCommand:
         return mapping
 
     @property
-    def clean_prefix(self):
-        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``."""
-        user = self.context.guild.me if self.context.guild else self.context.bot.user
-        # this breaks if the prefix mention is not the bot itself but I
-        # consider this to be an *incredibly* strange use case. I'd rather go
-        # for this common use case rather than waste performance for the
-        # odd one.
-        pattern = re.compile(fr"<@!?{user.id}>")
-        display_name = user.display_name.replace('\\', r'\\')
-        return pattern.sub('@' + display_name, self.context.prefix)
-
-    @property
     def invoked_with(self):
         """Similar to :attr:`Context.invoked_with` except properly handles
         the case where :meth:`Context.send_help` is used.
@@ -441,7 +429,7 @@ class HelpCommand:
         else:
             alias = command.name if not parent_sig else parent_sig + ' ' + command.name
 
-        return f'{self.clean_prefix}{alias} {command.signature}'
+        return f'{self.context.clean_prefix}{alias} {command.signature}'
 
     def remove_mentions(self, string):
         """Removes mentions from the string to prevent abuse.
@@ -931,15 +919,15 @@ class DefaultHelpCommand(HelpCommand):
     def shorten_text(self, text):
         """:class:`str`: Shortens text to fit into the :attr:`width`."""
         if len(text) > self.width:
-            return text[:self.width - 3] + '...'
+            return text[:self.width - 3].rstrip() + '...'
         return text
 
     def get_ending_note(self):
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
         return (
-            f"Type {self.clean_prefix}{command_name} command for more info on a command.\n"
-            f"You can also type {self.clean_prefix}{command_name} category for more info on a category."
+            f"Type {self.context.clean_prefix}{command_name} command for more info on a command.\n"
+            f"You can also type {self.context.clean_prefix}{command_name} category for more info on a category."
         )
 
     def add_indented_commands(self, commands, *, heading, max_size=None):
@@ -1151,12 +1139,12 @@ class MinimalHelpCommand(HelpCommand):
         """
         command_name = self.invoked_with
         return (
-            f"Use `{self.clean_prefix}{command_name} [command]` for more info on a command.\n"
-            f"You can also use `{self.clean_prefix}{command_name} [category]` for more info on a category."
+            f"Use `{self.context.clean_prefix}{command_name} [command]` for more info on a command.\n"
+            f"You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category."
         )
 
     def get_command_signature(self, command):
-        return f'{self.clean_prefix}{command.qualified_name} {command.signature}'
+        return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
 
     def get_ending_note(self):
         """Return the help command's ending note. This is mainly useful to override for i18n purposes.
@@ -1205,7 +1193,7 @@ class MinimalHelpCommand(HelpCommand):
             The command to show information of.
         """
         fmt = '{0}{1} \N{EN DASH} {2}' if command.short_doc else '{0}{1}'
-        self.paginator.add_line(fmt.format(self.clean_prefix, command.qualified_name, command.short_doc))
+        self.paginator.add_line(fmt.format(self.context.clean_prefix, command.qualified_name, command.short_doc))
 
     def add_aliases_formatting(self, aliases):
         """Adds the formatting information on a command's aliases.

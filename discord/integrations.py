@@ -22,7 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import datetime
+from typing import Optional, TYPE_CHECKING, overload
 from .utils import _get_as_snowflake, get, parse_time
 from .user import User
 from .errors import InvalidArgument
@@ -32,6 +35,14 @@ __all__ = (
     'IntegrationAccount',
     'Integration',
 )
+
+if TYPE_CHECKING:
+    from .types.integration import (
+        IntegrationAccount as IntegrationAccountPayload,
+        Integration as IntegrationPayload,
+    )
+    from .guild import Guild
+
 
 class IntegrationAccount:
     """Represents an integration account.
@@ -48,12 +59,13 @@ class IntegrationAccount:
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, **kwargs):
-        self.id = kwargs.pop('id')
-        self.name = kwargs.pop('name')
+    def __init__(self, data: IntegrationAccountPayload) -> None:
+        self.id: Optional[int] = _get_as_snowflake(data, 'id')
+        self.name: str = data.pop('name')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<IntegrationAccount id={self.id} name={self.name!r}>'
+
 
 class Integration:
     """Represents a guild integration.
@@ -90,20 +102,34 @@ class Integration:
         An aware UTC datetime representing when the integration was last synced.
     """
 
-    __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
-                 'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account',
-                 'enable_emoticons', '_role_id')
+    __slots__ = (
+        'id',
+        '_state',
+        'guild',
+        'name',
+        'enabled',
+        'type',
+        'syncing',
+        'role',
+        'expire_behaviour',
+        'expire_behavior',
+        'expire_grace_period',
+        'synced_at',
+        'user',
+        'account',
+        'enable_emoticons',
+        '_role_id',
+    )
 
-    def __init__(self, *, data, guild):
+    def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
         self.guild = guild
         self._state = guild._state
         self._from_data(data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Integration id={self.id} name={self.name!r} type={self.type!r}>'
 
-    def _from_data(self, integ):
+    def _from_data(self, integ: IntegrationPayload):
         self.id = _get_as_snowflake(integ, 'id')
         self.name = integ['name']
         self.type = integ['type']
@@ -118,9 +144,23 @@ class Integration:
         self.synced_at = parse_time(integ['synced_at'])
 
         self.user = User(state=self._state, data=integ['user'])
-        self.account = IntegrationAccount(**integ['account'])
+        self.account = IntegrationAccount(integ['account'])
 
-    async def edit(self, **fields):
+    @overload
+    async def edit(
+        self,
+        *,
+        expire_behaviour: Optional[ExpireBehaviour] = ...,
+        expire_grace_period: Optional[int] = ...,
+        enable_emoticons: Optional[bool] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self, **fields) -> None:
+        ...
+
+    async def edit(self, **fields) -> None:
         """|coro|
 
         Edits the integration.
@@ -173,7 +213,7 @@ class Integration:
         self.expire_grace_period = expire_grace_period
         self.enable_emoticons = enable_emoticons
 
-    async def sync(self):
+    async def sync(self) -> None:
         """|coro|
 
         Syncs the integration.
@@ -191,7 +231,7 @@ class Integration:
         await self._state.http.sync_integration(self.guild.id, self.id)
         self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
-    async def delete(self):
+    async def delete(self) -> None:
         """|coro|
 
         Deletes the integration.

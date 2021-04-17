@@ -153,11 +153,14 @@ class PrivateChannel(Snowflake, Protocol):
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
 
+    ROLE = 0
+    MEMBER = 1
+
     def __init__(self, **kwargs):
         self.id = kwargs.pop('id')
-        self.allow = int(kwargs.pop('allow_new', 0))
-        self.deny = int(kwargs.pop('deny_new', 0))
-        self.type = sys.intern(kwargs.pop('type'))
+        self.allow = int(kwargs.pop('allow', 0))
+        self.deny = int(kwargs.pop('deny', 0))
+        self.type = kwargs.pop('type')
 
     def _asdict(self):
         return {
@@ -166,6 +169,12 @@ class _Overwrites:
             'deny': str(self.deny),
             'type': self.type,
         }
+
+    def is_role(self) -> bool:
+        return self.type == 0
+
+    def is_member(self) -> bool:
+        return self.type == 1
 
 
 class GuildChannel(Protocol):
@@ -176,6 +185,7 @@ class GuildChannel(Protocol):
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.CategoryChannel`
+    - :class:`~discord.StageChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 
@@ -289,9 +299,9 @@ class GuildChannel(Protocol):
                 }
 
                 if isinstance(target, Role):
-                    payload['type'] = 'role'
+                    payload['type'] = _Overwrites.ROLE
                 else:
-                    payload['type'] = 'member'
+                    payload['type'] = _Overwrites.MEMBER
 
                 perms.append(payload)
             options['permission_overwrites'] = perms
@@ -318,7 +328,7 @@ class GuildChannel(Protocol):
             overridden_id = int(overridden.pop('id'))
             self._overwrites.append(_Overwrites(id=overridden_id, **overridden))
 
-            if overridden['type'] == 'member':
+            if overridden['type'] == _Overwrites.MEMBER:
                 continue
 
             if overridden_id == everyone_id:
@@ -340,7 +350,7 @@ class GuildChannel(Protocol):
         their default values in the :attr:`~discord.Guild.roles` attribute."""
         ret = []
         g = self.guild
-        for overwrite in filter(lambda o: o.type == 'role', self._overwrites):
+        for overwrite in filter(lambda o: o.is_role(), self._overwrites):
             role = g.get_role(overwrite.id)
             if role is None:
                 continue
@@ -376,9 +386,9 @@ class GuildChannel(Protocol):
         """
 
         if isinstance(obj, User):
-            predicate = lambda p: p.type == 'member'
+            predicate = lambda p: p.is_member()
         elif isinstance(obj, Role):
-            predicate = lambda p: p.type == 'role'
+            predicate = lambda p: p.is_role()
         else:
             predicate = lambda p: True
 
@@ -409,9 +419,9 @@ class GuildChannel(Protocol):
             deny = Permissions(ow.deny)
             overwrite = PermissionOverwrite.from_pair(allow, deny)
 
-            if ow.type == 'role':
+            if ow.is_role():
                 target = self.guild.get_role(ow.id)
-            elif ow.type == 'member':
+            elif ow.is_member():
                 target = self.guild.get_member(ow.id)
 
             # TODO: There is potential data loss here in the non-chunked
@@ -443,8 +453,9 @@ class GuildChannel(Protocol):
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
-    def permissions_for(self, member):
-        """Handles permission resolution for the current :class:`~discord.Member`.
+    def permissions_for(self, obj, /):
+        """Handles permission resolution for the :class:`~discord.Member`
+        or :class:`~discord.Role`.
 
         This function takes into consideration the following cases:
 
@@ -453,15 +464,27 @@ class GuildChannel(Protocol):
         - Channel overrides
         - Member overrides
 
+        If a :class:`~discord.Role` is passed, then it checks the permissions
+        someone with that role would have, which is essentially:
+
+        - The default role permissions
+        - The default role permission overwrites
+        - The permission overwrites of the role used as a parameter
+
+        .. versionchanged:: 2.0
+            The object passed in can now be a role object.
+
         Parameters
         ----------
-        member: :class:`~discord.Member`
-            The member to resolve permissions for.
+        obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]
+            The object to resolve permissions for. This could be either
+            a member or a role. If it's a role then member overwrites
+            are not computed.
 
         Returns
         -------
         :class:`~discord.Permissions`
-            The resolved permissions for the member.
+            The resolved permissions for the member or role.
         """
 
         # The current cases can be explained as:
@@ -478,12 +501,35 @@ class GuildChannel(Protocol):
         # The operation first takes into consideration the denied
         # and then the allowed.
 
-        if self.guild.owner_id == member.id:
+        if self.guild.owner_id == obj.id:
             return Permissions.all()
 
         default = self.guild.default_role
         base = Permissions(default.permissions.value)
-        roles = member._roles
+
+        # Handle the role case first
+        if isinstance(obj, Role):
+            if obj.is_default():
+                overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
+                if overwrite is not None:
+                    base.handle_overwrite(overwrite.allow, overwrite.deny)
+                return base
+
+            denies = 0
+            allows = 0
+            guild_id = self.guild.id
+            for overwrite in self._overwrites:
+                if not overwrite.is_role():
+                    continue
+
+                if overwrite.id in (obj.id, guild_id):
+                    denies |= overwrite.deny
+                    allows |= overwrite.allow
+
+            base.handle_overwrite(allows, denies)
+            return base
+
+        roles = obj._roles
         get_role = self.guild.get_role
 
         # Apply guild roles that the member has.
@@ -513,7 +559,7 @@ class GuildChannel(Protocol):
 
         # Apply channel specific role permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'role' and roles.has(overwrite.id):
+            if overwrite.is_role() and roles.has(overwrite.id):
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
@@ -521,7 +567,7 @@ class GuildChannel(Protocol):
 
         # Apply member specific permission overwrites
         for overwrite in remaining_overwrites:
-            if overwrite.type == 'member' and overwrite.id == member.id:
+            if overwrite.is_member() and overwrite.id == obj.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
 
@@ -632,9 +678,9 @@ class GuildChannel(Protocol):
         http = self._state.http
 
         if isinstance(target, User):
-            perm_type = 'member'
+            perm_type = _Overwrites.MEMBER
         elif isinstance(target, Role):
-            perm_type = 'role'
+            perm_type = _Overwrites.ROLE
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 
@@ -734,10 +780,10 @@ class GuildChannel(Protocol):
             Whether to move the channel to the end of the
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
-        before: :class:`abc.Snowflake`
+        before: :class:`~discord.abc.Snowflake`
             The channel that should be before our current channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
-        after: :class:`abc.Snowflake`
+        after: :class:`~discord.abc.Snowflake`
             The channel that should be after our current channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
@@ -747,7 +793,7 @@ class GuildChannel(Protocol):
             while a negative number moves it above. Note that this
             number is relative and computed after the ``beginning``,
             ``end``, ``before``, and ``after`` parameters.
-        category: Optional[:class:`abc.Snowflake`]
+        category: Optional[:class:`~discord.abc.Snowflake`]
             The category to move this channel under.
             If ``None`` is given then it moves it out of the category.
             This parameter is ignored if moving a category channel.
@@ -1223,6 +1269,7 @@ class Connectable(Protocol):
     The following implement this ABC:
 
     - :class:`~discord.VoiceChannel`
+    - :class:`~discord.StageChannel`
 
     Note
     ----

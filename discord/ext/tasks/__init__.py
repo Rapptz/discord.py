@@ -144,6 +144,8 @@ class Loop:
                         raise
                     await asyncio.sleep(backoff.delay())
                 else:
+                    await self._try_sleep_until(self._next_iteration)
+                    
                     if self._stop_next_iteration:
                         return
 
@@ -156,7 +158,6 @@ class Loop:
                     if self._current_loop == self.count:
                         break
 
-                    await self._try_sleep_until(self._next_iteration)
         except asyncio.CancelledError:
             self._is_being_cancelled = True
             raise

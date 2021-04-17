@@ -373,7 +373,6 @@ class DiscordWebSocket:
                 },
                 'compress': True,
                 'large_threshold': 250,
-                'guild_subscriptions': self._connection.guild_subscriptions,
                 'v': 3
             }
         }
@@ -608,7 +607,7 @@ class DiscordWebSocket:
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'game': activity,
+                'activities': [activity],
                 'afk': afk,
                 'since': since,
                 'status': status
