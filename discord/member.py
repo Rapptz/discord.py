@@ -225,7 +225,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status = {
             None: 'offline'
         }
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = []
         self.nick = data.get('nick', None)
         self.pending = data.get('pending', False)
 
@@ -312,7 +312,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._update_roles(data)
 
     def _presence_update(self, data, user):
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = tuple(map(create_activity, data['activities']))
         self._client_status = {
             sys.intern(key): sys.intern(value)
             for key, value in data.get('client_status', {}).items()
