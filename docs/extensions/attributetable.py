@@ -28,7 +28,8 @@ class attributetable_item(nodes.Part, nodes.Element):
     pass
 
 def visit_attributetable_node(self, node):
-    self.body.append('<div class="py-attribute-table" data-move-to-id="%s">' % node['python-class'])
+    class_ = node["python-class"]
+    self.body.append(f'<div class="py-attribute-table" data-move-to-id="{class_}">')
 
 def visit_attributetablecolumn_node(self, node):
     self.body.append(self.starttag(node, 'div', CLASS='py-attribute-table-column'))
@@ -113,9 +114,10 @@ class PyAttributeTable(SphinxDirective):
         content = self.arguments[0].strip()
         node = attributetableplaceholder('')
         modulename, name = self.parse_name(content)
+        node['python-doc'] = self.env.docname
         node['python-module'] = modulename
         node['python-class'] = name
-        node['python-full-name'] = '%s.%s' % (modulename, name)
+        node['python-full-name'] = f'{modulename}.{name}'
         return [node]
 
 def build_lookup_table(env):
@@ -178,10 +180,11 @@ def get_class_results(lookup, modulename, name, fullname):
         return groups
 
     for attr in members:
-        attrlookup = '%s.%s' % (fullname, attr)
+        attrlookup = f'{fullname}.{attr}'
         key = _('Attributes')
         badge = None
         label = attr
+        value = None
 
         for base in cls.__mro__:
             value = base.__dict__.get(attr)
@@ -196,7 +199,7 @@ def get_class_results(lookup, modulename, name, fullname):
                 badge['badge-type'] = _('coroutine')
             elif isinstance(value, classmethod):
                 key = _('Methods')
-                label = '%s.%s' % (name, attr)
+                label = f'{name}.{attr}'
                 badge = attributetablebadge('cls', 'cls')
                 badge['badge-type'] = _('classmethod')
             elif inspect.isfunction(value):
