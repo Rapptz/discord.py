@@ -44,6 +44,12 @@ class BaseUser(_BaseUser):
         self._state = state
         self._update(data)
 
+    def __repr__(self):
+        return (
+            f"<BaseUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}"
+            f" bot={self.bot} system={self.system}>"
+        )
+
     def __str__(self):
         return f'{self.name}#{self.discriminator}'
 

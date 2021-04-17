@@ -157,6 +157,12 @@ class WidgetMember(BaseUser):
 
         self.connected_channel = connected_channel
 
+    def __repr__(self):
+        return (
+            f"<WidgetMember name={self.name!r} discriminator={self.discriminator!r}"
+            f" bot={self.bot} nick={self.nick!r}>"
+        )
+
     @property
     def display_name(self):
         """:class:`str`: Returns the member's display name."""
