@@ -273,6 +273,9 @@ class DeletedReferencedMessage:
     def __init__(self, parent):
         self._parent = parent
 
+    def __repr__(self):
+        return f"<DeletedReferencedMessage id={self.id} channel_id={self.channel_id} guild_id={self.guild_id!r}>"
+
     @property
     def id(self):
         """:class:`int`: The message ID of the deleted referenced message."""
