@@ -588,7 +588,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         )
         return Thread(guild=self.guild, data=data)
 
-    async def archived_threads(
+    def archived_threads(
         self,
         *,
         private: bool = True,
