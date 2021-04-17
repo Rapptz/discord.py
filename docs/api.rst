@@ -2805,6 +2805,7 @@ Emoji
 
 .. autoclass:: Emoji()
     :members:
+    :inherited-members:
 
 PartialEmoji
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -2813,6 +2814,7 @@ PartialEmoji
 
 .. autoclass:: PartialEmoji()
     :members:
+    :inherited-members:
 
 Role
 ~~~~~
