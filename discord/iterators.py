@@ -705,7 +705,7 @@ class ArchivedThreadIterator(_AsyncIterator['Thread']):
         elif private:
             self.endpoint = self.http.get_private_archived_threads
         else:
-            self.endpoint = self.http.get_archived_threads
+            self.endpoint = self.http.get_public_archived_threads
 
         self.queue: asyncio.Queue[Thread] = asyncio.Queue()
         self.has_more: bool = True
