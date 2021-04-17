@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import io
 import os
-from typing import BinaryIO, Literal, TYPE_CHECKING, Tuple, Union
+from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union
 from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
@@ -45,7 +45,76 @@ VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 
-class Asset:
+class AssetMixin:
+    url: str
+    _state: Optional[Any]
+
+    async def read(self) -> bytes:
+        """|coro|
+
+        Retrieves the content of this asset as a :class:`bytes` object.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the asset.
+        """
+        if self._state is None:
+            raise DiscordException('Invalid state (no ConnectionState provided)')
+
+        return await self._state.http.get_from_cdn(self.url)
+
+    async def save(self, fp: Union[str, bytes, os.PathLike, io.BufferedIOBase], *, seek_begin: bool = True) -> int:
+        """|coro|
+
+        Saves this asset into a file-like object.
+
+        Parameters
+        ----------
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
+            The file-like object to save this attachment to or the filename
+            to use. If a filename is passed then a file is created with that
+            filename and used instead.
+        seek_begin: :class:`bool`
+            Whether to seek to the beginning of the file after saving is
+            successfully done.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+
+        Returns
+        --------
+        :class:`int`
+            The number of bytes written.
+        """
+
+        data = await self.read()
+        if isinstance(fp, io.BufferedIOBase):
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
+
+
+class Asset(AssetMixin):
     """Represents a CDN asset on Discord.
 
     .. container:: operations
@@ -152,19 +221,6 @@ class Asset:
             key=sticker_hash,
             animated=False,
         )
-
-    @classmethod
-    def _from_emoji(cls, state, emoji, *, format=None, static_format='png'):
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument(f"format must be None or one of {VALID_AVATAR_FORMATS}")
-        if format == "gif" and not emoji.animated:
-            raise InvalidArgument("non animated emoji's do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument(f"static_format must be one of {VALID_STATIC_FORMATS}")
-        if format is None:
-            format = 'gif' if emoji.animated else static_format
-
-        return cls(state, f'/emojis/{emoji.id}.{format}')
 
     def __str__(self) -> str:
         return self._url
@@ -332,66 +388,3 @@ class Asset:
         if self._animated:
             return self
         return self.with_format(format)
-
-    async def read(self) -> bytes:
-        """|coro|
-
-        Retrieves the content of this asset as a :class:`bytes` object.
-
-        .. versionadded:: 1.1
-
-        Raises
-        ------
-        DiscordException
-            There was no internal connection state.
-        HTTPException
-            Downloading the asset failed.
-        NotFound
-            The asset was deleted.
-
-        Returns
-        -------
-        :class:`bytes`
-            The content of the asset.
-        """
-        if self._state is None:
-            raise DiscordException('Invalid state (no ConnectionState provided)')
-
-        return await self._state.http.get_from_cdn(self.BASE + self._url)
-
-    async def save(self, fp: Union[str, bytes, os.PathLike, BinaryIO], *, seek_begin: bool = True) -> int:
-        """|coro|
-
-        Saves this asset into a file-like object.
-
-        Parameters
-        ----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
-
-        Raises
-        ------
-        DiscordException
-            There was no internal connection state.
-        HTTPException
-            Downloading the asset failed.
-        NotFound
-            The asset was deleted.
-
-        Returns
-        --------
-        :class:`int`
-            The number of bytes written.
-        """
-
-        data = await self.read()
-        if isinstance(fp, io.IOBase) and fp.writable():
-            written = fp.write(data)
-            if seek_begin:
-                fp.seek(0)
-            return written
-        else:
-            with open(fp, 'wb') as f:
-                return f.write(data)

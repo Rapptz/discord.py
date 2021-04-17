@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import io
 
-from .asset import Asset
+from .asset import Asset, AssetMixin
 from . import utils
 from .partial_emoji import _EmojiTag
 from .user import User
@@ -33,7 +33,7 @@ __all__ = (
     'Emoji',
 )
 
-class Emoji(_EmojiTag):
+class Emoji(_EmojiTag, AssetMixin):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
@@ -221,60 +221,3 @@ class Emoji(_EmojiTag):
             roles = [role.id for role in roles]
         await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)
 
-    async def read(self):
-        """|coro|
-
-        Retrieves the content of this emoji as a :class:`bytes` object.
-
-        .. versionadded:: 2.0
-
-        Raises
-        ------
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        -------
-        :class:`bytes`
-            The content of the emoji.
-        """
-        return await self._state.http.get_from_cdn(self.url)
-
-    async def save(self, fp, *, seek_begin=True):
-        """|coro|
-
-        Saves this emoji into a file-like object.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        ----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
-
-        Raises
-        ------
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        --------
-        :class:`int`
-            The number of bytes written.
-        """
-
-        data = await self.read()
-        if isinstance(fp, io.IOBase) and fp.writable():
-            written = fp.write(data)
-            if seek_begin:
-                fp.seek(0)
-            return written
-        else:
-            with open(fp, 'wb') as f:
-                return f.write(data)

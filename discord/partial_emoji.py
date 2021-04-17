@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import io
 
-from .asset import Asset
+from .asset import Asset, AssetMixin
 from .errors import DiscordException, InvalidArgument
 from . import utils
 
@@ -35,7 +35,7 @@ __all__ = (
 class _EmojiTag:
     __slots__ = ()
 
-class PartialEmoji(_EmojiTag):
+class PartialEmoji(_EmojiTag, AssetMixin):
     """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
@@ -163,72 +163,8 @@ class PartialEmoji(_EmojiTag):
         fmt = 'gif' if self.animated else 'png'
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
-    async def read(self):
-        """|coro|
-
-        Retrieves the content of this emoji as a :class:`bytes` object.
-
-        .. versionadded:: 2.0
-
-        Raises
-        ------
-        DiscordException
-            There was no internal connection state.
-        InvalidArgument
-            The emoji isn't custom.
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        -------
-        :class:`bytes`
-            The content of the emoji.
-        """
-        if self._state is None:
-            raise DiscordException('Invalid state (no ConnectionState provided)')
-
+    async def read(self) -> bytes:
         if self.is_unicode_emoji():
             raise InvalidArgument('PartialEmoji is not a custom emoji')
 
-        return await self._state.http.get_from_cdn(self.url)
-
-    async def save(self, fp, *, seek_begin=True):
-        """|coro|
-
-        Saves this emoji into a file-like object.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        ----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
-
-        Raises
-        ------
-        DiscordException
-            There was no internal connection state.
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        --------
-        :class:`int`
-            The number of bytes written.
-        """
-
-        data = await self.read()
-        if isinstance(fp, io.IOBase) and fp.writable():
-            written = fp.write(data)
-            if seek_begin:
-                fp.seek(0)
-            return written
-        else:
-            with open(fp, 'wb') as f:
-                return f.write(data)
+        return await super().read()
