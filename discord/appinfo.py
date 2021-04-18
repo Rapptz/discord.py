@@ -87,6 +87,16 @@ class AppInfo:
         this field will be the URL slug that links to the store page
 
         .. versionadded:: 1.3
+    
+    terms_of_service_url: Optional[:class:`str`]
+        The url of the app's terms of service
+
+        .. versionadded:: 2.0
+    
+    privacy_policy_url: Optional[:class:`str`]
+        The url of the app's privacy policy
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -106,6 +116,8 @@ class AppInfo:
         'primary_sku_id',
         'slug',
         '_cover_image',
+        'terms_of_service_url',
+        'privacy_policy_url'
     )
 
     def __init__(self, state, data):
@@ -131,6 +143,8 @@ class AppInfo:
         self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
         self.slug = data.get('slug')
         self._cover_image = data.get('cover_image')
+        self.terms_of_service_url = data.get("terms_of_service_url")
+        self.privacy_policy_url = data.get("privacy_policy_url")
 
     def __repr__(self):
         return (
