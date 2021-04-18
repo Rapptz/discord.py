@@ -54,43 +54,42 @@ __all__ = (
 )
 DISCORD_EPOCH = 1420070400000
 
+class cached_property:
+    def __init__(self, function):
+        self.function = function
+        self.__doc__ = getattr(function, '__doc__')
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        value = self.function(instance)
+        setattr(instance, self.function.__name__, value)
+
+        return value
+
 if TYPE_CHECKING:
     from functools import cached_property
-else:
-    class cached_property:
-        def __init__(self, function):
-            self.function = function
-            self.__doc__ = getattr(function, '__doc__')
 
-        def __get__(self, instance, owner):
-            if instance is None:
-                return self
-
-            value = self.function(instance)
-            setattr(instance, self.function.__name__, value)
-
-            return value
-
-FS = TypeVar('FS')
-FR = TypeVar('FR', covariant=True)
-CP = TypeVar('CP', bound='cached_property')
+T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)
 CSP = TypeVar('CSP', bound='CachedSlotProperty')
 
-class CachedSlotProperty(Generic[FS, FR]):
-    def __init__(self, name: str, function: Callable[[FS], FR]) -> None:
+class CachedSlotProperty(Generic[T, T_co]):
+    def __init__(self, name: str, function: Callable[[T], T_co]) -> None:
         self.name = name
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
     @overload
-    def __get__(self: CSP, instance: None, owner: Type[FS]) -> CSP:
+    def __get__(self: CSP, instance: None, owner: Type[T]) -> CSP:
         ...
 
     @overload
-    def __get__(self, instance: FS, owner: Type[FS]) -> FR:
+    def __get__(self, instance: T, owner: Type[T]) -> T_co:
         ...
 
-    def __get__(self, instance: Optional[FS], owner: Type[FS]) -> Any:
+    def __get__(self, instance: Optional[T], owner: Type[T]) -> Any:
         if instance is None:
             return self
 
@@ -101,8 +100,8 @@ class CachedSlotProperty(Generic[FS, FR]):
             setattr(instance, self.name, value)
             return value
 
-def cached_slot_property(name: str) -> Callable[[Callable[[FS], FR]], CachedSlotProperty[FS, FR]]:
-    def decorator(func: Callable[[FS], FR]) -> CachedSlotProperty[FS, FR]:
+def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlotProperty[T, T_co]]:
+    def decorator(func: Callable[[T], T_co]) -> CachedSlotProperty[T, T_co]:
         return CachedSlotProperty(name, func)
     return decorator
 
