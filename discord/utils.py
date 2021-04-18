@@ -295,7 +295,7 @@ def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
     return (discord_millis << 22) + (2 ** 22 - 1 if high else 0)
 
 
-def find(predicate: Callable[[T], bool], seq: Iterable[T]) -> Optional[T]:
+def find(predicate: Callable[[T], Any], seq: Iterable[T]) -> Optional[T]:
     """A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
