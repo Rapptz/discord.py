@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Discord API Wrapper
 ~~~~~~~~~~~~~~~~~~~
@@ -15,53 +13,52 @@ __title__ = 'discord'
 __author__ = 'Rapptz'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-present Rapptz'
-__version__ = '1.7.0a'
+__version__ = '2.0.0a'
 
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
 from collections import namedtuple
 import logging
 
-from .client import Client
-from .appinfo import AppInfo
-from .user import User, ClientUser, Profile
-from .emoji import Emoji
-from .partial_emoji import PartialEmoji
+from .client import *
+from .appinfo import *
+from .user import *
+from .emoji import *
+from .partial_emoji import *
 from .activity import *
 from .channel import *
-from .guild import Guild
+from .guild import *
 from .flags import *
-from .relationship import Relationship
-from .member import Member, VoiceState
+from .member import *
 from .message import *
-from .asset import Asset
+from .asset import *
 from .errors import *
-from .calls import CallMessage, GroupCall
-from .permissions import Permissions, PermissionOverwrite
-from .role import Role, RoleTags
-from .file import File
-from .colour import Color, Colour
-from .integrations import Integration, IntegrationAccount
-from .invite import Invite, PartialInviteChannel, PartialInviteGuild
-from .template import Template
-from .widget import Widget, WidgetMember, WidgetChannel
-from .object import Object
-from .reaction import Reaction
+from .permissions import *
+from .role import *
+from .file import *
+from .colour import *
+from .integrations import *
+from .invite import *
+from .template import *
+from .widget import *
+from .object import *
+from .reaction import *
 from . import utils, opus, abc
 from .enums import *
-from .embeds import Embed
-from .mentions import AllowedMentions
-from .shard import AutoShardedClient, ShardInfo
+from .embeds import *
+from .mentions import *
+from .shard import *
 from .player import *
 from .webhook import *
-from .voice_client import VoiceClient, VoiceProtocol
-from .audit_logs import AuditLogChanges, AuditLogEntry, AuditLogDiff
+from .voice_client import *
+from .audit_logs import *
 from .raw_models import *
 from .team import *
-from .sticker import Sticker
+from .sticker import *
+from .interactions import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=1, minor=7, micro=0, releaselevel='alpha', serial=0)
+version_info = VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

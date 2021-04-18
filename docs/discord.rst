@@ -1,3 +1,5 @@
+:orphan:
+
 .. _discord-intro:
 
 Creating a Bot Account

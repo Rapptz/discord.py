@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 .. _faq:
 
@@ -85,8 +87,15 @@ in the repository.
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There is a method for this under :class:`Client` called :meth:`Client.change_presence`.
-The relevant aspect of this is its ``activity`` keyword argument which takes in an :class:`Activity` object.
+The ``activity`` keyword argument may be passed in the :class:`Client` constructor or :meth:`Client.change_presence`, given an :class:`Activity` object.
+
+The constructor may be used for static activities, while :meth:`Client.change_presence` may be used to update the activity at runtime.
+
+.. warning::
+
+    It is highly discouraged to use :meth:`Client.change_presence` or API calls in :func:`on_ready` as this event may be called many times while running, not just once.
+
+    There is a high chance of disconnecting if presences are changed right after connecting.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
 For memory optimisation purposes, some activities are offered in slimmed down versions:
@@ -96,11 +105,11 @@ For memory optimisation purposes, some activities are offered in slimmed down ve
 
 Putting both of these pieces of info together, you get the following: ::
 
-    await client.change_presence(activity=discord.Game(name='my game'))
+    client = discord.Client(activity=discord.Game(name='my game'))
 
     # or, for watching:
     activity = discord.Activity(name='my activity', type=discord.ActivityType.watching)
-    await client.change_presence(activity=activity)
+    client = discord.Client(activity=activity)
 
 How do I send a message to a specific channel?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -227,7 +236,7 @@ technically in another thread, we must take caution in calling thread-safe opera
 us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` function that allows us to call
 a coroutine from another thread.
 
-However, this function returns a :class:`concurrent.Future` and to actually call it we have to fetch its result. Putting all of
+However, this function returns a :class:`~concurrent.futures.Future` and to actually call it we have to fetch its result. Putting all of
 this together we can do the following: ::
 
     def my_after(error):
@@ -288,7 +297,7 @@ How do I make a web request?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To make a request, you should use a non-blocking library.
-This library already uses and requires a 3rd party library for making requests, ``aiohttp``.
+This library already uses and requires a 3rd party library for making requests, :doc:`aiohttp <aio:index>`.
 
 Quick example: ::
 
@@ -381,12 +390,12 @@ Example: ::
 
     @bot.command()
     async def length(ctx):
-        await ctx.send('Your message is {} characters long.'.format(len(ctx.message.content)))
+        await ctx.send(f'Your message is {len(ctx.message.content)} characters long.')
 
 How do I make a subcommand?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Use the ``group`` decorator. This will transform the callback into a ``Group`` which will allow you to add commands into
+Use the :func:`~ext.commands.group` decorator. This will transform the callback into a :class:`~ext.commands.Group` which will allow you to add commands into
 the group operating as "subcommands". These groups can be arbitrarily nested as well.
 
 Example: ::
@@ -398,6 +407,6 @@ Example: ::
 
     @git.command()
     async def push(ctx, remote: str, branch: str):
-        await ctx.send('Pushing to {} {}'.format(remote, branch))
+        await ctx.send(f'Pushing to {remote} {branch}')
 
 This could then be used as ``?git push origin master``.

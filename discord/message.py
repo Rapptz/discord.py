@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -33,7 +31,6 @@ from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
-from .calls import CallMessage
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
 from .embeds import Embed
@@ -58,7 +55,7 @@ def convert_emoji_reaction(emoji):
         emoji = emoji.emoji
 
     if isinstance(emoji, Emoji):
-        return '%s:%s' % (emoji.name, emoji.id)
+        return f'{emoji.name}:{emoji.id}'
     if isinstance(emoji, PartialEmoji):
         return emoji._as_reaction()
     if isinstance(emoji, str):
@@ -66,10 +63,31 @@ def convert_emoji_reaction(emoji):
         # No existing emojis have <> in them, so this should be okay.
         return emoji.strip('<>')
 
-    raise InvalidArgument('emoji argument must be str, Emoji, or Reaction not {.__class__.__name__}.'.format(emoji))
+    raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
 
-class Attachment:
+class Attachment(Hashable):
     """Represents an attachment from Discord.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the URL of the attachment.
+
+        .. describe:: x == y
+
+            Checks if the attachment is equal to another attachment.
+
+        .. describe:: x != y
+
+            Checks if the attachment is not equal to another attachment.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the attachment.
+
+    .. versionchanged:: 1.7
+        Attachment can now be casted to :class:`str` and is hashable.
 
     Attributes
     ------------
@@ -90,9 +108,13 @@ class Attachment:
         The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
         case of images. When the message is deleted, this URL might be valid for a few
         minutes or not valid at all.
+    content_type: Optional[:class:`str`]
+        The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
+
+        .. versionadded:: 1.7
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http')
+    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
 
     def __init__(self, *, data, state):
         self.id = int(data['id'])
@@ -103,13 +125,17 @@ class Attachment:
         self.url = data.get('url')
         self.proxy_url = data.get('proxy_url')
         self._http = state.http
+        self.content_type = data.get('content_type')
 
     def is_spoiler(self):
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
 
     def __repr__(self):
-        return '<Attachment id={0.id} filename={0.filename!r} url={0.url!r}>'.format(self)
+        return f'<Attachment id={self.id} filename={self.filename!r} url={self.url!r}>'
+
+    def __str__(self):
+        return self.url or ''
 
     async def save(self, fp, *, seek_begin=True, use_cached=False):
         """|coro|
@@ -146,7 +172,7 @@ class Attachment:
             The number of bytes written.
         """
         data = await self.read(use_cached=use_cached)
-        if isinstance(fp, io.IOBase) and fp.writable():
+        if isinstance(fp, io.BufferedIOBase):
             written = fp.write(data)
             if seek_begin:
                 fp.seek(0)
@@ -247,6 +273,9 @@ class DeletedReferencedMessage:
     def __init__(self, parent):
         self._parent = parent
 
+    def __repr__(self):
+        return f"<DeletedReferencedMessage id={self.id} channel_id={self.channel_id} guild_id={self.guild_id!r}>"
+
     @property
     def id(self):
         """:class:`int`: The message ID of the deleted referenced message."""
@@ -279,6 +308,12 @@ class MessageReference:
         The channel id of the message referenced.
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
+    fail_if_not_exists: :class:`bool`
+        Whether replying to the referenced message should raise :class:`HTTPException`
+        if the message no longer exists or Discord could not fetch the message.
+
+        .. versionadded:: 1.7
+
     resolved: Optional[Union[:class:`Message`, :class:`DeletedReferencedMessage`]]
         The message that this reference resolved to. If this is ``None``
         then the original message was not fetched either due to the Discord API
@@ -291,14 +326,15 @@ class MessageReference:
         .. versionadded:: 1.6
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'resolved', '_state')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id, channel_id, guild_id=None):
+    def __init__(self, *, message_id, channel_id, guild_id=None, fail_if_not_exists=True):
         self._state = None
         self.resolved = None
         self.message_id = message_id
         self.channel_id = channel_id
         self.guild_id = guild_id
+        self.fail_if_not_exists = fail_if_not_exists
 
     @classmethod
     def with_state(cls, state, data):
@@ -306,12 +342,13 @@ class MessageReference:
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data.pop('channel_id'))
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.fail_if_not_exists = data.get('fail_if_not_exists', True)
         self._state = state
         self.resolved = None
         return self
 
     @classmethod
-    def from_message(cls, message):
+    def from_message(cls, message, *, fail_if_not_exists=True):
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -320,13 +357,18 @@ class MessageReference:
         ----------
         message: :class:`~discord.Message`
             The message to be converted into a reference.
+        fail_if_not_exists: :class:`bool`
+            Whether replying to the referenced message should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message.
+
+            .. versionadded:: 1.7
 
         Returns
         -------
         :class:`MessageReference`
             A reference to the message.
         """
-        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None))
+        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None), fail_if_not_exists=fail_if_not_exists)
         self._state = message._state
         return self
 
@@ -342,16 +384,18 @@ class MessageReference:
         .. versionadded:: 1.7
         """
         guild_id = self.guild_id if self.guild_id is not None else '@me'
-        return 'https://discord.com/channels/{0}/{1.channel_id}/{1.message_id}'.format(guild_id, self)
+        return f'https://discord.com/channels/{guild_id}/{self.channel_id}/{self.message_id}'
 
     def __repr__(self):
-        return '<MessageReference message_id={0.message_id!r} channel_id={0.channel_id!r} guild_id={0.guild_id!r}>'.format(self)
+        return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self):
         result = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
+        if self.fail_if_not_exists is not None:
+            result['fail_if_not_exists'] = self.fail_if_not_exists
         return result
 
     to_message_reference_dict = to_dict
@@ -412,9 +456,6 @@ class Message(Hashable):
     channel: Union[:class:`abc.Messageable`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
-    call: Optional[:class:`CallMessage`]
-        The call that the message refers to. This is only applicable to messages of type
-        :attr:`MessageType.call`.
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
@@ -490,7 +531,7 @@ class Message(Hashable):
                  'mention_everyone', 'embeds', 'id', 'mentions', 'author',
                  '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'call', 'flags',
+                 'role_mentions', '_cs_raw_role_mentions', 'type', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
 
@@ -504,7 +545,6 @@ class Message(Hashable):
         self.application = data.get('application')
         self.activity = data.get('activity')
         self.channel = channel
-        self.call = None
         self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
         self.type = try_enum(MessageType, data['type'])
         self.pinned = data['pinned']
@@ -537,14 +577,14 @@ class Message(Hashable):
 
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'flags'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'flags'):
             try:
-                getattr(self, '_handle_%s' % handler)(data[handler])
+                getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
                 continue
 
     def __repr__(self):
-        return '<Message id={0.id} channel={0.channel!r} type={0.type!r} author={0.author!r} flags={0.flags!r}>'.format(self)
+        return f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
 
     def _try_patch(self, data, key, transform=None):
         try:
@@ -705,26 +745,6 @@ class Message(Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
-    def _handle_call(self, call):
-        if call is None or self.type is not MessageType.call:
-            self.call = None
-            return
-
-        # we get the participant source from the mentions array or
-        # the author
-
-        participants = []
-        for uid in map(int, call.get('participants', [])):
-            if uid == self.author.id:
-                participants.append(self.author)
-            else:
-                user = utils.find(lambda u: u.id == uid, self.mentions)
-                if user is not None:
-                    participants.append(user)
-
-        call['participants'] = participants
-        self.call = CallMessage(message=self, **call)
-
     def _rebind_channel_reference(self, new_channel):
         self.channel = new_channel
 
@@ -746,21 +766,21 @@ class Message(Hashable):
         This allows you to receive the user IDs of mentioned users
         even in a private message context.
         """
-        return [int(x) for x in re.findall(r'<@!?([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<@!?([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_channel_mentions')
     def raw_channel_mentions(self):
         """List[:class:`int`]: A property that returns an array of channel IDs matched with
         the syntax of ``<#channel_id>`` in the message content.
         """
-        return [int(x) for x in re.findall(r'<#([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<#([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_raw_role_mentions')
     def raw_role_mentions(self):
         """List[:class:`int`]: A property that returns an array of role IDs matched with
         the syntax of ``<@&role_id>`` in the message content.
         """
-        return [int(x) for x in re.findall(r'<@&([0-9]+)>', self.content)]
+        return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_channel_mentions')
     def channel_mentions(self):
@@ -781,24 +801,24 @@ class Message(Hashable):
 
         .. note::
 
-            This *does not* escape markdown. If you want to escape
-            markdown then use :func:`utils.escape_markdown` along
-            with this function.
+            This *does not* affect markdown. If you want to escape
+            or remove markdown then use :func:`utils.escape_markdown` or :func:`utils.remove_markdown`
+            respectively, along with this function.
         """
 
         transformations = {
-            re.escape('<#%s>' % channel.id): '#' + channel.name
+            re.escape(f'<#{channel.id}>'): '#' + channel.name
             for channel in self.channel_mentions
         }
 
         mention_transforms = {
-            re.escape('<@%s>' % member.id): '@' + member.display_name
+            re.escape(f'<@{member.id}>'): '@' + member.display_name
             for member in self.mentions
         }
 
         # add the <@!user_id> cases as well..
         second_mention_transforms = {
-            re.escape('<@!%s>' % member.id): '@' + member.display_name
+            re.escape(f'<@!{member.id}>'): '@' + member.display_name
             for member in self.mentions
         }
 
@@ -807,7 +827,7 @@ class Message(Hashable):
 
         if self.guild is not None:
             role_transforms = {
-                re.escape('<@&%s>' % role.id): '@' + role.name
+                re.escape(f'<@&{role.id}>'): '@' + role.name
                 for role in self.role_mentions
             }
             transformations.update(role_transforms)
@@ -826,14 +846,14 @@ class Message(Hashable):
 
     @property
     def edited_at(self):
-        """Optional[:class:`datetime.datetime`]: A naive UTC datetime object containing the edited time of the message."""
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
 
     @property
     def jump_url(self):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
-        return 'https://discord.com/channels/{0}/{1.channel.id}/{1.id}'.format(guild_id, self)
+        return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
 
     def is_system(self):
         """:class:`bool`: Whether the message is a system message.
@@ -856,19 +876,19 @@ class Message(Hashable):
             return self.content
 
         if self.type is MessageType.pins_add:
-            return '{0.name} pinned a message to this channel.'.format(self.author)
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.recipient_add:
-            return '{0.name} added {1.name} to the group.'.format(self.author, self.mentions[0])
+            return f'{self.author.name} added {self.mentions[0].name} to the group.'
 
         if self.type is MessageType.recipient_remove:
-            return '{0.name} removed {1.name} from the group.'.format(self.author, self.mentions[0])
+            return f'{self.author.name} removed {self.mentions[0].name} from the group.'
 
         if self.type is MessageType.channel_name_change:
-            return '{0.author.name} changed the channel name: {0.content}'.format(self)
+            return f'{self.author.name} changed the channel name: {self.content}'
 
         if self.type is MessageType.channel_icon_change:
-            return '{0.author.name} changed the channel icon.'.format(self)
+            return f'{self.author.name} changed the channel icon.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -887,39 +907,38 @@ class Message(Hashable):
                 "Yay you made it, {0}!",
             ]
 
-            # manually reconstruct the epoch with millisecond precision, because
-            # datetime.datetime.timestamp() doesn't return the exact posix
-            # timestamp with the precision that we need
-            created_at_ms = int((self.created_at - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+            created_at_ms = int(self.created_at.timestamp() * 1000)
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
-        if self.type is MessageType.call:
-            # we're at the call message type now, which is a bit more complicated.
-            # we can make the assumption that Message.channel is a PrivateChannel
-            # with the type ChannelType.group or ChannelType.private
-            call_ended = self.call.ended_timestamp is not None
-
-            if self.channel.me in self.call.participants:
-                return '{0.author.name} started a call.'.format(self)
-            elif call_ended:
-                return 'You missed a call from {0.author.name}'.format(self)
-            else:
-                return '{0.author.name} started a call \N{EM DASH} Join the call.'.format(self)
-
         if self.type is MessageType.premium_guild_subscription:
-            return '{0.author.name} just boosted the server!'.format(self)
+            return f'{self.author.name} just boosted the server!'
 
         if self.type is MessageType.premium_guild_tier_1:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 1!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
 
         if self.type is MessageType.premium_guild_tier_2:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 2!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
 
         if self.type is MessageType.premium_guild_tier_3:
-            return '{0.author.name} just boosted the server! {0.guild} has achieved **Level 3!**'.format(self)
+            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return '{0.author.name} has added {0.content} to this channel'.format(self)
+            return f'{self.author.name} has added {self.content} to this channel'
+
+        if self.type is MessageType.guild_stream:
+            return f'{self.author.name} is live! Now streaming {self.author.activity.name}'
+
+        if self.type is MessageType.guild_discovery_disqualified:
+            return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.'
+
+        if self.type is MessageType.guild_discovery_requalified:
+            return 'This server is eligible for Server Discovery again and has been automatically relisted!'
+
+        if self.type is MessageType.guild_discovery_grace_period_initial_warning:
+            return 'This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.'
+
+        if self.type is MessageType.guild_discovery_grace_period_final_warning:
+            return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
     async def delete(self, *, delay=None):
         """|coro|
@@ -956,7 +975,7 @@ class Message(Hashable):
                 except HTTPException:
                     pass
 
-            asyncio.ensure_future(delete(), loop=self._state.loop)
+            asyncio.create_task(delete())
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
@@ -1036,7 +1055,8 @@ class Message(Hashable):
         try:
             allowed_mentions = fields.pop('allowed_mentions')
         except KeyError:
-            pass
+            if self._state.allowed_mentions is not None:
+                fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
         else:
             if allowed_mentions is not None:
                 if self._state.allowed_mentions is not None:
@@ -1244,31 +1264,11 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def ack(self):
-        """|coro|
-
-        Marks this message as read.
-
-        The user must not be a bot user.
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return await state.http.ack_message(self.channel.id, self.id)
-
     async def reply(self, content=None, **kwargs):
         """|coro|
 
-        A shortcut method to :meth:`abc.Messageable.send` to reply to the
-        :class:`Message`.
+        A shortcut method to :meth:`.abc.Messageable.send` to reply to the
+        :class:`.Message`.
 
         .. versionadded:: 1.6
 
@@ -1284,16 +1284,24 @@ class Message(Hashable):
 
         Returns
         ---------
-        :class:`Message`
+        :class:`.Message`
             The message that was sent.
         """
 
         return await self.channel.send(content, reference=self, **kwargs)
 
-    def to_reference(self):
+    def to_reference(self, *, fail_if_not_exists=True):
         """Creates a :class:`~discord.MessageReference` from the current message.
 
         .. versionadded:: 1.6
+
+        Parameters
+        ----------
+        fail_if_not_exists: :class:`bool`
+            Whether replying using the message reference should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message.
+
+            .. versionadded:: 1.7
 
         Returns
         ---------
@@ -1301,7 +1309,7 @@ class Message(Hashable):
             The reference to this message.
         """
 
-        return MessageReference.from_message(self)
+        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
 
     def to_message_reference_dict(self):
         data = {
@@ -1375,7 +1383,7 @@ class PartialMessage(Hashable):
 
     def __init__(self, *, channel, id):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError('Expected TextChannel or DMChannel not %r' % type(channel))
+            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
 
         self.channel = channel
         self._state = channel._state
@@ -1391,7 +1399,7 @@ class PartialMessage(Hashable):
     pinned = property(None, lambda x, y: ...)
 
     def __repr__(self):
-        return '<PartialMessage id={0.id} channel={0.channel!r}>'.format(self)
+        return f'<PartialMessage id={self.id} channel={self.channel!r}>'
 
     @property
     def created_at(self):
