@@ -745,6 +745,11 @@ class VoiceClient(VoiceProtocol):
             raise ClientException("Must provide a Sink object.")
 
         sink.init()
+        self.decoder = opus.DecodeManager(self)
+        self.decoder.start()
+        self.recording = True
+        self.sink = sink
+        self.sink.vc = self
 
         t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
         t.start()
@@ -796,12 +801,6 @@ class VoiceClient(VoiceProtocol):
         #  Gets data from _recv_audio and sorts
         #  it by user, handles pcm files and
         #  silence that should be added.
-        if not self.decoder:
-            self.decoder = opus.DecodeManager(self)
-        self.decoder.start()
-        self.recording = True
-        self.sink = sink
-        self.sink.vc = self
 
         self.user_timestamps = {}
         self.starting_time = time.perf_counter()
@@ -818,6 +817,7 @@ class VoiceClient(VoiceProtocol):
             except OSError:
                 self.stop_recording()
                 continue
+
             self.unpack_audio(data)
 
         self.sink.cleanup()
