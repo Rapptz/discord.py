@@ -744,12 +744,11 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, Sink):
             raise ClientException("Must provide a Sink object.")
 
-        sink.init()
+        sink.init(self)
         self.decoder = opus.DecodeManager(self)
         self.decoder.start()
         self.recording = True
         self.sink = sink
-        self.sink.vc = self
 
         t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
         t.start()
