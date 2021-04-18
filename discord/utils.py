@@ -387,10 +387,7 @@ def get(iterable: Iterable[T], **attrs: Any) -> Optional[T]:
 
 
 def _unique(iterable: Iterable[T]) -> List[T]:
-    seen = set()
-    adder = seen.add
-    return [x for x in iterable if not (x in seen or adder(x))]
-
+    return [x for x in dict.fromkeys(iterable)]
 
 def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     try:
@@ -515,7 +512,7 @@ def utcnow() -> datetime.datetime:
 
 def valid_icon_size(size: int) -> bool:
     """Icons must be power of 2 within [16, 4096]."""
-    return not size & (size - 1) and size in range(16, 4097)
+    return not size & (size - 1) and 4096 >= size >= 16
 
 
 class SnowflakeList(array.array):
