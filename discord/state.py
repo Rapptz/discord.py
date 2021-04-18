@@ -51,6 +51,7 @@ from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .integrations import Integration
 from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
@@ -956,6 +957,33 @@ class ConnectionState:
             self.dispatch('guild_integrations_update', guild)
         else:
             log.debug('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_integration_create(self, data):
+        guild_id = int(data.pop('guild_id'))
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            integration = Integration(data=data, guild=guild)
+            self.dispatch('integration_create', integration)
+        else:
+            log.debug('INTEGRATION_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+
+    def parse_integration_update(self, data):
+        guild_id = int(data.pop('guild_id'))
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            integration = Integration(data=data, guild=guild)
+            self.dispatch('integration_update', integration)
+        else:
+            log.debug('INTEGRATION_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+
+    def parse_integration_delete(self, data):
+        guild_id = int(data.pop('guild_id'))
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            integration = Integration(data=data, guild=guild)
+            self.dispatch('integration_delete', integration)
+        else:
+            log.debug('INTEGRATION_DELETE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
