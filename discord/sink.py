@@ -47,6 +47,7 @@ default_filters = {
 
 
 class Filters:
+    # TODO: Filter for max size per file, split into multiple files
     def __init__(self, **kwargs):
         self.filtered_users = kwargs.get('users', default_filters['users'])
         self.seconds = kwargs.get('time', default_filters['time'])
@@ -156,7 +157,8 @@ class Sink(Filters):
         self.vc = None
         self.audio_data = {}
 
-    def init(self):  # called under start_recording
+    def init(self, vc):  # called under start_recording
+        self.vc = vc
         Filters.__init__(self, **self.filters)
 
     @Filters.filter_decorator
