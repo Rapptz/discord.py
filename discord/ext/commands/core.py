@@ -28,6 +28,7 @@ from typing import (
     ForwardRef,
     Iterable,
     Literal,
+    Optional,
     Tuple,
     Union,
 )
@@ -89,7 +90,14 @@ def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
     none_cls = type(None)
     return tuple(p for p in parameters if p is not none_cls) + (none_cls,)
 
-def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any] = {}, *, implicit_str=True):
+def _evaluate_annotation(
+    tp: Any,
+    globals: Dict[str, Any],
+    locals: Dict[str, Any],
+    cache: Dict[str, Any],
+    *,
+    implicit_str: bool = True,
+):
     if isinstance(tp, ForwardRef):
         tp = tp.__forward_arg__
         # ForwardRefs always evaluate their internals
@@ -98,9 +106,9 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
     if implicit_str and isinstance(tp, str):
         if tp in cache:
             return cache[tp]
-        evaluated = eval(tp, globals)
+        evaluated = eval(tp, globals, locals)
         cache[tp] = evaluated
-        return _evaluate_annotation(evaluated, globals, cache)
+        return _evaluate_annotation(evaluated, globals, locals, cache)
 
     if hasattr(tp, '__args__'):
         implicit_str = True
@@ -108,7 +116,7 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
         if not hasattr(tp, '__origin__'):
             if PY_310 and tp.__class__ is types.Union:
                 converted = Union[args]  # type: ignore
-                return _evaluate_annotation(converted, globals, cache)
+                return _evaluate_annotation(converted, globals, locals, cache)
 
             return tp
         if tp.__origin__ is Union:
@@ -123,7 +131,7 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
             implicit_str = False
 
         evaluated_args = tuple(
-            _evaluate_annotation(arg, globals, cache, implicit_str=implicit_str) for arg in args
+            _evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args
         )
 
         if evaluated_args == args:
@@ -136,12 +144,21 @@ def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any]
 
     return tp
 
-def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[str, Any] = {}) -> Any:
+def resolve_annotation(
+    annotation: Any,
+    globalns: Dict[str, Any],
+    localns: Optional[Dict[str, Any]],
+    cache: Optional[Dict[str, Any]],
+) -> Any:
     if annotation is None:
         return type(None)
     if isinstance(annotation, str):
         annotation = ForwardRef(annotation)
-    return _evaluate_annotation(annotation, globalns, cache)
+
+    locals = globalns if localns is None else localns
+    if cache is None:
+        cache = {}
+    return _evaluate_annotation(annotation, globalns, locals, cache)
 
 def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
     globalns = function.__globals__
@@ -157,7 +174,7 @@ def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.
             params[name] = parameter.replace(annotation=type(None))
             continue
 
-        annotation = _evaluate_annotation(annotation, globalns, cache)
+        annotation = _evaluate_annotation(annotation, globalns, globalns, cache)
         if annotation is converters.Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
