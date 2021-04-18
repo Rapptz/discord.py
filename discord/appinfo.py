@@ -89,7 +89,7 @@ class AppInfo:
         .. versionadded:: 1.3
     
     terms_of_service_url: Optional[:class:`str`]
-        The application's term of service URL, if set.
+        The application's terms of service URL, if set.
 
         .. versionadded:: 2.0
     
