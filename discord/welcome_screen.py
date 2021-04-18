@@ -24,15 +24,33 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Dict, List, Optional, TYPE_CHECKING, Union, overload
 from .utils import _get_as_snowflake, get
 from .errors import InvalidArgument
 from .partial_emoji import _EmojiTag
+
+__all__ = (
+    'WelcomeChannel',
+    'WelcomeScreen',
+)
+
+if TYPE_CHECKING:
+    from .types.welcome_screen import (
+        WelcomeScreen as WelcomeScreenPayload,
+        WelcomeScreenChannel as WelcomeScreenChannelPayload,
+    )
+    from .abc import Snowflake
+    from .guild import Guild
+    from .partial_emoji import PartialEmoji
+    from .emoji import Emoji
 
 
 class WelcomeChannel:
     """Represents a :class:`WelcomeScreen` welcome channel.
 
-    .. versionadded:: 1.7
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -43,20 +61,21 @@ class WelcomeChannel:
     emoji: Optional[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
         The emoji used beside the channel description.
     """
-    def __init__(self, *, channel, description, emoji=None):
+
+    def __init__(self, *, channel: Snowflake, description: str, emoji: Union[PartialEmoji, Emoji, str] = None):
         self.channel = channel
         self.description = description
         self.emoji = emoji
-    
-    def __repr__(self):
-        return '<WelcomeChannel channel={0.channel!r} description={0.description!r} emoji={0.emoji}>'.format(self)
+
+    def __repr__(self) -> str:
+        return f'<WelcomeChannel channel={self.channel!r} description={self.description!r} emoji={self.emoji!r}>'
 
     @classmethod
-    def _from_dict(cls, *, data, guild):
+    def _from_dict(cls, *, data: WelcomeScreenChannelPayload, guild: Guild) -> WelcomeChannel:
         channel_id = _get_as_snowflake(data, 'channel_id')
         channel = guild.get_channel(channel_id)
         description = data['description']
-        _emoji_id  = _get_as_snowflake(data, 'emoji_id')
+        _emoji_id = _get_as_snowflake(data, 'emoji_id')
         _emoji_name = data['emoji_name']
 
         if _emoji_id:
@@ -66,9 +85,9 @@ class WelcomeChannel:
             # unicode or None
             emoji = _emoji_name
 
-        return cls(channel=channel, description=description, emoji=emoji)
+        return cls(channel=channel, description=description, emoji=emoji)  # type: ignore
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, str]:
         ret = {
             'channel_id': self.channel.id,
             'description': self.description,
@@ -77,18 +96,19 @@ class WelcomeChannel:
         }
 
         if isinstance(self.emoji, _EmojiTag):
-            ret['emoji_id'] = self.emoji.id
-            ret['emoji_name'] = self.emoji.name
+            ret['emoji_id'] = self.emoji.id  # type: ignore
+            ret['emoji_name'] = self.emoji.name  # type: ignore
         else:
             # unicode or None
             ret['emoji_name'] = self.emoji
 
         return ret
 
+
 class WelcomeScreen:
     """Represents a :class:`Guild` welcome screen.
 
-    .. versionadded:: 1.7
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -97,33 +117,48 @@ class WelcomeScreen:
     welcome_channels: List[:class:`WelcomeChannel`]
         The channels shown on the welcome screen.
     """
-    def __init__(self, *, data, guild):
+
+    def __init__(self, *, data: WelcomeScreenPayload, guild: Guild):
         self._state = guild._state
         self._guild = guild
         self._store(data)
-    
-    def _store(self, data):
+
+    def _store(self, data: WelcomeScreenPayload) -> None:
         self.description = data['description']
         welcome_channels = data.get('welcome_channels', [])
         self.welcome_channels = [WelcomeChannel._from_dict(data=wc, guild=self._guild) for wc in welcome_channels]
 
-    def __repr__(self):
-        return '<WelcomeScreen description={0.description!r} welcome_channels={0.welcome_channels!r} enabled={0.enabled}>'.format(self)
+    def __repr__(self) -> str:
+        return f'<WelcomeScreen description={self.description!r} welcome_channels={self.welcome_channels!r} enabled={self.enabled}>'
 
     @property
-    def enabled(self):
+    def enabled(self) -> bool:
         """:class:`bool`: Whether the welcome screen is displayed.
-        
+
         This is equivalent to checking if ``WELCOME_SCREEN_ENABLED``
         is present in :attr:`Guild.features`.
         """
         return 'WELCOME_SCREEN_ENABLED' in self._guild.features
 
+    @overload
+    async def edit(
+        self,
+        *,
+        description: Optional[str] = ...,
+        welcome_channels: Optional[List[WelcomeChannel]] = ...,
+        enabled: Optional[bool] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
     async def edit(self, **kwargs):
         """|coro|
-        
+
         Edit the welcome screen.
-        
+
         You must have the :attr:`~Permissions.manage_guild` permission in the
         guild to do this.
 
@@ -138,14 +173,14 @@ class WelcomeScreen:
                 description='This is a very cool community server!',
                 welcome_channels=[
                     WelcomeChannel(channel=rules_channel, description='Read the rules!', emoji='👨‍🏫'),
-                    WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji), 
+                    WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji),
                 ]
             )
-        
+
         .. note::
 
             Welcome channels can only accept custom emojis if :attr:`~Guild.premium_tier` is level 2 or above.
-        
+
         Parameters
         ------------
         description: Optional[:class:`str`]

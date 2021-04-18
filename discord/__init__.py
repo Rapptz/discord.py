@@ -40,6 +40,7 @@ from .colour import *
 from .integrations import *
 from .invite import *
 from .template import *
+from .welcome_screen import *
 from .widget import *
 from .object import *
 from .reaction import *
