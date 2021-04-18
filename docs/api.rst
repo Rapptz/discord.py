@@ -1070,6 +1070,11 @@ of :class:`enum.Enum`.
         The system message denoting that an application (or "slash") command was executed.
 
         .. versionadded:: 2.0
+    .. attribute:: guild_invite_reminder
+
+        The system message sent as a reminder to invite people to the guild.
+
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 

@@ -181,6 +181,7 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning   = 17
     reply                                        = 19
     application_command                          = 20
+    guild_invite_reminder                        = 22
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
