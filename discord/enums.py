@@ -46,7 +46,7 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
-    'InviteUserTarget',
+    'InviteTarget',
     'VideoQualityMode',
 )
 
@@ -426,7 +426,7 @@ class StickerType(Enum):
     apng = 2
     lottie = 3
 
-class InviteUserTarget(Enum):
+class InviteTarget(Enum):
     unknown = 0
     stream  = 1
 

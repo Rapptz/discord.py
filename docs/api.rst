@@ -1947,7 +1947,7 @@ of :class:`enum.Enum`.
 
         Represents a sticker with a lottie image.
 
-.. class:: InviteUserTarget
+.. class:: InviteTarget
 
     Represents the type of target an invite contains.
 
