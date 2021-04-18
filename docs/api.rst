@@ -2688,6 +2688,7 @@ Asset
 
 .. autoclass:: Asset()
     :members:
+    :inherited-members:
 
 Message
 ~~~~~~~
