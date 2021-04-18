@@ -270,10 +270,10 @@ class Invite(Hashable):
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
     target_user: Optional[:class:`User`]
-        The target of this invite in the case of stream invites
+        The target of this invite in the case of stream invites.
         .. versionadded:: 2.0
     target_type: :class:`InviteType`
-        The invite's target type
+        The invite's target type.
 
         .. versionadded:: 2.0
     """
