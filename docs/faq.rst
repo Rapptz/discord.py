@@ -35,7 +35,7 @@ You can only use ``await`` inside ``async def`` functions and nowhere else.
 What does "blocking" mean?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In asynchronous programming a blocking call is essentially all the parts of the function that are not ``await``. Do not
+In asynchronous programming, a blocking call is essentially all the parts of the function that are not ``await``. Do not
 despair however, because not all forms of blocking are bad! Using blocking calls is inevitable, but you must work to make
 sure that you don't excessively block functions. Remember, if you block for too long then your bot will freeze since it has
 not stopped the function's execution at that point to do other things.
@@ -98,7 +98,7 @@ The constructor may be used for static activities, while :meth:`Client.change_pr
     There is a high chance of disconnecting if presences are changed right after connecting.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
-For memory optimisation purposes, some activities are offered in slimmed down versions:
+For memory optimisation purposes, some activities are offered in slimmed-down versions:
 
 - :class:`Game`
 - :class:`Streaming`
@@ -198,7 +198,7 @@ Quick example: ::
     # or '\U0001f44d' or '👍'
     await message.add_reaction(emoji)
 
-In case you want to use emoji that come from a message, you already get their code points in the content without needing
+In case you want to use emojis that come from a message, you already get their code points in the content without needing
 to do anything special. You **cannot** send ``':thumbsup:'`` style shorthands.
 
 For custom emoji, you should pass an instance of :class:`Emoji`. You can also pass a ``'<:name:id>'`` string, but if you
