@@ -3119,6 +3119,14 @@ MemberCacheFlags
 .. autoclass:: MemberCacheFlags
     :members:
 
+ApplicationFlags
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ApplicationFlags
+
+.. autoclass:: ApplicationFlags
+    :members:
+
 File
 ~~~~~
 

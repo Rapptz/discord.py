@@ -41,6 +41,7 @@ from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
+from .flags import ApplicationFlags
 from .gateway import *
 from .activity import BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -289,6 +290,14 @@ class Client:
         after :func:`on_connect` is called.
         """
         return self._connection.application_id
+
+    @property
+    def application_flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The client's application flags.
+
+        .. versionadded: 2.0
+        """
+        return self._connection.application_flags  # type: ignore
 
     def is_ready(self):
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
