@@ -21,11 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
 import array
 import asyncio
 import collections.abc
-from typing import Any, Optional, overload
+from typing import Any, Callable, Generic, Optional, Type, TypeVar, overload, TYPE_CHECKING
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -53,27 +54,43 @@ __all__ = (
 )
 DISCORD_EPOCH = 1420070400000
 
-class cached_property:
-    def __init__(self, function):
-        self.function = function
-        self.__doc__ = getattr(function, '__doc__')
+if TYPE_CHECKING:
+    from functools import cached_property
+else:
+    class cached_property:
+        def __init__(self, function):
+            self.function = function
+            self.__doc__ = getattr(function, '__doc__')
 
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
+        def __get__(self, instance, owner):
+            if instance is None:
+                return self
 
-        value = self.function(instance)
-        setattr(instance, self.function.__name__, value)
+            value = self.function(instance)
+            setattr(instance, self.function.__name__, value)
 
-        return value
+            return value
 
-class CachedSlotProperty:
-    def __init__(self, name, function):
+FS = TypeVar('FS')
+FR = TypeVar('FR', covariant=True)
+CP = TypeVar('CP', bound='cached_property')
+CSP = TypeVar('CSP', bound='CachedSlotProperty')
+
+class CachedSlotProperty(Generic[FS, FR]):
+    def __init__(self, name: str, function: Callable[[FS], FR]) -> None:
         self.name = name
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
-    def __get__(self, instance, owner):
+    @overload
+    def __get__(self: CSP, instance: None, owner: Type[FS]) -> CSP:
+        ...
+
+    @overload
+    def __get__(self, instance: FS, owner: Type[FS]) -> FR:
+        ...
+
+    def __get__(self, instance: Optional[FS], owner: Type[FS]) -> Any:
         if instance is None:
             return self
 
@@ -84,8 +101,8 @@ class CachedSlotProperty:
             setattr(instance, self.name, value)
             return value
 
-def cached_slot_property(name):
-    def decorator(func):
+def cached_slot_property(name: str) -> Callable[[Callable[[FS], FR]], CachedSlotProperty[FS, FR]]:
+    def decorator(func: Callable[[FS], FR]) -> CachedSlotProperty[FS, FR]:
         return CachedSlotProperty(name, func)
     return decorator
 
