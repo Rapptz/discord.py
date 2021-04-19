@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, overload
 
 from . import utils, abc
 from .role import Role
@@ -991,6 +991,36 @@ class Guild(Hashable):
 
         await self._state.http.delete_guild(self.id)
 
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        description: Optional[str] = ...,
+        icon: Optional[bytes] = ...,
+        banner: Optional[bytes] = ...,
+        splash: Optional[bytes] = ...,
+        discovery_splash: Optional[bytes] = ...,
+        region: Optional[VoiceRegion] = ...,
+        afk_channel: Optional[VoiceChannel] = ...,
+        afk_timeout: int = ...,
+        default_notifications: NotificationLevel = ...,
+        verification_level: VerificationLevel = ...,
+        explicit_content_filter: ContentFilter = ...,
+        vanity_code: str = ...,
+        system_channel: Optional[TextChannel] = ...,
+        system_channel_flags: SystemChannelFlags = ...,
+        preferred_locale: str = ...,
+        rules_channel: Optional[TextChannel] = ...,
+        public_updates_channel: Optional[TextChannel] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
     async def edit(self, *, reason=None, **fields):
         """|coro|
 
@@ -1002,24 +1032,33 @@ class Guild(Hashable):
         .. versionchanged:: 1.4
             The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
 
+        .. versionchanged:: 2.0
+            The `discovery_splash` keyword-only parameter was added.
+
         Parameters
         ----------
         name: :class:`str`
             The new name of the guild.
-        description: :class:`str`
-            The new description of the guild. This is only available to guilds that
-            contain ``PUBLIC`` in :attr:`Guild.features`.
+        description: Optional[:class:`str`]
+            The new description of the guild. Could be ``None`` for no description.
+             This is only available to guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
             GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
-            Could be ``None`` to denote removal of the banner.
+            Could be ``None`` to denote removal of the banner. This is only available to guilds that contain
+            ``BANNER`` in :attr:`Guild.features`.
         splash: :class:`bytes`
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``INVITE_SPLASH``
+            in :attr:`Guild.features`.
+        discovery_splash: :class:`bytes`
+            A :term:`py:bytes-like object` representing the discovery splash.
+            Only PNG/JPEG supported. Could be ``None`` to denote removing the
+            splash. This is only available to guilds that contain ``DISCOVERABLE``
             in :attr:`Guild.features`.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
@@ -1106,9 +1145,20 @@ class Guild(Hashable):
             else:
                 splash = None
 
+        try:
+            discovery_splash_bytes = fields['discovery_splash']
+        except KeyError:
+            discovery_splash = self._discovery_splash
+        else:
+            if discovery_splash_bytes is not None:
+                discovery_splash = utils._bytes_to_base64_data(discovery_splash_bytes)
+            else:
+                discovery_splash = None
+
         fields['icon'] = icon
         fields['banner'] = banner
         fields['splash'] = splash
+        fields['discovery_splash'] = discovery_splash
 
         default_message_notifications = fields.get('default_notifications', self.default_notifications)
         if not isinstance(default_message_notifications, NotificationLevel):

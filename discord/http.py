@@ -785,6 +785,7 @@ class HTTPClient:
             'owner_id',
             'afk_channel_id',
             'splash',
+            'discovery_splash',
             'verification_level',
             'system_channel_id',
             'default_message_notifications',
