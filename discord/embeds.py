@@ -550,6 +550,9 @@ class Embed:
             The value of the field.
         inline: :class:`bool`
             Whether the field should be displayed inline.
+
+            .. versionchanged:: 2.0
+                Changed the default value to ``False``.
         """
 
         field = {
@@ -583,6 +586,9 @@ class Embed:
             The value of the field.
         inline: :class:`bool`
             Whether the field should be displayed inline.
+
+            .. versionchanged:: 2.0
+                Changed the default value to ``False``.
         """
 
         field = {
@@ -644,6 +650,9 @@ class Embed:
             The value of the field.
         inline: :class:`bool`
             Whether the field should be displayed inline.
+
+            .. versionchanged:: 2.0
+                Changed the default value to ``False``.
 
         Raises
         -------
