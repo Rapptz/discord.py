@@ -710,7 +710,7 @@ class Command(_BaseCommand):
                 result.append(value)
 
         if not result and not required:
-            return param.default
+            return await self._resolve_default(ctx, param)
         return result
 
     async def _transform_greedy_var_pos(self, ctx, param, converter):
@@ -723,7 +723,7 @@ class Command(_BaseCommand):
             view.index = previous
             raise RuntimeError() from None # break loop
         else:
-            return value
+            return value or await self._resolve_default(ctx, param)
 
     @property
     def clean_params(self) -> Dict[str, inspect.Parameter]:
