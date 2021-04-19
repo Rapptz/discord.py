@@ -75,6 +75,7 @@ __all__ = (
     'ExtensionFailed',
     'ExtensionNotFound',
     'CommandRegistrationError',
+    'FlagError',
     'BadFlagArgument',
     'MissingFlagArgument',
     'TooManyFlags',

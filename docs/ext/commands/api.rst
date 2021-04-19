@@ -467,6 +467,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.NSFWChannelRequired
     :members:
 
+.. autoexception:: discord.ext.commands.FlagError
+    :members:
+
 .. autoexception:: discord.ext.commands.BadFlagArgument
     :members:
 
@@ -524,7 +527,8 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
-                    - :exc:`~.commands.BadFlagArgument`
+                    - :exc:`~.commands.FlagError`
+                        - :exc:`~.commands.BadFlagArgument`
                         - :exc:`~.commands.MissingFlagArgument`
                         - :exc:`~.commands.TooManyFlags`
                         - :exc:`~.commands.MissingRequiredFlag`
