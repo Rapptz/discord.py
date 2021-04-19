@@ -88,7 +88,7 @@ class WelcomeChannel:
         return cls(channel=channel, description=description, emoji=emoji)  # type: ignore
 
     def to_dict(self) -> WelcomeScreenChannelPayload:
-        ret = {
+        ret: WelcomeScreenChannelPayload = {
             'channel_id': self.channel.id,
             'description': self.description,
             'emoji_id': None,
