@@ -329,6 +329,8 @@ Converters
 
 .. autoclass:: discord.ext.commands.Greedy()
 
+.. autofunction:: discord.ext.commands.run_converters
+
 .. _ext_commands_api_errors:
 
 Exceptions
