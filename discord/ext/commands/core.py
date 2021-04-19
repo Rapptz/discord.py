@@ -819,6 +819,7 @@ class Command(_BaseCommand):
             raise discord.ClientException(f'Callback for {self.name} command is missing "ctx" parameter.')
 
         for name, param in iterator:
+            ctx.current_parameter = param
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 transformed = await self.transform(ctx, param)
                 args.append(transformed)
