@@ -175,6 +175,11 @@ def parse_time(timestamp: str) -> datetime.datetime:
     ...
 
 
+@overload
+def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
+    ...
+
+
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
         return datetime.datetime.fromisoformat(timestamp)
@@ -388,6 +393,7 @@ def get(iterable: Iterable[T], **attrs: Any) -> Optional[T]:
 
 def _unique(iterable: Iterable[T]) -> List[T]:
     return [x for x in dict.fromkeys(iterable)]
+
 
 def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     try:
