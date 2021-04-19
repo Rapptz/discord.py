@@ -536,7 +536,7 @@ class Embed:
         """
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore
 
-    def add_field(self: E, *, name: Any, value: Any, inline: bool = True) -> E:
+    def add_field(self: E, *, name: Any, value: Any, inline: bool = False) -> E:
         """Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
@@ -565,7 +565,7 @@ class Embed:
 
         return self
 
-    def insert_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = True) -> E:
+    def insert_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = False) -> E:
         """Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
@@ -626,7 +626,7 @@ class Embed:
         except (AttributeError, IndexError):
             pass
 
-    def set_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = True) -> E:
+    def set_field_at(self: E, index: int, *, name: Any, value: Any, inline: bool = False) -> E:
         """Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field.
