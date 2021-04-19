@@ -331,6 +331,17 @@ Converters
 
 .. autofunction:: discord.ext.commands.run_converters
 
+Flag Converter
+~~~~~~~~~~~~~~~
+
+.. autoclass:: discord.ext.commands.FlagConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.Flag()
+    :members:
+
+.. autofunction:: discord.ext.commands.flag
+
 .. _ext_commands_api_errors:
 
 Exceptions
@@ -456,6 +467,18 @@ Exceptions
 .. autoexception:: discord.ext.commands.NSFWChannelRequired
     :members:
 
+.. autoexception:: discord.ext.commands.BadFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.TooManyFlags
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRequiredFlag
+    :members:
+
 .. autoexception:: discord.ext.commands.ExtensionError
     :members:
 
@@ -501,6 +524,10 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.BadFlagArgument`
+                        - :exc:`~.commands.MissingFlagArgument`
+                        - :exc:`~.commands.TooManyFlags`
+                        - :exc:`~.commands.MissingRequiredFlag`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`

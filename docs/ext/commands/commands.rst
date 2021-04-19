@@ -594,6 +594,157 @@ This command can be invoked any of the following ways:
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
     :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
 
+.. _ext_commands_flag_converter:
+
+FlagConverter
+++++++++++++++
+
+.. versionadded:: 2.0
+
+A :class:`~ext.commands.FlagConverter` allows the user to specify user-friendly "flags" using :pep:`526` type annotations
+or a syntax more reminiscent of the :mod:`py:dataclasses` module.
+
+For example, the following code:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+    @commands.command()
+    async def ban(ctx, *, flags: BanFlags):
+        plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
+        await ctx.send(f'Banned {flags.member} for {flags.reason!r} (deleted {plural} worth of messages)')
+
+Allows the user to invoke the command using a simple flag-like syntax:
+
+.. image:: /images/commands/flags1.png
+
+Flags use a syntax that allows the user to not require quotes when passing flags. The goal of the flag syntax is to be as
+user-friendly as possible. This makes flags a good choice for complicated commands that can have multiple knobs.
+**It is recommended to use keyword-only parameters with the flag converter**. This ensures proper parsing and
+behaviour with quoting.
+
+The :class:`~ext.commands.FlagConverter` class examines the class to find flags. A flag can either be a
+class variable with a type annotation or a class variable that's been assigned the result of the :func:`~ext.commands.flag`
+function.
+
+For most use cases, no extra work is required to define flags. However, if customisation is needed to control the flag name
+or the default value then the :func:`~ext.commands.flag` function can come in handy:
+
+.. code-block:: python3
+
+    from typing import List
+
+    class BanFlags(commands.FlagConverter):
+        members: List[discord.Member] = commands.flag(name='member', default=lambda ctx: [])
+
+This tells the parser that the ``members`` attribute is mapped to a flag named ``member`` and that
+the default value is an empty list. For greater customisability, the default can either be a value or a callable
+that takes the :class:`~ext.commands.Context` as a sole parameter. This callable can either be a function or a coroutine.
+
+In order to customise the flag syntax we also have a few options that can be passed to the class parameter list:
+
+.. code-block:: python3
+
+    # --hello=world syntax
+    class PosixLikeFlags(commands.FlagConverter, delimiter='=', prefix='--'):
+        hello: str
+
+
+    # /make food
+    class WindowsLikeFlags(commands.FlagConverter, prefix='/', delimiter=''):
+        make: str
+
+    # TOPIC: not allowed nsfw: yes Slowmode: 100
+    class Settings(commands.FlagConverter, case_insentitive=True):
+        topic: Optional[str]
+        nsfw: Optional[bool]
+        slowmode: Optional[int]
+
+The flag converter is similar to regular commands and allows you to use most types of converters
+(with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
+annotations as described below.
+
+typing.List
+^^^^^^^^^^^^^
+
+If a list is given as a flag annotation it tells the parser that the argument can be passed multiple times.
+
+For example, augmenting the example above:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    from typing import List
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        members: List[discord.Member] = commands.flag(name='member')
+        reason: str
+        days: int = 1
+
+    @commands.command()
+    async def ban(ctx, *, flags: BanFlags):
+        for member in flags.members:
+            await member.ban(reason=flags.reason, delete_message_days=flags.days)
+
+        members = ', '.join(str(member) for member in flags.members)
+        plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
+        await ctx.send(f'Banned {members} for {flags.reason!r} (deleted {plural} worth of messages)')
+
+This is called by repeatedly specifying the flag:
+
+.. image:: /images/commands/flags2.png
+
+typing.Tuple
+^^^^^^^^^^^^^
+
+Since the above syntax can be a bit repetitive when specifying a flag many times, the :class:`py:tuple` type annotation
+allows for "greedy-like" semantics using a variadic tuple:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    from typing import Tuple
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        members: Tuple[discord.Member, ...]
+        reason: str
+        days: int = 1
+
+This allows the previous ``ban`` command to be called like this:
+
+.. image:: /images/commands/flags3.png
+
+The :class:`py:tuple` annotation also allows for parsing of pairs. For example, given the following code:
+
+.. code-block:: python3
+
+    # point: 10 11 point: 12 13
+    class Coordinates(commands.FlagConverter):
+        point: Tuple[int, int]
+
+
+.. warning::
+
+    Due to potential parsing ambiguities, the parser expects tuple arguments to be quoted
+    if they require spaces. So if one of the inner types is :class:`str` and the argument requires spaces
+    then quotes should be used to disambiguate it from the other element of the tuple.
+
+typing.Dict
+^^^^^^^^^^^^^
+
+A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` except with the return type
+given as a :class:`dict` rather than a :class:`list`.
+
+
 .. _ext_commands_error_handler:
 
 Error Handling
