@@ -94,6 +94,7 @@ class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
 
 class ApplicationCommandInteractionDataOption(_ApplicationCommandInteractionDataOptionOptional):
     name: str
+    type: ApplicationCommandOptionType
 
 
 class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
