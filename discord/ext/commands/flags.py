@@ -303,11 +303,13 @@ class FlagsMeta(type):
 
         for flag_name, flag in get_flags(attrs, global_ns, local_ns).items():
             flags[flag_name] = flag
-            aliases.update({alias: flag_name for alias in flag.aliases})
+            aliases.update({alias_name: flag_name for alias_name in flag.aliases})
 
         forbidden = set(delimiter).union(prefix)
         for flag_name in flags:
             validate_flag_name(flag_name, forbidden)
+        for alias_name in aliases:
+            validate_flag_name(alias_name, forbidden)
 
         regex_flags = 0
         if case_insensitive:
