@@ -431,7 +431,7 @@ class FlagConverter(metaclass=FlagsMeta):
     @classmethod
     def parse_flags(cls, argument: str) -> Dict[str, List[str]]:
         result: Dict[str, List[str]] = {}
-        flags = cls.get_flags()
+        flags = cls.__commands_flags__
         last_position = 0
         last_flag: Optional[Flag] = None
 
@@ -502,7 +502,7 @@ class FlagConverter(metaclass=FlagsMeta):
             The flag converter instance with all flags parsed.
         """
         arguments = cls.parse_flags(argument)
-        flags = cls.get_flags()
+        flags = cls.__commands_flags__
 
         self: F = cls.__new__(cls)
         for name, flag in flags.items():
