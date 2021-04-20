@@ -408,6 +408,22 @@ class FlagConverter(metaclass=FlagsMeta):
         """Dict[:class:`str`, :class:`Flag`]: A mapping of flag name to flag object this converter has."""
         return cls.__commands_flags__.copy()
 
+    @classmethod
+    def _can_be_constructible(cls) -> bool:
+        return all(not flag.required for flag in cls.__commands_flags__.values())
+
+    @classmethod
+    async def _construct_default(cls: Type[F], ctx: Context) -> F:
+        self: F = cls.__new__(cls)
+        flags = cls.__commands_flags__
+        for flag in flags.values():
+            if callable(flag.default):
+                default = await maybe_coroutine(flag.default, ctx)
+                setattr(self, flag.attribute, default)
+            else:
+                setattr(self, flag.attribute, flag.default)
+        return self
+
     def __repr__(self) -> str:
         pairs = ' '.join([f'{flag.attribute}={getattr(self, flag.attribute)!r}' for flag in self.get_flags().values()])
         return f'<{self.__class__.__name__} {pairs}>'

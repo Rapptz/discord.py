@@ -559,6 +559,8 @@ class Command(_BaseCommand):
             if required:
                 if self._is_typing_optional(param.annotation):
                     return None
+                if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
+                    return await converter._construct_default(ctx)
                 raise MissingRequiredArgument(param)
             return param.default
 
