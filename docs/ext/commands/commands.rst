@@ -625,14 +625,15 @@ Allows the user to invoke the command using a simple flag-like syntax:
 
 .. image:: /images/commands/flags1.png
 
-Flags use a syntax that allows the user to not require quotes when passing flags. The goal of the flag syntax is to be as
-user-friendly as possible. This makes flags a good choice for complicated commands that can have multiple knobs.
-**It is recommended to use keyword-only parameters with the flag converter**. This ensures proper parsing and
-behaviour with quoting.
+Flags use a syntax that allows the user to not require quotes when passing in values to the flag. The goal of the
+flag syntax is to be as user-friendly as possible. This makes flags a good choice for complicated commands that can have
+multiple knobs to turn or simulating keyword-only parameters in your external command interface. **It is recommended to use
+keyword-only parameters with the flag converter**. This ensures proper parsing and behaviour with quoting.
 
-The :class:`~ext.commands.FlagConverter` class examines the class to find flags. A flag can either be a
+Internally, the :class:`~ext.commands.FlagConverter` class examines the class to find flags. A flag can either be a
 class variable with a type annotation or a class variable that's been assigned the result of the :func:`~ext.commands.flag`
-function.
+function. These flags are then used to define the interface that your users will use. The annotations correspond to
+the converters that the flag arguments must adhere to.
 
 For most use cases, no extra work is required to define flags. However, if customisation is needed to control the flag name
 or the default value then the :func:`~ext.commands.flag` function can come in handy:
@@ -652,8 +653,8 @@ In order to customise the flag syntax we also have a few options that can be pas
 
 .. code-block:: python3
 
-    # --hello=world syntax
-    class PosixLikeFlags(commands.FlagConverter, delimiter='=', prefix='--'):
+    # --hello world syntax
+    class PosixLikeFlags(commands.FlagConverter, delimiter=' ', prefix='--'):
         hello: str
 
 
@@ -666,6 +667,12 @@ In order to customise the flag syntax we also have a few options that can be pas
         topic: Optional[str]
         nsfw: Optional[bool]
         slowmode: Optional[int]
+
+.. note::
+
+    Despite the similarities in these examples to command like arguments, the syntax and parser is not
+    a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
+    all flags need a corresponding value.
 
 The flag converter is similar to regular commands and allows you to use most types of converters
 (with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
