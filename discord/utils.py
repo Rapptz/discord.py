@@ -93,7 +93,6 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .invite import Invite
     from .template import Template
-    from types import FunctionType as _Func
 
     class _RequestLike(Protocol):
         headers: Dict[str, Any]
@@ -186,8 +185,8 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: _Func) -> Callable[[_Func], _Func]:
-    def decorator(overriden: _Func) -> _Func:
+def copy_doc(original: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(overriden: Callable[..., Any]) -> Callable[..., Any]:
         overriden.__doc__ = original.__doc__
         overriden.__signature__ = _signature(original)  # type: ignore
         return overriden
@@ -464,16 +463,6 @@ async def sane_wait_for(futures, *, timeout):
         raise asyncio.TimeoutError()
 
     return done
-
-
-@overload
-async def sleep_until(when: datetime.datetime, result: None) -> None:
-    ...
-
-
-@overload
-async def sleep_until(when: datetime.datetime, result: T) -> T:
-    ...
 
 
 async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Optional[T]:
