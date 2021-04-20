@@ -37,7 +37,7 @@ from .view import StringView
 from .converter import run_converters
 
 from discord.utils import maybe_coroutine
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import (
     Dict,
     Optional,
@@ -87,6 +87,8 @@ class Flag:
     ------------
     name: :class:`str`
         The name of the flag.
+    aliases: List[:class:`str`]
+        The aliases of the flag name.
     attribute: :class:`str`
         The attribute in the class that corresponds to this flag.
     default: Any
@@ -101,7 +103,7 @@ class Flag:
     """
 
     name: str = MISSING
-    aliases: List[str] = MISSING
+    aliases: List[str] = field(default_factory=list)
     attribute: str = MISSING
     annotation: Any = MISSING
     default: Any = MISSING
@@ -121,7 +123,7 @@ class Flag:
 def flag(
     *,
     name: str = MISSING,
-    aliases: List[str] = MISSING,
+    aliases: List[str] = [],
     default: Any = MISSING,
     max_args: int = MISSING,
     override: bool = MISSING,
@@ -234,14 +236,13 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
         else:
             names.add(name)
 
-        if flag.aliases is not MISSING:
-            for alias in flag.aliases:
-                # Validate alias is unique
-                alias = alias.casefold() if case_insensitive else alias
-                if alias in names:
-                    raise TypeError(f'{flag.name!r} flag alias {alias!r} conflicts with previous flag or alias.')
-                else:
-                    names.add(alias)
+        for alias in flag.aliases:
+            # Validate alias is unique
+            alias = alias.casefold() if case_insensitive else alias
+            if alias in names:
+                raise TypeError(f'{flag.name!r} flag alias {alias!r} conflicts with previous flag or alias.')
+            else:
+                names.add(alias)
 
         flags[flag.name] = flag
 
@@ -298,14 +299,11 @@ class FlagsMeta(type):
         for base in reversed(bases):
             if base.__dict__.get('__commands_is_flag__', False):
                 flags.update(base.__dict__['__commands_flags__'])
-
-            if base.__dict__.get('__commands_flag_aliases__', False):
                 aliases.update(base.__dict__['__commands_flag_aliases__'])
 
         for flag_name, flag in get_flags(attrs, global_ns, local_ns).items():
             flags[flag_name] = flag
-            if flag.aliases is not MISSING:
-                aliases.update({alias: flag_name for alias in flag.aliases})
+            aliases.update({alias: flag_name for alias in flag.aliases})
 
         forbidden = set(delimiter).union(prefix)
         for flag_name in flags:
