@@ -123,7 +123,7 @@ class Flag:
 def flag(
     *,
     name: str = MISSING,
-    aliases: List[str] = None,
+    aliases: List[str] = MISSING,
     default: Any = MISSING,
     max_args: int = MISSING,
     override: bool = MISSING,
@@ -149,7 +149,7 @@ def flag(
         Whether multiple given values overrides the previous value. The default
         value depends on the annotation given.
     """
-    return Flag(name=name, aliases=aliases or [], default=default, max_args=max_args, override=override)
+    return Flag(name=name, aliases=aliases, default=default, max_args=max_args, override=override)
 
 
 def validate_flag_name(name: str, forbidden: Set[str]):
@@ -183,6 +183,9 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
             flag.name = name
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
+
+        if flag.aliases is MISSING:
+            flag.aliases = []
 
         # Add sensible defaults based off of the type annotation
         # <type> -> (max_args=1)
