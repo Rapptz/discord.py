@@ -312,7 +312,7 @@ class FlagsMeta(type):
         regex_flags = 0
         if case_insensitive:
             flags = {key.casefold(): value for key, value in flags.items()}
-            flag_aliases = {key.casefold(): value.casefold() for key, value in aliases.items()}
+            aliases = {key.casefold(): value.casefold() for key, value in aliases.items()}
             regex_flags = re.IGNORECASE
 
         keys = list(re.escape(k) for k in flags)
