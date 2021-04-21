@@ -268,14 +268,11 @@ class FlagsMeta(type):
         bases: Tuple[type, ...],
         attrs: Dict[str, Any],
         *,
-        case_insensitive: bool = False,
-        delimiter: str = ':',
-        prefix: str = '',
+        case_insensitive: bool = MISSING,
+        delimiter: str = MISSING,
+        prefix: str = MISSING,
     ):
         attrs['__commands_is_flag__'] = True
-        attrs['__commands_flag_case_insensitive__'] = case_insensitive
-        attrs['__commands_flag_delimiter__'] = delimiter
-        attrs['__commands_flag_prefix__'] = prefix
 
         if not prefix and not delimiter:
             raise TypeError('Must have either a delimiter or a prefix set')
@@ -303,6 +300,23 @@ class FlagsMeta(type):
             if base.__dict__.get('__commands_is_flag__', False):
                 flags.update(base.__dict__['__commands_flags__'])
                 aliases.update(base.__dict__['__commands_flag_aliases__'])
+                if case_insensitive is MISSING:
+                    attrs['__commands_flag_case_insensitive__'] = base.__dict__['__commands_flag_case_insensitive__']
+                if delimiter is MISSING:
+                    attrs['__commands_flag_delimiter__'] = base.__dict__['__commands_flag_delimiter__']
+                if prefix is MISSING:
+                    attrs['__commands_flag_prefix__'] = base.__dict__['__commands_flag_prefix__']
+
+        if case_insensitive is not MISSING:
+            attrs['__commands_flag_case_insensitive__'] = case_insensitive
+        if delimiter is not MISSING:
+            attrs['__commands_flag_delimiter__'] = delimiter
+        if prefix is not MISSING:
+            attrs['__commands_flag_prefix__'] = prefix
+
+        case_insensitive = attrs.setdefault('__commands_flag_case_insensitive__', False)
+        delimiter = attrs.setdefault('__commands_flag_delimiter__', ':')
+        prefix = attrs.setdefault('__commands_flag_prefix__', '')
 
         for flag_name, flag in get_flags(attrs, global_ns, local_ns).items():
             flags[flag_name] = flag
