@@ -1031,7 +1031,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def stage_channels(self):
-        """List[:class:`StageChannel`]: Returns the voice channels that are under this category.
+        """List[:class:`StageChannel`]: Returns the stage channels that are under this category.
 
         .. versionadded:: 1.7
         """

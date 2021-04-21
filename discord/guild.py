@@ -378,7 +378,7 @@ class Guild(Hashable):
 
     @property
     def stage_channels(self):
-        """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
+        """List[:class:`StageChannel`]: A list of stage channels that belongs to this guild.
 
         .. versionadded:: 1.7
 
