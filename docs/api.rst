@@ -1960,6 +1960,10 @@ of :class:`enum.Enum`.
     .. attribute:: stream
 
         The invite targets a stream.
+        
+    .. attribute:: activity
+    
+        The invite targets an activity.
 
 .. class:: VideoQualityMode
 
