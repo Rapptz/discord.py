@@ -295,6 +295,13 @@ class GuildChannel(Protocol):
         if overwrites is not None:
             perms = []
             for target, perm in overwrites.items():
+                if isinstance(target, Role):
+                    payload_type = _Overwrites.ROLE
+                elif isinstance(target, Member):
+                    payload_type = _Overwrites.MEMBER
+                else:
+                    raise InvalidArgument(f'Expected Role or Member received {target.__class__.__name__}')
+
                 if not isinstance(perm, PermissionOverwrite):
                     raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
@@ -302,13 +309,9 @@ class GuildChannel(Protocol):
                 payload = {
                     'allow': allow.value,
                     'deny': deny.value,
-                    'id': target.id
+                    'id': target.id,
+                    'type': payload_type
                 }
-
-                if isinstance(target, Role):
-                    payload['type'] = _Overwrites.ROLE
-                else:
-                    payload['type'] = _Overwrites.MEMBER
 
                 perms.append(payload)
             options['permission_overwrites'] = perms

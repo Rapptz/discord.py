@@ -732,6 +732,13 @@ class Guild(Hashable):
 
         perms = []
         for target, perm in overwrites.items():
+            if isinstance(target, Role):
+                payload_type = abc._Overwrites.ROLE
+            elif isinstance(target, Member):
+                payload_type = abc._Overwrites.MEMBER
+            else:
+                raise InvalidArgument(f'Expected Role or Member received {target.__class__.__name__}')
+
             if not isinstance(perm, PermissionOverwrite):
                 raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
@@ -739,13 +746,9 @@ class Guild(Hashable):
             payload = {
                 'allow': allow.value,
                 'deny': deny.value,
-                'id': target.id
+                'id': target.id,
+                'type': payload_type
             }
-
-            if isinstance(target, Role):
-                payload['type'] = abc._Overwrites.ROLE
-            else:
-                payload['type'] = abc._Overwrites.MEMBER
 
             perms.append(payload)
 
