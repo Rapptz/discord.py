@@ -29,7 +29,7 @@ from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, VerificationLevel, try_enum
+from .enums import ChannelType, VerificationLevel, InviteTarget, try_enum
 
 __all__ = (
     'PartialInviteChannel',
@@ -269,6 +269,14 @@ class Invite(Hashable):
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
+    target_user: Optional[:class:`User`]
+        The target of this invite in the case of stream invites.
+
+        .. versionadded:: 2.0
+    target_type: :class:`InviteType`
+        The invite's target type.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -282,6 +290,8 @@ class Invite(Hashable):
         'max_uses',
         'inviter',
         'channel',
+        'target_user',
+        'target_type',
         '_state',
         'approximate_member_count',
         'approximate_presence_count',
@@ -305,6 +315,9 @@ class Invite(Hashable):
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
         self.channel = data.get('channel')
+        target_user_data = data.get('target_user')
+        self.target_user = None if target_user_data is None else self._state.store_user(target_user_data)
+        self.target_type = try_enum(InviteTarget, data.get('target_type', 0))
 
     @classmethod
     def from_incomplete(cls, *, state, data):
