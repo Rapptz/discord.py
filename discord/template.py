@@ -105,7 +105,24 @@ class Template:
         This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
         The source guild.
+    is_dirty: Optional[:class:`bool`]
+        Whether the template has unsynced changes.
+
+        .. versionadded:: 2.0
     """
+
+    __slots__ = (
+        'code',
+        'uses',
+        'name',
+        'description',
+        'creator',
+        'created_at',
+        'updated_at',
+        'source_guild',
+        'is_dirty',
+        '_state',
+    )
 
     def __init__(self, *, state, data: TemplatePayload):
         self._state = state
@@ -133,11 +150,12 @@ class Template:
             guild = Guild(data=source_serialised, state=state)
 
         self.source_guild = guild
+        self.is_dirty = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
         return (
             f'<Template code={self.code!r} uses={self.uses} name={self.name!r}'
-            f' creator={self.creator!r} source_guild={self.source_guild!r}>'
+            f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
     async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None):
