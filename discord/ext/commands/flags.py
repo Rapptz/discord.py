@@ -184,7 +184,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
 
-        if flag.default is MISSING and issubclass(annotation, FlagConverter) and annotation._can_be_constructible():
+        if flag.default is MISSING and hasattr(annotation, '__commands_is_flag__') and annotation._can_be_constructible():
             flag.default = annotation._construct_default
 
         if flag.aliases is MISSING:
@@ -236,7 +236,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
             flag.override = False
 
         # Validate flag names are unique
-        name = flag.name.casefold() if case_insensitive else flag.name    
+        name = flag.name.casefold() if case_insensitive else flag.name
         if name in names:
             raise TypeError(f'{flag.name!r} flag conflicts with previous flag or alias.')
         else:
@@ -340,7 +340,7 @@ class FlagsMeta(type):
         keys = list(re.escape(k) for k in flags)
         keys.extend(re.escape(a) for a in aliases)
         keys = sorted(keys, key=lambda t: len(t), reverse=True)
-        
+
         joined = '|'.join(keys)
         pattern = re.compile(f'(({re.escape(prefix)})(?P<flag>{joined}){re.escape(delimiter)})', regex_flags)
         attrs['__commands_flag_regex__'] = pattern
