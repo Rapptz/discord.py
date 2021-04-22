@@ -592,7 +592,8 @@ ColorConverter = ColourConverter
 class RoleConverter(IDConverter[discord.Role]):
     """Converts to a :class:`~discord.Role`.
 
-    All lookups are via the local guild.
+    All lookups are via the local guild. If in a DM context, the converter raises
+    :exc:`.NoPrivateMessage` exception.
 
     The lookup strategy is as follows (in order):
 
