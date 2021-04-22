@@ -1961,9 +1961,9 @@ of :class:`enum.Enum`.
 
         The invite targets a stream.
         
-    .. attribute:: activity
+    .. attribute:: embedded_application
     
-        The invite targets an activity.
+        The invite targets an embedded application activity.
 
 .. class:: VideoQualityMode
 
