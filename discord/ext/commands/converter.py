@@ -592,8 +592,7 @@ ColorConverter = ColourConverter
 class RoleConverter(IDConverter[discord.Role]):
     """Converts to a :class:`~discord.Role`.
 
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
+    All lookups are via the local guild.
 
     The lookup strategy is as follows (in order):
 
