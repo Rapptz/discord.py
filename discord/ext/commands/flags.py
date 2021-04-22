@@ -184,6 +184,9 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
 
+        if flag.default is MISSING and issubclass(annotation, FlagConverter) and annotation._can_be_constructible():
+            flag.default = annotation._construct_default
+
         if flag.aliases is MISSING:
             flag.aliases = []
 
