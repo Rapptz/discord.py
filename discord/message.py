@@ -258,6 +258,23 @@ class Attachment(Hashable):
         data = await self.read(use_cached=use_cached)
         return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
 
+    def to_dict(self):
+        result = {
+            'filename': self.filename,
+            'id': self.id,
+            'proxy_url': self.proxy_url,
+            'size': self.size,
+            'url': self.url,
+            'spoiler': self.is_spoiler(),
+        }
+        if self.height:
+            result['height'] = self.height
+        if self.width:
+            result['width'] = self.width
+        if self.content_type:
+            result['content_type'] = self.content_type
+        return result
+
 class DeletedReferencedMessage:
     """A special sentinel type that denotes whether the
     resolved message referenced message had since been deleted.
@@ -1000,6 +1017,9 @@ class Message(Hashable):
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
+        attachments: List[:class:`Attachment`]
+            A list of attachments to keep in the message. If ``[]`` is passed
+            then all attachments are removed.
         suppress: :class:`bool`
             Whether to suppress embeds for the message. This removes
             all the embeds if set to ``True``. If set to ``False``
@@ -1067,6 +1087,13 @@ class Message(Hashable):
                 else:
                     allowed_mentions = allowed_mentions.to_dict()
                 fields['allowed_mentions'] = allowed_mentions
+
+        try:
+            attachments = fields.pop('attachments')
+        except KeyError:
+            pass
+        else:
+            fields['attachments'] = [a.to_dict() for a in attachments]
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
