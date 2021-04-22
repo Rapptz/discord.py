@@ -663,7 +663,7 @@ In order to customise the flag syntax we also have a few options that can be pas
         make: str
 
     # TOPIC: not allowed nsfw: yes Slowmode: 100
-    class Settings(commands.FlagConverter, case_insentitive=True):
+    class Settings(commands.FlagConverter, case_insensitive=True):
         topic: Optional[str]
         nsfw: Optional[bool]
         slowmode: Optional[int]
