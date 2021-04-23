@@ -52,6 +52,7 @@ class Filters:
         self.filtered_users = kwargs.get('users', default_filters['users'])
         self.seconds = kwargs.get('time', default_filters['time'])
         self.max_size = kwargs.get('max_size', default_filters['max_size'])
+        self.finished = False
 
         if self.seconds != 0:
             thread = threading.Thread(target=self.wait_and_stop)
@@ -66,10 +67,9 @@ class Filters:
 
     def wait_and_stop(self):
         time.sleep(self.seconds)
-        try:
-            self.vc.stop_recording()
-        except ClientException:
+        if self.finished:
             return
+        self.vc.stop_recording()
 
 
 class RawData:
@@ -172,6 +172,7 @@ class Sink(Filters):
         file.write(data)
 
     def cleanup(self):
+        self.finished = True
         for file in self.audio_data.values():
             file.cleanup()
             self.format_audio(file)
