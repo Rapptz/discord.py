@@ -232,6 +232,7 @@ class VoiceClient(VoiceProtocol):
         self.user_timestamps = {}
         self.sink = None
         self.starting_time = None
+        self.stopping_time = None
 
     warn_nacl = not has_nacl
     supported_modes = (
@@ -701,6 +702,9 @@ class VoiceClient(VoiceProtocol):
         """
         if 200 <= data[1] <= 204:
             # RTCP received.
+            # RTCP provides information about the connection
+            # as opposed to actual audio data, so it's not
+            # important at the moment.
             return
         if self.paused:
             return
@@ -737,6 +741,7 @@ class VoiceClient(VoiceProtocol):
         ClientException
             Must provide a Sink object.
         """
+        print('yes')
         if not self.is_connected():
             raise ClientException('Not connected to voice channel.')
         if self.recording:
@@ -744,11 +749,13 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, Sink):
             raise ClientException("Must provide a Sink object.")
 
+        print("yes")
         sink.init(self)
         self.decoder = opus.DecodeManager(self)
         self.decoder.start()
         self.recording = True
         self.sink = sink
+        self.empty_socket()
 
         t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
         t.start()
@@ -783,18 +790,13 @@ class VoiceClient(VoiceProtocol):
             raise ClientException("Not currently recording audio.")
         self.paused = {True: False, False: True}[self.paused]
 
-    def continue_recv(self):
-        # If data is not received while not recording
-        # then it will be received when the next
-        # recording starts. This function is run at
-        # the end of recv_audio and will end its
-        # execution after another recording starts
-        while not self.recording:
-            try:
-                self.socket.recv(4096)
-            except OSError:
-                # Disconnected
-                return
+    def empty_socket(self):
+        while True:
+            ready, _, _ = select.select([self.socket], [], [], 0.0)
+            if len(ready) == 0:
+                break
+            for s in ready:
+                s.recv(4096)
 
     def recv_audio(self, sink, callback, *args):
         #  Gets data from _recv_audio and sorts
@@ -817,8 +819,10 @@ class VoiceClient(VoiceProtocol):
                 self.stop_recording()
                 continue
 
+
             self.unpack_audio(data)
 
+        self.stopping_time = time.perf_counter()
         self.sink.cleanup()
         try:
             callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
@@ -828,7 +832,6 @@ class VoiceClient(VoiceProtocol):
         else:
             if result is not None:
                 print(result)
-        self.continue_recv()
 
     def recv_decoded_audio(self, data):
         if data.ssrc not in self.user_timestamps:
