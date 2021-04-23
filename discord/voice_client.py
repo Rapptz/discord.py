@@ -741,7 +741,6 @@ class VoiceClient(VoiceProtocol):
         ClientException
             Must provide a Sink object.
         """
-        print('yes')
         if not self.is_connected():
             raise ClientException('Not connected to voice channel.')
         if self.recording:
@@ -749,7 +748,6 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, Sink):
             raise ClientException("Must provide a Sink object.")
 
-        print("yes")
         sink.init(self)
         self.decoder = opus.DecodeManager(self)
         self.decoder.start()
