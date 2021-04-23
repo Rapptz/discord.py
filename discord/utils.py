@@ -72,7 +72,7 @@ __all__ = (
 DISCORD_EPOCH = 1420070400000
 
 
-class cached_property:
+class _cached_property:
     def __init__(self, function):
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
@@ -88,7 +88,7 @@ class cached_property:
 
 
 if TYPE_CHECKING:
-    from functools import cached_property
+    from functools import cached_property as cached_property
     from .permissions import Permissions
     from .abc import Snowflake
     from .invite import Invite
@@ -96,6 +96,9 @@ if TYPE_CHECKING:
 
     class _RequestLike(Protocol):
         headers: Dict[str, Any]
+
+else:
+    cached_property = _cached_property
 
 
 T = TypeVar('T')
