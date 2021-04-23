@@ -216,8 +216,8 @@ class _HelpCommandImpl(Command):
     def clean_params(self):
         result = self.params.copy()
         try:
-            result.popitem(last=False)
-        except Exception:
+            result.pop("ctx")
+        except KeyError:
             raise ValueError('Missing context parameter') from None
         else:
             return result
