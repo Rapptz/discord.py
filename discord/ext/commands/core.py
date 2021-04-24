@@ -112,6 +112,7 @@ def _evaluate_annotation(
 
     if hasattr(tp, '__args__'):
         implicit_str = True
+        is_literal = False
         args = tp.__args__
         if not hasattr(tp, '__origin__'):
             if PY_310 and tp.__class__ is types.Union:
@@ -129,12 +130,13 @@ def _evaluate_annotation(
             if not PY_310:
                 args = flatten_literal_params(tp.__args__)
             implicit_str = False
+            is_literal = True
 
         evaluated_args = tuple(
             _evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args
         )
 
-        if not all(isinstance(x, (str, int, bool, float, complex)) for x in evaluated_args):
+        if is_literal and not all(isinstance(x, (str, int, bool, float, complex)) for x in evaluated_args):
             raise TypeError('Literal arguments must be of type str, int, bool, float or complex.')
 
         if evaluated_args == args:
