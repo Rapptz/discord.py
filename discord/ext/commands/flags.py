@@ -40,6 +40,7 @@ from discord.utils import maybe_coroutine
 from dataclasses import dataclass, field
 from typing import (
     Dict,
+    Iterator,
     Optional,
     Pattern,
     Set,
@@ -443,6 +444,14 @@ class FlagConverter(metaclass=FlagsMeta):
     how this converter works, check the appropriate
     :ref:`documentation <ext_commands_flag_converter>`.
 
+    .. container:: operations
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(flag_name, flag_value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
     .. versionadded:: 2.0
 
     Parameters
@@ -467,6 +476,10 @@ class FlagConverter(metaclass=FlagsMeta):
     @classmethod
     def _can_be_constructible(cls) -> bool:
         return all(not flag.required for flag in cls.__commands_flags__.values())
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        for flag in self.__class__.__commands_flags__.values():
+            yield (flag.name, getattr(self, flag.attribute))
 
     @classmethod
     async def _construct_default(cls: Type[F], ctx: Context) -> F:
