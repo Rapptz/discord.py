@@ -134,6 +134,9 @@ def _evaluate_annotation(
             _evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args
         )
 
+        if not all(isinstance(x, (str, int, bool, float, complex)) for x in evaluated_args):
+            raise TypeError('Literal arguments must be of type str, int, bool, float or complex.')
+
         if evaluated_args == args:
             return tp
 
