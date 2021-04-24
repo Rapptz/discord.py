@@ -41,6 +41,7 @@ from dataclasses import dataclass, field
 from typing import (
     Dict,
     Iterator,
+    Literal,
     Optional,
     Pattern,
     Set,
@@ -230,6 +231,9 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
                     flag.max_args = -1
                 if flag.override is MISSING:
                     flag.override = True
+            elif origin is Literal:
+                if flag.max_args is MISSING:
+                    flag.max_args = 1
             else:
                 raise TypeError(f'Unsupported typing annotation {annotation!r} for {flag.name!r} flag')
 
