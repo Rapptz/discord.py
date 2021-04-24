@@ -78,6 +78,11 @@ class ActivityEmoji(_ActivityEmojiOptional):
     name: str
 
 
+class ActivityButton(TypedDict):
+    label: str
+    url: str
+
+
 class _SendableActivityOptional(TypedDict, total=False):
     url: Optional[str]
 
@@ -106,3 +111,4 @@ class Activity(_BaseActivity, total=False):
     secrets: ActivitySecrets
     session_id: Optional[str]
     instance: bool
+    buttons: List[ActivityButton]
