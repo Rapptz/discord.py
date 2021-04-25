@@ -487,7 +487,7 @@ class PartialWebhookGuild(Hashable):
         return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
-    def icon_url(self) -> Optional[Asset]:
+    def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
         if self._icon is None:
             return None

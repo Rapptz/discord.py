@@ -216,8 +216,8 @@ class _HelpCommandImpl(Command):
     def clean_params(self):
         result = self.params.copy()
         try:
-            result.popitem(last=False)
-        except Exception:
+            del result[next(iter(result))]
+        except StopIteration:
             raise ValueError('Missing context parameter') from None
         else:
             return result
@@ -281,7 +281,7 @@ class HelpCommand:
         If ``None``, only calls :attr:`.Commands.checks` in a guild setting.
         If ``False``, never calls :attr:`.Commands.checks`. Defaults to ``True``.
 
-        ..versionchanged:: 1.7
+        .. versionchanged:: 1.7
     command_attrs: :class:`dict`
         A dictionary of options to pass in for the construction of the help command.
         This allows you to change the command behaviour without actually changing

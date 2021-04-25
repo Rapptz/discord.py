@@ -1119,20 +1119,6 @@ of :class:`enum.Enum`.
 
         Represents a slash command interaction.
 
-.. class:: HypeSquadHouse
-
-    Specifies the HypeSquad house a user belongs to.
-
-    .. attribute:: bravery
-
-        The "Bravery" house.
-    .. attribute:: brilliance
-
-        The "Brilliance" house.
-    .. attribute:: balance
-
-        The "Balance" house.
-
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
@@ -1951,6 +1937,24 @@ of :class:`enum.Enum`.
     .. attribute:: lottie
 
         Represents a sticker with a lottie image.
+
+.. class:: InviteTarget
+
+    Represents the type of target an invite contains.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unknown
+
+        The invite doesn't target anyone or anything.
+
+    .. attribute:: stream
+
+        The invite targets a stream.
+        
+    .. attribute:: embedded_application
+    
+        The invite targets an embedded application activity.
 
 .. class:: VideoQualityMode
 
