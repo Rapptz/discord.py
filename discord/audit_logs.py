@@ -51,35 +51,44 @@ if TYPE_CHECKING:
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 
+
 def _transform_default_notifications(entry, data):
     return enums.try_enum(enums.NotificationLevel, data)
+
 
 def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
+
 def _transform_permissions(entry, data):
     return Permissions(int(data))
+
 
 def _transform_color(entry, data):
     return Colour(data)
 
+
 def _transform_snowflake(entry, data):
     return int(data)
+
 
 def _transform_channel(entry, data):
     if data is None:
         return None
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
+
 def _transform_owner_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
 
+
 def _transform_inviter_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
+
 
 def _transform_overwrites(entry, data):
     overwrites = []
@@ -103,31 +112,39 @@ def _transform_overwrites(entry, data):
 
     return overwrites
 
+
 def _transform_channeltype(entry, data):
     return enums.try_enum(enums.ChannelType, data)
+
 
 def _transform_voiceregion(entry, data):
     return enums.try_enum(enums.VoiceRegion, data)
 
+
 def _transform_video_quality_mode(entry, data):
     return enums.try_enum(enums.VideoQualityMode, data)
+
 
 def _transform_icon(entry, data):
     if data is None:
         return None
     return Asset._from_guild_icon(entry._state, entry.guild.id, data)
 
+
 def _transform_avatar(entry, data):
     if data is None:
         return None
     return Asset._from_avatar(entry._state, entry._target_id, data)
+
 
 def _guild_hash_transformer(path):
     def _transform(entry, data):
         if data is None:
             return None
         return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
+
     return _transform
+
 
 class AuditLogDiff:
     def __len__(self):
@@ -140,7 +157,9 @@ class AuditLogDiff:
         values = ' '.join('%s=%r' % item for item in self.__dict__.items())
         return f'<AuditLogDiff {values}>'
 
+
 class AuditLogChanges:
+    # fmt: off
     TRANSFORMERS = {
         'verification_level':            (None, _transform_verification_level),
         'explicit_content_filter':       (None, _transform_explicit_content_filter),
@@ -168,6 +187,7 @@ class AuditLogChanges:
         'video_quality_mode':            (None, _transform_video_quality_mode),
         'type':                          (None, _transform_channeltype),
     }
+    # fmt: on
 
     def __init__(self, entry, data: List[AuditLogChangePayload]):
         self.before = AuditLogDiff()
@@ -234,11 +254,12 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name'] # type: ignore
+                role.name = e['name']  # type: ignore
 
             data.append(role)
 
         setattr(second, 'roles', data)
+
 
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
@@ -305,7 +326,7 @@ class AuditLogEntry(Hashable):
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
-                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action is enums.AuditLogAction.member_disconnect:
@@ -318,10 +339,12 @@ class AuditLogEntry(Hashable):
                 # the pin actions have a dict with some information
                 channel_id = int(self.extra['channel_id'])
                 message_id = int(self.extra['message_id'])
+                # fmt: off
                 elems = {
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
                     'message_id': message_id
                 }
+                # fmt: on
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
