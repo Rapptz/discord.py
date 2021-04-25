@@ -471,8 +471,6 @@ class PartialWebhookGuild(Hashable):
         The partial guild's ID.
     name: :class:`str`
         The partial guild's name.
-    icon: :class:`str`
-        The partial guild's icon
     """
 
     __slots__ = ('id', 'name', '_icon', '_state')
