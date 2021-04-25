@@ -29,9 +29,8 @@ from typing import TYPE_CHECKING, Optional
 from . import utils
 from .asset import Asset
 
-from .guild import Guild
-
 if TYPE_CHECKING:
+    from .guild import Guild
     from .types.appinfo import AppInfo as AppInfoData
 
 __all__ = (
@@ -130,7 +129,6 @@ class AppInfo:
     )
 
     def __init__(self, state, data: AppInfoData):
-        from .user import User
         from .team import Team
 
         self._state = state
@@ -144,7 +142,7 @@ class AppInfo:
         self.bot_require_code_grant = data.get('bot_require_code_grant')
 
         owner = data.get('owner')
-        self.owner = User(state=self._state, data=owner) if owner else None
+        self.owner = state.store_user(state=self._state, data=owner) if owner else None
          
         team = data.get('team')
         self.team = Team(state, team) if team else None
