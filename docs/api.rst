@@ -1938,24 +1938,6 @@ of :class:`enum.Enum`.
 
         Represents a sticker with a lottie image.
 
-.. class:: InviteTarget
-
-    Represents the type of target an invite contains.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: unknown
-
-        The invite doesn't target anyone or anything.
-
-    .. attribute:: stream
-
-        The invite targets a stream.
-        
-    .. attribute:: embedded_application
-    
-        The invite targets an embedded application activity.
-
 .. class:: VideoQualityMode
 
     Represents the camera video quality mode for voice channel participants.
@@ -1976,12 +1958,17 @@ of :class:`enum.Enum`.
 
     .. vesionadded:: 2.0
 
+    .. attribute:: unknown
+
+        The invite doesn't target anyone or anything.
+
     .. attribute:: stream
 
-        A stream invite for a user
+        A stream invite that targets a user.
     
     .. attribute:: embedded_application
 
+        A stream invite that targets an embedded application.
 
 Async Iterator
 ----------------

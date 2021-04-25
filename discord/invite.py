@@ -327,12 +327,8 @@ class Invite(Hashable):
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
         self.channel = data.get('channel')
-        target_user_data = data.get('target_user')
-        self.target_user = None if target_user_data is None else self._state.store_user(target_user_data)
-        self.target_type = try_enum(InviteTarget, data.get('target_type', 0))
 
-        target_type = data.get('target_type')
-        self.target_type = try_enum(InviteTarget, target_type) if target_type else None
+        self.target_type = try_enum(InviteTarget, data.get("target_type", 0))
 
         target_user = data.get('target_user')
         self.target_user = User(data=target_user, state=state) if target_user else None
