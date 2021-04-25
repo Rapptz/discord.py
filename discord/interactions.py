@@ -30,6 +30,11 @@ from typing import Optional, TYPE_CHECKING
 from . import utils
 from .enums import try_enum, InteractionType
 
+from .user import User
+from .member import Member
+from .message import Message
+from .object import Object
+
 __all__ = (
     'Interaction',
 )
@@ -65,6 +70,8 @@ class Interaction:
         The application ID that the interaction was for.
     user: Optional[Union[:class:`User`, :class:`Member`]]
         The user or member that sent the interaction.
+    message: Optional[:class:`Message`]
+        The message that sent this interaction.
     token: :class:`str`
         The token to continue the interaction. These are valid
         for 15 minutes.
@@ -77,6 +84,7 @@ class Interaction:
         'channel_id',
         'data',
         'application_id',
+        'message',
         'user',
         'token',
         'version',
@@ -97,10 +105,28 @@ class Interaction:
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.application_id = utils._get_as_snowflake(data, 'application_id')
 
+        channel = self.channel or Object(id=self.channel_id)
+        try:
+            self.message = Message(state=self._state, channel=channel, data=data['message'])
+        except KeyError:
+            self.message = None
+
+        try:
+            self.user = User(state=self._state, data=data['user'])
+        except KeyError:
+            self.user = None
+
+        # TODO: there's a potential data loss here
+        guild = self.guild or Object(id=self.guild_id)
+        try:
+            self.user = Member(state=self._state, guild=guild, data=data['member'])
+        except KeyError:
+            pass
+
     @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
-        return self._state and self._state.get_guild(self.guild_id)
+        return self._state and self._state._get_guild(self.guild_id)
 
     @property
     def channel(self) -> Optional[GuildChannel]:

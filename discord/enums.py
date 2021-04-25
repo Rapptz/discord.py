@@ -48,6 +48,8 @@ __all__ = (
     'StickerType',
     'InviteTarget',
     'VideoQualityMode',
+    'ComponentType',
+    'ButtonStyle',
 )
 
 def _create_value_cls(name):
@@ -435,10 +437,36 @@ class InviteTarget(Enum):
 class InteractionType(Enum):
     ping = 1
     application_command = 2
+    component = 3
+
+class InteractionResponseType(Enum):
+    pong = 1
+    # ack = 2 (deprecated)
+    # channel_message = 3 (deprecated)
+    channel_message = 4  # (with source)
+    deferred_channel_message = 5  # (with source)
+    ack = 6  # for components?
 
 class VideoQualityMode(Enum):
     auto = 1
     full = 2
+
+    def __int__(self):
+        return self.value
+
+class ComponentType(Enum):
+    group = 1
+    button = 2
+
+    def __int__(self):
+        return self.value
+
+class ButtonStyle(Enum):
+    blurple = 1
+    grey = 2
+    green = 3
+    red = 4
+    hyperlink = 5
 
     def __int__(self):
         return self.value

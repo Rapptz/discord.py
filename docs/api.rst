@@ -1172,10 +1172,66 @@ of :class:`enum.Enum`.
     .. attribute:: ping
 
         Represents Discord pinging to see if the interaction response server is alive.
-
     .. attribute:: application_command
 
         Represents a slash command interaction.
+    .. attribute:: component
+
+        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+
+.. class:: InteractionResponseType
+
+    Specifies the response type for the interaction.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: pong
+
+        Pongs the interaction when given a ping.
+    .. attribute:: channel_message
+
+        Respond to a slash command with a message.
+    .. attribute:: deferred_channel_message
+
+        Responds to a slash command with a message at a later time.
+    .. attribute:: ack
+
+        Acknowledges the component interaction.
+
+.. class:: ComponentType
+
+    Represents the component type of a component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: group
+
+        Represents the group component which holds different components.
+    .. attribute:: button
+
+        Represents a button component.
+
+.. class:: ButtonStyle
+
+    Represents the style of the button component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: blurple::
+
+        Represents a blurple button.
+    .. attribute:: grey::
+
+        Represents a grey button.
+    .. attribute:: green::
+
+        Represents a green button.
+    .. attribute:: red::
+
+        Represents a red button.
+    .. attribute:: hyperlink::
+
+        Represents a hyperlink button.
 
 .. class:: VoiceRegion
 
@@ -2794,6 +2850,24 @@ Message
 .. autoclass:: Message()
     :members:
 
+Component
+~~~~~~~~~~
+
+.. attributetable:: Component
+
+.. autoclass:: Component()
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: Button
+
+.. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3326,6 +3400,41 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
+
+.. _discord_ui_kit:
+
+Bot UI Kit
+-------------
+
+The library has helpers to help create component-based UIs.
+
+View
+~~~~~~~
+
+.. attributetable:: discord.ui.View
+
+.. autoclass:: discord.ui.View
+    :members:
+
+Item
+~~~~~~~
+
+.. attributetable:: discord.ui.Item
+
+.. autoclass:: discord.ui.Item
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: discord.ui.Button
+
+.. autoclass:: discord.ui.Button
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.button
+
 
 Exceptions
 ------------
