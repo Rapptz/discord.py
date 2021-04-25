@@ -32,7 +32,10 @@ from .enums import TeamMembershipState, try_enum
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from .types.team import Team as TeamData, TeamMember as TeamMemberData
+    from .types.team import (
+        Team as TeamPayload,
+        TeamMember as TeamMemberPayload,
+    )
 
 __all__ = (
     'Team',
@@ -59,7 +62,7 @@ class Team:
 
     __slots__ = ('_state', 'id', 'name', '_icon', 'owner_id', 'members')
 
-    def __init__(self, state, data: TeamData):
+    def __init__(self, state, data: TeamPayload):
         self._state = state
 
         self.id = int(data['id'])
@@ -127,7 +130,7 @@ class TeamMember(BaseUser):
 
     __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
 
-    def __init__(self, team: Team, state, data: TeamMemberData):
+    def __init__(self, team: Team, state, data: TeamMemberPayload):
         self.team = team
         self.membership_state = try_enum(TeamMembershipState, data['membership_state'])
         self.permissions = data['permissions']

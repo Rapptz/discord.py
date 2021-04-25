@@ -31,7 +31,7 @@ from .asset import Asset
 
 if TYPE_CHECKING:
     from .guild import Guild
-    from .types.appinfo import AppInfo as AppInfoData
+    from .types.appinfo import AppInfo as AppInfoPayload
 
 __all__ = (
     'AppInfo',
@@ -132,7 +132,7 @@ class AppInfo:
         'privacy_policy_url',
     )
 
-    def __init__(self, state, data: AppInfoData):
+    def __init__(self, state, data: AppInfoPayload):
         from .team import Team
 
         self._state = state
