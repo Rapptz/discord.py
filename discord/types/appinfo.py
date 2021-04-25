@@ -32,9 +32,8 @@ from .team import Team
 class _AppInfoOptional(TypedDict, total=False):
     owner: User
     team: Team
-    description: str
-    bot_public: bool
     bot_require_code_grant: bool
+    bot_public: bool
     guild_id: str
     primary_sku_id: str
     slug: str
@@ -42,7 +41,6 @@ class _AppInfoOptional(TypedDict, total=False):
     privacy_policy_url: str
     hook: bool
     max_participants: int
-    icon: str
 
 class AppInfo(_AppInfoOptional):
     id: int
@@ -51,3 +49,5 @@ class AppInfo(_AppInfoOptional):
     verify_key: str
     icon: str
     summary: str
+    description: str
+    icon: str

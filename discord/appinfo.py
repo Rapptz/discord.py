@@ -48,14 +48,18 @@ class AppInfo:
         The application ID.
     name: :class:`str`
         The application name.
-    owner: :class:`User`
+    owner: Optional[:class:`User`]
         The application owner.
+
+        .. versionchanged:: 2.0
+            it is now Optional[:class:`User`] rather than :class:`User`
+
     team: Optional[:class:`Team`]
         The application's team.
 
         .. versionadded:: 1.3
 
-    description: Optional[:class:`str`]
+    description: :class:`str`
         The application description.
     bot_public: :class:`bool`
         Whether the bot can be invited by anyone or if it is locked
@@ -135,7 +139,7 @@ class AppInfo:
 
         self.id = int(data['id'])
         self.name = data['name']
-        self.description = data.get('description')
+        self.description = data['description']
         self._icon = data['icon']
         self.rpc_origins = data['rpc_origins']
         self.bot_public = data.get('bot_public', False)
