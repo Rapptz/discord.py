@@ -24,39 +24,20 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import TypedDict, List
 
-from .guild import InviteGuild, _GuildPreviewUnique
-from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import AppInfo
 
-InviteTargetType = Literal[1, 2]
+class TeamMember(TypedDict):
+    user: PartialUser
+    membership_state: int
+    permissions: List[str]
+    team_id: str
 
+class Team(TypedDict):
+    id: int
+    name: str
+    owner_id: int
+    members: List[TeamMember]
+    icon: str
 
-class _InviteOptional(TypedDict, total=False):
-    guild: InviteGuild
-    inviter: PartialUser
-    target_user: PartialUser
-    target_type: InviteTargetType
-    target_application: AppInfo
-
-
-class _InviteMetadata(TypedDict, total=False):
-    uses: int
-    max_uses: int
-    temporary: bool
-    created_at: str
-
-
-class IncompleteInvite(_InviteMetadata):
-    code: str
-    channel: PartialChannel
-
-
-class Invite(IncompleteInvite, _InviteOptional):
-    ...
-
-
-class InviteWithCounts(Invite, _GuildPreviewUnique):
-    ...

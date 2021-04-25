@@ -47,6 +47,7 @@ __all__ = (
     'ExpireBehavior',
     'StickerType',
     'VideoQualityMode',
+    'InviteTarget'
 )
 
 def _create_value_cls(name):
@@ -436,6 +437,10 @@ class VideoQualityMode(Enum):
 
     def __int__(self):
         return self.value
+
+class InviteTarget(Enum):
+    stream = 1
+    embedded_application = 2
 
 T = TypeVar('T')
 

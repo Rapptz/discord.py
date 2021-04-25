@@ -22,10 +22,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from . import utils
 from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .types.team import Team as TeamData, TeamMember as TeamMemberData
 
 __all__ = (
     'Team',
@@ -52,7 +59,7 @@ class Team:
 
     __slots__ = ('_state', 'id', 'name', '_icon', 'owner_id', 'members')
 
-    def __init__(self, state, data):
+    def __init__(self, state, data: TeamData):
         self._state = state
 
         self.id = int(data['id'])
@@ -120,7 +127,7 @@ class TeamMember(BaseUser):
 
     __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
 
-    def __init__(self, team, state, data):
+    def __init__(self, team, state, data: TeamMemberData):
         self.team = team
         self.membership_state = try_enum(TeamMembershipState, data['membership_state'])
         self.permissions = data['permissions']

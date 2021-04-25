@@ -1966,6 +1966,19 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
+.. class:: InviteTarget
+
+    Represents the invite type for voice channel invites
+
+    .. vesionadded:: 2.0
+
+    .. attribute:: stream
+
+        A stream invite for a user
+    
+    .. attribute:: embedded_application
+
+
 Async Iterator
 ----------------
 

@@ -29,7 +29,8 @@ from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, VerificationLevel, try_enum
+from .enums import ChannelType, VerificationLevel, InviteTarget, try_enum
+from .appinfo import AppInfo
 
 __all__ = (
     'PartialInviteChannel',
@@ -269,6 +270,20 @@ class Invite(Hashable):
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
+    target_type: Optional[:class:`InviteTarget`]
+        The type of target for the voice channel invite.
+        
+        .. versionadded:: 2.0
+    
+    target_user: Optional[:class:`Snowflake`]
+        the user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. the user must be streaming in the channel.
+
+        .. versionadded:: 2.0
+
+    target_application_id: Optional[:class:`int`]
+        The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -285,11 +300,16 @@ class Invite(Hashable):
         '_state',
         'approximate_member_count',
         'approximate_presence_count',
+        'target_type',
+        'target_user',
+        'target_application_id',
     )
 
     BASE = 'https://discord.gg'
 
     def __init__(self, *, state, data: InvitePayload):
+        from .user import User
+
         self._state = state
         self.max_age = data.get('max_age')
         self.code = data['code']
@@ -305,6 +325,15 @@ class Invite(Hashable):
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)
         self.channel = data.get('channel')
+
+        target_type = data.get('target_type')
+        self.target_type = try_enum(InviteTarget, target_type) if target_type else None
+
+        target_user = data.get('target')
+        self.target_user = User(data=target_user, state=state) if target_user else None
+
+        application = data.get("target_application")
+        self.target_application = AppInfo(data=application, state=state) if application else None
 
     @classmethod
     def from_incomplete(cls, *, state, data):

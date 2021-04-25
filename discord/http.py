@@ -973,6 +973,21 @@ class HTTPClient:
             'unique': options.get('unique', True),
         }
 
+        target_type = options.get("target_type")
+
+        if target_type:
+            payload['target_type'] = target_type.value 
+
+        target_user = options.get('target_user')
+
+        if target_type:
+            payload['target_user_id'] = target_user.id
+
+        target_application = options.get('target_application_id')
+
+        if target_application:
+            payload['target_application_id'] = str(target_application)
+
         return self.request(r, reason=reason, json=payload)
 
     def get_invite(self, invite_id, *, with_counts=True):
