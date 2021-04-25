@@ -925,6 +925,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.utcnow
 
+.. autofunction:: discord.utils.as_chunks
+
 .. _discord-api-enums:
 
 Enumerations
