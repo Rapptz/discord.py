@@ -910,7 +910,7 @@ class GuildChannel(Protocol):
             
             .. versionadded:: 2.0
         
-        target_user: Optional[:class:`Snowflake`]
+        target_user: Optional[:class:`User`]
             the user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. the user must be streaming in the channel.
 
             .. versionadded:: 2.0
