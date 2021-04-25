@@ -31,6 +31,7 @@ from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
 from .mixins import Hashable
+from .asset import Asset
 
 __all__ = (
     'AuditLogDiff',
@@ -102,11 +103,31 @@ def _transform_overwrites(entry, data):
 
     return overwrites
 
+def _transform_channeltype(entry, data):
+    return enums.try_enum(enums.ChannelType, data)
+
 def _transform_voiceregion(entry, data):
     return enums.try_enum(enums.VoiceRegion, data)
 
 def _transform_video_quality_mode(entry, data):
     return enums.try_enum(enums.VideoQualityMode, data)
+
+def _transform_icon(entry, data):
+    if data is None:
+        return None
+    return Asset._from_guild_icon(entry._state, entry.guild.id, data)
+
+def _transform_avatar(entry, data):
+    if data is None:
+        return None
+    return Asset._from_avatar(entry._state, entry.guild.id, data)
+
+def _guild_hash_transformer(path):
+    def _transform(entry, data):
+        if data is None:
+            return None
+        return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
+    return _transform
 
 class AuditLogDiff:
     def __len__(self):
@@ -135,14 +156,17 @@ class AuditLogChanges:
         'system_channel_id':             ('system_channel', _transform_channel),
         'widget_channel_id':             ('widget_channel', _transform_channel),
         'permission_overwrites':         ('overwrites', _transform_overwrites),
-        'splash_hash':                   ('splash', None),
-        'icon_hash':                     ('icon', None),
-        'avatar_hash':                   ('avatar', None),
+        'splash_hash':                   ('splash', _guild_hash_transformer('splashes')),
+        'banner_hash':                   ('banner', _guild_hash_transformer('banners')),
+        'discovery_splash_hash':         ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
+        'icon_hash':                     ('icon', _transform_icon),
+        'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
         'region':                        (None, _transform_voiceregion),
         'rtc_region':                    (None, _transform_voiceregion),
         'video_quality_mode':            (None, _transform_video_quality_mode),
+        'type':                          (None, _transform_channeltype),
     }
 
     def __init__(self, entry, data: List[AuditLogChangePayload]):
@@ -190,6 +214,9 @@ class AuditLogChanges:
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
             self.before.color = self.before.colour
+        if hasattr(self.after, 'expire_behavior'):
+            self.after.expire_behaviour = self.after.expire_behavior
+            self.before.expire_behaviour = self.before.expire_behavior
 
     def __repr__(self):
         return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
