@@ -120,7 +120,7 @@ def _transform_icon(entry, data):
 def _transform_avatar(entry, data):
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry.guild.id, data)
+    return Asset._from_avatar(entry._state, entry._target_id, data)
 
 def _guild_hash_transformer(path):
     def _transform(entry, data):
