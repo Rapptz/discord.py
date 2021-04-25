@@ -24,12 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, Union, List, Literal
+from typing import TYPE_CHECKING, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
-from .message import AllowedMentions
+from .components import ComponentType
 from .embed import Embed
 from .member import Member
 from .user import User
+
+if TYPE_CHECKING:
+    from .message import AllowedMentions, Message
 
 
 class _ApplicationCommandOptional(TypedDict, total=False):
@@ -84,12 +87,18 @@ class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOption
     name: str
 
 
+class ComponentInteractionData(TypedDict):
+    custom_id: str
+    component_type: ComponentType
+
+
 class _InteractionOptional(TypedDict, total=False):
-    data: ApplicationCommandInteractionData
+    data: Union[ApplicationCommandInteractionData, ComponentInteractionData]
     guild_id: Snowflake
     channel_id: Snowflake
     member: Member
     user: User
+    message: Message
 
 
 class Interaction(_InteractionOptional):

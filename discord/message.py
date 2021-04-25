@@ -33,6 +33,7 @@ from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, ClientException, HTTPException
+from .components import _component_factory
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -542,6 +543,10 @@ class Message(Hashable):
         A list of stickers given to the message.
 
         .. versionadded:: 1.6
+    components: List[:class:`Component`]
+        A list of components in the message.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
@@ -550,7 +555,7 @@ class Message(Hashable):
                  '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
-                 'application', 'activity', 'stickers')
+                 'application', 'activity', 'stickers', 'components')
 
     def __init__(self, *, state, channel, data):
         self._state = state
@@ -570,7 +575,8 @@ class Message(Hashable):
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
-        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
+        self.stickers = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.components = [_component_factory(d) for d in data.get('components', [])]
 
         try:
             ref = data['message_reference']
@@ -761,6 +767,9 @@ class Message(Hashable):
                 role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
+
+    def _handle_components(self, components):
+        self.components = [_component_factory(d) for d in components]
 
     def _rebind_channel_reference(self, new_channel):
         self.channel = new_channel
@@ -1038,6 +1047,11 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1095,9 +1109,23 @@ class Message(Hashable):
         else:
             fields['attachments'] = [a.to_dict() for a in attachments]
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
             self._update(data)
+
+        if view:
+            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)

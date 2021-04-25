@@ -43,7 +43,7 @@ from .template import *
 from .widget import *
 from .object import *
 from .reaction import *
-from . import utils, opus, abc
+from . import utils, opus, abc, ui
 from .enums import *
 from .embeds import *
 from .mentions import *
@@ -56,6 +56,7 @@ from .raw_models import *
 from .team import *
 from .sticker import *
 from .interactions import *
+from .components import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
