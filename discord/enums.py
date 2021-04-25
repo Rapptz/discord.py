@@ -428,6 +428,11 @@ class StickerType(Enum):
     apng = 2
     lottie = 3
 
+class InviteTarget(Enum):
+    unknown = 0
+    stream = 1
+    embedded_application = 2
+
 class InteractionType(Enum):
     ping = 1
     application_command = 2
@@ -438,11 +443,6 @@ class VideoQualityMode(Enum):
 
     def __int__(self):
         return self.value
-
-class InviteTarget(Enum):
-    unknown = 0
-    stream = 1
-    embedded_application = 2
 
 T = TypeVar('T')
 

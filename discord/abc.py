@@ -918,7 +918,7 @@ class GuildChannel(Protocol):
         target_application_id:: Optional[:class:`int`]
             The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
 
         Raises
         -------
