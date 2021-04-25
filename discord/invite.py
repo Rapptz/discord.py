@@ -310,8 +310,6 @@ class Invite(Hashable):
     BASE = 'https://discord.gg'
 
     def __init__(self, *, state, data: InvitePayload):
-        from .user import User
-
         self._state = state
         self.max_age = data.get('max_age')
         self.code = data['code']
@@ -331,7 +329,7 @@ class Invite(Hashable):
         self.target_type = try_enum(InviteTarget, data.get("target_type", 0))
 
         target_user = data.get('target_user')
-        self.target_user = User(data=target_user, state=state) if target_user else None
+        self.target_user = state.store_user(target_user) if target_user else None
 
         application = data.get("target_application")
         self.target_application = AppInfo(data=application, state=state) if application else None
