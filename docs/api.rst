@@ -1361,7 +1361,7 @@ of :class:`enum.Enum`.
         - Changing the guild invite splash
         - Changing the guild AFK channel or timeout
         - Changing the guild voice server region
-        - Changing the guild icon
+        - Changing the guild icon, banner, or discovery splash
         - Changing the guild moderation settings
         - Changing things related to the guild widget
 
@@ -1379,6 +1379,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.owner`
         - :attr:`~AuditLogDiff.splash`
+        - :attr:`~AuditLogDiff.discovery_splash`
+        - :attr:`~AuditLogDiff.icon`
+        - :attr:`~AuditLogDiff.banner`
         - :attr:`~AuditLogDiff.vanity_url_code`
 
     .. attribute:: channel_create
@@ -1710,6 +1713,7 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.avatar`
 
     .. attribute:: webhook_delete
 
@@ -2212,15 +2216,27 @@ AuditLogDiff
 
     .. attribute:: icon
 
-        A guild's icon hash. See also :attr:`Guild.icon`.
+        A guild's icon. See also :attr:`Guild.icon`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
 
     .. attribute:: splash
 
-        The guild's invite splash hash. See also :attr:`Guild.splash`.
+        The guild's invite splash. See also :attr:`Guild.splash`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
+
+    .. attribute:: discovery_splash
+
+        The guild's discovery splash. See also :attr:`Guild.discovery_splash`.
+
+        :type: :class:`Asset`
+
+    .. attribute:: banner
+
+        The guild's banner. See also :attr:`Guild.banner`.
+
+        :type: :class:`Asset`
 
     .. attribute:: owner
 
@@ -2506,11 +2522,11 @@ AuditLogDiff
 
     .. attribute:: avatar
 
-        The avatar hash of a member.
+        The avatar of a member.
 
         See also :attr:`User.avatar`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
 
     .. attribute:: slowmode_delay
 
