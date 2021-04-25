@@ -270,18 +270,18 @@ class Invite(Hashable):
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
-    target_type: Optional[:class:`InviteTarget`]
+    target_type: :class:`InviteTarget`
         The type of target for the voice channel invite.
         
         .. versionadded:: 2.0
     
     target_user: Optional[:class:`User`]
-        the user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. the user must be streaming in the channel.
+        the user whose stream to display for this invite, if any.
 
         .. versionadded:: 2.0
 
-    target_application_id: Optional[:class:`int`]
-        The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+    target_application: Optional[:class:`AppInfo`]
+        The embedded application for the invite, if any.
 
         .. versionadded:: 2.0
     """
@@ -302,8 +302,6 @@ class Invite(Hashable):
         '_state',
         'approximate_member_count',
         'approximate_presence_count',
-        'target_type',
-        'target_user',
         'target_application',
     )
 
