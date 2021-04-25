@@ -980,7 +980,7 @@ class HTTPClient:
 
         target_user = options.get('target_user')
 
-        if target_type:
+        if target_user:
             payload['target_user_id'] = target_user.id
 
         target_application = options.get('target_application_id')

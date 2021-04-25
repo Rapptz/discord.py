@@ -302,7 +302,7 @@ class Invite(Hashable):
         'approximate_presence_count',
         'target_type',
         'target_user',
-        'target_application_id',
+        'target_application',
     )
 
     BASE = 'https://discord.gg'
@@ -329,7 +329,7 @@ class Invite(Hashable):
         target_type = data.get('target_type')
         self.target_type = try_enum(InviteTarget, target_type) if target_type else None
 
-        target_user = data.get('target')
+        target_user = data.get('target_user')
         self.target_user = User(data=target_user, state=state) if target_user else None
 
         application = data.get("target_application")

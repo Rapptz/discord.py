@@ -142,7 +142,7 @@ class AppInfo:
         self.bot_require_code_grant = data.get('bot_require_code_grant')
 
         owner = data.get('owner')
-        self.owner = state.store_user(state=self._state, data=owner) if owner else None
+        self.owner = state.store_user(data=owner) if owner else None
          
         team = data.get('team')
         self.team = Team(state, team) if team else None
