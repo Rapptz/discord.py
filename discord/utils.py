@@ -768,6 +768,8 @@ def as_chunks(max_size: int, iterator: AsyncIterator[T]) -> AsyncIterator[List[T
 def as_chunks(max_size: int, iterator: _Iter[T]) -> _Iter[List[T]]:
     """A helper function that collects an iterator into chunks of a given size.
     
+    .. versionadded:: 2.0
+    
     Parameters
     ----------
     max_size: :class:`int`
