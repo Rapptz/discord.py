@@ -1119,20 +1119,6 @@ of :class:`enum.Enum`.
 
         Represents a slash command interaction.
 
-.. class:: HypeSquadHouse
-
-    Specifies the HypeSquad house a user belongs to.
-
-    .. attribute:: bravery
-
-        The "Bravery" house.
-    .. attribute:: brilliance
-
-        The "Brilliance" house.
-    .. attribute:: balance
-
-        The "Balance" house.
-
 .. class:: VoiceRegion
 
     Specifies the region a voice server belongs to.
