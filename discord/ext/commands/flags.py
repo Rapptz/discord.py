@@ -197,6 +197,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
         # List[str] -> (max_args=-1)
         # Tuple[int, ...] -> (max_args=1)
         # Dict[K, V] -> (max_args=-1, override=True)
+        # Union[str, int] -> (max_args=1)
         # Optional[str] -> (default=None, max_args=1)
 
         try:
@@ -206,11 +207,12 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
             if flag.max_args is MISSING:
                 flag.max_args = 1
         else:
-            if origin is Union and annotation.__args__[-1] is type(None):
-                # typing.Optional
+            if origin is Union:
+                # typing.Union
                 if flag.max_args is MISSING:
                     flag.max_args = 1
-                if flag.default is MISSING:
+                if annotation.__args__[-1] is type(None) and flag.default is MISSING:
+                    # typing.Optional
                     flag.default = None
             elif origin is tuple:
                 # typing.Tuple
@@ -421,10 +423,14 @@ async def convert_flag(ctx, argument: str, flag: Flag, annotation: Any = None) -
                 return await tuple_convert_all(ctx, argument, flag, annotation.__args__[0])
             else:
                 return await tuple_convert_flag(ctx, argument, flag, annotation.__args__)
-        elif origin is list or origin is Union and annotation.__args__[-1] is type(None):
-            # typing.List[x] or typing.Optional[x]
+        elif origin is list:
+            # typing.List[x]
             annotation = annotation.__args__[0]
             return await convert_flag(ctx, argument, flag, annotation)
+        elif origin is Union and annotation.__args__[-1] is type(None):
+            # typing.Optional[x]
+            annotation = Union[annotation.__args__[:-1]]
+            return await run_converters(ctx, annotation, argument, param)
         elif origin is dict:
             # typing.Dict[K, V] -> typing.Tuple[K, V]
             return await tuple_convert_flag(ctx, argument, flag, annotation.__args__)
