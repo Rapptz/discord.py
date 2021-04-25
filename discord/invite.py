@@ -281,7 +281,7 @@ class Invite(Hashable):
         .. versionadded:: 2.0
 
     target_application: Optional[:class:`AppInfo`]
-        The embedded application for the invite, if any.
+        The embedded application the invite targets, if any.
 
         .. versionadded:: 2.0
     """
