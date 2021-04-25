@@ -276,7 +276,7 @@ class Invite(Hashable):
         .. versionadded:: 2.0
     
     target_user: Optional[:class:`User`]
-        the user whose stream to display for this invite, if any.
+        The user whose stream to display for this invite, if any.
 
         .. versionadded:: 2.0
 

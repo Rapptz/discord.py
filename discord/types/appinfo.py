@@ -28,14 +28,15 @@ from typing import TypedDict, List
 
 from .user import User
 from .team import Team
+from .snowflake import Snowflake
 
 class _AppInfoOptional(TypedDict, total=False):
     owner: User
     team: Team
     bot_require_code_grant: bool
     bot_public: bool
-    guild_id: str
-    primary_sku_id: str
+    guild_id: Snowflake
+    primary_sku_id: Snowflake
     slug: str
     terms_of_service_url: str
     privacy_policy_url: str
@@ -43,7 +44,7 @@ class _AppInfoOptional(TypedDict, total=False):
     max_participants: int
 
 class AppInfo(_AppInfoOptional):
-    id: int
+    id: Snowflake
     name: str
     rpc_origins: List[str]
     verify_key: str

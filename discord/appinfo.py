@@ -52,7 +52,7 @@ class AppInfo:
         The application owner.
 
         .. versionchanged:: 2.0
-            it is now Optional[:class:`User`] rather than :class:`User`
+            This attribute is now optional.
 
     team: Optional[:class:`Team`]
         The application's team.
