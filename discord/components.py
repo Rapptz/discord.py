@@ -143,8 +143,12 @@ class Button(Component):
         }
         if self.custom_id:
             payload['custom_id'] = self.custom_id
+
         if self.url:
             payload['url'] = self.url
+
+        if self.emoji:
+            payload['emoji'] = self.emoji.to_dict()
 
         return payload  # type: ignore
 
