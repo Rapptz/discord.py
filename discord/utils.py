@@ -777,15 +777,15 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
     max_size: :class:`int`
         The maximum chunk size.
 
+
     .. warning::
-        
+
         The last chunk collected may not be as large as ``max_size``.
 
     Returns
     --------
     Union[:class:`Iterator`, :class:`AsyncIterator`]
         A new iterator which yields chunks of a given size.
-
     """
     if max_size <= 0:
         raise ValueError('Chunk sizes must be greater than 0.')
