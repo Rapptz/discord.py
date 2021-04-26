@@ -32,7 +32,7 @@ It looks something like this:
         if message.author == client.user:
             return
 
-        if message.content == ('Hello World!'):
+        if message.content == 'Hello World!':
             await message.channel.send('Hello!')
 
     client.run('your token here')
