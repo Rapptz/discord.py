@@ -32,7 +32,7 @@ It looks something like this:
         if message.author == client.user:
             return
 
-        if message.content.startswith('$hello'):
+        if message.content == ('Hello World!'):
             await message.channel.send('Hello!')
 
     client.run('your token here')
@@ -54,8 +54,9 @@ There's a lot going on here, so let's walk you through it step by step.
 4. Since the :func:`on_message` event triggers for *every* message received, we have to make
    sure that we ignore messages from ourselves. We do this by checking if the :attr:`Message.author`
    is the same as the :attr:`Client.user`.
-5. Afterwards, we check if the :class:`Message.content` starts with ``'$hello'``. If it is,
-   then we send a message in the channel it was used in with ``'Hello!'``.
+5. Afterwards, we check if the :class:`Message.content` is ``'Hello World!'``. If it is,
+   then we send a message in the channel it was used in with ``'Hello!'``. This is a basic way of 
+   handling commands, which can be later automated with the 'ext.commands'_ framework.
 6. Finally, we run the bot with our login token. If you need help getting your token or creating a bot,
    look in the :ref:`discord-intro` section.
 
@@ -76,3 +77,4 @@ On other systems:
     $ python3 example_bot.py
 
 Now you can try playing around with your basic bot.
+.. _ext.commands: https://discordpy.readthedocs.io/en/stable/ext/commands/commands.html
