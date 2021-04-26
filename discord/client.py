@@ -1257,7 +1257,7 @@ class Client:
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`Intents.members`, consider :meth:`get_user` instead.
 
         Parameters
         -----------
