@@ -55,6 +55,7 @@ class Colour:
              Returns the hex format for the colour.
              
         .. describe:: int(x)
+
              Returns the raw color value.
 
     Attributes
