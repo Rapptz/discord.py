@@ -756,27 +756,26 @@ async def _achunk(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[Li
 
 
 @overload
-def as_chunks(max_size: int, iterator: Iterator[T]) -> Iterator[List[T]]:
+def as_chunks(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
     ...
 
 
 @overload
-def as_chunks(max_size: int, iterator: AsyncIterator[T]) -> AsyncIterator[List[T]]:
+def as_chunks(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
     ...
 
 
-def as_chunks(max_size: int, iterator: _Iter[T]) -> _Iter[List[T]]:
+def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
     """A helper function that collects an iterator into chunks of a given size.
     
     .. versionadded:: 2.0
     
     Parameters
     ----------
-    max_size: :class:`int`
-        The maximum chunk size.
     iterator: Union[:class:`collections.abc.Iterator`, :class:`collections.abc.AsyncIterator`]
         The iterator to chunk, can be sync or async.
-
+    max_size: :class:`int`
+        The maximum chunk size.
 
     .. warning::
         
