@@ -28,6 +28,7 @@ import asyncio
 import collections.abc
 from typing import (
     Any,
+    AsyncIterator,
     Callable,
     Dict,
     Generic,
@@ -67,6 +68,7 @@ __all__ = (
     'remove_markdown',
     'escape_markdown',
     'escape_mentions',
+    'as_chunks',
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -103,6 +105,7 @@ else:
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
+_Iter = Union[Iterator[T], AsyncIterator[T]]
 CSP = TypeVar('CSP', bound='CachedSlotProperty')
 
 
@@ -723,3 +726,70 @@ def escape_mentions(text: str) -> str:
         The text with the mentions removed.
     """
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
+
+
+def _chunk(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+    ret = []
+    n = 0
+    for item in iterator:
+        ret.append(item)
+        n += 1
+        if n == max_size:
+            yield ret
+            ret = []
+            n = 0
+    if ret:
+        yield ret
+
+async def _achunk(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+    ret = []
+    n = 0
+    async for item in iterator:
+        ret.append(item)
+        n += 1
+        if n == max_size:
+            yield ret
+            ret = []
+            n = 0
+    if ret:
+        yield ret
+
+
+@overload
+def as_chunks(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+    ...
+
+
+@overload
+def as_chunks(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+    ...
+
+
+def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
+    """A helper function that collects an iterator into chunks of a given size.
+    
+    .. versionadded:: 2.0
+    
+    Parameters
+    ----------
+    iterator: Union[:class:`collections.abc.Iterator`, :class:`collections.abc.AsyncIterator`]
+        The iterator to chunk, can be sync or async.
+    max_size: :class:`int`
+        The maximum chunk size.
+
+
+    .. warning::
+
+        The last chunk collected may not be as large as ``max_size``.
+
+    Returns
+    --------
+    Union[:class:`Iterator`, :class:`AsyncIterator`]
+        A new iterator which yields chunks of a given size.
+    """
+    if max_size <= 0:
+        raise ValueError('Chunk sizes must be greater than 0.')
+
+    if isinstance(iterator, AsyncIterator):
+        return _achunk(iterator, max_size)
+    return _chunk(iterator, max_size)
