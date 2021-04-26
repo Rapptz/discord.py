@@ -31,7 +31,7 @@ import asyncio
 import sys
 import time
 import os
-from .item import Item
+from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..components import (
     Component,
@@ -95,13 +95,13 @@ class View:
     __discord_ui_view__: ClassVar[bool] = True
 
     if TYPE_CHECKING:
-        __view_children_items__: ClassVar[List[Item]]
+        __view_children_items__: ClassVar[List[ItemCallbackType]]
 
     def __init_subclass__(cls) -> None:
-        children: List[Item] = []
+        children: List[ItemCallbackType] = []
         for base in reversed(cls.__mro__):
             for member in base.__dict__.values():
-                if isinstance(member, Item):
+                if hasattr(member, '__discord_ui_model_type__'):
                     children.append(member)
 
         if len(children) > 25:
@@ -111,7 +111,13 @@ class View:
 
     def __init__(self, timeout: Optional[float] = 180.0):
         self.timeout = timeout
-        self.children: List[Item] = [i.copy() for i in self.__view_children_items__]
+        self.children: List[Item] = []
+        for func in self.__view_children_items__:
+            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
+            item.callback = partial(func, self, item)
+            item._view = self
+            self.children.append(item)
+
         self.id = os.urandom(16).hex()
         self._cancel_callback: Optional[Callable[[View], None]] = None
 
@@ -171,11 +177,12 @@ class View:
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__!r}')
 
+        item._view = self
         self.children.append(item)
 
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
         await state.http.create_interaction_response(interaction.id, interaction.token, type=6)
-        await item._do_call(self, interaction)
+        await item.callback(interaction)
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
         asyncio.create_task(self._scheduled_task(state, item, interaction), name=f'discord-ui-view-dispatch-{self.id}')

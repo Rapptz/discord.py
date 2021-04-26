@@ -24,8 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Coroutine, Dict, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
-import inspect
+from typing import Any, Callable, Coroutine, Dict, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
 
@@ -50,23 +49,13 @@ class Item:
     - :class:`discord.ui.Button`
     """
 
-    __slots__: Tuple[str, ...] = (
-        '_callback',
-        '_pass_view_arg',
-        'group_id',
-    )
-
     __item_repr_attributes__: Tuple[str, ...] = ('group_id',)
 
     def __init__(self):
-        self._callback: Optional[ItemCallbackType] = None
-        self._pass_view_arg = True
+        self._view: Optional[View] = None
         self.group_id: Optional[int] = None
 
     def to_component_dict(self) -> Dict[str, Any]:
-        raise NotImplementedError
-
-    def copy(self: I) -> I:
         raise NotImplementedError
 
     def refresh_state(self, component: Component) -> None:
@@ -88,53 +77,20 @@ class Item:
         return f'<{self.__class__.__name__} {attrs}>'
 
     @property
-    def callback(self) -> Optional[ItemCallbackType]:
-        """Returns the underlying callback associated with this interaction."""
-        return self._callback
+    def view(self) -> Optional[View]:
+        """Optional[:class:`View`]: The underlying view for this item."""
+        return self._view
 
-    @callback.setter
-    def callback(self, value: Optional[ItemCallbackType]):
-        if value is None:
-            self._callback = None
-            return
+    async def callback(self, interaction: Interaction):
+        """|coro|
 
-        # Check if it's a partial function
-        try:
-            partial = value.func
-        except AttributeError:
-            pass
-        else:
-            if not inspect.iscoroutinefunction(value.func):
-                raise TypeError(f'inner partial function must be a coroutine')
+        The callback associated with this UI item.
 
-            # Check if the partial is bound
-            try:
-                bound_partial = partial.__self__
-            except AttributeError:
-                pass
-            else:
-                self._pass_view_arg = not hasattr(bound_partial, '__discord_ui_view__')
+        This can be overriden by subclasses.
 
-            self._callback = value
-            return
-
-        try:
-            func_self = value.__self__
-        except AttributeError:
-            pass
-        else:
-            if not isinstance(func_self, Item):
-                raise TypeError(f'callback bound method must be from Item not {func_self!r}')
-            else:
-                value = value.__func__
-
-        if not inspect.iscoroutinefunction(value):
-            raise TypeError(f'callback must be a coroutine not {value!r}')
-
-        self._callback = value
-
-    async def _do_call(self, view: View, interaction: Interaction):
-        if self._pass_view_arg:
-            await self._callback(view, self, interaction)
-        else:
-            await self._callback(self, interaction)  # type: ignore
+        Parameters
+        -----------
+        interaction: :class:`Interaction`
+            The interaction that triggered this UI item.
+        """
+        pass

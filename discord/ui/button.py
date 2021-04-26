@@ -87,8 +87,6 @@ class Button(Item):
         The emoji of the button, if available.
     """
 
-    __slots__: Tuple[str, ...] = Item.__slots__ + ('_underlying',)
-
     __item_repr_attributes__: Tuple[str, ...] = (
         'style',
         'url',
@@ -192,19 +190,6 @@ class Button(Item):
         else:
             self._underlying.emoji = None
 
-    def copy(self: B) -> B:
-        button = self.__class__(
-            style=self.style,
-            label=self.label,
-            disabled=self.disabled,
-            custom_id=self.custom_id,
-            url=self.url,
-            emoji=self.emoji,
-            group=self.group_id,
-        )
-        button.callback = self.callback
-        return button
-
     @classmethod
     def from_component(cls: Type[B], button: ButtonComponent) -> B:
         return cls(
@@ -239,7 +224,7 @@ def button(
     style: ButtonStyle = ButtonStyle.grey,
     emoji: Optional[Union[str, PartialEmoji]] = None,
     group: Optional[int] = None,
-) -> Callable[[ItemCallbackType], Button]:
+) -> Callable[[ItemCallbackType], ItemCallbackType]:
     """A decorator that attaches a button to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -275,14 +260,22 @@ def button(
         ordering.
     """
 
-    def decorator(func: ItemCallbackType) -> Button:
+    def decorator(func: ItemCallbackType) -> ItemCallbackType:
         nonlocal custom_id
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
         custom_id = custom_id or os.urandom(32).hex()
-        button = Button(style=style, custom_id=custom_id, url=None, disabled=disabled, label=label, emoji=emoji, group=group)
-        button.callback = func
-        return button
+        func.__discord_ui_model_type__ = Button
+        func.__discord_ui_model_kwargs__ = {
+            'style': style,
+            'custom_id': custom_id,
+            'url': None,
+            'disabled': disabled,
+            'label': label,
+            'emoji': emoji,
+            'group': group,
+        }
+        return func
 
     return decorator
