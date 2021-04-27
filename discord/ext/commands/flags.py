@@ -32,7 +32,7 @@ from .errors import (
     MissingRequiredFlag,
 )
 
-from .core import resolve_annotation
+from discord.utils import resolve_annotation
 from .view import StringView
 from .converter import run_converters
 
