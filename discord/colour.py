@@ -56,7 +56,7 @@ class Colour:
              
         .. describe:: int(x)
 
-             Returns the raw color value.
+             Returns the raw colour value.
 
     Attributes
     ------------
