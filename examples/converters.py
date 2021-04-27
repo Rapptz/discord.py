@@ -28,7 +28,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
     # and can do the following:
     user_id = user.id
     username = user.name
-    avatar = user.avatar_url
+    avatar = user.avatar.url
     await ctx.send(f'User found: {user_id} -- {username}\n{avatar}')
 
 @userinfo.error
