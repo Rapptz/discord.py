@@ -866,7 +866,7 @@ def evaluate_annotation(
         evaluated_args = tuple(evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args)
 
         if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
-            raise TypeError('Literal arguments must be of type str, int, bool, float or complex.')
+            raise TypeError('Literal arguments must be of type str, int, or bool.')
 
         if evaluated_args == args:
             return tp
