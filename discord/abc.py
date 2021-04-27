@@ -1070,7 +1070,7 @@ class Messageable(Protocol):
         else:
             if isinstance(content, DiscordEmbed):
                 embed = content.to_dict()
-                content = None
+            content = None
 
         if allowed_mentions is not None:
             if state.allowed_mentions is not None:
