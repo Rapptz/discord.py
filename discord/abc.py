@@ -30,6 +30,7 @@ import asyncio
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
+from .embeds import DiscordEmbed
 from .context_managers import Typing
 from .enums import ChannelType, VideoQualityMode
 from .errors import InvalidArgument, ClientException
@@ -1002,8 +1003,8 @@ class Messageable(Protocol):
 
         Parameters
         ------------
-        content: :class:`str`
-            The content of the message to send.
+        content: Union[:class:`str`, :class:`~discord.Embed`]
+            The content of the message to send. If it is an instance of :class:`discord.Embed`, it will auto-detect and use it as embed.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`~discord.Embed`
@@ -1062,9 +1063,14 @@ class Messageable(Protocol):
 
         channel = await self._get_channel()
         state = self._state
-        content = str(content) if content is not None else None
+        
         if embed is not None:
             embed = embed.to_dict()
+            content = str(content) if content is not None else None
+        else:
+            if isinstance(content, DiscordEmbed):
+                embed = content.to_dict()
+                content = None
 
         if allowed_mentions is not None:
             if state.allowed_mentions is not None:
