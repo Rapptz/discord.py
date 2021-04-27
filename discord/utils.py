@@ -79,6 +79,14 @@ __all__ = (
 DISCORD_EPOCH = 1420070400000
 
 
+class _MissingSentinel:
+    def __repr__(self):
+        return 'MISSING'
+
+
+MISSING: Any = _MissingSentinel()
+
+
 class _cached_property:
     def __init__(self, function):
         self.function = function
