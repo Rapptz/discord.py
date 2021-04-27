@@ -58,8 +58,8 @@ __all__ = (
     'BotMissingRole',
     'MissingAnyRole',
     'BotMissingAnyRole',
-    'MissingPermissions',
-    'BotMissingPermissions',
+    'PermissionCheckFailed',
+    'BotPermissionCheckFailed',
     'NSFWChannelRequired',
     'ConversionError',
     'BadUnionArgument',
@@ -598,7 +598,7 @@ class NSFWChannelRequired(CheckFailure):
         self.channel = channel
         super().__init__(f"Channel '{channel}' needs to be NSFW for this command to work.")
 
-class MissingPermissions(CheckFailure):
+class PermissionCheckFailed(CheckFailure):
     """Exception raised when the command invoker lacks permissions to run a
     command.
 
@@ -608,20 +608,41 @@ class MissingPermissions(CheckFailure):
     -----------
     missing_perms: :class:`list`
         The required permissions that are missing.
+    needless_perms: :class:`list`
+        The required permissions that are needless.
+
+        .. versionadded:: 2.0
     """
-    def __init__(self, missing_perms, *args):
+    def __init__(self, missing_perms, needless_perms, *args):
         self.missing_perms = missing_perms
+        self.needless_perms = needless_perms
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        needless = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in needless_perms]
+        perm_txt = ""
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = f'You are missing {fmt} permission(s) to run this command.'
+        
+        if missing:
+            perm_txt += f"are missing {fmt} permission(s)"
+
+        if len(needless) > 2:
+            fmt = '{}, and {}'.format(", ".join(needless[:-1]), needless[-1])
+        else:
+            fmt = ' and '.join(needless)
+
+        if needless:
+            if missing:
+                perm_txt += ", and you "
+            perm_txt += f"shouldn't have {fmt} permission(s)"
+
+        message = f'You {perm_txt} to run this command.'
         super().__init__(message, *args)
 
-class BotMissingPermissions(CheckFailure):
+class BotPermissionCheckFailed(CheckFailure):
     """Exception raised when the bot's member lacks permissions to run a
     command.
 
@@ -631,17 +652,38 @@ class BotMissingPermissions(CheckFailure):
     -----------
     missing_perms: :class:`list`
         The required permissions that are missing.
+    needless_perms: :class:`list`
+        The required permissions that are needless.
+
+        .. versionadded:: 2.0
     """
-    def __init__(self, missing_perms, *args):
+    def __init__(self, missing_perms, needless_perms, *args):
         self.missing_perms = missing_perms
+        self.needless_perms = needless_perms
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        needless = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in needless_perms]
+        perm_txt = ""
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
-        message = f'Bot requires {fmt} permission(s) to run this command.'
+        
+        if missing:
+            perm_txt += f"requires {fmt} permission(s)"
+
+        if len(needless) > 2:
+            fmt = '{}, and {}'.format(", ".join(needless[:-1]), needless[-1])
+        else:
+            fmt = ' and '.join(needless)
+
+        if needless:
+            if missing:
+                perm_txt += ", and bot "
+            perm_txt += f"shouldn't have {fmt} permission(s)"
+
+        message = f'Bot {perm_txt} to run this command.'
         super().__init__(message, *args)
 
 class BadUnionArgument(UserInputError):

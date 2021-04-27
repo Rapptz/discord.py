@@ -1723,12 +1723,15 @@ def has_permissions(**perms):
         ch = ctx.channel
         permissions = ch.permissions_for(ctx.author)
 
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        failed_perms = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
-        if not missing:
+        if not failed_perms:
             return True
 
-        raise MissingPermissions(missing)
+        missing = list(filter(lambda perm: getattr(permissions, perm) is not True, failed_perms))
+        needless = list(filter(lambda perm: getattr(permissions, perm) is not False, failed_perms))
+
+        raise PermissionCheckFailed(missing, needless)
 
     return check(predicate)
 
@@ -1749,12 +1752,15 @@ def bot_has_permissions(**perms):
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)
 
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        failed_perms = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
-        if not missing:
+        if not failed_perms:
             return True
 
-        raise BotMissingPermissions(missing)
+        missing = list(filter(lambda perm: getattr(permissions, perm) is not True, failed_perms))
+        needless = list(filter(lambda perm: getattr(permissions, perm) is not False, failed_perms))
+
+        raise BotPermissionCheckFailed(missing, needless)
 
     return check(predicate)
 
