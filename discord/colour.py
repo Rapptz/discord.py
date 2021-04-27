@@ -53,6 +53,10 @@ class Colour:
         .. describe:: str(x)
 
              Returns the hex format for the colour.
+             
+        .. describe:: int(x)
+
+             Returns the raw color value.
 
     Attributes
     ------------
@@ -79,6 +83,9 @@ class Colour:
 
     def __str__(self):
         return f'#{self.value:0>6x}'
+    
+    def __int__(self):
+        return self.value
 
     def __repr__(self):
         return f'<Colour value={self.value}>'
