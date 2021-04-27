@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Coroutine, Dict, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
 
@@ -38,10 +38,11 @@ if TYPE_CHECKING:
     from ..components import Component
 
 I = TypeVar('I', bound='Item')
+V = TypeVar('V', bound='View', covariant=True)
 ItemCallbackType = Callable[[Any, I, Interaction], Coroutine[Any, Any, Any]]
 
 
-class Item:
+class Item(Generic[V]):
     """Represents the base UI item that all UI components inherit from.
 
     The current UI items supported are:
@@ -52,7 +53,7 @@ class Item:
     __item_repr_attributes__: Tuple[str, ...] = ('group_id',)
 
     def __init__(self):
-        self._view: Optional[View] = None
+        self._view: Optional[V] = None
         self.group_id: Optional[int] = None
 
     def to_component_dict(self) -> Dict[str, Any]:
@@ -77,7 +78,7 @@ class Item:
         return f'<{self.__class__.__name__} {attrs}>'
 
     @property
-    def view(self) -> Optional[View]:
+    def view(self) -> Optional[V]:
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 

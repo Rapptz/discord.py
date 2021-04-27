@@ -41,7 +41,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from ..components import Component
+    from .view import View
 
 _custom_emoji = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
 
@@ -63,9 +63,10 @@ def _to_partial_emoji(obj: Union[str, PartialEmoji], *, _custom_emoji=_custom_em
 
 
 B = TypeVar('B', bound='Button')
+V = TypeVar('V', bound='View', covariant=True)
 
 
-class Button(Item):
+class Button(Item[V]):
     """Represents a UI button.
 
     .. versionadded:: 2.0
