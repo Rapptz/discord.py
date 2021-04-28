@@ -115,6 +115,9 @@ class Button(Item[V]):
         if url is None and custom_id is None:
             custom_id = os.urandom(16).hex()
 
+        if url is not None:
+            style = ButtonStyle.link
+
         self._underlying = ButtonComponent._raw_construct(
             type=ComponentType.button,
             custom_id=custom_id,
