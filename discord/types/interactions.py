@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Dict, TypedDict, Union, List, Literal
-from .snowflake import Snowflake, SnowflakeList
+from .snowflake import Snowflake
 from .message import AllowedMentions
 from .channel import PartialChannel
 from .embed import Embed
@@ -50,7 +50,7 @@ class _ApplicationCommandOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
 
 
-ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8]
+ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 class ApplicationCommandOption(_ApplicationCommandOptionOptional):
