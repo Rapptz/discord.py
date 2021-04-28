@@ -55,7 +55,14 @@ if TYPE_CHECKING:
     from .user import ClientUser
     from .asset import Asset
 
-MISSING = utils.MISSING
+
+class _Undefined:
+    def __repr__(self):
+        return 'see-below'
+
+
+_undefined = _Undefined()
+
 
 @runtime_checkable
 class Snowflake(Protocol):
@@ -230,20 +237,20 @@ class GuildChannel(Protocol):
         payload = []
         for index, c in enumerate(channels):
             d = {'id': c.id, 'position': index}
-            if parent_id is not MISSING and c.id == self.id:
+            if parent_id is not _undefined and c.id == self.id:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)
 
         await http.bulk_channel_update(self.guild.id, payload, reason=reason)
         self.position = position
-        if parent_id is not MISSING:
+        if parent_id is not _undefined:
             self.category_id = int(parent_id) if parent_id else None
 
     async def _edit(self, options, reason):
         try:
             parent = options.pop('category')
         except KeyError:
-            parent_id = MISSING
+            parent_id = _undefined
         else:
             parent_id = parent and parent.id
 
@@ -271,7 +278,7 @@ class GuildChannel(Protocol):
         try:
             position = options.pop('position')
         except KeyError:
-            if parent_id is not MISSING:
+            if parent_id is not _undefined:
                 if lock_permissions:
                     category = self.guild.get_channel(parent_id)
                     options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
@@ -610,7 +617,7 @@ class GuildChannel(Protocol):
         """
         await self._state.http.delete_channel(self.id, reason=reason)
 
-    async def set_permissions(self, target, *, overwrite=MISSING, reason=None, **permissions):
+    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -684,7 +691,7 @@ class GuildChannel(Protocol):
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 
-        if overwrite is MISSING:
+        if overwrite is _undefined:
             if len(permissions) == 0:
                 raise InvalidArgument('No overwrite provided.')
             try:
