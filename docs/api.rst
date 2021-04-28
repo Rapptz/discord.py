@@ -1194,9 +1194,10 @@ of :class:`enum.Enum`.
     .. attribute:: deferred_channel_message
 
         Responds to a slash command with a message at a later time.
-    .. attribute:: ack
+    .. attribute:: deferred_message_update
 
-        Acknowledges the component interaction.
+        Acknowledges the component interaction with a promise that
+        the message will update later (though there is no need to actually update the message).
 
 .. class:: ComponentType
 
@@ -1204,9 +1205,9 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.0
 
-    .. attribute:: group
+    .. attribute:: action_row
 
-        Represents the group component which holds different components.
+        Represents the group component which holds different components in a row.
     .. attribute:: button
 
         Represents a button component.
@@ -1217,21 +1218,21 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.0
 
-    .. attribute:: blurple::
+    .. attribute:: primary::
 
-        Represents a blurple button.
-    .. attribute:: grey::
+        Represents a blurple button for the primary action.
+    .. attribute:: secondary::
 
-        Represents a grey button.
-    .. attribute:: green::
+        Represents a grey button for the secondary action.
+    .. attribute:: success::
 
-        Represents a green button.
-    .. attribute:: red::
+        Represents a green button for a successful action.
+    .. attribute:: danger::
 
-        Represents a red button.
-    .. attribute:: hyperlink::
+        Represents a red button for a dangerous action.
+    .. attribute:: link::
 
-        Represents a hyperlink button.
+        Represents a link button.
 
 .. class:: VoiceRegion
 

@@ -445,7 +445,7 @@ class InteractionResponseType(Enum):
     # channel_message = 3 (deprecated)
     channel_message = 4  # (with source)
     deferred_channel_message = 5  # (with source)
-    ack = 6  # for components?
+    deferred_message_update = 6  # for components
 
 class VideoQualityMode(Enum):
     auto = 1
@@ -455,18 +455,18 @@ class VideoQualityMode(Enum):
         return self.value
 
 class ComponentType(Enum):
-    group = 1
+    action_row = 1
     button = 2
 
     def __int__(self):
         return self.value
 
 class ButtonStyle(Enum):
-    blurple = 1
-    grey = 2
-    green = 3
-    red = 4
-    hyperlink = 5
+    primary = 1
+    secondary = 2
+    success = 3
+    danger = 4
+    link = 5
 
     def __int__(self):
         return self.value

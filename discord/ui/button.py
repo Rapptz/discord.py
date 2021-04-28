@@ -222,7 +222,7 @@ def button(
     *,
     custom_id: Optional[str] = None,
     disabled: bool = False,
-    style: ButtonStyle = ButtonStyle.grey,
+    style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, PartialEmoji]] = None,
     group: Optional[int] = None,
 ) -> Callable[[ItemCallbackType], ItemCallbackType]:

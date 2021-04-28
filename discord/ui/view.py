@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
     for item in components:
-        if item.type is ComponentType.group:
+        if item.type is ComponentType.action_row:
             yield from item.children
         else:
             yield item
