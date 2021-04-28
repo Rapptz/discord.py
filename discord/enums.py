@@ -48,7 +48,6 @@ __all__ = (
     'StickerType',
     'InviteTarget',
     'VideoQualityMode',
-    'InviteTarget'
 )
 
 def _create_value_cls(name):

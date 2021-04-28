@@ -973,7 +973,7 @@ class HTTPClient:
             'unique': options.get('unique', True),
         }
 
-        target_type = options.get("target_type")
+        target_type = options.get('target_type')
 
         if target_type:
             payload['target_type'] = target_type.value 

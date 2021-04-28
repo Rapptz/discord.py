@@ -1954,9 +1954,9 @@ of :class:`enum.Enum`.
 
 .. class:: InviteTarget
 
-    Represents the invite type for voice channel invites
+    Represents the invite type for voice channel invites.
 
-    .. vesionadded:: 2.0
+    .. versionadded:: 2.0
 
     .. attribute:: unknown
 
