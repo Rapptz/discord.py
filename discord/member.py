@@ -23,10 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
+from discord.channel import VocalGuildChannel
 import inspect
 import itertools
 import sys
 from operator import attrgetter
+from typing import List, Literal, Optional, TYPE_CHECKING, overload
 
 import discord.abc
 
@@ -43,6 +45,9 @@ __all__ = (
     'VoiceState',
     'Member',
 )
+
+if TYPE_CHECKING:
+    from .channel import VocalGuildChannel
 
 class VoiceState:
     """Represents a Discord user's voice state.
@@ -517,6 +522,19 @@ class Member(discord.abc.Messageable, _BaseUser):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
 
+    @overload
+    async def ban(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        delete_message_days: Literal[1, 2, 3, 4, 5, 6, 7] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def ban(self) -> None:
+        ...
+
     async def ban(self, **kwargs):
         """|coro|
 
@@ -524,19 +542,37 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.guild.ban(self, **kwargs)
 
-    async def unban(self, *, reason=None):
+    async def unban(self, *, reason: Optional[str] = None):
         """|coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`.
         """
         await self.guild.unban(self, reason=reason)
 
-    async def kick(self, *, reason=None):
+    async def kick(self, *, reason: Optional[str] = None):
         """|coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`.
         """
         await self.guild.kick(self, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        nick: Optional[str] = None,
+        mute: bool = ...,
+        deafen: bool = ...,
+        suppress: bool = ...,
+        roles: Optional[List[discord.abc.Snowflake]] = ...,
+        voice_channel: Optional[VocalGuildChannel] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **fields):
         """|coro|
@@ -685,7 +721,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
-    async def move_to(self, channel, *, reason=None):
+    async def move_to(self, channel: VocalGuildChannel, *, reason: Optional[str] = None):
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
@@ -708,7 +744,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def add_roles(self, *roles, reason=None, atomic=True):
+    async def add_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str]=None, atomic: bool = True):
         r"""|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -747,7 +783,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
 
-    async def remove_roles(self, *roles, reason=None, atomic=True):
+    async def remove_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str]=None, atomic: bool=True):
         r"""|coro|
 
         Removes :class:`Role`\s from this member.

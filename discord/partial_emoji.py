@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 from .asset import Asset, AssetMixin
@@ -36,7 +37,7 @@ __all__ = (
 if TYPE_CHECKING:
     from .state import ConnectionState
     from datetime import datetime
-
+    from .types.message import PartialEmoji
 
 class _EmojiTag:
     __slots__ = ()
@@ -104,13 +105,13 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             name=data.get('name', ''),
         )
 
-    def to_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Any] = {'name': self.name}
+    def to_dict(self) -> PartialEmoji:
+        o = { 'name': self.name }
         if self.id:
-            o['id'] = self.id
+            o['id'] = self.id # type: ignore
         if self.animated:
-            o['animated'] = self.animated
-        return o
+            o['animated'] = self.animated # type: ignore
+        return o # type: ignore
 
     @classmethod
     def with_state(

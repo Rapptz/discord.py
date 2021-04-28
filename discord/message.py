@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar
+from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional
 
 from . import utils
 from .reaction import Reaction
@@ -398,7 +398,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True):
+    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6

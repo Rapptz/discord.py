@@ -22,11 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import time
 import asyncio
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 import discord.abc
-from .permissions import Permissions
+from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
 from . import utils
@@ -43,6 +46,12 @@ __all__ = (
     'GroupChannel',
     '_channel_factory',
 )
+
+if TYPE_CHECKING:
+    from .role import Role
+    from .member import Member
+    from .abc import Snowflake
+    from .message import Message
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -190,6 +199,27 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        topic: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        sync_permissions: bool = ...,
+        category: Optional[CategoryChannel] = ...,
+        slowmode_delay: int = ...,
+        type: ChannelType = ...,
+        overwrites: Dict[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
     async def edit(self, *, reason=None, **options):
         """|coro|
 
@@ -246,7 +276,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         await self._edit(options, reason=reason)
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self, *, name: str = None, reason: str = None) -> TextChannel:
         return await self._clone_impl({
             'topic': self.topic,
             'nsfw': self.nsfw,
@@ -302,7 +332,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         message_ids = [m.id for m in messages]
         await self._state.http.delete_messages(self.id, message_ids)
 
-    async def purge(self, *, limit=100, check=None, before=None, after=None, around=None, oldest_first=False, bulk=True):
+    async def purge(
+        self,
+        *,
+        limit: int = 100,
+        check: Callable[[Message], bool] = None,
+        before: Optional[discord.abc.SnowflakeTime] = None,
+        after: Optional[discord.abc.SnowflakeTime] = None,
+        around: Optional[discord.abc.SnowflakeTime] = None,
+        oldest_first: Optional[bool] = False,
+        bulk: bool = True,
+    ) -> List[Message]:
         """|coro|
 
         Purges a list of messages that meet the criteria given by the predicate
@@ -428,7 +468,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name, avatar=None, reason=None):
+    async def create_webhook(self, *, name: str, avatar: bytes = None, reason: str = None):
         """|coro|
 
         Creates a webhook for this channel.
@@ -468,7 +508,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
-    async def follow(self, *, destination, reason=None):
+    async def follow(self, *, destination: TextChannel, reason: Optional[str] = None):
         """
         Follows a channel using a webhook.
 
@@ -535,7 +575,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
+class _VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
                  '_state', 'position', '_overwrites', 'category_id',
                  'rtc_region', 'video_quality_mode')
@@ -609,7 +649,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
             base.value &= ~denied.value
         return base
 
-class VoiceChannel(VocalGuildChannel):
+class VoiceChannel(_VocalGuildChannel):
     """Represents a Discord guild voice channel.
 
     .. container:: operations
@@ -680,11 +720,32 @@ class VoiceChannel(VocalGuildChannel):
         return ChannelType.voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self, *, name: str = None, reason: str = None) -> VoiceChannel:
         return await self._clone_impl({
             'bitrate': self.bitrate,
             'user_limit': self.user_limit
         }, name=name, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        bitrate: int = ...,
+        user_limit: int = ...,
+        position: int = ...,
+        sync_permissions: int = ...,
+        category: Optional[CategoryChannel] = ...,
+        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        rtc_region: Optional[VoiceRegion] = ...,
+        video_quality_mode: VideoQualityMode = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -740,7 +801,7 @@ class VoiceChannel(VocalGuildChannel):
 
         await self._edit(options, reason=reason)
 
-class StageChannel(VocalGuildChannel):
+class StageChannel(_VocalGuildChannel):
     """Represents a Discord guild stage channel.
 
     .. versionadded:: 1.7
@@ -822,10 +883,30 @@ class StageChannel(VocalGuildChannel):
         return ChannelType.stage_voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self, *, name: str = None, reason: Optional[str] = None) -> StageChannel:
         return await self._clone_impl({
             'topic': self.topic,
         }, name=name, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        topic: Optional[str] = ...,
+        position: int = ...,
+        sync_permissions: int = ...,
+        category: Optional[CategoryChannel] = ...,
+        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        rtc_region: Optional[VoiceRegion] = ...,
+        video_quality_mode: VideoQualityMode = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -839,7 +920,7 @@ class StageChannel(VocalGuildChannel):
         ----------
         name: :class:`str`
             The new channel's name.
-        topic: :class:`str`
+        topic: Optional[:class:`str`]
             The new channel's topic.
         position: :class:`int`
             The new channel's position.
@@ -873,6 +954,11 @@ class StageChannel(VocalGuildChannel):
         """
 
         await self._edit(options, reason=reason)
+
+if TYPE_CHECKING:
+    VocalGuildChannel = Union[VoiceChannel, StageChannel]
+else:
+    VocalGuildChannel = _VocalGuildChannel
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord channel category.
@@ -948,10 +1034,26 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return self.nsfw or self.guild.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self, *, name: str = None, reason: Optional[str] = None) -> CategoryChannel:
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **options):
         """|coro|
@@ -1159,10 +1261,28 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         return self.nsfw or self.guild.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self, *, name: str = None, reason: Optional[str] = None):
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        sync_permissions: bool = ...,
+        category: Optional[CategoryChannel],
+        reason: Optional[str],
+        overwrites: Dict[Union[Role, Member], PermissionOverwrite]
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **options):
         """|coro|

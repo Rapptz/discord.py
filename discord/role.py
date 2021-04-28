@@ -22,6 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import Optional, Union, overload
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
@@ -305,6 +306,24 @@ class Role(Hashable):
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
         await http.move_role_position(self.guild.id, payload, reason=reason)
 
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        permissions: Permissions = ...,
+        colour: Union[Colour, int] = ...,
+        hoist: bool = ...,
+        mentionable: bool = ...,
+        position: int = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
     async def edit(self, *, reason=None, **fields):
         """|coro|
 
@@ -371,7 +390,7 @@ class Role(Hashable):
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         self._update(data)
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None):
         """|coro|
 
         Deletes the role.

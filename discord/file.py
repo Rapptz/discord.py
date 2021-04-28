@@ -27,6 +27,8 @@ from typing import Optional, TYPE_CHECKING, Union
 
 import os
 import io
+import os
+from typing import Optional, Union
 
 __all__ = (
     'File',

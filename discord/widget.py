@@ -22,6 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import Optional
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
 from .activity import create_activity
@@ -253,7 +254,7 @@ class Widget:
         """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
-    async def fetch_invite(self, *, with_counts=True):
+    async def fetch_invite(self, *, with_counts: bool = True) -> Optional[Invite]:
         """|coro|
 
         Retrieves an :class:`Invite` from a invite URL or ID.
