@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional
+from typing import TYPE_CHECKING, Union, List, Optional, Any
 
 from . import utils
 from .reaction import Reaction
@@ -52,17 +52,16 @@ if TYPE_CHECKING:
         Attachment as AttachmentPayload,
         MessageReference as MessageReferencePayload,
         MessageApplication as MessageApplicationPayload,
-        MessageActivity as MessageActivityPayload
+        MessageActivity as MessageActivityPayload,
+        Reaction as ReactionPayload,
     )
 
     from .types.member import Member as MemberPayload
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
-    from .types.reaction import Reaction as ReactionPayload
     from .abc import Snowflake
     from .abc import GuildChannel, PrivateChannel, Messageable
     from .state import ConnectionState
-    from .user import User
 
 __all__ = (
     'Attachment',
@@ -482,7 +481,7 @@ class Message(Hashable):
     type: :class:`MessageType`
         The type of message. In most cases this should not be checked, but it is helpful
         in cases where it might be a system message for :attr:`system_content`.
-    author: :class:`abc.User`
+    author: Union[:class:`Member`, :class:`abc.User`]
         A :class:`Member` that sent the message. If :attr:`channel` is a
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
@@ -573,8 +572,6 @@ class Message(Hashable):
                  'role_mentions', '_cs_raw_role_mentions', 'type', 'flags',
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
-
-    author: Union[Member, User]
 
     def __init__(self, *, state: ConnectionState, channel: Messageable, data: MessagePayload):
         self._state = state
@@ -1488,7 +1485,7 @@ class PartialMessage(Hashable):
         data = await self._state.http.get_message(self.channel.id, self.id)
         return self._state.create_message(channel=self.channel, data=data)
 
-    async def edit(self, **fields) -> Optional[Message]:
+    async def edit(self, **fields: Any) -> Optional[Message]:
         """|coro|
 
         Edits the message.
