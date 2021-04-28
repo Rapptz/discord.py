@@ -1375,7 +1375,7 @@ class Guild(Hashable):
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_member` instead.
+            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_member` instead.
 
         Parameters
         -----------
