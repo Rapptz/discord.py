@@ -24,14 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import sys
 import copy
 import asyncio
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .enums import ChannelType, VideoQualityMode
+from .enums import ChannelType
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -692,7 +691,7 @@ class GuildChannel(Protocol):
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 
-        if isinstance(overwrite, _Undefined):
+        if overwrite is _undefined:
             if len(permissions) == 0:
                 raise InvalidArgument('No overwrite provided.')
             try:

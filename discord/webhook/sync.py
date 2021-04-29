@@ -45,7 +45,7 @@ from ..message import Message
 from ..http import Route
 from ..object import Object
 
-from .async_ import BaseWebhook, handle_message_parameters, _WebhookState, MISSING
+from .async_ import BaseWebhook, handle_message_parameters, _WebhookState
 
 __all__ = (
     'SyncWebhook',
@@ -67,6 +67,8 @@ if TYPE_CHECKING:
         from requests import Session, Response
     except ModuleNotFoundError:
         pass
+
+MISSING = utils.MISSING
 
 
 class DeferredLock:
@@ -332,6 +334,7 @@ class WebhookAdapter:
     ):
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
+
 
 _context = threading.local()
 _context.adapter = WebhookAdapter()
