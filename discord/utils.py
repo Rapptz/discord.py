@@ -84,7 +84,7 @@ class _MissingSentinel:
         return False
 
     def __repr__(self):
-        return 'MISSING'
+        return '...'
 
 
 MISSING: Any = _MissingSentinel()
