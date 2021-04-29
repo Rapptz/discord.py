@@ -111,11 +111,7 @@ class Interaction:
         except KeyError:
             self.message = None
 
-        try:
-            self.user = User(state=self._state, data=data['user'])
-        except KeyError:
-            self.user = None
-
+        self.user: Optional[Union[User, Member]] = None
         # TODO: there's a potential data loss here
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
@@ -123,6 +119,12 @@ class Interaction:
                 self.user = Member(state=self._state, guild=guild, data=data['member'])
             except KeyError:
                 pass
+        else:
+            try:
+                self.user = User(state=self._state, data=data['user'])
+            except KeyError:
+                pass
+
 
     @property
     def guild(self) -> Optional[Guild]:
