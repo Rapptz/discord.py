@@ -509,7 +509,7 @@ class WebhookMessage(Message):
         """
 
         if delay is not None:
-            if self._state.parent._adapter.is_async():
+            if self._state._webhook._adapter.is_async():
                 return self._delete_delay_async(delay)
             else:
                 return self._delete_delay_sync(delay)
