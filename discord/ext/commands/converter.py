@@ -29,6 +29,7 @@ import inspect
 from typing import (
     Any,
     Dict,
+    Generic,
     Iterable,
     Literal,
     Optional,
@@ -994,6 +995,9 @@ async def run_converters(ctx: Context, converter, argument: str, param: inspect.
         The resulting conversion.
     """
     origin = getattr(converter, '__origin__', None)
+
+    if origin is not None and issubclass(converter, Generic):  # type: ignore
+        converter = origin
 
     if origin is Union:
         errors = []
