@@ -47,16 +47,12 @@ default_filters = {
 
 
 class Filters:
-    # TODO: Filter for max size per file, split into multiple files
+    # TODO: Filter for max size per file; audio can be split into multiple files
     def __init__(self, **kwargs):
         self.filtered_users = kwargs.get('users', default_filters['users'])
         self.seconds = kwargs.get('time', default_filters['time'])
         self.max_size = kwargs.get('max_size', default_filters['max_size'])
         self.finished = False
-
-        if self.seconds != 0:
-            thread = threading.Thread(target=self.wait_and_stop)
-            thread.start()
 
     @staticmethod
     def filter_decorator(func):  # Contains all filters
@@ -64,6 +60,11 @@ class Filters:
             if not self.filtered_users or user in self.filtered_users:
                 return func(self, data, user)
         return _filter
+
+    def init(self):
+        if self.seconds != 0:
+            thread = threading.Thread(target=self.wait_and_stop)
+            thread.start()
 
     def wait_and_stop(self):
         time.sleep(self.seconds)
@@ -144,10 +145,11 @@ class Sink(Filters):
         if filters is None:
             filters = default_filters
         self.filters = filters
+        Filters.__init__(self, **self.filters)
 
         encoding = encoding.lower()
 
-        # Would also like to add opus, but don't
+        # Would also like to add opus but don't
         # know how I would go about it.
         if encoding not in self.valid_encodings:
             raise ClientException("That's not a valid encoding type.")
@@ -159,7 +161,7 @@ class Sink(Filters):
 
     def init(self, vc):  # called under start_recording
         self.vc = vc
-        Filters.__init__(self, **self.filters)
+        super().init()
 
     @Filters.filter_decorator
     def write(self, data, user):
