@@ -111,7 +111,7 @@ class Interaction:
         except KeyError:
             self.message = None
 
-        self.user = None
+        self.user: Optional[Union[User, Member]] = None
         # TODO: there's a potential data loss here
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
