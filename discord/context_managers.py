@@ -61,7 +61,6 @@ class Typing:
         self.task.cancel()
 
     async def __aenter__(self):
-        self._channel = await self.messageable._get_channel()
         return self.__enter__()
 
     async def __aexit__(self, exc_type, exc, tb):
