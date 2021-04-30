@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Tuple, Union
 
 from . import utils
 from .enums import try_enum, InteractionType
@@ -77,7 +77,7 @@ class Interaction:
         for 15 minutes.
     """
 
-    __slots__ = (
+    __slots__: Tuple[str, ...] = (
         'id',
         'type',
         'guild_id',
@@ -112,6 +112,7 @@ class Interaction:
             self.message = None
 
         self.user: Optional[Union[User, Member]] = None
+
         # TODO: there's a potential data loss here
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
