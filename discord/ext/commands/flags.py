@@ -276,9 +276,6 @@ class FlagsMeta(type):
     ):
         attrs['__commands_is_flag__'] = True
 
-        if not prefix and not delimiter:
-            raise TypeError('Must have either a delimiter or a prefix set')
-
         try:
             global_ns = sys.modules[attrs['__module__']].__dict__
         except KeyError:
