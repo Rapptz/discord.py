@@ -181,8 +181,9 @@ class View:
         self.children.append(item)
 
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
-        await state.http.create_interaction_response(interaction.id, interaction.token, type=6)
         await item.callback(interaction)
+        if not interaction.response._responded:
+            await interaction.response.defer()
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
         asyncio.create_task(self._scheduled_task(state, item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
