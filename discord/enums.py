@@ -446,6 +446,7 @@ class InteractionResponseType(Enum):
     channel_message = 4  # (with source)
     deferred_channel_message = 5  # (with source)
     deferred_message_update = 6  # for components
+    message_update = 7 # for components
 
 class VideoQualityMode(Enum):
     auto = 1

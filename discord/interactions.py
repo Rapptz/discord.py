@@ -25,18 +25,21 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING, Tuple, Union
+from discord.types.interactions import InteractionResponse
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 
 from . import utils
-from .enums import try_enum, InteractionType
+from .enums import try_enum, InteractionType, InteractionResponseType
 
 from .user import User
 from .member import Member
-from .message import Message
+from .message import Message, Attachment
 from .object import Object
+from .webhook.async_ import async_context
 
 __all__ = (
     'Interaction',
+    'InteractionResponse',
 )
 
 if TYPE_CHECKING:
@@ -45,6 +48,12 @@ if TYPE_CHECKING:
     )
     from .guild import Guild
     from .abc import GuildChannel
+    from .state import ConnectionState
+    from aiohttp import ClientSession
+    from .embeds import Embed
+    from .ui.view import View
+
+MISSING: Any = utils.MISSING
 
 
 class Interaction:
@@ -89,10 +98,13 @@ class Interaction:
         'token',
         'version',
         '_state',
+        '_session',
+        '_cs_response',
     )
 
-    def __init__(self, *, data: InteractionPayload, state=None):
+    def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state = state
+        self._session: ClientSession = state.http._HTTPClient__session
         self._from_data(data)
 
     def _from_data(self, data: InteractionPayload):
@@ -126,7 +138,6 @@ class Interaction:
             except KeyError:
                 pass
 
-
     @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
@@ -141,3 +152,231 @@ class Interaction:
         """
         guild = self.guild
         return guild and guild.get_channel(self.channel_id)
+
+    @utils.cached_slot_property('_cs_response')
+    def response(self) -> InteractionResponse:
+        """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction."""
+        return InteractionResponse(self)
+
+
+class InteractionResponse:
+    """Represents a Discord interaction response.
+
+    This type can be accessed through :attr:`Interaction.response`.
+
+    .. versionadded:: 2.0
+    """
+
+    __slots__: Tuple[str, ...] = (
+        '_responded',
+        '_parent',
+    )
+
+    def __init__(self, parent: Interaction):
+        self._parent: Interaction = parent
+        self._responded: bool = False
+
+    async def defer(self, *, ephemeral: bool = False) -> None:
+        """|coro|
+
+        Defers the interaction response.
+
+        This is typically used when the interaction is acknowledged
+        and a secondary action will be done later.
+
+        Parameters
+        -----------
+        ephemeral: :class:`bool`
+            Indicates whether the deferred message will eventually be ephemeral.
+            This only applies for interactions of type :attr:`InteractionType.application_command`.
+
+        Raises
+        -------
+        HTTPException
+            Deferring the interaction failed.
+        """
+        if self._responded:
+            return
+
+        defer_type: int = 0
+        data: Optional[Dict[str, Any]] = None
+        parent = self._parent
+        if parent.type is InteractionType.component:
+            defer_type = InteractionResponseType.deferred_message_update.value
+        elif parent.type is InteractionType.application_command:
+            defer_type = InteractionResponseType.deferred_channel_message.value
+            if ephemeral:
+                data = {'flags': 64}
+
+        if defer_type:
+            adapter = async_context.get()
+            await adapter.create_interaction_response(
+                parent.id, parent.token, session=parent._session, type=defer_type, data=data
+            )
+            self._responded = True
+
+    async def pong(self) -> None:
+        """|coro|
+
+        Pongs the ping interaction.
+
+        This should rarely be used.
+
+        Raises
+        -------
+        HTTPException
+            Ponging the interaction failed.
+        """
+        if self._responded:
+            return
+
+        parent = self._parent
+        if parent.type is InteractionType.ping:
+            adapter = async_context.get()
+            await adapter.create_interaction_response(
+                parent.id, parent.token, session=parent._session, type=InteractionResponseType.pong.value
+            )
+            self._responded = True
+
+    async def send_message(
+        self,
+        content: Optional[Any] = None,
+        *,
+        embed: Embed = MISSING,
+        embeds: List[Embed] = MISSING,
+        tts: bool = False,
+        ephemeral: bool = False,
+    ) -> None:
+        """|coro|
+
+        Responds to this interaction by sending a message.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The content of the message to send.
+        embeds: List[:class:`Embed`]
+            A list of embeds to send with the content. Maximum of 10. This cannot
+            be mixed with the ``embed`` parameter.
+        embed: :class:`Embed`
+            The rich embed for the content to send. This cannot be mixed with
+            ``embeds`` parameter.
+        tts: :class:`bool`
+            Indicates if the message should be sent using text-to-speech.
+        ephemeral: :class:`bool`
+            Indicates if the message should only be visible to the user who started the interaction.
+
+        Raises
+        -------
+        HTTPException
+            Sending the message failed.
+        TypeError
+            You specified both ``embed`` and ``embeds``.
+        ValueError
+            The length of ``embeds`` was invalid.
+        """
+        if self._responded:
+            return
+
+        payload: Dict[str, Any] = {
+            'tts': tts,
+        }
+
+        if embed is not MISSING and embeds is not MISSING:
+            raise TypeError('cannot mix embed and embeds keyword arguments')
+
+        if embed is not MISSING:
+            embeds = [embed]
+
+        if embeds:
+            if len(embeds) > 10:
+                raise ValueError('embeds cannot exceed maximum of 10 elements')
+            payload['embeds'] = [e.to_dict() for e in embeds]
+
+        if content is not None:
+            payload['content'] = str(content)
+
+        if ephemeral:
+            payload['flags'] = 64
+
+        parent = self._parent
+        adapter = async_context.get()
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            type=InteractionResponseType.channel_message.value,
+            data=payload,
+        )
+        self._responded = True
+
+    async def edit_message(
+        self,
+        *,
+        content: Optional[Any] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: List[Attachment] = MISSING,
+        view: Optional[View] = MISSING,
+    ) -> None:
+        """|coro|
+
+        Responds to this interaction by editing the original message of
+        a component interaction.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The new content to replace the message with. ``None`` removes the content.
+        embed: Optional[:class:`Embed`]
+            The new embed to replace the embed with. ``None`` removes the embed.
+        attachments: List[:class:`Attachment`]
+            A list of attachments to keep in the message. If ``[]`` is passed
+            then all attachments are removed.
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        """
+        if self._responded:
+            return
+
+        parent = self._parent
+        if parent.type is not InteractionType.component:
+            return
+
+        # TODO: embeds: List[Embed]?
+        payload = {}
+        if content is not MISSING:
+            if content is None:
+                payload['content'] = None
+            else:
+                payload['content'] = str(content)
+
+        if embed is not MISSING:
+            if embed is None:
+                payload['embed'] = None
+            else:
+                payload['embed'] = embed.to_dict()
+
+        if attachments is not MISSING:
+            payload['attachments'] = [a.to_dict() for a in attachments]
+
+        if view is not MISSING:
+            if view is None:
+                payload['components'] = []
+            else:
+                payload['components'] = view.to_components()
+
+        adapter = async_context.get()
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            type=InteractionResponseType.message_update.value,
+            data=payload,
+        )
+        self._responded = True
