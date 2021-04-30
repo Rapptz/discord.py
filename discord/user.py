@@ -213,7 +213,7 @@ class ClientUser(BaseUser):
         .. versionadded:: 1.3
 
     verified: :class:`bool`
-        Specifies if the user is a verified account.
+        Specifies if the user's email is verified.
     locale: Optional[:class:`str`]
         The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
