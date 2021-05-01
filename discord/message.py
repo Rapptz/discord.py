@@ -576,8 +576,9 @@ class Message(Hashable):
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
 
-    _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
-    _CACHED_SLOTS: ClassVar[List[str]]
+    if TYPE_CHECKING:
+        _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
+        _CACHED_SLOTS: ClassVar[List[str]]
 
     def __init__(self, *, state: ConnectionState, channel: Union[TextChannel, DMChannel, GroupChannel], data: MessagePayload):
         self._state = state
@@ -1379,14 +1380,7 @@ class Message(Hashable):
 
         return data
 
-def implement_partial_methods(cls):
-    msg = Message
-    for name in cls._exported_names:
-        func = getattr(msg, name)
-        setattr(cls, name, func)
-    return cls
 
-@implement_partial_methods
 class PartialMessage(Hashable):
     """Represents a partial message to aid with working messages when only
     a message and channel ID are present.
@@ -1423,20 +1417,18 @@ class PartialMessage(Hashable):
 
     __slots__ = ('channel', 'id', '_cs_guild', '_state')
 
-    _exported_names = (
-        'jump_url',
-        'delete',
-        'publish',
-        'pin',
-        'unpin',
-        'add_reaction',
-        'remove_reaction',
-        'clear_reaction',
-        'clear_reactions',
-        'reply',
-        'to_reference',
-        'to_message_reference_dict',
-    )
+    jump_url: str = Message.jump_url  # type: ignore
+    delete = Message.delete
+    publish = Message.publish
+    pin = Message.pin
+    unpin = Message.unpin
+    add_reaction = Message.add_reaction
+    remove_reaction = Message.remove_reaction
+    clear_reaction = Message.clear_reaction
+    clear_reactions = Message.clear_reactions
+    reply = Message.reply
+    to_reference = Message.to_reference
+    to_message_reference_dict = Message.to_message_reference_dict
 
     def __init__(self, *, channel: Union[GuildChannel, PrivateChannel], id: int):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
