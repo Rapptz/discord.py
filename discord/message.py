@@ -74,6 +74,7 @@ __all__ = (
     'DeletedReferencedMessage',
 )
 
+
 def convert_emoji_reaction(emoji):
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
@@ -88,6 +89,7 @@ def convert_emoji_reaction(emoji):
         return emoji.strip('<>')
 
     raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
+
 
 class Attachment(Hashable):
     """Represents an attachment from Discord.
@@ -161,7 +163,13 @@ class Attachment(Hashable):
     def __str__(self) -> str:
         return self.url or ''
 
-    async def save(self, fp: Union[io.BufferedIOBase, PathLike], *, seek_begin: bool = True, use_cached: bool = False) -> int:
+    async def save(
+        self,
+        fp: Union[io.BufferedIOBase, PathLike],
+        *,
+        seek_begin: bool = True,
+        use_cached: bool = False,
+    ) -> int:
         """|coro|
 
         Saves this attachment into a file-like object.
@@ -299,6 +307,7 @@ class Attachment(Hashable):
             result['content_type'] = self.content_type
         return result
 
+
 class DeletedReferencedMessage:
     """A special sentinel type that denotes whether the
     resolved message referenced message had since been deleted.
@@ -309,7 +318,7 @@ class DeletedReferencedMessage:
     .. versionadded:: 1.6
     """
 
-    __slots__ = ('_parent')
+    __slots__ = ('_parent',)
 
     def __init__(self, parent: MessageReference):
         self._parent = parent
@@ -409,7 +418,12 @@ class MessageReference:
         :class:`MessageReference`
             A reference to the message.
         """
-        self = cls(message_id=message.id, channel_id=message.channel.id, guild_id=getattr(message.guild, 'id', None), fail_if_not_exists=fail_if_not_exists)
+        self = cls(
+            message_id=message.id,
+            channel_id=message.channel.id,
+            guild_id=getattr(message.guild, 'id', None),
+            fail_if_not_exists=fail_if_not_exists,
+        )
         self._state = message._state
         return self
 
@@ -441,6 +455,7 @@ class MessageReference:
 
     to_message_reference_dict = to_dict
 
+
 def flatten_handlers(cls):
     prefix = len('_handle_')
     handlers = [
@@ -452,10 +467,9 @@ def flatten_handlers(cls):
     # store _handle_member last
     handlers.append(('member', cls._handle_member))
     cls._HANDLERS = handlers
-    cls._CACHED_SLOTS = [
-        attr for attr in cls.__slots__ if attr.startswith('_cs_')
-    ]
+    cls._CACHED_SLOTS = [attr for attr in cls.__slots__ if attr.startswith('_cs_')]
     return cls
+
 
 @flatten_handlers
 class Message(Hashable):
@@ -568,19 +582,49 @@ class Message(Hashable):
         .. versionadded:: 1.6
     """
 
-    __slots__ = ('_edited_timestamp', 'tts', 'content', 'channel', 'webhook_id',
-                 'mention_everyone', 'embeds', 'id', 'mentions', 'author',
-                 '_cs_channel_mentions', '_cs_raw_mentions', 'attachments',
-                 '_cs_clean_content', '_cs_raw_channel_mentions', 'nonce', 'pinned',
-                 'role_mentions', '_cs_raw_role_mentions', 'type', 'flags',
-                 '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
-                 'application', 'activity', 'stickers')
+    __slots__ = (
+        '_state',
+        '_edited_timestamp',
+        '_cs_channel_mentions',
+        '_cs_raw_mentions',
+        '_cs_clean_content',
+        '_cs_raw_channel_mentions',
+        '_cs_raw_role_mentions',
+        '_cs_system_content',
+        '_cs_guild',
+        'tts',
+        'content',
+        'channel',
+        'webhook_id',
+        'mention_everyone',
+        'embeds',
+        'id',
+        'mentions',
+        'author',
+        'attachments',
+        'nonce',
+        'pinned',
+        'role_mentions',
+        'type',
+        'flags',
+        'reactions',
+        'reference',
+        'application',
+        'activity',
+        'stickers',
+    )
 
     if TYPE_CHECKING:
         _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
         _CACHED_SLOTS: ClassVar[List[str]]
 
-    def __init__(self, *, state: ConnectionState, channel: Union[TextChannel, DMChannel, GroupChannel], data: MessagePayload):
+    def __init__(
+        self,
+        *,
+        state: ConnectionState,
+        channel: Union[TextChannel, DMChannel, GroupChannel],
+        data: MessagePayload,
+    ):
         self._state = state
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
@@ -629,7 +673,9 @@ class Message(Hashable):
                 continue
 
     def __repr__(self) -> str:
-        return f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
+        return (
+            f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
+        )
 
     def _try_patch(self, data, key, transform=None) -> None:
         try:
@@ -851,6 +897,7 @@ class Message(Hashable):
             respectively, along with this function.
         """
 
+        # fmt: off
         transformations = {
             re.escape(f'<#{channel.id}>'): '#' + channel.name
             for channel in self.channel_mentions
@@ -876,6 +923,8 @@ class Message(Hashable):
                 for role in self.role_mentions
             }
             transformations.update(role_transforms)
+
+        # fmt: on
 
         def repl(obj):
             return transformations.get(re.escape(obj.group(0)), '')
@@ -1016,6 +1065,7 @@ class Message(Hashable):
             Deleting the message failed.
         """
         if delay is not None:
+
             async def delete(delay: float):
                 await asyncio.sleep(delay)
                 try:
@@ -1097,9 +1147,9 @@ class Message(Hashable):
         except KeyError:
             pass
         else:
-             flags = MessageFlags._from_value(self.flags.value)
-             flags.suppress_embeds = suppress
-             fields['flags'] = flags.value
+            flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
+            fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
 
@@ -1555,9 +1605,9 @@ class PartialMessage(Hashable):
         except KeyError:
             pass
         else:
-             flags = MessageFlags._from_value(0)
-             flags.suppress_embeds = suppress
-             fields['flags'] = flags.value
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress
+            fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
 
