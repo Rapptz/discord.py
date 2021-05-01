@@ -1189,7 +1189,9 @@ class HTTPClient:
             }
         ]
 
-        if file:
+        if file is None:
+            return self.request(route, form=form)
+        else:
             form.append(
                 {
                     'name': 'file',
@@ -1198,8 +1200,7 @@ class HTTPClient:
                     'content_type': 'application/octet-stream',
                 }
             )
-
-        return self.request(route, form=form, files=[file])
+            return self.request(route, form=form, files=[file])
 
     def create_interaction_response(self, interaction_id, token):
         r = Route(
