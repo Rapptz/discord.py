@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional, Any
+from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar
 
 from . import utils
 from .reaction import Reaction
@@ -62,6 +62,9 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .abc import GuildChannel, PrivateChannel, Messageable
     from .state import ConnectionState
+    from .channel import TextChannel, GroupChannel, DMChannel
+
+    EmojiInputType = Union[Emoji, PartialEmoji, str]
 
 __all__ = (
     'Attachment',
@@ -573,6 +576,9 @@ class Message(Hashable):
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
 
+    _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
+    _CACHED_SLOTS: ClassVar[List[str]]
+
     def __init__(self, *, state: ConnectionState, channel: Union[TextChannel, DMChannel, GroupChannel], data: MessagePayload):
         self._state = state
         self.id = int(data['id'])
@@ -649,7 +655,7 @@ class Message(Hashable):
 
         return reaction
 
-    def _remove_reaction(self, data: ReactionPayload, emoji: Union[Emoji, PartialEmoji, str], user_id: int) -> Reaction:
+    def _remove_reaction(self, data: ReactionPayload, emoji: EmojiInputType, user_id: int) -> Reaction:
         reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:
@@ -685,7 +691,7 @@ class Message(Hashable):
         # otherwise they overwrite each other which is undesirable.
         # Since there's no good way to do this we have to iterate over every
         # handler rather than iterating over the keys which is a little slower
-        for key, handler in self._HANDLERS:  # type: ignore
+        for key, handler in self._HANDLERS:
             try:
                 value = data[key]
             except KeyError:
@@ -694,7 +700,7 @@ class Message(Hashable):
                 handler(self, value)
 
         # clear the cached properties
-        for attr in self._CACHED_SLOTS:  # type: ignore
+        for attr in self._CACHED_SLOTS:
             try:
                 delattr(self, attr)
             except AttributeError:
@@ -1198,7 +1204,7 @@ class Message(Hashable):
         await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
         self.pinned = False
 
-    async def add_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str]) -> None:
+    async def add_reaction(self, emoji: EmojiInputType) -> None:
         """|coro|
 
         Add a reaction to the message.
@@ -1229,7 +1235,7 @@ class Message(Hashable):
         emoji = convert_emoji_reaction(emoji)
         await self._state.http.add_reaction(self.channel.id, self.id, emoji)
 
-    async def remove_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str], member: Snowflake) -> None:
+    async def remove_reaction(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
         """|coro|
 
         Remove a reaction by the member from the message.
@@ -1268,7 +1274,7 @@ class Message(Hashable):
         else:
             await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
 
-    async def clear_reaction(self, emoji: Union[Emoji, Reaction, PartialEmoji, str]) -> None:
+    async def clear_reaction(self, emoji: Union[EmojiInputType, Reaction]) -> None:
         """|coro|
 
         Clears a specific reaction from the message.
