@@ -37,6 +37,7 @@ from typing import (
     Iterator,
     List,
     Literal,
+    Mapping,
     Optional,
     Protocol,
     Sequence,
@@ -116,7 +117,7 @@ if TYPE_CHECKING:
     from .template import Template
 
     class _RequestLike(Protocol):
-        headers: Dict[str, Any]
+        headers: Mapping[str, Any]
 
 
 else:
