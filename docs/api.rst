@@ -2260,6 +2260,30 @@ AuditLogDiff
 
         :type: Union[:class:`TextChannel`, :class:`Object`]
 
+
+    .. attribute:: rules_channel
+
+        The guild's rules channel.
+
+        If this could not be found then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.rules_channel`.
+
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
+
+    .. attribute:: public_updates_channel
+
+        The guild's public updates channel.
+
+        If this could not be found then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.public_updates_channel`.
+
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
     .. attribute:: afk_timeout
 
         The guild's AFK timeout. See :attr:`Guild.afk_timeout`.
