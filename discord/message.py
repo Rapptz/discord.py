@@ -1026,7 +1026,7 @@ class Message(Hashable):
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
-    async def edit(self, **fields) -> None:
+    async def edit(self, **fields: Any) -> None:
         """|coro|
 
         Edits the message.
