@@ -975,9 +975,10 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id, *, with_counts=True):
+    def get_invite(self, invite_id, *, with_counts=True, with_expiration=True):
         params = {
             'with_counts': int(with_counts),
+            'with_expiration': int(with_expiration),
         }
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
