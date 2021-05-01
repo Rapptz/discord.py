@@ -127,6 +127,7 @@ class WebhookAdapter:
 
         response: Optional[Response] = None
         data: Optional[Union[Dict[str, Any], str]] = None
+        file_data: Optional[Dict[str, Any]] = None
         method = route.method
         url = route.url
         webhook_id = route.webhook_id
@@ -137,13 +138,16 @@ class WebhookAdapter:
                     file.reset(seek=attempt)
 
                 if multipart:
-                    form_data: Dict[str, Any] = {}
+                    file_data = {}
                     for p in multipart:
-                        form_data[p['name']] = (p['filename'], p['value'], p['content_type'])
-                    to_send = form_data
+                        name = p['name']
+                        if name == 'payload_json':
+                            to_send = { 'payload_json': p['value'] }
+                        else:
+                            file_data[name] = (p['filename'], p['value'], p['content_type'])
 
                 try:
-                    with session.request(method, url, data=to_send, headers=headers, params=params) as response:
+                    with session.request(method, url, data=to_send, files=file_data, headers=headers, params=params) as response:
                         log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
