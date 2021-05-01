@@ -135,17 +135,14 @@ class AppInfo:
         from .team import Team
 
         self._state = state
-
         self.id = int(data['id'])
         self.name = data['name']
         self.description = data['description']
         self._icon = data['icon']
         self.rpc_origins = data['rpc_origins']
-        self.bot_public = data.get('bot_public', False)
-        self.bot_require_code_grant = data.get('bot_require_code_grant')
-
-        owner = data.get('owner')
-        self.owner = state.store_user(data=owner) if owner else None
+        self.bot_public = data['bot_public']
+        self.bot_require_code_grant = data['bot_require_code_grant']
+        self.owner = state.store_user(data['owner'])
          
         team = data.get('team')
         self.team = Team(state, team) if team else None

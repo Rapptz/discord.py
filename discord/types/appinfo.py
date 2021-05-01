@@ -31,10 +31,7 @@ from .team import Team
 from .snowflake import Snowflake
 
 class _AppInfoOptional(TypedDict, total=False):
-    owner: User
     team: Team
-    bot_require_code_grant: bool
-    bot_public: bool
     guild_id: Snowflake
     primary_sku_id: Snowflake
     slug: str
@@ -52,6 +49,9 @@ class AppInfo(_AppInfoOptional):
     summary: str
     description: str
     icon: str
+    owner: User
+    bot_public: bool
+    bot_require_code_grant: bool
 
 class _PartialAppInfoOptional(TypedDict, total=False):
     rpc_origins: List[str]
