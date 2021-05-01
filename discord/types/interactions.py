@@ -106,7 +106,7 @@ class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
 
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
-    resolved: List[ApplicationCommandInteractionDataResolved]
+    resolved: ApplicationCommandInteractionDataResolved
 
 
 class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOptional):

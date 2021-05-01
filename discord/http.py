@@ -1332,7 +1332,7 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def batch_guild_application_command_permissions(self, application_id, guild_id, payload):
+    def bulk_edit_guild_application_command_permissions(self, application_id, guild_id, payload):
         r = Route(
             'PUT',
             '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
