@@ -220,23 +220,25 @@ class Invite(Hashable):
 
     The following table illustrates what methods will obtain the attributes:
 
-    +------------------------------------+----------------------------------------------------------+
-    |             Attribute              |                          Method                          |
-    +====================================+==========================================================+
-    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites` |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite`                              |
-    +------------------------------------+----------------------------------------------------------+
-    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite`                              |
-    +------------------------------------+----------------------------------------------------------+
+    +------------------------------------+------------------------------------------------------------+
+    |             Attribute              |                          Method                            |
+    +====================================+============================================================+
+    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite` with `with_counts` enabled     |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with `with_counts` enabled     |
+    +------------------------------------+------------------------------------------------------------+
+    | :attr:`expires_at`                 | :meth:`Client.fetch_invite` with `with_expiration` enabled |
+    +------------------------------------+------------------------------------------------------------+
 
     If it's not in the table above then it is available by all methods.
 
@@ -268,6 +270,12 @@ class Invite(Hashable):
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
+    expires_at: Optional[:class:`datetime.datetime`]
+        The expiration date of the invite. If the value is ``None`` when received through
+        `Client.fetch_invite` with `with_expiration` enabled, the invite will never expire.
+
+        .. versionadded:: 2.0
+
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
     target_type: :class:`InviteTarget`
@@ -303,6 +311,7 @@ class Invite(Hashable):
         'approximate_member_count',
         'approximate_presence_count',
         'target_application',
+        'expires_at',
     )
 
     BASE = 'https://discord.gg'
@@ -319,6 +328,8 @@ class Invite(Hashable):
         self.max_uses = data.get('max_uses')
         self.approximate_presence_count = data.get('approximate_presence_count')
         self.approximate_member_count = data.get('approximate_member_count')
+        expires_at = data.get('expires_at', None)
+        self.expires_at = parse_time(expires_at) if expires_at else None
 
         inviter_data = data.get('inviter')
         self.inviter = None if inviter_data is None else self._state.store_user(inviter_data)

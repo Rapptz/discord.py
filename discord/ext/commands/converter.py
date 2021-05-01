@@ -29,6 +29,7 @@ import inspect
 from typing import (
     Any,
     Dict,
+    Generic,
     Iterable,
     Literal,
     Optional,
@@ -904,6 +905,13 @@ def get_converter(param: inspect.Parameter) -> Any:
     return converter
 
 
+_GenericAlias = type(List[T])
+
+
+def is_generic_type(tp: Any, *, _GenericAlias: Type = _GenericAlias) -> bool:
+    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)  # type: ignore
+
+
 CONVERTER_MAPPING: Dict[Type[Any], Any] = {
     discord.Object: ObjectConverter,
     discord.Member: MemberConverter,
@@ -1040,5 +1048,12 @@ async def run_converters(ctx: Context, converter, argument: str, param: inspect.
 
         # if we're here, then we failed to match all the literals
         raise BadLiteralArgument(param, literal_args, errors)
+
+    # This must be the last if-clause in the chain of origin checking
+    # Nearly every type is a generic type within the typing library
+    # So care must be taken to make sure a more specialised origin handle
+    # isn't overwritten by the widest if clause
+    if origin is not None and is_generic_type(converter):
+        converter = origin
 
     return await _actual_conversion(ctx, converter, argument, param)

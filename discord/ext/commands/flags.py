@@ -32,11 +32,11 @@ from .errors import (
     MissingRequiredFlag,
 )
 
-from .core import resolve_annotation
+from discord.utils import resolve_annotation
 from .view import StringView
 from .converter import run_converters
 
-from discord.utils import maybe_coroutine
+from discord.utils import maybe_coroutine, MISSING
 from dataclasses import dataclass, field
 from typing import (
     Dict,
@@ -67,14 +67,6 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .context import Context
-
-
-class _MissingSentinel:
-    def __repr__(self):
-        return 'MISSING'
-
-
-MISSING: Any = _MissingSentinel()
 
 
 @dataclass
@@ -283,9 +275,6 @@ class FlagsMeta(type):
         prefix: str = MISSING,
     ):
         attrs['__commands_is_flag__'] = True
-
-        if not prefix and not delimiter:
-            raise TypeError('Must have either a delimiter or a prefix set')
 
         try:
             global_ns = sys.modules[attrs['__module__']].__dict__

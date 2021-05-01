@@ -24,14 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import sys
 import copy
 import asyncio
-from typing import TYPE_CHECKING, Optional, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
-from .enums import ChannelType, VideoQualityMode
+from .enums import ChannelType
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -54,6 +53,7 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from .user import ClientUser
+    from .asset import Asset
 
 
 class _Undefined:
@@ -106,8 +106,8 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: Optional[:class:`str`]
-        The avatar hash the user has.
+    avatar: :class:`Asset`
+        The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
     """
@@ -115,7 +115,7 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
-    avatar: Optional[str]
+    avatar: Asset
     bot: bool
 
     @property
@@ -691,7 +691,7 @@ class GuildChannel(Protocol):
         else:
             raise InvalidArgument('target parameter must be either Member or Role')
 
-        if isinstance(overwrite, _Undefined):
+        if overwrite is _undefined:
             if len(permissions) == 0:
                 raise InvalidArgument('No overwrite provided.')
             try:

@@ -990,9 +990,10 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id, *, with_counts=True):
+    def get_invite(self, invite_id, *, with_counts=True, with_expiration=True):
         params = {
             'with_counts': int(with_counts),
+            'with_expiration': int(with_expiration),
         }
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
@@ -1116,7 +1117,7 @@ class HTTPClient:
     def get_guild_commands(self, application_id, guild_id) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
@@ -1125,7 +1126,7 @@ class HTTPClient:
     def get_guild_command(self, application_id, guild_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1135,7 +1136,7 @@ class HTTPClient:
     def upsert_guild_command(self, application_id, guild_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
@@ -1150,7 +1151,7 @@ class HTTPClient:
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         r = Route(
             'PATCH',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1160,7 +1161,7 @@ class HTTPClient:
     def delete_guild_command(self, application_id, guild_id, command_id):
         r = Route(
             'DELETE',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1172,7 +1173,7 @@ class HTTPClient:
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
@@ -1317,6 +1318,44 @@ class HTTPClient:
             message_id=message_id,
         )
         return self.request(r)
+
+    def get_guild_application_command_permissions(self, application_id, guild_id) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
+        r = Route(
+            'GET',
+            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+        )
+        return self.request(r)
+
+    def get_application_command_permissions(self, application_id, guild_id, command_id) -> Response[interactions.GuildApplicationCommandPermissions]:
+        r = Route(
+            'GET',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+            command_id=command_id,
+        )
+        return self.request(r)
+
+    def edit_application_command_permissions(self, application_id, guild_id, command_id, payload):
+        r = Route(
+            'PUT',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+            command_id=command_id,
+        )
+        return self.request(r, json=payload)
+
+    def bulk_edit_guild_application_command_permissions(self, application_id, guild_id, payload):
+        r = Route(
+            'PUT',
+            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+        )
+        return self.request(r, json=payload)
 
     # Misc
 

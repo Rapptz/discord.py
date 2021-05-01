@@ -28,7 +28,6 @@ import contextvars
 import logging
 import asyncio
 import json
-import time
 import re
 
 from urllib.parse import quote as urlquote
@@ -67,16 +66,7 @@ if TYPE_CHECKING:
     from ..abc import Snowflake
     import datetime
 
-
-class _Missing:
-    def __bool__(self):
-        return False
-
-    def __repr__(self):
-        return '...'
-
-
-MISSING: Any = _Missing()
+MISSING = utils.MISSING
 
 
 class AsyncDeferredLock:
@@ -471,8 +461,6 @@ class PartialWebhookGuild(Hashable):
         The partial guild's ID.
     name: :class:`str`
         The partial guild's name.
-    icon: :class:`str`
-        The partial guild's icon
     """
 
     __slots__ = ('id', 'name', '_icon', '_state')
@@ -732,6 +720,7 @@ class BaseWebhook(Hashable):
             # Default is always blurple apparently
             return Asset._from_default_avatar(self._state, 0)
         return Asset._from_avatar(self._state, self.id, self._avatar)
+
 
 class Webhook(BaseWebhook):
     """Represents an asynchronous Discord webhook.
