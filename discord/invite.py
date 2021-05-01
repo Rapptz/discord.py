@@ -339,7 +339,7 @@ class Invite(Hashable):
 
         self.target_type = try_enum(InviteTarget, data.get("target_type", 0))
 
-        application = data.get("target_application")
+        application = data.get('target_application')
         self.target_application = PartialAppInfo(data=application, state=state) if application else None
 
     @classmethod
