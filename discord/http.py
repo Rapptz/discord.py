@@ -1303,6 +1303,44 @@ class HTTPClient:
         )
         return self.request(r)
 
+    def get_guild_application_command_permissions(self, application_id, guild_id) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
+        r = Route(
+            'GET',
+            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+        )
+        return self.request(r)
+
+    def get_application_command_permissions(self, application_id, guild_id, command_id) -> Response[interactions.GuildApplicationCommandPermissions]:
+        r = Route(
+            'GET',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+            command_id=command_id,
+        )
+        return self.request(r)
+
+    def edit_application_command_permissions(self, application_id, guild_id, command_id, payload):
+        r = Route(
+            'PUT',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+            command_id=command_id,
+        )
+        return self.request(r, json=payload)
+
+    def bulk_edit_guild_application_command_permissions(self, application_id, guild_id, payload):
+        r = Route(
+            'PUT',
+            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
+            application_id=application_id,
+            guild_id=guild_id,
+        )
+        return self.request(r, json=payload)
+
     # Misc
 
     def application_info(self):

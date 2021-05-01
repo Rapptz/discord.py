@@ -24,11 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, Union, List, Literal
+from typing import Dict, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
 from .message import AllowedMentions
+from .channel import PartialChannel
 from .embed import Embed
 from .member import Member
+from .role import Role
 from .user import User
 
 
@@ -48,7 +50,7 @@ class _ApplicationCommandOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
 
 
-ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8]
+ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 class ApplicationCommandOption(_ApplicationCommandOptionOptional):
@@ -63,6 +65,25 @@ class ApplicationCommandOptionChoice(TypedDict):
     value: Union[str, int]
 
 
+ApplicationCommandPermissionType = Literal[1, 2]
+
+
+class ApplicationCommandPermissions(TypedDict):
+    id: Snowflake
+    type: ApplicationCommandPermissionType
+    permission: bool
+
+
+class PartialGuildApplicationCommandPermissions(TypedDict):
+    id: Snowflake
+    permissions: List[ApplicationCommandPermissions]
+
+
+class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissions):
+    application_id: Snowflake
+    guild_id: Snowflake
+
+
 InteractionType = Literal[1, 2]
 
 
@@ -73,10 +94,19 @@ class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
 
 class ApplicationCommandInteractionDataOption(_ApplicationCommandInteractionDataOptionOptional):
     name: str
+    type: ApplicationCommandOptionType
+
+
+class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
+    users: Dict[Snowflake, User]
+    members: Dict[Snowflake, Member]
+    roles: Dict[Snowflake, Role]
+    channels: Dict[Snowflake, PartialChannel]
 
 
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
+    resolved: ApplicationCommandInteractionDataResolved
 
 
 class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOptional):
