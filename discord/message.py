@@ -1156,7 +1156,7 @@ class Message(Hashable):
         try:
             allowed_mentions = fields.pop('allowed_mentions')
         except KeyError:
-            if self._state.allowed_mentions is not None:
+            if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
                 fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
         else:
             if allowed_mentions is not None:
