@@ -143,7 +143,7 @@ class AppInfo:
         self.bot_public = data['bot_public']
         self.bot_require_code_grant = data['bot_require_code_grant']
         self.owner = state.store_user(data['owner'])
-         
+
         team = data.get('team')
         self.team = Team(state, team) if team else None
 
@@ -191,22 +191,6 @@ class AppInfo:
         """
         return self._state._get_guild(self.guild_id)
 
-"""
-{
-    'id':'755600276941176913',
-    'name': 'YouTube Together',
-    'icon': '4e0fd3bf009282c0ecd1fb010e621f28',
-    'description': 'Watch YouTube together',
-    'summary': 'Watch YouTube together',
-    'cover_image': 'dc73f8a0e3b2b519f0332dc1ffc9ad4e',
-    'hook': True,
-    'rpc_origins': [],
-    'terms_of_service_url': 'https://discord.com/terms',
-    'privacy_policy_url': 'https://discord.com/privacy',
-    'verify_key': '11f490f8f76ecb4e175ad82bce9c573889fbe9bc671e22ca8f8b950bb7f2a7bb',
-    'max_participants': -1
-}
-"""
 class PartialAppInfo:
     """Represents a partial AppInfo given by :func:`~GuildChannel.create_invite`
 
