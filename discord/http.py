@@ -1101,7 +1101,7 @@ class HTTPClient:
     def get_guild_commands(self, application_id, guild_id) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
@@ -1110,7 +1110,7 @@ class HTTPClient:
     def get_guild_command(self, application_id, guild_id, command_id) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1120,7 +1120,7 @@ class HTTPClient:
     def upsert_guild_command(self, application_id, guild_id, payload) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
@@ -1135,7 +1135,7 @@ class HTTPClient:
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         r = Route(
             'PATCH',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1145,7 +1145,7 @@ class HTTPClient:
     def delete_guild_command(self, application_id, guild_id, command_id):
         r = Route(
             'DELETE',
-            '/applications/{application_id}/{guild_id}/commands/{command_id}',
+            '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
             application_id=application_id,
             guild_id=guild_id,
             command_id=command_id,
@@ -1157,7 +1157,7 @@ class HTTPClient:
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
-            '/applications/{application_id}/{guild_id}/commands',
+            '/applications/{application_id}/guilds/{guild_id}/commands',
             application_id=application_id,
             guild_id=guild_id,
         )
