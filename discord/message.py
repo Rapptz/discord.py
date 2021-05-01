@@ -491,7 +491,7 @@ class Message(Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: :class:`abc.Messageable`
+    channel: Union[:class:`TextChannel`, :class:`DMChannel`, :class:`GroupChannel`]
         The :class:`TextChannel` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -573,7 +573,7 @@ class Message(Hashable):
                  '_cs_system_content', '_cs_guild', '_state', 'reactions', 'reference',
                  'application', 'activity', 'stickers')
 
-    def __init__(self, *, state: ConnectionState, channel: Messageable, data: MessagePayload):
+    def __init__(self, *, state: ConnectionState, channel: Union[TextChannel, DMChannel, GroupChannel], data: MessagePayload):
         self._state = state
         self.id = int(data['id'])
         self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
@@ -783,7 +783,7 @@ class Message(Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
-    def _rebind_channel_reference(self, new_channel: Messageable) -> None:
+    def _rebind_channel_reference(self, new_channel: Union[TextChannel, DMChannel, GroupChannel]) -> None:
         self.channel = new_channel
 
         try:
@@ -1315,7 +1315,7 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def reply(self, content: str = None, **kwargs) -> Message:
+    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
 
         A shortcut method to :meth:`.abc.Messageable.send` to reply to the
