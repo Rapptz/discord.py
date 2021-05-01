@@ -174,6 +174,8 @@ class AuditLogChanges:
         'afk_channel_id':                ('afk_channel', _transform_channel),
         'system_channel_id':             ('system_channel', _transform_channel),
         'widget_channel_id':             ('widget_channel', _transform_channel),
+        'rules_channel_id':              ('rules_channel', _transform_channel),
+        'public_updates_channel_id':     ('public_updates_channel', _transform_channel),
         'permission_overwrites':         ('overwrites', _transform_overwrites),
         'splash_hash':                   ('splash', _guild_hash_transformer('splashes')),
         'banner_hash':                   ('banner', _guild_hash_transformer('banners')),
