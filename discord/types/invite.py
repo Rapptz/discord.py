@@ -29,7 +29,7 @@ from typing import Literal, TypedDict
 from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import AppInfo
+from .appinfo import PartialAppInfo
 
 InviteTargetType = Literal[1, 2]
 
@@ -39,7 +39,7 @@ class _InviteOptional(TypedDict, total=False):
     inviter: PartialUser
     target_user: PartialUser
     target_type: InviteTargetType
-    target_application: AppInfo
+    target_application: PartialAppInfo
 
 
 class _InviteMetadata(TypedDict, total=False):

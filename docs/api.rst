@@ -64,6 +64,14 @@ AppInfo
 .. autoclass:: AppInfo()
     :members:
 
+PartialAppInfo
+~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialAppInfo
+
+.. autoclass:: PartialAppInfo()
+    :members:
+
 Team
 ~~~~~
 
@@ -1938,20 +1946,6 @@ of :class:`enum.Enum`.
 
         Represents a sticker with a lottie image.
 
-.. class:: VideoQualityMode
-
-    Represents the camera video quality mode for voice channel participants.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: auto
-
-        Represents auto camera video quality.
-
-    .. attribute:: full
-
-        Represents full camera video quality.
-
 .. class:: InviteTarget
 
     Represents the invite type for voice channel invites.
@@ -1969,6 +1963,21 @@ of :class:`enum.Enum`.
     .. attribute:: embedded_application
 
         A stream invite that targets an embedded application.
+
+.. class:: VideoQualityMode
+
+    Represents the camera video quality mode for voice channel participants.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: auto
+
+        Represents auto camera video quality.
+
+    .. attribute:: full
+
+        Represents full camera video quality.
+
 
 Async Iterator
 ----------------

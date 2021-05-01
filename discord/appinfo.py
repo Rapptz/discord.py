@@ -31,10 +31,13 @@ from .asset import Asset
 
 if TYPE_CHECKING:
     from .guild import Guild
-    from .types.appinfo import AppInfo as AppInfoPayload
+    from .types.appinfo import AppInfo as AppInfoPayload, PartialAppInfo as PartialAppInfoPayload
+
+    from .state import ConnectionState
 
 __all__ = (
     'AppInfo',
+    'PartialAppInfo',
 )
 
 
@@ -48,12 +51,8 @@ class AppInfo:
         The application ID.
     name: :class:`str`
         The application name.
-    owner: Optional[:class:`User`]
+    owner: :class:`User`
         The application owner.
-
-        .. versionchanged:: 2.0
-            This attribute is now optional.
-
     team: Optional[:class:`Team`]
         The application's team.
 
@@ -194,3 +193,70 @@ class AppInfo:
         .. versionadded:: 1.3
         """
         return self._state._get_guild(self.guild_id)
+
+"""
+{
+    'id':'755600276941176913',
+    'name': 'YouTube Together',
+    'icon': '4e0fd3bf009282c0ecd1fb010e621f28',
+    'description': 'Watch YouTube together',
+    'summary': 'Watch YouTube together',
+    'cover_image': 'dc73f8a0e3b2b519f0332dc1ffc9ad4e',
+    'hook': True,
+    'rpc_origins': [],
+    'terms_of_service_url': 'https://discord.com/terms',
+    'privacy_policy_url': 'https://discord.com/privacy',
+    'verify_key': '11f490f8f76ecb4e175ad82bce9c573889fbe9bc671e22ca8f8b950bb7f2a7bb',
+    'max_participants': -1
+}
+"""
+class PartialAppInfo:
+    """Represents a partial AppInfo given by :func:`~GuildChannel.create_invite`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -------------
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    description: :class:`str`
+        The application description.
+    rpc_origins: Optional[List[:class:`str`]]
+        A list of RPC origin URLs, if RPC is enabled.
+    summary: :class:`str`
+        If this application is a game sold on Discord,
+        this field will be the summary field for the store page of its primary SKU.
+    verify_key: :class:`str`
+        The hex encoded key for verification in interactions and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+    terms_of_service_url: Optional[:class:`str`]
+        The application's terms of service URL, if set.
+    privacy_policy_url: Optional[:class:`str`]
+        The application's privacy policy URL, if set.
+    """
+
+    __slots__ = ('_state', 'id', 'name', 'description', 'rpc_origins', 'summary', 'verify_key', 'terms_of_service_url', 'privacy_policy_url', '_icon')
+
+    def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
+        self._state = state
+        self.id = int(data['id'])
+        self.name = data['name']
+        self._icon = data.get('icon')
+        self.description = data['description']
+        self.rpc_origins = data.get('rpc_origins')
+        self.summary = data['summary']
+        self.verify_key = data['verify_key']
+        self.terms_of_service_url = data.get('terms_of_service_url')
+        self.privacy_policy_url = data.get('privacy_policy_url')
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='app')

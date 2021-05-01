@@ -934,6 +934,9 @@ class GuildChannel(Protocol):
             The invite that was created.
         """
 
+        if "target_type" in fields:
+            fields["target_type"] = fields["target_type"].value
+
         data = await self._state.http.create_invite(self.id, reason=reason, **fields)
         return Invite.from_incomplete(data=data, state=self._state)
 

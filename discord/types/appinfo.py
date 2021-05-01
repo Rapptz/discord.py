@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, List
+from typing import TypedDict, List, Optional
 
 from .user import User
 from .team import Team
@@ -52,3 +52,19 @@ class AppInfo(_AppInfoOptional):
     summary: str
     description: str
     icon: str
+
+class _PartialAppInfoOptional(TypedDict, total=False):
+    rpc_origins: List[str]
+    cover_image: str
+    hook: bool
+    terms_of_service_url: str
+    privacy_policy_url: str
+    max_participants: int
+
+class PartialAppInfo(_PartialAppInfoOptional):
+    id: Snowflake
+    name: str
+    verify_key: str
+    icon: Optional[str]
+    summary: str
+    description: str
