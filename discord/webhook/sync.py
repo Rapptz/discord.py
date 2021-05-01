@@ -156,6 +156,9 @@ class WebhookAdapter:
                             response.status_code,
                         )
                         response.encoding = 'utf-8'
+                        # Compatibility with aiohttp
+                        response.status = response.status_code  # type: ignore
+
                         data = response.text or None
                         if data and response.headers['Content-Type'] == 'application/json':
                             data = json.loads(data)
