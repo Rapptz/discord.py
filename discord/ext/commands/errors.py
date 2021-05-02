@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from discord.errors import ClientException, DiscordException
-
+from typing import Literal
 
 __all__ = (
     'CommandError',
@@ -666,13 +666,17 @@ class BadUnionArgument(UserInputError):
 
         def _get_name(x):
             try:
-                return x.__name__
+                yield x.__name__
             except AttributeError:
-                if hasattr(x, '__origin__'):
-                    return repr(x)
-                return x.__class__.__name__
+                origin = getattr(x, '__origin__', None)
+                if origin is Literal:
+                    yield from map(repr, x.__args__)
+                elif origin is not None:
+                    yield repr(x)
+                else:
+                    yield x.__class__.__name__
 
-        to_string = [_get_name(x) for x in converters]
+        to_string = [name for x in converters for name in _get_name(x)]
         if len(to_string) > 2:
             fmt = '{}, or {}'.format(', '.join(to_string[:-1]), to_string[-1])
         else:
