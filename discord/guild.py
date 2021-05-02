@@ -1002,7 +1002,7 @@ class Guild(Hashable):
         banner: Optional[bytes] = ...,
         splash: Optional[bytes] = ...,
         discovery_splash: Optional[bytes] = ...,
-        features: List[str] = ...,
+        community: bool = ...,
         region: Optional[VoiceRegion] = ...,
         afk_channel: Optional[VoiceChannel] = ...,
         afk_timeout: int = ...,
@@ -1023,7 +1023,7 @@ class Guild(Hashable):
         ...
 
     async def edit(self, *, reason=None, **fields):
-        """|coro|
+        r"""|coro|
 
         Edits the guild.
 
@@ -1034,7 +1034,7 @@ class Guild(Hashable):
             The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
 
         .. versionchanged:: 2.0
-            The `discovery_splash` and `features` keyword-only parameters were added.
+            The `discovery_splash` and `community` keyword-only parameters were added.
 
         Parameters
         ----------
@@ -1061,9 +1061,9 @@ class Guild(Hashable):
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``DISCOVERABLE``
             in :attr:`Guild.features`.
-        features: List[:class:`str`]
-            The enabled features for the guild. Note that only certain features
-            can be toggled with the API.
+        community: :class:`bool`
+            Whether the guild should be a Community guild. If set to ``True``\, both ``rules_channel``
+            and ``public_updates_channel`` parameters are required.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
@@ -1235,6 +1235,25 @@ class Guild(Hashable):
                 fields['public_updates_channel_id'] = public_updates_channel
             else:
                 fields['public_updates_channel_id'] = public_updates_channel.id
+
+        features = []
+
+        try:
+            community = fields['community']
+        except KeyError:
+            community = 'COMMUNITY' in self.features
+
+        if community:
+            try:
+                fields['rules_channel_id']
+                fields['public_updates_channel_id']
+            except KeyError:
+                raise InvalidArgument('community field requires both rules_channel and public_updates_channel fields to be provided') from None
+            else:
+                features.append('COMMUNITY')
+
+        fields['features'] = features
+
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
