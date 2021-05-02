@@ -1171,7 +1171,7 @@ class Webhook(BaseWebhook):
         Returns
         ---------
         Optional[:class:`WebhookMessage`]
-            The message that was sent, if ``wait`` is ``True``.
+            If ``wait`` is ``True`` then the message that was sent, otherwise ``None``.
         """
 
         if self.token is None:
