@@ -1162,16 +1162,16 @@ class Webhook(BaseWebhook):
         Forbidden
             The authorization token for the webhook is incorrect.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
-            The length of ``embeds`` was invalid
+            The length of ``embeds`` was invalid.
         InvalidArgument
             There was no token associated with this webhook.
 
         Returns
         ---------
         Optional[:class:`WebhookMessage`]
-            The message that was sent, if wait is True.
+            The message that was sent, if ``wait`` is ``True``.
         """
 
         if self.token is None:
