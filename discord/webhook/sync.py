@@ -845,7 +845,7 @@ class SyncWebhook(BaseWebhook):
         Returns
         ---------
         Optional[:class:`SyncWebhookMessage`]
-            The message that was sent.
+            If ``wait`` is ``True`` then the message that was sent, otherwise ``None``.
         """
 
         if self.token is None:
