@@ -853,7 +853,7 @@ class SyncWebhook(BaseWebhook):
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
-            content = ...  # type: ignore
+            content = MISSING
 
         params = handle_message_parameters(
             content=content,

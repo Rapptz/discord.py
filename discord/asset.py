@@ -45,6 +45,8 @@ VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 
+MISSING = utils.MISSING
+
 class AssetMixin:
     url: str
     _state: Optional[Any]
@@ -254,9 +256,9 @@ class Asset(AssetMixin):
 
     def replace(
         self,
-        size: int = ...,
-        format: ValidAssetFormatTypes = ...,
-        static_format: ValidStaticFormatTypes = ...,
+        size: int = MISSING,
+        format: ValidAssetFormatTypes = MISSING,
+        static_format: ValidStaticFormatTypes = MISSING,
     ) -> Asset:
         """Returns a new asset with the passed components replaced.
 
@@ -284,7 +286,7 @@ class Asset(AssetMixin):
         url = yarl.URL(self._url)
         path, _ = os.path.splitext(url.path)
 
-        if format is not ...:
+        if format is not MISSING:
             if self._animated:
                 if format not in VALID_ASSET_FORMATS:
                     raise InvalidArgument(f'format must be one of {VALID_ASSET_FORMATS}')
@@ -293,12 +295,12 @@ class Asset(AssetMixin):
                     raise InvalidArgument(f'format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{format}')
 
-        if static_format is not ... and not self._animated:
+        if static_format is not MISSING and not self._animated:
             if static_format not in VALID_STATIC_FORMATS:
                 raise InvalidArgument(f'static_format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{static_format}')
 
-        if size is not ...:
+        if size is not MISSING:
             if not utils.valid_icon_size(size):
                 raise InvalidArgument('size must be a power of 2 between 16 and 4096')
             url = url.with_query(size=size)
