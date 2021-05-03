@@ -80,6 +80,7 @@ __all__ = (
     'DeletedReferencedMessage',
 )
 
+
 def convert_emoji_reaction(emoji):
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
@@ -513,8 +514,8 @@ class Message(Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`DMChannel`, :class:`GroupChannel`]
-        The :class:`TextChannel` that the message was sent from.
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
+        The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
@@ -632,7 +633,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, DMChannel, GroupChannel],
+        channel: Union[TextChannel, Thread, DMChannel, GroupChannel],
         data: MessagePayload,
     ):
         self._state = state
@@ -850,7 +851,7 @@ class Message(Hashable):
     def _handle_components(self, components: List[ComponentPayload]):
         self.components = [_component_factory(d) for d in components]
 
-    def _rebind_channel_reference(self, new_channel: Union[TextChannel, DMChannel, GroupChannel]) -> None:
+    def _rebind_channel_reference(self, new_channel: Union[TextChannel, Thread, DMChannel, GroupChannel]) -> None:
         self.channel = new_channel
 
         try:

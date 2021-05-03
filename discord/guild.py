@@ -493,6 +493,10 @@ class Guild(Hashable):
     def get_channel(self, channel_id):
         """Returns a channel with the given ID.
 
+        .. note::
+
+            This does *not* search for threads.
+
         Parameters
         -----------
         channel_id: :class:`int`
