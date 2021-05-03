@@ -56,6 +56,8 @@ if TYPE_CHECKING:
     from .asset import Asset
 
 
+MISSING = utils.MISSING
+
 class _Undefined:
     def __repr__(self):
         return 'see-below'
@@ -829,8 +831,8 @@ class GuildChannel(Protocol):
             raise InvalidArgument('Only one of [before, after, end, beginning] can be used.')
 
         bucket = self._sorting_bucket
-        parent_id = kwargs.get('category', ...)
-        if parent_id not in (..., None):
+        parent_id = kwargs.get('category', MISSING)
+        if parent_id not in (MISSING, None):
             parent_id = parent_id.id
             channels = [
                 ch
@@ -874,7 +876,7 @@ class GuildChannel(Protocol):
         reason = kwargs.get('reason')
         for index, channel in enumerate(channels):
             d = {'id': channel.id, 'position': index}
-            if parent_id is not ... and channel.id == self.id:
+            if parent_id is not MISSING and channel.id == self.id:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)
 
