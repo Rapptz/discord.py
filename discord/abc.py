@@ -1155,7 +1155,8 @@ class Messageable(Protocol):
     async def fetch_message(self, id):
         """|coro|
 
-        Retrieves a single :class:`~discord.Message` from the destination.
+        Retrieves a single :class:`~discord.Message` from the destination, which is the channel that this
+        object refers to.
 
         This can only be used by bot accounts.
 
