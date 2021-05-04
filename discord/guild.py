@@ -213,6 +213,11 @@ class Guild(Hashable):
     def _add_member(self, member):
         self._members[member.id] = member
 
+    def _store_thread(self, payload) -> Thread:
+        thread = Thread(guild=self, data=payload)
+        self._threads[thread.id] = thread
+        return thread
+
     def _remove_member(self, member):
         self._members.pop(member.id, None)
 

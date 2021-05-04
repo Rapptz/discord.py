@@ -23,7 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+from discord.types.threads import ThreadMember
+from typing import Dict, Optional, TYPE_CHECKING
 
 from .mixins import Hashable
 from .abc import Messageable
@@ -117,6 +118,7 @@ class Thread(Messageable, Hashable):
         'guild',
         '_type',
         '_state',
+        '_members',
         'owner_id',
         'parent_id',
         'last_message_id',
@@ -134,6 +136,7 @@ class Thread(Messageable, Hashable):
     def __init__(self, *, guild: Guild, data: ThreadPayload):
         self._state: ConnectionState = guild._state
         self.guild = guild
+        self._members: Dict[int, ThreadMember] = {}
         self._from_data(data)
 
     async def _get_channel(self):
@@ -343,6 +346,9 @@ class Thread(Messageable, Hashable):
             Deleting the thread failed.
         """
         await self._state.http.delete_channel(self.id)
+
+    def _add_member(self, member: ThreadMember) -> None:
+        self._members[member.id] = member
 
 
 class ThreadMember(Hashable):
