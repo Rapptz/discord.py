@@ -1236,23 +1236,19 @@ class Guild(Hashable):
             else:
                 fields['public_updates_channel_id'] = public_updates_channel.id
 
-        features = []
-
         try:
-            community = fields['community']
+            community = fields.pop('community')
         except KeyError:
-            community = 'COMMUNITY' in self.features
+            pass
+        else:
+            features = []
+            if community:
+                if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
+                    features.append('COMMUNITY')
+                else:
+                    raise InvalidArgument('community field requires both rules_channel and public_updates_channel fields to be provided')
 
-        if community:
-            try:
-                fields['rules_channel_id']
-                fields['public_updates_channel_id']
-            except KeyError:
-                raise InvalidArgument('community field requires both rules_channel and public_updates_channel fields to be provided') from None
-            else:
-                features.append('COMMUNITY')
-
-        fields['features'] = features
+            fields['features'] = features
 
         await http.edit_guild(self.id, reason=reason, **fields)
 
