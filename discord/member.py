@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+import datetime
+import inspect
 import itertools
 import sys
 from operator import attrgetter
@@ -31,12 +31,18 @@ from operator import attrgetter
 import discord.abc
 
 from . import utils
+from .errors import ClientException
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
 from .enums import Status, try_enum
 from .colour import Colour
 from .object import Object
+
+__all__ = (
+    'VoiceState',
+    'Member',
+)
 
 class VoiceState:
     """Represents a Discord user's voice state.
@@ -58,15 +64,32 @@ class VoiceState:
 
     self_video: :class:`bool`
         Indicates if the user is currently broadcasting video.
+    suppress: :class:`bool`
+        Indicates if the user is suppressed from speaking.
+
+        Only applies to stage channels.
+
+        .. versionadded:: 1.7
+
+    requested_to_speak_at: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies the date and time in UTC that the member
+        requested to speak. It will be ``None`` if they are not requesting to speak
+        anymore or have been accepted to speak.
+
+        Only applicable to stage channels.
+
+        .. versionadded:: 1.7
+
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[:class:`VoiceChannel`]
+    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
         The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
 
     __slots__ = ('session_id', 'deaf', 'mute', 'self_mute',
-                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel')
+                 'self_stream', 'self_video', 'self_deaf', 'afk', 'channel',
+                 'requested_to_speak_at', 'suppress')
 
     def __init__(self, *, data, channel=None):
         self.session_id = data.get('session_id')
@@ -80,10 +103,21 @@ class VoiceState:
         self.afk = data.get('suppress', False)
         self.mute = data.get('mute', False)
         self.deaf = data.get('deaf', False)
+        self.suppress = data.get('suppress', False)
+        self.requested_to_speak_at = utils.parse_time(data.get('request_to_speak_timestamp'))
         self.channel = channel
 
     def __repr__(self):
-        return '<VoiceState self_mute={0.self_mute} self_deaf={0.self_deaf} self_stream={0.self_stream} channel={0.channel!r}>'.format(self)
+        attrs = [
+            ('self_mute', self.self_mute),
+            ('self_deaf', self.self_deaf),
+            ('self_stream', self.self_stream),
+            ('suppress', self.suppress),
+            ('requested_to_speak_at', self.requested_to_speak_at),
+            ('channel', self.channel)
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {inner}>'
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
@@ -99,21 +133,26 @@ def flatten_user(cls):
         # slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
             getter = attrgetter('_user.' + attr)
-            setattr(cls, attr, property(getter, doc='Equivalent to :attr:`User.%s`' % attr))
+            setattr(cls, attr, property(getter, doc=f'Equivalent to :attr:`User.{attr}`'))
         else:
             # Technically, this can also use attrgetter
             # However I'm not sure how I feel about "functions" returning properties
             # It probably breaks something in Sphinx.
             # probably a member function by now
             def generate_function(x):
-                def general(self, *args, **kwargs):
-                    return getattr(self._user, x)(*args, **kwargs)
+                # We want sphinx to properly show coroutine functions as coroutines
+                if inspect.iscoroutinefunction(value):
+                    async def general(self, *args, **kwargs):
+                        return await getattr(self._user, x)(*args, **kwargs)
+                else:
+                    def general(self, *args, **kwargs):
+                        return getattr(self._user, x)(*args, **kwargs)
 
                 general.__name__ = x
                 return general
 
             func = generate_function(attr)
-            func.__doc__ = value.__doc__
+            func = utils.copy_doc(value)(func)
             setattr(cls, attr, func)
 
     return cls
@@ -149,10 +188,17 @@ class Member(discord.abc.Messageable, _BaseUser):
     Attributes
     ----------
     joined_at: Optional[:class:`datetime.datetime`]
-        A datetime object that specifies the date and time in UTC that the member joined the guild.
+        An aware datetime object that specifies the date and time in UTC that the member joined the guild.
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
     activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
         The activities that the user is currently doing.
+
+        .. note::
+
+            Due to a Discord API limitation, a user's Spotify activity may not appear
+            if they are listening to a song with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
@@ -162,7 +208,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
-        A datetime object that specifies the date and time in UTC when the member used their
+        An aware datetime object that specifies the date and time in UTC when the member used their
         Nitro boost on the guild, if available. This could be ``None``.
     """
 
@@ -179,7 +225,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._client_status = {
             None: 'offline'
         }
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = []
         self.nick = data.get('nick', None)
         self.pending = data.get('pending', False)
 
@@ -187,8 +233,8 @@ class Member(discord.abc.Messageable, _BaseUser):
         return str(self._user)
 
     def __repr__(self):
-        return '<Member id={1.id} name={1.name!r} discriminator={1.discriminator!r}' \
-               ' bot={1.bot} nick={0.nick!r} guild={0.guild!r}>'.format(self, self._user)
+        return f'<Member id={self._user.id} name={self._user.name!r} discriminator={self._user.discriminator!r}' \
+               f' bot={self._user.bot} nick={self.nick!r} guild={self.guild!r}>'
 
     def __eq__(self, other):
         return isinstance(other, _BaseUser) and other.id == self.id
@@ -222,17 +268,6 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             member_data['user'] = data
             return cls(data=member_data, guild=guild, state=state)
-
-    @classmethod
-    def _from_presence_update(cls, *, data, guild, state):
-        clone = cls(data=data, guild=guild, state=state)
-        to_return = cls(data=data, guild=guild, state=state)
-        to_return._client_status = {
-            sys.intern(key): sys.intern(value)
-            for key, value in data.get('client_status', {}).items()
-        }
-        to_return._client_status[None] = sys.intern(data['status'])
-        return to_return, clone
 
     @classmethod
     def _copy(cls, member):
@@ -277,7 +312,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         self._update_roles(data)
 
     def _presence_update(self, data, user):
-        self.activities = tuple(map(create_activity, data.get('activities', [])))
+        self.activities = tuple(map(create_activity, data['activities']))
         self._client_status = {
             sys.intern(key): sys.intern(value)
             for key, value in data.get('client_status', {}).items()
@@ -290,12 +325,12 @@ class Member(discord.abc.Messageable, _BaseUser):
 
     def _update_inner_user(self, user):
         u = self._user
-        original = (u.name, u.avatar, u.discriminator, u._public_flags)
+        original = (u.name, u._avatar, u.discriminator, u._public_flags)
         # These keys seem to always be available
         modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.avatar, u.discriminator, u._public_flags = modified
+            u.name, u._avatar, u.discriminator, u._public_flags = modified
             # Signal to dispatch on_user_update
             return to_return, u
 
@@ -387,8 +422,8 @@ class Member(discord.abc.Messageable, _BaseUser):
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention the member."""
         if self.nick:
-            return '<@!%s>' % self.id
-        return '<@%s>' % self.id
+            return f'<@!{self._user.id}>'
+        return f'<@{self._user.id}>'
 
     @property
     def display_name(self):
@@ -404,6 +439,12 @@ class Member(discord.abc.Messageable, _BaseUser):
     def activity(self):
         """Union[:class:`BaseActivity`, :class:`Spotify`]: Returns the primary
         activity the user is currently doing. Could be ``None`` if no activity is being done.
+
+        .. note::
+
+            Due to a Discord API limitation, this may be ``None`` if
+            the user is listening to a song on Spotify with a title longer
+            than 128 characters. See :issue:`1738` for more information.
 
         .. note::
 
@@ -433,27 +474,6 @@ class Member(discord.abc.Messageable, _BaseUser):
 
         return any(self._roles.has(role.id) for role in message.role_mentions)
 
-    def permissions_in(self, channel):
-        """An alias for :meth:`abc.GuildChannel.permissions_for`.
-
-        Basically equivalent to:
-
-        .. code-block:: python3
-
-            channel.permissions_for(self)
-
-        Parameters
-        -----------
-        channel: :class:`abc.GuildChannel`
-            The channel to check your permissions for.
-
-        Returns
-        -------
-        :class:`Permissions`
-            The resolved permissions for the member.
-        """
-        return channel.permissions_for(self)
-
     @property
     def top_role(self):
         """:class:`Role`: Returns the member's highest role.
@@ -474,8 +494,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         This only takes into consideration the guild permissions
         and not most of the implied permissions or any of the
         channel permission overwrites. For 100% accurate permission
-        calculation, please use either :meth:`permissions_in` or
-        :meth:`abc.GuildChannel.permissions_for`.
+        calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
         This does take into consideration guild ownership and the
         administrator implication.
@@ -553,6 +572,11 @@ class Member(discord.abc.Messageable, _BaseUser):
             Indicates if the member should be guild muted or un-muted.
         deafen: :class:`bool`
             Indicates if the member should be guild deafened or un-deafened.
+        suppress: :class:`bool`
+            Indicates if the member should be suppressed in stage channels.
+
+            .. versionadded:: 1.7
+
         roles: Optional[List[:class:`Role`]]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
@@ -570,6 +594,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         http = self._state.http
         guild_id = self.guild.id
+        me = self._state.self_id == self.id
         payload = {}
 
         try:
@@ -579,7 +604,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             pass
         else:
             nick = nick or ''
-            if self._state.self_id == self.id:
+            if me:
                 await http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
@@ -591,6 +616,23 @@ class Member(discord.abc.Messageable, _BaseUser):
         mute = fields.get('mute')
         if mute is not None:
             payload['mute'] = mute
+
+        suppress = fields.get('suppress')
+        if suppress is not None:
+            voice_state_payload = {
+                'channel_id': self.voice.channel.id,
+                'suppress': suppress,
+            }
+
+            if suppress or self.bot:
+                voice_state_payload['request_to_speak_timestamp'] = None
+
+            if me:
+                await http.edit_my_voice_state(guild_id, voice_state_payload)
+            else:
+                if not suppress:
+                    voice_state_payload['request_to_speak_timestamp'] = datetime.datetime.utcnow().isoformat()
+                await http.edit_voice_state(guild_id, self.id, voice_state_payload)
 
         try:
             vc = fields['voice_channel']
@@ -606,9 +648,42 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             payload['roles'] = tuple(r.id for r in roles)
 
-        await http.edit_member(guild_id, self.id, reason=reason, **payload)
+        if payload:
+            await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         # TODO: wait for WS event for modify-in-place behaviour
+
+    async def request_to_speak(self):
+        """|coro|
+
+        Request to speak in the connected channel.
+
+        Only applies to stage channels.
+
+        .. note::
+
+            Requesting members that are not the client is equivalent
+            to :attr:`.edit` providing ``suppress`` as ``False``.
+
+        .. versionadded:: 1.7
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to the action requested.
+        HTTPException
+            The operation failed.
+        """
+        payload = {
+            'channel_id': self.voice.channel.id,
+            'request_to_speak_timestamp': datetime.datetime.utcnow().isoformat(),
+        }
+
+        if self._state.self_id != self.id:
+            payload['suppress'] = False
+            await self._state.http.edit_voice_state(self.guild.id, self.id, payload)
+        else:
+            await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
     async def move_to(self, channel, *, reason=None):
         """|coro|

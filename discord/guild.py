@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -26,8 +24,9 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
+from typing import List, TYPE_CHECKING
 
-from . import utils
+from . import utils, abc
 from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
@@ -46,6 +45,14 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
 
+__all__ = (
+    'Guild',
+)
+
+if TYPE_CHECKING:
+    from .types.guild import (
+        Ban as BanPayload
+    )
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -87,15 +94,13 @@ class Guild(Hashable):
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
         The channel that denotes the AFK channel. ``None`` if it doesn't exist.
-    icon: Optional[:class:`str`]
-        The guild's icon.
     id: :class:`int`
         The guild's ID.
     owner_id: :class:`int`
         The guild owner's ID. Use :attr:`Guild.owner` instead.
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
-        reliability of other attributes outside of :meth:`Guild.id` is slim and they might
+        reliability of other attributes outside of :attr:`Guild.id` is slim and they might
         all be ``None``. It is best to not do anything with the guild if it is unavailable.
 
         Check the :func:`on_guild_unavailable` and :func:`on_guild_available` events.
@@ -111,8 +116,6 @@ class Guild(Hashable):
         The maximum amount of users in a video channel.
 
         .. versionadded:: 1.4
-    banner: Optional[:class:`str`]
-        The guild's banner.
     description: Optional[:class:`str`]
         The guild's description.
     mfa_level: :class:`int`
@@ -147,8 +150,6 @@ class Guild(Hashable):
         - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
 
-    splash: Optional[:class:`str`]
-        The guild's invite splash.
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
@@ -157,22 +158,23 @@ class Guild(Hashable):
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
-    discovery_splash: :class:`str`
-        The guild's discovery splash.
 
-        .. versionadded:: 1.3
+    nsfw: :class:`bool`
+        If the guild is marked as "not safe for work".
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', 'icon',
-                 'name', 'id', 'unavailable', 'banner', 'region', '_state',
+    __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', '_icon',
+                 'name', 'id', 'unavailable', '_banner', 'region', '_state',
                  '_roles', '_member_count', '_large',
                  'owner_id', 'mfa_level', 'emojis', 'features',
-                 'verification_level', 'explicit_content_filter', 'splash',
+                 'verification_level', 'explicit_content_filter', '_splash',
                  '_voice_states', '_system_channel_id', 'default_notifications',
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
-                 'preferred_locale', 'discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id')
+                 'preferred_locale', '_discovery_splash', '_rules_channel_id',
+                 '_public_updates_channel_id', 'nsfw')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -205,15 +207,18 @@ class Guild(Hashable):
         self._members.pop(member.id, None)
 
     def __str__(self):
-        return self.name
+        return self.name or ''
 
     def __repr__(self):
         attrs = (
-            'id', 'name', 'shard_id', 'chunked'
+            ('id', self.id),
+            ('name', self.name),
+            ('shard_id', self.shard_id),
+            ('chunked', self.chunked),
+            ('member_count', getattr(self, '_member_count', None)),
         )
-        resolved = ['%s=%r' % (attr, getattr(self, attr)) for attr in attrs]
-        resolved.append('member_count=%r' % getattr(self, '_member_count', None))
-        return '<Guild %s>' % ' '.join(resolved)
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<Guild {inner}>'
 
     def _update_voice_state(self, data, channel_id):
         user_id = int(data['user_id'])
@@ -278,8 +283,8 @@ class Guild(Hashable):
         self.default_notifications = try_enum(NotificationLevel, guild.get('default_message_notifications'))
         self.explicit_content_filter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout = guild.get('afk_timeout')
-        self.icon = guild.get('icon')
-        self.banner = guild.get('banner')
+        self._icon = guild.get('icon')
+        self._banner = guild.get('banner')
         self.unavailable = guild.get('unavailable', False)
         self.id = int(guild['id'])
         self._roles = {}
@@ -291,7 +296,7 @@ class Guild(Hashable):
         self.mfa_level = guild.get('mfa_level')
         self.emojis = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
         self.features = guild.get('features', [])
-        self.splash = guild.get('splash')
+        self._splash = guild.get('splash')
         self._system_channel_id = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description = guild.get('description')
         self.max_presences = guild.get('max_presences')
@@ -301,16 +306,16 @@ class Guild(Hashable):
         self.premium_subscription_count = guild.get('premium_subscription_count') or 0
         self._system_channel_flags = guild.get('system_channel_flags', 0)
         self.preferred_locale = guild.get('preferred_locale')
-        self.discovery_splash = guild.get('discovery_splash')
+        self._discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self.nsfw = guild.get('nsfw', False)
 
-        cache_online_members = self._state.member_cache_flags.online
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=state)
-            if cache_joined or (cache_online_members and member.raw_status != 'offline') or member.id == self_id:
+            if cache_joined or member.id == self_id:
                 self._add_member(member)
 
         self._sync(guild)
@@ -368,6 +373,18 @@ class Guild(Hashable):
         This is sorted by the position and are in UI order from top to bottom.
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, VoiceChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def stage_channels(self):
+        """List[:class:`StageChannel`]: A list of stage channels that belongs to this guild.
+
+        .. versionadded:: 1.7
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
@@ -594,139 +611,32 @@ class Guild(Hashable):
         return self.get_member(self.owner_id)
 
     @property
-    def icon_url(self):
-        """:class:`Asset`: Returns the guild's icon asset."""
-        return self.icon_url_as()
-
-    def is_icon_animated(self):
-        """:class:`bool`: Returns True if the guild has an animated icon."""
-        return bool(self.icon and self.icon.startswith('a_'))
-
-    def icon_url_as(self, *, format=None, static_format='webp', size=1024):
-        """Returns an :class:`Asset` for the guild's icon.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif', and
-        'gif' is only valid for animated avatars. The size must be a power of 2
-        between 16 and 4096.
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the icon to.
-            If the format is ``None``, then it is automatically
-            detected into either 'gif' or static_format depending on the
-            icon being animated or not.
-        static_format: Optional[:class:`str`]
-            Format to attempt to convert only non-animated icons to.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_icon(self._state, self, format=format, static_format=static_format, size=size)
+    def icon(self):
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
 
     @property
-    def banner_url(self):
-        """:class:`Asset`: Returns the guild's banner asset."""
-        return self.banner_url_as()
-
-    def banner_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's banner.
-
-        The format must be one of 'webp', 'jpeg', or 'png'. The
-        size must be a power of 2 between 16 and 4096.
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the banner to.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_image(self._state, self.id, self.banner, 'banners', format=format, size=size)
+    def banner(self):
+        """Optional[:class:`Asset`]: Returns the guild's banner asset, if available."""
+        if self._banner is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._banner, path='banners')
 
     @property
-    def splash_url(self):
-        """:class:`Asset`: Returns the guild's invite splash asset."""
-        return self.splash_url_as()
-
-    def splash_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's invite splash.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 4096.
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the splash to.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_image(self._state, self.id, self.splash, 'splashes', format=format, size=size)
+    def splash(self):
+        """Optional[:class:`Asset`]: Returns the guild's invite splash asset, if available."""
+        if self._splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
 
     @property
-    def discovery_splash_url(self):
-        """:class:`Asset`: Returns the guild's discovery splash asset.
-
-        .. versionadded:: 1.3
-        """
-        return self.discovery_splash_url_as()
-
-    def discovery_splash_url_as(self, *, format='webp', size=2048):
-        """Returns an :class:`Asset` for the guild's discovery splash.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', or 'png'. The
-        size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 1.3
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the splash to.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_guild_image(self._state, self.id, self.discovery_splash, 'discovery-splashes', format=format, size=size)
+    def discovery_splash(self):
+        """Optional[:class:`Asset`]: Returns the guild's discovery splash asset, if available."""
+        if self._discovery_splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
 
     @property
     def member_count(self):
@@ -823,7 +733,7 @@ class Guild(Hashable):
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
             allow, deny = perm.pair()
             payload = {
@@ -833,9 +743,9 @@ class Guild(Hashable):
             }
 
             if isinstance(target, Role):
-                payload['type'] = 'role'
+                payload['type'] = abc._Overwrites.ROLE
             else:
-                payload['type'] = 'member'
+                payload['type'] = abc._Overwrites.MEMBER
 
             perms.append(payload)
 
@@ -843,6 +753,13 @@ class Guild(Hashable):
             options['rate_limit_per_user'] = options.pop('slowmode_delay')
         except KeyError:
             pass
+
+        try:
+            rtc_region = options.pop('rtc_region')
+        except KeyError:
+            pass
+        else:
+            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
 
         parent_id = category.id if category else None
         return self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
@@ -945,6 +862,15 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+        rtc_region: Optional[:class:`VoiceRegion`]
+            The region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 1.7
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the voice channel's participants.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -962,6 +888,38 @@ class Guild(Hashable):
         """
         data = await self._create_channel(name, overwrites, ChannelType.voice, category, reason=reason, **options)
         channel = VoiceChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
+    async def create_stage_channel(self, name, *, topic=None, category=None, overwrites=None, reason=None, position=None):
+        """|coro|
+
+        This is similar to :meth:`create_text_channel` except makes a :class:`StageChannel` instead.
+
+        .. note::
+
+            The ``slowmode_delay`` and ``nsfw`` parameters are not supported in this function.
+
+        .. versionadded:: 1.7
+
+        Raises
+        ------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        InvalidArgument
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`StageChannel`
+            The channel that was just created.
+        """
+        data = await self._create_channel(name, overwrites, ChannelType.stage_voice, category, reason=reason, position=position, topic=topic)
+        channel = StageChannel(state=self._state, guild=self, data=data)
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
@@ -1052,8 +1010,8 @@ class Guild(Hashable):
             The new description of the guild. This is only available to guilds that
             contain ``PUBLIC`` in :attr:`Guild.features`.
         icon: :class:`bytes`
-            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
-            and GIF This is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
+            GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
@@ -1114,7 +1072,7 @@ class Guild(Hashable):
         try:
             icon_bytes = fields['icon']
         except KeyError:
-            icon = self.icon
+            icon = self._icon
         else:
             if icon_bytes is not None:
                 icon = utils._bytes_to_base64_data(icon_bytes)
@@ -1124,7 +1082,7 @@ class Guild(Hashable):
         try:
             banner_bytes = fields['banner']
         except KeyError:
-            banner = self.banner
+            banner = self._banner
         else:
             if banner_bytes is not None:
                 banner = utils._bytes_to_base64_data(banner_bytes)
@@ -1141,7 +1099,7 @@ class Guild(Hashable):
         try:
             splash_bytes = fields['splash']
         except KeyError:
-            splash = self.splash
+            splash = self._splash
         else:
             if splash_bytes is not None:
                 splash = utils._bytes_to_base64_data(splash_bytes)
@@ -1253,7 +1211,7 @@ class Guild(Hashable):
         def convert(d):
             factory, ch_type = _channel_factory(d['type'])
             if factory is None:
-                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(d))
 
             channel = factory(guild=self, state=self._state, data=d)
             return channel
@@ -1261,9 +1219,7 @@ class Guild(Hashable):
         return [convert(d) for d in data]
 
     def fetch_members(self, *, limit=1000, after=None):
-        """|coro|
-
-        Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
+        """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
         .. note::
@@ -1281,7 +1237,8 @@ class Guild(Hashable):
             Pass ``None`` to fetch all members. Note that this is potentially slow.
         after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve members after this date or object.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
         Raises
         ------
@@ -1321,7 +1278,7 @@ class Guild(Hashable):
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_member` instead.
+            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_member` instead.
 
         Parameters
         -----------
@@ -1370,7 +1327,7 @@ class Guild(Hashable):
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
-        data = await self._state.http.get_ban(user.id, self.id)
+        data: BanPayload = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(
             user=User(state=self._state, data=data['user']),
             reason=data['reason']
@@ -1397,7 +1354,7 @@ class Guild(Hashable):
             A list of :class:`BanEntry` objects.
         """
 
-        data = await self._state.http.get_bans(self.id)
+        data: List[BanPayload] = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']),
                          reason=e['reason'])
                 for e in data]
@@ -1453,7 +1410,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             roles = [str(role.id) for role in roles]
@@ -1506,7 +1463,7 @@ class Guild(Hashable):
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def estimate_pruned_members(self, *, days):
+    async def estimate_pruned_members(self, *, days, roles=None):
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -1517,6 +1474,11 @@ class Guild(Hashable):
         -----------
         days: :class:`int`
             The number of days before counting as inactive.
+        roles: Optional[List[:class:`abc.Snowflake`]]
+            A list of :class:`abc.Snowflake` that represent roles to include in the estimate. If a member
+            has a role that is not specified, they'll be excluded.
+
+            .. versionadded:: 1.7
 
         Raises
         -------
@@ -1534,12 +1496,15 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument('Expected int for ``days``, received {0.__class__.__name__} instead.'.format(days))
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
-        data = await self._state.http.estimate_pruned_members(self.id, days)
+        if roles:
+            roles = [str(role.id) for role in roles]
+
+        data = await self._state.http.estimate_pruned_members(self.id, days, roles)
         return data['pruned']
 
-    async def invites(self):
+    async def invites(self) -> List[Invite]:
         """|coro|
 
         Returns a list of all active instant invites from the guild.
@@ -1818,9 +1783,9 @@ class Guild(Hashable):
         try:
             perms = fields.pop('permissions')
         except KeyError:
-            fields['permissions'] = 0
+            fields['permissions'] = '0'
         else:
-            fields['permissions'] = perms.value
+            fields['permissions'] = str(perms.value)
 
         try:
             colour = fields.pop('colour')
@@ -1834,7 +1799,7 @@ class Guild(Hashable):
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         for key in fields:
             if key not in valid_keys:
-                raise InvalidArgument('%r is not a valid field.' % key)
+                raise InvalidArgument(f'{key!r} is not a valid field.')
 
         data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
@@ -1989,7 +1954,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self):
+    async def vanity_invite(self) -> Invite:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -2027,29 +1992,6 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
-    @utils.deprecated()
-    def ack(self):
-        """|coro|
-
-        Marks every message in this guild as read.
-
-        The user must not be a bot user.
-
-        .. deprecated:: 1.7
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        ClientException
-            You must not be a bot user.
-        """
-
-        state = self._state
-        if state.is_bot:
-            raise ClientException('Must not be a bot account to ack messages.')
-        return state.http.ack_guild(self.id)
-
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
         """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 
@@ -2061,17 +2003,17 @@ class Guild(Hashable):
         Getting the first 100 entries: ::
 
             async for entry in guild.audit_logs(limit=100):
-                print('{0.user} did {0.action} to {0.target}'.format(entry))
+                print(f'{entry.user} did {entry.action} to {entry.target}')
 
         Getting entries for a specific action: ::
 
             async for entry in guild.audit_logs(action=discord.AuditLogAction.ban):
-                print('{0.user} banned {0.target}'.format(entry))
+                print(f'{entry.user} banned {entry.target}')
 
         Getting entries made by a specific user: ::
 
             entries = await guild.audit_logs(limit=None, user=guild.me).flatten()
-            await channel.send('I made {} moderation actions.'.format(len(entries)))
+            await channel.send(f'I made {len(entries)} moderation actions.')
 
         Parameters
         -----------
@@ -2079,10 +2021,12 @@ class Guild(Hashable):
             The number of entries to retrieve. If ``None`` retrieve all entries.
         before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries before this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
             Retrieve entries after this date or entry.
-            If a date is provided it must be a timezone-naive datetime representing UTC time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         oldest_first: :class:`bool`
             If set to ``True``, return entries in oldest->newest order. Defaults to ``True`` if
             ``after`` is specified, otherwise ``False``.
@@ -2161,7 +2105,8 @@ class Guild(Hashable):
         if not self._state._intents.members:
             raise ClientException('Intents.members must be enabled to use this.')
 
-        return await self._state.chunk_guild(self, cache=cache)
+        if not self._state.is_guild_evicted(self):
+            return await self._state.chunk_guild(self, cache=cache)
 
     async def query_members(self, query=None, *, limit=5, user_ids=None, presences=False, cache=True):
         """|coro|

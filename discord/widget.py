@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -29,6 +27,12 @@ from .user import BaseUser
 from .activity import create_activity
 from .invite import Invite
 from .enums import Status, try_enum
+
+__all__ = (
+    'WidgetChannel',
+    'WidgetMember',
+    'Widget',
+)
 
 class WidgetChannel:
     """Represents a "partial" widget channel.
@@ -72,12 +76,12 @@ class WidgetChannel:
         return self.name
 
     def __repr__(self):
-        return '<WidgetChannel id={0.id} name={0.name!r} position={0.position!r}>'.format(self)
+        return f'<WidgetChannel id={self.id} name={self.name!r} position={self.position!r}>'
 
     @property
     def mention(self):
         """:class:`str`: The string that allows you to mention the channel."""
-        return '<#%s>' % self.id
+        return f'<#{self.id}>'
 
     @property
     def created_at(self):
@@ -153,6 +157,12 @@ class WidgetMember(BaseUser):
 
         self.connected_channel = connected_channel
 
+    def __repr__(self):
+        return (
+            f"<WidgetMember name={self.name!r} discriminator={self.discriminator!r}"
+            f" bot={self.bot} nick={self.nick!r}>"
+        )
+
     @property
     def display_name(self):
         """:class:`str`: Returns the member's display name."""
@@ -226,7 +236,7 @@ class Widget:
         return self.id == other.id
 
     def __repr__(self):
-        return '<Widget id={0.id} name={0.name!r} invite_url={0.invite_url!r}>'.format(self)
+        return f'<Widget id={self.id} name={self.name!r} invite_url={self.invite_url!r}>'
 
     @property
     def created_at(self):
@@ -236,7 +246,7 @@ class Widget:
     @property
     def json_url(self):
         """:class:`str`: The JSON URL of the widget."""
-        return "https://discord.com/api/guilds/{0.id}/widget.json".format(self)
+        return f"https://discord.com/api/guilds/{self.id}/widget.json"
 
     @property
     def invite_url(self):

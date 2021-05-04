@@ -176,7 +176,8 @@ Paginator
 Enums
 ------
 
-.. class:: discord.ext.commands.BucketType
+.. class:: BucketType
+    :module: discord.ext.commands
 
     Specifies a type of bucket for, e.g. a cooldown.
 
@@ -272,6 +273,9 @@ Converters
 .. autoclass:: discord.ext.commands.Converter
     :members:
 
+.. autoclass:: discord.ext.commands.ObjectConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.MemberConverter
     :members:
 
@@ -288,6 +292,12 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.StoreChannelConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.StageChannelConverter
     :members:
 
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
@@ -317,27 +327,20 @@ Converters
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
-.. data:: ext.commands.Greedy
+.. autoclass:: discord.ext.commands.Greedy()
 
-    A special converter that greedily consumes arguments until it can't.
-    As a consequence of this behaviour, most input errors are silently discarded,
-    since it is used as an indicator of when to stop parsing.
+.. autofunction:: discord.ext.commands.run_converters
 
-    When a parser error is met the greedy converter stops converting, undoes the
-    internal string parsing routine, and continues parsing regularly.
+Flag Converter
+~~~~~~~~~~~~~~~
 
-    For example, in the following code:
+.. autoclass:: discord.ext.commands.FlagConverter
+    :members:
 
-    .. code-block:: python3
+.. autoclass:: discord.ext.commands.Flag()
+    :members:
 
-        @commands.command()
-        async def test(ctx, numbers: Greedy[int], reason: str):
-            await ctx.send("numbers: {}, reason: {}".format(numbers, reason))
-
-    An invocation of ``[p]test 1 2 3 4 5 6 hello`` would pass ``numbers`` with
-    ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
-
-    For more information, check :ref:`ext_commands_special_converters`.
+.. autofunction:: discord.ext.commands.flag
 
 .. _ext_commands_api_errors:
 
@@ -464,6 +467,21 @@ Exceptions
 .. autoexception:: discord.ext.commands.NSFWChannelRequired
     :members:
 
+.. autoexception:: discord.ext.commands.FlagError
+    :members:
+
+.. autoexception:: discord.ext.commands.BadFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.TooManyFlags
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRequiredFlag
+    :members:
+
 .. autoexception:: discord.ext.commands.ExtensionError
     :members:
 
@@ -509,6 +527,11 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.FlagError`
+                        - :exc:`~.commands.BadFlagArgument`
+                        - :exc:`~.commands.MissingFlagArgument`
+                        - :exc:`~.commands.TooManyFlags`
+                        - :exc:`~.commands.MissingRequiredFlag`
                 - :exc:`~.commands.BadUnionArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`

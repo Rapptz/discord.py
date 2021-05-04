@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -45,6 +43,11 @@ from .errors import (
 
 from . import utils
 from .enums import Status
+
+__all__ = (
+    'AutoShardedClient',
+    'ShardInfo',
+)
 
 log = logging.getLogger(__name__)
 
@@ -319,7 +322,7 @@ class AutoShardedClient(Client):
 
     def _get_state(self, **options):
         return AutoShardedConnectionState(dispatch=self.dispatch,
-                                          handlers=self._handlers, syncer=self._syncer,
+                                          handlers=self._handlers,
                                           hooks=self._hooks, http=self.http, loop=self.loop, **options)
 
     @property
@@ -355,42 +358,6 @@ class AutoShardedClient(Client):
     def shards(self):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return { shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items() }
-
-    @utils.deprecated('Guild.chunk')
-    async def request_offline_members(self, *guilds):
-        r"""|coro|
-
-        Requests previously offline members from the guild to be filled up
-        into the :attr:`Guild.members` cache. This function is usually not
-        called. It should only be used if you have the ``fetch_offline_members``
-        parameter set to ``False``.
-
-        When the client logs on and connects to the websocket, Discord does
-        not provide the library with offline members if the number of members
-        in the guild is larger than 250. You can check if a guild is large
-        if :attr:`Guild.large` is ``True``.
-
-        .. warning::
-
-            This method is deprecated. Use :meth:`Guild.chunk` instead.
-
-        Parameters
-        -----------
-        \*guilds: :class:`Guild`
-            An argument list of guilds to request offline members for.
-
-        Raises
-        -------
-        InvalidArgument
-            If any guild is unavailable in the collection.
-        """
-        if any(g.unavailable for g in guilds):
-            raise InvalidArgument('An unavailable or non-large guild was passed.')
-
-        _guilds = sorted(guilds, key=lambda g: g.shard_id)
-        for shard_id, sub_guilds in itertools.groupby(_guilds, key=lambda g: g.shard_id):
-            for guild in sub_guilds:
-                await self._connection.chunk_guild(guild)
 
     async def launch_shard(self, gateway, shard_id, *, initial=False):
         try:
