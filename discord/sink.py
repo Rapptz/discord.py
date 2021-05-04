@@ -127,7 +127,7 @@ class AudioData:
 class Sink(Filters):
     valid_encodings = ['wav', 'mp3', 'pcm']
 
-    def __init__(self, *, encoding='wave', output_path='', filters=None):
+    def __init__(self, *, encoding='wav', output_path='', filters=None):
         """A Sink "stores" all the audio data.
 
         Parameters
