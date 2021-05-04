@@ -1157,8 +1157,6 @@ class Messageable(Protocol):
 
         Retrieves a single :class:`~discord.Message` from the destination.
 
-        This can only be used by bot accounts.
-
         Parameters
         ------------
         id: :class:`int`
