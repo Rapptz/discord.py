@@ -310,8 +310,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         without discrimination.
 
         You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own (unless you are a user
-        account). The :attr:`~Permissions.read_message_history` permission is
+        delete messages even if they are your own.
+        The :attr:`~Permissions.read_message_history` permission is
         also needed to retrieve message history.
 
         Examples
