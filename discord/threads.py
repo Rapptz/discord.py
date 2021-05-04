@@ -142,6 +142,12 @@ class Thread(Messageable, Hashable):
     async def _get_channel(self):
         return self
 
+    def __repr__(self) -> str:
+        return (
+            f'<Thread id={self.id!r} name={self.name!r} parent={self.parent}'
+            f' owner_id={self.owner_id!r} locked={self.locked} archived={self.archived}>'
+        )
+
     def _from_data(self, data: ThreadPayload):
         self.id = int(data['id'])
         self.parent_id = int(data['parent_id'])
@@ -397,6 +403,9 @@ class ThreadMember(Hashable):
         self.parent = parent
         self._state = parent._state
         self._from_data(data)
+
+    def __repr__(self) -> str:
+        return f'<ThreadMember id={self.id} thread_id={self.thread_id} joined_at={self.joined_at!r}>'
 
     def _from_data(self, data: ThreadMemberPayload):
         try:
