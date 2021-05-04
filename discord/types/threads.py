@@ -23,11 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Literal, Optional, TypedDict
+from typing import List, Literal, Optional, TypedDict
 
 from .snowflake import Snowflake
 
-ThreadTypes = Literal[11, 12]
+ThreadTypes = Literal[10, 11, 12]
 ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
 
 
@@ -38,9 +38,13 @@ class ThreadMember(TypedDict):
     flags: int
 
 
-class ThreadMetadata(TypedDict):
+class _ThreadMetadataOptional(TypedDict, total=False):
+    archiver_id: Snowflake
+    locked: bool
+
+
+class ThreadMetadata(_ThreadMetadataOptional):
     archived: bool
-    archiver_id: Optional[Snowflake]
     auto_archive_duration: ThreadArchiveDuration
     archive_timestamp: str
 
@@ -48,6 +52,7 @@ class ThreadMetadata(TypedDict):
 class _ThreadOptional(TypedDict, total=False):
     member: ThreadMember
     last_message_id: Optional[Snowflake]
+    last_pin_timestamp: Optional[Snowflake]
 
 
 class Thread(_ThreadOptional):
@@ -59,4 +64,11 @@ class Thread(_ThreadOptional):
     type: ThreadTypes
     member_count: int
     message_count: int
+    rate_limit_per_user: int
     thread_metadata: ThreadMetadata
+
+
+class ThreadPaginationPayload(TypedDict):
+    threads: List[Thread]
+    members: List[ThreadMember]
+    has_more: bool

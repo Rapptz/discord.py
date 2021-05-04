@@ -87,6 +87,11 @@ class Thread(Messageable, Hashable):
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this thread. It may
         *not* point to an existing or valid message.
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this thread. A value of `0` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
     message_count: :class:`int`
         An approximate number of messages in this thread. This caps at 50.
     member_count: :class:`int`
@@ -112,10 +117,13 @@ class Thread(Messageable, Hashable):
         '_type',
         '_state',
         'owner_id',
+        'parent_id',
         'last_message_id',
         'message_count',
         'member_count',
+        'slowmode_delay',
         'me',
+        'locked',
         'archived',
         'archiver_id',
         'auto_archive_duration',
@@ -135,8 +143,9 @@ class Thread(Messageable, Hashable):
         self.parent_id = int(data['parent_id'])
         self.owner_id = int(data['owner_id'])
         self.name = data['name']
-        self.type = try_enum(ChannelType, data['type'])
+        self._type = try_enum(ChannelType, data['type'])
         self.last_message_id = utils._get_as_snowflake(data, 'last_message_id')
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._unroll_metadata(data['thread_metadata'])
 
         try:
@@ -151,6 +160,7 @@ class Thread(Messageable, Hashable):
         self.archiver_id = utils._get_as_snowflake(data, 'archiver_id')
         self.auto_archive_duration = data['auto_archive_duration']
         self.archive_timestamp = utils.parse_time(data['archive_timestamp'])
+        self.locked = data.get('locked', False)
 
     def _update(self, data):
         try:
@@ -196,7 +206,7 @@ class Thread(Messageable, Hashable):
 
     def is_private(self) -> bool:
         """:class:`bool`: Whether the thread is a private thread."""
-        return self.type is ChannelType.private_thread
+        return self._type is ChannelType.private_thread
 
     async def edit(
         self,

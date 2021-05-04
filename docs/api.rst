@@ -1065,6 +1065,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
 
+    .. attribute:: news_thread
+
+        A news thread
+
+        .. versionadded:: 2.0
+
     .. attribute:: public_thread
 
         A public thread
@@ -1096,12 +1102,12 @@ of :class:`enum.Enum`.
         The default message type. This is the same as regular messages.
     .. attribute:: recipient_add
 
-        The system message when a recipient is added to a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is added to a group private
+        message or a thread.
     .. attribute:: recipient_remove
 
-        The system message when a recipient is removed from a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is removed from a group private
+        message or a thread.
     .. attribute:: call
 
         The system message denoting call state, e.g. missed call, started call,
@@ -1170,7 +1176,10 @@ of :class:`enum.Enum`.
         .. versionadded:: 1.7
     .. attribute:: thread_created
 
-        The system message denoting that a thread has been created
+        The system message denoting that a thread has been created. This is only
+        sent if the thread has been created from an older message. The period of time
+        required for a message to be considered old cannot be relied upon and is up to
+        Discord.
 
         .. versionadded:: 2.0
     .. attribute:: reply
@@ -1190,8 +1199,8 @@ of :class:`enum.Enum`.
         .. versionadded:: 2.0
     .. attribute:: thread_starter_message
 
-        The system message denoting that this message is the one that started a thread's
-        conversation topic.
+        The system message denoting the message in the thread that is the one that started the
+        thread's conversation topic.
 
         .. versionadded:: 2.0
 
