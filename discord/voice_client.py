@@ -848,5 +848,6 @@ class VoiceClient(VoiceProtocol):
 
         silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
         data.decoded_data = struct.pack('<h', 0) * silence + data.decoded_data
-        threading.Condition().wait_for(lambda: self.ssrc_exists(data.ssrc))
+        if not self.ssrc_exists(data.ssrc):
+            threading.Condition().wait_for(lambda: self.ssrc_exists(data.ssrc))
         self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]['user_id'])
