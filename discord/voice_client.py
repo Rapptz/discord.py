@@ -832,6 +832,9 @@ class VoiceClient(VoiceProtocol):
             if result is not None:
                 print(result)
 
+    def ssrc_exists(self, ssrc):
+        return ssrc in self.ws.ssrc_map
+
     def recv_decoded_audio(self, data):
         if data.ssrc not in self.user_timestamps:
             self.user_timestamps.update({data.ssrc: data.timestamp})
@@ -842,4 +845,5 @@ class VoiceClient(VoiceProtocol):
 
         silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
         data.decoded_data = struct.pack('<h', 0) * silence + data.decoded_data
+        threading.Condition().wait_for(lambda: self.ssrc_exists(data.ssrc))
         self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]['user_id'])
