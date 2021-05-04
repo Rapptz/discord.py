@@ -28,7 +28,7 @@ from typing import Optional, TYPE_CHECKING
 from .mixins import Hashable
 from .abc import Messageable
 from .enums import ChannelType, try_enum
-from . import utils
+from .utils import MISSING, parse_time, _get_as_snowflake
 
 __all__ = (
     'Thread',
@@ -145,7 +145,7 @@ class Thread(Messageable, Hashable):
         self.owner_id = int(data['owner_id'])
         self.name = data['name']
         self._type = try_enum(ChannelType, data['type'])
-        self.last_message_id = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_message_id = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._unroll_metadata(data['thread_metadata'])
 
@@ -158,9 +158,9 @@ class Thread(Messageable, Hashable):
 
     def _unroll_metadata(self, data: ThreadMetadata):
         self.archived = data['archived']
-        self.archiver_id = utils._get_as_snowflake(data, 'archiver_id')
+        self.archiver_id = _get_as_snowflake(data, 'archiver_id')
         self.auto_archive_duration = data['auto_archive_duration']
-        self.archive_timestamp = utils.parse_time(data['archive_timestamp'])
+        self.archive_timestamp = parse_time(data['archive_timestamp'])
         self.locked = data.get('locked', False)
 
     def _update(self, data):
@@ -216,9 +216,9 @@ class Thread(Messageable, Hashable):
     async def edit(
         self,
         *,
-        name: str = ...,
-        archived: bool = ...,
-        auto_archive_duration: ThreadArchiveDuration = ...,
+        name: str = MISSING,
+        archived: bool = MISSING,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
     ):
         """|coro|
 
@@ -244,11 +244,11 @@ class Thread(Messageable, Hashable):
             Editing the thread failed.
         """
         payload = {}
-        if name is not ...:
+        if name is not MISSING:
             payload['name'] = str(name)
-        if archived is not ...:
+        if archived is not MISSING:
             payload['archived'] = archived
-        if auto_archive_duration is not ...:
+        if auto_archive_duration is not MISSING:
             payload['auto_archive_duration'] = auto_archive_duration
         await self._state.http.edit_channel(self.id, **payload)
 
@@ -344,6 +344,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.delete_channel(self.id)
 
+
 class ThreadMember(Hashable):
     """Represents a Discord thread member.
 
@@ -403,5 +404,5 @@ class ThreadMember(Hashable):
         except KeyError:
             self.thread_id = self.parent.id
 
-        self.joined_at = utils.parse_time(data['join_timestamp'])
+        self.joined_at = parse_time(data['join_timestamp'])
         self.flags = data['flags']
