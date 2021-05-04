@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .message import Message
     from .abc import Snowflake
+    from .state import ConnectionState
 
 
 class Thread(Messageable, Hashable):
@@ -131,7 +132,7 @@ class Thread(Messageable, Hashable):
     )
 
     def __init__(self, *, guild: Guild, data: ThreadPayload):
-        self._state = guild._state
+        self._state: ConnectionState = guild._state
         self.guild = guild
         self._from_data(data)
 
@@ -153,7 +154,7 @@ class Thread(Messageable, Hashable):
         except KeyError:
             self.me = None
         else:
-            self.me = ThreadMember(member, self._state)
+            self.me = ThreadMember(self, member)
 
     def _unroll_metadata(self, data: ThreadMetadata):
         self.archived = data['archived']
@@ -382,14 +383,25 @@ class ThreadMember(Hashable):
         'joined_at',
         'flags',
         '_state',
+        'parent',
     )
 
-    def __init__(self, data: ThreadMemberPayload, state):
-        self._state = state
+    def __init__(self, parent: Thread, data: ThreadMemberPayload):
+        self.parent = parent
+        self._state = parent._state
         self._from_data(data)
 
     def _from_data(self, data: ThreadMemberPayload):
-        self.id = int(data['user_id'])
-        self.thread_id = int(data['id'])
+        try:
+            self.id = int(data['user_id'])
+        except KeyError:
+            assert self._state.self_id is not None
+            self.id = self._state.self_id
+
+        try:
+            self.thread_id = int(data['id'])
+        except KeyError:
+            self.thread_id = self.parent.id
+
         self.joined_at = utils.parse_time(data['join_timestamp'])
         self.flags = data['flags']
