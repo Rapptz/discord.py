@@ -208,6 +208,10 @@ class Thread(Messageable, Hashable):
         """:class:`bool`: Whether the thread is a private thread."""
         return self._type is ChannelType.private_thread
 
+    def is_news(self) -> bool:
+        """:class:`bool`: Whether the thread is a news thread."""
+        return self._type is ChannelType.news_thread
+
     async def edit(
         self,
         *,
