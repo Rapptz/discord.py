@@ -589,18 +589,33 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-    async def start_private_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def start_thread(
+        self,
+        *,
+        name: str,
+        message: Optional[Snowflake] = None,
+        auto_archive_duration: ThreadArchiveDuration = 1440,
+    ) -> Thread:
         """|coro|
 
-        Starts a private thread in this text channel.
+        Starts a thread in this text channel.
 
-        You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to start a thread.
+        If no starter message is passed with the ``message`` parameter then
+        you must have :attr:`~discord.Permissions.send_messages` and
+        :attr:`~discord.Permissions.use_private_threads` in order to start the thread.
+
+        If a starter message is passed with the ``message`` parameter then
+        you must have :attr:`~discord.Permissions.send_messages` and
+        :attr:`~discord.Permissions.use_threads` in order to start the thread.
 
         Parameters
         -----------
         name: :class:`str`
             The name of the thread.
+        message: Optional[:class:`abc.Snowflake`]
+            A snowflake representing the message to start the thread with.
+            If ``None`` is passed then a private thread is started.
+            Defaults to ``None``.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
@@ -613,18 +628,28 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Starting the thread failed.
         """
 
-        data = await self._state.http.start_private_thread(
-            self.id,
-            name=name,
-            auto_archive_duration=auto_archive_duration,
-            type=ChannelType.private_thread.value,
-        )
+        if message is None:
+            data = await self._state.http.start_private_thread(
+                self.id,
+                name=name,
+                auto_archive_duration=auto_archive_duration,
+                type=ChannelType.private_thread.value,
+            )
+        else:
+            data = await self._state.http.start_public_thread(
+                self.id,
+                message.id,
+                name=name,
+                auto_archive_duration=auto_archive_duration,
+                type=ChannelType.public_thread.value,
+            )
+
         return Thread(guild=self.guild, data=data)
 
     def archived_threads(
         self,
         *,
-        private: bool = True,
+        private: bool = False,
         joined: bool = False,
         limit: Optional[int] = 50,
         before: Optional[Union[Snowflake, datetime.datetime]] = None,

@@ -1430,7 +1430,7 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def start_public_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def start_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
         """|coro|
 
         Starts a public thread from this message.
