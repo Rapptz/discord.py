@@ -506,6 +506,7 @@ class Intents(BaseFlags):
         This also corresponds to the following attributes and classes in terms of cache:
 
         - :meth:`Client.get_all_members`
+        - :meth:`Client.get_user`
         - :meth:`Guild.chunk`
         - :meth:`Guild.fetch_members`
         - :meth:`Guild.get_member`
