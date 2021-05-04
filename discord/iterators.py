@@ -749,4 +749,5 @@ class ArchivedThreadIterator(_AsyncIterator['Thread']):
             self.before = self.update_before(threads[-1])
 
     def create_thread(self, data: ThreadPayload) -> Thread:
+        from .threads import Thread
         return Thread(guild=self.guild, data=data)
