@@ -1524,9 +1524,9 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return value.format(data['url'], encoding)
 
     async def get_bot_gateway(self, *, encoding='json', zlib=True):
@@ -1536,9 +1536,9 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return data['shards'], value.format(data['url'], encoding)
 
     def get_user(self, user_id):
