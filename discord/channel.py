@@ -269,8 +269,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         You must have the :attr:`~Permissions.manage_messages` permission to
         use this.
 
-        Usable only by bot accounts.
-
         Parameters
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
@@ -281,8 +279,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ClientException
             The number of messages to delete was more than 100.
         Forbidden
-            You do not have proper permissions to delete the messages or
-            you're not using a bot account.
+            You do not have proper permissions to delete the messages.
         NotFound
             If single delete, then the message was already deleted.
         HTTPException
