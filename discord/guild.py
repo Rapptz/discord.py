@@ -1155,9 +1155,9 @@ class Guild(Hashable):
             pass
         else:
             if discovery_splash_bytes is not None:
-                discovery_splash = utils._bytes_to_base64_data(discovery_splash_bytes)
+                fields['discovery_splash'] = utils._bytes_to_base64_data(discovery_splash_bytes)
             else:
-                discovery_splash = None
+                fields['discovery_splash'] = None
 
         fields['icon'] = icon
         fields['banner'] = banner
