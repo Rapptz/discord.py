@@ -179,7 +179,7 @@ class _Overwrites:
         return self.type == 1
 
 
-class GuildChannel(Protocol):
+class GuildChannel(Snowflake, Protocol):
     """An ABC that details the common operations on a Discord guild channel.
 
     The following implement this ABC:
