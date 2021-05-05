@@ -1401,6 +1401,51 @@ class Guild(Hashable):
             reason=data['reason']
         )
 
+    async def fetch_channel(self, channel_id: int, /) -> abc.GuildChannel:
+        """|coro|
+
+        Retrieves a :class:`.abc.GuildChannel` with the specified ID.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_channel` instead.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        :exc:`.InvalidData`
+            An unknown channel type was received from Discord
+            or the guild the channel belongs to is not the same
+            as the one in this object points to.
+        :exc:`.HTTPException`
+            Retrieving the channel failed.
+        :exc:`.NotFound`
+            Invalid Channel ID.
+        :exc:`.Forbidden`
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        :class:`.abc.GuildChannel`
+            The channel from the ID.
+        """
+        data = await self._state.http.get_channel(channel_id)
+
+        factory, ch_type = _channel_factory(data['type'])
+        if factory is None:
+            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+
+        if ch_type in (ChannelType.group, ChannelType.private):
+            raise InvalidData('Channel ID resolved to a private channel')
+
+        guild_id = int(data['guild_id'])
+        if self.id != guild_id:
+            raise InvalidData('Guild ID resolved to a different guild')
+
+        channel: abc.GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore
+        return channel
+
     async def bans(self):
         """|coro|
 
