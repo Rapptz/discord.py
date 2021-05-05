@@ -28,12 +28,14 @@ from . import utils
 from .mixins import Hashable
 
 from typing import (
-    Any,
+    SupportsInt,
     TYPE_CHECKING,
+    Union,
 )
 
 if TYPE_CHECKING:
     import datetime
+    SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
 
 __all__ = (
     'Object',
@@ -73,7 +75,7 @@ class Object(Hashable):
         The ID of the object.
     """
 
-    def __init__(self, id: Any):
+    def __init__(self, id: SupportsIntCast):
         try:
             id = int(id)
         except ValueError:
