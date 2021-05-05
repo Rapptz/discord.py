@@ -1854,7 +1854,7 @@ of :class:`enum.Enum`.
 
 .. class:: TeamMembershipState
 
-    Represents the membership state of a team member retrieved through :func:`Bot.application_info`.
+    Represents the membership state of a team member retrieved through :func:`Client.application_info`.
 
     .. versionadded:: 1.3
 
@@ -2581,6 +2581,7 @@ Webhook
 
 .. autoclass:: Webhook()
     :members:
+    :inherited-members:
 
 WebhookMessage
 ~~~~~~~~~~~~~~~~
@@ -2597,6 +2598,7 @@ SyncWebhook
 
 .. autoclass:: SyncWebhook()
     :members:
+    :inherited-members:
 
 SyncWebhookMessage
 ~~~~~~~~~~~~~~~~~~~

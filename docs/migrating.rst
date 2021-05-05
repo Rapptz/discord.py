@@ -381,7 +381,7 @@ They will be enumerated here.
 
 **Changed**
 
-- :attr:`Member.avatar_url` and :attr:`User.avatar_url` now return the default avatar if a custom one is not set.
+- ``Member.avatar_url`` and ``User.avatar_url`` now return the default avatar if a custom one is not set.
 - :attr:`Message.embeds` is now a list of :class:`Embed` instead of :class:`dict` objects.
 - :attr:`Message.attachments` is now a list of :class:`Attachment` instead of :class:`dict` object.
 - :attr:`Guild.roles` is now sorted through hierarchy. The first element is always the ``@everyone`` role.
@@ -403,7 +403,7 @@ They will be enumerated here.
 - :attr:`Guild.shard_id` to get a guild's Shard ID if you're sharding.
 - :attr:`Client.users` to get all visible :class:`User` instances.
 - :meth:`Client.get_user` to get a :class:`User` by ID.
-- :meth:`User.avatar_url_as` to get an avatar in a specific size or format.
+- ``User.avatar_url_as`` to get an avatar in a specific size or format.
 - :meth:`Guild.vanity_invite` to fetch the guild's vanity invite.
 - :meth:`Guild.audit_logs` to fetch the guild's audit logs.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
@@ -576,8 +576,8 @@ After:
 - :func:`on_guild_channel_delete`
 - :func:`on_guild_channel_create`
 - :func:`on_guild_channel_update`
-- :func:`on_private_channel_delete`
-- :func:`on_private_channel_create`
+- ``on_private_channel_delete``
+- ``on_private_channel_create``
 - :func:`on_private_channel_update`
 
 The ``on_guild_channel_`` events correspond to :class:`abc.GuildChannel` being updated (i.e. :class:`TextChannel`

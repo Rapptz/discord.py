@@ -57,11 +57,11 @@ New Features
 - Add :attr:`Permissions.use_slash_commands`
 - Add :attr:`Permissions.request_to_speak`
 - Add support for voice regions in voice channels via :attr:`VoiceChannel.rtc_region` (:issue:`6606`)
-- Add support for :meth:`PartialEmoji.url_as` (:issue:`6341`)
+- Add support for ``PartialEmoji.url_as`` (:issue:`6341`)
 - Add :attr:`MessageReference.jump_url` (:issue:`6318`)
 - Add :attr:`File.spoiler` (:issue:`6317`)
 - Add support for passing ``roles`` to :meth:`Guild.estimate_pruned_members` (:issue:`6538`)
-- Allow callable class factories to be used in :meth:`abc.Connectable.play` (:issue:`6478`)
+- Allow callable class factories to be used in :meth:`abc.Connectable.connect <VoiceChannel.connect>` (:issue:`6478`)
 - Add a way to get mutual guilds from the client's cache via :attr:`User.mutual_guilds` (:issue:`2539`, :issue:`6444`)
 - :meth:`PartialMessage.edit` now returns a full :class:`Message` upon success (:issue:`6309`)
 - Add :attr:`RawMessageUpdateEvent.guild_id` (:issue:`6489`)
@@ -95,7 +95,7 @@ Bug Fixes
     - Note that currently, bot users still cannot set a custom activity due to a Discord limitation.
 - Fix :exc:`ZeroDivisionError` being raised from :attr:`VoiceClient.average_latency` (:issue:`6430`, :issue:`6436`)
 - Fix :attr:`User.public_flags` not updating upon edit (:issue:`6315`)
-- Fix :attr:`Message.call` sometimes causing attribute errors (:issue:`6390`)
+- Fix ``Message.call`` sometimes causing attribute errors (:issue:`6390`)
 - Fix issue resending a file during request retries on newer versions of ``aiohttp`` (:issue:`6531`)
 - Raise an error when ``user_ids`` is empty in :meth:`Guild.query_members`
 - Fix ``__str__`` magic method raising when a :class:`Guild` is unavailable.
@@ -113,7 +113,7 @@ Miscellaneous
 ~~~~~~~~~~~~~~
 
 - User endpoints and all userbot related functionality has been deprecated and will be removed in the next major version of the library.
-- :class:`Permission` class methods were updated to match the UI of the Discord client (:issue:`6476`)
+- :class:`Permissions` class methods were updated to match the UI of the Discord client (:issue:`6476`)
 - ``_`` and ``-`` characters are now stripped when making a new cog using the ``discord`` package (:issue:`6313`)
 
 .. _vp1p6p0:
@@ -128,7 +128,7 @@ New Features
 
 - An entirely redesigned documentation. This was the cumulation of multiple months of effort.
     - There's now a dark theme, feel free to navigate to the cog on the screen to change your setting, though this should be automatic.
-- Add support for :meth:`AppInfo.icon_url_as` and :meth:`AppInfo.cover_image_url_as` (:issue:`5888`)
+- Add support for ``AppInfo.icon_url_as`` and ``AppInfo.cover_image_url_as`` (:issue:`5888`)
 - Add :meth:`Colour.random` to get a random colour (:issue:`6067`)
 - Add support for stickers via :class:`Sticker` (:issue:`5946`)
 - Add support for replying via :meth:`Message.reply` (:issue:`6061`)
@@ -152,7 +152,7 @@ New Features
     - This adds :class:`WebhookMessage` as well to power this behaviour.
 - Add :class:`PartialMessage` to allow working with a message via channel objects and just a message_id (:issue:`5905`)
     - This is useful if you don't want to incur an extra API call to fetch the message.
-- Add :meth:`Emoji.url_as` (:issue:`6162`)
+- Add ``Emoji.url_as`` (:issue:`6162`)
 - Add support for :attr:`Member.pending` for the membership gating feature.
 - Allow ``colour`` parameter to take ``int`` in :meth:`Guild.create_role` (:issue:`6195`)
 - Add support for ``presences`` in :meth:`Guild.query_members` (:issue:`2354`)
@@ -172,7 +172,7 @@ Bug Fixes
 - Fix :attr:`Message.author` being overwritten in certain cases during message update.
     - This would previously make it so :attr:`Message.author` is a :class:`User`.
 - Fix :exc:`UnboundLocalError` for editing ``public_updates_channel`` in :meth:`Guild.edit` (:issue:`6093`)
-- Fix uninitialised :attr:`CustomActivity.created_at` (:issue:`6095`)
+- Fix uninitialised :attr:`CustomActivity.created_at <BaseActivity.created_at>` (:issue:`6095`)
 - |commands| Errors during cog unload no longer stops module cleanup (:issue:`6113`)
 - |commands| Properly cleanup lingering commands when a conflicting alias is found when adding commands (:issue:`6217`)
 
@@ -242,9 +242,9 @@ New Features
     - This seems currently unused API wise.
 
 - Add support for message references, :attr:`Message.reference` (:issue:`5754`, :issue:`5832`)
-- Add alias for :class:`ColourConverter` under ``ColorConverter`` (:issue:`5773`)
+- Add alias for :class:`ColourConverter <ext.commands.ColourConverter>` under ``ColorConverter`` (:issue:`5773`)
 - Add alias for :attr:`PublicUserFlags.verified_bot_developer` under :attr:`PublicUserFlags.early_verified_bot_developer` (:issue:`5849`)
-- |commands| Add support for ``require_var_positional`` for :class:`Command` (:issue:`5793`)
+- |commands| Add support for ``require_var_positional`` for :class:`Command <ext.commands.Command>` (:issue:`5793`)
 
 Bug Fixes
 ~~~~~~~~~~
@@ -255,7 +255,7 @@ Bug Fixes
 - Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
 - Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
 - Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
-- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- Fix ``overwrites`` being ignored in ``abc.GuildChannel.edit`` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
 - |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
 - |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
 - |commands| Fix cooldown timing ignoring edited timestamps.
@@ -270,7 +270,7 @@ Miscellaneous
 - Warnings logged due to missed caches are now changed to DEBUG log level.
 - Some strings are now explicitly interned to reduce memory usage.
 - Usage of namedtuples has been reduced to avoid potential breaking changes in the future (:issue:`5834`)
-- |commands| All :class:`BadArgument` exceptions from the built-in converters now raise concrete exceptions to better tell them apart (:issue:`5748`)
+- |commands| All :class:`BadArgument <ext.commands.BadArgument>` exceptions from the built-in converters now raise concrete exceptions to better tell them apart (:issue:`5748`)
 - |tasks| Lazily fetch the event loop to prevent surprises when changing event loop policy (:issue:`5808`)
 
 .. _vp1p4p2:
@@ -289,7 +289,7 @@ Bug Fixes
 - Fix cases where a keep-alive thread would ack despite already dying (:issue:`5800`)
 - Fix cases where a :class:`Member` reference would be stale when cache is disabled in message events (:issue:`5819`)
 - Fix ``allowed_mentions`` not being sent when sending a single file (:issue:`5835`)
-- Fix ``overwrites`` being ignored in :meth:`abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
+- Fix ``overwrites`` being ignored in ``abc.GuildChannel.edit` if ``{}`` is passed (:issue:`5756`, :issue:`5757`)
 - |commands| Fix exceptions being raised improperly in command invoke hooks (:issue:`5799`)
 - |commands| Fix commands not being properly ejected during errors in a cog injection (:issue:`5804`)
 - |commands| Fix cooldown timing ignoring edited timestamps.
@@ -366,8 +366,8 @@ New Features
 - Allow changing of channel types via :meth:`TextChannel.edit` to and from a news channel (:issue:`4121`)
 - Add :meth:`Guild.edit_role_positions` to bulk edit role positions in a single API call (:issue:`2501`, :issue:`2143`)
 - Add :meth:`Guild.change_voice_state` to change your voice state in a guild (:issue:`5088`)
-- Add :meth:`PartialInviteGuild.is_icon_animated` for checking if the invite guild has animated icon (:issue:`4180`, :issue:`4181`)
-- Add :meth:`PartialInviteGuild.icon_url_as` now supports ``static_format`` for consistency (:issue:`4180`, :issue:`4181`)
+- Add ``PartialInviteGuild.is_icon_animated`` for checking if the invite guild has animated icon (:issue:`4180`, :issue:`4181`)
+- Add ``PartialInviteGuild.icon_url_as`` now supports ``static_format`` for consistency (:issue:`4180`, :issue:`4181`)
 - Add support for ``user_ids`` in :meth:`Guild.query_members`
 - Add support for pruning members by roles in :meth:`Guild.prune_members` (:issue:`4043`)
 - |commands| Implement :func:`~ext.commands.before_invoke` and :func:`~ext.commands.after_invoke` decorators (:issue:`1986`, :issue:`2502`)
@@ -396,9 +396,9 @@ Bug Fixes
 - Fix an issue with domain resolution in voice (:issue:`5188`, :issue:`5191`)
 - Fix an issue where :attr:`PartialEmoji.id` could be a string (:issue:`4153`, :issue:`4152`)
 - Fix regression where :attr:`Member.activities` would not clear.
-- |commands| A :exc:`TypeError` is now raised when :obj:`typing.Optional` is used within :data:`commands.Greedy <.ext.commands.Greedy>` (:issue:`2253`, :issue:`5068`)
+- |commands| A :exc:`TypeError` is now raised when :obj:`typing.Optional` is used within ``commands.Greedy`` (:issue:`2253`, :issue:`5068`)
 - |commands| :meth:`Bot.walk_commands <.ext.commands.Bot.walk_commands>` no longer yields duplicate commands due to aliases (:issue:`2591`)
-- |commands| Fix regex characters not being escaped in :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` (:issue:`4058`, :issue:`4071`)
+- |commands| Fix regex characters not being escaped in ``HelpCommand.clean_prefix`` (:issue:`4058`, :issue:`4071`)
 - |commands| Fix :meth:`Bot.get_command <.ext.commands.Bot.get_command>` from raising errors when a name only has whitespace (:issue:`5124`)
 - |commands| Fix issue with :attr:`Context.subcommand_passed <.ext.commands.Context.subcommand_passed>` not functioning as expected (:issue:`5198`)
 - |tasks| Task objects are no longer stored globally so two class instances can now start two separate tasks (:issue:`2294`)
@@ -515,18 +515,18 @@ New Features
     - Note that integration support is not finalized.
 
 - Add :attr:`Webhook.type` to query the type of webhook (:class:`WebhookType`). (:issue:`2441`)
-- Allow bulk editing of channel overwrites through :meth:`abc.GuildChannel.edit`. (:issue:`2198`)
-- Add :class:`Activity.created_at` to see when an activity was started. (:issue:`2446`)
+- Allow bulk editing of channel overwrites through ``abc.GuildChannel.edit``. (:issue:`2198`)
+- Add :class:`Activity.created_at <BaseActivity.created_at>` to see when an activity was started. (:issue:`2446`)
 - Add support for ``xsalsa20_poly1305_lite`` encryption mode for voice. (:issue:`2463`)
 - Add :attr:`RawReactionActionEvent.member` to get the member who did the reaction. (:issue:`2443`)
 - Add support for new YouTube streaming via :attr:`Streaming.platform` and :attr:`Streaming.game`. (:issue:`2445`)
-- Add :attr:`Guild.discovery_splash_url` to get the discovery splash image asset. (:issue:`2482`)
+- Add ``Guild.discovery_splash_url`` to get the discovery splash image asset. (:issue:`2482`)
 - Add :attr:`Guild.rules_channel` to get the rules channel of public guilds. (:issue:`2482`)
     - It should be noted that this feature is restricted to those who are either in Server Discovery or planning to be there.
 
 - Add support for message flags via :attr:`Message.flags` and :class:`MessageFlags`. (:issue:`2433`)
-- Add :attr:`User.system` and :attr:`Profile.system` to know whether a user is an official Discord Trust and Safety account.
-- Add :attr:`Profile.team_user` to check whether a user is a member of a team.
+- Add :attr:`User.system` and ``Profile.system`` to know whether a user is an official Discord Trust and Safety account.
+- Add ``Profile.team_user`` to check whether a user is a member of a team.
 - Add :meth:`Attachment.to_file` to easily convert attachments to :class:`File` for sending.
 - Add certain aliases to :class:`Permissions` to match the UI better. (:issue:`2496`)
     - :attr:`Permissions.manage_permissions`
@@ -577,7 +577,7 @@ Bug Fixes
 - |commands| Fix issue with paginator prefix being ``None`` causing empty pages. (:issue:`2471`)
 - |commands| :class:`~.commands.Greedy` now ignores parsing errors rather than propagating them.
 - |commands| :meth:`Command.can_run <.ext.commands.Command.can_run>` now checks whether a command is disabled.
-- |commands| :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` now takes into consideration nickname mentions. (:issue:`2489`)
+- |commands| ``HelpCommand.clean_prefix`` now takes into consideration nickname mentions. (:issue:`2489`)
 - |commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` now properly propagates to the :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` handler.
 
 Miscellaneous
@@ -659,7 +659,7 @@ v1.2.1
 Bug Fixes
 ~~~~~~~~~~~
 
-- :attr:`User.avatar_url` and related attributes no longer raise an error.
+- ``User.avatar_url`` and related attributes no longer raise an error.
 - More compatibility shims with the ``enum.Enum`` code.
 
 .. _vp1p2p0:
@@ -680,8 +680,8 @@ New Features
 - Add :attr:`Guild.system_channel_flags` to query the settings for a guild's :attr:`Guild.system_channel`.
     - This includes a new type named :class:`SystemChannelFlags`
 - Add :attr:`Emoji.available` to query if an emoji can be used (within the guild or otherwise).
-- Add support for animated icons in :meth:`Guild.icon_url_as` and :attr:`Guild.icon_url`.
-- Add :meth:`Guild.is_icon_animated`.
+- Add support for animated icons in ``Guild.icon_url_as`` and ``Guild.icon_url``.
+- Add ``Guild.is_icon_animated``.
 - Add support for the various new :class:`MessageType` involving nitro boosting.
 - Add :attr:`VoiceRegion.india`. (:issue:`2145`)
 - Add :meth:`Embed.insert_field_at`. (:issue:`2178`)
@@ -757,7 +757,7 @@ New Features
 ++++++++++++++++++++++++++
 
 - Add new :func:`~.commands.dm_only` check.
-- Support callable converters in :data:`~.commands.Greedy`
+- Support callable converters in ``~.commands.Greedy``
 - Add new :class:`~.commands.MessageConverter`.
     - This allows you to use :class:`Message` as a type hint in functions.
 - Allow passing ``cls`` in the :func:`~.commands.group` decorator (:issue:`2061`)
@@ -770,7 +770,7 @@ Bug Fixes
 - Fix :exc:`AttributeError` when using ``__repr__`` on :class:`Widget`.
 - Fix issue with :attr:`abc.GuildChannel.overwrites` returning ``None`` for keys.
 - Remove incorrect legacy NSFW checks in e.g. :meth:`TextChannel.is_nsfw`.
-- Fix :exc:`UnboundLocalError` when :class:`RequestsWebhookAdapter` raises an error.
+- Fix :exc:`UnboundLocalError` when ``RequestsWebhookAdapter`` raises an error.
 - Fix bug where updating your own user did not update your member instances.
 - Tighten constraints of ``__eq__`` in :class:`Spotify` objects (:issue:`2113`, :issue:`2117`)
 
@@ -780,7 +780,7 @@ Bug Fixes
 - Fix lambda converters in a non-module context (e.g. ``eval``).
 - Use message creation time for reference time when computing cooldowns.
     - This prevents cooldowns from triggering during e.g. a RESUME session.
-- Fix the default :func:`on_command_error` to work with new-style cogs (:issue:`2094`)
+- Fix the default :func:`~.commands.on_command_error` to work with new-style cogs (:issue:`2094`)
 - DM channels are now recognised as NSFW in :func:`~.commands.is_nsfw` check.
 - Fix race condition with help commands (:issue:`2123`)
 - Fix cog descriptions not showing in :class:`~.commands.MinimalHelpCommand` (:issue:`2139`)
@@ -828,7 +828,7 @@ v0.16.6
 Bug Fixes
 ~~~~~~~~~~
 
-- Fix issue with :meth:`Client.create_server` that made it stop working.
+- Fix issue with ``Client.create_server`` that made it stop working.
 - Fix main thread being blocked upon calling ``StreamPlayer.stop``.
 - Handle HEARTBEAT_ACK and resume gracefully when it occurs.
 - Fix race condition when pre-emptively rate limiting that caused releasing an already released lock.
@@ -848,7 +848,7 @@ Bug Fixes
 - The CDN URL is now used instead of the API URL for assets.
 - Rate limit implementation now tries to use header information if possible.
 - Event loop is now properly propagated (:issue:`420`)
-- Allow falsey values in :meth:`Client.send_message` and :meth:`Client.send_file`.
+- Allow falsey values in ``Client.send_message`` and ``Client.send_file``.
 
 .. _vp0p16p0:
 
@@ -858,8 +858,8 @@ v0.16.0
 New Features
 ~~~~~~~~~~~~~~
 
-- Add :attr:`Channel.overwrites` to get all the permission overwrites of a channel.
-- Add :attr:`Server.features` to get information about partnered servers.
+- Add ``Channel.overwrites`` to get all the permission overwrites of a channel.
+- Add ``Server.features`` to get information about partnered servers.
 
 Bug Fixes
 ~~~~~~~~~~
@@ -892,8 +892,8 @@ New Features
 
 - Rich Embeds for messages are now supported.
 
-    - To do so, create your own :class:`Embed` and pass the instance to the ``embed`` keyword argument to :meth:`Client.send_message` or :meth:`Client.edit_message`.
-- Add :meth:`Client.clear_reactions` to remove all reactions from a message.
+    - To do so, create your own :class:`Embed` and pass the instance to the ``embed`` keyword argument to ``Client.send_message`` or ``Client.edit_message``.
+- Add ``Client.clear_reactions`` to remove all reactions from a message.
 - Add support for MESSAGE_REACTION_REMOVE_ALL event, under :func:`on_reaction_clear`.
 - Add :meth:`Permissions.update` and :meth:`PermissionOverwrite.update` for bulk permission updates.
 
@@ -923,13 +923,13 @@ v0.14.2
 New Features
 ~~~~~~~~~~~~~~
 
-- :meth:`Client.wait_for_reaction` now returns a namedtuple with ``reaction`` and ``user`` attributes.
+- ``Client.wait_for_reaction`` now returns a namedtuple with ``reaction`` and ``user`` attributes.
     - This is for better support in the case that ``None`` is returned since tuple unpacking can lead to issues.
 
 Bug Fixes
 ~~~~~~~~~~
 
-- Fix bug that disallowed ``None`` to be passed for ``emoji`` parameter in :meth:`Client.wait_for_reaction`.
+- Fix bug that disallowed ``None`` to be passed for ``emoji`` parameter in ``Client.wait_for_reaction``.
 
 .. _v0p14p1:
 
@@ -953,15 +953,15 @@ New Features
 ~~~~~~~~~~~~~
 
 - Add support for Manage Webhooks permission under :attr:`Permissions.manage_webhooks`
-- Add support for ``around`` argument in 3.5+ :meth:`Client.logs_from`.
+- Add support for ``around`` argument in 3.5+ ``Client.logs_from``.
 - Add support for reactions.
-    - :meth:`Client.add_reaction` to add a reactions
-    - :meth:`Client.remove_reaction` to remove a reaction.
-    - :meth:`Client.get_reaction_users` to get the users that reacted to a message.
+    - ``Client.add_reaction`` to add a reactions
+    - ``Client.remove_reaction`` to remove a reaction.
+    - ``Client.get_reaction_users`` to get the users that reacted to a message.
     - :attr:`Permissions.add_reactions` permission bit support.
     - Two new events, :func:`on_reaction_add` and :func:`on_reaction_remove`.
     - :attr:`Message.reactions` to get reactions from a message.
-    - :meth:`Client.wait_for_reaction` to wait for a reaction from a user.
+    - ``Client.wait_for_reaction`` to wait for a reaction from a user.
 
 Bug Fixes
 ~~~~~~~~~~
@@ -981,9 +981,9 @@ New Features
 
 - Add the ability to manage emojis.
 
-    - :meth:`Client.create_custom_emoji` to create new emoji.
-    - :meth:`Client.edit_custom_emoji` to edit an old emoji.
-    - :meth:`Client.delete_custom_emoji` to delete a custom emoji.
+    - ``Client.create_custom_emoji`` to create new emoji.
+    - ``Client.edit_custom_emoji`` to edit an old emoji.
+    - ``Client.delete_custom_emoji`` to delete a custom emoji.
 - Add new :attr:`Permissions.manage_emojis` toggle.
 
     - This applies for :class:`PermissionOverwrite` as well.
@@ -991,7 +991,7 @@ New Features
 
     - :attr:`Status.dnd` (aliased with :attr:`Status.do_not_disturb`\) for Do Not Disturb.
     - :attr:`Status.invisible` for setting your status to invisible (please see the docs for a caveat).
-- Deprecate :meth:`Client.change_status`
+- Deprecate ``Client.change_status``
 
     - Use :meth:`Client.change_presence` instead for better more up to date functionality.
     - This method is subject for removal in a future API version.
@@ -1018,29 +1018,29 @@ New Features
 - Add custom emoji support.
 
     - Adds a new class to represent a custom Emoji named :class:`Emoji`
-    - Adds a utility generator function, :meth:`Client.get_all_emojis`.
-    - Adds a list of emojis on a server, :attr:`Server.emojis`.
-    - Adds a new event, :func:`on_server_emojis_update`.
-- Add new server regions to :class:`ServerRegion`
+    - Adds a utility generator function, ``Client.get_all_emojis``.
+    - Adds a list of emojis on a server, ``Server.emojis``.
+    - Adds a new event, ``on_server_emojis_update``.
+- Add new server regions to ``ServerRegion``
 
-    - :attr:`ServerRegion.eu_central` and :attr:`ServerRegion.eu_west`.
+    - ``ServerRegion.eu_central`` and ``ServerRegion.eu_west``.
 - Add support for new pinned system message under :attr:`MessageType.pins_add`.
 - Add order comparisons for :class:`Role` to allow it to be compared with regards to hierarchy.
 
     - This means that you can now do ``role_a > role_b`` etc to check if ``role_b`` is lower in the hierarchy.
 
-- Add :attr:`Server.role_hierarchy` to get the server's role hierarchy.
-- Add :attr:`Member.server_permissions` to get a member's server permissions without their channel specific overwrites.
-- Add :meth:`Client.get_user_info` to retrieve a user's info from their ID.
+- Add ``Server.role_hierarchy`` to get the server's role hierarchy.
+- Add ``Member.server_permissions`` to get a member's server permissions without their channel specific overwrites.
+- Add ``Client.get_user_info`` to retrieve a user's info from their ID.
 - Add a new ``Player`` property, ``Player.error`` to fetch the error that stopped the player.
 
     - To help with this change, a player's ``after`` function can now take a single parameter denoting the current player.
 - Add support for server verification levels.
 
     - Adds a new enum called :class:`VerificationLevel`.
-    - This enum can be used in :meth:`Client.edit_server` under the ``verification_level`` keyword argument.
-    - Adds a new attribute in the server, :attr:`Server.verification_level`.
-- Add :attr:`Server.voice_client` shortcut property for :meth:`Client.voice_client_in`.
+    - This enum can be used in ``Client.edit_server`` under the ``verification_level`` keyword argument.
+    - Adds a new attribute in the server, ``Server.verification_level``.
+- Add ``Server.voice_client`` shortcut property for ``Client.voice_client_in``.
 
     - This is technically old (was added in v0.10.0) but was undocumented until v0.12.0.
 
@@ -1056,8 +1056,8 @@ Bug Fixes
 
 - Fix bug that caused the library to not work with the latest ``websockets`` library.
 - Fix bug that leaked keep alive threads (:issue:`309`)
-- Fix bug that disallowed :class:`ServerRegion` from being used in :meth:`Client.edit_server`.
-- Fix bug in :meth:`Channel.permissions_for` that caused permission resolution to happen out of order.
+- Fix bug that disallowed ``ServerRegion`` from being used in ``Client.edit_server``.
+- Fix bug in ``Channel.permissions_for`` that caused permission resolution to happen out of order.
 - Fix bug in :attr:`Member.top_role` that did not account for same-position roles.
 
 .. _v0p11p0:
@@ -1075,16 +1075,16 @@ Breaking Changes
 New Features
 ~~~~~~~~~~~~~
 
-- Add the ability to prune members via :meth:`Client.prune_members`.
+- Add the ability to prune members via ``Client.prune_members``.
 - Switch the websocket gateway version to v6 from v5. This allows the library to work with group DMs and 1-on-1 calls.
 - Add :attr:`AppInfo.owner` attribute.
-- Add :class:`CallMessage` for group voice call messages.
-- Add :class:`GroupCall` for group voice call information.
+- Add ``CallMessage`` for group voice call messages.
+- Add ``GroupCall`` for group voice call information.
 - Add :attr:`Message.system_content` to get the system message.
-- Add the remaining VIP servers and the Brazil servers into :class:`ServerRegion` enum.
-- Add ``stderr`` argument to :meth:`VoiceClient.create_ffmpeg_player` to redirect stderr.
-- The library now handles implicit permission resolution in :meth:`Channel.permissions_for`.
-- Add :attr:`Server.mfa_level` to query a server's 2FA requirement.
+- Add the remaining VIP servers and the Brazil servers into ``ServerRegion`` enum.
+- Add ``stderr`` argument to ``VoiceClient.create_ffmpeg_player`` to redirect stderr.
+- The library now handles implicit permission resolution in ``Channel.permissions_for``.
+- Add ``Server.mfa_level`` to query a server's 2FA requirement.
 - Add :attr:`Permissions.external_emojis` permission.
 - Add :attr:`Member.voice` attribute that refers to a :class:`VoiceState`.
 
@@ -1098,7 +1098,7 @@ For the command extension, the following are new:
 Bug Fixes
 ~~~~~~~~~~
 
-- :attr:`Client.email` is now saved when using a token for user accounts.
+- ``Client.email`` is now saved when using a token for user accounts.
 - Fix issue when removing roles out of order.
 - Fix bug where discriminators would not update.
 - Handle cases where ``HEARTBEAT`` opcode is received. This caused bots to disconnect seemingly randomly.
@@ -1127,27 +1127,27 @@ New Features
 - Two new exception types, :exc:`Forbidden` and :exc:`NotFound` to denote permission errors or 404 errors.
 - Added :meth:`Client.delete_invite` to revoke invites.
 - Added support for sending voice. Check :class:`VoiceClient` for more details.
-- Added :meth:`Client.wait_for_message` coroutine to aid with follow up commands.
+- Added ``Client.wait_for_message`` coroutine to aid with follow up commands.
 - Added :data:`version_info` named tuple to check version info of the library.
 - Login credentials are now cached to have a faster login experience. You can disable this by passing in ``cache_auth=False``
   when constructing a :class:`Client`.
 - New utility function, :func:`discord.utils.get` to simplify retrieval of items based on attributes.
 - All data classes now support ``!=``, ``==``, ``hash(obj)`` and ``str(obj)``.
-- Added :meth:`Client.get_bans` to get banned members from a server.
-- Added :meth:`Client.invites_from` to get currently active invites in a server.
-- Added :attr:`Server.me` attribute to get the :class:`Member` version of :attr:`Client.user`.
+- Added ``Client.get_bans`` to get banned members from a server.
+- Added ``Client.invites_from`` to get currently active invites in a server.
+- Added ``Server.me`` attribute to get the :class:`Member` version of :attr:`Client.user`.
 - Most data classes now support a ``hash(obj)`` function to allow you to use them in ``set`` or ``dict`` classes or subclasses.
 - Add :meth:`Message.clean_content` to get a text version of the content with the user and channel mentioned changed into their names.
-- Added a way to remove the messages of the user that just got banned in :meth:`Client.ban`.
+- Added a way to remove the messages of the user that just got banned in ``Client.ban``.
 - Added :meth:`Client.wait_until_ready` to facilitate easy creation of tasks that require the client cache to be ready.
-- Added :meth:`Client.wait_until_login` to facilitate easy creation of tasks that require the client to be logged in.
-- Add :class:`discord.Game` to represent any game with custom text to send to :meth:`Client.change_status`.
+- Added ``Client.wait_until_login`` to facilitate easy creation of tasks that require the client to be logged in.
+- Add :class:`discord.Game` to represent any game with custom text to send to ``Client.change_status``.
 - Add :attr:`Message.nonce` attribute.
-- Add :meth:`Member.permissions_in` as another way of doing :meth:`Channel.permissions_for`.
-- Add :meth:`Client.move_member` to move a member to another voice channel.
-- You can now create a server via :meth:`Client.create_server`.
-- Added :meth:`Client.edit_server` to edit existing servers.
-- Added :meth:`Client.server_voice_state` to server mute or server deafen a member.
+- Add ``Member.permissions_in`` as another way of doing ``Channel.permissions_for``.
+- Add ``Client.move_member`` to move a member to another voice channel.
+- You can now create a server via ``Client.create_server``.
+- Added ``Client.edit_server`` to edit existing servers.
+- Added ``Client.server_voice_state`` to server mute or server deafen a member.
 - If you are being rate limited, the library will now handle it for you.
 - Add :func:`on_member_ban` and :func:`on_member_unban` events that trigger when a member is banned/unbanned.
 
@@ -1166,11 +1166,11 @@ Bug Fixes
 
 - Fix bug where guilds being updated did not edit the items in cache.
 - Fix bug where ``member.roles`` were empty upon joining instead of having the ``@everyone`` role.
-- Fix bug where :meth:`Role.is_everyone` was not being set properly when the role was being edited.
-- :meth:`Client.logs_from` now handles cases where limit > 100 to sidestep the discord API limitation.
+- Fix bug where ``Role.is_everyone`` was not being set properly when the role was being edited.
+- ``Client.logs_from`` now handles cases where limit > 100 to sidestep the discord API limitation.
 - Fix bug where a role being deleted would trigger a ``ValueError``.
 - Fix bug where :meth:`Permissions.kick_members` and :meth:`Permissions.ban_members` were flipped.
 - Mentions are now triggered normally. This was changed due to the way discord handles it internally.
-- Fix issue when a :class:`Message` would attempt to upgrade a :attr:`Message.server` when the channel is
+- Fix issue when a :class:`Message` would attempt to upgrade a ``Message.server`` when the channel is
   a :class:`Object`.
 - Unavailable servers were not being added into cache, this has been corrected.

@@ -387,7 +387,7 @@ class PublicUserFlags(BaseFlags):
         return UserFlags.verified_bot_developer.value
 
     def all(self) -> List[UserFlags]:
-        """List[:class:`UserFlags`]: Returns all public flags the user has."""
+        """List[:class:`PublicUserFlags`]: Returns all public flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
 
 

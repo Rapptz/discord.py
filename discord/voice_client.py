@@ -71,7 +71,7 @@ class VoiceProtocol:
     This class allows you to implement a protocol to allow for an external
     method of sending voice, such as Lavalink_ or a native library implementation.
 
-    These classes are passed to :meth:`abc.Connectable.connect`.
+    These classes are passed to :meth:`abc.Connectable.connect <VoiceChannel.connect>`.
 
     .. _Lavalink: https://github.com/freyacodes/Lavalink
 

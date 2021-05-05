@@ -108,7 +108,7 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: :class:`Asset`
+    avatar: :class:`~discord.Asset`
         The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
@@ -600,7 +600,7 @@ class GuildChannel(Snowflake, Protocol):
 
         Deletes the channel.
 
-        You must have :attr:`~Permissions.manage_channels` permission to use this.
+        You must have :attr:`~discord.Permissions.manage_channels` permission to use this.
 
         Parameters
         -----------
@@ -637,7 +637,7 @@ class GuildChannel(Snowflake, Protocol):
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~discord.Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -767,7 +767,7 @@ class GuildChannel(Snowflake, Protocol):
 
         A rich interface to help move a channel relative to other channels.
 
-        If exact position movement is required, :meth:`edit` should be used instead.
+        If exact position movement is required, edit should be used instead.
 
         You must have the :attr:`~discord.Permissions.manage_channels` permission to
         do this.
@@ -887,7 +887,7 @@ class GuildChannel(Snowflake, Protocol):
 
         Creates an instant invite from a text or voice channel.
 
-        You must have the :attr:`~Permissions.create_instant_invite` permission to
+        You must have the :attr:`~discord.Permissions.create_instant_invite` permission to
         do this.
 
         Parameters
@@ -930,7 +930,7 @@ class GuildChannel(Snowflake, Protocol):
 
         Returns a list of all active instant invites from this channel.
 
-        You must have :attr:`~Permissions.manage_channels` to get this information.
+        You must have :attr:`~discord.Permissions.manage_channels` to get this information.
 
         Raises
         -------
@@ -1211,7 +1211,7 @@ class Messageable(Protocol):
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
         """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
-        You must have :attr:`~Permissions.read_message_history` permissions to use this.
+        You must have :attr:`~discord.Permissions.read_message_history` permissions to use this.
 
         Examples
         ---------

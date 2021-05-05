@@ -516,7 +516,7 @@ class ColourConverter(Converter[discord.Colour]):
     - ``#<hex>``
     - ``0x#<hex>``
     - ``rgb(<number>, <number>, <number>)``
-    - Any of the ``classmethod`` in :class:`Colour`
+    - Any of the ``classmethod`` in :class:`~discord.Colour`
 
         - The ``_`` in the name can be optionally replaced with spaces.
 

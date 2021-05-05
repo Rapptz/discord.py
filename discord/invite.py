@@ -281,7 +281,7 @@ class Invite(Hashable):
         The target of this invite in the case of stream invites.
 
         .. versionadded:: 2.0
-    target_type: :class:`InviteType`
+    target_type: :class:`InviteTarget`
         The invite's target type.
 
         .. versionadded:: 2.0
