@@ -173,8 +173,6 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the client uses for HTTP requests and websocket operations.
-    max_messages: Optional[:class:`int`]
-        The maximum number of messages stored in the internal message cache.
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None

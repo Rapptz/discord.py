@@ -767,7 +767,7 @@ class GuildChannel(Snowflake, Protocol):
 
         A rich interface to help move a channel relative to other channels.
 
-        If exact position movement is required, edit should be used instead.
+        If exact position movement is required, ``edit`` should be used instead.
 
         You must have the :attr:`~discord.Permissions.manage_channels` permission to
         do this.
