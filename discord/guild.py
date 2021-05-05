@@ -1162,7 +1162,6 @@ class Guild(Hashable):
         fields['icon'] = icon
         fields['banner'] = banner
         fields['splash'] = splash
-        fields['discovery_splash'] = discovery_splash
 
         default_message_notifications = fields.get('default_notifications', self.default_notifications)
         if not isinstance(default_message_notifications, NotificationLevel):
