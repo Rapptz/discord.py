@@ -1152,7 +1152,7 @@ class Guild(Hashable):
         try:
             discovery_splash_bytes = fields['discovery_splash']
         except KeyError:
-            discovery_splash = self._discovery_splash
+            pass
         else:
             if discovery_splash_bytes is not None:
                 discovery_splash = utils._bytes_to_base64_data(discovery_splash_bytes)
