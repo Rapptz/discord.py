@@ -28,7 +28,7 @@ import asyncio
 import json
 import logging
 import sys
-from typing import Any, Coroutine, List, TYPE_CHECKING, TypeVar
+from typing import Any, Coroutine, List, Optional, TYPE_CHECKING, TypeVar
 from urllib.parse import quote as _uriquote
 import weakref
 
@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from .types import (
         interactions,
+        invite,
     )
 
     T = TypeVar('T')
@@ -966,13 +967,22 @@ class HTTPClient:
 
     # Invite management
 
-    def create_invite(self, channel_id, *, reason=None, **options):
+    def create_invite(
+        self,
+        channel_id: int,
+        *,
+        reason: Optional[str] = None,
+        max_age: int = 0,
+        max_uses: int = 0,
+        temporary: bool = False,
+        unique: bool = True,
+    ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
-            'max_age': options.get('max_age', 0),
-            'max_uses': options.get('max_uses', 0),
-            'temporary': options.get('temporary', False),
-            'unique': options.get('unique', True),
+            'max_age': max_age,
+            'max_uses': max_uses,
+            'temporary': temporary,
+            'unique': unique,
         }
 
         return self.request(r, reason=reason, json=payload)
