@@ -27,8 +27,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
 from .components import ComponentType
-from .channel import PartialChannel
 from .embed import Embed
+from .channel import ChannelType
 from .member import Member
 from .role import Role
 from .user import User
@@ -100,11 +100,18 @@ class ApplicationCommandInteractionDataOption(_ApplicationCommandInteractionData
     type: ApplicationCommandOptionType
 
 
+class ApplicationCommandResolvedPartialChannel(TypedDict):
+    id: Snowflake
+    type: ChannelType
+    permissions: str
+    name: str
+
+
 class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
     users: Dict[Snowflake, User]
     members: Dict[Snowflake, Member]
     roles: Dict[Snowflake, Role]
-    channels: Dict[Snowflake, PartialChannel]
+    channels: Dict[Snowflake, ApplicationCommandResolvedPartialChannel]
 
 
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
