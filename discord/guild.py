@@ -143,7 +143,7 @@ class Guild(Hashable):
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``PUBLIC``: Guild is a public guild.
         - ``NEWS``: Guild can create news channels.
-        - ``BANNER``: Guild can upload and use a banner.
+        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``PUBLIC_DISABLED``: Guild cannot be public.
         - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
