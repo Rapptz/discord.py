@@ -289,7 +289,7 @@ class Client:
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
-        after :func:`connect` is called.
+        after :func:`~discord.on_connect` is called.
         """
         return self._connection.application_id
 
