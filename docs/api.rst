@@ -1078,6 +1078,59 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+.. class:: UserFlags
+
+    Represents Discord User flags.
+
+    .. attribute:: staff
+
+        The user is a Discord Employee.
+    .. attribute:: partner
+
+        The user is a Discord Partner.
+    .. attribute:: hypesquad
+
+        The user is a HypeSquad Events member.
+    .. attribute:: bug_hunter
+
+        The user is a Bug Hunter.
+    .. attribute:: mfa_sms
+
+        The user has SMS recovery for Multi Factor Authentication enabled.
+    .. attribute:: premium_promo_dismissed
+
+        The user has dismissed the Discord Nitro promotion.
+    .. attribute:: hypesquad_bravery
+
+        The user is a HypeSquad Bravery member.
+    .. attribute:: hypesquad_brilliance
+
+        The user is a HypeSquad Brilliance member.
+    .. attribute:: hypesquad_balance
+
+        The user is a HypeSquad Balance member.
+    .. attribute:: early_supporter
+
+        The user is an Early Supporter.
+    .. attribute:: team_user
+
+        The user is a Team User.
+    .. attribute:: system
+
+        The user is a system user (i.e. represents Discord officially).
+    .. attribute:: has_unread_urgent_messages
+
+        The user has an unready system message.
+    .. attribute:: bug_hunter_level_2
+
+        The user is a Bug Hunter Level 2".
+    .. attribute:: verified_bot
+
+        The user is a Verified Bot.
+    .. attribute:: verified_bot_developer
+
+        The user is an Early Verified Bot Developer.
+
 .. class:: ActivityType
 
     Specifies the type of :class:`Activity`. This is used to check how to
