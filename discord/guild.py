@@ -32,7 +32,7 @@ from .member import Member, VoiceState
 from .emoji import Emoji
 from .errors import InvalidData
 from .permissions import PermissionOverwrite
-from .colour import Colour
+from .color import Color
 from .errors import InvalidArgument, ClientException
 from .channel import *
 from .enums import VoiceRegion, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
@@ -1745,7 +1745,7 @@ class Guild(Hashable):
         do this.
 
         .. versionchanged:: 1.6
-            Can now pass ``int`` to ``colour`` keyword-only parameter.
+            Can now pass ``int`` to ``color`` keyword-only parameter.
 
         Parameters
         -----------
@@ -1753,8 +1753,8 @@ class Guild(Hashable):
             The role name. Defaults to 'new role'.
         permissions: :class:`Permissions`
             The permissions to have. Defaults to no permissions.
-        colour: Union[:class:`Colour`, :class:`int`]
-            The colour for the role. Defaults to :meth:`Colour.default`.
+        color: Union[:class:`Color`, :class:`int`]
+            The color for the role. Defaults to :meth:`Color.default`.
             This is aliased to ``color`` as well.
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
@@ -1788,13 +1788,13 @@ class Guild(Hashable):
             fields['permissions'] = str(perms.value)
 
         try:
-            colour = fields.pop('colour')
+            color = fields.pop('color')
         except KeyError:
-            colour = fields.get('color', Colour.default())
+            color = fields.get('color', Color.default())
         finally:
-            if isinstance(colour, int):
-                colour = Colour(value=colour)
-            fields['color'] = colour.value
+            if isinstance(color, int):
+                color = Color(value=color)
+            fields['color'] = color.value
 
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         for key in fields:

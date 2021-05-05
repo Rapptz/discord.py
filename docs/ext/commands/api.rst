@@ -315,7 +315,7 @@ Converters
 .. autoclass:: discord.ext.commands.GameConverter
     :members:
 
-.. autoclass:: discord.ext.commands.ColourConverter
+.. autoclass:: discord.ext.commands.ColorConverter
     :members:
 
 .. autoclass:: discord.ext.commands.EmojiConverter
@@ -428,7 +428,7 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
-.. autoexception:: discord.ext.commands.BadColourArgument
+.. autoexception:: discord.ext.commands.BadColorArgument
     :members:
 
 .. autoexception:: discord.ext.commands.RoleNotFound
@@ -521,7 +521,7 @@ Exception Hierarchy
                     - :exc:`~.commands.UserNotFound`
                     - :exc:`~.commands.ChannelNotFound`
                     - :exc:`~.commands.ChannelNotReadable`
-                    - :exc:`~.commands.BadColourArgument`
+                    - :exc:`~.commands.BadColorArgument`
                     - :exc:`~.commands.RoleNotFound`
                     - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`

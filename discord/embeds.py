@@ -28,7 +28,7 @@ import datetime
 from typing import Any, Dict, Final, List, Protocol, TYPE_CHECKING, Type, TypeVar, Union
 
 from . import utils
-from .colour import Colour
+from .color import Color
 
 __all__ = (
     'Embed',
@@ -148,8 +148,8 @@ class Embed:
         The timestamp of the embed content. This is an aware datetime.
         If a naive datetime is passed, it is converted to an aware
         datetime with the local timezone.
-    colour: Union[:class:`Colour`, :class:`int`]
-        The colour code of the embed. Aliased to ``color`` as well.
+    color: Union[:class:`Color`, :class:`int`]
+        The color code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
     Empty
         A special sentinel value used by ``EmbedProxy`` and this class
@@ -161,7 +161,7 @@ class Embed:
         'url',
         'type',
         '_timestamp',
-        '_colour',
+        '_color',
         '_footer',
         '_image',
         '_thumbnail',
@@ -177,8 +177,8 @@ class Embed:
     def __init__(
         self,
         *,
-        colour: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
-        color: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
+        color: Union[int, Color, _EmptyEmbed] = EmptyEmbed,
+        color: Union[int, Color, _EmptyEmbed] = EmptyEmbed,
         title: MaybeEmpty[Any] = EmptyEmbed,
         type: EmbedType = 'rich',
         url: MaybeEmpty[Any] = EmptyEmbed,
@@ -186,7 +186,7 @@ class Embed:
         timestamp: datetime.datetime = None,
     ):
 
-        self.colour = colour if colour is not EmptyEmbed else color
+        self.color = color if color is not EmptyEmbed else color
         self.title = title
         self.type = type
         self.url = url
@@ -244,7 +244,7 @@ class Embed:
         # try to fill in the more rich fields
 
         try:
-            self._colour = Colour(value=data['color'])
+            self._color = Color(value=data['color'])
         except KeyError:
             pass
 
@@ -294,7 +294,7 @@ class Embed:
                 self.title,
                 self.url,
                 self.description,
-                self.colour,
+                self.color,
                 self.fields,
                 self.timestamp,
                 self.author,
@@ -307,19 +307,19 @@ class Embed:
         )
 
     @property
-    def colour(self) -> MaybeEmpty[Colour]:
-        return getattr(self, '_colour', EmptyEmbed)
+    def color(self) -> MaybeEmpty[Color]:
+        return getattr(self, '_color', EmptyEmbed)
 
-    @colour.setter
-    def colour(self, value: Union[int, Colour, _EmptyEmbed]):  # type: ignore
-        if isinstance(value, (Colour, _EmptyEmbed)):
-            self._colour = value
+    @color.setter
+    def color(self, value: Union[int, Color, _EmptyEmbed]):  # type: ignore
+        if isinstance(value, (Color, _EmptyEmbed)):
+            self._color = value
         elif isinstance(value, int):
-            self._colour = Colour(value=value)
+            self._color = Color(value=value)
         else:
-            raise TypeError(f'Expected discord.Colour, int, or Embed.Empty but received {value.__class__.__name__} instead.')
+            raise TypeError(f'Expected discord.Color, int, or Embed.Empty but received {value.__class__.__name__} instead.')
 
-    color = colour
+    color = color
 
     @property
     def timestamp(self) -> MaybeEmpty[datetime.datetime]:
@@ -676,12 +676,12 @@ class Embed:
         # deal with basic convenience wrappers
 
         try:
-            colour = result.pop('colour')
+            color = result.pop('color')
         except KeyError:
             pass
         else:
-            if colour:
-                result['color'] = colour.value
+            if color:
+                result['color'] = color.value
 
         try:
             timestamp = result.pop('timestamp')

@@ -488,8 +488,8 @@ msgid ":class:`PartialEmoji`"
 msgstr ":class:`PartialEmoji`"
 
 #: ../../ext/commands/commands.rst:385 ../../ext/commands/commands.rst:418
-msgid ":class:`Colour`"
-msgstr ":class:`Colour`"
+msgid ":class:`Color`"
+msgstr ":class:`Color`"
 
 #: ../../ext/commands/commands.rst:387
 msgid ""
@@ -563,8 +563,8 @@ msgid ":class:`~ext.commands.PartialEmojiConverter`"
 msgstr ":class:`~ext.commands.PartialEmojiConverter`"
 
 #: ../../ext/commands/commands.rst:418
-msgid ":class:`~ext.commands.ColourConverter`"
-msgstr ":class:`~ext.commands.ColourConverter`"
+msgid ":class:`~ext.commands.ColorConverter`"
+msgstr ":class:`~ext.commands.ColorConverter`"
 
 #: ../../ext/commands/commands.rst:421
 msgid ""

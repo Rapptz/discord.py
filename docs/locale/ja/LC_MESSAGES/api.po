@@ -485,12 +485,12 @@ msgstr ""
 #: discord.Client.private_channels discord.Client.user discord.Client.users
 #: discord.Client.voice_clients discord.ClientUser
 #: discord.ClientUser.avatar_url discord.ClientUser.blocked
-#: discord.ClientUser.color discord.ClientUser.colour
+#: discord.ClientUser.color discord.ClientUser.color
 #: discord.ClientUser.created_at discord.ClientUser.default_avatar
 #: discord.ClientUser.default_avatar_url discord.ClientUser.display_name
 #: discord.ClientUser.friends discord.ClientUser.mention
 #: discord.ClientUser.public_flags discord.ClientUser.relationships
-#: discord.Colour discord.Colour.b discord.Colour.g discord.Colour.r
+#: discord.Color discord.Color.b discord.Color.g discord.Color.r
 #: discord.ConnectionClosed discord.CustomActivity discord.CustomActivity.type
 #: discord.DMChannel discord.DMChannel.created_at discord.DMChannel.type
 #: discord.Embed discord.Embed.author discord.Embed.fields discord.Embed.footer
@@ -522,7 +522,7 @@ msgstr ""
 #: discord.Intents.messages discord.Intents.presences discord.Intents.reactions
 #: discord.Intents.typing discord.Intents.voice_states discord.Intents.webhooks
 #: discord.Invite discord.Invite.id discord.Invite.url discord.Member
-#: discord.Member.activity discord.Member.color discord.Member.colour
+#: discord.Member.activity discord.Member.color discord.Member.color
 #: discord.Member.desktop_status discord.Member.display_name
 #: discord.Member.guild_permissions discord.Member.mention
 #: discord.Member.mobile_status discord.Member.raw_status discord.Member.roles
@@ -577,11 +577,11 @@ msgstr ""
 #: discord.RawMessageUpdateEvent discord.RawReactionActionEvent
 #: discord.RawReactionClearEmojiEvent discord.RawReactionClearEvent
 #: discord.Reaction discord.Reaction.custom_emoji discord.Relationship
-#: discord.Role discord.Role.color discord.Role.colour discord.Role.created_at
+#: discord.Role discord.Role.color discord.Role.color discord.Role.created_at
 #: discord.Role.members discord.Role.mention discord.Role.permissions
 #: discord.ShardInfo discord.ShardInfo.latency discord.Spotify.album
 #: discord.Spotify.album_cover_url discord.Spotify.artist
-#: discord.Spotify.artists discord.Spotify.color discord.Spotify.colour
+#: discord.Spotify.artists discord.Spotify.color discord.Spotify.color
 #: discord.Spotify.created_at discord.Spotify.duration discord.Spotify.end
 #: discord.Spotify.name discord.Spotify.party_id discord.Spotify.start
 #: discord.Spotify.title discord.Spotify.track_id discord.Spotify.type
@@ -593,7 +593,7 @@ msgstr ""
 #: discord.TextChannel.changed_roles discord.TextChannel.created_at
 #: discord.TextChannel.members discord.TextChannel.mention
 #: discord.TextChannel.permissions_synced discord.TextChannel.type discord.User
-#: discord.User.avatar_url discord.User.color discord.User.colour
+#: discord.User.avatar_url discord.User.color discord.User.color
 #: discord.User.created_at discord.User.default_avatar
 #: discord.User.default_avatar_url discord.User.display_name
 #: discord.User.dm_channel discord.User.mention discord.User.public_flags
@@ -610,7 +610,7 @@ msgstr ""
 #: discord.Widget.invite_url discord.Widget.json_url discord.WidgetChannel
 #: discord.WidgetChannel.created_at discord.WidgetChannel.mention
 #: discord.WidgetMember discord.WidgetMember.avatar_url
-#: discord.WidgetMember.color discord.WidgetMember.colour
+#: discord.WidgetMember.color discord.WidgetMember.color
 #: discord.WidgetMember.created_at discord.WidgetMember.default_avatar
 #: discord.WidgetMember.default_avatar_url discord.WidgetMember.display_name
 #: discord.WidgetMember.mention discord.WidgetMember.public_flags
@@ -2164,7 +2164,7 @@ msgstr "Botのアプリケーション情報。"
 #: discord.Asset.save:15 discord.Attachment:7 discord.Attachment:13
 #: discord.Attachment.save:24 discord.AuditLogEntry:22
 #: discord.CategoryChannel:39 discord.CategoryChannel:46 discord.ClientUser:31
-#: discord.Colour:28 discord.Colour.b:3 discord.Colour.g:3 discord.Colour.r:3
+#: discord.Color:28 discord.Color.b:3 discord.Color.g:3 discord.Color.r:3
 #: discord.ConnectionClosed:8 discord.DMChannel:37 discord.Emoji:39
 #: discord.Emoji:63 discord.GroupChannel:37 discord.Guild:46 discord.Guild:64
 #: discord.Guild:70 discord.Guild:124 discord.Guild:178 discord.Guild:184
@@ -5534,8 +5534,8 @@ msgstr ""
 ":class:`Role` か、 :class:`Object` のいずれかになります。"
 
 #: ../../api.rst:1552 ../../api.rst:1572 ../../api.rst:1587
-msgid ":attr:`~AuditLogDiff.colour`"
-msgstr ":attr:`~AuditLogDiff.colour`"
+msgid ":attr:`~AuditLogDiff.color`"
+msgstr ":attr:`~AuditLogDiff.color`"
 
 #: ../../api.rst:1553 ../../api.rst:1573 ../../api.rst:1588
 msgid ":attr:`~AuditLogDiff.mentionable`"
@@ -5562,7 +5562,7 @@ msgid "The permissions have changed"
 msgstr ""
 
 #: ../../api.rst:1564
-msgid "The colour has changed"
+msgid "The color has changed"
 msgstr ""
 
 #: ../../api.rst:1565
@@ -5986,13 +5986,13 @@ msgstr ""
 #: ../../api.rst:1974
 msgid ""
 "Represents the default avatar with the color blurple. See also "
-":attr:`Colour.blurple`"
+":attr:`Color.blurple`"
 msgstr ""
 
 #: ../../api.rst:1978
 msgid ""
 "Represents the default avatar with the color grey. See also "
-":attr:`Colour.greyple`"
+":attr:`Color.greyple`"
 msgstr ""
 
 #: ../../api.rst:1982
@@ -6003,19 +6003,19 @@ msgstr ":attr:`high` のエイリアス。"
 #: ../../api.rst:1985
 msgid ""
 "Represents the default avatar with the color green. See also "
-":attr:`Colour.green`"
+":attr:`Color.green`"
 msgstr ""
 
 #: ../../api.rst:1989
 msgid ""
 "Represents the default avatar with the color orange. See also "
-":attr:`Colour.orange`"
+":attr:`Color.orange`"
 msgstr ""
 
 #: ../../api.rst:1993
 msgid ""
 "Represents the default avatar with the color red. See also "
-":attr:`Colour.red`"
+":attr:`Color.red`"
 msgstr ""
 
 #: ../../api.rst:1998
@@ -6593,20 +6593,20 @@ msgstr ""
 
 #: ../../api.rst:2390
 #, fuzzy
-msgid "The colour of a role."
-msgstr ":class:`Colour` – 役職の色。"
+msgid "The color of a role."
+msgstr ":class:`Color` – 役職の色。"
 
 #: ../../api.rst:2392
-msgid "See also :attr:`Role.colour`"
+msgid "See also :attr:`Role.color`"
 msgstr ""
 
-#: ../../api.rst:2394 discord.ClientUser.color:6 discord.ClientUser.colour:6
-#: discord.Member.color:7 discord.Member.colour:7 discord.Role.color:3
-#: discord.Role.colour:3 discord.Spotify.color:5 discord.Spotify.colour:5
-#: discord.User.color:6 discord.User.colour:6 discord.WidgetMember.color:6
-#: discord.WidgetMember.colour:6 of
+#: ../../api.rst:2394 discord.ClientUser.color:6 discord.ClientUser.color:6
+#: discord.Member.color:7 discord.Member.color:7 discord.Role.color:3
+#: discord.Role.color:3 discord.Spotify.color:5 discord.Spotify.color:5
+#: discord.User.color:6 discord.User.color:6 discord.WidgetMember.color:6
+#: discord.WidgetMember.color:6 of
 #, fuzzy
-msgid ":class:`Colour`"
+msgid ":class:`Color`"
 msgstr ":class:`bool`"
 
 #: ../../api.rst:2398
@@ -8735,23 +8735,23 @@ msgstr ""
 #: of
 msgid ""
 "A property that returns a color denoting the rendered color for the user."
-" This always returns :meth:`Colour.default`."
+" This always returns :meth:`Color.default`."
 msgstr ""
 
 #: discord.ClientUser.color:4 discord.Member.color:5 discord.User.color:4
 #: discord.WidgetMember.color:4 of
-msgid "There is an alias for this named :attr:`colour`."
+msgid "There is an alias for this named :attr:`color`."
 msgstr ""
 
-#: discord.ClientUser.colour:1 discord.User.colour:1
-#: discord.WidgetMember.colour:1 of
+#: discord.ClientUser.color:1 discord.User.color:1
+#: discord.WidgetMember.color:1 of
 msgid ""
-"A property that returns a colour denoting the rendered colour for the "
-"user. This always returns :meth:`Colour.default`."
+"A property that returns a color denoting the rendered color for the "
+"user. This always returns :meth:`Color.default`."
 msgstr ""
 
-#: discord.ClientUser.colour:4 discord.Member.colour:5 discord.User.colour:4
-#: discord.WidgetMember.colour:4 of
+#: discord.ClientUser.color:4 discord.Member.color:5 discord.User.color:4
+#: discord.WidgetMember.color:4 of
 msgid "There is an alias for this named :attr:`color`."
 msgstr ""
 
@@ -11446,7 +11446,7 @@ msgstr ""
 
 #: discord.Guild.create_role:14 of
 msgid ""
-"The colour for the role. Defaults to :meth:`Colour.default`. This is "
+"The color for the role. Defaults to :meth:`Color.default`. This is "
 "aliased to ``color`` as well."
 msgstr ""
 
@@ -11977,18 +11977,18 @@ msgid ""
 " a mobile device."
 msgstr ""
 
-#: discord.Member.colour:1 of
+#: discord.Member.color:1 of
 msgid ""
-"A property that returns a colour denoting the rendered colour for the "
-"member. If the default colour is the one rendered then an instance of "
-":meth:`Colour.default` is returned."
+"A property that returns a color denoting the rendered color for the "
+"member. If the default color is the one rendered then an instance of "
+":meth:`Color.default` is returned."
 msgstr ""
 
 #: discord.Member.color:1 of
 msgid ""
 "A property that returns a color denoting the rendered color for the "
 "member. If the default color is the one rendered then an instance of "
-":meth:`Colour.default` is returned."
+":meth:`Color.default` is returned."
 msgstr ""
 
 #: discord.Member.roles:1 of
@@ -12353,16 +12353,16 @@ msgstr ":class:`.Invite`"
 msgid "When the user started listening in UTC."
 msgstr "入力を始めたユーザー。"
 
-#: discord.Spotify.color:1 discord.Spotify.colour:1 of
-msgid "Returns the Spotify integration colour, as a :class:`Colour`."
+#: discord.Spotify.color:1 discord.Spotify.color:1 of
+msgid "Returns the Spotify integration color, as a :class:`Color`."
 msgstr ""
 
-#: discord.Spotify.colour:3 of
+#: discord.Spotify.color:3 of
 msgid "There is an alias for this named :attr:`color`"
 msgstr ""
 
 #: discord.Spotify.color:3 of
-msgid "There is an alias for this named :attr:`colour`"
+msgid "There is an alias for this named :attr:`color`"
 msgstr ""
 
 #: discord.Spotify.name:1 of
@@ -12736,12 +12736,12 @@ msgstr ":class:`bool` -- ユーザーがBotアカウントであるかを表し�
 msgid "Returns the role's permissions."
 msgstr "役職の名前を返します。"
 
-#: discord.Role.colour:1 of
-msgid "Returns the role colour. An alias exists under ``color``."
+#: discord.Role.color:1 of
+msgid "Returns the role color. An alias exists under ``color``."
 msgstr ""
 
 #: discord.Role.color:1 of
-msgid "Returns the role color. An alias exists under ``colour``."
+msgid "Returns the role color. An alias exists under ``color``."
 msgstr ""
 
 #: discord.Role.created_at:1 of
@@ -12763,7 +12763,7 @@ msgid "Edits the role."
 msgstr ""
 
 #: discord.Role.edit:10 of
-msgid "Can now pass ``int`` to ``colour`` keyword-only parameter."
+msgid "Can now pass ``int`` to ``color`` keyword-only parameter."
 msgstr ""
 
 #: discord.Role.edit:13 of
@@ -12775,7 +12775,7 @@ msgid "The new permissions to change to."
 msgstr ""
 
 #: discord.Role.edit:17 of
-msgid "The new colour to change to. (aliased to color as well)"
+msgid "The new color to change to. (aliased to color as well)"
 msgstr ""
 
 #: discord.Role.edit:19 of
@@ -14450,13 +14450,13 @@ msgstr ""
 
 #: discord.Embed:55 of
 msgid ""
-"The colour code of the embed. Aliased to ``color`` as well. This can be "
+"The color code of the embed. Aliased to ``color`` as well. This can be "
 "set during initialisation."
 msgstr ""
 
 #: discord.Embed:58 of
 #, fuzzy
-msgid "Union[:class:`Colour`, :class:`int`]"
+msgid "Union[:class:`Color`, :class:`int`]"
 msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
 
 #: discord.Embed:62 of
@@ -15523,204 +15523,204 @@ msgid "Whether the attachment is a spoiler."
 msgstr ""
 
 #: ../../api.rst:2914
-msgid "Colour"
+msgid "Color"
 msgstr ""
 
-#: discord.Colour:1 of
+#: discord.Color:1 of
 msgid ""
-"Represents a Discord role colour. This class is similar to a (red, green,"
+"Represents a Discord role color. This class is similar to a (red, green,"
 " blue) :class:`tuple`."
 msgstr ""
 
-#: discord.Colour:4 of
+#: discord.Color:4 of
 msgid "There is an alias for this called Color."
 msgstr ""
 
-#: discord.Colour:10 of
-msgid "Checks if two colours are equal."
+#: discord.Color:10 of
+msgid "Checks if two colors are equal."
 msgstr ""
 
-#: discord.Colour:14 of
-msgid "Checks if two colours are not equal."
+#: discord.Color:14 of
+msgid "Checks if two colors are not equal."
 msgstr ""
 
-#: discord.Colour:18 of
-msgid "Return the colour's hash."
+#: discord.Color:18 of
+msgid "Return the color's hash."
 msgstr ""
 
-#: discord.Colour:22 of
-msgid "Returns the hex format for the colour."
+#: discord.Color:22 of
+msgid "Returns the hex format for the color."
 msgstr ""
 
-#: discord.Colour:26 of
-msgid "The raw integer colour value."
+#: discord.Color:26 of
+msgid "The raw integer color value."
 msgstr ""
 
-#: discord.Colour.r:1 of
-msgid "Returns the red component of the colour."
+#: discord.Color.r:1 of
+msgid "Returns the red component of the color."
 msgstr ""
 
-#: discord.Colour.g:1 of
-msgid "Returns the green component of the colour."
+#: discord.Color.g:1 of
+msgid "Returns the green component of the color."
 msgstr ""
 
-#: discord.Colour.b:1 of
-msgid "Returns the blue component of the colour."
+#: discord.Color.b:1 of
+msgid "Returns the blue component of the color."
 msgstr ""
 
-#: discord.Colour.to_rgb:1 of
+#: discord.Color.to_rgb:1 of
 msgid ""
 "Tuple[:class:`int`, :class:`int`, :class:`int`]: Returns an (r, g, b) "
-"tuple representing the colour."
+"tuple representing the color."
 msgstr ""
 
-#: discord.Colour.from_rgb:1 of
-msgid "Constructs a :class:`Colour` from an RGB tuple."
+#: discord.Color.from_rgb:1 of
+msgid "Constructs a :class:`Color` from an RGB tuple."
 msgstr ""
 
-#: discord.Colour.from_hsv:1 of
-msgid "Constructs a :class:`Colour` from an HSV tuple."
+#: discord.Color.from_hsv:1 of
+msgid "Constructs a :class:`Color` from an HSV tuple."
 msgstr ""
 
-#: discord.Colour.default:1 of
-msgid "A factory method that returns a :class:`Colour` with a value of ``0``."
+#: discord.Color.default:1 of
+msgid "A factory method that returns a :class:`Color` with a value of ``0``."
 msgstr ""
 
-#: discord.Colour.teal:1 of
+#: discord.Color.teal:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x1abc9c``."
 msgstr ""
 
-#: discord.Colour.dark_teal:1 of
+#: discord.Color.dark_teal:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x11806a``."
 msgstr ""
 
-#: discord.Colour.green:1 of
+#: discord.Color.green:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x2ecc71``."
 msgstr ""
 
-#: discord.Colour.dark_green:1 of
+#: discord.Color.dark_green:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x1f8b4c``."
 msgstr ""
 
-#: discord.Colour.blue:1 of
+#: discord.Color.blue:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x3498db``."
 msgstr ""
 
-#: discord.Colour.dark_blue:1 of
+#: discord.Color.dark_blue:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x206694``."
 msgstr ""
 
-#: discord.Colour.purple:1 of
+#: discord.Color.purple:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x9b59b6``."
 msgstr ""
 
-#: discord.Colour.dark_purple:1 of
+#: discord.Color.dark_purple:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x71368a``."
 msgstr ""
 
-#: discord.Colour.magenta:1 of
+#: discord.Color.magenta:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xe91e63``."
 msgstr ""
 
-#: discord.Colour.dark_magenta:1 of
+#: discord.Color.dark_magenta:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xad1457``."
 msgstr ""
 
-#: discord.Colour.gold:1 of
+#: discord.Color.gold:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xf1c40f``."
 msgstr ""
 
-#: discord.Colour.dark_gold:1 of
+#: discord.Color.dark_gold:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xc27c0e``."
 msgstr ""
 
-#: discord.Colour.orange:1 of
+#: discord.Color.orange:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xe67e22``."
 msgstr ""
 
-#: discord.Colour.dark_orange:1 of
+#: discord.Color.dark_orange:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xa84300``."
 msgstr ""
 
-#: discord.Colour.red:1 of
+#: discord.Color.red:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0xe74c3c``."
 msgstr ""
 
-#: discord.Colour.dark_red:1 of
+#: discord.Color.dark_red:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x992d22``."
 msgstr ""
 
-#: discord.Colour.lighter_gray:1 discord.Colour.lighter_grey:1 of
+#: discord.Color.lighter_gray:1 discord.Color.lighter_grey:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x95a5a6``."
 msgstr ""
 
-#: discord.Colour.dark_gray:1 discord.Colour.dark_grey:1 of
+#: discord.Color.dark_gray:1 discord.Color.dark_grey:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x607d8b``."
 msgstr ""
 
-#: discord.Colour.light_gray:1 discord.Colour.light_grey:1 of
+#: discord.Color.light_gray:1 discord.Color.light_grey:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x979c9f``."
 msgstr ""
 
-#: discord.Colour.darker_gray:1 discord.Colour.darker_grey:1 of
+#: discord.Color.darker_gray:1 discord.Color.darker_grey:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x546e7a``."
 msgstr ""
 
-#: discord.Colour.blurple:1 of
+#: discord.Color.blurple:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x7289da``."
 msgstr ""
 
-#: discord.Colour.greyple:1 of
+#: discord.Color.greyple:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x99aab5``."
 msgstr ""
 
-#: discord.Colour.dark_theme:1 of
+#: discord.Color.dark_theme:1 of
 msgid ""
-"A factory method that returns a :class:`Colour` with a value of "
+"A factory method that returns a :class:`Color` with a value of "
 "``0x36393F``. This will appear transparent on Discord's dark theme."
 msgstr ""
 
@@ -17524,20 +17524,20 @@ msgstr ":class:`~discord.User`"
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`Colour` -- A property that "
+#~ ":class:`Color` -- A property that "
 #~ "returns a color denoting the rendered"
 #~ " color for the user. This always "
-#~ "returns :meth:`Colour.default`."
+#~ "returns :meth:`Color.default`."
 #~ msgstr ""
 
-#~ msgid "There is an alias for this named :meth:`colour`."
+#~ msgid "There is an alias for this named :meth:`color`."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`Colour` -- A property that "
-#~ "returns a colour denoting the rendered"
-#~ " colour for the user. This always "
-#~ "returns :meth:`Colour.default`."
+#~ ":class:`Color` -- A property that "
+#~ "returns a color denoting the rendered"
+#~ " color for the user. This always "
+#~ "returns :meth:`Color.default`."
 #~ msgstr ""
 
 #~ msgid "There is an alias for this named :meth:`color`."
@@ -18434,20 +18434,20 @@ msgstr ":class:`~discord.User`"
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`Colour` -- A property that "
-#~ "returns a colour denoting the rendered"
-#~ " colour for the member. If the "
-#~ "default colour is the one rendered "
-#~ "then an instance of :meth:`Colour.default` "
+#~ ":class:`Color` -- A property that "
+#~ "returns a color denoting the rendered"
+#~ " color for the member. If the "
+#~ "default color is the one rendered "
+#~ "then an instance of :meth:`Color.default` "
 #~ "is returned."
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`Colour` -- A property that "
+#~ ":class:`Color` -- A property that "
 #~ "returns a color denoting the rendered"
 #~ " color for the member. If the "
 #~ "default color is the one rendered "
-#~ "then an instance of :meth:`Colour.default` "
+#~ "then an instance of :meth:`Color.default` "
 #~ "is returned."
 #~ msgstr ""
 
@@ -18502,7 +18502,7 @@ msgstr ":class:`~discord.User`"
 #~ msgid "There is an alias for this named :meth:`color`"
 #~ msgstr ""
 
-#~ msgid "There is an alias for this named :meth:`colour`"
+#~ msgid "There is an alias for this named :meth:`color`"
 #~ msgstr ""
 
 #~ msgid ""
@@ -18674,8 +18674,8 @@ msgstr ":class:`~discord.User`"
 #~ msgstr ""
 
 #~ msgid ""
-#~ ":class:`Colour` -- Represents the role "
-#~ "colour. An alias exists under ``color``."
+#~ ":class:`Color` -- Represents the role "
+#~ "color. An alias exists under ``color``."
 #~ msgstr ""
 
 #~ msgid ""
@@ -19258,8 +19258,8 @@ msgstr ":class:`~discord.User`"
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Union[:class:`Colour`, :class:`int`] -- The "
-#~ "colour code of the embed. Aliased "
+#~ "Union[:class:`Color`, :class:`int`] -- The "
+#~ "color code of the embed. Aliased "
 #~ "to ``color`` as well. This can be"
 #~ " set during initialisation."
 #~ msgstr ""
@@ -19288,24 +19288,24 @@ msgstr ":class:`~discord.User`"
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Represents a Discord role colour. This"
+#~ "Represents a Discord role color. This"
 #~ " class is similar to an (red, "
 #~ "green, blue) :class:`tuple`."
 #~ msgstr ""
 
-#~ msgid ":class:`int` -- The raw integer colour value."
+#~ msgid ":class:`int` -- The raw integer color value."
 #~ msgstr ""
 
-#~ msgid ":class:`int` -- Returns the red component of the colour."
+#~ msgid ":class:`int` -- Returns the red component of the color."
 #~ msgstr ""
 
-#~ msgid ":class:`int` -- Returns the green component of the colour."
+#~ msgid ":class:`int` -- Returns the green component of the color."
 #~ msgstr ""
 
-#~ msgid ":class:`int` -- Returns the blue component of the colour."
+#~ msgid ":class:`int` -- Returns the blue component of the color."
 #~ msgstr ""
 
-#~ msgid "A factory method that returns a :class:`Colour` with a value of 0."
+#~ msgid "A factory method that returns a :class:`Color` with a value of 0."
 #~ msgstr ""
 
 #~ msgid ":class:`int` -- The application ID of the game."

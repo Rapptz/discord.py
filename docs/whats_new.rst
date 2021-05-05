@@ -69,12 +69,12 @@ New Features
 - :class:`Attachment` is now hashable
 - Add :attr:`Attachment.content_type` attribute (:issue:`6618`)
 - Add support for casting :class:`Attachment` to :class:`str` to get the URL.
-- Add ``seed`` parameter for :class:`Colour.random` (:issue:`6562`)
+- Add ``seed`` parameter for :class:`Color.random` (:issue:`6562`)
     - This only seeds it for one call. If seeding for multiple calls is desirable, use :func:`random.seed`.
 
 - Add a :func:`utils.remove_markdown` helper function (:issue:`6573`)
 - Add support for passing scopes to :func:`utils.oauth_url` (:issue:`6568`)
-- |commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColourConverter <ext.commands.ColourConverter>` (:issue:`6374`)
+- |commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColorConverter <ext.commands.ColorConverter>` (:issue:`6374`)
 - |commands| Add support for converting :class:`StoreChannel` via :class:`StoreChannelConverter <ext.commands.StoreChannelConverter>` (:issue:`6603`)
 - |commands| Add support for stripping whitespace after the prefix is encountered using the ``strip_after_prefix`` :class:`~ext.commands.Bot` constructor parameter.
 - |commands| Add :attr:`Context.invoked_parents <ext.commands.Context.invoked_parents>` to get the aliases a command's parent was invoked with (:issue:`1874`, :issue:`6462`)
@@ -129,7 +129,7 @@ New Features
 - An entirely redesigned documentation. This was the cumulation of multiple months of effort.
     - There's now a dark theme, feel free to navigate to the cog on the screen to change your setting, though this should be automatic.
 - Add support for :meth:`AppInfo.icon_url_as` and :meth:`AppInfo.cover_image_url_as` (:issue:`5888`)
-- Add :meth:`Colour.random` to get a random colour (:issue:`6067`)
+- Add :meth:`Color.random` to get a random color (:issue:`6067`)
 - Add support for stickers via :class:`Sticker` (:issue:`5946`)
 - Add support for replying via :meth:`Message.reply` (:issue:`6061`)
     - This also comes with the :attr:`AllowedMentions.replied_user` setting.
@@ -154,7 +154,7 @@ New Features
     - This is useful if you don't want to incur an extra API call to fetch the message.
 - Add :meth:`Emoji.url_as` (:issue:`6162`)
 - Add support for :attr:`Member.pending` for the membership gating feature.
-- Allow ``colour`` parameter to take ``int`` in :meth:`Guild.create_role` (:issue:`6195`)
+- Allow ``color`` parameter to take ``int`` in :meth:`Guild.create_role` (:issue:`6195`)
 - Add support for ``presences`` in :meth:`Guild.query_members` (:issue:`2354`)
 - |commands| Add support for ``description`` keyword argument in :class:`commands.Cog <ext.commands.Cog>` (:issue:`6028`)
 - |tasks| Add support for calling the wrapped coroutine as a function via ``__call__``.
@@ -183,7 +183,7 @@ Miscellaneous
 - Update dependencies to allow the library to work on Python 3.9+ without requiring build tools. (:issue:`5984`, :issue:`5970`)
 - Fix docstring issue leading to a SyntaxError in 3.9 (:issue:`6153`)
 - Update Windows opus binaries from 1.2.1 to 1.3.1 (:issue:`6161`)
-- Allow :meth:`Guild.create_role` to accept :class:`int` as the ``colour`` parameter (:issue:`6195`)
+- Allow :meth:`Guild.create_role` to accept :class:`int` as the ``color`` parameter (:issue:`6195`)
 - |commands| :class:`MessageConverter <ext.commands.MessageConverter>` regex got updated to support ``www.`` prefixes (:issue:`6002`)
 - |commands| :class:`UserConverter <ext.commands.UserConverter>` now fetches the API if an ID is passed and the user is not cached.
 - |commands| :func:`max_concurrency <ext.commands.max_concurrency>` is now called before cooldowns (:issue:`6172`)
@@ -232,7 +232,7 @@ New Features
 - Support for gateway intents, passed via ``intents`` in :class:`Client` using :class:`Intents`.
 - Add :attr:`VoiceRegion.south_korea` (:issue:`5233`)
 - Add support for ``__eq__`` for :class:`Message` (:issue:`5789`)
-- Add :meth:`Colour.dark_theme` factory method (:issue:`1584`)
+- Add :meth:`Color.dark_theme` factory method (:issue:`1584`)
 - Add :meth:`AllowedMentions.none` and :meth:`AllowedMentions.all` (:issue:`5785`)
 - Add more concrete exceptions for 500 class errors under :class:`DiscordServerError` (:issue:`5797`)
 - Implement :class:`VoiceProtocol` to better intersect the voice flow.
@@ -242,7 +242,7 @@ New Features
     - This seems currently unused API wise.
 
 - Add support for message references, :attr:`Message.reference` (:issue:`5754`, :issue:`5832`)
-- Add alias for :class:`ColourConverter` under ``ColorConverter`` (:issue:`5773`)
+- Add alias for :class:`ColorConverter` under ``ColorConverter`` (:issue:`5773`)
 - Add alias for :attr:`PublicUserFlags.verified_bot_developer` under :attr:`PublicUserFlags.early_verified_bot_developer` (:issue:`5849`)
 - |commands| Add support for ``require_var_positional`` for :class:`Command` (:issue:`5793`)
 
@@ -352,11 +352,11 @@ New Features
     - There is currently no support in the audit log for this.
 
 - Add an alias for :attr:`VerificationLevel.extreme` under :attr:`VerificationLevel.very_high` (:issue:`2650`)
-- Add various grey to gray aliases for :class:`Colour` (:issue:`5130`)
+- Add various grey to gray aliases for :class:`Color` (:issue:`5130`)
 - Added :attr:`VoiceClient.latency` and :attr:`VoiceClient.average_latency` (:issue:`2535`)
 - Add ``use_cached`` and ``spoiler`` parameters to :meth:`Attachment.to_file` (:issue:`2577`, :issue:`4095`)
 - Add ``position`` parameter support to :meth:`Guild.create_category` (:issue:`2623`)
-- Allow passing ``int`` for the colour in :meth:`Role.edit` (:issue:`4057`)
+- Allow passing ``int`` for the color in :meth:`Role.edit` (:issue:`4057`)
 - Add :meth:`Embed.remove_author` to clear author information from an embed (:issue:`4068`)
 - Add the ability to clear images and thumbnails in embeds using :attr:`Embed.Empty` (:issue:`4053`)
 - Add :attr:`Guild.max_video_channel_users` (:issue:`4120`)

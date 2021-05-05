@@ -26,7 +26,7 @@ import discord.abc
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data
 from .enums import DefaultAvatar, try_enum
-from .colour import Colour
+from .color import Color
 from .asset import Asset
 
 __all__ = (
@@ -116,22 +116,22 @@ class BaseUser(_BaseUser):
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
 
     @property
-    def colour(self):
-        """:class:`Colour`: A property that returns a colour denoting the rendered colour
-        for the user. This always returns :meth:`Colour.default`.
+    def color(self):
+        """:class:`Color`: A property that returns a color denoting the rendered color
+        for the user. This always returns :meth:`Color.default`.
 
         There is an alias for this named :attr:`color`.
         """
-        return Colour.default()
+        return Color.default()
 
     @property
     def color(self):
-        """:class:`Colour`: A property that returns a color denoting the rendered color
-        for the user. This always returns :meth:`Colour.default`.
+        """:class:`Color`: A property that returns a color denoting the rendered color
+        for the user. This always returns :meth:`Color.default`.
 
-        There is an alias for this named :attr:`colour`.
+        There is an alias for this named :attr:`color`.
         """
-        return self.colour
+        return self.color
 
     @property
     def mention(self):

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .permissions import Permissions
 from .errors import InvalidArgument
-from .colour import Colour
+from .color import Color
 from .mixins import Hashable
 from .utils import snowflake_time, _get_as_snowflake
 
@@ -150,7 +150,7 @@ class Role(Hashable):
         'id',
         'name',
         '_permissions',
-        '_colour',
+        '_color',
         'position',
         'managed',
         'mentionable',
@@ -212,7 +212,7 @@ class Role(Hashable):
         self.name = data['name']
         self._permissions = int(data.get('permissions', 0))
         self.position = data.get('position', 0)
-        self._colour = data.get('color', 0)
+        self._color = data.get('color', 0)
         self.hoist = data.get('hoist', False)
         self.managed = data.get('managed', False)
         self.mentionable = data.get('mentionable', False)
@@ -253,14 +253,14 @@ class Role(Hashable):
         return Permissions(self._permissions)
 
     @property
-    def colour(self):
-        """:class:`Colour`: Returns the role colour. An alias exists under ``color``."""
-        return Colour(self._colour)
+    def color(self):
+        """:class:`Color`: Returns the role color. An alias exists under ``color``."""
+        return Color(self._color)
 
     @property
     def color(self):
-        """:class:`Colour`: Returns the role color. An alias exists under ``colour``."""
-        return self.colour
+        """:class:`Color`: Returns the role color. An alias exists under ``color``."""
+        return self.color
 
     @property
     def created_at(self):
@@ -316,7 +316,7 @@ class Role(Hashable):
         All fields are optional.
 
         .. versionchanged:: 1.4
-            Can now pass ``int`` to ``colour`` keyword-only parameter.
+            Can now pass ``int`` to ``color`` keyword-only parameter.
 
         Parameters
         -----------
@@ -324,8 +324,8 @@ class Role(Hashable):
             The new role name to change to.
         permissions: :class:`Permissions`
             The new permissions to change to.
-        colour: Union[:class:`Colour`, :class:`int`]
-            The new colour to change to. (aliased to color as well)
+        color: Union[:class:`Color`, :class:`int`]
+            The new color to change to. (aliased to color as well)
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
         mentionable: :class:`bool`
@@ -353,17 +353,17 @@ class Role(Hashable):
             self.position = position
 
         try:
-            colour = fields['colour']
+            color = fields['color']
         except KeyError:
-            colour = fields.get('color', self.colour)
+            color = fields.get('color', self.color)
 
-        if isinstance(colour, int):
-            colour = Colour(value=colour)
+        if isinstance(color, int):
+            color = Color(value=color)
 
         payload = {
             'name': fields.get('name', self.name),
             'permissions': str(fields.get('permissions', self.permissions).value),
-            'color': colour.value,
+            'color': color.value,
             'hoist': fields.get('hoist', self.hoist),
             'mentionable': fields.get('mentionable', self.mentionable),
         }

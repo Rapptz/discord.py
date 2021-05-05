@@ -362,9 +362,9 @@ They will be enumerated here.
 
     - Use :attr:`Message.created_at` instead.
 
-- ``Colour.to_tuple()``
+- ``Color.to_tuple()``
 
-    - Use :meth:`Colour.to_rgb` instead.
+    - Use :meth:`Color.to_rgb` instead.
 
 - ``Permissions.view_audit_logs``
 
@@ -409,7 +409,7 @@ They will be enumerated here.
 - :attr:`Message.webhook_id` to fetch the message's webhook ID.
 - :attr:`Message.activity` and :attr:`Message.application` for Rich Presence related information.
 - :meth:`TextChannel.is_nsfw` to check if a text channel is NSFW.
-- :meth:`Colour.from_rgb` to construct a :class:`Colour` from RGB tuple.
+- :meth:`Color.from_rgb` to construct a :class:`Color` from RGB tuple.
 - :meth:`Guild.get_role` to get a role by its ID.
 
 .. _migrating_1_0_sending_messages:

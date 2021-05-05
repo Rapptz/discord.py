@@ -28,7 +28,7 @@ from typing import Dict, List, TYPE_CHECKING
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
-from .colour import Colour
+from .color import Color
 from .invite import Invite
 from .mixins import Hashable
 from .asset import Asset
@@ -65,7 +65,7 @@ def _transform_permissions(entry, data):
 
 
 def _transform_color(entry, data):
-    return Colour(data)
+    return Color(data)
 
 
 def _transform_snowflake(entry, data):
@@ -167,7 +167,7 @@ class AuditLogChanges:
         'deny':                          (None, _transform_permissions),
         'permissions':                   (None, _transform_permissions),
         'id':                            (None, _transform_snowflake),
-        'color':                         ('colour', _transform_color),
+        'color':                         ('color', _transform_color),
         'owner_id':                      ('owner', _transform_owner_id),
         'inviter_id':                    ('inviter', _transform_inviter_id),
         'channel_id':                    ('channel', _transform_channel),
@@ -233,9 +233,9 @@ class AuditLogChanges:
             setattr(self.after, attr, after)
 
         # add an alias
-        if hasattr(self.after, 'colour'):
-            self.after.color = self.after.colour
-            self.before.color = self.before.colour
+        if hasattr(self.after, 'color'):
+            self.after.color = self.after.color
+            self.before.color = self.before.color
         if hasattr(self.after, 'expire_behavior'):
             self.after.expire_behaviour = self.after.expire_behavior
             self.before.expire_behaviour = self.before.expire_behavior

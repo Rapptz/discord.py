@@ -166,7 +166,7 @@ msgid "Add support for ``__eq__`` for :class:`Message` (:issue:`5789`)"
 msgstr ""
 
 #: ../../whats_new.rst:58
-msgid "Add :meth:`Colour.dark_theme` factory method (:issue:`1584`)"
+msgid "Add :meth:`Color.dark_theme` factory method (:issue:`1584`)"
 msgstr ""
 
 #: ../../whats_new.rst:59
@@ -211,7 +211,7 @@ msgstr ""
 
 #: ../../whats_new.rst:68
 msgid ""
-"Add alias for :class:`ColourConverter` under ``ColorConverter`` "
+"Add alias for :class:`ColorConverter` under ``ColorConverter`` "
 "(:issue:`5773`)"
 msgstr ""
 
@@ -500,7 +500,7 @@ msgid ""
 msgstr ""
 
 #: ../../whats_new.rst:178
-msgid "Add various grey to gray aliases for :class:`Colour` (:issue:`5130`)"
+msgid "Add various grey to gray aliases for :class:`Color` (:issue:`5130`)"
 msgstr ""
 
 #: ../../whats_new.rst:179
@@ -522,7 +522,7 @@ msgid ""
 msgstr ""
 
 #: ../../whats_new.rst:182
-msgid "Allow passing ``int`` for the colour in :meth:`Role.edit` (:issue:`4057`)"
+msgid "Allow passing ``int`` for the color in :meth:`Role.edit` (:issue:`4057`)"
 msgstr ""
 
 #: ../../whats_new.rst:183

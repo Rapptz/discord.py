@@ -1592,7 +1592,7 @@ of :class:`enum.Enum`.
 
         Possible attributes for :class:`AuditLogDiff`:
 
-        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.color`
         - :attr:`~AuditLogDiff.mentionable`
         - :attr:`~AuditLogDiff.hoist`
         - :attr:`~AuditLogDiff.name`
@@ -1604,7 +1604,7 @@ of :class:`enum.Enum`.
 
         - The name has changed
         - The permissions have changed
-        - The colour has changed
+        - The color has changed
         - Its hoist/mentionable state has changed
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
@@ -1612,7 +1612,7 @@ of :class:`enum.Enum`.
 
         Possible attributes for :class:`AuditLogDiff`:
 
-        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.color`
         - :attr:`~AuditLogDiff.mentionable`
         - :attr:`~AuditLogDiff.hoist`
         - :attr:`~AuditLogDiff.name`
@@ -1627,7 +1627,7 @@ of :class:`enum.Enum`.
 
         Possible attributes for :class:`AuditLogDiff`:
 
-        - :attr:`~AuditLogDiff.colour`
+        - :attr:`~AuditLogDiff.color`
         - :attr:`~AuditLogDiff.mentionable`
         - :attr:`~AuditLogDiff.hoist`
         - :attr:`~AuditLogDiff.name`
@@ -1905,26 +1905,26 @@ of :class:`enum.Enum`.
     .. attribute:: blurple
 
         Represents the default avatar with the color blurple.
-        See also :attr:`Colour.blurple`
+        See also :attr:`Color.blurple`
     .. attribute:: grey
 
         Represents the default avatar with the color grey.
-        See also :attr:`Colour.greyple`
+        See also :attr:`Color.greyple`
     .. attribute:: gray
 
         An alias for :attr:`grey`.
     .. attribute:: green
 
         Represents the default avatar with the color green.
-        See also :attr:`Colour.green`
+        See also :attr:`Color.green`
     .. attribute:: orange
 
         Represents the default avatar with the color orange.
-        See also :attr:`Colour.orange`
+        See also :attr:`Color.orange`
     .. attribute:: red
 
         Represents the default avatar with the color red.
-        See also :attr:`Colour.red`
+        See also :attr:`Color.red`
 
 .. class:: StickerType
 
@@ -2437,14 +2437,14 @@ AuditLogDiff
 
         :type: :class:`Permissions`
 
-    .. attribute:: colour
+    .. attribute:: color
                    color
 
-        The colour of a role.
+        The color of a role.
 
-        See also :attr:`Role.colour`
+        See also :attr:`Role.color`
 
-        :type: :class:`Colour`
+        :type: :class:`Color`
 
     .. attribute:: hoist
 
@@ -3186,12 +3186,12 @@ File
 .. autoclass:: File
     :members:
 
-Colour
+Color
 ~~~~~~
 
-.. attributetable:: Colour
+.. attributetable:: Color
 
-.. autoclass:: Colour
+.. autoclass:: Color
     :members:
 
 BaseActivity

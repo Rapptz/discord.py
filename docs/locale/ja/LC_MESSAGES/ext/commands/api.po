@@ -319,7 +319,7 @@ msgstr "これは:meth:`.check`と:meth:`.check_once`のデコレータでない
 #: discord.ext.commands.Cog.cog_after_invoke
 #: discord.ext.commands.Cog.cog_before_invoke
 #: discord.ext.commands.Cog.cog_command_error discord.ext.commands.Cog.listener
-#: discord.ext.commands.ColourConverter.convert
+#: discord.ext.commands.ColorConverter.convert
 #: discord.ext.commands.Command.add_check
 #: discord.ext.commands.Command.after_invoke
 #: discord.ext.commands.Command.before_invoke
@@ -428,7 +428,7 @@ msgstr "ボットに登録するコグ。"
 #: discord.ext.commands.Bot.wait_for
 #: discord.ext.commands.CategoryChannelConverter.convert
 #: discord.ext.commands.Cog.listener
-#: discord.ext.commands.ColourConverter.convert
+#: discord.ext.commands.ColorConverter.convert
 #: discord.ext.commands.Command.after_invoke
 #: discord.ext.commands.Command.before_invoke
 #: discord.ext.commands.Command.can_run discord.ext.commands.Command.error
@@ -613,7 +613,7 @@ msgstr ""
 #: discord.ext.commands.Bot.start:1 discord.ext.commands.Bot.wait_for:1
 #: discord.ext.commands.Bot.wait_until_ready:1
 #: discord.ext.commands.CategoryChannelConverter.convert:1
-#: discord.ext.commands.ColourConverter.convert:1
+#: discord.ext.commands.ColorConverter.convert:1
 #: discord.ext.commands.Command.__call__:1
 #: discord.ext.commands.Command.can_run:1
 #: discord.ext.commands.Context.fetch_message:1
@@ -4804,7 +4804,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:3
-#: discord.ext.commands.ColourConverter.convert:3
+#: discord.ext.commands.ColorConverter.convert:3
 #: discord.ext.commands.Converter.convert:3
 #: discord.ext.commands.EmojiConverter.convert:3
 #: discord.ext.commands.GameConverter.convert:3
@@ -4821,7 +4821,7 @@ msgid "The method to override to do conversion logic."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:5
-#: discord.ext.commands.ColourConverter.convert:5
+#: discord.ext.commands.ColorConverter.convert:5
 #: discord.ext.commands.Converter.convert:5
 #: discord.ext.commands.EmojiConverter.convert:5
 #: discord.ext.commands.GameConverter.convert:5
@@ -4841,7 +4841,7 @@ msgid ""
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:9
-#: discord.ext.commands.ColourConverter.convert:9
+#: discord.ext.commands.ColorConverter.convert:9
 #: discord.ext.commands.Converter.convert:9
 #: discord.ext.commands.EmojiConverter.convert:9
 #: discord.ext.commands.GameConverter.convert:9
@@ -4858,7 +4858,7 @@ msgid "The invocation context that the argument is being used in."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:11
-#: discord.ext.commands.ColourConverter.convert:11
+#: discord.ext.commands.ColorConverter.convert:11
 #: discord.ext.commands.Converter.convert:11
 #: discord.ext.commands.EmojiConverter.convert:11
 #: discord.ext.commands.GameConverter.convert:11
@@ -4875,7 +4875,7 @@ msgid "The argument that is being converted."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:14
-#: discord.ext.commands.ColourConverter.convert:14
+#: discord.ext.commands.ColorConverter.convert:14
 #: discord.ext.commands.Converter.convert:14
 #: discord.ext.commands.EmojiConverter.convert:14
 #: discord.ext.commands.GameConverter.convert:14
@@ -4892,7 +4892,7 @@ msgid "A generic exception occurred when converting the argument."
 msgstr ""
 
 #: discord.ext.commands.CategoryChannelConverter.convert:15
-#: discord.ext.commands.ColourConverter.convert:15
+#: discord.ext.commands.ColorConverter.convert:15
 #: discord.ext.commands.Converter.convert:15
 #: discord.ext.commands.EmojiConverter.convert:15
 #: discord.ext.commands.GameConverter.convert:15
@@ -5055,40 +5055,40 @@ msgstr ""
 msgid "Converts to :class:`~discord.Game`."
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:1 of
-msgid "Converts to a :class:`~discord.Colour`."
+#: discord.ext.commands.ColorConverter:1 of
+msgid "Converts to a :class:`~discord.Color`."
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:3 of
+#: discord.ext.commands.ColorConverter:3 of
 msgid "Add an alias named ColorConverter"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:6 of
+#: discord.ext.commands.ColorConverter:6 of
 msgid "The following formats are accepted:"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:8 of
+#: discord.ext.commands.ColorConverter:8 of
 msgid "``0x<hex>``"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:9 of
+#: discord.ext.commands.ColorConverter:9 of
 msgid "``#<hex>``"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:10 of
+#: discord.ext.commands.ColorConverter:10 of
 msgid "``0x#<hex>``"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:11 of
-msgid "Any of the ``classmethod`` in :class:`Colour`"
+#: discord.ext.commands.ColorConverter:11 of
+msgid "Any of the ``classmethod`` in :class:`Color`"
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:13 of
+#: discord.ext.commands.ColorConverter:13 of
 msgid "The ``_`` in the name can be optionally replaced with spaces."
 msgstr ""
 
-#: discord.ext.commands.ColourConverter:15 of
-msgid "Raise :exc:`.BadColourArgument` instead of generic :exc:`.BadArgument`"
+#: discord.ext.commands.ColorConverter:15 of
+msgid "Raise :exc:`.BadColorArgument` instead of generic :exc:`.BadArgument`"
 msgstr ""
 
 #: discord.ext.commands.EmojiConverter:1 of
@@ -5760,7 +5760,7 @@ msgid ":exc:`~.commands.ChannelNotReadable`"
 msgstr ""
 
 #: ../../ext/commands/api.rst:428
-msgid ":exc:`~.commands.BadColourArgument`"
+msgid ":exc:`~.commands.BadColorArgument`"
 msgstr ""
 
 #: ../../ext/commands/api.rst:429

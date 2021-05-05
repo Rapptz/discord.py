@@ -36,7 +36,7 @@ from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
 from .enums import Status, try_enum
-from .colour import Colour
+from .color import Color
 from .object import Object
 
 __all__ = (
@@ -372,33 +372,33 @@ class Member(discord.abc.Messageable, _BaseUser):
         return 'mobile' in self._client_status
 
     @property
-    def colour(self):
-        """:class:`Colour`: A property that returns a colour denoting the rendered colour
-        for the member. If the default colour is the one rendered then an instance
-        of :meth:`Colour.default` is returned.
+    def color(self):
+        """:class:`Color`: A property that returns a color denoting the rendered color
+        for the member. If the default color is the one rendered then an instance
+        of :meth:`Color.default` is returned.
 
         There is an alias for this named :attr:`color`.
         """
 
         roles = self.roles[1:] # remove @everyone
 
-        # highest order of the colour is the one that gets rendered.
-        # if the highest is the default colour then the next one with a colour
+        # highest order of the color is the one that gets rendered.
+        # if the highest is the default color then the next one with a color
         # is chosen instead
         for role in reversed(roles):
-            if role.colour.value:
-                return role.colour
-        return Colour.default()
+            if role.color.value:
+                return role.color
+        return Color.default()
 
     @property
     def color(self):
-        """:class:`Colour`: A property that returns a color denoting the rendered color for
-        the member. If the default color is the one rendered then an instance of :meth:`Colour.default`
+        """:class:`Color`: A property that returns a color denoting the rendered color for
+        the member. If the default color is the one rendered then an instance of :meth:`Color.default`
         is returned.
 
-        There is an alias for this named :attr:`colour`.
+        There is an alias for this named :attr:`color`.
         """
-        return self.colour
+        return self.color
 
     @property
     def roles(self):

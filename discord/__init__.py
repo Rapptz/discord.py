@@ -36,7 +36,7 @@ from .errors import *
 from .permissions import *
 from .role import *
 from .file import *
-from .colour import *
+from .color import *
 from .integrations import *
 from .invite import *
 from .template import *

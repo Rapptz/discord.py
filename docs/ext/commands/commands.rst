@@ -388,7 +388,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Guild` (since v1.7)
 - :class:`Role`
 - :class:`Game`
-- :class:`Colour`
+- :class:`Color`
 - :class:`Emoji`
 - :class:`PartialEmoji`
 
@@ -429,7 +429,7 @@ converter is given below:
 +--------------------------+-------------------------------------------------+
 | :class:`Game`            | :class:`~ext.commands.GameConverter`            |
 +--------------------------+-------------------------------------------------+
-| :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
+| :class:`Color`          | :class:`~ext.commands.ColorConverter`          |
 +--------------------------+-------------------------------------------------+
 | :class:`Emoji`           | :class:`~ext.commands.EmojiConverter`           |
 +--------------------------+-------------------------------------------------+

@@ -62,7 +62,7 @@ __all__ = (
     'GuildConverter',
     'RoleConverter',
     'GameConverter',
-    'ColourConverter',
+    'ColorConverter',
     'ColorConverter',
     'VoiceChannelConverter',
     'StageChannelConverter',
@@ -504,8 +504,8 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
         return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
 
 
-class ColourConverter(Converter[discord.Colour]):
-    """Converts to a :class:`~discord.Colour`.
+class ColorConverter(Converter[discord.Color]):
+    """Converts to a :class:`~discord.Color`.
 
     .. versionchanged:: 1.5
         Add an alias named ColorConverter
@@ -516,7 +516,7 @@ class ColourConverter(Converter[discord.Colour]):
     - ``#<hex>``
     - ``0x#<hex>``
     - ``rgb(<number>, <number>, <number>)``
-    - Any of the ``classmethod`` in :class:`Colour`
+    - Any of the ``classmethod`` in :class:`Color`
 
         - The ``_`` in the name can be optionally replaced with spaces.
 
@@ -524,7 +524,7 @@ class ColourConverter(Converter[discord.Colour]):
     either a 6 digit hex number or a 3 digit hex shortcut (e.g. #fff).
 
     .. versionchanged:: 1.5
-         Raise :exc:`.BadColourArgument` instead of generic :exc:`.BadArgument`
+         Raise :exc:`.BadColorArgument` instead of generic :exc:`.BadArgument`
 
     .. versionchanged:: 1.7
         Added support for ``rgb`` function and 3-digit hex shortcuts
@@ -537,9 +537,9 @@ class ColourConverter(Converter[discord.Colour]):
         try:
             value = int(arg, base=16)
             if not (0 <= value <= 0xFFFFFF):
-                raise BadColourArgument(argument)
+                raise BadColorArgument(argument)
         except ValueError:
-            raise BadColourArgument(argument)
+            raise BadColorArgument(argument)
         else:
             return discord.Color(value=value)
 
@@ -547,25 +547,25 @@ class ColourConverter(Converter[discord.Colour]):
         if number[-1] == '%':
             value = int(number[:-1])
             if not (0 <= value <= 100):
-                raise BadColourArgument(argument)
+                raise BadColorArgument(argument)
             return round(255 * (value / 100))
 
         value = int(number)
         if not (0 <= value <= 255):
-            raise BadColourArgument(argument)
+            raise BadColorArgument(argument)
         return value
 
     def parse_rgb(self, argument, *, regex=RGB_REGEX):
         match = regex.match(argument)
         if match is None:
-            raise BadColourArgument(argument)
+            raise BadColorArgument(argument)
 
         red = self.parse_rgb_number(argument, match.group('r'))
         green = self.parse_rgb_number(argument, match.group('g'))
         blue = self.parse_rgb_number(argument, match.group('b'))
         return discord.Color.from_rgb(red, green, blue)
 
-    async def convert(self, ctx: Context, argument: str) -> discord.Colour:
+    async def convert(self, ctx: Context, argument: str) -> discord.Color:
         if argument[0] == '#':
             return self.parse_hex_number(argument[1:])
 
@@ -581,13 +581,13 @@ class ColourConverter(Converter[discord.Colour]):
             return self.parse_rgb(arg)
 
         arg = arg.replace(' ', '_')
-        method = getattr(discord.Colour, arg, None)
+        method = getattr(discord.Color, arg, None)
         if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-            raise BadColourArgument(arg)
+            raise BadColorArgument(arg)
         return method()
 
 
-ColorConverter = ColourConverter
+ColorConverter = ColorConverter
 
 
 class RoleConverter(IDConverter[discord.Role]):
@@ -923,7 +923,7 @@ CONVERTER_MAPPING: Dict[Type[Any], Any] = {
     discord.Guild: GuildConverter,
     discord.Role: RoleConverter,
     discord.Game: GameConverter,
-    discord.Colour: ColourConverter,
+    discord.Color: ColorConverter,
     discord.VoiceChannel: VoiceChannelConverter,
     discord.StageChannel: StageChannelConverter,
     discord.Emoji: EmojiConverter,

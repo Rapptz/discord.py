@@ -29,7 +29,7 @@ from typing import List, TYPE_CHECKING
 
 from .asset import Asset
 from .enums import ActivityType, try_enum
-from .colour import Colour
+from .color import Color
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 
@@ -586,18 +586,18 @@ class Spotify:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
 
     @property
-    def colour(self):
-        """:class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
+    def color(self):
+        """:class:`Color`: Returns the Spotify integration color, as a :class:`Color`.
 
         There is an alias for this named :attr:`color`"""
-        return Colour(0x1DB954)
+        return Color(0x1DB954)
 
     @property
     def color(self):
-        """:class:`Colour`: Returns the Spotify integration colour, as a :class:`Colour`.
+        """:class:`Color`: Returns the Spotify integration color, as a :class:`Color`.
 
-        There is an alias for this named :attr:`colour`"""
-        return self.colour
+        There is an alias for this named :attr:`color`"""
+        return self.color
 
     def to_dict(self):
         return {

@@ -48,7 +48,7 @@ __all__ = (
     'UserNotFound',
     'ChannelNotFound',
     'ChannelNotReadable',
-    'BadColourArgument',
+    'BadColorArgument',
     'RoleNotFound',
     'BadInviteArgument',
     'EmojiNotFound',
@@ -335,8 +335,8 @@ class ChannelNotFound(BadArgument):
         self.argument = argument
         super().__init__(f'Channel "{argument}" not found.')
 
-class BadColourArgument(BadArgument):
-    """Exception raised when the colour is not valid.
+class BadColorArgument(BadArgument):
+    """Exception raised when the color is not valid.
 
     This inherits from :exc:`BadArgument`
 
@@ -345,13 +345,13 @@ class BadColourArgument(BadArgument):
     Attributes
     -----------
     argument: :class:`str`
-        The colour supplied by the caller that was not valid
+        The color supplied by the caller that was not valid
     """
     def __init__(self, argument):
         self.argument = argument
-        super().__init__(f'Colour "{argument}" is invalid.')
+        super().__init__(f'Color "{argument}" is invalid.')
 
-BadColorArgument = BadColourArgument
+BadColorArgument = BadColorArgument
 
 class RoleNotFound(BadArgument):
     """Exception raised when the bot can not find the role.
