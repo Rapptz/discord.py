@@ -394,6 +394,8 @@ class AuditLogAction(Enum):
             return 'webhook'
         elif v < 70:
             return 'emoji'
+        elif v == 73:
+            return 'channel'
         elif v < 80:
             return 'message'
         elif v < 90:
