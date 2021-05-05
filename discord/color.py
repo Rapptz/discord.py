@@ -273,4 +273,4 @@ class Color:
         """
         return cls(0x36393F)
 
-Color = Color
+
