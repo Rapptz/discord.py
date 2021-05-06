@@ -35,7 +35,7 @@ class PartialEmoji(TypedDict):
 class Emoji(PartialEmoji, total=False):
     roles: SnowflakeList
     user: User
-    required_colons: bool
+    require_colons: bool
     managed: bool
     animated: bool
     available: bool

@@ -22,18 +22,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import io
+from __future__ import annotations
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 from .asset import Asset, AssetMixin
-from .errors import DiscordException, InvalidArgument
+from .errors import InvalidArgument
 from . import utils
 
 __all__ = (
     'PartialEmoji',
 )
 
+if TYPE_CHECKING:
+    from .state import ConnectionState
+    from datetime import datetime
+
+
 class _EmojiTag:
     __slots__ = ()
+
+    id: int
+
+
+PE = TypeVar('PE', bound='PartialEmoji')
+
 
 class PartialEmoji(_EmojiTag, AssetMixin):
     """Represents a "partial" emoji.
@@ -75,22 +87,25 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
     __slots__ = ('animated', 'name', 'id', '_state')
 
-    def __init__(self, *, name, animated=False, id=None):
+    if TYPE_CHECKING:
+        id: Optional[int]
+
+    def __init__(self, *, name: str, animated: bool = False, id: Optional[int] = None):
         self.animated = animated
         self.name = name
         self.id = id
-        self._state = None
+        self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls: Type[PE], data: Dict[str, Any]) -> PE:
         return cls(
             animated=data.get('animated', False),
             id=utils._get_as_snowflake(data, 'id'),
-            name=data.get('name'),
+            name=data.get('name', ''),
         )
 
-    def to_dict(self):
-        o = { 'name': self.name }
+    def to_dict(self) -> Dict[str, Any]:
+        o: Dict[str, Any] = {'name': self.name}
         if self.id:
             o['id'] = self.id
         if self.animated:
@@ -98,12 +113,14 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         return o
 
     @classmethod
-    def with_state(cls, state, *, name, animated=False, id=None):
+    def with_state(
+        cls: Type[PE], state: ConnectionState, *, name: str, animated: bool = False, id: Optional[int] = None
+    ) -> PE:
         self = cls(name=name, animated=animated, id=id)
         self._state = state
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.id is None:
             return self.name
         if self.animated:
@@ -113,7 +130,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
     def __repr__(self):
         return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if self.is_unicode_emoji():
             return isinstance(other, PartialEmoji) and self.name == other.name
 
@@ -121,32 +138,32 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             return self.id == other.id
         return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.id, self.name))
 
-    def is_custom_emoji(self):
+    def is_custom_emoji(self) -> bool:
         """:class:`bool`: Checks if this is a custom non-Unicode emoji."""
         return self.id is not None
 
-    def is_unicode_emoji(self):
+    def is_unicode_emoji(self) -> bool:
         """:class:`bool`: Checks if this is a Unicode emoji."""
         return self.id is None
 
-    def _as_reaction(self):
+    def _as_reaction(self) -> str:
         if self.id is None:
             return self.name
         return f'{self.name}:{self.id}'
 
     @property
-    def created_at(self):
+    def created_at(self) -> Optional[datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the emoji's creation time in UTC, or None if Unicode emoji.
 
         .. versionadded:: 1.6
         """
-        if self.is_unicode_emoji():
+        if self.id is None:
             return None
 
         return utils.snowflake_time(self.id)
