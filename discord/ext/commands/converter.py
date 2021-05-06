@@ -377,8 +377,8 @@ class MessageConverter(IDConverter[discord.Message]):
             raise ChannelNotReadable(channel)
 
 
-class TextChannelConverter(IDConverter[discord.TextChannel]):
-    """Converts to a :class:`~discord.TextChannel`.
+class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
+    """Converts to a :class:`~discord.abc.GuildChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -387,14 +387,13 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by name.
 
-    .. versionchanged:: 1.5
-         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+    .. versionadded:: 2.0
     """
 
-    async def convert(self, ctx: Context, argument: str) -> discord.TextChannel:
-        return self._resolve_channel(ctx, argument, ctx.guild.text_channels, discord.TextChannel)
+    async def convert(self, ctx: Context, argument: str) -> discord.abc.GuildChannel:
+        return self._resolve_channel(ctx, argument, ctx.guild.channels, discord.abc.GuildChannel)
 
     @staticmethod
     def _resolve_channel(ctx: Context, argument: str, iterable: Iterable[CT], type: Type[CT]) -> CT:
@@ -427,6 +426,26 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
         return result
 
 
+class TextChannelConverter(IDConverter[discord.TextChannel]):
+    """Converts to a :class:`~discord.TextChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+    """
+
+    async def convert(self, ctx: Context, argument: str) -> discord.TextChannel:
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.text_channels, discord.TextChannel)
+
+
 class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     """Converts to a :class:`~discord.VoiceChannel`.
 
@@ -444,7 +463,7 @@ class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.VoiceChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.voice_channels, discord.VoiceChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.voice_channels, discord.VoiceChannel)
 
 
 class StageChannelConverter(IDConverter[discord.StageChannel]):
@@ -463,7 +482,7 @@ class StageChannelConverter(IDConverter[discord.StageChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StageChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.stage_channels, discord.StageChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.stage_channels, discord.StageChannel)
 
 
 class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
@@ -483,7 +502,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.CategoryChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.categories, discord.CategoryChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.categories, discord.CategoryChannel)
 
 
 class StoreChannelConverter(IDConverter[discord.StoreChannel]):
@@ -502,26 +521,7 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StoreChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
-
-
-class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
-    """Converts to a :class:`~discord.abc.GuildChannel`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
-    The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name.
-
-    .. versionadded:: 2.0
-    """
-
-    async def convert(self, ctx: Context, argument: str) -> discord.abc.GuildChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.abc.GuildChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
 
 
 class ColourConverter(Converter[discord.Colour]):
