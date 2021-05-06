@@ -155,6 +155,7 @@ class CachedSlotProperty(Generic[T, T_co]):
             setattr(instance, self.name, value)
             return value
 
+
 class classproperty(Generic[T_co]):
     def __init__(self, fget: Callable[[Any], T_co]) -> None:
         self.fget = fget
@@ -164,6 +165,7 @@ class classproperty(Generic[T_co]):
 
     def __set__(self, instance, value) -> None:
         raise AttributeError('cannot set attribute')
+
 
 def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlotProperty[T, T_co]]:
     def decorator(func: Callable[[T], T_co]) -> CachedSlotProperty[T, T_co]:
@@ -560,7 +562,20 @@ class SnowflakeList(array.array):
 
     __slots__ = ()
 
-    def __new__(cls, data: Sequence[int], *, is_sorted: bool = False):
+    if TYPE_CHECKING:
+
+        @overload
+        def __init__(self, data: Iterable[int], *, is_sorted: Literal[False] = False):
+            ...
+
+        @overload
+        def __init__(self, data: Sequence[int], *, is_sorted: Literal[True]):
+            ...
+
+        def __init__(self, data: Union[Sequence[int], Iterable[int]], *, is_sorted: bool = False):
+            ...
+
+    def __new__(cls, data: Union[Sequence[int], Iterable[int]], *, is_sorted: bool = False):
         return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
 
     def add(self, element: int) -> None:
