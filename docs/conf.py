@@ -40,6 +40,7 @@ extensions = [
     'exception_hierarchy',
     'attributetable',
     'resourcelinks',
+    'nitpick_file_ignorer',
 ]
 
 autodoc_member_order = 'bysource'
@@ -139,6 +140,13 @@ pygments_style = 'friendly'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+
+# Nitpicky mode options
+nitpick_ignore_files = [
+  "migrating_to_async",
+  "migrating",
+  "whats_new",
+]
 
 # -- Options for HTML output ----------------------------------------------
 
