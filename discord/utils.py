@@ -564,18 +564,10 @@ class SnowflakeList(array.array):
 
     if TYPE_CHECKING:
 
-        @overload
-        def __init__(self, data: Iterable[int], *, is_sorted: Literal[False] = False):
+        def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
             ...
 
-        @overload
-        def __init__(self, data: Sequence[int], *, is_sorted: Literal[True]):
-            ...
-
-        def __init__(self, data: Union[Sequence[int], Iterable[int]], *, is_sorted: bool = False):
-            ...
-
-    def __new__(cls, data: Union[Sequence[int], Iterable[int]], *, is_sorted: bool = False):
+    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False):
         return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
 
     def add(self, element: int) -> None:
