@@ -698,6 +698,7 @@ class HTTPClient:
             'video_quality_mode',
             'archived',
             'auto_archive_duration',
+            'locked',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)

@@ -103,6 +103,8 @@ class Thread(Messageable, Hashable):
         This could not be available.
     archived: :class:`bool`
         Whether the thread is archived.
+    locked: :class:`bool`
+        Whether the thread is locked.
     archiver_id: Optional[:class:`int`]
         The user's ID that archived this thread.
     auto_archive_duration: :class:`int`
@@ -215,11 +217,19 @@ class Thread(Messageable, Hashable):
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     def is_private(self) -> bool:
-        """:class:`bool`: Whether the thread is a private thread."""
+        """:class:`bool`: Whether the thread is a private thread.
+
+        A private thread is only viewable by those that have been explicitly
+        invited or have :attr:`~.Permissions.manage_threads`.
+        """
         return self._type is ChannelType.private_thread
 
     def is_news(self) -> bool:
-        """:class:`bool`: Whether the thread is a news thread."""
+        """:class:`bool`: Whether the thread is a news thread.
+
+        A news thread is a thread that has a parent that is a news channel,
+        i.e. :meth:`.TextChannel.is_news` is ``True``.
+        """
         return self._type is ChannelType.news_thread
 
     async def edit(
@@ -227,14 +237,20 @@ class Thread(Messageable, Hashable):
         *,
         name: str = MISSING,
         archived: bool = MISSING,
+        locked: bool = MISSING,
+        slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
     ):
         """|coro|
 
         Edits the thread.
 
-        To unarchive a thread :attr:`~.Permissions.send_messages` is required. Otherwise,
-        :attr:`~.Permissions.manage_messages` is required to edit the thread.
+        Editing the thread requires :attr:`.Permissions.manage_threads`. The thread
+        creator can also edit ``name``, ``archived`` or ``auto_archive_duration``.
+        Note that if the thread is locked then only those with :attr:`.Permissions.manage_threads`
+        can unarchive a thread.
+
+        The thread must be unarchived to be edited.
 
         Parameters
         ------------
@@ -242,8 +258,14 @@ class Thread(Messageable, Hashable):
             The new name of the thread.
         archived: :class:`bool`
             Whether to archive the thread or not.
+        locked: :class:`bool`
+            Whether to lock the thread or not.
         auto_archive_duration: :class:`int`
             The new duration to auto archive threads for inactivity.
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this thread, in seconds.
+            A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
 
         Raises
         -------
@@ -259,6 +281,11 @@ class Thread(Messageable, Hashable):
             payload['archived'] = archived
         if auto_archive_duration is not MISSING:
             payload['auto_archive_duration'] = auto_archive_duration
+        if locked is not MISSING:
+            payload['locked'] = locked
+        if slowmode_delay is not MISSING:
+            payload['rate_limit_per_user'] = slowmode_delay
+
         await self._state.http.edit_channel(self.id, **payload)
 
     async def join(self):
@@ -321,7 +348,7 @@ class Thread(Messageable, Hashable):
 
         Removes a user from this thread.
 
-        You must have :attr:`~Permissions.manage_messages` or be the creator of the thread to remove a user.
+        You must have :attr:`~Permissions.manage_threads` or be the creator of the thread to remove a user.
 
         Parameters
         -----------
@@ -342,7 +369,7 @@ class Thread(Messageable, Hashable):
 
         Deletes this thread.
 
-        You must have :attr:`~Permissions.manage_channels` to delete threads.
+        You must have :attr:`~Permissions.manage_threads` to delete threads.
 
         Raises
         -------

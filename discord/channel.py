@@ -674,7 +674,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Returns an :class:`~discord.AsyncIterator` that iterates over all archived threads in the guild.
 
         You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
-        then :attr:`~Permissions.manage_messages` is also required.
+        then :attr:`~Permissions.manage_threads` is also required.
 
         Parameters
         -----------
