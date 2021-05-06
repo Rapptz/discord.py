@@ -51,8 +51,6 @@ if TYPE_CHECKING:
 
 
 async def json_or_text(response):
-    print(response)
-    print(response.text)
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
@@ -65,7 +63,7 @@ async def json_or_text(response):
 
 
 class Route:
-    BASE = 'https://discord.com/api/v8'
+    BASE = 'https://discord.com/api/v9'
 
     def __init__(self, method, path, **parameters):
         self.path = path
@@ -128,7 +126,7 @@ class HTTPClient:
         self.proxy_auth = proxy_auth
         self.use_clock = not unsync_clock
 
-        user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
+        user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     def recreate(self):
@@ -1377,9 +1375,9 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return value.format(data['url'], encoding)
 
     async def get_bot_gateway(self, *, encoding='json', zlib=True):
@@ -1389,9 +1387,9 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return data['shards'], value.format(data['url'], encoding)
 
     def get_user(self, user_id):
