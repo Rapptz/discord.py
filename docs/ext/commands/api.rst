@@ -288,6 +288,9 @@ Converters
 .. autoclass:: discord.ext.commands.PartialMessageConverter
     :members:
 
+.. autoclass:: discord.ext.commands.GuildChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
