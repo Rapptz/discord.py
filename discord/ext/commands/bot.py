@@ -220,7 +220,7 @@ class BotBase(GroupMixin):
             The function that was used as a global check.
         call_once: :class:`bool`
             If the function should only be called once per
-            per :meth:`.invoke` call.
+            :meth:`.invoke` call.
         """
 
         if call_once:
