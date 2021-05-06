@@ -908,9 +908,9 @@ class Command(_BaseCommand):
     def short_doc(self):
         """:class:`str`: Gets the "short" documentation of a command.
 
-        By default, this is the :attr:`brief` attribute.
+        By default, this is the :attr:`.brief` attribute.
         If that lookup leads to an empty string then the first line of the
-        :attr:`help` attribute is used instead.
+        :attr:`.help` attribute is used instead.
         """
         if self.brief is not None:
             return self.brief
@@ -979,7 +979,7 @@ class Command(_BaseCommand):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`checks` attribute. This also checks whether the
+        inside the :attr:`~Command.checks` attribute. This also checks whether the
         command is disabled.
 
         .. versionchanged:: 1.3

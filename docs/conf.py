@@ -53,7 +53,7 @@ extlinks = {
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
-  'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
+  'req': ('https://docs.python-requests.org/en/latest/', None)
 }
 
 rst_prolog = """

@@ -277,9 +277,9 @@ class HelpCommand:
         Defaults to ``False``.
     verify_checks: Optional[:class:`bool`]
         Specifies if commands should have their :attr:`.Command.checks` called
-        and verified. If ``True``, always calls :attr:`.Commands.checks`.
-        If ``None``, only calls :attr:`.Commands.checks` in a guild setting.
-        If ``False``, never calls :attr:`.Commands.checks`. Defaults to ``True``.
+        and verified. If ``True``, always calls :attr:`.Command.checks`.
+        If ``None``, only calls :attr:`.Command.checks` in a guild setting.
+        If ``False``, never calls :attr:`.Command.checks`. Defaults to ``True``.
 
         .. versionchanged:: 1.7
     command_attrs: :class:`dict`
@@ -615,8 +615,7 @@ class HelpCommand:
         """|coro|
 
         Handles the implementation when an error happens in the help command.
-        For example, the result of :meth:`command_not_found` or
-        :meth:`command_has_no_subcommand_found` will be passed here.
+        For example, the result of :meth:`command_not_found` will be passed here.
 
         You can override this method to customise the behaviour.
 
@@ -949,7 +948,7 @@ class DefaultHelpCommand(HelpCommand):
             if the list of commands is greater than 0.
         max_size: Optional[:class:`int`]
             The max size to use for the gap between indents.
-            If unspecified, calls :meth:`get_max_size` on the
+            If unspecified, calls :meth:`~HelpCommand.get_max_size` on the
             commands parameter.
         """
 

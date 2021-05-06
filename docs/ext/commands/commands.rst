@@ -761,7 +761,7 @@ When our commands fail to parse we will, by default, receive a noisy error in ``
 that an error has happened and has been silently ignored.
 
 In order to handle our errors, we must use something called an error handler. There is a global error handler, called
-:func:`on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
+:func:`.on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
 called for every error reached.
 
 Most of the time however, we want to handle an error local to the command itself. Luckily, commands come with local error

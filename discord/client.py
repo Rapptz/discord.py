@@ -287,13 +287,13 @@ class Client:
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
-        after :func:`on_connect` is called.
+        after :func:`~discord.on_connect` is called.
         """
         return self._connection.application_id
 
     @property
     def application_flags(self) -> ApplicationFlags:
-        """:class:`ApplicationFlags`: The client's application flags.
+        """:class:`~discord.ApplicationFlags`: The client's application flags.
 
         .. versionadded: 2.0
         """
@@ -1261,7 +1261,7 @@ class Client:
 
         .. note::
 
-            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
         Parameters
         -----------

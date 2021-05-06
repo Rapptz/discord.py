@@ -353,7 +353,7 @@ def find(predicate: Callable[[T], Any], seq: Iterable[T]) -> Optional[T]:
     -----------
     predicate
         A function that returns a boolean-like result.
-    seq: iterable
+    seq: :class:`collections.abc.Iterable`
         The iterable to search through.
     """
 
@@ -530,7 +530,7 @@ async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Op
 def utcnow() -> datetime.datetime:
     """A helper function to return an aware UTC datetime representing the current time.
 
-    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    This should be preferred to :meth:`datetime.datetime.utcnow` since it is an aware
     datetime, compared to the naive datetime in the standard library.
 
     .. versionadded:: 2.0
