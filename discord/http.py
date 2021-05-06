@@ -51,6 +51,8 @@ if TYPE_CHECKING:
 
 
 async def json_or_text(response):
+    print(response)
+    print(response.text)
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
