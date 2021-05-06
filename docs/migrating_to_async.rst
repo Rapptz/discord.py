@@ -48,7 +48,7 @@ Or in Python 3.5+:
     async def on_message(message):
         pass
 
-Because there is a lot of typing, a utility decorator (``Client.async_event``) is provided
+Because there is a lot of typing, a utility decorator (:meth:`Client.async_event`) is provided
 for easier registration. For example:
 
 .. code-block:: python3
@@ -130,10 +130,10 @@ sequence functions.
 
 The affected attributes are as follows:
 
-- ``Client.servers``
+- :attr:`Client.servers`
 - :attr:`Client.private_channels`
-- ``Server.channels``
-- ``Server.members``
+- :attr:`Server.channels`
+- :attr:`Server.members`
 
 Some examples of previously valid behaviour that is now invalid
 
@@ -193,21 +193,21 @@ The following functions were changed into properties:
 +----------------------------------------+--------------------------------------+
 |                 Before                 |                After                 |
 +----------------------------------------+--------------------------------------+
-| ``User.avatar_url()``                  | ``User.avatar_url``                  |
+| ``User.avatar_url()``                  | :attr:`User.avatar_url`              |
 +----------------------------------------+--------------------------------------+
 | ``User.mention()``                     | :attr:`User.mention`                 |
 +----------------------------------------+--------------------------------------+
-| ``Channel.mention()``                  | ``Channel.mention``                  |
+| ``Channel.mention()``                  | :attr:`Channel.mention`              |
 +----------------------------------------+--------------------------------------+
-| ``Channel.is_default_channel()``       | ``Channel.is_default``               |
+| ``Channel.is_default_channel()``       | :attr:`Channel.is_default`           |
 +----------------------------------------+--------------------------------------+
-| ``Role.is_everyone()``                 | ``Role.is_everyone``                 |
+| ``Role.is_everyone()``                 | :attr:`Role.is_everyone`             |
 +----------------------------------------+--------------------------------------+
-| ``Server.get_default_role()``          | ``Server.default_role``              |
+| ``Server.get_default_role()``          | :attr:`Server.default_role`          |
 +----------------------------------------+--------------------------------------+
-| ``Server.icon_url()``                  | ``Server.icon_url``                  |
+| ``Server.icon_url()``                  | :attr:`Server.icon_url`              |
 +----------------------------------------+--------------------------------------+
-| ``Server.get_default_channel()``       | ``Server.default_channel``           |
+| ``Server.get_default_channel()``       | :attr:`Server.default_channel`       |
 +----------------------------------------+--------------------------------------+
 | ``Message.get_raw_mentions()``         | :attr:`Message.raw_mentions`         |
 +----------------------------------------+--------------------------------------+
@@ -234,11 +234,11 @@ Renamed Functions
 
 Functions have been renamed.
 
-+------------------------------------+---------------------------------------+
-| Before                             | After                                 |
-+------------------------------------+---------------------------------------+
-| ``Client.set_channel_permissions`` | ``Client.edit_channel_permissions``   |
-+------------------------------------+---------------------------------------+
++------------------------------------+-------------------------------------------+
+| Before                             | After                                     |
++------------------------------------+-------------------------------------------+
+| ``Client.set_channel_permissions`` | :meth:`Client.edit_channel_permissions`   |
++------------------------------------+-------------------------------------------+
 
 All the :class:`Permissions` related attributes have been renamed and the `can_` prefix has been
 dropped. So for example, ``can_manage_messages`` has become ``manage_messages``.
@@ -253,12 +253,12 @@ knowing the argument order and the issues that could arise from them.
 
 The following parameters are now exclusively keyword arguments:
 
-- ``Client.send_message``
+- :meth:`Client.send_message`
     - ``tts``
-- ``Client.logs_from``
+- :meth:`Client.logs_from`
     - ``before``
     - ``after``
-- ``Client.edit_channel_permissions``
+- :meth:`Client.edit_channel_permissions`
     - ``allow``
     - ``deny``
 
@@ -317,6 +317,5 @@ event loop then doing so is quite straightforward:
         loop.run_until_complete(client.logout())
     finally:
         loop.close()
-
 
 
