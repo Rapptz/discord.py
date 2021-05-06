@@ -1123,7 +1123,7 @@ of :class:`enum.Enum`.
         The user has an unready system message.
     .. attribute:: bug_hunter_level_2
 
-        The user is a Bug Hunter Level 2".
+        The user is a Bug Hunter Level 2.
     .. attribute:: verified_bot
 
         The user is a Verified Bot.
