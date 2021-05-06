@@ -367,7 +367,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         count = 0
 
         minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if bulk else _single_delete_strategy
+        strategy = self.delete_messages if self._state.is_bot and bulk else _single_delete_strategy
 
         while True:
             try:

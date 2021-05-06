@@ -102,7 +102,7 @@ async def logging_coroutine(coroutine, *, info):
         log.exception('Exception occurred during %s', info)
 
 class ConnectionState:
-    def __init__(self, *, dispatch, handlers, hooks, http, loop, **options):
+    def __init__(self, *, dispatch, handlers, hooks, syncer, http, loop, **options):
         self.loop = loop
         self.http = http
         self.max_messages = options.get('max_messages', 1000)
@@ -110,6 +110,8 @@ class ConnectionState:
             self.max_messages = 1000
 
         self.dispatch = dispatch
+        self.syncer = syncer
+        self.is_bot = None
         self.handlers = handlers
         self.hooks = hooks
         self.shard_count = None
@@ -327,7 +329,7 @@ class ConnectionState:
         channel_id = channel.id
         self._private_channels[channel_id] = channel
 
-        if len(self._private_channels) > 128:
+        if self.is_bot and len(self._private_channels) > 128:
             _, to_remove = self._private_channels.popitem(last=False)
             if isinstance(to_remove, DMChannel) and to_remove.recipient:
                 self._private_channels_by_user.pop(to_remove.recipient.id, None)
@@ -392,40 +394,47 @@ class ConnectionState:
 
     async def _delay_ready(self):
         try:
-            states = []
-            while True:
-                # this snippet of code is basically waiting N seconds
-                # until the last GUILD_CREATE was sent
-                try:
-                    guild = await asyncio.wait_for(self._ready_state.get(), timeout=self.guild_ready_timeout)
-                except asyncio.TimeoutError:
-                    break
-                else:
-                    if self._guild_needs_chunking(guild):
-                        future = await self.chunk_guild(guild, wait=False)
-                        states.append((guild, future))
+            # only real bots wait for GUILD_CREATE streaming
+            if self.is_bot:
+                states = []
+                while True:
+                    # this snippet of code is basically waiting N seconds
+                    # until the last GUILD_CREATE was sent
+                    try:
+                        guild = await asyncio.wait_for(self._ready_state.get(), timeout=self.guild_ready_timeout)
+                    except asyncio.TimeoutError:
+                        break
                     else:
-                        if guild.unavailable is False:
-                            self.dispatch('guild_available', guild)
+                        if self._guild_needs_chunking(guild):
+                            future = await self.chunk_guild(guild, wait=False)
+                            states.append((guild, future))
                         else:
-                            self.dispatch('guild_join', guild)
+                            if guild.unavailable is False:
+                                self.dispatch('guild_available', guild)
+                            else:
+                                self.dispatch('guild_join', guild)
 
-            for guild, future in states:
-                try:
-                    await asyncio.wait_for(future, timeout=5.0)
-                except asyncio.TimeoutError:
-                    log.warning('Shard ID %s timed out waiting for chunks for guild_id %s.', guild.shard_id, guild.id)
+                for guild, future in states:
+                    try:
+                        await asyncio.wait_for(future, timeout=5.0)
+                    except asyncio.TimeoutError:
+                        log.warning('Shard ID %s timed out waiting for chunks for guild_id %s.', guild.shard_id, guild.id)
 
-                if guild.unavailable is False:
-                    self.dispatch('guild_available', guild)
-                else:
-                    self.dispatch('guild_join', guild)
+                    if guild.unavailable is False:
+                        self.dispatch('guild_available', guild)
+                    else:
+                        self.dispatch('guild_join', guild)
 
             # remove the state
             try:
                 del self._ready_state
             except AttributeError:
                 pass # already been deleted somehow
+
+            # call GUILD_SYNC after we're done chunking
+            if not self.is_bot:
+                log.info('Requesting GUILD_SYNC for %s guilds', len(self.guilds))
+                await self.syncer([s.id for s in self.guilds])
 
         except asyncio.CancelledError:
             pass
@@ -456,6 +465,18 @@ class ConnectionState:
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
+
+        for relationship in data.get('relationships', []):
+            try:
+                r_id = int(relationship['id'])
+            except KeyError:
+                continue
+            else:
+                user._relationships[r_id] = Relationship(state=self, data=relationship)
+
+        for pm in data.get('private_channels', []):
+            factory, _ = _channel_factory(pm['type'])
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         self._ready_task = asyncio.create_task(self._delay_ready())
@@ -682,6 +703,22 @@ class ConnectionState:
         else:
             self.dispatch('guild_channel_pins_update', channel, last_pin)
 
+    def parse_channel_recipient_add(self, data):
+        channel = self._get_private_channel(int(data['channel_id']))
+        user = self.store_user(data['user'])
+        channel.recipients.append(user)
+        self.dispatch('group_join', channel, user)
+
+    def parse_channel_recipient_remove(self, data):
+        channel = self._get_private_channel(int(data['channel_id']))
+        user = self.store_user(data['user'])
+        try:
+            channel.recipients.remove(user)
+        except ValueError:
+            pass
+        else:
+            self.dispatch('group_remove', channel, user)
+
     def parse_guild_member_add(self, data):
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
@@ -821,6 +858,10 @@ class ConnectionState:
             self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
+
+    def parse_guild_sync(self, data):
+        guild = self._get_guild(int(data['id']))
+        guild._sync(data)
 
     def parse_guild_update(self, data):
         guild = self._get_guild(int(data['id']))
@@ -1001,6 +1042,25 @@ class ConnectionState:
                 timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
 
+    def parse_relationship_add(self, data):
+        key = int(data['id'])
+        old = self.user.get_relationship(key)
+        new = Relationship(state=self, data=data)
+        self.user._relationships[key] = new
+        if old is not None:
+            self.dispatch('relationship_update', old, new)
+        else:
+            self.dispatch('relationship_add', new)
+
+    def parse_relationship_remove(self, data):
+        key = int(data['id'])
+        try:
+            old = self.user._relationships.pop(key)
+        except KeyError:
+            pass
+        else:
+            self.dispatch('relationship_remove', old)
+
     def _get_reaction_user(self, channel, user_id):
         if isinstance(channel, TextChannel):
             return channel.guild.get_member(user_id)
@@ -1152,6 +1212,10 @@ class AutoShardedConnectionState(ConnectionState):
 
         if self._messages:
             self._update_message_references()
+
+        for pm in data.get('private_channels', []):
+            factory, _ = _channel_factory(pm['type'])
+            self._add_private_channel(factory(me=user, data=pm, state=self))
 
         self.dispatch('connect')
         self.dispatch('shard_connect', data['__shard_id__'])

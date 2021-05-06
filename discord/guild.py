@@ -2105,6 +2105,25 @@ class Guild(Hashable):
         payload['max_age'] = 0
         return Invite(state=self._state, data=payload)
 
+    @utils.deprecated()
+    def ack(self):
+        """|coro|
+        Marks every message in this guild as read.
+        The user must not be a bot user.
+        .. deprecated:: 1.7
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        ClientException
+            You must not be a bot user.
+        """
+
+        state = self._state
+        if state.is_bot:
+            raise ClientException('Must not be a bot account to ack messages.')
+        return state.http.ack_guild(self.id)
+
     def audit_logs(self, *, limit=100, before=None, after=None, oldest_first=None, user=None, action=None):
         """Returns an :class:`AsyncIterator` that enables receiving the guild's audit logs.
 

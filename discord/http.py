@@ -167,7 +167,7 @@ class HTTPClient:
         }
 
         if self.token is not None:
-            headers['Authorization'] = 'Bot ' + self.token
+            headers['Authorization'] = 'Bot ' + self.token if self.bot_token else self.token
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
@@ -302,18 +302,23 @@ class HTTPClient:
         if self.__session:
             await self.__session.close()
 
+    def _token(self, token, *, bot=True):
+        self.token = token
+        self.bot_token = bot
+        self._ack_token = None
+
     # login management
 
-    async def static_login(self, token):
+    async def static_login(self, token, *, bot):
         # Necessary to get aiohttp to stop complaining about session creation
         self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
-        old_token = self.token
-        self.token = token
+        old_token, old_bot = self.token, self.bot_token
+        self._token(token, bot=bot)
 
         try:
             data = await self.request(Route('GET', '/users/@me'))
         except HTTPException as exc:
-            self.token = old_token
+            self._token(old_token, bot=old_bot)
             if exc.response.status == 401:
                 raise LoginFailure('Improper token has been passed.') from exc
             raise
@@ -457,6 +462,15 @@ class HTTPClient:
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
         )
+
+    async def ack_message(self, channel_id, message_id):
+        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
+        data = await self.request(r, json={'token': self._ack_token})
+        self._ack_token = data['token']
+
+    def ack_guild(self, guild_id):
+        return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
+
 
     def delete_message(self, channel_id, message_id, *, reason=None):
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)

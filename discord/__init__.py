@@ -29,6 +29,7 @@ from .activity import *
 from .channel import *
 from .guild import *
 from .flags import *
+from .relationship import Relationship
 from .member import *
 from .message import *
 from .asset import *

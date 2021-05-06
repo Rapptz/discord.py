@@ -36,12 +36,18 @@ __all__ = (
     'ContentFilter',
     'Status',
     'DefaultAvatar',
+    'RelationshipType',
     'AuditLogAction',
     'AuditLogActionCategory',
     'UserFlags',
     'ActivityType',
+    'HypeSquadHouse',
     'NotificationLevel',
+    'PremiumType',
+    'UserContentFilter',
+    'FriendFlags',
     'TeamMembershipState',
+    'Theme',
     'WebhookType',
     'ExpireBehaviour',
     'ExpireBehavior',
@@ -245,6 +251,23 @@ class ContentFilter(Enum):
     def __str__(self):
         return self.name
 
+class UserContentFilter(Enum):
+    disabled    = 0
+    friends     = 1
+    all_messages = 2
+
+class FriendFlags(Enum):
+    noone = 0
+    mutual_guilds = 1
+    mutual_friends = 2
+    guild_and_friends = 3
+    everyone = 4
+
+class Theme(Enum):
+    light = 'light'
+    dark = 'dark'
+
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'
@@ -266,6 +289,13 @@ class DefaultAvatar(Enum):
 
     def __str__(self):
         return self.name
+
+class RelationshipType(Enum):
+    friend           = 1
+    blocked          = 2
+    incoming_request = 3
+    outgoing_request = 4
+
 
 class NotificationLevel(Enum):
     all_messages  = 0
@@ -409,6 +439,16 @@ class ActivityType(Enum):
 
     def __int__(self):
         return self.value
+
+class HypeSquadHouse(Enum):
+    bravery = 1
+    brilliance = 2
+    balance = 3
+
+class PremiumType(Enum):
+    nitro_classic = 1
+    nitro = 2
+
 
 class TeamMembershipState(Enum):
     invited = 1

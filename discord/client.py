@@ -31,7 +31,7 @@ from typing import Any, Optional, Union
 
 import aiohttp
 
-from .user import User
+from .user import User, Profile
 from .invite import Invite
 from .template import Template
 from .widget import Widget
@@ -213,7 +213,10 @@ class Client:
 
     def _get_state(self, **options):
         return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                               hooks=self._hooks, http=self.http, loop=self.loop, **options)
+                               hooks=self._hooks, syncer=self._syncer, http=self.http, loop=self.loop, **options)
+
+    async def _syncer(self, guilds):
+        await self.ws.request_sync(guilds)
 
     def _handle_ready(self):
         self._ready.set()
@@ -403,7 +406,7 @@ class Client:
 
     # login state management
 
-    async def login(self, token):
+    async def login(self, token, *, bot=True):
         """|coro|
 
         Logs in the client with the specified credentials.
@@ -426,7 +429,8 @@ class Client:
         """
 
         log.info('logging in using static token')
-        await self.http.static_login(token.strip())
+        await self.http.static_login(token.strip(), bot=bot)
+        self._connection.is_bot = bot
 
     async def connect(self, *, reconnect=True):
         """|coro|
@@ -547,7 +551,7 @@ class Client:
         self._connection.clear()
         self.http.recreate()
 
-    async def start(self, token, *, reconnect=True):
+    async def start(self, *args, **kwargs):
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -557,7 +561,13 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
-        await self.login(token)
+        bot = kwargs.pop('bot', True)
+        reconnect = kwargs.pop('reconnect', True)
+
+        if kwargs:
+            raise TypeError(f"unexpected keyword argument(s) {list(kwargs.keys())}")
+
+        await self.login(*args, bot=bot)
         await self.connect(reconnect=reconnect)
 
     def run(self, *args, **kwargs):
@@ -1282,6 +1292,43 @@ class Client:
         """
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
+
+    async def fetch_user_profile(self, user_id):
+        """|coro|
+        Gets an arbitrary user's profile.
+        .. deprecated:: 1.7
+        .. note::
+            This can only be used by non-bot accounts.
+        Parameters
+        ------------
+        user_id: :class:`int`
+            The ID of the user to fetch their profile for.
+        Raises
+        -------
+        :exc:`.Forbidden`
+            Not allowed to fetch profiles.
+        :exc:`.HTTPException`
+            Fetching the profile failed.
+        Returns
+        --------
+        :class:`.Profile`
+            The profile of the user.
+        """
+
+        state = self._connection
+        data = await self.http.get_user_profile(user_id)
+
+        def transform(d):
+            return state._get_guild(int(d['id']))
+
+        since = data.get('premium_since')
+        mutual_guilds = list(filter(None, map(transform, data.get('mutual_guilds', []))))
+        user = data['user']
+        return Profile(flags=user.get('flags', 0),
+                       premium_since=utils.parse_time(since),
+                       mutual_guilds=mutual_guilds,
+                       user=User(data=user, state=state),
+                       connected_accounts=data['connected_accounts'])
 
     async def fetch_channel(self, channel_id):
         """|coro|
