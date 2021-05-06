@@ -36,7 +36,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException
+from .errors import InvalidArgument, HTTPException
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
-    from .abc import GuildChannel, PrivateChannel, Messageable
+    from .abc import GuildChannel
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
 
@@ -445,13 +445,13 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
+        result = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result
+        return result  # type: ignore
 
     to_message_reference_dict = to_dict
 
@@ -1480,7 +1480,7 @@ class PartialMessage(Hashable):
     to_reference = Message.to_reference
     to_message_reference_dict = Message.to_message_reference_dict
 
-    def __init__(self, *, channel: Union[GuildChannel, PrivateChannel], id: int):
+    def __init__(self, *, channel: Union[TextChannel, DMChannel], id: int):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
             raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
 
