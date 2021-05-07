@@ -412,7 +412,7 @@ converter is given below:
 +--------------------------+-------------------------------------------------+
 | :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConverter`  |
 +--------------------------+-------------------------------------------------+
-| :class:`GuildChannel`    | :class:`~ext.commands.GuildChannelConverter`    |
+| :class:`.GuildChannel`   | :class:`~ext.commands.GuildChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
 +--------------------------+-------------------------------------------------+
