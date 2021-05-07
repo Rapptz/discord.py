@@ -379,7 +379,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`User`
 - :class:`Message` (since v1.1)
 - :class:`PartialMessage` (since v1.7)
-- :class:`GuildChannel` (since 2.0)
+- :class:`abc.GuildChannel` (since 2.0)
 - :class:`TextChannel`
 - :class:`VoiceChannel`
 - :class:`StageChannel` (since v1.7)
