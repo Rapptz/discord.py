@@ -391,8 +391,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
-        self.separator = kwargs.pop('separator', None) or Separator()
-        self.quotation = kwargs.pop('quotation', None)
+        self.separator: Separator = kwargs.pop('separator', None) or Separator()
+        self.quotation: Quotation = kwargs.pop('quotation', None)
 
     @property
     def callback(self) -> Union[
@@ -1093,7 +1093,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(f'<{name}>')
 
         if self.quotation:
-            result = ["%s%s%s" % (self.quotation.start, r, self.quotation.end) for r in result]
+            (quotation_start, quotation_end) = self.quotation._initial_quotations
+            result = ["%s%s%s" % (quotation_start, r, quotation_end) for r in result]
 
         return self.separator.key.join(result)
 

@@ -22,7 +22,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import List, Optional, Set, Tuple, Union, overload
 from .errors import UnexpectedQuoteError, InvalidEndOfQuotedStringError, ExpectedClosingQuoteError
+
+__all__ = (
+    'Separator',
+    'Quotation'
+)
 
 # map from opening quotes to closing quotes
 _quotes = {
@@ -46,8 +54,11 @@ _quotes = {
 }
 _all_quotes = set(_quotes.keys()) | set(_quotes.values())
 
+
 class Separator:
     """An argument qualifier, which acts as the delimiter for arguments.
+
+    .. versionadded:: 2.0
 
     .. code-block:: python3
 
@@ -75,17 +86,23 @@ class Separator:
         Whether or not to strip whitespace from the arguments. By default,
         it is ``True``.
     """
-    def __init__(self, key=None, *, strip_ws=True):
+
+    __slots__ = ('key', 'strip_ws')
+
+    def __init__(self, key: Optional[str] = None, *, strip_ws: bool = True) -> None:
         if key == '':
             raise ValueError('The separator must be a non-empty string or None.')
-        self.key = key
-        self.strip_ws = strip_ws
+        self.key: Optional[str] = key
+        self.strip_ws: bool = strip_ws
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<Separator key={0.key!r} strip_ws={0.strip_ws}>'.format(self)
 
+
 class Quotation:
-    """An argument qualifier, which acts as a drop-in replacement for quotes.
+    r"""An argument qualifier, which acts as a drop-in replacement for quotes.
+
+    .. versionadded:: 2.0
 
     .. code-block:: python3
 
@@ -103,7 +120,7 @@ class Quotation:
         # ?bar a b (c d e) f g
         # -> "a,b,c d e,f,g"
 
-    Attributes
+    Parameters
     -----------
     start: :class:`str`
         The starting key that represents the first quote character.
@@ -111,22 +128,35 @@ class Quotation:
         The ending key that represents the last quote character. If ``None``\,
         it will be set as the same key as ``start``.
     """
-    def __init__(self, start, end=None):
-        self._keys = {start: start or end}
+
+    __slots__ = ('_keys', '_all_keys', '_initial_quotations')
+
+    @overload
+    def __init__(self, start: str) -> None:
+        ...
+
+    @overload
+    def __init__(self, start: str, end: str) -> None:
+        ...
+
+    def __init__(self, start: str, end: Optional[str] = None):
+        self._keys = {start: end or start}
         self._all_keys = None
 
         for s, e in self._keys.items():
             if not s or not e:
                 raise ValueError('Quotations must be a non-empty string.')
 
+        self._initial_quotations = (start, end or start)
+
     @property
-    def all_keys(self):
+    def all_keys(self) -> Set[str]:
         if not self._all_keys:
             self._all_keys = set(self._keys.keys()) | set(self._keys.values())
         return self._all_keys
 
     @classmethod
-    def from_pairs(cls, *pairs):
+    def from_pairs(cls, *pairs: Union[Tuple[str, str], List[str]]) -> Quotation:
         """Creates a Quotation that can accept pairs of quotes as tuples or lists.
 
         .. code-block:: python3
@@ -135,25 +165,29 @@ class Quotation:
             async def foo(ctx, *c):
                 await ctx.send(','.join(c))
         """
+        if not pairs:
+            raise ValueError('at least one pair must be provided.')
+
         self = None
         for s, e in pairs:
             if self is None:
                 self = cls(s, e)
             else:
                 if not s or not e:
-                    raise ValueError('Quotations must be a non-empty string.')
-                
-                self._keys[s] = e
-        return self
+                    raise ValueError('quotations must be a non-empty string.')
 
-    def get(self, key):
+                self._keys[s] = e
+        return self  # type: ignore
+
+    def get(self, key) -> Optional[str]:
         return self._keys.get(key)
-    
-    def __contains__(self, item):
+
+    def __contains__(self, item) -> bool:
         return item in self._all_keys
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<Quotation keys={0!r}>'.format(self._all_keys)
+
 
 class StringView:
     def __init__(self, buffer):

@@ -38,7 +38,7 @@ from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, 
 import discord
 
 from .core import GroupMixin
-from .view import StringView
+from .view import Quotation, Separator, StringView
 from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
@@ -134,9 +134,9 @@ class BotBase(GroupMixin):
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
+        self.command_separator: Optional[Separator] = options.get('command_separator', None)
+        self.command_quotation: Optional[Quotation] = options.get('command_quotation', None)
         self.strip_after_prefix = options.get('strip_after_prefix', False)
-        self.command_separator = options.get('command_separator', None)
-        self.command_quotation = options.get('command_quotation', None)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')
