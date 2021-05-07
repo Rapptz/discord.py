@@ -22,10 +22,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import List, Optional, TYPE_CHECKING
+
 from . import utils
 from .user import User
 from .asset import Asset
 from .team import Team
+
+if TYPE_CHECKING:
+    from .guild import Guild
+    from .state import ConnectionState
+    from .types.appinfo import AppInfo as AppInfoPayload
 
 __all__ = (
     'AppInfo',
@@ -122,14 +131,31 @@ class AppInfo:
         'privacy_policy_url',
     )
 
-    def __init__(self, state, data):
+    if TYPE_CHECKING:
+        id: int
+        name: str
+        owner: User
+        team: Optional[Team]
+        description: Optional[str]
+        bot_public: bool
+        bot_require_code_grant: bool
+        rpc_origins: Optional[List[str]]
+        summary: str
+        verify_key: str
+        guild_id: Optional[int]
+        primary_sku_id: Optional[int]
+        slug: Optional[str]
+        terms_of_service_url: Optional[str]
+        privacy_policy_url: Optional[str]
+
+    def __init__(self, state: ConnectionState, data: AppInfoPayload) -> None:
         self._state = state
 
         self.id = int(data['id'])
         self.name = data['name']
         self.description = data['description']
         self._icon = data['icon']
-        self.rpc_origins = data['rpc_origins']
+        self.rpc_origins = data.get('rpc_origins')
         self.bot_public = data['bot_public']
         self.bot_require_code_grant = data['bot_require_code_grant']
         self.owner = User(state=self._state, data=data['owner'])
@@ -148,7 +174,7 @@ class AppInfo:
         self.terms_of_service_url = data.get('terms_of_service_url')
         self.privacy_policy_url = data.get('privacy_policy_url')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
             f'description={self.description!r} public={self.bot_public} '
@@ -156,14 +182,14 @@ class AppInfo:
         )
 
     @property
-    def icon(self):
+    def icon(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
 
     @property
-    def cover_image(self):
+    def cover_image(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
 
         This is only available if the application is a game sold on Discord.
@@ -173,10 +199,12 @@ class AppInfo:
         return Asset._from_cover_image(self._state, self.id, self._cover_image)
 
     @property
-    def guild(self):
+    def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
         this field will be the guild to which it has been linked
 
         .. versionadded:: 1.3
         """
+        if self.guild_id is None:
+            return None
         return self._state._get_guild(int(self.guild_id))
