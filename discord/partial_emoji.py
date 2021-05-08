@@ -106,7 +106,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         )
 
     def to_dict(self) -> PartialEmojiPayload:
-        o: Dict[str, Any]  = {'name': self.name}
+        o: Dict[str, Any] = {'name': self.name}
         if self.id:
             o['id'] = self.id
         if self.animated:
