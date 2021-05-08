@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .abc import Snowflake
     from .message import Message
+    from .webhook import Webhook
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -468,7 +469,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name: str, avatar: bytes = None, reason: str = None):
+    async def create_webhook(self, *, name: str, avatar: bytes = None, reason: str = None) -> Webhook:
         """|coro|
 
         Creates a webhook for this channel.
@@ -508,7 +509,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
-    async def follow(self, *, destination: TextChannel, reason: Optional[str] = None):
+    async def follow(self, *, destination: TextChannel, reason: Optional[str] = None) -> Webhook:
         """
         Follows a channel using a webhook.
 
@@ -1261,7 +1262,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         return self.nsfw or self.guild.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: str = None, reason: Optional[str] = None):
+    async def clone(self, *, name: str = None, reason: Optional[str] = None) -> StoreChannel:
         return await self._clone_impl({
             'nsfw': self.nsfw
         }, name=name, reason=reason)

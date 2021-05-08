@@ -1126,7 +1126,7 @@ class Messageable(Protocol):
         delete_after: int = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: MessageReference = ...,
+        reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
     ) -> Message:
         ...

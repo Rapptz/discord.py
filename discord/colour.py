@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 import colorsys
 import random
-from typing import Optional, Union
 
 from typing import (
     Any,

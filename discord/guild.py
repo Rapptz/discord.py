@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     )
     from .permissions import Permissions
     from .channel import VocalGuildChannel
+    from .template import Template
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')
@@ -1349,7 +1350,7 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    def fetch_members(self, *, limit: int = 1000, after: Optional[abc.SnowflakeTime] = None):
+    def fetch_members(self, *, limit: int = 1000, after: Optional[abc.SnowflakeTime] = None) -> List[Member]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
@@ -1718,7 +1719,7 @@ class Guild(Hashable):
 
         return result
 
-    async def create_template(self, *, name: str, description: Optional[str] = None):
+    async def create_template(self, *, name: str, description: Optional[str] = None) -> Template:
         """|coro|
 
         Creates a template for the guild.
@@ -1748,7 +1749,7 @@ class Guild(Hashable):
 
         return Template(state=self._state, data=data)
 
-    async def create_integration(self, *, type: str, id: int):
+    async def create_integration(self, *, type: str, id: int) -> None:
         """|coro|
 
         Attaches an integration to the guild.
@@ -1774,7 +1775,7 @@ class Guild(Hashable):
         """
         await self._state.http.create_integration(self.id, type, id)
 
-    async def integrations(self):
+    async def integrations(self) -> List[Integration]:
         """|coro|
 
         Returns a list of all integrations attached to the guild.
@@ -2023,7 +2024,7 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
-    async def edit_role_positions(self, positions: Dict[abc.Snowflake, int], *, reason: Optional[str] = None):
+    async def edit_role_positions(self, positions: Dict[abc.Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
         """|coro|
 
         Bulk edits a list of :class:`Role` in the guild.
@@ -2089,7 +2090,7 @@ class Guild(Hashable):
 
         return roles
 
-    async def kick(self, user: abc.Snowflake, *, reason: Optional[str] = None):
+    async def kick(self, user: abc.Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Kicks a user from the guild.
@@ -2121,7 +2122,7 @@ class Guild(Hashable):
         *,
         reason: Optional[str] = None,
         delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1
-    ):
+    ) -> None:
         """|coro|
 
         Bans a user from the guild.
@@ -2150,7 +2151,7 @@ class Guild(Hashable):
         """
         await self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
 
-    async def unban(self, user: abc.Snowflake, *, reason: Optional[str] = None):
+    async def unban(self, user: abc.Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Unbans a user from the guild.
@@ -2312,7 +2313,7 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    async def chunk(self, *, cache: bool = True):
+    async def chunk(self, *, cache: bool = True) -> None:
         """|coro|
 
         Requests all members that belong to this guild. In order to use this,

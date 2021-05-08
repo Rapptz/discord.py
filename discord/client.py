@@ -29,7 +29,7 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import aiohttp
 
@@ -973,7 +973,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None):
+    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None) -> List[Guild]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::

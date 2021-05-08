@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import Optional, Union, overload
+
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour

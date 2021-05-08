@@ -33,7 +33,6 @@ from typing import List, Literal, Optional, TYPE_CHECKING, overload
 import discord.abc
 
 from . import utils
-from .errors import ClientException
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
@@ -542,14 +541,14 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.guild.ban(self, **kwargs)
 
-    async def unban(self, *, reason: Optional[str] = None):
+    async def unban(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Unbans this member. Equivalent to :meth:`Guild.unban`.
         """
         await self.guild.unban(self, reason=reason)
 
-    async def kick(self, *, reason: Optional[str] = None):
+    async def kick(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Kicks this member. Equivalent to :meth:`Guild.kick`.
@@ -721,7 +720,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         else:
             await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
-    async def move_to(self, channel: VocalGuildChannel, *, reason: Optional[str] = None):
+    async def move_to(self, channel: VocalGuildChannel, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
@@ -744,7 +743,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def add_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str]=None, atomic: bool = True):
+    async def add_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str] = None, atomic: bool = True):
         r"""|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -783,7 +782,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
 
-    async def remove_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str]=None, atomic: bool=True):
+    async def remove_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|
 
         Removes :class:`Role`\s from this member.

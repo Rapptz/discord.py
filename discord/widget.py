@@ -22,7 +22,6 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
 from .activity import create_activity
@@ -254,10 +253,10 @@ class Widget:
         """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
-    async def fetch_invite(self, *, with_counts: bool = True) -> Optional[Invite]:
+    async def fetch_invite(self, *, with_counts: bool = True) -> Invite:
         """|coro|
 
-        Retrieves an :class:`Invite` from a invite URL or ID.
+        Retrieves an :class:`Invite` from the widget's invite URL.
         This is the same as :meth:`Client.fetch_invite`; the invite
         code is abstracted away.
 
@@ -271,9 +270,8 @@ class Widget:
         Returns
         --------
         :class:`Invite`
-            The invite from the URL/ID.
+            The invite from the widget's invite URL.
         """
-        if self._invite:
-            invite_id = resolve_invite(self._invite)
-            data = await self._state.http.get_invite(invite_id, with_counts=with_counts)
-            return Invite.from_incomplete(state=self._state, data=data)
+        invite_id = resolve_invite(self._invite)
+        data = await self._state.http.get_invite(invite_id, with_counts=with_counts)
+        return Invite.from_incomplete(state=self._state, data=data)
