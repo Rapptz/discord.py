@@ -128,14 +128,14 @@ class ConnectionState:
         self.allowed_mentions = allowed_mentions
         self._chunk_requests = {} # Dict[Union[int, str], ChunkRequest]
 
-        activity = options.get('activity', None)
+        activity = options.get('start_up_activity', None)
         if activity:
             if not isinstance(activity, BaseActivity):
                 raise TypeError('activity parameter must derive from BaseActivity.')
 
             activity = activity.to_dict()
 
-        status = options.get('status', None)
+        status = options.get('start_up_status', None)
         if status:
             if status is Status.offline:
                 status = 'invisible'

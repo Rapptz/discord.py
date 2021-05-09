@@ -140,10 +140,14 @@ class Client:
         is ``True``.
 
         .. versionadded:: 1.5
-    status: Optional[:class:`.Status`]
+    start_up_status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
-    activity: Optional[:class:`.BaseActivity`]
+
+        .. versionchanged:: 2.0
+    start_up_activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
+
+        .. versionchanged:: 2.0
     allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
@@ -641,6 +645,24 @@ class Client:
             self._connection._activity = value.to_dict()
         else:
             raise TypeError('activity must derive from BaseActivity.')
+    
+    @property
+    def status(self):
+        """Optional[:class:`.Status`]
+        A status to start your presence with upon logging on to Discord.
+
+        .. versionadded: 2.0
+        """
+        return Status(self._connection._status)
+
+    @status.setter
+    def status(self, value):
+        if value is Status.offline:
+            self._connection._status = 'invisible'
+        elif isinstance(value, Status):
+            self._connection._status = str(value)
+        else:
+            raise TypeError('status must derive from Status.')
 
     @property
     def allowed_mentions(self):
