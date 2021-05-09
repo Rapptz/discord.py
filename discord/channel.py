@@ -35,6 +35,7 @@ from .mixins import Hashable
 from . import utils
 from .asset import Asset
 from .errors import ClientException, NoMoreItems, InvalidArgument
+from .stage_instance import StageInstance
 
 __all__ = (
     'TextChannel',
@@ -834,8 +835,6 @@ class StageChannel(VocalGuildChannel):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
-    topic: Optional[:class:`str`]
-        The channel's topic. ``None`` if it isn't set.
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -890,6 +889,60 @@ class StageChannel(VocalGuildChannel):
             'topic': self.topic,
         }, name=name, reason=reason)
 
+    async def create_instance(self, *, topic: str = None) -> StageInstance:
+        """|coro|
+
+        Create a stage instance.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        topic: :class:`str`
+            The stage instance's topic.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to create a stage instance.
+        HTTPException
+            Creating a stage instance failed.
+
+        Returns
+        --------
+        :class:`StageInstance`
+            The newly created stage instance.
+        """
+        data = await self._state.http.create_stage_instance(self.id, topic)
+        return StageInstance(state=self._state, data=data)
+
+    async def fetch_instance(self) -> StageInstance:
+        """|coro|
+
+        Gets a :class:`StageInstance` for a stage channel id.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The stage channel ID.
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            The stage instance or channel could not be found.
+        :exc:`.HTTPException`
+            Getting the stage instance failed.
+
+        Returns
+        --------
+        :class:`StageInstance`
+            The stage instance from the stage channel ID.
+        """
+        data = await self._state.http.create_stage_instance(self.id)
+        return StageInstance(state=self._state, data=data)
+
     @overload
     async def edit(
         self,
@@ -922,8 +975,6 @@ class StageChannel(VocalGuildChannel):
         ----------
         name: :class:`str`
             The new channel's name.
-        topic: Optional[:class:`str`]
-            The new channel's topic.
         position: :class:`int`
             The new channel's position.
         sync_permissions: :class:`bool`

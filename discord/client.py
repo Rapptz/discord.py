@@ -56,6 +56,7 @@ from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
 from .ui.view import View
+from .stage_instance import StageInstance
 
 __all__ = (
     'Client',
@@ -1136,6 +1137,33 @@ class Client:
             data = await self.http.create_guild(name, region_value, icon)
         return Guild(data=data, state=self._connection)
 
+    async def fetch_stage_instance(self, channel_id: int) -> StageInstance:
+        """|coro|
+
+        Gets a :class:`StageInstance` for a stage channel id.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The stage channel ID.
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            The stage instance or channel could not be found.
+        :exc:`.HTTPException`
+            Getting the stage instance failed.
+
+        Returns
+        --------
+        :class:`StageInstance`
+            The stage instance from the stage channel ID.
+        """
+        data = await self.http.create_stage_instance(channel_id)
+        return StageInstance(state=self._connection, data=data)
+
     # Invite management
 
     async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True, with_expiration: bool = True) -> Invite:
@@ -1261,7 +1289,7 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. 
+        Retrieves a :class:`~discord.User` based on their ID.
         You do not have to share any guilds with the user to get this information,
         however many operations do require that you do.
 

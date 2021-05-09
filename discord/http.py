@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from .types import (
         interactions,
         invite,
+        stage_instance,
     )
 
     T = TypeVar('T')
@@ -1079,6 +1080,24 @@ class HTTPClient:
 
     def move_member(self, user_id, guild_id, channel_id, *, reason=None):
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
+
+    # Stage instance management
+
+    def get_stage_instance(self, channel_id) -> Response[stage_instance.StageInstance]:
+        return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
+
+    def create_stage_instance(self, channel_id) -> Response[stage_instance.StageInstance]:
+        return self.request(Route('POST', '/stage-instances/{channel_id}', channel_id=channel_id))
+
+    def edit_stage_instance(self, channel_id, topic) -> Response[None]:
+        payload = {
+            'topic': topic,
+        }
+
+        return self.request(Route('PATCH', '/stage-instance/{channel_id}', channel_id=channel_id), json=payload)
+
+    def delete_stage_instance(self, channel_id) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
 
     # Application commands (global)
 
