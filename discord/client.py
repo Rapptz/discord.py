@@ -140,16 +140,10 @@ class Client:
         is ``True``.
 
         .. versionadded:: 1.5
-    start_up_status: Optional[:class:`.Status`]
+    status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
-
-        .. versionchanged:: 2.0
-            Renamed from `status` to `start_up_status`
-    start_up_activity: Optional[:class:`.BaseActivity`]
+    activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
-
-        .. versionchanged:: 2.0
-            Renamed from `activity` to `start_up_activity`
     allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
