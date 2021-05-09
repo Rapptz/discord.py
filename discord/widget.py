@@ -28,7 +28,7 @@ from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
-from .activity import BaseActivity, Spotify, create_activity
+from .activity import Activity, BaseActivity, Spotify, create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
@@ -78,15 +78,10 @@ class WidgetChannel:
     """
     __slots__ = ('id', 'name', 'position')
 
-    if TYPE_CHECKING:
-        id: int
-        name: str
-        position: int
-
     def __init__(self, id: int, name: str, position: int) -> None:
-        self.id = id
-        self.name = name
-        self.position = position
+        self.id: int = id
+        self.name: str = name
+        self.position: int = position
 
     def __str__(self) -> str:
         return self.name
@@ -157,13 +152,7 @@ class WidgetMember(BaseUser):
                  'connected_channel')
 
     if TYPE_CHECKING:
-        status: Status
-        nick: Optional[str]
         activity: Optional[Union[BaseActivity, Spotify]]
-        deafened: Optional[bool]
-        muted: Optional[bool]
-        suppress: Optional[bool]
-        connected_channel: Optional[WidgetChannel]
 
     def __init__(
         self,
@@ -173,20 +162,22 @@ class WidgetMember(BaseUser):
         connected_channel: Optional[WidgetChannel] = None
     ) -> None:
         super().__init__(state=state, data=data)
-        self.nick = data.get('nick')
-        self.status = try_enum(Status, data.get('status'))
-        self.deafened = data.get('deaf', False) or data.get('self_deaf', False)
-        self.muted = data.get('mute', False) or data.get('self_mute', False)
-        self.suppress = data.get('suppress', False)
+        self.nick: Optional[str] = data.get('nick')
+        self.status: Status = try_enum(Status, data.get('status'))
+        self.deafened: Optional[bool] = data.get('deaf', False) or data.get('self_deaf', False)
+        self.muted: Optional[bool] = data.get('mute', False) or data.get('self_mute', False)
+        self.suppress: Optional[bool] = data.get('suppress', False)
 
         try:
             game = data['game']
         except KeyError:
-            self.activity = None
+            activity = None
         else:
-            self.activity = create_activity(game)
+            activity = create_activity(game)
 
-        self.connected_channel = connected_channel
+        self.activity: Optional[Union[BaseActivity, Spotify]] = activity 
+
+        self.connected_channel: Optional[WidgetChannel] = connected_channel
 
     def __repr__(self) -> str:
         return (
@@ -238,24 +229,18 @@ class Widget:
     """
     __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
 
-    if TYPE_CHECKING:
-        id: int
-        name: str
-        channels: List[WidgetChannel]
-        members: List[WidgetMember]
-
     def __init__(self, *, state: ConnectionState, data: WidgetPayload) -> None:
         self._state = state
         self._invite = data['instant_invite']
-        self.name = data['name']
-        self.id = int(data['id'])
+        self.name: str = data['name']
+        self.id: int = int(data['id'])
 
-        self.channels = []
+        self.channels: List[WidgetChannel] = []
         for channel in data.get('channels', []):
             _id = int(channel['id'])
             self.channels.append(WidgetChannel(id=_id, name=channel['name'], position=channel['position']))
 
-        self.members = []
+        self.members: List[WidgetMember] = []
         channels = {channel.id: channel for channel in self.channels}
         for member in data.get('members', []):
             connected_channel = _get_as_snowflake(member, 'channel_id')
