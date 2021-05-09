@@ -919,14 +919,9 @@ class StageChannel(VocalGuildChannel):
     async def fetch_instance(self) -> StageInstance:
         """|coro|
 
-        Gets a :class:`StageInstance` for a stage channel id.
+        Gets the running :class:`StageInstance`.
 
         .. versionadded:: 2.0
-
-        Parameters
-        -----------
-        channel_id: :class:`int`
-            The stage channel ID.
 
         Raises
         -------
@@ -938,7 +933,7 @@ class StageChannel(VocalGuildChannel):
         Returns
         --------
         :class:`StageInstance`
-            The stage instance from the stage channel ID.
+            The stage instance.
         """
         data = await self._state.http.create_stage_instance(self.id)
         return StageInstance(state=self._state, data=data)
