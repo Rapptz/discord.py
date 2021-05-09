@@ -131,48 +131,31 @@ class AppInfo:
         'privacy_policy_url',
     )
 
-    if TYPE_CHECKING:
-        id: int
-        name: str
-        owner: User
-        team: Optional[Team]
-        description: Optional[str]
-        bot_public: bool
-        bot_require_code_grant: bool
-        rpc_origins: Optional[List[str]]
-        summary: str
-        verify_key: str
-        guild_id: Optional[int]
-        primary_sku_id: Optional[int]
-        slug: Optional[str]
-        terms_of_service_url: Optional[str]
-        privacy_policy_url: Optional[str]
-
     def __init__(self, state: ConnectionState, data: AppInfoPayload) -> None:
         self._state = state
 
-        self.id = int(data['id'])
-        self.name = data['name']
-        self.description = data['description']
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.description: Optional[str] = data['description']
         self._icon = data['icon']
-        self.rpc_origins = data.get('rpc_origins')
-        self.bot_public = data['bot_public']
-        self.bot_require_code_grant = data['bot_require_code_grant']
-        self.owner = User(state=self._state, data=data['owner'])
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
+        self.bot_public: bool = data['bot_public']
+        self.bot_require_code_grant: bool = data['bot_require_code_grant']
+        self.owner: User = User(state=self._state, data=data['owner'])
 
         team = data.get('team')
-        self.team = Team(state, team) if team else None
+        self.team: Optional[Team] = Team(state, team) if team else None
 
-        self.summary = data['summary']
-        self.verify_key = data['verify_key']
+        self.summary: str = data['summary']
+        self.verify_key: str = data['verify_key']
 
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
 
-        self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
-        self.slug = data.get('slug')
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
+        self.slug: Optional[str] = data.get('slug')
         self._cover_image = data.get('cover_image')
-        self.terms_of_service_url = data.get('terms_of_service_url')
-        self.privacy_policy_url = data.get('privacy_policy_url')
+        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
+        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
 
     def __repr__(self) -> str:
         return (
