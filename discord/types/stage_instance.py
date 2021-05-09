@@ -26,6 +26,7 @@ from typing import TypedDict
 
 from .snowflake import Snowflake
 
+
 class StageInstance(TypedDict):
     id: Snowflake
     guild_id: Snowflake

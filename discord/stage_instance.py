@@ -29,6 +29,10 @@ from typing import Optional, TYPE_CHECKING
 from .utils import cached_slot_property
 from .mixins import Hashable
 
+__all__ = (
+    'StageInstance',
+)
+
 if TYPE_CHECKING:
     from .types.stage_instance import StageInstance as StageInstancePayload
     from .state import ConnectionState
@@ -54,6 +58,7 @@ class StageInstance(Hashable):
     """
 
     __slots__ = (
+        '_state',
         'id',
         'guild_id',
         'channel_id',
@@ -68,6 +73,9 @@ class StageInstance(Hashable):
         self.guild_id: int = int(data['guild_id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
+
+    def __repr__(self) -> str:
+        return f'<StageInstance id={self.id} guild={self.guild_id} channel_id={self.channel_id} topic={self.topic!r}>'
 
     @cached_slot_property('_cs_guild')
     def guild(self) -> Optional[Guild]:

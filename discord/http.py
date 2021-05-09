@@ -46,6 +46,7 @@ if TYPE_CHECKING:
         invite,
         stage_instance,
     )
+    from .types.snowflake import Snowflake
 
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
@@ -1083,20 +1084,25 @@ class HTTPClient:
 
     # Stage instance management
 
-    def get_stage_instance(self, channel_id) -> Response[stage_instance.StageInstance]:
+    def get_stage_instance(self, channel_id: Snowflake) -> Response[stage_instance.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, channel_id) -> Response[stage_instance.StageInstance]:
-        return self.request(Route('POST', '/stage-instances/{channel_id}', channel_id=channel_id))
+    def create_stage_instance(self, channel_id: Snowflake, topic: str) -> Response[stage_instance.StageInstance]:
+        payload = {
+            'channel_id': channel_id,
+            'topic': topic,
+        }
 
-    def edit_stage_instance(self, channel_id, topic) -> Response[None]:
+        return self.request(Route('POST', '/stage-instances'), json=payload)
+
+    def edit_stage_instance(self, channel_id: Snowflake, topic: str) -> Response[None]:
         payload = {
             'topic': topic,
         }
 
-        return self.request(Route('PATCH', '/stage-instance/{channel_id}', channel_id=channel_id), json=payload)
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
 
-    def delete_stage_instance(self, channel_id) -> Response[None]:
+    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
 
     # Application commands (global)

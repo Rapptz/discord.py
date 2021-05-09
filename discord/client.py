@@ -1161,7 +1161,7 @@ class Client:
         :class:`StageInstance`
             The stage instance from the stage channel ID.
         """
-        data = await self.http.create_stage_instance(channel_id)
+        data = await self.http.get_stage_instance(channel_id)
         return StageInstance(state=self._connection, data=data)
 
     # Invite management

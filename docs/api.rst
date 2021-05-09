@@ -3385,6 +3385,14 @@ ApplicationFlags
 .. autoclass:: ApplicationFlags
     :members:
 
+StageInstance
+~~~~~~~~~~~~~~
+
+.. attributetable:: StageInstance
+
+.. autoclass:: StageInstance
+    :members:
+
 File
 ~~~~~
 
