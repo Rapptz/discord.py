@@ -40,5 +40,6 @@ class TeamMember(TypedDict):
 class Team(TypedDict):
     icon: Optional[str]
     id: Snowflake
+    name: str
     members: List[TeamMember]
     owner_user_id: Snowflake
