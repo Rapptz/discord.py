@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import Literal, Optional, TypedDict
 
 from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
@@ -45,6 +45,10 @@ class _InviteMetadata(TypedDict, total=False):
     max_uses: int
     temporary: bool
     created_at: str
+
+
+class VanityInvite(_InviteMetadata):
+    code: Optional[str]
 
 
 class IncompleteInvite(_InviteMetadata):

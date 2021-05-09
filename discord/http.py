@@ -28,7 +28,21 @@ import asyncio
 import json
 import logging
 import sys
-from typing import Any, Coroutine, List, Optional, TYPE_CHECKING, TypeVar
+from typing import (
+    Any,
+    ClassVar,
+    Coroutine,
+    Dict,
+    Final,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    TYPE_CHECKING,
+    Tuple,
+    Type,
+    TypeVar,
+)
 from urllib.parse import quote as _uriquote
 import weakref
 
@@ -41,16 +55,36 @@ from . import __version__, utils
 log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from .file import File
+    from .enums import AuditLogAction
+
     from .types import (
+        appinfo,
+        audit_log,
+        channel,
+        emoji,
+        guild,
+        integration,
         interactions,
         invite,
+        member,
+        message,
+        template,
+        role,
+        user,
+        webhook,
+        widget,
     )
 
+    from types import TracebackType
+
     T = TypeVar('T')
+    BE = TypeVar('BE', bound=BaseException)
+    MU = TypeVar('MU', bound='MaybeUnlock')
     Response = Coroutine[Any, Any, T]
 
 
-async def json_or_text(response):
+async def json_or_text(response: aiohttp.ClientResponse) -> Any:
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
@@ -63,58 +97,69 @@ async def json_or_text(response):
 
 
 class Route:
-    BASE = 'https://discord.com/api/v8'
+    BASE: Final[ClassVar[str]] = 'https://discord.com/api/v8'
 
-    def __init__(self, method, path, **parameters):
+    def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.path = path
         self.method = method
         url = self.BASE + self.path
         if parameters:
-            self.url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
-        else:
-            self.url = url
+            url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+        self.url = url
 
         # major parameters:
-        self.channel_id = parameters.get('channel_id')
-        self.guild_id = parameters.get('guild_id')
-        self.webhook_id = parameters.get('webhook_id')
-        self.webhook_token = parameters.get('webhook_token')
+        self.channel_id: Optional[int] = parameters.get('channel_id')
+        self.guild_id: Optional[int] = parameters.get('guild_id')
+        self.webhook_id: Optional[int] = parameters.get('webhook_id')
+        self.webhook_token: Optional[str] = parameters.get('webhook_token')
 
     @property
-    def bucket(self):
+    def bucket(self) -> str:
         # the bucket is just method + path w/ major parameters
         return f'{self.channel_id}:{self.guild_id}:{self.path}'
 
 
 class MaybeUnlock:
-    def __init__(self, lock):
+    def __init__(self, lock: asyncio.Lock) -> None:
         self.lock = lock
         self._unlock = True
 
-    def __enter__(self):
+    def __enter__(self: MU) -> MU:
         return self
 
-    def defer(self):
+    def defer(self) -> None:
         self._unlock = False
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: TracebackType,
+    ) -> None:
         if self._unlock:
             self.lock.release()
 
 
 # For some reason, the Discord voice websocket expects this header to be
 # completely lowercase while aiohttp respects spec and does it as case-insensitive
-aiohttp.hdrs.WEBSOCKET = 'websocket'
+aiohttp.hdrs.WEBSOCKET = 'websocket'  #type: ignore
 
 
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
 
-    SUCCESS_LOG = '{method} {url} has received {text}'
-    REQUEST_LOG = '{method} {url} with {json} has returned {status}'
+    SUCCESS_LOG: Final[ClassVar[str]] = '{method} {url} has received {text}'
+    REQUEST_LOG: Final[ClassVar[str]] = '{method} {url} with {json} has returned {status}'
 
-    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, unsync_clock=True):
-        self.loop = asyncio.get_event_loop() if loop is None else loop
+    def __init__(
+        self,
+        connector=None,
+        *,
+        proxy=None,
+        proxy_auth=None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
+        unsync_clock: bool = True
+    ) -> None:
+        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
         self.__session = None  # filled in static_login
         self._locks = weakref.WeakValueDictionary()
@@ -129,13 +174,13 @@ class HTTPClient:
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    def recreate(self):
+    def recreate(self) -> None:
         if self.__session.closed:
             self.__session = aiohttp.ClientSession(
                 connector=self.connector, ws_response_class=DiscordClientWebSocketResponse
             )
 
-    async def ws_connect(self, url, *, compress=0):
+    async def ws_connect(self, url: str, *, compress: int = 0) -> Any:
         kwargs = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
@@ -150,7 +195,14 @@ class HTTPClient:
 
         return await self.__session.ws_connect(url, **kwargs)
 
-    async def request(self, route, *, files=None, form=None, **kwargs) -> Any:
+    async def request(
+        self,
+        route: Route,
+        *,
+        files: Optional[Sequence[File]] = None,
+        form: Iterable[Dict[str, Any]] = None,
+        **kwargs: Any
+    ) -> Any:
         bucket = route.bucket
         method = route.method
         url = route.url
@@ -285,7 +337,7 @@ class HTTPClient:
 
             raise HTTPException(r, data)
 
-    async def get_from_cdn(self, url):
+    async def get_from_cdn(self, url: str) -> bytes:
         async with self.__session.get(url) as resp:
             if resp.status == 200:
                 return await resp.read()
@@ -298,13 +350,13 @@ class HTTPClient:
 
     # state management
 
-    async def close(self):
+    async def close(self) -> None:
         if self.__session:
             await self.__session.close()
 
     # login management
 
-    async def static_login(self, token):
+    async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         self.__session = aiohttp.ClientSession(connector=self.connector, ws_response_class=DiscordClientWebSocketResponse)
         old_token = self.token
@@ -320,24 +372,24 @@ class HTTPClient:
 
         return data
 
-    def logout(self):
+    def logout(self) -> Response[None]:
         return self.request(Route('POST', '/auth/logout'))
 
     # Group functionality
 
-    def start_group(self, user_id, recipients):
+    def start_group(self, user_id: int, recipients: List[int]) -> Response[channel.GroupDMChannel]:
         payload = {
             'recipients': recipients,
         }
 
         return self.request(Route('POST', '/users/{user_id}/channels', user_id=user_id), json=payload)
 
-    def leave_group(self, channel_id):
+    def leave_group(self, channel_id) -> Response[None]:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
 
     # Message management
 
-    def start_private_message(self, user_id):
+    def start_private_message(self, user_id: int) -> Response[channel.DMChannel]:
         payload = {
             'recipient_id': user_id,
         }
@@ -346,15 +398,15 @@ class HTTPClient:
 
     def send_message(
         self,
-        channel_id,
-        content,
+        channel_id: int,
+        content: str,
         *,
-        tts=False,
-        embed=None,
-        nonce=None,
-        allowed_mentions=None,
-        message_reference=None,
-    ):
+        tts: bool = False,
+        embed: Optional[Dict[str, Any]] = None,
+        nonce: Optional[str] =  None,
+        allowed_mentions: bool = None,
+        message_reference: bool = None,
+    ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
 
@@ -378,25 +430,25 @@ class HTTPClient:
 
         return self.request(r, json=payload)
 
-    def send_typing(self, channel_id):
+    def send_typing(self, channel_id: int) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
     def send_multipart_helper(
         self,
-        route,
+        route: Route,
         *,
-        files,
-        content=None,
-        tts=False,
-        embed=None,
-        embeds=None,
-        nonce=None,
-        allowed_mentions=None,
-        message_reference=None,
-    ):
+        files: Sequence[File],
+        content: Optional[str] = None,
+        tts: bool = False,
+        embed: Optional[Dict[str, Any]] = None,
+        embeds: Iterable[Optional[Dict[str, Any]]] = None,
+        nonce: Optional[str] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
+        message_reference: Optional[int] = None,
+    ) -> Response[message.Message]:
         form = []
 
-        payload = {'tts': tts}
+        payload: Dict[str, Any] = {'tts': tts}
         if content:
             payload['content'] = content
         if embed:
@@ -436,16 +488,16 @@ class HTTPClient:
 
     def send_files(
         self,
-        channel_id,
+        channel_id: int,
         *,
-        files,
-        content=None,
-        tts=False,
-        embed=None,
-        nonce=None,
-        allowed_mentions=None,
-        message_reference=None,
-    ):
+        files: Sequence[File],
+        content: Optional[str] = None,
+        tts: bool = False,
+        embed: Optional[Dict[str, Any]] = None,
+        nonce: Optional[str] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
+        message_reference: Optional[int] = None,
+    ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         return self.send_multipart_helper(
             r,
@@ -458,11 +510,11 @@ class HTTPClient:
             message_reference=message_reference,
         )
 
-    def delete_message(self, channel_id, message_id, *, reason=None):
+    def delete_message(self, channel_id: int, message_id: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, reason=reason)
 
-    def delete_messages(self, channel_id, message_ids, *, reason=None):
+    def delete_messages(self, channel_id: int, message_ids: List[int], *, reason: Optional[str] = None) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
             'messages': message_ids,
@@ -470,11 +522,11 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_message(self, channel_id, message_id, **fields):
+    def edit_message(self, channel_id: int, message_id: int, **fields: Any) -> Response[message.Message]:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
-    def add_reaction(self, channel_id, message_id, emoji):
+    def add_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
         r = Route(
             'PUT',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
@@ -484,7 +536,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def remove_reaction(self, channel_id, message_id, emoji, member_id):
+    def remove_reaction(self, channel_id: int, message_id: int, emoji: str, member_id: int) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
@@ -495,7 +547,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def remove_own_reaction(self, channel_id, message_id, emoji):
+    def remove_own_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
@@ -505,7 +557,14 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_reaction_users(self, channel_id, message_id, emoji, limit, after=None):
+    def get_reaction_users(
+        self,
+        channel_id: int,
+        message_id: int,
+        emoji: str,
+        limit: int,
+        after=None,
+    ) -> Response[List[user.User]]:
         r = Route(
             'GET',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
@@ -521,7 +580,7 @@ class HTTPClient:
             params['after'] = after
         return self.request(r, params=params)
 
-    def clear_reactions(self, channel_id, message_id):
+    def clear_reactions(self, channel_id: int, message_id: int) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions',
@@ -531,7 +590,7 @@ class HTTPClient:
 
         return self.request(r)
 
-    def clear_single_reaction(self, channel_id, message_id, emoji):
+    def clear_single_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
@@ -541,16 +600,23 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_message(self, channel_id, message_id):
+    def get_message(self, channel_id: int, message_id: int) -> Response[message.Message]:
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r)
 
-    def get_channel(self, channel_id):
+    def get_channel(self, channel_id: int) -> Response[channel.Channel]:
         r = Route('GET', '/channels/{channel_id}', channel_id=channel_id)
         return self.request(r)
 
-    def logs_from(self, channel_id, limit, before=None, after=None, around=None):
-        params = {
+    def logs_from(
+        self,
+        channel_id: int,
+        limit: int,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
+        around: Optional[int] = None,
+    ) -> Response[List[message.Message]]:
+        params: Dict[str, Any] = {
             'limit': limit,
         }
 
@@ -563,7 +629,7 @@ class HTTPClient:
 
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
 
-    def publish_message(self, channel_id, message_id):
+    def publish_message(self, channel_id: int, message_id: int) -> Response[message.Message]:
         return self.request(
             Route(
                 'POST',
@@ -573,7 +639,7 @@ class HTTPClient:
             )
         )
 
-    def pin_message(self, channel_id, message_id, reason=None):
+    def pin_message(self, channel_id: int, message_id: int, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'PUT',
             '/channels/{channel_id}/pins/{message_id}',
@@ -582,7 +648,7 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def unpin_message(self, channel_id, message_id, reason=None):
+    def unpin_message(self, channel_id: int, message_id: int, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/pins/{message_id}',
@@ -591,12 +657,12 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def pins_from(self, channel_id):
+    def pins_from(self, channel_id: int) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
     # Member management
 
-    def kick(self, user_id, guild_id, reason=None):
+    def kick(self, user_id: int, guild_id: int, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
             # thanks aiohttp
@@ -604,7 +670,13 @@ class HTTPClient:
 
         return self.request(r)
 
-    def ban(self, user_id, guild_id, delete_message_days=1, reason=None):
+    def ban(
+        self,
+        user_id: int,
+        guild_id: int,
+        delete_message_days: int = 1,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         r = Route('PUT', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         params = {
             'delete_message_days': delete_message_days,
@@ -616,11 +688,19 @@ class HTTPClient:
 
         return self.request(r, params=params)
 
-    def unban(self, user_id, guild_id, *, reason=None):
+    def unban(self, user_id: int, guild_id: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
 
-    def guild_voice_state(self, user_id, guild_id, *, mute=None, deafen=None, reason=None):
+    def guild_voice_state(
+        self,
+        user_id: int,
+        guild_id: int,
+        *,
+        mute: Optional[bool] = None,
+        deafen: Optional[bool] = None,
+        reason: Optional[str] = None,
+    ) -> Response[member.Member]:
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         payload = {}
         if mute is not None:
@@ -631,7 +711,7 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_profile(self, username, avatar):
+    def edit_profile(self, username: Optional[str], avatar: Optional[bytes]) -> Response[user.User]:
         payload = {}
         if avatar is not None:
             payload['avatar'] = avatar
@@ -640,35 +720,61 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
-    def change_my_nickname(self, guild_id, nickname, *, reason=None):
+    def change_my_nickname(
+        self,
+        guild_id: int,
+        nickname: str,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[member.Nickname]:
         r = Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id)
         payload = {
             'nick': nickname,
         }
         return self.request(r, json=payload, reason=reason)
 
-    def change_nickname(self, guild_id, user_id, nickname, *, reason=None):
+    def change_nickname(
+        self,
+        guild_id: int,
+        user_id: int,
+        nickname: str,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[member.Member]:
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         payload = {
             'nick': nickname,
         }
         return self.request(r, json=payload, reason=reason)
 
-    def edit_my_voice_state(self, guild_id, payload):
+    def edit_my_voice_state(self, guild_id: int, payload) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_voice_state(self, guild_id, user_id, payload):
+    def edit_voice_state(self, guild_id: int, user_id: int, payload) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=payload)
 
-    def edit_member(self, guild_id, user_id, *, reason=None, **fields):
+    def edit_member(
+        self,
+        guild_id: int,
+        user_id: int,
+        *,
+        reason: Optional[str] = None,
+        **fields: Any,
+    ) -> Response[member.Member]:
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=fields, reason=reason)
 
     # Channel management
 
-    def edit_channel(self, channel_id, *, reason=None, **options):
+    def edit_channel(
+        self,
+        channel_id: int,
+        *,
+        reason: Optional[str] = None,
+        **options: Any,
+    ) -> Response[channel.Channel]:
         r = Route('PATCH', '/channels/{channel_id}', channel_id=channel_id)
         valid_keys = (
             'name',
@@ -687,11 +793,24 @@ class HTTPClient:
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
 
-    def bulk_channel_update(self, guild_id, data, *, reason=None):
+    def bulk_channel_update(
+        self,
+        guild_id: int,
+        data,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/channels', guild_id=guild_id)
         return self.request(r, json=data, reason=reason)
 
-    def create_channel(self, guild_id, channel_type, *, reason=None, **options):
+    def create_channel(
+        self,
+        guild_id: int,
+        channel_type: channel.ChannelType,
+        *,
+        reason: Optional[str] = None,
+        **options: Any,
+    ) -> Response[channel.GuildChannel]:
         payload = {
             'type': channel_type,
         }
@@ -713,13 +832,25 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
 
-    def delete_channel(self, channel_id, *, reason=None):
+    def delete_channel(
+        self,
+        channel_id: int,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Webhook management
 
-    def create_webhook(self, channel_id, *, name, avatar=None, reason=None):
-        payload = {
+    def create_webhook(
+        self,
+        channel_id: int,
+        *,
+        name: str,
+        avatar: Optional[bytes] = None,
+        reason: Optional[str] = None,
+    ) -> Response[webhook.Webhook]:
+        payload: Dict[str, Any] = {
             'name': name,
         }
         if avatar is not None:
@@ -737,7 +868,12 @@ class HTTPClient:
     def get_webhook(self, webhook_id):
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
 
-    def follow_webhook(self, channel_id, webhook_channel_id, reason=None):
+    def follow_webhook(
+        self,
+        channel_id: int,
+        webhook_channel_id: int,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         payload = {
             'webhook_channel_id': str(webhook_channel_id),
         }
@@ -747,8 +883,13 @@ class HTTPClient:
 
     # Guild management
 
-    def get_guilds(self, limit, before=None, after=None):
-        params = {
+    def get_guilds(
+        self,
+        limit: int,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
+    ) -> Response[List[guild.Guild]]:
+        params: Dict[str, Any] = {
             'limit': limit,
         }
 
@@ -759,16 +900,16 @@ class HTTPClient:
 
         return self.request(Route('GET', '/users/@me/guilds'), params=params)
 
-    def leave_guild(self, guild_id):
+    def leave_guild(self, guild_id: int) -> Response[None]:
         return self.request(Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id))
 
-    def get_guild(self, guild_id):
+    def get_guild(self, guild_id: int) -> Response[guild.Guild]:
         return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def delete_guild(self, guild_id):
+    def delete_guild(self, guild_id: int) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def create_guild(self, name, region, icon):
+    def create_guild(self, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
         payload = {
             'name': name,
             'icon': icon,
@@ -777,7 +918,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds'), json=payload)
 
-    def edit_guild(self, guild_id, *, reason=None, **fields):
+    def edit_guild(self, guild_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[guild.Guild]:
         valid_keys = (
             'name',
             'region',
@@ -804,19 +945,19 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
-    def get_template(self, code):
+    def get_template(self, code: str) -> Response[template.Template]:
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
 
-    def guild_templates(self, guild_id):
+    def guild_templates(self, guild_id: int) -> Response[List[template.Template]]:
         return self.request(Route('GET', '/guilds/{guild_id}/templates', guild_id=guild_id))
 
-    def create_template(self, guild_id, payload):
+    def create_template(self, guild_id: int, payload) -> Response[template.Template]:
         return self.request(Route('POST', '/guilds/{guild_id}/templates', guild_id=guild_id), json=payload)
 
-    def sync_template(self, guild_id, code):
+    def sync_template(self, guild_id: int, code: str) -> Response[template.Template]:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def edit_template(self, guild_id, code, payload):
+    def edit_template(self, guild_id: int, code: str, payload) -> Response[template.Template]:
         valid_keys = (
             'name',
             'description',
@@ -826,10 +967,10 @@ class HTTPClient:
             Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code), json=payload
         )
 
-    def delete_template(self, guild_id, code):
+    def delete_template(self, guild_id: int, code: str) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def create_from_template(self, code, name, region, icon):
+    def create_from_template(self, code: str, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
         payload = {
             'name': name,
             'icon': icon,
@@ -837,24 +978,24 @@ class HTTPClient:
         }
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
-    def get_bans(self, guild_id):
+    def get_bans(self, guild_id: int) -> Response[List[guild.Ban]]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
-    def get_ban(self, user_id, guild_id):
+    def get_ban(self, user_id: int, guild_id: int) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
 
-    def get_vanity_code(self, guild_id):
+    def get_vanity_code(self, guild_id: int) -> Response[invite.VanityInvite]:
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 
-    def change_vanity_code(self, guild_id, code, *, reason=None):
-        payload = {'code': code}
+    def change_vanity_code(self, guild_id: int, code: str, *, reason: Optional[str] = None) -> Response[None]:
+        payload: Dict[str, Any] = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
-    def get_all_guild_channels(self, guild_id):
+    def get_all_guild_channels(self, guild_id: int) -> Response[List[guild.GuildChannel]]:
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
-    def get_members(self, guild_id, limit, after):
-        params = {
+    def get_members(self, guild_id: int, limit: int, after: Optional[int]) -> Response[List[member.Member]]:
+        params: Dict[str, Any] = {
             'limit': limit,
         }
         if after:
@@ -863,11 +1004,19 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
         return self.request(r, params=params)
 
-    def get_member(self, guild_id, member_id):
+    def get_member(self, guild_id: int, member_id: int) -> Response[member.Member]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
-    def prune_members(self, guild_id, days, compute_prune_count, roles, *, reason=None):
-        payload = {
+    def prune_members(
+        self,
+        guild_id: int,
+        days: int,
+        compute_prune_count: bool,
+        roles: List[str],
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[guild.GuildPrune]:
+        payload: Dict[str, Any] = {
             'days': days,
             'compute_prune_count': 'true' if compute_prune_count else 'false',
         }
@@ -876,8 +1025,13 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
-    def estimate_pruned_members(self, guild_id, days, roles):
-        params = {
+    def estimate_pruned_members(
+        self,
+        guild_id: int,
+        days: int,
+        roles: List[str],
+    ) -> Response[guild.GuildPrune]:
+        params: Dict[str, Any] = {
             'days': days,
         }
         if roles:
@@ -885,13 +1039,21 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def get_all_custom_emojis(self, guild_id):
+    def get_all_custom_emojis(self, guild_id: int) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
 
-    def get_custom_emoji(self, guild_id, emoji_id):
+    def get_custom_emoji(self, guild_id: int, emoji_id: int) -> Response[emoji.Emoji]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
 
-    def create_custom_emoji(self, guild_id, name, image, *, roles=None, reason=None):
+    def create_custom_emoji(
+        self,
+        guild_id: int,
+        name: str,
+        image: bytes,
+        *,
+        roles: Optional[List[int]] = None,
+        reason: Optional[str] = None,
+    ) -> Response[emoji.Emoji]:
         payload = {
             'name': name,
             'image': image,
@@ -901,20 +1063,33 @@ class HTTPClient:
         r = Route('POST', '/guilds/{guild_id}/emojis', guild_id=guild_id)
         return self.request(r, json=payload, reason=reason)
 
-    def delete_custom_emoji(self, guild_id, emoji_id, *, reason=None):
+    def delete_custom_emoji(
+        self,
+        guild_id: int,
+        emoji_id: int,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id: int, emoji_id: int, *, payload, reason: Optional[str] = None):
+    def edit_custom_emoji(
+        self,
+        guild_id: int,
+        emoji_id: int,
+        *,
+        payload,
+        reason: Optional[str] = None,
+    ) -> Response[emoji.Emoji]:
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
 
-    def get_all_integrations(self, guild_id):
+    def get_all_integrations(self, guild_id: int) -> Response[List[integration.Integration]]:
         r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
 
         return self.request(r)
 
-    def create_integration(self, guild_id, type, id):
+    def create_integration(self, guild_id: int, type: integration.IntegrationType, id: int) -> Response[None]:
         payload = {
             'type': type,
             'id': id,
@@ -923,29 +1098,37 @@ class HTTPClient:
         r = Route('POST', '/guilds/{guild_id}/integrations', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_integration(self, guild_id, integration_id, **payload):
+    def edit_integration(self, guild_id: int, integration_id: int, **payload: Any) -> Response[None]:
         r = Route(
             'PATCH', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
         return self.request(r, json=payload)
 
-    def sync_integration(self, guild_id, integration_id):
+    def sync_integration(self, guild_id: int, integration_id: int) -> Response[None]:
         r = Route(
             'POST', '/guilds/{guild_id}/integrations/{integration_id}/sync', guild_id=guild_id, integration_id=integration_id
         )
 
         return self.request(r)
 
-    def delete_integration(self, guild_id, integration_id):
+    def delete_integration(self, guild_id: int, integration_id: int) -> Response[None]:
         r = Route(
             'DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
         return self.request(r)
 
-    def get_audit_logs(self, guild_id, limit=100, before=None, after=None, user_id=None, action_type=None):
-        params = {'limit': limit}
+    def get_audit_logs(
+        self,
+        guild_id: int,
+        limit: int = 100,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
+        user_id: Optional[int] = None,
+        action_type: Optional[AuditLogAction] = None,
+    ) -> Response[audit_log.AuditLog]:
+        params: Dict[str, Any] = {'limit': limit}
         if before:
             params['before'] = before
         if after:
@@ -958,7 +1141,7 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
 
-    def get_widget(self, guild_id):
+    def get_widget(self, guild_id: int) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
     # Invite management
@@ -983,49 +1166,68 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id, *, with_counts=True, with_expiration=True):
+    def get_invite(
+        self,
+        invite_id: str,
+        *,
+        with_counts: bool = True,
+        with_expiration: bool = True,
+    ) -> Response[invite.Invite]:
         params = {
             'with_counts': int(with_counts),
             'with_expiration': int(with_expiration),
         }
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
-    def invites_from(self, guild_id):
+    def invites_from(self, guild_id: int) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
 
-    def invites_from_channel(self, channel_id):
+    def invites_from_channel(self, channel_id: int) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def delete_invite(self, invite_id, *, reason=None):
+    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
 
-    def get_roles(self, guild_id):
+    def get_roles(self, guild_id: int) -> Response[List[role.Role]]:
         return self.request(Route('GET', '/guilds/{guild_id}/roles', guild_id=guild_id))
 
-    def edit_role(self, guild_id, role_id, *, reason=None, **fields):
+    def edit_role(self, guild_id: int, role_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         payload = {k: v for k, v in fields.items() if k in valid_keys}
         return self.request(r, json=payload, reason=reason)
 
-    def delete_role(self, guild_id, role_id, *, reason=None):
+    def delete_role(self, guild_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         return self.request(r, reason=reason)
 
-    def replace_roles(self, user_id, guild_id, role_ids, *, reason=None):
+    def replace_roles(
+        self,
+        user_id: int,
+        guild_id: int,
+        role_ids: List[int],
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[member.Member]:
         return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids, reason=reason)
 
-    def create_role(self, guild_id, *, reason=None, **fields):
+    def create_role(self, guild_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
         r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r, json=fields, reason=reason)
 
-    def move_role_position(self, guild_id, positions, *, reason=None):
+    def move_role_position(
+        self,
+        guild_id: int,
+        positions,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[List[role.Role]]:
         r = Route('PATCH', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r, json=positions, reason=reason)
 
-    def add_role(self, guild_id, user_id, role_id, *, reason=None):
+    def add_role(self, guild_id: int, user_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'PUT',
             '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
@@ -1035,7 +1237,7 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def remove_role(self, guild_id, user_id, role_id, *, reason=None):
+    def remove_role(self, guild_id: int, user_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE',
             '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
@@ -1045,26 +1247,42 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def edit_channel_permissions(self, channel_id, target, allow, deny, type, *, reason=None):
+    def edit_channel_permissions(
+        self,
+        channel_id: int,
+        target: int,
+        allow: str,
+        deny: str,
+        type: int,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[None]:
         payload = {'id': target, 'allow': allow, 'deny': deny, 'type': type}
         r = Route('PUT', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, json=payload, reason=reason)
 
-    def delete_channel_permissions(self, channel_id, target, *, reason=None):
+    def delete_channel_permissions(self, channel_id: int, target: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, reason=reason)
 
     # Voice management
 
-    def move_member(self, user_id, guild_id, channel_id, *, reason=None):
+    def move_member(
+        self,
+        user_id: int,
+        guild_id: int,
+        channel_id: int,
+        *,
+        reason: Optional[str] = None,
+    ) -> Response[member.Member]:
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
     # Application commands (global)
 
-    def get_global_commands(self, application_id) -> Response[List[interactions.ApplicationCommand]]:
+    def get_global_commands(self, application_id: int) -> Response[List[interactions.ApplicationCommand]]:
         return self.request(Route('GET', '/applications/{application_id}/commands', application_id=application_id))
 
-    def get_global_command(self, application_id, command_id) -> Response[interactions.ApplicationCommand]:
+    def get_global_command(self, application_id: int, command_id: int) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/commands/{command_id}',
@@ -1073,11 +1291,15 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id, payload) -> Response[interactions.ApplicationCommand]:
+    def upsert_global_command(self, application_id: int, payload) -> Response[interactions.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
-    def edit_global_command(self, application_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
+    def edit_global_command(self,
+        application_id: int,
+        command_id: int,
+        payload,
+    ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1092,7 +1314,7 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def delete_global_command(self, application_id, command_id):
+    def delete_global_command(self, application_id: int, command_id: int) -> Response[None]:
         r = Route(
             'DELETE',
             '/applications/{application_id}/commands/{command_id}',
@@ -1101,13 +1323,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id, payload) -> Response[List[interactions.ApplicationCommand]]:
+    def bulk_upsert_global_commands(self, application_id: int, payload) -> Response[List[interactions.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
     # Application commands (guild)
 
-    def get_guild_commands(self, application_id, guild_id) -> Response[List[interactions.ApplicationCommand]]:
+    def get_guild_commands(self, application_id: int, guild_id: int) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1116,7 +1338,12 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_guild_command(self, application_id, guild_id, command_id) -> Response[interactions.ApplicationCommand]:
+    def get_guild_command(
+        self,
+        application_id: int,
+        guild_id: int,
+        command_id: int,
+    ) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
@@ -1126,7 +1353,12 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_guild_command(self, application_id, guild_id, payload) -> Response[interactions.ApplicationCommand]:
+    def upsert_guild_command(
+        self,
+        application_id: int,
+        guild_id: int,
+        payload,
+    ) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1135,7 +1367,12 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def edit_guild_command(self, application_id, guild_id, command_id, payload) -> Response[interactions.ApplicationCommand]:
+    def edit_guild_command(self,
+        application_id: int,
+        guild_id: int,
+        command_id: int,
+        payload,
+    ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1151,7 +1388,12 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def delete_guild_command(self, application_id, guild_id, command_id):
+    def delete_guild_command(
+        self,
+        application_id: int,
+        guild_id: int,
+        command_id: int,
+    ) -> Response[None]:
         r = Route(
             'DELETE',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
@@ -1162,7 +1404,10 @@ class HTTPClient:
         return self.request(r)
 
     def bulk_upsert_guild_commands(
-        self, application_id, guild_id, payload
+        self, 
+        application_id: int,
+        guild_id: int, 
+        payload,
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
@@ -1176,14 +1421,14 @@ class HTTPClient:
 
     def _edit_webhook_helper(
         self,
-        route,
-        file=None,
-        content=None,
-        embeds=None,
-        allowed_mentions=None,
+        route: Route,
+        file: Optional[File] = None,
+        content: Optional[str] = None,
+        embeds: Optional[List[Dict[str, Any]]] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
     ):
 
-        payload = {}
+        payload: Dict[str, Any] = {}
         if content:
             payload['content'] = content
         if embeds:
@@ -1191,7 +1436,7 @@ class HTTPClient:
         if allowed_mentions:
             payload['allowed_mentions'] = allowed_mentions
 
-        form = [
+        form: List[Dict[str, Any]] = [
             {
                 'name': 'payload_json',
                 'value': utils.to_json(payload),
@@ -1208,9 +1453,9 @@ class HTTPClient:
                 }
             )
 
-        return self.request(route, form=form, files=[file])
+        return self.request(route, form=form, files=[file] if file else None)
 
-    def create_interaction_response(self, interaction_id, token):
+    def create_interaction_response(self, interaction_id: int, token: str) -> Response[None]:
         r = Route(
             'POST',
             '/interactions/{interaction_id}/{interaction_token}/callback',
@@ -1221,9 +1466,9 @@ class HTTPClient:
 
     def get_original_interaction_response(
         self,
-        application_id,
-        token,
-    ):
+        application_id: int,
+        token: str,
+    ) -> Response[message.Message]:
         r = Route(
             'GET',
             '/webhooks/{application_id}/{interaction_token}/messages/@original',
@@ -1234,13 +1479,13 @@ class HTTPClient:
 
     def edit_original_interaction_response(
         self,
-        application_id,
-        token,
-        file=None,
-        content=None,
-        embeds=None,
-        allowed_mentions=None,
-    ):
+        application_id: int,
+        token: str,
+        file: Optional[File] = None,
+        content: Optional[str] = None,
+        embeds: Optional[List[Dict[str, Any]]] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
+    ) -> Response[message.Message]:
         r = Route(
             'PATCH',
             '/webhooks/{application_id}/{interaction_token}/messages/@original',
@@ -1249,7 +1494,7 @@ class HTTPClient:
         )
         return self._edit_webhook_helper(r, file=file, content=content, embeds=embeds, allowed_mentions=allowed_mentions)
 
-    def delete_original_interaction_response(self, application_id, token):
+    def delete_original_interaction_response(self, application_id: int, token: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/webhooks/{application_id}/{interaction_token}/messages/@original',
@@ -1260,14 +1505,14 @@ class HTTPClient:
 
     def create_followup_message(
         self,
-        application_id,
-        token,
-        files=None,
-        content=None,
-        tts=False,
-        embeds=None,
-        allowed_mentions=None,
-    ):
+        application_id: int,
+        token: str,
+        files: List[File] = [],
+        content: Optional[str] = None,
+        tts: bool = False,
+        embeds: Optional[List[Dict[str, Any]]] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
+    ) -> Response[message.Message]:
         r = Route(
             'POST',
             '/webhooks/{application_id}/{interaction_token}',
@@ -1285,14 +1530,14 @@ class HTTPClient:
 
     def edit_followup_message(
         self,
-        application_id,
-        token,
-        message_id,
-        file=None,
-        content=None,
-        embeds=None,
-        allowed_mentions=None,
-    ):
+        application_id: int,
+        token: str,
+        message_id: int,
+        file: Optional[File] = None,
+        content: Optional[str] = None,
+        embeds: Optional[List[Dict[str, Any]]] = None,
+        allowed_mentions: Optional[Dict[str, Any]] = None,
+    )-> Response[message.Message]:
         r = Route(
             'PATCH',
             '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
@@ -1302,7 +1547,7 @@ class HTTPClient:
         )
         return self._edit_webhook_helper(r, file=file, content=content, embeds=embeds, allowed_mentions=allowed_mentions)
 
-    def delete_followup_message(self, application_id, token, message_id):
+    def delete_followup_message(self, application_id: int, token: str, message_id: int) -> Response[None]:
         r = Route(
             'DELETE',
             '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
@@ -1312,7 +1557,11 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_guild_application_command_permissions(self, application_id, guild_id) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
+    def get_guild_application_command_permissions(
+        self,
+        application_id: int,
+        guild_id: int,
+    ) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
@@ -1321,7 +1570,12 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_application_command_permissions(self, application_id, guild_id, command_id) -> Response[interactions.GuildApplicationCommandPermissions]:
+    def get_application_command_permissions(
+        self,
+        application_id: int,
+        guild_id: int,
+        command_id: int,
+    ) -> Response[interactions.GuildApplicationCommandPermissions]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
@@ -1331,7 +1585,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def edit_application_command_permissions(self, application_id, guild_id, command_id, payload):
+    def edit_application_command_permissions(
+        self,
+        application_id: int,
+        guild_id: int,
+        command_id: int,
+        payload,
+    ) -> Response[None]:
         r = Route(
             'PUT',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
@@ -1341,7 +1601,12 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def bulk_edit_guild_application_command_permissions(self, application_id, guild_id, payload):
+    def bulk_edit_guild_application_command_permissions(
+        self,
+        application_id: int,
+        guild_id: int,
+        payload
+    ) -> Response[None]:
         r = Route(
             'PUT',
             '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
@@ -1352,10 +1617,10 @@ class HTTPClient:
 
     # Misc
 
-    def application_info(self):
+    def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
-    async def get_gateway(self, *, encoding='json', zlib=True):
+    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:
             data = await self.request(Route('GET', '/gateway'))
         except HTTPException as exc:
@@ -1366,7 +1631,7 @@ class HTTPClient:
             value = '{0}?encoding={1}&v=8'
         return value.format(data['url'], encoding)
 
-    async def get_bot_gateway(self, *, encoding='json', zlib=True):
+    async def get_bot_gateway(self, *, encoding='json', zlib=True) -> Tuple[int, str]:
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:
@@ -1378,5 +1643,5 @@ class HTTPClient:
             value = '{0}?encoding={1}&v=8'
         return data['shards'], value.format(data['url'], encoding)
 
-    def get_user(self, user_id):
+    def get_user(self, user_id) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

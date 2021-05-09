@@ -22,36 +22,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, Type, TypedDict
-from .snowflake import Snowflake
-from .member import Member
+from typing import TypedDict
 
 
-class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
-    self_stream: bool
+class SessionStartLimit(TypedDict):
+    total: int
+    remaining: int
+    reset_after: int
+    max_concurrency: int
 
 
-class PartialVoiceState(_PartialVoiceStateOptional):
-    channel_id: Optional[Snowflake]
-    user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
+class Gateway(TypedDict):
+    url: str
 
 
-class VoiceState(PartialVoiceState, total=False):
-    guild_id: Snowflake
-
-
-class VoiceRegion(TypedDict):
-    id: str
-    name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+class GatewayBot(Gateway):
+    shards: int
+    session_start_limit: SessionStartLimit

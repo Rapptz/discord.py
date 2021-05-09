@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .user import PartialUser
 from .snowflake import Snowflake
-from typing import List, Literal, Optional, TypedDict
+from typing import List, Literal, Optional, TypedDict, Union
 
 
 class PermissionOverwrite(TypedDict):
@@ -89,3 +89,5 @@ class DMChannel(PartialChannel):
 class GroupDMChannel(DMChannel):
     icon: Optional[str]
     owner_id: Snowflake
+
+Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

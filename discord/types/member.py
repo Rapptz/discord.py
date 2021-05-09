@@ -27,6 +27,10 @@ from .snowflake import SnowflakeList
 from .user import User
 
 
+class Nickname(TypedDict):
+    nick: str
+
+
 class PartialMember(TypedDict):
     roles: SnowflakeList
     joined_at: str

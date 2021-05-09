@@ -137,3 +137,6 @@ class InviteGuild(Guild, total=False):
 
 class GuildWithCounts(Guild, _GuildPreviewUnique):
     ...
+
+class GuildPrune(TypedDict):
+    pruned: Optional[int]
