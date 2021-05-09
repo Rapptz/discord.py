@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from .types import (
         interactions,
         invite,
+        discovery,
     )
 
     T = TypeVar('T')
@@ -960,6 +961,29 @@ class HTTPClient:
 
     def get_widget(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
+
+    # Guild Discovery management
+
+    def get_guild_discovery_metadata(self, guild_id: int) -> Response[discovery.DiscoveryMetadata]:
+        return self.request(Route('GET', '/guilds/{guild_id}/discovery-metadata', guild_id=guild_id))
+
+    def edit_guild_discovery_metadata(self, guild_id: int, **payload: Any) -> Response[discovery.DiscoveryMetadata]:
+        valid_keys = (
+            'primary_category_id',
+            'keywords',
+            'emoji_discoverability_enabled',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        return self.request(Route('PATCH', '/guilds/{guild_id}/discovery-metadata', guild_id=guild_id), json=payload)
+
+    def add_guild_discovery_subcategory(self, guild_id: int, category_id: int) -> Response[None]:
+        return self.request(Route('POST', '/guilds/{guild_id}/discovery-categories/{category_id}', guild_id=guild_id, category_id=category_id))
+
+    def remove_guild_discovery_subcategory(self, guild_id: int, category_id: int) -> Response[None]:
+        return self.request(Route('DELETE', '/guilds/{guild_id}/discovery-categories/{category_id}', guild_id=guild_id, category_id=category_id))
+
+    def get_discovery_categories(self) -> Response[List[discovery.DiscoveryCategory]]:
+        return self.request(Route('GET', '/discovery/categories'))
 
     # Invite management
 

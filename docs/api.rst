@@ -2873,6 +2873,20 @@ Interaction
 .. autoclass:: Interaction()
     :members:
 
+DiscoveryCategory
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: DiscoveryCategory()
+    :members:
+
+DiscoveryMetadata
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: DiscoveryMetadata
+
+.. autoclass:: DiscoveryMetadata()
+    :members:
+
 Member
 ~~~~~~
 

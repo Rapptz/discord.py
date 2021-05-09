@@ -81,6 +81,7 @@ GuildFeature = Literal[
     'COMMERCE',
     'NEWS',
     'DISCOVERABLE',
+    'DISCOVERABLE_DISABLED',
     'FEATURABLE',
     'ANIMATED_ICON',
     'BANNER',

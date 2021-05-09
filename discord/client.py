@@ -27,7 +27,7 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import aiohttp
 
@@ -53,6 +53,7 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
+from .discovery import DiscoveryCategory
 
 __all__ = (
     'Client',
@@ -1346,6 +1347,27 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def fetch_discovery_categories(self) -> List[DiscoveryCategory]:
+        """|coro|
+
+        Retrieves a list of :class:`DiscoveryCategory` that can be
+        used when editing a guild's discovery metadata.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the discovery categories failed.
+
+        Returns
+        --------
+        List[:class:`DiscoveryCategory`]
+            The discovery categories.
+        """
+        data = await self.http.get_discovery_categories()
+        return [DiscoveryCategory(data=d) for d in data]
 
     async def create_dm(self, user):
         """|coro|
