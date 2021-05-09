@@ -27,7 +27,7 @@ import random
 
 from typing import (
     Any,
-    Optional, 
+    Optional,
     Tuple,
     Type,
     TypeVar,
@@ -65,7 +65,7 @@ class Colour:
         .. describe:: str(x)
 
              Returns the hex format for the colour.
-             
+
         .. describe:: int(x)
 
              Returns the raw colour value.
@@ -95,7 +95,7 @@ class Colour:
 
     def __str__(self) -> str:
         return f'#{self.value:0>6x}'
-    
+
     def __int__(self) -> int:
         return self.value
 

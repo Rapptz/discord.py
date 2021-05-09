@@ -112,7 +112,7 @@ class Loop:
                     await asyncio.sleep(backoff.delay())
                 else:
                     await sleep_until(self._next_iteration)
-                    
+
                     if self._stop_next_iteration:
                         return
                     self._current_loop += 1

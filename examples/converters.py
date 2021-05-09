@@ -78,7 +78,7 @@ class ChannelOrMemberConverter(commands.Converter):
 async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
     # This command signature utilises the custom converter written above
     # What will happen during command invocation is that the `target` above will be passed to
-    # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and 
+    # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and
     # the conversion will go through the process defined there.
 
     await target.send(f'Hello, {target.name}!')

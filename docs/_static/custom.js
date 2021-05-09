@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
-  
+
   toTop = document.getElementById('to-top');
   toTop.hidden = !(window.scrollY > 0);
 
