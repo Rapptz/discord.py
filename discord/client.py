@@ -658,7 +658,9 @@ class Client:
 
         .. versionadded: 2.0
         """
-        return Status(self._connection._status)
+        if self._connection._status in set(state.value for state in Status):
+            return Status(self._connection._status)
+        return Status.online
 
     @start_up_status.setter
     def start_up_status(self, value):
