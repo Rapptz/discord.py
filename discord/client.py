@@ -144,10 +144,12 @@ class Client:
         A status to start your presence with upon logging on to Discord.
 
         .. versionchanged:: 2.0
+            Renamed from `status` to `start_up_status`
     start_up_activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
 
         .. versionchanged:: 2.0
+            Renamed from `activity` to `start_up_activity`
     allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
@@ -631,14 +633,17 @@ class Client:
         return self._closed
 
     @property
-    def activity(self):
+    def start_up_activity(self):
         """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
+
+        .. versionchanged: 2.0
+            Renamed from `activity` to `start_up_activity`
         """
         return create_activity(self._connection._activity)
 
-    @activity.setter
-    def activity(self, value):
+    @start_up_activity.setter
+    def start_up_activity(self, value):
         if value is None:
             self._connection._activity = None
         elif isinstance(value, BaseActivity):
@@ -647,16 +652,16 @@ class Client:
             raise TypeError('activity must derive from BaseActivity.')
     
     @property
-    def status(self):
-        """Optional[:class:`.Status`]
-        A status to start your presence with upon logging on to Discord.
+    def start_up_status(self):
+        """:class:`.Status`:
+        The status being used upon logging on to Discord.
 
         .. versionadded: 2.0
         """
         return Status(self._connection._status)
 
-    @status.setter
-    def status(self, value):
+    @start_up_status.setter
+    def start_up_status(self, value):
         if value is Status.offline:
             self._connection._status = 'invisible'
         elif isinstance(value, Status):
