@@ -935,7 +935,7 @@ class StageChannel(VocalGuildChannel):
         :class:`StageInstance`
             The stage instance.
         """
-        data = await self._state.http.create_stage_instance(self.id)
+        data = await self._state.http.get_stage_instance(self.id)
         return StageInstance(state=self._state, data=data)
 
     @overload
