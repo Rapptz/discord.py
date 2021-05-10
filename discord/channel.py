@@ -27,7 +27,7 @@ import asyncio
 
 import discord.abc
 from .permissions import Permissions
-from .enums import ChannelType, try_enum, VoiceRegion
+from .enums import ChannelType, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
@@ -269,8 +269,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         You must have the :attr:`~Permissions.manage_messages` permission to
         use this.
 
-        Usable only by bot accounts.
-
         Parameters
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
@@ -281,8 +279,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ClientException
             The number of messages to delete was more than 100.
         Forbidden
-            You do not have proper permissions to delete the messages or
-            you're not using a bot account.
+            You do not have proper permissions to delete the messages.
         NotFound
             If single delete, then the message was already deleted.
         HTTPException
@@ -313,8 +310,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         without discrimination.
 
         You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own (unless you are a user
-        account). The :attr:`~Permissions.read_message_history` permission is
+        delete messages even if they are your own.
+        The :attr:`~Permissions.read_message_history` permission is
         also needed to retrieve message history.
 
         Examples
@@ -541,7 +538,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
                  '_state', 'position', '_overwrites', 'category_id',
-                 'rtc_region')
+                 'rtc_region', 'video_quality_mode')
 
     def __init__(self, *, state, guild, data):
         self._state = state
@@ -560,6 +557,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         self.rtc_region = data.get('rtc_region')
         if self.rtc_region:
             self.rtc_region = try_enum(VoiceRegion, self.rtc_region)
+        self.video_quality_mode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
         self.category_id = utils._get_as_snowflake(data, 'parent_id')
         self.position = data['position']
         self.bitrate = data.get('bitrate')
@@ -654,6 +652,10 @@ class VoiceChannel(VocalGuildChannel):
         A value of ``None`` indicates automatic voice region detection.
 
         .. versionadded:: 1.7
+    video_quality_mode: :class:`VideoQualityMode`
+        The camera video quality for the voice channel's participants.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ()
@@ -665,6 +667,7 @@ class VoiceChannel(VocalGuildChannel):
             ('rtc_region', self.rtc_region),
             ('position', self.position),
             ('bitrate', self.bitrate),
+            ('video_quality_mode', self.video_quality_mode),
             ('user_limit', self.user_limit),
             ('category_id', self.category_id)
         ]
@@ -720,6 +723,10 @@ class VoiceChannel(VocalGuildChannel):
             A value of ``None`` indicates automatic voice region detection.
 
             .. versionadded:: 1.7
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the voice channel's participants.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -778,6 +785,10 @@ class StageChannel(VocalGuildChannel):
     rtc_region: Optional[:class:`VoiceRegion`]
         The region for the stage channel's voice communication.
         A value of ``None`` indicates automatic voice region detection.
+    video_quality_mode: :class:`VideoQualityMode`
+        The camera video quality for the stage channel's participants.
+
+        .. versionadded:: 2.0
     """
     __slots__ = ('topic',)
 
@@ -789,6 +800,7 @@ class StageChannel(VocalGuildChannel):
             ('rtc_region', self.rtc_region),
             ('position', self.position),
             ('bitrate', self.bitrate),
+            ('video_quality_mode', self.video_quality_mode),
             ('user_limit', self.user_limit),
             ('category_id', self.category_id)
         ]
@@ -845,6 +857,10 @@ class StageChannel(VocalGuildChannel):
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the stage channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the stage channel's participants.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -1012,7 +1028,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def stage_channels(self):
-        """List[:class:`StageChannel`]: Returns the voice channels that are under this category.
+        """List[:class:`StageChannel`]: Returns the stage channels that are under this category.
 
         .. versionadded:: 1.7
         """

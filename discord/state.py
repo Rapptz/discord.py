@@ -48,7 +48,7 @@ from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
-from .flags import Intents, MemberCacheFlags
+from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
 from .interactions import Interaction
@@ -452,6 +452,7 @@ class ConnectionState:
                 pass
             else:
                 self.application_id = utils._get_as_snowflake(application, 'id')
+                self.application_flags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)
@@ -1144,6 +1145,7 @@ class AutoShardedConnectionState(ConnectionState):
                 pass
             else:
                 self.application_id = utils._get_as_snowflake(application, 'id')
+                self.application_flags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)

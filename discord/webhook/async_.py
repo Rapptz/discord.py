@@ -28,7 +28,6 @@ import contextvars
 import logging
 import asyncio
 import json
-import time
 import re
 
 from urllib.parse import quote as urlquote
@@ -67,16 +66,7 @@ if TYPE_CHECKING:
     from ..abc import Snowflake
     import datetime
 
-
-class _Missing:
-    def __bool__(self):
-        return False
-
-    def __repr__(self):
-        return '...'
-
-
-MISSING: Any = _Missing()
+MISSING = utils.MISSING
 
 
 class AsyncDeferredLock:
@@ -471,8 +461,6 @@ class PartialWebhookGuild(Hashable):
         The partial guild's ID.
     name: :class:`str`
         The partial guild's name.
-    icon: :class:`str`
-        The partial guild's icon
     """
 
     __slots__ = ('id', 'name', '_icon', '_state')
@@ -487,7 +475,7 @@ class PartialWebhookGuild(Hashable):
         return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
-    def icon_url(self) -> Optional[Asset]:
+    def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
         if self._icon is None:
             return None
@@ -733,6 +721,7 @@ class BaseWebhook(Hashable):
             return Asset._from_default_avatar(self._state, 0)
         return Asset._from_avatar(self._state, self.id, self._avatar)
 
+
 class Webhook(BaseWebhook):
     """Represents an asynchronous Discord webhook.
 
@@ -799,8 +788,6 @@ class Webhook(BaseWebhook):
         received without authentication then this will be ``None``.
     name: Optional[:class:`str`]
         The default name of the webhook.
-    avatar: Optional[:class:`str`]
-        The default avatar of the webhook.
     source_guild: Optional[:class:`PartialWebhookGuild`]
         The guild of the channel that this webhook is following.
         Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
@@ -1173,16 +1160,16 @@ class Webhook(BaseWebhook):
         Forbidden
             The authorization token for the webhook is incorrect.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
-            The length of ``embeds`` was invalid
+            The length of ``embeds`` was invalid.
         InvalidArgument
             There was no token associated with this webhook.
 
         Returns
         ---------
         Optional[:class:`WebhookMessage`]
-            The message that was sent.
+            If ``wait`` is ``True`` then the message that was sent, otherwise ``None``.
         """
 
         if self.token is None:
@@ -1190,7 +1177,7 @@ class Webhook(BaseWebhook):
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
-            content = ...  # type: ignore
+            content = MISSING
 
         params = handle_message_parameters(
             content=content,

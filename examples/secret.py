@@ -81,7 +81,7 @@ async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: disc
     """
 
     # fetch the emoji asset and read it as bytes.
-    emoji_bytes = await emoji.url.read()
+    emoji_bytes = await emoji.read()
 
     # the key parameter here is `roles`, which controls
     # what roles are able to use the emoji.

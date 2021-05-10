@@ -107,4 +107,4 @@ class Sticker(Hashable):
         if self.format is StickerType.lottie:
             return None
 
-        return Asset._from_sticker_url(self._state, self.id, self._image)
+        return Asset._from_sticker(self._state, self.id, self._image)

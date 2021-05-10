@@ -22,10 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import io
+from __future__ import annotations
+from typing import Any, Iterator, List, Optional, TYPE_CHECKING, Tuple
 
-from .asset import Asset
-from . import utils
+from .asset import Asset, AssetMixin
+from .utils import SnowflakeList, snowflake_time, MISSING
 from .partial_emoji import _EmojiTag
 from .user import User
 
@@ -33,7 +34,16 @@ __all__ = (
     'Emoji',
 )
 
-class Emoji(_EmojiTag):
+if TYPE_CHECKING:
+    from .types.emoji import Emoji as EmojiPayload
+    from .guild import Guild
+    from .state import ConnectionState
+    from .abc import Snowflake
+    from .role import Role
+    from datetime import datetime
+
+
+class Emoji(_EmojiTag, AssetMixin):
     """Represents a custom emoji.
 
     Depending on the way this object was created, some of the attributes can
@@ -82,56 +92,64 @@ class Emoji(_EmojiTag):
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
         having the :attr:`~Permissions.manage_emojis` permission.
     """
-    __slots__ = ('require_colons', 'animated', 'managed', 'id', 'name', '_roles', 'guild_id',
-                 '_state', 'user', 'available')
 
-    def __init__(self, *, guild, state, data):
+    __slots__: Tuple[str, ...] = (
+        'require_colons',
+        'animated',
+        'managed',
+        'id',
+        'name',
+        '_roles',
+        'guild_id',
+        '_state',
+        'user',
+        'available',
+    )
+
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload):
         self.guild_id = guild.id
         self._state = state
         self._from_data(data)
 
-    def _from_data(self, emoji):
-        self.require_colons = emoji['require_colons']
-        self.managed = emoji['managed']
-        self.id = int(emoji['id'])
+    def _from_data(self, emoji: EmojiPayload):
+        self.require_colons = emoji.get('require_colons', False)
+        self.managed = emoji.get('managed', False)
+        self.id = int(emoji['id'])  # type: ignore
         self.name = emoji['name']
         self.animated = emoji.get('animated', False)
         self.available = emoji.get('available', True)
-        self._roles = utils.SnowflakeList(map(int, emoji.get('roles', [])))
+        self._roles = SnowflakeList(map(int, emoji.get('roles', [])))
         user = emoji.get('user')
         self.user = User(state=self._state, data=user) if user else None
 
-    def _iterator(self):
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
         for attr in self.__slots__:
             if attr[0] != '_':
                 value = getattr(self, attr, None)
                 if value is not None:
                     yield (attr, value)
 
-    def __iter__(self):
-        return self._iterator()
-
-    def __str__(self):
+    def __str__(self) -> str:
         if self.animated:
             return f'<a:{self.name}:{self.id}>'
         return f'<:{self.name}:{self.id}>'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Emoji id={self.id} name={self.name!r} animated={self.animated} managed={self.managed}>'
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, _EmojiTag) and self.id == other.id
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.id >> 22
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the emoji's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return snowflake_time(self.id)
 
     @property
     def url(self) -> str:
@@ -140,7 +158,7 @@ class Emoji(_EmojiTag):
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     @property
-    def roles(self):
+    def roles(self) -> List[Role]:
         """List[:class:`Role`]: A :class:`list` of roles that is allowed to use this emoji.
 
         If roles is empty, the emoji is unrestricted.
@@ -152,11 +170,11 @@ class Emoji(_EmojiTag):
         return [role for role in guild.roles if self._roles.has(role.id)]
 
     @property
-    def guild(self):
+    def guild(self) -> Guild:
         """:class:`Guild`: The guild this emoji belongs to."""
         return self._state._get_guild(self.guild_id)
 
-    def is_usable(self):
+    def is_usable(self) -> bool:
         """:class:`bool`: Whether the bot can use this emoji.
 
         .. versionadded:: 1.3
@@ -168,7 +186,7 @@ class Emoji(_EmojiTag):
         emoji_roles, my_roles = self._roles, self.guild.me._roles
         return any(my_roles.has(role_id) for role_id in emoji_roles)
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the custom emoji.
@@ -191,7 +209,7 @@ class Emoji(_EmojiTag):
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name=None, roles=None, reason=None):
+    async def edit(self, *, name: str = MISSING, roles: List[Snowflake] = MISSING, reason: Optional[str] = None) -> None:
         r"""|coro|
 
         Edits the custom emoji.
@@ -203,8 +221,8 @@ class Emoji(_EmojiTag):
         -----------
         name: :class:`str`
             The new emoji name.
-        roles: Optional[list[:class:`Role`]]
-            A :class:`list` of :class:`Role`\s that can use this emoji. Leave empty to make it available to everyone.
+        roles: Optional[List[:class:`~discord.abc.Snowflake`]]
+            A list of roles that can use this emoji. An empty list can be passed to make it available to everyone.
         reason: Optional[:class:`str`]
             The reason for editing this emoji. Shows up on the audit log.
 
@@ -216,65 +234,10 @@ class Emoji(_EmojiTag):
             An error occurred editing the emoji.
         """
 
-        name = name or self.name
-        if roles:
-            roles = [role.id for role in roles]
-        await self._state.http.edit_custom_emoji(self.guild.id, self.id, name=name, roles=roles, reason=reason)
+        payload = {}
+        if name is not MISSING:
+            payload['name'] = name
+        if roles is not MISSING:
+            payload['roles'] = [role.id for role in roles]
 
-    async def read(self):
-        """|coro|
-
-        Retrieves the content of this emoji as a :class:`bytes` object.
-
-        .. versionadded:: 2.0
-
-        Raises
-        ------
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        -------
-        :class:`bytes`
-            The content of the emoji.
-        """
-        return await self._state.http.get_from_cdn(self.url)
-
-    async def save(self, fp, *, seek_begin=True):
-        """|coro|
-
-        Saves this emoji into a file-like object.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        ----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
-
-        Raises
-        ------
-        HTTPException
-            Downloading the emoji failed.
-        NotFound
-            The emoji was deleted.
-
-        Returns
-        --------
-        :class:`int`
-            The number of bytes written.
-        """
-
-        data = await self.read()
-        if isinstance(fp, io.IOBase) and fp.writable():
-            written = fp.write(data)
-            if seek_begin:
-                fp.seek(0)
-            return written
-        else:
-            with open(fp, 'wb') as f:
-                return f.write(data)
+        await self._state.http.edit_custom_emoji(self.guild.id, self.id, payload=payload, reason=reason)

@@ -26,7 +26,22 @@ from __future__ import annotations
 
 import re
 import inspect
-from typing import Iterable, Optional, TYPE_CHECKING, List, Protocol, Type, TypeVar, Tuple, Union, runtime_checkable
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    Iterable,
+    Literal,
+    Optional,
+    TYPE_CHECKING,
+    List,
+    Protocol,
+    Type,
+    TypeVar,
+    Tuple,
+    Union,
+    runtime_checkable,
+)
 
 import discord
 from .errors import *
@@ -56,8 +71,10 @@ __all__ = (
     'CategoryChannelConverter',
     'IDConverter',
     'StoreChannelConverter',
+    'GuildChannelConverter',
     'clean_content',
     'Greedy',
+    'run_converters',
 )
 
 
@@ -360,8 +377,8 @@ class MessageConverter(IDConverter[discord.Message]):
             raise ChannelNotReadable(channel)
 
 
-class TextChannelConverter(IDConverter[discord.TextChannel]):
-    """Converts to a :class:`~discord.TextChannel`.
+class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
+    """Converts to a :class:`~discord.abc.GuildChannel`.
 
     All lookups are via the local guild. If in a DM context, then the lookup
     is done by the global cache.
@@ -370,14 +387,13 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name
+    3. Lookup by name.
 
-    .. versionchanged:: 1.5
-         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+    .. versionadded:: 2.0
     """
 
-    async def convert(self, ctx: Context, argument: str) -> discord.TextChannel:
-        return self._resolve_channel(ctx, argument, ctx.guild.text_channels, discord.TextChannel)
+    async def convert(self, ctx: Context, argument: str) -> discord.abc.GuildChannel:
+        return self._resolve_channel(ctx, argument, ctx.guild.channels, discord.abc.GuildChannel)
 
     @staticmethod
     def _resolve_channel(ctx: Context, argument: str, iterable: Iterable[CT], type: Type[CT]) -> CT:
@@ -410,6 +426,26 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
         return result
 
 
+class TextChannelConverter(IDConverter[discord.TextChannel]):
+    """Converts to a :class:`~discord.TextChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+
+    .. versionchanged:: 1.5
+         Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
+    """
+
+    async def convert(self, ctx: Context, argument: str) -> discord.TextChannel:
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.text_channels, discord.TextChannel)
+
+
 class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     """Converts to a :class:`~discord.VoiceChannel`.
 
@@ -427,7 +463,7 @@ class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.VoiceChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.voice_channels, discord.VoiceChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.voice_channels, discord.VoiceChannel)
 
 
 class StageChannelConverter(IDConverter[discord.StageChannel]):
@@ -446,7 +482,7 @@ class StageChannelConverter(IDConverter[discord.StageChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StageChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.stage_channels, discord.StageChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.stage_channels, discord.StageChannel)
 
 
 class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
@@ -466,7 +502,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.CategoryChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.categories, discord.CategoryChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.categories, discord.CategoryChannel)
 
 
 class StoreChannelConverter(IDConverter[discord.StoreChannel]):
@@ -485,7 +521,7 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StoreChannel:
-        return TextChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
 
 
 class ColourConverter(Converter[discord.Colour]):
@@ -500,7 +536,7 @@ class ColourConverter(Converter[discord.Colour]):
     - ``#<hex>``
     - ``0x#<hex>``
     - ``rgb(<number>, <number>, <number>)``
-    - Any of the ``classmethod`` in :class:`Colour`
+    - Any of the ``classmethod`` in :class:`~discord.Colour`
 
         - The ``_`` in the name can be optionally replaced with spaces.
 
@@ -577,8 +613,8 @@ ColorConverter = ColourConverter
 class RoleConverter(IDConverter[discord.Role]):
     """Converts to a :class:`~discord.Role`.
 
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
+    All lookups are via the local guild. If in a DM context, the converter raises
+    :exc:`.NoPrivateMessage` exception.
 
     The lookup strategy is as follows (in order):
 
@@ -867,3 +903,178 @@ class Greedy(List[T]):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
         return cls(converter=converter)
+
+
+def _convert_to_bool(argument: str) -> bool:
+    lowered = argument.lower()
+    if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
+        return True
+    elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
+        return False
+    else:
+        raise BadBoolArgument(lowered)
+
+
+def get_converter(param: inspect.Parameter) -> Any:
+    converter = param.annotation
+    if converter is param.empty:
+        if param.default is not param.empty:
+            converter = str if param.default is None else type(param.default)
+        else:
+            converter = str
+    return converter
+
+
+_GenericAlias = type(List[T])
+
+
+def is_generic_type(tp: Any, *, _GenericAlias: Type = _GenericAlias) -> bool:
+    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)  # type: ignore
+
+
+CONVERTER_MAPPING: Dict[Type[Any], Any] = {
+    discord.Object: ObjectConverter,
+    discord.Member: MemberConverter,
+    discord.User: UserConverter,
+    discord.Message: MessageConverter,
+    discord.PartialMessage: PartialMessageConverter,
+    discord.TextChannel: TextChannelConverter,
+    discord.Invite: InviteConverter,
+    discord.Guild: GuildConverter,
+    discord.Role: RoleConverter,
+    discord.Game: GameConverter,
+    discord.Colour: ColourConverter,
+    discord.VoiceChannel: VoiceChannelConverter,
+    discord.StageChannel: StageChannelConverter,
+    discord.Emoji: EmojiConverter,
+    discord.PartialEmoji: PartialEmojiConverter,
+    discord.CategoryChannel: CategoryChannelConverter,
+    discord.StoreChannel: StoreChannelConverter,
+    discord.abc.GuildChannel: GuildChannelConverter,
+}
+
+
+async def _actual_conversion(ctx: Context, converter, argument: str, param: inspect.Parameter):
+    if converter is bool:
+        return _convert_to_bool(argument)
+
+    try:
+        module = converter.__module__
+    except AttributeError:
+        pass
+    else:
+        if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
+            converter = CONVERTER_MAPPING.get(converter, converter)
+
+    try:
+        if inspect.isclass(converter) and issubclass(converter, Converter):
+            if inspect.ismethod(converter.convert):
+                return await converter.convert(ctx, argument)
+            else:
+                return await converter().convert(ctx, argument)
+        elif isinstance(converter, Converter):
+            return await converter.convert(ctx, argument)
+    except CommandError:
+        raise
+    except Exception as exc:
+        raise ConversionError(converter, exc) from exc
+
+    try:
+        return converter(argument)
+    except CommandError:
+        raise
+    except Exception as exc:
+        try:
+            name = converter.__name__
+        except AttributeError:
+            name = converter.__class__.__name__
+
+        raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
+
+
+async def run_converters(ctx: Context, converter, argument: str, param: inspect.Parameter):
+    """|coro|
+
+    Runs converters for a given converter, argument, and parameter.
+
+    This function does the same work that the library does under the hood.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    ------------
+    ctx: :class:`Context`
+        The invocation context to run the converters under.
+    converter: Any
+        The converter to run, this corresponds to the annotation in the function.
+    argument: :class:`str`
+        The argument to convert to.
+    param: :class:`inspect.Parameter`
+        The parameter being converted. This is mainly for error reporting.
+
+    Raises
+    -------
+    CommandError
+        The converter failed to convert.
+
+    Returns
+    --------
+    Any
+        The resulting conversion.
+    """
+    origin = getattr(converter, '__origin__', None)
+
+    if origin is Union:
+        errors = []
+        _NoneType = type(None)
+        union_args = converter.__args__
+        for conv in union_args:
+            # if we got to this part in the code, then the previous conversions have failed
+            # so we should just undo the view, return the default, and allow parsing to continue
+            # with the other parameters
+            if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
+                ctx.view.undo()
+                return None if param.default is param.empty else param.default
+
+            try:
+                value = await run_converters(ctx, conv, argument, param)
+            except CommandError as exc:
+                errors.append(exc)
+            else:
+                return value
+
+        # if we're here, then we failed all the converters
+        raise BadUnionArgument(param, union_args, errors)
+
+    if origin is Literal:
+        errors = []
+        conversions = {}
+        literal_args = converter.__args__
+        for literal in literal_args:
+            literal_type = type(literal)
+            try:
+                value = conversions[literal_type]
+            except KeyError:
+                try:
+                    value = await _actual_conversion(ctx, literal_type, argument, param)
+                except CommandError as exc:
+                    errors.append(exc)
+                    conversions[literal_type] = object()
+                    continue
+                else:
+                    conversions[literal_type] = value
+
+            if value == literal:
+                return value
+
+        # if we're here, then we failed to match all the literals
+        raise BadLiteralArgument(param, literal_args, errors)
+
+    # This must be the last if-clause in the chain of origin checking
+    # Nearly every type is a generic type within the typing library
+    # So care must be taken to make sure a more specialised origin handle
+    # isn't overwritten by the widest if clause
+    if origin is not None and is_generic_type(converter):
+        converter = origin
+
+    return await _actual_conversion(ctx, converter, argument, param)

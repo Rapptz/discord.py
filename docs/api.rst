@@ -367,7 +367,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_delete` event instead.
 
     This requires :attr:`Intents.messages` to be enabled.
@@ -384,7 +384,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     the messages list. Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_bulk_message_delete` event instead.
 
     This requires :attr:`Intents.messages` to be enabled.
@@ -425,7 +425,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_edit` event instead.
 
     The following non-exhaustive cases trigger this event:
@@ -925,6 +925,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.utcnow
 
+.. autofunction:: discord.utils.as_chunks
+
 .. _discord-api-enums:
 
 Enumerations
@@ -1070,6 +1072,64 @@ of :class:`enum.Enum`.
         The system message denoting that an application (or "slash") command was executed.
 
         .. versionadded:: 2.0
+    .. attribute:: guild_invite_reminder
+
+        The system message sent as a reminder to invite people to the guild.
+
+        .. versionadded:: 2.0
+
+.. class:: UserFlags
+
+    Represents Discord User flags.
+
+    .. attribute:: staff
+
+        The user is a Discord Employee.
+    .. attribute:: partner
+
+        The user is a Discord Partner.
+    .. attribute:: hypesquad
+
+        The user is a HypeSquad Events member.
+    .. attribute:: bug_hunter
+
+        The user is a Bug Hunter.
+    .. attribute:: mfa_sms
+
+        The user has SMS recovery for Multi Factor Authentication enabled.
+    .. attribute:: premium_promo_dismissed
+
+        The user has dismissed the Discord Nitro promotion.
+    .. attribute:: hypesquad_bravery
+
+        The user is a HypeSquad Bravery member.
+    .. attribute:: hypesquad_brilliance
+
+        The user is a HypeSquad Brilliance member.
+    .. attribute:: hypesquad_balance
+
+        The user is a HypeSquad Balance member.
+    .. attribute:: early_supporter
+
+        The user is an Early Supporter.
+    .. attribute:: team_user
+
+        The user is a Team User.
+    .. attribute:: system
+
+        The user is a system user (i.e. represents Discord officially).
+    .. attribute:: has_unread_urgent_messages
+
+        The user has an unready system message.
+    .. attribute:: bug_hunter_level_2
+
+        The user is a Bug Hunter Level 2.
+    .. attribute:: verified_bot
+
+        The user is a Verified Bot.
+    .. attribute:: verified_bot_developer
+
+        The user is an Early Verified Bot Developer.
 
 .. class:: ActivityType
 
@@ -1113,20 +1173,6 @@ of :class:`enum.Enum`.
     .. attribute:: application_command
 
         Represents a slash command interaction.
-
-.. class:: HypeSquadHouse
-
-    Specifies the HypeSquad house a user belongs to.
-
-    .. attribute:: bravery
-
-        The "Bravery" house.
-    .. attribute:: brilliance
-
-        The "Brilliance" house.
-    .. attribute:: balance
-
-        The "Balance" house.
 
 .. class:: VoiceRegion
 
@@ -1356,7 +1402,7 @@ of :class:`enum.Enum`.
         - Changing the guild invite splash
         - Changing the guild AFK channel or timeout
         - Changing the guild voice server region
-        - Changing the guild icon
+        - Changing the guild icon, banner, or discovery splash
         - Changing the guild moderation settings
         - Changing things related to the guild widget
 
@@ -1374,6 +1420,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.owner`
         - :attr:`~AuditLogDiff.splash`
+        - :attr:`~AuditLogDiff.discovery_splash`
+        - :attr:`~AuditLogDiff.icon`
+        - :attr:`~AuditLogDiff.banner`
         - :attr:`~AuditLogDiff.vanity_url_code`
 
     .. attribute:: channel_create
@@ -1413,6 +1462,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.overwrites`
         - :attr:`~AuditLogDiff.topic`
         - :attr:`~AuditLogDiff.bitrate`
+        - :attr:`~AuditLogDiff.rtc_region`
+        - :attr:`~AuditLogDiff.video_quality_mode`
 
     .. attribute:: channel_delete
 
@@ -1703,6 +1754,7 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.avatar`
 
     .. attribute:: webhook_delete
 
@@ -1855,7 +1907,7 @@ of :class:`enum.Enum`.
 
 .. class:: TeamMembershipState
 
-    Represents the membership state of a team member retrieved through :func:`Bot.application_info`.
+    Represents the membership state of a team member retrieved through :func:`Client.application_info`.
 
     .. versionadded:: 1.3
 
@@ -1944,6 +1996,38 @@ of :class:`enum.Enum`.
     .. attribute:: lottie
 
         Represents a sticker with a lottie image.
+
+.. class:: InviteTarget
+
+    Represents the type of target an invite contains.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unknown
+
+        The invite doesn't target anyone or anything.
+
+    .. attribute:: stream
+
+        The invite targets a stream.
+        
+    .. attribute:: embedded_application
+    
+        The invite targets an embedded application activity.
+
+.. class:: VideoQualityMode
+
+    Represents the camera video quality mode for voice channel participants.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: auto
+
+        Represents auto camera video quality.
+
+    .. attribute:: full
+
+        Represents full camera video quality.
 
 Async Iterator
 ----------------
@@ -2173,15 +2257,27 @@ AuditLogDiff
 
     .. attribute:: icon
 
-        A guild's icon hash. See also :attr:`Guild.icon`.
+        A guild's icon. See also :attr:`Guild.icon`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
 
     .. attribute:: splash
 
-        The guild's invite splash hash. See also :attr:`Guild.splash`.
+        The guild's invite splash. See also :attr:`Guild.splash`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
+
+    .. attribute:: discovery_splash
+
+        The guild's discovery splash. See also :attr:`Guild.discovery_splash`.
+
+        :type: :class:`Asset`
+
+    .. attribute:: banner
+
+        The guild's banner. See also :attr:`Guild.banner`.
+
+        :type: :class:`Asset`
 
     .. attribute:: owner
 
@@ -2214,6 +2310,30 @@ AuditLogDiff
         with the ID being set.
 
         See :attr:`Guild.system_channel`.
+
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
+
+    .. attribute:: rules_channel
+
+        The guild's rules channel.
+
+        If this could not be found then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.rules_channel`.
+
+        :type: Union[:class:`TextChannel`, :class:`Object`]
+
+
+    .. attribute:: public_updates_channel
+
+        The guild's public updates channel.
+
+        If this could not be found then it falls back to a :class:`Object`
+        with the ID being set.
+
+        See :attr:`Guild.public_updates_channel`.
 
         :type: Union[:class:`TextChannel`, :class:`Object`]
 
@@ -2467,11 +2587,11 @@ AuditLogDiff
 
     .. attribute:: avatar
 
-        The avatar hash of a member.
+        The avatar of a member.
 
         See also :attr:`User.avatar`.
 
-        :type: :class:`str`
+        :type: :class:`Asset`
 
     .. attribute:: slowmode_delay
 
@@ -2481,6 +2601,23 @@ AuditLogDiff
         See also :attr:`TextChannel.slowmode_delay`.
 
         :type: :class:`int`
+
+    .. attribute:: rtc_region
+
+        The region for the voice channel’s voice communication.
+        A value of ``None`` indicates automatic voice region detection.
+
+        See also :attr:`VoiceChannel.rtc_region`.
+
+        :type: :class:`VoiceRegion`
+
+    .. attribute:: video_quality_mode
+
+        The camera video quality for the voice channel's participants.
+
+        See also :attr:`VoiceChannel.video_quality_mode`.
+
+        :type: :class:`VideoQualityMode`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
@@ -2497,6 +2634,7 @@ Webhook
 
 .. autoclass:: Webhook()
     :members:
+    :inherited-members:
 
 WebhookMessage
 ~~~~~~~~~~~~~~~~
@@ -2513,6 +2651,7 @@ SyncWebhook
 
 .. autoclass:: SyncWebhook()
     :members:
+    :inherited-members:
 
 SyncWebhookMessage
 ~~~~~~~~~~~~~~~~~~~
@@ -2655,6 +2794,7 @@ Asset
 
 .. autoclass:: Asset()
     :members:
+    :inherited-members:
 
 Message
 ~~~~~~~
@@ -2772,6 +2912,7 @@ Emoji
 
 .. autoclass:: Emoji()
     :members:
+    :inherited-members:
 
 PartialEmoji
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -2780,6 +2921,7 @@ PartialEmoji
 
 .. autoclass:: PartialEmoji()
     :members:
+    :inherited-members:
 
 Role
 ~~~~~
@@ -3081,6 +3223,14 @@ MemberCacheFlags
 .. attributetable:: MemberCacheFlags
 
 .. autoclass:: MemberCacheFlags
+    :members:
+
+ApplicationFlags
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ApplicationFlags
+
+.. autoclass:: ApplicationFlags
     :members:
 
 File

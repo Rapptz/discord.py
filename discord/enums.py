@@ -46,6 +46,8 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
+    'InviteTarget',
+    'VideoQualityMode',
 )
 
 def _create_value_cls(name):
@@ -180,6 +182,7 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning   = 17
     reply                                        = 19
     application_command                          = 20
+    guild_invite_reminder                        = 22
 
 class VoiceRegion(Enum):
     us_west       = 'us-west'
@@ -370,6 +373,8 @@ class AuditLogAction(Enum):
             return 'webhook'
         elif v < 70:
             return 'emoji'
+        elif v == 73:
+            return 'channel'
         elif v < 80:
             return 'message'
         elif v < 90:
@@ -424,9 +429,21 @@ class StickerType(Enum):
     apng = 2
     lottie = 3
 
+class InviteTarget(Enum):
+    unknown = 0
+    stream  = 1
+    embedded_application = 2
+
 class InteractionType(Enum):
     ping = 1
     application_command = 2
+
+class VideoQualityMode(Enum):
+    auto = 1
+    full = 2
+
+    def __int__(self):
+        return self.value
 
 T = TypeVar('T')
 

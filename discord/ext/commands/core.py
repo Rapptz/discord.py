@@ -25,10 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import (
     Any,
     Dict,
-    ForwardRef,
-    Iterable,
     Literal,
-    Tuple,
     Union,
 )
 import asyncio
@@ -36,13 +33,12 @@ import functools
 import inspect
 import datetime
 import types
-import sys
 
 import discord
 
 from .errors import *
 from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
-from . import converter as converters
+from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 
@@ -73,81 +69,12 @@ __all__ = (
     'bot_has_guild_permissions'
 )
 
-PY_310 = sys.version_info >= (3, 10)
-
-def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
-    params = []
-    literal_cls = type(Literal[0])
-    for p in parameters:
-        if isinstance(p, literal_cls):
-            params.extend(p.__args__)
-        else:
-            params.append(p)
-    return tuple(params)
-
-def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
-    none_cls = type(None)
-    return tuple(p for p in parameters if p is not none_cls) + (none_cls,)
-
-def _evaluate_annotation(tp: Any, globals: Dict[str, Any], cache: Dict[str, Any] = {}, *, implicit_str=True):
-    if isinstance(tp, ForwardRef):
-        tp = tp.__forward_arg__
-        # ForwardRefs always evaluate their internals
-        implicit_str = True
-
-    if implicit_str and isinstance(tp, str):
-        if tp in cache:
-            return cache[tp]
-        evaluated = eval(tp, globals)
-        cache[tp] = evaluated
-        return _evaluate_annotation(evaluated, globals, cache)
-
-    if hasattr(tp, '__args__'):
-        implicit_str = True
-        args = tp.__args__
-        if not hasattr(tp, '__origin__'):
-            if PY_310 and tp.__class__ is types.Union:
-                converted = Union[args]  # type: ignore
-                return _evaluate_annotation(converted, globals, cache)
-
-            return tp
-        if tp.__origin__ is Union:
-            try:
-                if args.index(type(None)) != len(args) - 1:
-                    args = normalise_optional_params(tp.__args__)
-            except ValueError:
-                pass
-        if tp.__origin__ is Literal:
-            if not PY_310:
-                args = flatten_literal_params(tp.__args__)
-            implicit_str = False
-
-        evaluated_args = tuple(
-            _evaluate_annotation(arg, globals, cache, implicit_str=implicit_str) for arg in args
-        )
-
-        if evaluated_args == args:
-            return tp
-
-        try:
-            return tp.copy_with(evaluated_args)
-        except AttributeError:
-            return tp.__origin__[evaluated_args]
-
-    return tp
-
-def resolve_annotation(annotation: Any, globalns: Dict[str, Any], cache: Dict[str, Any] = {}) -> Any:
-    if annotation is None:
-        return type(None)
-    if isinstance(annotation, str):
-        annotation = ForwardRef(annotation)
-    return _evaluate_annotation(annotation, globalns, cache)
-
 def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
     globalns = function.__globals__
     signature = inspect.signature(function)
     params = {}
     cache: Dict[str, Any] = {}
+    eval_annotation = discord.utils.evaluate_annotation
     for name, parameter in signature.parameters.items():
         annotation = parameter.annotation
         if annotation is parameter.empty:
@@ -157,8 +84,8 @@ def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.
             params[name] = parameter.replace(annotation=type(None))
             continue
 
-        annotation = _evaluate_annotation(annotation, globalns, cache)
-        if annotation is converters.Greedy:
+        annotation = eval_annotation(annotation, globalns, globalns, cache)
+        if annotation is Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
         params[name] = parameter.replace(annotation=annotation)
@@ -202,14 +129,6 @@ def hooked_wrapped_callback(command, ctx, coro):
         return ret
     return wrapped
 
-def _convert_to_bool(argument):
-    lowered = argument.lower()
-    if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
-        return True
-    elif lowered in ('no', 'n', 'false', 'f', '0', 'disable', 'off'):
-        return False
-    else:
-        raise BadBoolArgument(lowered)
 
 class _CaseInsensitiveDict(dict):
     def __contains__(self, k):
@@ -524,113 +443,16 @@ class Command(_BaseCommand):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def _actual_conversion(self, ctx, converter, argument, param):
-        if converter is bool:
-            return _convert_to_bool(argument)
-
-        try:
-            module = converter.__module__
-        except AttributeError:
-            pass
-        else:
-            if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
-                converter = getattr(converters, converter.__name__ + 'Converter', converter)
-
-        try:
-            if inspect.isclass(converter) and issubclass(converter, converters.Converter):
-                if inspect.ismethod(converter.convert):
-                    return await converter.convert(ctx, argument)
-                else:
-                    return await converter().convert(ctx, argument)
-            elif isinstance(converter, converters.Converter):
-                return await converter.convert(ctx, argument)
-        except CommandError:
-            raise
-        except Exception as exc:
-            raise ConversionError(converter, exc) from exc
-
-        try:
-            return converter(argument)
-        except CommandError:
-            raise
-        except Exception as exc:
-            try:
-                name = converter.__name__
-            except AttributeError:
-                name = converter.__class__.__name__
-
-            raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
-
-    async def do_conversion(self, ctx, converter, argument, param):
-        origin = getattr(converter, '__origin__', None)
-
-        if origin is Union:
-            errors = []
-            _NoneType = type(None)
-            union_args = converter.__args__
-            for conv in union_args:
-                # if we got to this part in the code, then the previous conversions have failed
-                # so we should just undo the view, return the default, and allow parsing to continue
-                # with the other parameters
-                if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
-                    ctx.view.undo()
-                    return None if param.default is param.empty else param.default
-
-                try:
-                    value = await self.do_conversion(ctx, conv, argument, param)
-                except CommandError as exc:
-                    errors.append(exc)
-                else:
-                    return value
-
-            # if we're here, then we failed all the converters
-            raise BadUnionArgument(param, union_args, errors)
-
-        if origin is Literal:
-            errors = []
-            conversions = {}
-            literal_args = converter.__args__
-            for literal in literal_args:
-                literal_type = type(literal)
-                try:
-                    value = conversions[literal_type]
-                except KeyError:
-                    try:
-                        value = await self._actual_conversion(ctx, literal_type, argument, param)
-                    except CommandError as exc:
-                        errors.append(exc)
-                        conversions[literal_type] = object()
-                        continue
-                    else:
-                        conversions[literal_type] = value
-
-                if value == literal:
-                    return value
-
-            # if we're here, then we failed to match all the literals
-            raise BadLiteralArgument(param, literal_args, errors)
-
-        return await self._actual_conversion(ctx, converter, argument, param)
-
-    def _get_converter(self, param):
-        converter = param.annotation
-        if converter is param.empty:
-            if param.default is not param.empty:
-                converter = str if param.default is None else type(param.default)
-            else:
-                converter = str
-        return converter
-
     async def transform(self, ctx, param):
         required = param.default is param.empty
-        converter = self._get_converter(param)
+        converter = get_converter(param)
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
         view.skip_ws()
 
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
-        if isinstance(converter, converters.Greedy):
+        if isinstance(converter, Greedy):
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 return await self._transform_greedy_pos(ctx, param, required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
@@ -647,6 +469,8 @@ class Command(_BaseCommand):
             if required:
                 if self._is_typing_optional(param.annotation):
                     return None
+                if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
+                    return await converter._construct_default(ctx)
                 raise MissingRequiredArgument(param)
             return param.default
 
@@ -657,7 +481,7 @@ class Command(_BaseCommand):
             argument = view.get_quoted_word()
         view.previous = previous
 
-        return await self.do_conversion(ctx, converter, argument, param)
+        return await run_converters(ctx, converter, argument, param)
 
     async def _transform_greedy_pos(self, ctx, param, required, converter):
         view = ctx.view
@@ -669,7 +493,7 @@ class Command(_BaseCommand):
             view.skip_ws()
             try:
                 argument = view.get_quoted_word()
-                value = await self.do_conversion(ctx, converter, argument, param)
+                value = await run_converters(ctx, converter, argument, param)
             except (CommandError, ArgumentParsingError):
                 view.index = previous
                 break
@@ -685,7 +509,7 @@ class Command(_BaseCommand):
         previous = view.index
         try:
             argument = view.get_quoted_word()
-            value = await self.do_conversion(ctx, converter, argument, param)
+            value = await run_converters(ctx, converter, argument, param)
         except (CommandError, ArgumentParsingError):
             view.index = previous
             raise RuntimeError() from None # break loop
@@ -802,15 +626,16 @@ class Command(_BaseCommand):
             raise discord.ClientException(f'Callback for {self.name} command is missing "ctx" parameter.')
 
         for name, param in iterator:
+            ctx.current_parameter = param
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 transformed = await self.transform(ctx, param)
                 args.append(transformed)
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
-                    converter = self._get_converter(param)
+                    converter = get_converter(param)
                     argument = view.read_rest()
-                    kwargs[name] = await self.do_conversion(ctx, converter, argument, param)
+                    kwargs[name] = await run_converters(ctx, converter, argument, param)
                 else:
                     kwargs[name] = await self.transform(ctx, param)
                 break
@@ -1083,9 +908,9 @@ class Command(_BaseCommand):
     def short_doc(self):
         """:class:`str`: Gets the "short" documentation of a command.
 
-        By default, this is the :attr:`brief` attribute.
+        By default, this is the :attr:`.brief` attribute.
         If that lookup leads to an empty string then the first line of the
-        :attr:`help` attribute is used instead.
+        :attr:`.help` attribute is used instead.
         """
         if self.brief is not None:
             return self.brief
@@ -1108,7 +933,7 @@ class Command(_BaseCommand):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, converters.Greedy)
+            greedy = isinstance(param.annotation, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
@@ -1154,7 +979,7 @@ class Command(_BaseCommand):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`checks` attribute. This also checks whether the
+        inside the :attr:`~Command.checks` attribute. This also checks whether the
         command is disabled.
 
         .. versionchanged:: 1.3

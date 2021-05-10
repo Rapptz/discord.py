@@ -42,7 +42,7 @@ Event Reference
 These events function similar to :ref:`the regular events <discord-api-events>`, except they
 are custom to the command extension module.
 
-.. function:: on_command_error(ctx, error)
+.. function:: discord.ext.commands.on_command_error(ctx, error)
 
     An error handler that is called when an error is raised
     inside a command either through user input error, check
@@ -55,7 +55,7 @@ are custom to the command extension module.
     :param error: The error that was raised.
     :type error: :class:`.CommandError` derived
 
-.. function:: on_command(ctx)
+.. function:: discord.ext.commands.on_command(ctx)
 
     An event that is called when a command is found and is about to be invoked.
 
@@ -65,7 +65,7 @@ are custom to the command extension module.
     :param ctx: The invocation context.
     :type ctx: :class:`.Context`
 
-.. function:: on_command_completion(ctx)
+.. function:: discord.ext.commands.on_command_completion(ctx)
 
     An event that is called when a command has completed its invocation.
 
@@ -288,6 +288,9 @@ Converters
 .. autoclass:: discord.ext.commands.PartialMessageConverter
     :members:
 
+.. autoclass:: discord.ext.commands.GuildChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
@@ -329,6 +332,19 @@ Converters
 
 .. autoclass:: discord.ext.commands.Greedy()
 
+.. autofunction:: discord.ext.commands.run_converters
+
+Flag Converter
+~~~~~~~~~~~~~~~
+
+.. autoclass:: discord.ext.commands.FlagConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.Flag()
+    :members:
+
+.. autofunction:: discord.ext.commands.flag
+
 .. _ext_commands_api_errors:
 
 Exceptions
@@ -359,6 +375,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.BadUnionArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.BadLiteralArgument
     :members:
 
 .. autoexception:: discord.ext.commands.PrivateMessageOnly
@@ -454,6 +473,21 @@ Exceptions
 .. autoexception:: discord.ext.commands.NSFWChannelRequired
     :members:
 
+.. autoexception:: discord.ext.commands.FlagError
+    :members:
+
+.. autoexception:: discord.ext.commands.BadFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingFlagArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.TooManyFlags
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRequiredFlag
+    :members:
+
 .. autoexception:: discord.ext.commands.ExtensionError
     :members:
 
@@ -499,7 +533,13 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.FlagError`
+                        - :exc:`~.commands.BadFlagArgument`
+                        - :exc:`~.commands.MissingFlagArgument`
+                        - :exc:`~.commands.TooManyFlags`
+                        - :exc:`~.commands.MissingRequiredFlag`
                 - :exc:`~.commands.BadUnionArgument`
+                - :exc:`~.commands.BadLiteralArgument`
                 - :exc:`~.commands.ArgumentParsingError`
                     - :exc:`~.commands.UnexpectedQuoteError`
                     - :exc:`~.commands.InvalidEndOfQuotedStringError`

@@ -47,12 +47,17 @@ class Context(discord.abc.Messageable):
         The bot that contains the command being executed.
     args: :class:`list`
         The list of transformed arguments that were passed into the command.
-        If this is accessed during the :func:`on_command_error` event
+        If this is accessed during the :func:`.on_command_error` event
         then this list could be incomplete.
     kwargs: :class:`dict`
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
-        :func:`on_command_error` event then this dict could be incomplete.
+        :func:`.on_command_error` event then this dict could be incomplete.
+    current_parameter: Optional[:class:`inspect.Parameter`]
+        The parameter that is currently being inspected and converted.
+        This is only of use for within converters.
+
+        .. versionadded:: 2.0
     prefix: :class:`str`
         The prefix that was used to invoke the command.
     command: :class:`Command`
@@ -94,6 +99,7 @@ class Context(discord.abc.Messageable):
         self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
         self.subcommand_passed = attrs.pop('subcommand_passed', None)
         self.command_failed = attrs.pop('command_failed', False)
+        self.current_parameter = attrs.pop('current_parameter', None)
         self._state = self.message._state
 
     async def invoke(self, command, /, *args, **kwargs):

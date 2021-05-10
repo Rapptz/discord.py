@@ -41,6 +41,7 @@ from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
+from .flags import ApplicationFlags
 from .gateway import *
 from .activity import BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -286,9 +287,17 @@ class Client:
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
-        after :func:`on_connect` is called.
+        after :func:`~discord.on_connect` is called.
         """
         return self._connection.application_id
+
+    @property
+    def application_flags(self) -> ApplicationFlags:
+        """:class:`~discord.ApplicationFlags`: The client's application flags.
+
+        .. versionadded: 2.0
+        """
+        return self._connection.application_flags  # type: ignore
 
     def is_ready(self):
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -1123,7 +1132,7 @@ class Client:
 
     # Invite management
 
-    async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True) -> Invite:
+    async def fetch_invite(self, url: Union[Invite, str], *, with_counts: bool = True, with_expiration: bool = True) -> Invite:
         """|coro|
 
         Gets an :class:`.Invite` from a discord.gg URL or ID.
@@ -1142,6 +1151,11 @@ class Client:
             Whether to include count information in the invite. This fills the
             :attr:`.Invite.approximate_member_count` and :attr:`.Invite.approximate_presence_count`
             fields.
+        with_expiration: :class:`bool`
+            Whether to include the expiration date of the invite. This fills the
+            :attr:`.Invite.expires_at` field.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1157,7 +1171,7 @@ class Client:
         """
 
         invite_id = utils.resolve_invite(url)
-        data = await self.http.get_invite(invite_id, with_counts=with_counts)
+        data = await self.http.get_invite(invite_id, with_counts=with_counts, with_expiration=with_expiration)
         return Invite.from_incomplete(state=self._connection, data=data)
 
     async def delete_invite(self, invite: Union[Invite, str]) -> None:
@@ -1241,14 +1255,13 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. This can only
-        be used by bot accounts. You do not have to share any guilds
-        with the user to get this information, however many operations
-        do require that you do.
+        Retrieves a :class:`~discord.User` based on their ID. 
+        You do not have to share any guilds with the user to get this information,
+        however many operations do require that you do.
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
         Parameters
         -----------
@@ -1333,3 +1346,31 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def create_dm(self, user):
+        """|coro|
+
+        Creates a :class:`.DMChannel` with this user.
+
+        This should be rarely called, as this is done transparently for most
+        people.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to create a DM with.
+
+        Returns
+        -------
+        :class:`.DMChannel`
+            The channel that was created.
+        """
+        state = self._connection
+        found = state._get_private_channel_by_user(user.id)
+        if found:
+            return found
+
+        data = await state.http.start_private_message(user.id)
+        return state.add_dm_channel(data)

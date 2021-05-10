@@ -98,7 +98,7 @@ The constructor may be used for static activities, while :meth:`Client.change_pr
     There is a high chance of disconnecting if presences are changed right after connecting.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
-For memory optimisation purposes, some activities are offered in slimmed down versions:
+For memory optimisation purposes, some activities are offered in slimmed-down versions:
 
 - :class:`Game`
 - :class:`Streaming`

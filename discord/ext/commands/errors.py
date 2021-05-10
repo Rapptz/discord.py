@@ -75,6 +75,11 @@ __all__ = (
     'ExtensionFailed',
     'ExtensionNotFound',
     'CommandRegistrationError',
+    'FlagError',
+    'BadFlagArgument',
+    'MissingFlagArgument',
+    'TooManyFlags',
+    'MissingRequiredFlag',
 )
 
 class CommandError(DiscordException):
@@ -84,7 +89,7 @@ class CommandError(DiscordException):
 
     This exception and exceptions inherited from it are handled
     in a special way as they are caught and passed into a special event
-    from :class:`.Bot`\, :func:`on_command_error`.
+    from :class:`.Bot`\, :func:`.on_command_error`.
     """
     def __init__(self, message=None, *args):
         if message is not None:
@@ -452,7 +457,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: Cooldown
+    cooldown: ``Cooldown``
         A class with attributes ``rate``, ``per``, and ``type`` similar to
         the :func:`.cooldown` decorator.
     retry_after: :class:`float`
@@ -483,7 +488,7 @@ class MaxConcurrencyReached(CommandError):
         suffix = 'per %s' % name if per.name != 'default' else 'globally'
         plural = '%s times %s' if number > 1 else '%s time %s'
         fmt = plural % (number, suffix)
-        super().__init__(f'Too many people using this command. It can only be used {fmt} concurrently.')
+        super().__init__(f'Too many people are using this command. It can only be used {fmt} concurrently.')
 
 class MissingRole(CheckFailure):
     """Exception raised when the command invoker lacks a role to run a command.
@@ -649,7 +654,7 @@ class BadUnionArgument(UserInputError):
     -----------
     param: :class:`inspect.Parameter`
         The parameter that failed being converted.
-    converters: Tuple[Type, ...]
+    converters: Tuple[Type, ``...``]
         A tuple of converters attempted in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
@@ -687,7 +692,7 @@ class BadLiteralArgument(UserInputError):
     -----------
     param: :class:`inspect.Parameter`
         The parameter that failed being converted.
-    literals: Tuple[Any, ...]
+    literals: Tuple[Any, ``...``]
         A tuple of values compared against in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
@@ -855,3 +860,76 @@ class CommandRegistrationError(ClientException):
         self.alias_conflict = alias_conflict
         type_ = 'alias' if alias_conflict else 'command'
         super().__init__(f'The {type_} {name} is already an existing command or alias.')
+
+class FlagError(BadArgument):
+    """The base exception type for all flag parsing related errors.
+
+    This inherits from :exc:`BadArgument`.
+
+    .. versionadded:: 2.0
+    """
+    pass
+
+class TooManyFlags(FlagError):
+    """An exception raised when a flag has received too many values.
+
+    This inherits from :exc:`FlagError`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    flag: :class:`~discord.ext.commands.Flag`
+        The flag that received too many values.
+    values: List[:class:`str`]
+        The values that were passed.
+    """
+    def __init__(self, flag, values):
+        self.flag = flag
+        self.values = values
+        super().__init__(f'Too many flag values, expected {flag.max_args} but received {len(values)}.')
+
+class BadFlagArgument(FlagError):
+    """An exception raised when a flag failed to convert a value.
+
+    """
+    def __init__(self, flag):
+        self.flag = flag
+        try:
+            name = flag.annotation.__name__
+        except AttributeError:
+            name = flag.annotation.__class__.__name__
+
+        super().__init__(f'Could not convert to {name!r} for flag {flag.name!r}')
+
+class MissingRequiredFlag(FlagError):
+    """An exception raised when a required flag was not given.
+
+    This inherits from :exc:`FlagError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    flag: :class:`~discord.ext.commands.Flag`
+        The required flag that was not found.
+    """
+    def __init__(self, flag):
+        self.flag = flag
+        super().__init__(f'Flag {flag.name!r} is required and missing')
+
+class MissingFlagArgument(FlagError):
+    """An exception raised when a flag did not get a value.
+
+    This inherits from :exc:`FlagError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    flag: :class:`~discord.ext.commands.Flag`
+        The flag that did not get a value.
+    """
+    def __init__(self, flag):
+        self.flag = flag
+        super().__init__(f'Flag {flag.name!r} does not have an argument')

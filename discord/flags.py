@@ -34,10 +34,12 @@ __all__ = (
     'PublicUserFlags',
     'Intents',
     'MemberCacheFlags',
+    'ApplicationFlags',
 )
 
 FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
+
 
 class flag_value(Generic[BF]):
     def __init__(self, func: Callable[[Any], int]):
@@ -63,16 +65,20 @@ class flag_value(Generic[BF]):
     def __repr__(self):
         return f'<flag_value flag={self.flag!r}>'
 
+
 class alias_flag_value(flag_value):
     pass
 
+
 def fill_with_flags(*, inverted: bool = False):
     def decorator(cls: Type[BF]):
+        # fmt: off
         cls.VALID_FLAGS = {
             name: value.flag
             for name, value in cls.__dict__.items()
             if isinstance(value, flag_value)
         }
+        # fmt: on
 
         if inverted:
             max_bits = max(cls.VALID_FLAGS.values()).bit_length()
@@ -81,7 +87,9 @@ def fill_with_flags(*, inverted: bool = False):
             cls.DEFAULT_VALUE = 0
 
         return cls
+
     return decorator
+
 
 # n.b. flags must inherit from this and use the decorator above
 class BaseFlags:
@@ -135,6 +143,7 @@ class BaseFlags:
             self.value &= ~o
         else:
             raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
+
 
 @fill_with_flags(inverted=True)
 class SystemChannelFlags(BaseFlags):
@@ -269,6 +278,7 @@ class MessageFlags(BaseFlags):
         An urgent message is one sent by Discord Trust and Safety.
         """
         return 16
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
@@ -496,6 +506,7 @@ class Intents(BaseFlags):
         This also corresponds to the following attributes and classes in terms of cache:
 
         - :meth:`Client.get_all_members`
+        - :meth:`Client.get_user`
         - :meth:`Guild.chunk`
         - :meth:`Guild.fetch_members`
         - :meth:`Guild.get_member`
@@ -808,6 +819,7 @@ class Intents(BaseFlags):
         """
         return 1 << 14
 
+
 @fill_with_flags()
 class MemberCacheFlags(BaseFlags):
     """Controls the library's cache policy when it comes to members.
@@ -936,3 +948,74 @@ class MemberCacheFlags(BaseFlags):
     @property
     def _voice_only(self):
         return self.value == 1
+
+
+@fill_with_flags()
+class ApplicationFlags(BaseFlags):
+    r"""Wraps up the Discord Application flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two ApplicationFlags are equal.
+        .. describe:: x != y
+
+            Checks if two ApplicationFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def gateway_presence(self):
+        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
+        receive presence information over the gateway.
+        """
+        return 1 << 12
+
+    @flag_value
+    def gateway_presence_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
+        presence information over the gateway.
+        """
+        return 1 << 13
+
+    @flag_value
+    def gateway_guild_members(self):
+        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
+        receive guild members information over the gateway.
+        """
+        return 1 << 14
+
+    @flag_value
+    def gateway_guild_members_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
+        guild members information over the gateway.
+        """
+        return 1 << 15
+
+    @flag_value
+    def verification_pending_guild_limit(self):
+        """:class:`bool`: Returns ``True`` if the application is currently pending verification
+        and has hit the guild limit.
+        """
+        return 1 << 16
+
+    @flag_value
+    def embedded(self):
+        """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
+        return 1 << 17

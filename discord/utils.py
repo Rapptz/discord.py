@@ -21,11 +21,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
 import array
 import asyncio
 import collections.abc
-from typing import Any, Optional, overload
+from typing import (
+    Any,
+    AsyncIterator,
+    Callable,
+    Dict,
+    ForwardRef,
+    Generic,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Protocol,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+    TYPE_CHECKING,
+)
 import unicodedata
 from base64 import b64encode
 from bisect import bisect_left
@@ -35,6 +57,8 @@ from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
 import json
 import re
+import sys
+import types
 import warnings
 
 from .errors import InvalidArgument
@@ -50,10 +74,27 @@ __all__ = (
     'remove_markdown',
     'escape_markdown',
     'escape_mentions',
+    'as_chunks',
 )
+
 DISCORD_EPOCH = 1420070400000
 
-class cached_property:
+
+class _MissingSentinel:
+    def __eq__(self, other):
+        return False
+
+    def __bool__(self):
+        return False
+
+    def __repr__(self):
+        return '...'
+
+
+MISSING: Any = _MissingSentinel()
+
+
+class _cached_property:
     def __init__(self, function):
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
@@ -67,13 +108,43 @@ class cached_property:
 
         return value
 
-class CachedSlotProperty:
-    def __init__(self, name, function):
+
+if TYPE_CHECKING:
+    from functools import cached_property as cached_property
+    from .permissions import Permissions
+    from .abc import Snowflake
+    from .invite import Invite
+    from .template import Template
+
+    class _RequestLike(Protocol):
+        headers: Mapping[str, Any]
+
+
+else:
+    cached_property = _cached_property
+
+
+T = TypeVar('T')
+T_co = TypeVar('T_co', covariant=True)
+_Iter = Union[Iterator[T], AsyncIterator[T]]
+CSP = TypeVar('CSP', bound='CachedSlotProperty')
+
+
+class CachedSlotProperty(Generic[T, T_co]):
+    def __init__(self, name: str, function: Callable[[T], T_co]) -> None:
         self.name = name
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
-    def __get__(self, instance, owner):
+    @overload
+    def __get__(self: CSP, instance: None, owner: Type[T]) -> CSP:
+        ...
+
+    @overload
+    def __get__(self, instance: T, owner: Type[T]) -> T_co:
+        ...
+
+    def __get__(self, instance: Optional[T], owner: Type[T]) -> Any:
         if instance is None:
             return self
 
@@ -84,74 +155,109 @@ class CachedSlotProperty:
             setattr(instance, self.name, value)
             return value
 
-def cached_slot_property(name):
-    def decorator(func):
+
+class classproperty(Generic[T_co]):
+    def __init__(self, fget: Callable[[Any], T_co]) -> None:
+        self.fget = fget
+
+    def __get__(self, instance: Optional[Any], owner: Type[Any]) -> T_co:
+        return self.fget(owner)
+
+    def __set__(self, instance, value) -> None:
+        raise AttributeError('cannot set attribute')
+
+
+def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlotProperty[T, T_co]]:
+    def decorator(func: Callable[[T], T_co]) -> CachedSlotProperty[T, T_co]:
         return CachedSlotProperty(name, func)
+
     return decorator
 
-class SequenceProxy(collections.abc.Sequence):
+
+class SequenceProxy(Generic[T_co], collections.abc.Sequence):
     """Read-only proxy of a Sequence."""
-    def __init__(self, proxied):
+
+    def __init__(self, proxied: Sequence[T_co]):
         self.__proxied = proxied
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> T_co:
         return self.__proxied[idx]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__proxied)
 
-    def __contains__(self, item):
+    def __contains__(self, item: Any) -> bool:
         return item in self.__proxied
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T_co]:
         return iter(self.__proxied)
 
-    def __reversed__(self):
+    def __reversed__(self) -> Iterator[T_co]:
         return reversed(self.__proxied)
 
-    def index(self, value, *args, **kwargs):
+    def index(self, value: Any, *args, **kwargs) -> int:
         return self.__proxied.index(value, *args, **kwargs)
 
-    def count(self, value):
+    def count(self, value: Any) -> int:
         return self.__proxied.count(value)
+
 
 @overload
 def parse_time(timestamp: None) -> None:
     ...
 
+
 @overload
 def parse_time(timestamp: str) -> datetime.datetime:
     ...
+
+
+@overload
+def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
+    ...
+
 
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
         return datetime.datetime.fromisoformat(timestamp)
     return None
 
-def copy_doc(original):
-    def decorator(overriden):
+
+def copy_doc(original: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(overriden: Callable[..., Any]) -> Callable[..., Any]:
         overriden.__doc__ = original.__doc__
-        overriden.__signature__ = _signature(original)
+        overriden.__signature__ = _signature(original)  # type: ignore
         return overriden
+
     return decorator
 
-def deprecated(instead=None):
-    def actual_decorator(func):
+
+def deprecated(instead: Optional[str] = None) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    def actual_decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
-        def decorated(*args, **kwargs):
-            warnings.simplefilter('always', DeprecationWarning) # turn off filter
+        def decorated(*args, **kwargs) -> T:
+            warnings.simplefilter('always', DeprecationWarning)  # turn off filter
             if instead:
                 fmt = "{0.__name__} is deprecated, use {1} instead."
             else:
                 fmt = '{0.__name__} is deprecated.'
 
             warnings.warn(fmt.format(func, instead), stacklevel=3, category=DeprecationWarning)
-            warnings.simplefilter('default', DeprecationWarning) # reset filter
+            warnings.simplefilter('default', DeprecationWarning)  # reset filter
             return func(*args, **kwargs)
+
         return decorated
+
     return actual_decorator
 
-def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes=None):
+
+def oauth_url(
+    client_id: str,
+    permissions: Optional[Permissions] = None,
+    guild: Optional[Snowflake] = None,
+    redirect_uri: Optional[str] = None,
+    scopes: Optional[Iterable[str]] = None,
+):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
@@ -162,7 +268,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes
     permissions: :class:`~discord.Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
         permissions.
-    guild: :class:`~discord.Guild`
+    guild: :class:`~discord.abc.Snowflake`
         The guild to pre-select in the authorization screen, if available.
     redirect_uri: :class:`str`
         An optional valid redirect URI.
@@ -184,6 +290,7 @@ def oauth_url(client_id, permissions=None, guild=None, redirect_uri=None, scopes
         url = url + "&guild_id=" + str(guild.id)
     if redirect_uri is not None:
         from urllib.parse import urlencode
+
         url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
     return url
 
@@ -202,6 +309,7 @@ def snowflake_time(id: int) -> datetime.datetime:
     """
     timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
     return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+
 
 def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
@@ -226,9 +334,10 @@ def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
         The snowflake representing the time given.
     """
     discord_millis = int(dt.timestamp() * 1000 - DISCORD_EPOCH)
-    return (discord_millis << 22) + (2**22-1 if high else 0)
+    return (discord_millis << 22) + (2 ** 22 - 1 if high else 0)
 
-def find(predicate, seq):
+
+def find(predicate: Callable[[T], Any], seq: Iterable[T]) -> Optional[T]:
     """A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
@@ -244,7 +353,7 @@ def find(predicate, seq):
     -----------
     predicate
         A function that returns a boolean-like result.
-    seq: iterable
+    seq: :class:`collections.abc.Iterable`
         The iterable to search through.
     """
 
@@ -253,7 +362,8 @@ def find(predicate, seq):
             return element
     return None
 
-def get(iterable, **attrs):
+
+def get(iterable: Iterable[T], **attrs: Any) -> Optional[T]:
     r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
     :func:`~discord.utils.find`.
@@ -310,20 +420,17 @@ def get(iterable, **attrs):
                 return elem
         return None
 
-    converted = [
-        (attrget(attr.replace('__', '.')), value)
-        for attr, value in attrs.items()
-    ]
+    converted = [(attrget(attr.replace('__', '.')), value) for attr, value in attrs.items()]
 
     for elem in iterable:
         if _all(pred(elem) == value for pred, value in converted):
             return elem
     return None
 
-def _unique(iterable):
-    seen = set()
-    adder = seen.add
-    return [x for x in iterable if not (x in seen or adder(x))]
+
+def _unique(iterable: Iterable[T]) -> List[T]:
+    return [x for x in dict.fromkeys(iterable)]
+
 
 def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     try:
@@ -333,7 +440,8 @@ def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     else:
         return value and int(value)
 
-def _get_mime_type_for_image(data):
+
+def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
     elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
@@ -345,16 +453,19 @@ def _get_mime_type_for_image(data):
     else:
         raise InvalidArgument('Unsupported image type given')
 
-def _bytes_to_base64_data(data):
+
+def _bytes_to_base64_data(data: bytes) -> str:
     fmt = 'data:{mime};base64,{data}'
     mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 
-def to_json(obj):
+
+def to_json(obj: Any) -> str:
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
-def _parse_ratelimit_header(request, *, use_clock=False):
+
+def _parse_ratelimit_header(request: _RequestLike, *, use_clock: bool = False) -> float:
     reset_after = request.headers.get('X-Ratelimit-Reset-After')
     if use_clock or not reset_after:
         utc = datetime.timezone.utc
@@ -364,12 +475,14 @@ def _parse_ratelimit_header(request, *, use_clock=False):
     else:
         return float(reset_after)
 
+
 async def maybe_coroutine(f, *args, **kwargs):
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
     else:
         return value
+
 
 async def async_all(gen, *, check=_isawaitable):
     for elem in gen:
@@ -379,10 +492,9 @@ async def async_all(gen, *, check=_isawaitable):
             return False
     return True
 
+
 async def sane_wait_for(futures, *, timeout):
-    ensured = [
-        asyncio.ensure_future(fut) for fut in futures
-    ]
+    ensured = [asyncio.ensure_future(fut) for fut in futures]
     done, pending = await asyncio.wait(ensured, timeout=timeout, return_when=asyncio.ALL_COMPLETED)
 
     if len(pending) != 0:
@@ -390,13 +502,15 @@ async def sane_wait_for(futures, *, timeout):
 
     return done
 
+
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
         when = dt.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
     return max((dt - now).total_seconds(), 0)
 
-async def sleep_until(when, result=None):
+
+async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Optional[T]:
     """|coro|
 
     Sleep until a specified time.
@@ -416,10 +530,11 @@ async def sleep_until(when, result=None):
     delta = compute_timedelta(when)
     return await asyncio.sleep(delta, result)
 
+
 def utcnow() -> datetime.datetime:
     """A helper function to return an aware UTC datetime representing the current time.
 
-    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    This should be preferred to :meth:`datetime.datetime.utcnow` since it is an aware
     datetime, compared to the naive datetime in the standard library.
 
     .. versionadded:: 2.0
@@ -431,9 +546,11 @@ def utcnow() -> datetime.datetime:
     """
     return datetime.datetime.now(datetime.timezone.utc)
 
-def valid_icon_size(size):
+
+def valid_icon_size(size: int) -> bool:
     """Icons must be power of 2 within [16, 4096]."""
-    return not size & (size - 1) and size in range(16, 4097)
+    return not size & (size - 1) and 4096 >= size >= 16
+
 
 class SnowflakeList(array.array):
     """Internal data storage class to efficiently store a list of snowflakes.
@@ -449,24 +566,31 @@ class SnowflakeList(array.array):
 
     __slots__ = ()
 
-    def __new__(cls, data, *, is_sorted=False):
-        return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))
+    if TYPE_CHECKING:
 
-    def add(self, element):
+        def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
+            ...
+
+    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False):
+        return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
+
+    def add(self, element: int) -> None:
         i = bisect_left(self, element)
         self.insert(i, element)
 
-    def get(self, element):
+    def get(self, element: int) -> Optional[int]:
         i = bisect_left(self, element)
         return self[i] if i != len(self) and self[i] == element else None
 
-    def has(self, element):
+    def has(self, element: int) -> bool:
         i = bisect_left(self, element)
         return i != len(self) and self[i] == element
 
+
 _IS_ASCII = re.compile(r'^[\x00-\x7f]+$')
 
-def _string_width(string, *, _IS_ASCII=_IS_ASCII):
+
+def _string_width(string: str, *, _IS_ASCII=_IS_ASCII) -> int:
     """Returns string's width."""
     match = _IS_ASCII.match(string)
     if match:
@@ -476,7 +600,8 @@ def _string_width(string, *, _IS_ASCII=_IS_ASCII):
     func = unicodedata.east_asian_width
     return sum(2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1 for char in string)
 
-def resolve_invite(invite):
+
+def resolve_invite(invite: Union[Invite, str]) -> str:
     """
     Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
@@ -491,6 +616,7 @@ def resolve_invite(invite):
         The invite code.
     """
     from .invite import Invite  # circular import
+
     if isinstance(invite, Invite):
         return invite.code
     else:
@@ -500,7 +626,8 @@ def resolve_invite(invite):
             return m.group(1)
     return invite
 
-def resolve_template(code):
+
+def resolve_template(code: Union[Template, str]) -> str:
     """
     Resolves a template code from a :class:`~discord.Template`, URL or code.
 
@@ -516,7 +643,8 @@ def resolve_template(code):
     :class:`str`
         The template code.
     """
-    from .template import Template # circular import
+    from .template import Template  # circular import
+
     if isinstance(code, Template):
         return code.code
     else:
@@ -526,8 +654,8 @@ def resolve_template(code):
             return m.group(1)
     return code
 
-_MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c)
-                                     for c in ('*', '`', '_', '~', '|'))
+
+_MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(c) for c in ('*', '`', '_', '~', '|'))
 
 _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
@@ -537,7 +665,8 @@ _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\
 
 _MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
 
-def remove_markdown(text, *, ignore_links=True):
+
+def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
     """A helper function that removes markdown characters.
 
     .. versionadded:: 1.7
@@ -570,7 +699,8 @@ def remove_markdown(text, *, ignore_links=True):
         regex = f'(?:{_URL_REGEX}|{regex})'
     return re.sub(regex, replacement, text, 0, re.MULTILINE)
 
-def escape_markdown(text, *, as_needed=False, ignore_links=True):
+
+def escape_markdown(text: str, *, as_needed: bool = False, ignore_links: bool = True) -> str:
     r"""A helper function that escapes Discord's markdown.
 
     Parameters
@@ -596,6 +726,7 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
     """
 
     if not as_needed:
+
         def replacement(match):
             groupdict = match.groupdict()
             is_url = groupdict.get('url')
@@ -611,7 +742,8 @@ def escape_markdown(text, *, as_needed=False, ignore_links=True):
         text = re.sub(r'\\', r'\\\\', text)
         return _MARKDOWN_ESCAPE_REGEX.sub(r'\\\1', text)
 
-def escape_mentions(text):
+
+def escape_mentions(text: str) -> str:
     """A helper function that escapes everyone, here, role, and user mentions.
 
     .. note::
@@ -635,3 +767,165 @@ def escape_mentions(text):
         The text with the mentions removed.
     """
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
+
+
+def _chunk(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+    ret = []
+    n = 0
+    for item in iterator:
+        ret.append(item)
+        n += 1
+        if n == max_size:
+            yield ret
+            ret = []
+            n = 0
+    if ret:
+        yield ret
+
+
+async def _achunk(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+    ret = []
+    n = 0
+    async for item in iterator:
+        ret.append(item)
+        n += 1
+        if n == max_size:
+            yield ret
+            ret = []
+            n = 0
+    if ret:
+        yield ret
+
+
+@overload
+def as_chunks(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+    ...
+
+
+@overload
+def as_chunks(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+    ...
+
+
+def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
+    """A helper function that collects an iterator into chunks of a given size.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    ----------
+    iterator: Union[:class:`collections.abc.Iterator`, :class:`collections.abc.AsyncIterator`]
+        The iterator to chunk, can be sync or async.
+    max_size: :class:`int`
+        The maximum chunk size.
+
+
+    .. warning::
+
+        The last chunk collected may not be as large as ``max_size``.
+
+    Returns
+    --------
+    Union[:class:`Iterator`, :class:`AsyncIterator`]
+        A new iterator which yields chunks of a given size.
+    """
+    if max_size <= 0:
+        raise ValueError('Chunk sizes must be greater than 0.')
+
+    if isinstance(iterator, AsyncIterator):
+        return _achunk(iterator, max_size)
+    return _chunk(iterator, max_size)
+
+
+PY_310 = sys.version_info >= (3, 10)
+
+
+def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
+    params = []
+    literal_cls = type(Literal[0])
+    for p in parameters:
+        if isinstance(p, literal_cls):
+            params.extend(p.__args__)
+        else:
+            params.append(p)
+    return tuple(params)
+
+
+def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
+    none_cls = type(None)
+    return tuple(p for p in parameters if p is not none_cls) + (none_cls,)
+
+
+def evaluate_annotation(
+    tp: Any,
+    globals: Dict[str, Any],
+    locals: Dict[str, Any],
+    cache: Dict[str, Any],
+    *,
+    implicit_str: bool = True,
+):
+    if isinstance(tp, ForwardRef):
+        tp = tp.__forward_arg__
+        # ForwardRefs always evaluate their internals
+        implicit_str = True
+
+    if implicit_str and isinstance(tp, str):
+        if tp in cache:
+            return cache[tp]
+        evaluated = eval(tp, globals, locals)
+        cache[tp] = evaluated
+        return evaluate_annotation(evaluated, globals, locals, cache)
+
+    if hasattr(tp, '__args__'):
+        implicit_str = True
+        is_literal = False
+        args = tp.__args__
+        if not hasattr(tp, '__origin__'):
+            if PY_310 and tp.__class__ is types.Union:
+                converted = Union[args]  # type: ignore
+                return evaluate_annotation(converted, globals, locals, cache)
+
+            return tp
+        if tp.__origin__ is Union:
+            try:
+                if args.index(type(None)) != len(args) - 1:
+                    args = normalise_optional_params(tp.__args__)
+            except ValueError:
+                pass
+        if tp.__origin__ is Literal:
+            if not PY_310:
+                args = flatten_literal_params(tp.__args__)
+            implicit_str = False
+            is_literal = True
+
+        evaluated_args = tuple(evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args)
+
+        if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
+            raise TypeError('Literal arguments must be of type str, int, bool, or NoneType.')
+
+        if evaluated_args == args:
+            return tp
+
+        try:
+            return tp.copy_with(evaluated_args)
+        except AttributeError:
+            return tp.__origin__[evaluated_args]
+
+    return tp
+
+
+def resolve_annotation(
+    annotation: Any,
+    globalns: Dict[str, Any],
+    localns: Optional[Dict[str, Any]],
+    cache: Optional[Dict[str, Any]],
+) -> Any:
+    if annotation is None:
+        return type(None)
+    if isinstance(annotation, str):
+        annotation = ForwardRef(annotation)
+
+    locals = globalns if localns is None else localns
+    if cache is None:
+        cache = {}
+    return evaluate_annotation(annotation, globalns, locals, cache)

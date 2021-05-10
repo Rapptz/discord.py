@@ -44,6 +44,12 @@ class BaseUser(_BaseUser):
         self._state = state
         self._update(data)
 
+    def __repr__(self):
+        return (
+            f"<BaseUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}"
+            f" bot={self.bot} system={self.system}>"
+        )
+
     def __str__(self):
         return f'{self.name}#{self.discriminator}'
 
@@ -199,8 +205,6 @@ class ClientUser(BaseUser):
         The user's unique ID.
     discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[:class:`str`]
-        The avatar hash the user has. Could be ``None``.
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`
@@ -209,7 +213,7 @@ class ClientUser(BaseUser):
         .. versionadded:: 1.3
 
     verified: :class:`bool`
-        Specifies if the user is a verified account.
+        Specifies if the user's email is verified.
     locale: Optional[:class:`str`]
         The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
@@ -301,8 +305,6 @@ class User(BaseUser, discord.abc.Messageable):
         The user's unique ID.
     discriminator: :class:`str`
         The user's discriminator. This is given when the username has conflicts.
-    avatar: Optional[:class:`str`]
-        The avatar hash the user has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`

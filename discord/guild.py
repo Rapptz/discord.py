@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import copy
 from collections import namedtuple
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, overload
 
 from . import utils, abc
 from .role import Role
@@ -143,7 +143,7 @@ class Guild(Hashable):
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``PUBLIC``: Guild is a public guild.
         - ``NEWS``: Guild can create news channels.
-        - ``BANNER``: Guild can upload and use a banner (i.e. :meth:`banner_url`).
+        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``PUBLIC_DISABLED``: Guild cannot be public.
         - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
@@ -378,7 +378,7 @@ class Guild(Hashable):
 
     @property
     def stage_channels(self):
-        """List[:class:`StageChannel`]: A list of voice channels that belongs to this guild.
+        """List[:class:`StageChannel`]: A list of stage channels that belongs to this guild.
 
         .. versionadded:: 1.7
 
@@ -867,6 +867,10 @@ class Guild(Hashable):
             A value of ``None`` indicates automatic voice region detection.
 
             .. versionadded:: 1.7
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the voice channel's participants.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -987,8 +991,39 @@ class Guild(Hashable):
 
         await self._state.http.delete_guild(self.id)
 
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        description: Optional[str] = ...,
+        icon: Optional[bytes] = ...,
+        banner: Optional[bytes] = ...,
+        splash: Optional[bytes] = ...,
+        discovery_splash: Optional[bytes] = ...,
+        community: bool = ...,
+        region: Optional[VoiceRegion] = ...,
+        afk_channel: Optional[VoiceChannel] = ...,
+        afk_timeout: int = ...,
+        default_notifications: NotificationLevel = ...,
+        verification_level: VerificationLevel = ...,
+        explicit_content_filter: ContentFilter = ...,
+        vanity_code: str = ...,
+        system_channel: Optional[TextChannel] = ...,
+        system_channel_flags: SystemChannelFlags = ...,
+        preferred_locale: str = ...,
+        rules_channel: Optional[TextChannel] = ...,
+        public_updates_channel: Optional[TextChannel] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
     async def edit(self, *, reason=None, **fields):
-        """|coro|
+        r"""|coro|
 
         Edits the guild.
 
@@ -998,25 +1033,37 @@ class Guild(Hashable):
         .. versionchanged:: 1.4
             The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
 
+        .. versionchanged:: 2.0
+            The `discovery_splash` and `community` keyword-only parameters were added.
+
         Parameters
         ----------
         name: :class:`str`
             The new name of the guild.
-        description: :class:`str`
-            The new description of the guild. This is only available to guilds that
-            contain ``PUBLIC`` in :attr:`Guild.features`.
+        description: Optional[:class:`str`]
+            The new description of the guild. Could be ``None`` for no description.
+            This is only available to guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
         icon: :class:`bytes`
-            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG supported
-            and GIF This is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
+            GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
             Could be ``None`` to denote removal of the icon.
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the banner.
-            Could be ``None`` to denote removal of the banner.
+            Could be ``None`` to denote removal of the banner. This is only available to guilds that contain
+            ``BANNER`` in :attr:`Guild.features`.
         splash: :class:`bytes`
             A :term:`py:bytes-like object` representing the invite splash.
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``INVITE_SPLASH``
             in :attr:`Guild.features`.
+        discovery_splash: :class:`bytes`
+            A :term:`py:bytes-like object` representing the discovery splash.
+            Only PNG/JPEG supported. Could be ``None`` to denote removing the
+            splash. This is only available to guilds that contain ``DISCOVERABLE``
+            in :attr:`Guild.features`.
+        community: :class:`bool`
+            Whether the guild should be a Community guild. If set to ``True``\, both ``rules_channel``
+            and ``public_updates_channel`` parameters are required.
         region: :class:`VoiceRegion`
             The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
@@ -1102,6 +1149,16 @@ class Guild(Hashable):
             else:
                 splash = None
 
+        try:
+            discovery_splash_bytes = fields['discovery_splash']
+        except KeyError:
+            pass
+        else:
+            if discovery_splash_bytes is not None:
+                fields['discovery_splash'] = utils._bytes_to_base64_data(discovery_splash_bytes)
+            else:
+                fields['discovery_splash'] = None
+
         fields['icon'] = icon
         fields['banner'] = banner
         fields['splash'] = splash
@@ -1177,6 +1234,21 @@ class Guild(Hashable):
                 fields['public_updates_channel_id'] = public_updates_channel
             else:
                 fields['public_updates_channel_id'] = public_updates_channel.id
+
+        try:
+            community = fields.pop('community')
+        except KeyError:
+            pass
+        else:
+            features = []
+            if community:
+                if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
+                    features.append('COMMUNITY')
+                else:
+                    raise InvalidArgument('community field requires both rules_channel and public_updates_channel fields to be provided')
+
+            fields['features'] = features
+
         await http.edit_guild(self.id, reason=reason, **fields)
 
     async def fetch_channels(self):
@@ -1274,7 +1346,7 @@ class Guild(Hashable):
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_member` instead.
+            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_member` instead.
 
         Parameters
         -----------
@@ -1328,6 +1400,51 @@ class Guild(Hashable):
             user=User(state=self._state, data=data['user']),
             reason=data['reason']
         )
+
+    async def fetch_channel(self, channel_id: int, /) -> abc.GuildChannel:
+        """|coro|
+
+        Retrieves a :class:`.abc.GuildChannel` with the specified ID.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :meth:`get_channel` instead.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        :exc:`.InvalidData`
+            An unknown channel type was received from Discord
+            or the guild the channel belongs to is not the same
+            as the one in this object points to.
+        :exc:`.HTTPException`
+            Retrieving the channel failed.
+        :exc:`.NotFound`
+            Invalid Channel ID.
+        :exc:`.Forbidden`
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        :class:`.abc.GuildChannel`
+            The channel from the ID.
+        """
+        data = await self._state.http.get_channel(channel_id)
+
+        factory, ch_type = _channel_factory(data['type'])
+        if factory is None:
+            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+
+        if ch_type in (ChannelType.group, ChannelType.private):
+            raise InvalidData('Channel ID resolved to a private channel')
+
+        guild_id = int(data['guild_id'])
+        if self.id != guild_id:
+            raise InvalidData('Guild ID resolved to a different guild')
+
+        channel: abc.GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore
+        return channel
 
     async def bans(self):
         """|coro|
