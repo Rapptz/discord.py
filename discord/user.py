@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import TYPE_CHECKING
+
 import discord.abc
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data
@@ -39,6 +41,13 @@ _BaseUser = discord.abc.User
 
 class BaseUser(_BaseUser):
     __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
+
+    if TYPE_CHECKING:
+        name: str
+        id: int
+        discriminator: str
+        bot: bool
+        system: bool
 
     def __init__(self, *, state, data):
         self._state = state
