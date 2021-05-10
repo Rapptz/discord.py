@@ -448,3 +448,8 @@ class ThreadMember(Hashable):
 
         self.joined_at = parse_time(data['join_timestamp'])
         self.flags = data['flags']
+
+    @property
+    def thread(self) -> Thread:
+        """:class:`Thread`: The thread this member belongs to."""
+        return self.parent
