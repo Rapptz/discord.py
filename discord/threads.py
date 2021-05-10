@@ -383,6 +383,8 @@ class Thread(Messageable, Hashable):
     def _add_member(self, member: ThreadMember) -> None:
         self._members[member.id] = member
 
+    def _pop_member(self, member_id: int) -> Optional[ThreadMember]:
+        return self._members.pop(member_id, None)
 
 class ThreadMember(Hashable):
     """Represents a Discord thread member.

@@ -658,10 +658,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
-.. function:: on_thread_delete(thread)
-              on_thread_create(thread)
+.. function:: on_thread_join(thread)
 
-    Called whenever a thread is deleted or created.
+    Called whenever a thread is joined.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
@@ -669,8 +668,53 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     .. versionadded:: 2.0
 
-    :param thread: The thread that got created or deleted.
+    :param thread: The thread that got joined.
     :type thread: :class:`Thread`
+
+.. function:: on_thread_remove(thread)
+
+    Called whenever a thread is removed. This is different from a thread being deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. warning::
+
+        Due to technical limitations, this event might not be called
+        as soon as one expects. Since the library tracks thread membership
+        locally, the API only sends updated thread membership status upon being
+        synced by joining a thread.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got removed.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_delete(thread)
+
+    Called whenever a thread is deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got deleted.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_member_join(member)
+              on_thread_member_remove(member)
+
+    Called when a :class:`ThreadMember` leaves or joins a :class:`Thread`.
+
+    You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who joined or left.
+    :type member: :class:`ThreadMember`
 
 .. function:: on_thread_update(before, after)
 

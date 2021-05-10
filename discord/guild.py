@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import copy
 from collections import namedtuple
-from typing import Dict, List, Literal, Optional, TYPE_CHECKING, Union, overload
+from typing import Dict, List, Set, Literal, Optional, TYPE_CHECKING, Union, overload
 
 from . import utils, abc
 from .role import Role
@@ -226,6 +226,20 @@ class Guild(Hashable):
 
     def _remove_thread(self, thread):
         self._threads.pop(thread.id, None)
+
+    def _clear_threads(self):
+        self._threads.clear()
+
+    def _remove_threads_by_channel(self, channel_id: int):
+        to_remove = [k for k, t in self._threads.items() if t.parent_id == channel_id]
+        for k in to_remove:
+            del self._threads[k]
+
+    def _filter_threads(self, channel_ids: Set[int]) -> Dict[int, Thread]:
+        to_remove: Dict[int, Thread] = {k: t for k, t in self._threads.items() if t.parent_id in channel_ids}
+        for k in to_remove:
+            del self._threads[k]
+        return to_remove
 
     def __str__(self):
         return self.name or ''
