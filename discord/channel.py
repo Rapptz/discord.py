@@ -53,6 +53,7 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .message import Message
     from .webhook import Webhook
+    from .abc import SnowflakeTime
 
 async def _single_delete_strategy(messages):
     for m in messages:
@@ -338,9 +339,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         *,
         limit: int = 100,
         check: Callable[[Message], bool] = None,
-        before: Optional[discord.abc.SnowflakeTime] = None,
-        after: Optional[discord.abc.SnowflakeTime] = None,
-        around: Optional[discord.abc.SnowflakeTime] = None,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = False,
         bulk: bool = True,
     ) -> List[Message]:
@@ -576,7 +577,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .message import PartialMessage
         return PartialMessage(channel=self, id=message_id)
 
-class _VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
+class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = ('name', 'id', 'guild', 'bitrate', 'user_limit',
                  '_state', 'position', '_overwrites', 'category_id',
                  'rtc_region', 'video_quality_mode')
@@ -650,7 +651,7 @@ class _VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hash
             base.value &= ~denied.value
         return base
 
-class VoiceChannel(_VocalGuildChannel):
+class VoiceChannel(VocalGuildChannel):
     """Represents a Discord guild voice channel.
 
     .. container:: operations
@@ -802,7 +803,7 @@ class VoiceChannel(_VocalGuildChannel):
 
         await self._edit(options, reason=reason)
 
-class StageChannel(_VocalGuildChannel):
+class StageChannel(VocalGuildChannel):
     """Represents a Discord guild stage channel.
 
     .. versionadded:: 1.7
@@ -955,12 +956,6 @@ class StageChannel(_VocalGuildChannel):
         """
 
         await self._edit(options, reason=reason)
-
-if TYPE_CHECKING:
-    VocalGuildChannel = Union[VoiceChannel, StageChannel]
-else:
-    VocalGuildChannel = _VocalGuildChannel
-
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord channel category.
 

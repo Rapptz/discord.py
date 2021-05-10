@@ -23,12 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
-from discord.channel import VocalGuildChannel
 import inspect
 import itertools
 import sys
 from operator import attrgetter
-from typing import List, Literal, Optional, TYPE_CHECKING, overload
+from typing import List, Literal, Optional, TYPE_CHECKING, Union, overload
 
 import discord.abc
 
@@ -46,7 +45,10 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .channel import VocalGuildChannel
+    from .channel import VoiceChannel, StageChannel
+    from .abc import Snowflake
+
+    VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
 class VoiceState:
     """Represents a Discord user's voice state.
@@ -743,7 +745,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def add_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str] = None, atomic: bool = True):
+    async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True):
         r"""|coro|
 
         Gives the member a number of :class:`Role`\s.
@@ -782,7 +784,7 @@ class Member(discord.abc.Messageable, _BaseUser):
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
 
-    async def remove_roles(self, *roles: discord.abc.Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
+    async def remove_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|
 
         Removes :class:`Role`\s from this member.

@@ -54,8 +54,10 @@ if TYPE_CHECKING:
         Ban as BanPayload
     )
     from .permissions import Permissions
-    from .channel import VocalGuildChannel
+    from .channel import VoiceChannel, StageChannel
     from .template import Template
+
+    VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
 BanEntry = namedtuple('BanEntry', 'reason user')
 _GuildLimit = namedtuple('_GuildLimit', 'emoji bitrate filesize')

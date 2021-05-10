@@ -49,7 +49,7 @@ __all__ = (
     'Connectable',
 )
 
-T = TypeVar('T', bound=VoiceClient)
+T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -1134,7 +1134,7 @@ class Messageable(Protocol):
     @overload
     async def send(
         self,
-        content: None = ...,
+        content: Optional[str] = ...,
         *,
         tts: bool = ...,
         embed: Embed = ...,
