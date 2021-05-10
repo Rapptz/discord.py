@@ -709,14 +709,16 @@ class ConnectionState:
 
     def parse_thread_create(self, data):
         guild_id = int(data['guild_id'])
-        guild = self._get_guild(guild_id)
+        guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
             log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
         thread = Thread(guild=guild, data=data)
+        has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
-        self.dispatch('thread_join', thread)
+        if not has_thread:
+            self.dispatch('thread_join', thread)
 
     def parse_thread_update(self, data):
         guild_id = int(data['guild_id'])
