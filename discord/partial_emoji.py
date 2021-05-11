@@ -111,7 +111,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             o['id'] = self.id
         if self.animated:
             o['animated'] = self.animated
-        return o  # type: ignore
+        return o
 
     @classmethod
     def with_state(
