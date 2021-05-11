@@ -151,8 +151,9 @@ class Loop:
 
                     now = datetime.datetime.now(datetime.timezone.utc)
                     if now > self._next_iteration:
-                        self._prepare_time_index(now)
                         self._next_iteration = now
+                        if self._time is not None:
+                            self._prepare_time_index(now)
 
                     self._current_loop += 1
                     if self._current_loop == self.count:
