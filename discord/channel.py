@@ -50,7 +50,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .role import Role
-    from .member import Member
+    from .member import Member, VoiceState
     from .abc import Snowflake
     from .message import Message
     from .webhook import Webhook
@@ -612,7 +612,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return ChannelType.voice.value
 
     @property
-    def members(self):
+    def members(self) -> List[Member]:
         """List[:class:`Member`]: Returns all members that are currently inside this voice channel."""
         ret = []
         for user_id, state in self.guild._voice_states.items():
@@ -623,7 +623,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return ret
 
     @property
-    def voice_states(self):
+    def voice_states(self) -> Dict[int, VoiceState]:
         """Returns a mapping of member IDs who have voice states in this channel.
 
         .. versionadded:: 1.3
@@ -641,7 +641,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
-    def permissions_for(self, member):
+    def permissions_for(self, member: Member, /) -> Permissions:
         base = super().permissions_for(member)
 
         # voice channels cannot be edited by people who can't connect to them
@@ -835,6 +835,8 @@ class StageChannel(VocalGuildChannel):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it isn't set.
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -874,9 +876,31 @@ class StageChannel(VocalGuildChannel):
         self.topic = data.get('topic')
 
     @property
-    def requesting_to_speak(self):
+    def requesting_to_speak(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
         return [member for member in self.members if member.voice.requested_to_speak_at is not None]
+
+    @property
+    def speakers(self) -> List[Member]:
+        """List[:class:`Member`]: A list of members who have been permitted to speak in the stage channel.
+
+        .. versionadded:: 2.0
+        """
+        return [member for member in self.members if not member.voice.suppress and member.voice.requested_to_speak_at is None]
+
+    @property
+    def moderators(self) -> List[Member]:
+        """List[:class:`Member`]: A list of members who are moderating the stage channel.
+
+        .. versionadded:: 2.0
+        """
+        required_permissions = Permissions.stage_moderator()
+        ret = []
+        for member in self.members:
+            permissions: Permissions = self.permissions_for(member)
+            if permissions >= required_permissions:
+                ret.append(member)
+        return ret
 
     @property
     def type(self):
@@ -885,11 +909,9 @@ class StageChannel(VocalGuildChannel):
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: str = None, reason: Optional[str] = None) -> StageChannel:
-        return await self._clone_impl({
-            'topic': self.topic,
-        }, name=name, reason=reason)
+        return await self._clone_impl({}, name=name, reason=reason)
 
-    async def create_instance(self, *, topic: str = None) -> StageInstance:
+    async def create_instance(self, *, topic: str) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -965,6 +987,9 @@ class StageChannel(VocalGuildChannel):
 
         You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
+
+        .. versionchanged:: 2.0
+            The ``topic`` parameter must now be set via :attr:`create_instance`.
 
         Parameters
         ----------
