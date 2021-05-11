@@ -555,7 +555,8 @@ class Guild(Hashable):
     @property
     def premium_subscribers(self):
         """List[:class:`Member`]: A list of members who have "boosted" this guild."""
-        return [member for member in self.members if member.premium_since is not None]
+        role = self.premium_subscriber_role
+        return [member for member in self.members if member._roles.has(role.id)]
 
     @property
     def roles(self):
