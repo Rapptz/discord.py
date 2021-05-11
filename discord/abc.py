@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import copy
 import asyncio
+from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Protocol, Type, TypeVar, Union, overload, runtime_checkable
 
 from .iterators import HistoryIterator
@@ -52,8 +53,6 @@ __all__ = (
 T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from .user import ClientUser
     from .asset import Asset
     from .state import ConnectionState

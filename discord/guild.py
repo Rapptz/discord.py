@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import copy
 from collections import namedtuple
 from typing import Dict, List, Literal, Optional, TYPE_CHECKING, Union, overload
