@@ -283,3 +283,8 @@ class Template:
             This template does not exist.
         """
         await self._state.http.delete_template(self.source_guild.id, self.code)
+
+    @property
+    def url(self) -> str:
+        """:class:`str`: The template url."""
+        return f'https://discord.new/{self.code}'
