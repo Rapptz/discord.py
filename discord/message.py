@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar
+from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
 
 from . import utils
 from .reaction import Reaction
@@ -63,6 +63,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
+    from .mentions import AllowedMentions
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -398,7 +399,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True):
+    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -1077,7 +1078,24 @@ class Message(Hashable):
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
-    async def edit(self, **fields: Any) -> None:
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: List[Attachment] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
+    async def edit(self, **fields) -> None:
         """|coro|
 
         Edits the message.

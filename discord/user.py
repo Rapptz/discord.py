@@ -22,12 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import TYPE_CHECKING
-
+from typing import Optional, TYPE_CHECKING
 import discord.abc
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data
-from .enums import DefaultAvatar, try_enum
+from .enums import DefaultAvatar
 from .colour import Colour
 from .asset import Asset
 
@@ -248,7 +247,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username=None, avatar=None):
+    async def edit(self, *, username: str = None, avatar:  Optional[bytes] = None) -> None:
         """|coro|
 
         Edits the current profile of the client.

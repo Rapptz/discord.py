@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import copy
 import asyncio
-from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Protocol, TypeVar, Union, overload, runtime_checkable
+from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Protocol, Type, TypeVar, Union, overload, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -49,6 +49,8 @@ __all__ = (
     'Connectable',
 )
 
+T = TypeVar('T', bound=VoiceProtocol)
+
 if TYPE_CHECKING:
     from datetime import datetime
 
@@ -58,7 +60,8 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .channel import CategoryChannel
-
+    from .embeds import Embed
+    from .message import Message, MessageReference
 
 MISSING = utils.MISSING
 
@@ -95,6 +98,7 @@ class Snowflake(Protocol):
         """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
 
+SnowflakeTime = Union[Snowflake, datetime]
 
 @runtime_checkable
 class User(Snowflake, Protocol):
@@ -653,14 +657,34 @@ class GuildChannel:
         """
         await self._state.http.delete_channel(self.id, reason=reason)
 
+    @overload
     async def set_permissions(
         self,
         target: Union[Member, Role],
         *,
-        overwrite: Optional[PermissionOverwrite] = _undefined,
-        reason: Optional[str] = None,
+        overwrite: Optional[Union[PermissionOverwrite, _Undefined]] = ...,
+        reason: Optional[str] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        reason: Optional[str] = ...,
         **permissions: bool,
     ) -> None:
+        ...
+
+    async def set_permissions(
+        self,
+        target,
+        *,
+        overwrite=_undefined,
+        reason=None,
+        **permissions
+    ):
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -815,7 +839,7 @@ class GuildChannel:
         offset: int = MISSING,
         category: Optional[Snowflake] = MISSING,
         sync_permissions: bool = MISSING,
-        reason: str = MISSING,
+        reason: Optional[str] = MISSING,
     ) -> None:
         ...
 
@@ -1090,6 +1114,38 @@ class Messageable(Protocol):
 
     async def _get_channel(self):
         raise NotImplementedError
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] =...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        file: File = ...,
+        delete_after: int = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        files: List[File] = ...,
+        delete_after: int = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+    ) -> Message:
+        ...
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
@@ -1402,7 +1458,7 @@ class Connectable(Protocol):
     def _get_voice_state_pair(self):
         raise NotImplementedError
 
-    async def connect(self, *, timeout=60.0, reconnect=True, cls=VoiceClient):
+    async def connect(self, *, timeout: float = 60.0, reconnect: bool = True, cls: Type[T] = VoiceClient) -> T:
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish

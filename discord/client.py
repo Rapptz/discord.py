@@ -22,12 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import signal
 import sys
 import traceback
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import aiohttp
 
@@ -57,6 +59,9 @@ from .appinfo import AppInfo
 __all__ = (
     'Client',
 )
+
+if TYPE_CHECKING:
+    from .abc import SnowflakeTime
 
 log = logging.getLogger(__name__)
 
@@ -968,7 +973,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit=100, before=None, after=None):
+    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None) -> List[Guild]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
