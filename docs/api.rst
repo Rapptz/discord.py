@@ -3126,6 +3126,15 @@ StageChannel
     :members:
     :inherited-members:
 
+
+StageInstance
+~~~~~~~~~~~~~~
+
+.. attributetable:: StageInstance
+
+.. autoclass:: StageInstance()
+    :members:
+
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
 
@@ -3383,14 +3392,6 @@ ApplicationFlags
 .. attributetable:: ApplicationFlags
 
 .. autoclass:: ApplicationFlags
-    :members:
-
-StageInstance
-~~~~~~~~~~~~~~
-
-.. attributetable:: StageInstance
-
-.. autoclass:: StageInstance
     :members:
 
 File
