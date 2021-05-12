@@ -52,7 +52,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .abc import Snowflake
+    from .abc import SnowflakeTime
     from .types.guild import (
         Ban as BanPayload
     )
