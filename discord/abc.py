@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import copy
 import asyncio
-from datetime import datetime
 from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Protocol, Type, TypeVar, Union, overload, runtime_checkable
 
 from .iterators import HistoryIterator
@@ -53,6 +52,8 @@ __all__ = (
 T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from .user import ClientUser
     from .asset import Asset
     from .state import ConnectionState
@@ -61,6 +62,8 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference
+
+    SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING
 
@@ -96,8 +99,6 @@ class Snowflake(Protocol):
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
-
-SnowflakeTime = Union[Snowflake, datetime]
 
 @runtime_checkable
 class User(Snowflake, Protocol):

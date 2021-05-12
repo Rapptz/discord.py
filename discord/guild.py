@@ -52,6 +52,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from .abc import Snowflake
     from .types.guild import (
         Ban as BanPayload
     )
@@ -1354,7 +1355,7 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    def fetch_members(self, *, limit: int = 1000, after: Optional[abc.SnowflakeTime] = None) -> List[Member]:
+    def fetch_members(self, *, limit: int = 1000, after: Optional[SnowflakeTime] = None) -> List[Member]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
@@ -2223,8 +2224,8 @@ class Guild(Hashable):
         self,
         *,
         limit: int = 100,
-        before: Optional[abc.SnowflakeTime] = None,
-        after: Optional[abc.SnowflakeTime] = None,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = None,
         user: abc.Snowflake = None,
         action: AuditLogAction = None
