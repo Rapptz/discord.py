@@ -126,15 +126,9 @@ class DiscoveryMetadata:
         self.emoji_discoverability_enabled: bool = data['emoji_discoverability_enabled']
         self.subcategory_ids: List[int] = data['category_ids']
 
-        partner_actioned_timestamp = data['partner_actioned_timestamp']
-        self.partner_actioned_timestamp: Optional[datetime] = (
-            parse_time(partner_actioned_timestamp) if partner_actioned_timestamp else None
-        )
+        self.partner_actioned_timestamp: Optional[datetime] = parse_time(data['partner_actioned_timestamp'])
 
-        partner_application_timestamp = data['partner_application_timestamp']
-        self.partner_application_timestamp: Optional[datetime] = (
-            parse_time(partner_application_timestamp) if partner_application_timestamp else None
-        )
+        self.partner_application_timestamp: Optional[datetime] = parse_time(data['partner_application_timestamp'])
 
     @overload
     async def edit(
