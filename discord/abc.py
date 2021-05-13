@@ -63,6 +63,8 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Message, MessageReference
 
+    SnowflakeTime = Union["Snowflake", datetime]
+
 MISSING = utils.MISSING
 
 
@@ -97,8 +99,6 @@ class Snowflake(Protocol):
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
-
-SnowflakeTime = Union[Snowflake, datetime]
 
 @runtime_checkable
 class User(Snowflake, Protocol):
