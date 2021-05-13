@@ -174,8 +174,8 @@ class Command(_BaseCommand):
         If the command is invoked while it is disabled, then
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
-    parent: Optional[:class:`Command`]
-        The parent command that this command belongs to. ``None`` if there
+    parent: Optional[:class:`Group`]
+        The parent group that this command belongs to. ``None`` if there
         isn't one.
     cog: Optional[:class:`Cog`]
         The cog that this command belongs to. ``None`` if there isn't one.
@@ -556,7 +556,7 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """List[:class:`Command`]: Retrieves the parents of this command.
+        """List[:class:`Group`]: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
