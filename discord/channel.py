@@ -641,7 +641,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
-    def permissions_for(self, member: Member, /) -> Permissions:
+    def permissions_for(self, member: Union[Role, Member], /) -> Permissions:
         base = super().permissions_for(member)
 
         # voice channels cannot be edited by people who can't connect to them

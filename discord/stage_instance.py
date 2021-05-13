@@ -45,6 +45,20 @@ class StageInstance(Hashable):
 
     .. versionadded:: 2.0
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two stagea instances are equal.
+
+        .. describe:: x != y
+
+            Checks if two stage instances are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the stage instance's hash.
+
     Attributes
     -----------
     id: :class:`int`
