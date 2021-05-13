@@ -80,7 +80,8 @@ class Colour:
 
     def __init__(self, value):
         if not isinstance(value, int):
-            raise TypeError(f'Expected int parameter, received {value.__class__.__name__} instead.')
+            raise TypeError(
+                f'Expected int parameter, received {value.__class__.__name__} instead.')
 
         self.value: int = value
 
@@ -287,5 +288,22 @@ class Colour:
         .. versionadded:: 1.5
         """
         return cls(0x36393F)
+
+    @classmethod
+    def fuchsia(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xB459E``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xEB459E)
+
+    @classmethod
+    def yellow(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xFEE75C``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xFEE75C)
+
 
 Color = Colour
