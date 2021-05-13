@@ -574,7 +574,7 @@ class Command(_BaseCommand):
 
     @property
     def root_parent(self):
-        """Optional[:class:`Command`]: Retrieves the root parent of this command.
+        """Optional[:class:`Group`]: Retrieves the root parent of this command.
 
         If the command has no parents then it returns ``None``.
 
