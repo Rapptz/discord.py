@@ -22,12 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import signal
 import sys
 import traceback
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import aiohttp
 
@@ -58,6 +60,9 @@ from .discovery import DiscoveryCategory
 __all__ = (
     'Client',
 )
+
+if TYPE_CHECKING:
+    from .abc import SnowflakeTime
 
 log = logging.getLogger(__name__)
 
@@ -969,7 +974,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit=100, before=None, after=None):
+    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None) -> List[Guild]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
@@ -1256,7 +1261,7 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. 
+        Retrieves a :class:`~discord.User` based on their ID.
         You do not have to share any guilds with the user to get this information,
         however many operations do require that you do.
 
