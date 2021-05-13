@@ -2010,9 +2010,9 @@ of :class:`enum.Enum`.
     .. attribute:: stream
 
         The invite targets a stream.
-        
+
     .. attribute:: embedded_application
-    
+
         The invite targets an embedded application activity.
 
 .. class:: VideoQualityMode
@@ -2538,7 +2538,7 @@ AuditLogDiff
 
         See also :attr:`Invite.inviter`.
 
-        :type: :class:`User`
+        :type: Optional[:class:`User`]
 
     .. attribute:: max_uses
 
