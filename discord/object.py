@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,8 +22,24 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from . import utils
 from .mixins import Hashable
+
+from typing import (
+    SupportsInt,
+    TYPE_CHECKING,
+    Union,
+)
+
+if TYPE_CHECKING:
+    import datetime
+    SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
+
+__all__ = (
+    'Object',
+)
 
 class Object(Hashable):
     """Represents a generic Discord object.
@@ -61,18 +75,18 @@ class Object(Hashable):
         The ID of the object.
     """
 
-    def __init__(self, id):
+    def __init__(self, id: SupportsIntCast):
         try:
             id = int(id)
         except ValueError:
-            raise TypeError('id parameter must be convertable to int not {0.__class__!r}'.format(id)) from None
+            raise TypeError(f'id parameter must be convertable to int not {id.__class__!r}') from None
         else:
             self.id = id
 
-    def __repr__(self):
-        return '<Object id=%r>' % self.id
+    def __repr__(self) -> str:
+        return f'<Object id={self.id!r}>'
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
         return utils.snowflake_time(self.id)

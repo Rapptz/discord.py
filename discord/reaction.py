@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -25,6 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .iterators import ReactionIterator
+
+__all__ = (
+    'Reaction',
+)
 
 class Reaction:
     """Represents a reaction to a message.
@@ -91,7 +93,7 @@ class Reaction:
         return str(self.emoji)
 
     def __repr__(self):
-        return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
+        return f'<Reaction emoji={self.emoji!r} me={self.me} count={self.count}>'
 
     async def remove(self, user):
         """|coro|
@@ -156,14 +158,14 @@ class Reaction:
 
             # I do not actually recommend doing this.
             async for user in reaction.users():
-                await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
+                await channel.send(f'{user} has reacted with {reaction.emoji}!')
 
         Flattening into a list: ::
 
             users = await reaction.users().flatten()
             # users is now a list of User...
             winner = random.choice(users)
-            await channel.send('{} has won the raffle.'.format(winner))
+            await channel.send(f'{winner} has won the raffle.')
 
         Parameters
         ------------
@@ -189,7 +191,7 @@ class Reaction:
         """
 
         if self.custom_emoji:
-            emoji = '{0.name}:{0.id}'.format(self.emoji)
+            emoji = f'{self.emoji.name}:{self.emoji.id}'
         else:
             emoji = self.emoji
 

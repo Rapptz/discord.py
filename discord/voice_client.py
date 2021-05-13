@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -44,6 +42,7 @@ import socket
 import logging
 import struct
 import threading
+from typing import Any, Callable
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -57,6 +56,11 @@ try:
 except ImportError:
     has_nacl = False
 
+__all__ = (
+    'VoiceProtocol',
+    'VoiceClient',
+)
+
 log = logging.getLogger(__name__)
 
 class VoiceProtocol:
@@ -68,9 +72,9 @@ class VoiceProtocol:
     This class allows you to implement a protocol to allow for an external
     method of sending voice, such as Lavalink_ or a native library implementation.
 
-    These classes are passed to :meth:`abc.Connectable.connect`.
+    These classes are passed to :meth:`abc.Connectable.connect <VoiceChannel.connect>`.
 
-    .. _Lavalink: https://github.com/Frederikam/Lavalink
+    .. _Lavalink: https://github.com/freyacodes/Lavalink
 
     Parameters
     ------------
@@ -118,7 +122,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout, reconnect):
+    async def connect(self, *, timeout: float, reconnect: bool):
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -141,7 +145,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def disconnect(self, *, force):
+    async def disconnect(self, *, force: bool):
         """|coro|
 
         An abstract method called when the client terminates the connection.
@@ -325,7 +329,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect, timeout):
+    async def connect(self, *, reconnect: bool, timeout: bool):
         log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -448,7 +452,7 @@ class VoiceClient(VoiceProtocol):
                     log.warning('Could not connect to voice... Retrying...')
                     continue
 
-    async def disconnect(self, *, force=False):
+    async def disconnect(self, *, force: bool = False):
         """|coro|
 
         Disconnects this voice client from voice.
@@ -522,7 +526,7 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def play(self, source, *, after=None):
+    def play(self, source: AudioSource, *, after: Callable[[Exception], Any]=None):
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -558,7 +562,7 @@ class VoiceClient(VoiceProtocol):
             raise ClientException('Already playing audio.')
 
         if not isinstance(source, AudioSource):
-            raise TypeError('source must an AudioSource not {0.__class__.__name__}'.format(source))
+            raise TypeError(f'source must an AudioSource not {source.__class__.__name__}')
 
         if not self.encoder and not source.is_opus():
             self.encoder = opus.Encoder()
@@ -601,7 +605,7 @@ class VoiceClient(VoiceProtocol):
     @source.setter
     def source(self, value):
         if not isinstance(value, AudioSource):
-            raise TypeError('expected AudioSource not {0.__class__.__name__}.'.format(value))
+            raise TypeError(f'expected AudioSource not {value.__class__.__name__}.')
 
         if self._player is None:
             raise ValueError('Not playing anything.')

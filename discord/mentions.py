@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+__all__ = (
+    'AllowedMentions',
+)
+
+
 class _FakeBool:
     def __repr__(self):
         return 'True'
@@ -34,7 +37,9 @@ class _FakeBool:
     def __bool__(self):
         return True
 
+
 default = _FakeBool()
+
 
 class AllowedMentions:
     """A class that represents what mentions are allowed in a message.
@@ -124,4 +129,7 @@ class AllowedMentions:
         return AllowedMentions(everyone=everyone, roles=roles, users=users, replied_user=replied_user)
 
     def __repr__(self):
-        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles}, replied_user={0.replied_user})'.format(self)
+        return (
+            f'{self.__class__.__name__}(everyone={self.everyone}, '
+            f'users={self.users}, roles={self.roles}, replied_user={self.replied_user})'
+        )

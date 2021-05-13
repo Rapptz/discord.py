@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,45 +22,73 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Dict, List, TYPE_CHECKING
 from . import utils, enums
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
 from .colour import Colour
 from .invite import Invite
 from .mixins import Hashable
+from .asset import Asset
+
+__all__ = (
+    'AuditLogDiff',
+    'AuditLogChanges',
+    'AuditLogEntry',
+)
+
+if TYPE_CHECKING:
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
+    from .guild import Guild
+    from .user import User
+
 
 def _transform_verification_level(entry, data):
     return enums.try_enum(enums.VerificationLevel, data)
 
+
 def _transform_default_notifications(entry, data):
     return enums.try_enum(enums.NotificationLevel, data)
+
 
 def _transform_explicit_content_filter(entry, data):
     return enums.try_enum(enums.ContentFilter, data)
 
+
 def _transform_permissions(entry, data):
-    return Permissions(data)
+    return Permissions(int(data))
+
 
 def _transform_color(entry, data):
     return Colour(data)
 
+
 def _transform_snowflake(entry, data):
     return int(data)
+
 
 def _transform_channel(entry, data):
     if data is None:
         return None
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
+
 def _transform_owner_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
 
+
 def _transform_inviter_id(entry, data):
     if data is None:
         return None
     return entry._get_member(int(data))
+
 
 def _transform_overwrites(entry, data):
     overwrites = []
@@ -73,9 +99,10 @@ def _transform_overwrites(entry, data):
 
         ow_type = elem['type']
         ow_id = int(elem['id'])
-        if ow_type == 'role':
+        target = None
+        if ow_type == '0':
             target = entry.guild.get_role(ow_id)
-        else:
+        elif ow_type == '1':
             target = entry._get_member(ow_id)
 
         if target is None:
@@ -84,6 +111,40 @@ def _transform_overwrites(entry, data):
         overwrites.append((target, ow))
 
     return overwrites
+
+
+def _transform_channeltype(entry, data):
+    return enums.try_enum(enums.ChannelType, data)
+
+
+def _transform_voiceregion(entry, data):
+    return enums.try_enum(enums.VoiceRegion, data)
+
+
+def _transform_video_quality_mode(entry, data):
+    return enums.try_enum(enums.VideoQualityMode, data)
+
+
+def _transform_icon(entry, data):
+    if data is None:
+        return None
+    return Asset._from_guild_icon(entry._state, entry.guild.id, data)
+
+
+def _transform_avatar(entry, data):
+    if data is None:
+        return None
+    return Asset._from_avatar(entry._state, entry._target_id, data)
+
+
+def _guild_hash_transformer(path):
+    def _transform(entry, data):
+        if data is None:
+            return None
+        return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
+
+    return _transform
+
 
 class AuditLogDiff:
     def __len__(self):
@@ -94,9 +155,11 @@ class AuditLogDiff:
 
     def __repr__(self):
         values = ' '.join('%s=%r' % item for item in self.__dict__.items())
-        return '<AuditLogDiff %s>' % values
+        return f'<AuditLogDiff {values}>'
+
 
 class AuditLogChanges:
+    # fmt: off
     TRANSFORMERS = {
         'verification_level':            (None, _transform_verification_level),
         'explicit_content_filter':       (None, _transform_explicit_content_filter),
@@ -111,15 +174,24 @@ class AuditLogChanges:
         'afk_channel_id':                ('afk_channel', _transform_channel),
         'system_channel_id':             ('system_channel', _transform_channel),
         'widget_channel_id':             ('widget_channel', _transform_channel),
+        'rules_channel_id':              ('rules_channel', _transform_channel),
+        'public_updates_channel_id':     ('public_updates_channel', _transform_channel),
         'permission_overwrites':         ('overwrites', _transform_overwrites),
-        'splash_hash':                   ('splash', None),
-        'icon_hash':                     ('icon', None),
-        'avatar_hash':                   ('avatar', None),
+        'splash_hash':                   ('splash', _guild_hash_transformer('splashes')),
+        'banner_hash':                   ('banner', _guild_hash_transformer('banners')),
+        'discovery_splash_hash':         ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
+        'icon_hash':                     ('icon', _transform_icon),
+        'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
         'default_message_notifications': ('default_notifications', _transform_default_notifications),
+        'region':                        (None, _transform_voiceregion),
+        'rtc_region':                    (None, _transform_voiceregion),
+        'video_quality_mode':            (None, _transform_video_quality_mode),
+        'type':                          (None, _transform_channeltype),
     }
+    # fmt: on
 
-    def __init__(self, entry, data):
+    def __init__(self, entry, data: List[AuditLogChangePayload]):
         self.before = AuditLogDiff()
         self.after = AuditLogDiff()
 
@@ -164,16 +236,19 @@ class AuditLogChanges:
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
             self.before.color = self.before.colour
+        if hasattr(self.after, 'expire_behavior'):
+            self.after.expire_behaviour = self.after.expire_behavior
+            self.before.expire_behaviour = self.before.expire_behavior
 
     def __repr__(self):
-        return '<AuditLogChanges before=%r after=%r>' % (self.before, self.after)
+        return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
     def _handle_role(self, first, second, entry, elem):
         if not hasattr(first, 'roles'):
             setattr(first, 'roles', [])
 
         data = []
-        g = entry.guild
+        g: Guild = entry.guild
 
         for e in elem:
             role_id = int(e['id'])
@@ -181,11 +256,12 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']
+                role.name = e['name']  # type: ignore
 
             data.append(role)
 
         setattr(second, 'roles', data)
+
 
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
@@ -230,7 +306,7 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users, data, guild):
+    def __init__(self, *, users: Dict[str, User], data: AuditLogEntryPayload, guild: Guild):
         self._state = guild._state
         self.guild = guild
         self._users = users
@@ -252,7 +328,7 @@ class AuditLogEntry(Hashable):
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
-                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
                 }
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action is enums.AuditLogAction.member_disconnect:
@@ -265,22 +341,24 @@ class AuditLogEntry(Hashable):
                 # the pin actions have a dict with some information
                 channel_id = int(self.extra['channel_id'])
                 message_id = int(self.extra['message_id'])
+                # fmt: off
                 elems = {
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
                     'message_id': message_id
                 }
+                # fmt: on
                 self.extra = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
-                if the_type == 'member':
+                if the_type == '1':
                     self.extra = self._get_member(instance_id)
-                else:
+                elif the_type == '0':
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')
+                        role.name = self.extra.get('role_name')  # type: ignore
                     self.extra = role
 
         # this key is not present when the above is present, typically.
@@ -297,7 +375,7 @@ class AuditLogEntry(Hashable):
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self):
-        return '<AuditLogEntry id={0.id} action={0.action} user={0.user!r}>'.format(self)
+        return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
     @utils.cached_property
     def created_at(self):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -27,6 +25,12 @@ DEALINGS IN THE SOFTWARE.
 import struct
 
 from .errors import DiscordException
+
+__all__ = (
+    'OggError',
+    'OggPage',
+    'OggStream',
+)
 
 class OggError(DiscordException):
     """An exception that is thrown for Ogg stream parsing errors."""

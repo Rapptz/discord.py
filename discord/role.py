@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,11 +22,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import Optional, Union, overload
+
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _get_as_snowflake
+
+__all__ = (
+    'RoleTags',
+    'Role',
+)
+
 
 class RoleTags:
     """Represents tags on a role.
@@ -49,7 +55,11 @@ class RoleTags:
         The integration ID that manages the role.
     """
 
-    __slots__ = ('bot_id', 'integration_id', '_premium_subscriber',)
+    __slots__ = (
+        'bot_id',
+        'integration_id',
+        '_premium_subscriber',
+    )
 
     def __init__(self, data):
         self.bot_id = _get_as_snowflake(data, 'bot_id')
@@ -73,8 +83,11 @@ class RoleTags:
         return self.integration_id is not None
 
     def __repr__(self):
-        return '<RoleTags bot_id={0.bot_id} integration_id={0.integration_id} ' \
-               'premium_subscriber={1}>'.format(self, self.is_premium_subscriber())
+        return (
+            f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
+            f'premium_subscriber={self.is_premium_subscriber()}>'
+        )
+
 
 class Role(Hashable):
     """Represents a Discord role in a :class:`Guild`.
@@ -135,8 +148,19 @@ class Role(Hashable):
         The role tags associated with this role.
     """
 
-    __slots__ = ('id', 'name', '_permissions', '_colour', 'position',
-                 'managed', 'mentionable', 'hoist', 'guild', 'tags', '_state')
+    __slots__ = (
+        'id',
+        'name',
+        '_permissions',
+        '_colour',
+        'position',
+        'managed',
+        'mentionable',
+        'hoist',
+        'guild',
+        'tags',
+        '_state',
+    )
 
     def __init__(self, *, guild, state, data):
         self.guild = guild
@@ -148,7 +172,7 @@ class Role(Hashable):
         return self.name
 
     def __repr__(self):
-        return '<Role id={0.id} name={0.name!r}>'.format(self)
+        return f'<Role id={self.id} name={self.name!r}>'
 
     def __lt__(self, other):
         if not isinstance(other, Role) or not isinstance(self, Role):
@@ -188,7 +212,7 @@ class Role(Hashable):
 
     def _update(self, data):
         self.name = data['name']
-        self._permissions = int(data.get('permissions_new', 0))
+        self._permissions = int(data.get('permissions', 0))
         self.position = data.get('position', 0)
         self._colour = data.get('color', 0)
         self.hoist = data.get('hoist', False)
@@ -248,7 +272,7 @@ class Role(Hashable):
     @property
     def mention(self):
         """:class:`str`: Returns a string that allows you to mention a role."""
-        return '<@&%s>' % self.id
+        return f'<@&{self.id}>'
 
     @property
     def members(self):
@@ -282,6 +306,24 @@ class Role(Hashable):
 
         payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
         await http.move_role_position(self.guild.id, payload, reason=reason)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        permissions: Permissions = ...,
+        colour: Union[Colour, int] = ...,
+        hoist: bool = ...,
+        mentionable: bool = ...,
+        position: int = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
 
     async def edit(self, *, reason=None, **fields):
         """|coro|
@@ -343,13 +385,13 @@ class Role(Hashable):
             'permissions': str(fields.get('permissions', self.permissions).value),
             'color': colour.value,
             'hoist': fields.get('hoist', self.hoist),
-            'mentionable': fields.get('mentionable', self.mentionable)
+            'mentionable': fields.get('mentionable', self.mentionable),
         }
 
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         self._update(data)
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None):
         """|coro|
 
         Deletes the role.
