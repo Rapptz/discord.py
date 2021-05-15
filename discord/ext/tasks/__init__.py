@@ -185,7 +185,7 @@ class Loop(Generic[LF]):
                     now = datetime.datetime.now(datetime.timezone.utc)
                     if now > self._next_iteration:
                         self._next_iteration = now
-                        if self._time is not None:
+                        if self._time is not MISSING:
                             self._prepare_time_index(now)
 
                     self._current_loop += 1
@@ -673,7 +673,7 @@ class Loop(Generic[LF]):
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
         if self.is_running():
-            if self._time is not None:
+            if self._time is not MISSING:
                 # prepare the next time index starting from after the last iteration
                 self._prepare_time_index(now=self._last_iteration)
 
