@@ -267,7 +267,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     If you want exception to propagate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
-    :ref:`py:raise`.  Exceptions raised by ``on_error`` will not be
+    :ref:`raise statement <py:raise>`. Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
 
     .. note::
