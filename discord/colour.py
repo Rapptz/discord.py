@@ -295,7 +295,7 @@ class Colour:
 
     @classmethod
     def fuchsia(cls: Type[CT]) -> CT:
-        """A factory method that returns a :class:`Colour` with a value of ``0xB459E``.
+        """A factory method that returns a :class:`Colour` with a value of ``0xEB459E``.
 
         .. versionadded:: 2.0
         """
