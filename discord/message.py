@@ -1119,8 +1119,10 @@ class Message(Hashable):
 
         Publishes this message to your announcement channel.
 
+        You must have the :attr:`~Permissions.send_messages` permission to do this.
+
         If the message is not your own then the :attr:`~Permissions.manage_messages`
-        permission is needed.
+        permission is also needed.
 
         Raises
         -------
