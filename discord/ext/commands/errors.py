@@ -49,6 +49,7 @@ __all__ = (
     'ChannelNotFound',
     'ChannelNotReadable',
     'BadColourArgument',
+    'BadColorArgument',
     'RoleNotFound',
     'BadInviteArgument',
     'EmojiNotFound',
