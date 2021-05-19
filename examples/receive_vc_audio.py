@@ -1,6 +1,5 @@
 import discord
-
-
+import os
 
 
 def vc_required(func):
@@ -109,7 +108,7 @@ class Client(discord.Client):
     @vc_required
     async def toggle_pause(self, msg, vc):
         vc.toggle_pause()
-        await msg.channel.send(f"The recording has been {'paused' if vc.paused else 'unpaused}")
+        await msg.channel.send(f"The recording has been {'paused' if vc.paused else 'unpaused'}")
 
     @vc_required
     async def stop_recording(self, msg, vc):
