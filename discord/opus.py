@@ -39,6 +39,8 @@ from .sink import RawData
 
 __all__ = (
     'Encoder',
+    'Decoder',
+    'DecodeManager',
     'OpusError',
     'OpusNotLoaded',
 )
