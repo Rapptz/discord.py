@@ -56,7 +56,7 @@ from .raw_models import *
 from .team import *
 from .sticker import *
 from .interactions import *
-from .sink import Sink, Filters
+from .sink import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
