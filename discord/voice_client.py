@@ -795,7 +795,7 @@ class VoiceClient(VoiceProtocol):
     def empty_socket(self):
         while True:
             ready, _, _ = select.select([self.socket], [], [], 0.0)
-            if len(ready) == 0:
+            if not ready:
                 break
             for s in ready:
                 s.recv(4096)
