@@ -1,7 +1,6 @@
 import discord
 
 
-Sink = discord.Sink
 
 
 def vc_required(func):
