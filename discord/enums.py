@@ -397,6 +397,7 @@ class UserFlags(Enum):
     bug_hunter_level_2 = 16384
     verified_bot = 65536
     verified_bot_developer = 131072
+    discord_certified_moderator = 262144
 
 class ActivityType(Enum):
     unknown = -1
