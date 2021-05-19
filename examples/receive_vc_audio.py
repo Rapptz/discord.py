@@ -115,8 +115,7 @@ class Client(discord.Client):
     async def stop_recording(self, msg, vc):
         vc.stop_recording()
 
-    async def on_stopped(self, sink, *args):
-        channel = args[0]
+    async def on_stopped(self, sink, channel, *args):
         # Note: sink.audio_data = {user_id: AudioData}
         recorded_users = [f" <@{str(user_id)}> ({os.path.split(audio.file)[1]}) " for user_id, audio in sink.audio_data.items()]
         await channel.send(f"Finished! Recorded audio for {', '.join(recorded_users)}.")
