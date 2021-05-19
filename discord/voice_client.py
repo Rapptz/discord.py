@@ -779,7 +779,7 @@ class VoiceClient(VoiceProtocol):
         self.recording = False
         self.paused = False
 
-    def pause_recording(self):
+    def toggle_pause(self):
         """Pauses or unpauses the recording.
 
         Must be already recording.
