@@ -463,4 +463,4 @@ class DecodeManager(threading.Thread, _OpusStruct):
 
     @property
     def decoding(self):
-        return bool(len(self.decode_queue))
+        return bool(self.decode_queue)
