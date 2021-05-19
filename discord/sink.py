@@ -89,10 +89,7 @@ class RawData:
 
 
 class AudioData:
-    """
-    Handles data that's been completely decrypted and decoded
-    and is ready to be saved to file.
-    """
+    """Handles data that's been completely decrypted and decoded and is ready to be saved to file."""
     def __init__(self, file):
         self.file = open(file, 'ab')
         self.dir_path = os.path.split(file)[0]
