@@ -1,6 +1,9 @@
 import discord
+import os
 
 
+Sink = discord.Sink
+TOKEN = os.getenv('TOKEN')
 
 
 def vc_required(func):
@@ -47,7 +50,7 @@ def get_encoding(args):
         index = args.index('--output')
         try:
             encoding = args[index+1].lower()
-            if encoding not in discord.Sink.valid_encodings:
+            if encoding not in Sink.valid_encodings:
                 return
             return encoding
         except IndexError:
@@ -73,13 +76,11 @@ class Client(discord.Client):
         if not vc:
             await message.channel.send("You're not in a vc right now")
             return
-        connection = self.connections.get(message.guild.id)
-        if connection:
-            if connection.channel.id == message.author.voice.channel.id:
-                return connection
-
-            await connection.move_to(vc.channel)
-            return connection
+        if message.guild.id in self.connections:
+            if self.connections[message.guild.id].channel.id == message.author.voice.channel.id:
+                return self.connections[message.guild.id]
+            await self.connections[message.guild.id].move_to(vc.channel)
+            return self.connections[message.guild.id]
         else:
             vc = await vc.channel.connect()
             self.connections.update({message.guild.id: vc})
@@ -97,41 +98,37 @@ class Client(discord.Client):
         args = msg.content.split()[1:]
         filters = args_to_filters(args)
         if type(filters) == str:
-            return await msg.channel.send(filters)
+            await msg.channel.send(filters)
+            return
         encoding = get_encoding(args)
         if encoding is None:
-            return await msg.channel.send("You must provide a valid output encoding.")
-
-        vc.start_recording(discord.Sink(encoding=encoding, filters=filters), self.on_stopped, msg.channel)
-
+            await msg.channel.send("You must provide a valid output encoding.")
+            return
+        vc.start_recording(Sink(encoding=encoding, filters=filters), self.finished_callback, msg.channel)
         await msg.channel.send("The recording has started!")
 
     @vc_required
     async def pause_recording(self, msg, vc):
         vc.pause_recording()
-        await msg.channel.send(f"The recording has been {'paused' if vc.paused else 'unpaused}")
+        await msg.channel.send("The recording has been " + {True: "paused!", False: 'unpaused!'}[vc.paused])
 
     @vc_required
     async def stop_recording(self, msg, vc):
         vc.stop_recording()
 
-    async def on_stopped(self, sink, channel, *args):
+    async def finished_callback(self, sink, *args):
+        channel = args[0]
         # Note: sink.audio_data = {user_id: AudioData}
         recorded_users = [f" <@{str(user_id)}> ({os.path.split(audio.file)[1]}) " for user_id, audio in sink.audio_data.items()]
-        await channel.send(f"Finished! Recorded audio for {', '.join(recorded_users)}.")
+        await channel.send(f"Finished! Recorded audio for {','.join(recorded_users)}")
 
     async def on_voice_state_update(self, member, before, after):
-        if member.id != self.user.id:
-            return
-        # Filter out updates other than when we leave a channel we're connected to
-        if member.guild.id not in self.connections and (not before.channel and after.channel):
-            return
-
-        print("Disconnected")
-        del self.connections[member.guild.id]
-
+        if member.id == self.user.id:
+            if before.channel and not after.channel and member.guild.id in self.connections:
+                print("Disconnected")
+                del self.connections[member.guild.id]
 
 
 intents = discord.Intents.all()
 client = Client(intents=intents)
-client.run('token')
+client.run(TOKEN)
