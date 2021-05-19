@@ -73,11 +73,13 @@ class Client(discord.Client):
         if not vc:
             await message.channel.send("You're not in a vc right now")
             return
-        if message.guild.id in self.connections:
-            if self.connections[message.guild.id].channel.id == message.author.voice.channel.id:
-                return self.connections[message.guild.id]
-            await self.connections[message.guild.id].move_to(vc.channel)
-            return self.connections[message.guild.id]
+        connection = self.connections.get(message.guild.id)
+        if connection:
+            if connection.channel.id == message.author.voice.channel.id:
+                return connection
+
+            await connection.move_to(vc.channel)
+            return connection
         else:
             vc = await vc.channel.connect()
             self.connections.update({message.guild.id: vc})
