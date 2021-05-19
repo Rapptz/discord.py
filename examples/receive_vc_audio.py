@@ -131,4 +131,4 @@ class Client(discord.Client):
 
 intents = discord.Intents.all()
 client = Client(intents=intents)
-client.run(TOKEN)
+client.run('token')
