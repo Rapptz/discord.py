@@ -49,6 +49,7 @@ __all__ = (
     'ChannelNotFound',
     'ChannelNotReadable',
     'BadColourArgument',
+    'BadColorArgument',
     'RoleNotFound',
     'BadInviteArgument',
     'EmojiNotFound',
@@ -89,7 +90,7 @@ class CommandError(DiscordException):
 
     This exception and exceptions inherited from it are handled
     in a special way as they are caught and passed into a special event
-    from :class:`.Bot`\, :func:`on_command_error`.
+    from :class:`.Bot`\, :func:`.on_command_error`.
     """
     def __init__(self, message=None, *args):
         if message is not None:
@@ -457,7 +458,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: Cooldown
+    cooldown: ``Cooldown``
         A class with attributes ``rate``, ``per``, and ``type`` similar to
         the :func:`.cooldown` decorator.
     retry_after: :class:`float`
@@ -488,7 +489,7 @@ class MaxConcurrencyReached(CommandError):
         suffix = 'per %s' % name if per.name != 'default' else 'globally'
         plural = '%s times %s' if number > 1 else '%s time %s'
         fmt = plural % (number, suffix)
-        super().__init__(f'Too many people using this command. It can only be used {fmt} concurrently.')
+        super().__init__(f'Too many people are using this command. It can only be used {fmt} concurrently.')
 
 class MissingRole(CheckFailure):
     """Exception raised when the command invoker lacks a role to run a command.
@@ -654,7 +655,7 @@ class BadUnionArgument(UserInputError):
     -----------
     param: :class:`inspect.Parameter`
         The parameter that failed being converted.
-    converters: Tuple[Type, ...]
+    converters: Tuple[Type, ``...``]
         A tuple of converters attempted in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
@@ -692,7 +693,7 @@ class BadLiteralArgument(UserInputError):
     -----------
     param: :class:`inspect.Parameter`
         The parameter that failed being converted.
-    literals: Tuple[Any, ...]
+    literals: Tuple[Any, ``...``]
         A tuple of values compared against in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.

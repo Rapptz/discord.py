@@ -379,6 +379,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`User`
 - :class:`Message` (since v1.1)
 - :class:`PartialMessage` (since v1.7)
+- :class:`abc.GuildChannel` (since 2.0)
 - :class:`TextChannel`
 - :class:`VoiceChannel`
 - :class:`StageChannel` (since v1.7)
@@ -410,6 +411,8 @@ converter is given below:
 | :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
 +--------------------------+-------------------------------------------------+
 | :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConverter`  |
++--------------------------+-------------------------------------------------+
+| :class:`.GuildChannel`   | :class:`~ext.commands.GuildChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
 +--------------------------+-------------------------------------------------+
@@ -761,7 +764,7 @@ When our commands fail to parse we will, by default, receive a noisy error in ``
 that an error has happened and has been silently ignored.
 
 In order to handle our errors, we must use something called an error handler. There is a global error handler, called
-:func:`on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
+:func:`.on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
 called for every error reached.
 
 Most of the time however, we want to handle an error local to the command itself. Luckily, commands come with local error

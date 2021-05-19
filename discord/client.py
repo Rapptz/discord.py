@@ -22,12 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import signal
 import sys
 import traceback
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import aiohttp
 
@@ -57,6 +59,9 @@ from .appinfo import AppInfo
 __all__ = (
     'Client',
 )
+
+if TYPE_CHECKING:
+    from .abc import SnowflakeTime
 
 log = logging.getLogger(__name__)
 
@@ -287,13 +292,13 @@ class Client:
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
-        after :func:`on_connect` is called.
+        after :func:`~discord.on_connect` is called.
         """
         return self._connection.application_id
 
     @property
     def application_flags(self) -> ApplicationFlags:
-        """:class:`ApplicationFlags`: The client's application flags.
+        """:class:`~discord.ApplicationFlags`: The client's application flags.
 
         .. versionadded: 2.0
         """
@@ -968,7 +973,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit=100, before=None, after=None):
+    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None) -> List[Guild]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
@@ -1261,7 +1266,7 @@ class Client:
 
         .. note::
 
-            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
         Parameters
         -----------

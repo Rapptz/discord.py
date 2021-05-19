@@ -44,6 +44,7 @@ import struct
 import threading
 import select
 import time
+from typing import Any, Callable
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -75,7 +76,7 @@ class VoiceProtocol:
     This class allows you to implement a protocol to allow for an external
     method of sending voice, such as Lavalink_ or a native library implementation.
 
-    These classes are passed to :meth:`abc.Connectable.connect`.
+    These classes are passed to :meth:`abc.Connectable.connect <VoiceChannel.connect>`.
 
     .. _Lavalink: https://github.com/freyacodes/Lavalink
 
@@ -125,7 +126,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout, reconnect):
+    async def connect(self, *, timeout: float, reconnect: bool):
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -148,7 +149,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def disconnect(self, *, force):
+    async def disconnect(self, *, force: bool):
         """|coro|
 
         An abstract method called when the client terminates the connection.
@@ -340,7 +341,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect, timeout):
+    async def connect(self, *, reconnect: bool, timeout: bool):
         log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -463,7 +464,7 @@ class VoiceClient(VoiceProtocol):
                     log.warning('Could not connect to voice... Retrying...')
                     continue
 
-    async def disconnect(self, *, force=False):
+    async def disconnect(self, *, force: bool = False):
         """|coro|
 
         Disconnects this voice client from voice.
@@ -572,8 +573,8 @@ class VoiceClient(VoiceProtocol):
 
     def get_ssrc(self, user_id):
         return {info['user_id']: ssrc for ssrc, info in self.ws.ssrc_map.items()}[user_id]
-
-    def play(self, source, *, after=None):
+      
+    def play(self, source: AudioSource, *, after: Callable[[Exception], Any]=None):
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted

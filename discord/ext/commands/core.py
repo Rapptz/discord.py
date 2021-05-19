@@ -174,8 +174,8 @@ class Command(_BaseCommand):
         If the command is invoked while it is disabled, then
         :exc:`.DisabledCommand` is raised to the :func:`.on_command_error`
         event. Defaults to ``True``.
-    parent: Optional[:class:`Command`]
-        The parent command that this command belongs to. ``None`` if there
+    parent: Optional[:class:`Group`]
+        The parent group that this command belongs to. ``None`` if there
         isn't one.
     cog: Optional[:class:`Cog`]
         The cog that this command belongs to. ``None`` if there isn't one.
@@ -556,7 +556,7 @@ class Command(_BaseCommand):
 
     @property
     def parents(self):
-        """List[:class:`Command`]: Retrieves the parents of this command.
+        """List[:class:`Group`]: Retrieves the parents of this command.
 
         If the command has no parents then it returns an empty :class:`list`.
 
@@ -574,7 +574,7 @@ class Command(_BaseCommand):
 
     @property
     def root_parent(self):
-        """Optional[:class:`Command`]: Retrieves the root parent of this command.
+        """Optional[:class:`Group`]: Retrieves the root parent of this command.
 
         If the command has no parents then it returns ``None``.
 
@@ -908,9 +908,9 @@ class Command(_BaseCommand):
     def short_doc(self):
         """:class:`str`: Gets the "short" documentation of a command.
 
-        By default, this is the :attr:`brief` attribute.
+        By default, this is the :attr:`.brief` attribute.
         If that lookup leads to an empty string then the first line of the
-        :attr:`help` attribute is used instead.
+        :attr:`.help` attribute is used instead.
         """
         if self.brief is not None:
             return self.brief
@@ -979,7 +979,7 @@ class Command(_BaseCommand):
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
-        inside the :attr:`checks` attribute. This also checks whether the
+        inside the :attr:`~Command.checks` attribute. This also checks whether the
         command is disabled.
 
         .. versionchanged:: 1.3

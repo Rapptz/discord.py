@@ -262,7 +262,7 @@ class Invite(Hashable):
     max_uses: :class:`int`
         How many times the invite can be used.
         A value of ``0`` indicates that it has unlimited uses.
-    inviter: :class:`User`
+    inviter: Optional[:class:`User`]
         The user who created the invite.
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild.
@@ -281,7 +281,7 @@ class Invite(Hashable):
         The target of this invite in the case of stream invites.
 
         .. versionadded:: 2.0
-    target_type: :class:`InviteType`
+    target_type: :class:`InviteTarget`
         The invite's target type.
 
         .. versionadded:: 2.0

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import copy
 import asyncio
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import Any, Dict, List, Mapping, Optional, TYPE_CHECKING, Protocol, Type, TypeVar, Union, overload, runtime_checkable
 
 from .iterators import HistoryIterator
 from .context_managers import Typing
@@ -49,21 +49,31 @@ __all__ = (
     'Connectable',
 )
 
+T = TypeVar('T', bound=VoiceProtocol)
+
 if TYPE_CHECKING:
     from datetime import datetime
 
     from .user import ClientUser
     from .asset import Asset
+    from .state import ConnectionState
+    from .guild import Guild
+    from .member import Member
+    from .channel import CategoryChannel
+    from .embeds import Embed
+    from .message import Message, MessageReference
 
+    SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING
+
 
 class _Undefined:
     def __repr__(self):
         return 'see-below'
 
 
-_undefined = _Undefined()
+_undefined: Any = _Undefined()
 
 
 @runtime_checkable
@@ -81,6 +91,7 @@ class Snowflake(Protocol):
     id: :class:`int`
         The model's unique ID.
     """
+
     __slots__ = ()
     id: int
 
@@ -88,7 +99,6 @@ class Snowflake(Protocol):
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
         raise NotImplementedError
-
 
 @runtime_checkable
 class User(Snowflake, Protocol):
@@ -108,11 +118,12 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: :class:`Asset`
+    avatar: :class:`~discord.Asset`
         The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
     """
+
     __slots__ = ()
 
     name: str
@@ -147,6 +158,7 @@ class PrivateChannel(Snowflake, Protocol):
     me: :class:`~discord.ClientUser`
         The user presenting yourself.
     """
+
     __slots__ = ()
 
     me: ClientUser
@@ -179,7 +191,10 @@ class _Overwrites:
         return self.type == 1
 
 
-class GuildChannel(Protocol):
+GCH = TypeVar('GCH', bound='GuildChannel')
+
+
+class GuildChannel:
     """An ABC that details the common operations on a Discord guild channel.
 
     The following implement this ABC:
@@ -206,16 +221,38 @@ class GuildChannel(Protocol):
         The position in the channel list. This is a number that starts at 0.
         e.g. the top channel is position 0.
     """
+
     __slots__ = ()
 
-    def __str__(self):
+    id: int
+    name: str
+    guild: Guild
+    type: ChannelType
+    _state: ConnectionState
+
+    if TYPE_CHECKING:
+
+        def __init__(self, *, state: ConnectionState, guild: Guild, data: Dict[str, Any]):
+            ...
+
+    def __str__(self) -> str:
         return self.name
 
     @property
-    def _sorting_bucket(self):
+    def _sorting_bucket(self) -> int:
         raise NotImplementedError
 
-    async def _move(self, position, parent_id=None, lock_permissions=False, *, reason):
+    def _update(self, guild: Guild, data: Dict[str, Any]) -> None:
+        raise NotImplementedError
+
+    async def _move(
+        self,
+        position: int,
+        parent_id: Optional[Any] = None,
+        lock_permissions: bool = False,
+        *,
+        reason: Optional[str],
+    ):
         if position < 0:
             raise InvalidArgument('Channel position cannot be less than 0.')
 
@@ -304,7 +341,7 @@ class GuildChannel(Protocol):
                 payload = {
                     'allow': allow.value,
                     'deny': deny.value,
-                    'id': target.id
+                    'id': target.id,
                 }
 
                 if isinstance(target, Role):
@@ -354,7 +391,7 @@ class GuildChannel(Protocol):
             tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
 
     @property
-    def changed_roles(self):
+    def changed_roles(self) -> List[Role]:
         """List[:class:`~discord.Role`]: Returns a list of roles that have been overridden from
         their default values in the :attr:`~discord.Guild.roles` attribute."""
         ret = []
@@ -370,16 +407,16 @@ class GuildChannel(Protocol):
         return ret
 
     @property
-    def mention(self):
+    def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel."""
         return f'<#{self.id}>'
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-    def overwrites_for(self, obj):
+    def overwrites_for(self, obj: Union[Role, User]) -> PermissionOverwrite:
         """Returns the channel-specific overwrites for a member or a role.
 
         Parameters
@@ -410,7 +447,7 @@ class GuildChannel(Protocol):
         return PermissionOverwrite()
 
     @property
-    def overwrites(self):
+    def overwrites(self) -> Mapping[Union[Role, Member], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
@@ -427,6 +464,7 @@ class GuildChannel(Protocol):
             allow = Permissions(ow.allow)
             deny = Permissions(ow.deny)
             overwrite = PermissionOverwrite.from_pair(allow, deny)
+            target = None
 
             if ow.is_role():
                 target = self.guild.get_role(ow.id)
@@ -443,7 +481,7 @@ class GuildChannel(Protocol):
         return ret
 
     @property
-    def category(self):
+    def category(self) -> Optional[CategoryChannel]:
         """Optional[:class:`~discord.CategoryChannel`]: The category this channel belongs to.
 
         If there is no category then this is ``None``.
@@ -451,7 +489,7 @@ class GuildChannel(Protocol):
         return self.guild.get_channel(self.category_id)
 
     @property
-    def permissions_synced(self):
+    def permissions_synced(self) -> bool:
         """:class:`bool`: Whether or not the permissions for this channel are synced with the
         category it belongs to.
 
@@ -462,7 +500,7 @@ class GuildChannel(Protocol):
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
-    def permissions_for(self, obj, /):
+    def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
         or :class:`~discord.Role`.
 
@@ -595,12 +633,12 @@ class GuildChannel(Protocol):
 
         return base
 
-    async def delete(self, *, reason=None):
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the channel.
 
-        You must have :attr:`~Permissions.manage_channels` permission to use this.
+        You must have :attr:`~discord.Permissions.manage_channels` permission to use this.
 
         Parameters
         -----------
@@ -619,7 +657,34 @@ class GuildChannel(Protocol):
         """
         await self._state.http.delete_channel(self.id, reason=reason)
 
-    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    @overload
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Optional[Union[PermissionOverwrite, _Undefined]] = ...,
+        reason: Optional[str] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        reason: Optional[str] = ...,
+        **permissions: bool,
+    ) -> None:
+        ...
+
+    async def set_permissions(
+        self,
+        target,
+        *,
+        overwrite=_undefined,
+        reason=None,
+        **permissions
+    ):
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -637,7 +702,7 @@ class GuildChannel(Protocol):
         If the ``overwrite`` parameter is ``None``, then the permission
         overwrites are deleted.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to use this.
+        You must have the :attr:`~discord.Permissions.manage_roles` permission to use this.
 
         Examples
         ----------
@@ -714,10 +779,14 @@ class GuildChannel(Protocol):
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
-    async def _clone_impl(self, base_attrs, *, name=None, reason=None):
-        base_attrs['permission_overwrites'] = [
-            x._asdict() for x in self._overwrites
-        ]
+    async def _clone_impl(
+        self: GCH,
+        base_attrs: Dict[str, Any],
+        *,
+        name: Optional[str] = None,
+        reason: Optional[str] = None,
+    ) -> GCH:
+        base_attrs['permission_overwrites'] = [x._asdict() for x in self._overwrites]
         base_attrs['parent_id'] = self.category_id
         base_attrs['name'] = name or self.name
         guild_id = self.guild.id
@@ -729,7 +798,7 @@ class GuildChannel(Protocol):
         self.guild._channels[obj.id] = obj
         return obj
 
-    async def clone(self, *, name=None, reason=None):
+    async def clone(self: GCH, *, name: Optional[str] = None, reason: Optional[str] = None) -> GCH:
         """|coro|
 
         Clones this channel. This creates a channel with the same properties
@@ -762,12 +831,60 @@ class GuildChannel(Protocol):
         """
         raise NotImplementedError
 
-    async def move(self, **kwargs):
+    @overload
+    async def move(
+        self,
+        *,
+        beginning: bool,
+        offset: int = MISSING,
+        category: Optional[Snowflake] = MISSING,
+        sync_permissions: bool = MISSING,
+        reason: Optional[str] = MISSING,
+    ) -> None:
+        ...
+
+    @overload
+    async def move(
+        self,
+        *,
+        end: bool,
+        offset: int = MISSING,
+        category: Optional[Snowflake] = MISSING,
+        sync_permissions: bool = MISSING,
+        reason: str = MISSING,
+    ) -> None:
+        ...
+
+    @overload
+    async def move(
+        self,
+        *,
+        before: Snowflake,
+        offset: int = MISSING,
+        category: Optional[Snowflake] = MISSING,
+        sync_permissions: bool = MISSING,
+        reason: str = MISSING,
+    ) -> None:
+        ...
+
+    @overload
+    async def move(
+        self,
+        *,
+        after: Snowflake,
+        offset: int = MISSING,
+        category: Optional[Snowflake] = MISSING,
+        sync_permissions: bool = MISSING,
+        reason: str = MISSING,
+    ) -> None:
+        ...
+
+    async def move(self, **kwargs) -> None:
         """|coro|
 
         A rich interface to help move a channel relative to other channels.
 
-        If exact position movement is required, :meth:`edit` should be used instead.
+        If exact position movement is required, ``edit`` should be used instead.
 
         You must have the :attr:`~discord.Permissions.manage_channels` permission to
         do this.
@@ -832,6 +949,7 @@ class GuildChannel(Protocol):
 
         bucket = self._sorting_bucket
         parent_id = kwargs.get('category', MISSING)
+        # fmt: off
         if parent_id not in (MISSING, None):
             parent_id = parent_id.id
             channels = [
@@ -847,6 +965,7 @@ class GuildChannel(Protocol):
                 if ch._sorting_bucket == bucket
                 and ch.category_id == self.category_id
             ]
+        # fmt: on
 
         channels.sort(key=lambda c: (c.position, c.id))
 
@@ -882,12 +1001,20 @@ class GuildChannel(Protocol):
 
         await self._state.http.bulk_channel_update(self.guild.id, payload, reason=reason)
 
-    async def create_invite(self, *, reason=None, **fields):
+    async def create_invite(
+        self,
+        *,
+        reason: Optional[str] = None,
+        max_age: int = 0,
+        max_uses: int = 0,
+        temporary: bool = False,
+        unique: bool = True,
+    ) -> Invite:
         """|coro|
 
         Creates an instant invite from a text or voice channel.
 
-        You must have the :attr:`~Permissions.create_instant_invite` permission to
+        You must have the :attr:`~discord.Permissions.create_instant_invite` permission to
         do this.
 
         Parameters
@@ -922,15 +1049,22 @@ class GuildChannel(Protocol):
             The invite that was created.
         """
 
-        data = await self._state.http.create_invite(self.id, reason=reason, **fields)
+        data = await self._state.http.create_invite(
+            self.id,
+            reason=reason,
+            max_age=max_age,
+            max_uses=max_uses,
+            temporary=temporary,
+            unique=unique,
+        )
         return Invite.from_incomplete(data=data, state=self._state)
 
-    async def invites(self):
+    async def invites(self) -> List[Invite]:
         """|coro|
 
         Returns a list of all active instant invites from this channel.
 
-        You must have :attr:`~Permissions.manage_channels` to get this information.
+        You must have :attr:`~discord.Permissions.manage_channels` to get this information.
 
         Raises
         -------
@@ -980,6 +1114,38 @@ class Messageable(Protocol):
 
     async def _get_channel(self):
         raise NotImplementedError
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] =...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        file: File = ...,
+        delete_after: int = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        files: List[File] = ...,
+        delete_after: int = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+    ) -> Message:
+        ...
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
@@ -1211,7 +1377,7 @@ class Messageable(Protocol):
     def history(self, *, limit=100, before=None, after=None, around=None, oldest_first=None):
         """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
 
-        You must have :attr:`~Permissions.read_message_history` permissions to use this.
+        You must have :attr:`~discord.Permissions.read_message_history` permissions to use this.
 
         Examples
         ---------
@@ -1283,6 +1449,7 @@ class Connectable(Protocol):
     This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
     checks.
     """
+
     __slots__ = ()
 
     def _get_voice_client_key(self):
@@ -1291,7 +1458,7 @@ class Connectable(Protocol):
     def _get_voice_state_pair(self):
         raise NotImplementedError
 
-    async def connect(self, *, timeout=60.0, reconnect=True, cls=VoiceClient):
+    async def connect(self, *, timeout: float = 60.0, reconnect: bool = True, cls: Type[T] = VoiceClient) -> T:
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
