@@ -109,7 +109,7 @@ class Client(discord.Client):
     @vc_required
     async def pause_recording(self, msg, vc):
         vc.pause_recording()
-        await msg.channel.send("The recording has been " + {True: "paused!", False: 'unpaused!'}[vc.paused])
+        await msg.channel.send(f"The recording has been {'paused' if vc.paused else 'unpaused}")
 
     @vc_required
     async def stop_recording(self, msg, vc):
