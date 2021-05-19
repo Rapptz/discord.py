@@ -842,7 +842,9 @@ class VoiceClient(VoiceProtocol):
         if data.ssrc not in self.user_timestamps:
             self.user_timestamps.update({data.ssrc: data.timestamp})
             # Add silence of when they were not being recorded.
-            data.decoded_data = struct.pack('<h', 0) * round(self.decoder.CHANNELS * self.decoder.SAMPLING_RATE * (time.perf_counter() - self.starting_time)) + data.decoded_data
+            data.decoded_data = struct.pack('<h', 0) * round(
+                self.decoder.CHANNELS * self.decoder.SAMPLING_RATE * (time.perf_counter() - self.starting_time)
+            ) + data.decoded_data
         else:
             self.user_timestamps[data.ssrc] = data.timestamp
 
