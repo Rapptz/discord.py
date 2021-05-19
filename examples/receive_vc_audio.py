@@ -122,10 +122,15 @@ class Client(discord.Client):
         await channel.send(f"Finished! Recorded audio for {','.join(recorded_users)}")
 
     async def on_voice_state_update(self, member, before, after):
-        if member.id == self.user.id:
-            if before.channel and not after.channel and member.guild.id in self.connections:
-                print("Disconnected")
-                del self.connections[member.guild.id]
+        if member.id != self.user.id:
+            return
+        # Filter out updates other than when we leave a channel we're connected to
+        if member.guild.id not in self.connections and (not before.channel and after.channel):
+            return
+
+        print("Disconnected")
+        del self.connections[member.guild.id]
+
 
 
 intents = discord.Intents.all()
