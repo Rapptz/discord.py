@@ -119,7 +119,7 @@ class Client(discord.Client):
         channel = args[0]
         # Note: sink.audio_data = {user_id: AudioData}
         recorded_users = [f" <@{str(user_id)}> ({os.path.split(audio.file)[1]}) " for user_id, audio in sink.audio_data.items()]
-        await channel.send(f"Finished! Recorded audio for {','.join(recorded_users)}")
+        await channel.send(f"Finished! Recorded audio for {', '.join(recorded_users)}.")
 
     async def on_voice_state_update(self, member, before, after):
         if member.id != self.user.id:
