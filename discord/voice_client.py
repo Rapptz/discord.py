@@ -826,14 +826,11 @@ class VoiceClient(VoiceProtocol):
 
         self.stopping_time = time.perf_counter()
         self.sink.cleanup()
-        try:
-            callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
-            result = callback.result()
-        except Exception as exc:
-            raise exc
-        else:
-            if result is not None:
-                print(result)
+        callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
+        result = callback.result()
+
+        if result is not None:
+            print(result)
 
     def ssrc_exists(self, ssrc):
         return ssrc in self.ws.ssrc_map
