@@ -101,7 +101,8 @@ class Client(discord.Client):
         if encoding is None:
             await msg.channel.send("You must provide a valid output encoding.")
             return
-        vc.start_recording(Sink(encoding=encoding, filters=filters), self.on_stopped, msg.channel)
+        vc.start_recording(discord.Sink(encoding=encoding, filters=filters), self.on_stopped, msg.channel)
+
         await msg.channel.send("The recording has started!")
 
     @vc_required
