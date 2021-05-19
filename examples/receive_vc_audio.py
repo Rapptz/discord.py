@@ -47,7 +47,7 @@ def get_encoding(args):
         index = args.index('--output')
         try:
             encoding = args[index+1].lower()
-            if encoding not in Sink.valid_encodings:
+            if encoding not in discord.Sink.valid_encodings:
                 return
             return encoding
         except IndexError:
