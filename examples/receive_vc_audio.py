@@ -1,9 +1,7 @@
 import discord
-import os
 
 
 Sink = discord.Sink
-TOKEN = os.getenv('TOKEN')
 
 
 def vc_required(func):
