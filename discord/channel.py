@@ -470,7 +470,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name: str, avatar: bytes = None, reason: str = None) -> Webhook:
+    async def create_webhook(self, name: str, *, avatar: bytes = None, reason: str = None) -> Webhook:
         """|coro|
 
         Creates a webhook for this channel.
