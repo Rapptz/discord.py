@@ -36,6 +36,7 @@ __all__ = (
     'LoginFailure',
     'ConnectionClosed',
     'PrivilegedIntentsRequired',
+    'RecordingException',
 )
 
 class DiscordException(Exception):
@@ -213,3 +214,9 @@ class PrivilegedIntentsRequired(ClientException):
               'and explicitly enable the privileged intents within your application\'s page. If this is not ' \
               'possible, then consider disabling the privileged intents instead.'
         super().__init__(msg % shard_id)
+
+
+class RecordingException(ClientException):
+    """Exception that's thrown when there is an error while trying to record
+    audio from a voice channel."""
+    pass
