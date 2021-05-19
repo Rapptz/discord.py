@@ -117,10 +117,7 @@ class AudioData:
 
 
 class Sink(Filters):
-    valid_encodings = ['wav', 'mp3', 'pcm']
-
-    def __init__(self, *, encoding='wav', output_path='', filters=None):
-        """A Sink "stores" all the audio data.
+    """A Sink "stores" all the audio data.
 
         Parameters
         ----------
@@ -133,7 +130,11 @@ class Sink(Filters):
         ------
         ClientException
             That's not a valid encoding type.
-        """
+    """
+
+    valid_encodings = ['wav', 'mp3', 'pcm']
+
+    def __init__(self, *, encoding='wav', output_path='', filters=None):
         if filters is None:
             filters = default_filters
         self.filters = filters
