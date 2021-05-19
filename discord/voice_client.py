@@ -49,7 +49,7 @@ from typing import Any, Callable
 from . import opus, utils
 from .backoff import ExponentialBackoff
 from .gateway import *
-from .errors import ClientException, ConnectionClosed
+from .errors import ClientException, ConnectionClosed, RecordingException
 from .player import AudioPlayer, AudioSource
 from .sink import Sink, RawData
 
@@ -738,19 +738,19 @@ class VoiceClient(VoiceProtocol):
 
         Raises
         ------
-        ClientException
+        RecordingException
             Not connected to a voice channel.
-        ClientException
+        RecordingException
             Already recording.
-        ClientException
+        RecordingException
             Must provide a Sink object.
         """
         if not self.is_connected():
-            raise ClientException('Not connected to voice channel.')
+            raise RecordingException('Not connected to voice channel.')
         if self.recording:
-            raise ClientException("Already recording.")
+            raise RecordingException("Already recording.")
         if not isinstance(sink, Sink):
-            raise ClientException("Must provide a Sink object.")
+            raise RecordingException("Must provide a Sink object.")
 
         self.empty_socket()
 
@@ -770,11 +770,11 @@ class VoiceClient(VoiceProtocol):
 
         Raises
         ------
-        ClientException
+        RecordingException
             Not currently recording.
         """
         if not self.recording:
-            raise ClientException("Not currently recording audio.")
+            raise RecordingException("Not currently recording audio.")
         self.decoder.stop()
         self.recording = False
         self.paused = False
@@ -786,11 +786,11 @@ class VoiceClient(VoiceProtocol):
 
         Raises
         ------
-        ClientException
+        RecordingException
             Not currently recording.
          """
         if not self.recording:
-            raise ClientException("Not currently recording audio.")
+            raise RecordingException("Not currently recording audio.")
         self.paused = not self.paused
 
     def empty_socket(self):
