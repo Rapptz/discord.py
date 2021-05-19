@@ -32,6 +32,14 @@ import sys
 import struct
 
 
+__all__ = (
+    'Filters',
+    'Sink',
+    'AudioData',
+    'RawData',
+)
+
+
 if sys.platform != 'win32':
     CREATE_NO_WINDOW = 0
 else:
