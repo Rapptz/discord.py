@@ -72,10 +72,7 @@ class Filters:
 
 
 class RawData:
-    """
-    Handles raw data from Discord so that it can be
-    decrypted and decoded to be used.
-    """
+    """Handles raw data from Discord so that it can be decrypted and decoded to be used."""
     def __init__(self, data, client):
         self.data = bytearray(data)
         self.client = client
