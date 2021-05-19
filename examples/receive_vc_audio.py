@@ -65,7 +65,7 @@ class Client(discord.Client):
         self.commands = {
             '!start': self.start_recording,
             '!stop': self.stop_recording,
-            '!pause': self.pause_recording,
+            '!pause': self.toggle_pause,
         }
 
     async def get_vc(self, message):
@@ -107,8 +107,8 @@ class Client(discord.Client):
         await msg.channel.send("The recording has started!")
 
     @vc_required
-    async def pause_recording(self, msg, vc):
-        vc.pause_recording()
+    async def toggle_pause(self, msg, vc):
+        vc.toggle_pause()
         await msg.channel.send(f"The recording has been {'paused' if vc.paused else 'unpaused}")
 
     @vc_required
