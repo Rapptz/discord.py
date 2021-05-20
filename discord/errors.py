@@ -218,5 +218,6 @@ class PrivilegedIntentsRequired(ClientException):
 
 class RecordingException(ClientException):
     """Exception that's thrown when there is an error while trying to record
-    audio from a voice channel."""
+    audio from a voice channel.
+    """
     pass
