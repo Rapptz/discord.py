@@ -52,7 +52,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
     @commands.command()
     async def hello(self, ctx):
         """Have the bot greet you."""
-        await ctx.send('Hello am I an example bot!')
+        await ctx.send('Hello I am an example bot!')
 
     # A command group within a Cog.
     @commands.group(invoke_without_command=True)
@@ -105,7 +105,7 @@ class Miscellaneous(commands.Cog, name='Misc'):
             plural_or_singular = 'is' if len(mentioned_afk_users) == 1 else 'are'
             # formats each user as Username#0000
             formatted_users = [str(bot.get_user(user)) for user in mentioned_afk_users]
-            afk_users = ','.join(formatted_users)
+            afk_users = ', '.join(formatted_users)
             await message.channel.send(f'{afk_users} {plural_or_singular} afk.')
 
 # Cogs have to be explicitly added.
