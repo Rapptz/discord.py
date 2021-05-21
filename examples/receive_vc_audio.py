@@ -36,7 +36,7 @@ def args_to_filters(args):
                 break
             index += 1
         if not users:
-            return "You must provide at least one user, or multiple separated by spaces"
+            return "You must provide at least one user, or multiple users separated by spaces."
         filters.update({'users': users})
     return filters
 
