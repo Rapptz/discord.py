@@ -22,7 +22,7 @@ def args_to_filters(args):
         try:
             seconds = int(seconds)
         except ValueError:
-            return "You must provide a value integer value"
+            return "You must provide an integer value."
         filters.update({'time': seconds})
     if '--users' in args:
         users = []
