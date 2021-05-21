@@ -87,5 +87,6 @@ bot = commands.Bot(command_prefix='?', description=description, intents=intents)
       
       #how can you send the embed? look here
       await ctx.send(embed=embed) #the second 'embed' is the name of the var where we started creating our embed with 'discord.Embed'.
-    
-  
+
+
+  bot.run('token')
