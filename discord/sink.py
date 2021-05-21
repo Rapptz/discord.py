@@ -130,7 +130,7 @@ class Sink(Filters):
         Parameters
         ----------
         encoding: :class:`string`
-            The encoding to use. Valid types include wave.
+            The encoding to use. Valid types include wav, mp3, and pcm (even though it's not an actual encoding).
         output_path: :class:`string`
             A path to where the audio files should be output.
 
@@ -153,7 +153,7 @@ class Sink(Filters):
         # Would also like to add opus but don't
         # know how I would go about it.
         if encoding not in self.valid_encodings:
-            raise ClientException("That's not a valid encoding type.")
+            raise ClientException("An invalid encoding type was specified.")
 
         self.encoding = encoding
         self.file_path = output_path
