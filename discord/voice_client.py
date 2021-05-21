@@ -730,7 +730,7 @@ class VoiceClient(VoiceProtocol):
         Parameters
         ----------
         sink: :class:`Sink`
-            A Sink which will "store" all the audio data
+            A Sink which will "store" all the audio data.
         callback: :class:`asynchronous function`
             A function which is called after the bot has stopped recording.
         *args:
