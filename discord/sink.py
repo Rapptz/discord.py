@@ -130,14 +130,14 @@ class Sink(Filters):
         Parameters
         ----------
         encoding: :class:`string`
-            Valid types include wave
+            The encoding to use. Valid types include wave.
         output_path: :class:`string`
-            A path to where the audio files should be output
+            A path to where the audio files should be output.
 
         Raises
         ------
         ClientException
-            That's not a valid encoding type.
+            An invalid encoding type was specified.
     """
 
     valid_encodings = ['wav', 'mp3', 'pcm']
