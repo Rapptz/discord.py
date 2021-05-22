@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-from .utils import cached_slot_property
+from .utils import MISSING, cached_slot_property
 from .mixins import Hashable
 from .errors import InvalidArgument
 from .enums import PrivacyLevel, try_enum
@@ -111,7 +111,7 @@ class StageInstance(Hashable):
     def is_public(self):
         return self.privacy_level == PrivacyLevel.public
 
-    async def edit(self, *, topic: str = None, privacy_level: PrivacyLevel = None) -> None:
+    async def edit(self, *, topic: str = None, privacy_level: PrivacyLevel = MISSING) -> None:
         """|coro|
 
         Edits the stage instance.
@@ -125,6 +125,8 @@ class StageInstance(Hashable):
 
         Raises
         ------
+        InvalidArgument
+            If the ``privacy_level`` parameter is not the proper type.
         Forbidden
             You do not have permissions to edit the stage instance.
         HTTPException
@@ -136,7 +138,7 @@ class StageInstance(Hashable):
         if topic:
             payload['topic'] = topic
 
-        if privacy_level is not None:
+        if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
                 raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
 

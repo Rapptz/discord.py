@@ -922,7 +922,7 @@ class StageChannel(VocalGuildChannel):
         """
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
-    async def create_instance(self, *, topic: str, privacy_level: PrivacyLevel = None) -> StageInstance:
+    async def create_instance(self, *, topic: str, privacy_level: PrivacyLevel = utils.MISSING) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -938,6 +938,8 @@ class StageChannel(VocalGuildChannel):
 
         Raises
         ------
+        InvalidArgument
+            If the ``privacy_level`` parameter is not the proper type.
         Forbidden
             You do not have permissions to create a stage instance.
         HTTPException
@@ -954,7 +956,7 @@ class StageChannel(VocalGuildChannel):
             'topic': topic
         }
 
-        if privacy_level is not None:
+        if privacy_level is not utils.MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
                 raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
 
