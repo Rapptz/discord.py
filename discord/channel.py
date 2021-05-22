@@ -889,18 +889,21 @@ class StageChannel(VocalGuildChannel):
         return [member for member in self.members if not member.voice.suppress and member.voice.requested_to_speak_at is None]
 
     @property
+    def listeners(self) -> List[Member]:
+        """List[:class:`Member`]: A list of members who are listening in the stage channel.
+
+        .. versionadded:: 2.0
+        """
+        return [member for member in self.members if member.voice.suppress]
+
+    @property
     def moderators(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who are moderating the stage channel.
 
         .. versionadded:: 2.0
         """
         required_permissions = Permissions.stage_moderator()
-        ret = []
-        for member in self.members:
-            permissions: Permissions = self.permissions_for(member)
-            if permissions >= required_permissions:
-                ret.append(member)
-        return ret
+        return [member for member in self.members if self.permissions_for(member) >= required_permissions]
 
     @property
     def type(self):
