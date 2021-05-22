@@ -29,7 +29,7 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, List, Optional, TYPE_CHECKING, Union
+from typing import Any, Generator, List, Optional, TYPE_CHECKING, TypeVar, Union
 
 import aiohttp
 
@@ -64,6 +64,9 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime
+
+    T = TypeVar('T')
+    GetAll = Generator[T, None, None]
 
 log = logging.getLogger(__name__)
 
@@ -694,6 +697,28 @@ class Client:
         """
         return self._connection.get_channel(id)
 
+    def get_stage_instance(self, id) -> Optional[StageInstance]:
+        """Returns a stage instance with the given stage channel ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`StageInstance`]
+            The returns stage instance of ``None`` if not found.
+        """
+        from .channel import StageChannel
+
+        channel = self._connection.get_channel(id)
+
+        if isinstance(channel, StageChannel):
+            return channel.instance
+
     def get_guild(self, id):
         """Returns a guild with the given ID.
 
@@ -779,6 +804,23 @@ class Client:
         """
         for guild in self.guilds:
             yield from guild.members
+
+    def get_all_stage_instances(self) -> GetAll[StageInstance]:
+        """Returns a generator with every :class:`StageInstance` the client can see.
+
+        This is equivalent to: ::
+
+            for guild in client.guilds:
+                for stage_instance in guild.stage_instances
+                    yield stage_instance
+
+        Yields
+        ------
+        :class:`.StageInstance`
+            A stage instance the client can see.
+        """
+        for guild in self.guilds:
+            yield from guild.stage_instances
 
     # listeners/waiters
 
@@ -1162,7 +1204,8 @@ class Client:
             The stage instance from the stage channel ID.
         """
         data = await self.http.get_stage_instance(channel_id)
-        return StageInstance(state=self._connection, data=data)
+        guild = self.get_guild(int(data['guild_id']))
+        return StageInstance(guild=guild, state=self._connection, data=data)  # type: ignore
 
     # Invite management
 

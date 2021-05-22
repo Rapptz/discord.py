@@ -30,7 +30,7 @@ from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union, overloa
 
 import discord.abc
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, try_enum, VoiceRegion, VideoQualityMode
+from .enums import ChannelType, PrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
 from . import utils
 from .asset import Asset
@@ -911,7 +911,15 @@ class StageChannel(VocalGuildChannel):
     async def clone(self, *, name: str = None, reason: Optional[str] = None) -> StageChannel:
         return await self._clone_impl({}, name=name, reason=reason)
 
-    async def create_instance(self, *, topic: str) -> StageInstance:
+    @property
+    def instance(self) -> Optional[StageInstance]:
+        """Optional[:class:`StageInstance`]: The running stage instance of the stage channel.
+
+        .. versionadded:: 2.0
+        """
+        return utils.get(self.guild.stage_instances, channel_id=self.id)
+
+    async def create_instance(self, *, topic: str, privacy_level: PrivacyLevel = None) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -922,6 +930,8 @@ class StageChannel(VocalGuildChannel):
         -----------
         topic: :class:`str`
             The stage instance's topic.
+        privacy_level: :class:`PrivacyLevel`
+            The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
 
         Raises
         ------
@@ -935,8 +945,20 @@ class StageChannel(VocalGuildChannel):
         :class:`StageInstance`
             The newly created stage instance.
         """
-        data = await self._state.http.create_stage_instance(self.id, topic)
-        return StageInstance(state=self._state, data=data)
+
+        payload = {
+            'channel_id': self.id,
+            'topic': topic
+        }
+
+        if privacy_level is not None:
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
+
+            payload['privacy_level'] = privacy_level.value
+
+        data = await self._state.http.create_stage_instance(**payload)
+        return StageInstance(guild=self.guild, state=self._state, data=data)
 
     async def fetch_instance(self) -> StageInstance:
         """|coro|
@@ -958,7 +980,7 @@ class StageChannel(VocalGuildChannel):
             The stage instance.
         """
         data = await self._state.http.get_stage_instance(self.id)
-        return StageInstance(state=self._state, data=data)
+        return StageInstance(guild=self.guild, state=self._state, data=data)
 
     @overload
     async def edit(

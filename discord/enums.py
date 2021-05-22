@@ -479,6 +479,10 @@ class ButtonStyle(Enum):
 
     def __int__(self):
         return self.value
+class PrivacyLevel(Enum):
+    public = 1
+    closed = 2
+    guild_only = 2
 
 T = TypeVar('T')
 

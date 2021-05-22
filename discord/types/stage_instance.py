@@ -22,13 +22,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from .snowflake import Snowflake
 
+PrivacyLevel = Literal[1, 2]
 
 class StageInstance(TypedDict):
     id: Snowflake
     guild_id: Snowflake
     channel_id: Snowflake
     topic: str
+    privacy_level: PrivacyLevel
+    discoverable_disabled: bool

@@ -1087,18 +1087,22 @@ class HTTPClient:
     def get_stage_instance(self, channel_id: Snowflake) -> Response[stage_instance.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, channel_id: Snowflake, topic: str) -> Response[stage_instance.StageInstance]:
-        payload = {
-            'channel_id': channel_id,
-            'topic': topic,
-        }
+    def create_stage_instance(self, **payload) -> Response[stage_instance.StageInstance]:
+        valid_keys = (
+            'channel_id',
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
 
         return self.request(Route('POST', '/stage-instances'), json=payload)
 
-    def edit_stage_instance(self, channel_id: Snowflake, topic: str) -> Response[None]:
-        payload = {
-            'topic': topic,
-        }
+    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+        valid_keys = (
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
 
         return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
 

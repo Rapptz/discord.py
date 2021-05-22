@@ -28,6 +28,8 @@ from typing import Optional, TYPE_CHECKING
 
 from .utils import cached_slot_property
 from .mixins import Hashable
+from .errors import InvalidArgument
+from .enums import PrivacyLevel, try_enum
 
 __all__ = (
     'StageInstance',
@@ -63,45 +65,53 @@ class StageInstance(Hashable):
     -----------
     id: :class:`int`
         The stage instance's ID.
-    guild_id: :class:`int`
-        The ID of the guild that the stage instance is running in.
+    guild: :class:`Guild`
+        The guild that the stage instance is running in.
     channel_id: :class:`int`
         The ID of the channel that the stage instance is running in.
     topic: :class:`str`
         The topic of the stage instance.
+    privacy_level: :class:`PrivacyLevel`
+        The privacy level of the stage instance.
+    discoverable_disabled: :class:`bool`
+        Whether the stage instance is discoverable.
     """
 
     __slots__ = (
         '_state',
         'id',
-        'guild_id',
+        'guild',
         'channel_id',
         'topic',
-        '_cs_guild',
+        'privacy_level',
+        'discoverable_disabled',
         '_cs_channel',
     )
 
-    def __init__(self, *, state: ConnectionState, data: StageInstancePayload) -> None:
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: StageInstancePayload) -> None:
         self._state = state
+        self.guild = guild
+        self._update(data)
+
+    def _update(self, data: StageInstancePayload):
         self.id: int = int(data['id'])
-        self.guild_id: int = int(data['guild_id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
+        self.privacy_level = try_enum(PrivacyLevel, data['privacy_level'])
+        self.discoverable_disabled = data['discoverable_disabled']
 
     def __repr__(self) -> str:
-        return f'<StageInstance id={self.id} guild={self.guild_id} channel_id={self.channel_id} topic={self.topic!r}>'
-
-    @cached_slot_property('_cs_guild')
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild that the stage instance is running in."""
-        return self._state._get_guild(self.guild_id)
+        return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
 
     @cached_slot_property('_cs_channel')
     def channel(self) -> Optional[StageChannel]:
         """Optional[:class:`StageChannel`: The guild that stage instance is running in."""
         return self._state.get_channel(self.channel_id)
 
-    async def edit(self, *, topic: str) -> None:
+    def is_public(self):
+        return self.privacy_level == PrivacyLevel.public
+
+    async def edit(self, *, topic: str = None, privacy_level: PrivacyLevel = None) -> None:
         """|coro|
 
         Edits the stage instance.
@@ -110,6 +120,8 @@ class StageInstance(Hashable):
         -----------
         topic: :class:`str`
             The stage instance's new topic.
+        privacy_level: :class:`PrivacyLevel`
+            The stage instance's new privacy level.
 
         Raises
         ------
@@ -118,8 +130,20 @@ class StageInstance(Hashable):
         HTTPException
             Editing a stage instance failed.
         """
-        await self._state.http.edit_stage_instance(self.channel_id, topic)
-        self.topic = topic
+
+        payload = {}
+
+        if topic:
+            payload['topic'] = topic
+
+        if privacy_level is not None:
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
+
+            payload['privacy_level'] = privacy_level.value
+
+        if payload:
+            await self._state.http.edit_stage_instance(self.channel_id, **payload)
 
     async def delete(self) -> None:
         """|coro|
