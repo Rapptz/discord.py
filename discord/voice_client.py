@@ -53,9 +53,9 @@ from .errors import ClientException, ConnectionClosed, RecordingException
 from .player import AudioPlayer, AudioSource
 from .sink import Sink, RawData
 
-
 try:
     import nacl.secret
+
     has_nacl = True
 except ImportError:
     has_nacl = False
@@ -66,6 +66,7 @@ __all__ = (
 )
 
 log = logging.getLogger(__name__)
+
 
 class VoiceProtocol:
     """A class that represents the Discord voice protocol.
@@ -176,6 +177,7 @@ class VoiceProtocol:
         key_id, _ = self.channel._get_voice_client_key()
         self.client._connection._remove_voice_client(key_id)
 
+
 class VoiceClient(VoiceProtocol):
     """Represents a Discord voice connection.
 
@@ -202,6 +204,7 @@ class VoiceClient(VoiceProtocol):
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
+
     def __init__(self, client, channel):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
@@ -317,7 +320,8 @@ class VoiceClient(VoiceProtocol):
         await self.channel.guild.change_voice_state(channel=self.channel)
 
     async def voice_disconnect(self):
-        log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id, self.guild.id)
+        log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id,
+                 self.guild.id)
         await self.channel.guild.change_voice_state(channel=None)
 
     def prepare_handshake(self):
@@ -538,7 +542,7 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def _decrypt_xsalsa20_poly1305(self, header,  data):
+    def _decrypt_xsalsa20_poly1305(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
         nonce = bytearray(24)
@@ -573,8 +577,8 @@ class VoiceClient(VoiceProtocol):
 
     def get_ssrc(self, user_id):
         return {info['user_id']: ssrc for ssrc, info in self.ws.ssrc_map.items()}[user_id]
-      
-    def play(self, source: AudioSource, *, after: Callable[[Exception], Any]=None):
+
+    def play(self, source: AudioSource, *, after: Callable[[Exception], Any] = None):
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -813,7 +817,7 @@ class VoiceClient(VoiceProtocol):
                                           [self.socket], 0.01)
             if not ready:
                 if err:
-                    print("Socket error")
+                    print(f"Socket error: {err}")
                 continue
 
             try:
@@ -821,7 +825,6 @@ class VoiceClient(VoiceProtocol):
             except OSError:
                 self.stop_recording()
                 continue
-
 
             self.unpack_audio(data)
 
@@ -832,9 +835,6 @@ class VoiceClient(VoiceProtocol):
 
         if result is not None:
             print(result)
-
-    def ssrc_exists(self, ssrc):
-        return ssrc in self.ws.ssrc_map
 
     def recv_decoded_audio(self, data):
         if data.ssrc not in self.user_timestamps:
@@ -848,6 +848,6 @@ class VoiceClient(VoiceProtocol):
 
         silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
         data.decoded_data = struct.pack('<h', 0) * silence + data.decoded_data
-        while not self.ssrc_exists(data.ssrc):
-            time.sleep(0.2)
+        while not ssrc in self.ws.ssrc_map:
+            time.sleep(0.05)
         self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]['user_id'])
