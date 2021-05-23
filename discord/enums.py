@@ -229,7 +229,7 @@ class VerificationLevel(Enum):
     low       = 1
     medium    = 2
     high      = 3
-    very_high = 4
+    highest = 4
 
     def __str__(self):
         return self.name

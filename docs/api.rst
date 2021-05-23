@@ -1298,11 +1298,9 @@ of :class:`enum.Enum`.
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
-    .. attribute:: very_high
+    .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
-
-        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 
