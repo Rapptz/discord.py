@@ -1312,7 +1312,8 @@ class Messageable(Protocol):
         Example Usage: ::
         
             async with channel.typing(): 
-                await asyncio.sleep(10) # something heavy 
+                # stimulate something heavy 
+                await asyncio.sleep(10)
 
             await channel.send('done!')
 
