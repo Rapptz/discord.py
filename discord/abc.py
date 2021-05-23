@@ -706,8 +706,7 @@ class GuildChannel:
 
         .. note::
 
-            Setting new permissions will overwrite old permissions.
-            If you had ``send_messages`` set before, and you change ``read_messages``, ``send_messages`` will no longer be set.
+            This method *replaces* the old overwrites with the ones given.
 
         Examples
         ----------
