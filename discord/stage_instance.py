@@ -29,14 +29,14 @@ from typing import Optional, TYPE_CHECKING
 from .utils import MISSING, cached_slot_property
 from .mixins import Hashable
 from .errors import InvalidArgument
-from .enums import PrivacyLevel, try_enum
+from .enums import StagePrivacyLevel, try_enum
 
 __all__ = (
     'StageInstance',
 )
 
 if TYPE_CHECKING:
-    from .types.stage_instance import StageInstance as StageInstancePayload
+    from .types.channel import StageInstance as StageInstancePayload
     from .state import ConnectionState
     from .channel import StageChannel
     from .guild import Guild
@@ -97,7 +97,7 @@ class StageInstance(Hashable):
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
-        self.privacy_level = try_enum(PrivacyLevel, data['privacy_level'])
+        self.privacy_level = try_enum(StagePrivacyLevel, data['privacy_level'])
         self.discoverable_disabled = data['discoverable_disabled']
 
     def __repr__(self) -> str:
@@ -108,10 +108,10 @@ class StageInstance(Hashable):
         """Optional[:class:`StageChannel`: The guild that stage instance is running in."""
         return self._state.get_channel(self.channel_id)
 
-    def is_public(self):
-        return self.privacy_level == PrivacyLevel.public
+    def is_public(self) -> bool:
+        return self.privacy_level is StagePrivacyLevel.public
 
-    async def edit(self, *, topic: str = None, privacy_level: PrivacyLevel = MISSING) -> None:
+    async def edit(self, *, topic: str = MISSING, privacy_level: StagePrivacyLevel = MISSING) -> None:
         """|coro|
 
         Edits the stage instance.
@@ -135,11 +135,11 @@ class StageInstance(Hashable):
 
         payload = {}
 
-        if topic:
+        if topic is not MISSING:
             payload['topic'] = topic
 
         if privacy_level is not MISSING:
-            if not isinstance(privacy_level, PrivacyLevel):
+            if not isinstance(privacy_level, StagePrivacyLevel):
                 raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value

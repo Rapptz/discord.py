@@ -89,3 +89,15 @@ class DMChannel(PartialChannel):
 class GroupDMChannel(DMChannel):
     icon: Optional[str]
     owner_id: Snowflake
+
+
+PrivacyLevel = Literal[1, 2]
+
+
+class StageInstance(TypedDict):
+    id: Snowflake
+    guild_id: Snowflake
+    channel_id: Snowflake
+    topic: str
+    privacy_level: PrivacyLevel
+    discoverable_disabled: bool

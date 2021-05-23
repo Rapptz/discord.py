@@ -65,9 +65,6 @@ __all__ = (
 if TYPE_CHECKING:
     from .abc import SnowflakeTime
 
-    T = TypeVar('T')
-    GetAll = Generator[T, None, None]
-
 log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop):
@@ -804,23 +801,6 @@ class Client:
         """
         for guild in self.guilds:
             yield from guild.members
-
-    def get_all_stage_instances(self) -> GetAll[StageInstance]:
-        """Returns a generator with every :class:`StageInstance` the client can see.
-
-        This is equivalent to: ::
-
-            for guild in client.guilds:
-                for stage_instance in guild.stage_instances
-                    yield stage_instance
-
-        Yields
-        ------
-        :class:`.StageInstance`
-            A stage instance the client can see.
-        """
-        for guild in self.guilds:
-            yield from guild.stage_instances
 
     # listeners/waiters
 

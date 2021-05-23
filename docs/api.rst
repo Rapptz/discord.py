@@ -840,12 +840,16 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`StageInstance` is created or deleted for a :class:`StageChannel`.
 
+    .. versionadded:: 2.0
+
     :param stage_instance: The stage instance that was created or deleted.
     :type stage_instance: :class:`StageInstance`
 
 .. function:: on_stage_instance_update(before, after)
 
     Called when a :class:`StageInstance` is updated.
+
+    .. versionadded:: 2.0
 
     The following, but not limited to, examples illustrate when this event is called:
 
@@ -2158,7 +2162,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: guild_only
 
-        See :attr:`.closed`
+        Alias for :attr:`.closed`
 
 Async Iterator
 ----------------
