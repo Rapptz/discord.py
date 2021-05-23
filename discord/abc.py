@@ -1310,7 +1310,6 @@ class Messageable(Protocol):
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
-        
             async with channel.typing(): 
                 # stimulate something heavy 
                 await asyncio.sleep(10)
