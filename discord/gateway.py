@@ -599,7 +599,9 @@ class DiscordWebSocket:
         if activity is not None:
             if not isinstance(activity, BaseActivity):
                 raise InvalidArgument('activity must derive from BaseActivity.')
-            activity = activity.to_dict()
+            activity = [activity.to_dict()]
+        else:
+            activity = []
 
         if status == 'idle':
             since = int(time.time() * 1000)
@@ -607,7 +609,7 @@ class DiscordWebSocket:
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'activities': [activity],
+                'activities': activity,
                 'afk': afk,
                 'since': since,
                 'status': status
@@ -706,13 +708,18 @@ class DiscordVoiceWebSocket:
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
 
-    def __init__(self, socket, loop):
+    def __init__(self, socket, loop, *, hook=None):
         self.ws = socket
         self.loop = loop
         self._keep_alive = None
         self._close_code = None
         self.secret_key = None
+        if hook:
+            self._hook = hook
 
+    async def _hook(self, msg):
+        pass
+    
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -745,12 +752,12 @@ class DiscordVoiceWebSocket:
         await self.send_as_json(payload)
 
     @classmethod
-    async def from_client(cls, client, *, resume=False):
+    async def from_client(cls, client, *, resume=False, hook=None):
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
-        ws = cls(socket, loop=client.loop)
+        ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
@@ -817,6 +824,8 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
+            
+        await self._hook(self, msg)
 
     async def initial_connection(self, data):
         state = self._connection

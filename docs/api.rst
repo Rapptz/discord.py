@@ -267,7 +267,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     If you want exception to propagate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
-    :ref:`py:raise`.  Exceptions raised by ``on_error`` will not be
+    :ref:`raise statement <py:raise>`. Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
 
     .. note::
@@ -824,7 +824,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
     :type before: :class:`VoiceState`
-    :param after: The voice state after to the changes.
+    :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
 .. function:: on_member_ban(guild, user)
@@ -2010,9 +2010,9 @@ of :class:`enum.Enum`.
     .. attribute:: stream
 
         The invite targets a stream.
-        
+
     .. attribute:: embedded_application
-    
+
         The invite targets an embedded application activity.
 
 .. class:: VideoQualityMode
@@ -2538,7 +2538,7 @@ AuditLogDiff
 
         See also :attr:`Invite.inviter`.
 
-        :type: :class:`User`
+        :type: Optional[:class:`User`]
 
     .. attribute:: max_uses
 

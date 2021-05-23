@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 from .asset import Asset, AssetMixin
@@ -36,7 +37,7 @@ __all__ = (
 if TYPE_CHECKING:
     from .state import ConnectionState
     from datetime import datetime
-
+    from .types.message import PartialEmoji as PartialEmojiPayload
 
 class _EmojiTag:
     __slots__ = ()

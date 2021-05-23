@@ -143,7 +143,7 @@ class Context(discord.abc.Messageable):
         ret = await command.callback(*arguments, **kwargs)
         return ret
 
-    async def reinvoke(self, *, call_hooks=False, restart=True):
+    async def reinvoke(self, *, call_hooks: bool = False, restart: bool = True):
         """|coro|
 
         Calls the command again.
