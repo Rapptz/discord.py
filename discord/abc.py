@@ -704,6 +704,11 @@ class GuildChannel:
 
         You must have the :attr:`~discord.Permissions.manage_roles` permission to use this.
 
+        .. note::
+
+            Setting new permissions will overwrite old permissions.
+            If you had ``send_messages`` set before, and you change ``read_messages``, ``send_messages`` will no longer be set.
+
         Examples
         ----------
 
