@@ -704,6 +704,10 @@ class GuildChannel:
 
         You must have the :attr:`~discord.Permissions.manage_roles` permission to use this.
 
+        .. note::
+
+            This method *replaces* the old overwrites with the ones given.
+
         Examples
         ----------
 
