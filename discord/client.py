@@ -177,7 +177,7 @@ class Client:
     ws
         The websocket gateway the client is currently connected to. Could be ``None``.
     loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the client uses for HTTP requests and websocket operations.
+        The event loop that the client uses for asynchronous operations.
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
