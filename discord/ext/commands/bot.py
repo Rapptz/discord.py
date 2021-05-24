@@ -1051,10 +1051,6 @@ class Bot(BotBase, discord.Client):
         you require group commands to be case insensitive as well.
     description: :class:`str`
         The content prefixed into the default help message.
-    self_bot: :class:`bool`
-        If ``True``, the bot will only listen to commands invoked by itself rather
-        than ignoring itself. If ``False`` (the default) then the bot will ignore
-        itself. This cannot be changed once initialised.
     help_command: Optional[:class:`.HelpCommand`]
         The help command implementation to use. This can be dynamically
         set at runtime. To remove the help command pass ``None``. For more
