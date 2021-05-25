@@ -708,14 +708,19 @@ class DiscordVoiceWebSocket:
     CLIENT_CONNECT      = 12
     CLIENT_DISCONNECT   = 13
 
-    def __init__(self, socket, loop):
+    def __init__(self, socket, loop, *, hook=None):
         self.ws = socket
         self.loop = loop
         self._keep_alive = None
         self._close_code = None
         self.secret_key = None
         self.ssrc_map = {}
+        if hook:
+            self._hook = hook
 
+    async def _hook(self, msg):
+        pass
+    
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -748,12 +753,12 @@ class DiscordVoiceWebSocket:
         await self.send_as_json(payload)
 
     @classmethod
-    async def from_client(cls, client, *, resume=False):
+    async def from_client(cls, client, *, resume=False, hook=None):
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
-        ws = cls(socket, loop=client.loop)
+        ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
@@ -828,6 +833,8 @@ class DiscordVoiceWebSocket:
                 self.ssrc_map[ssrc]['speaking'] = speaking
             else:
                 self.ssrc_map.update({ssrc: {'user_id': user, 'speaking': speaking}})
+            
+        await self._hook(self, msg)
 
     async def initial_connection(self, data):
         state = self._connection

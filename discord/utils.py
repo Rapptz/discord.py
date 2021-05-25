@@ -127,7 +127,6 @@ else:
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterator[T], AsyncIterator[T]]
-CSP = TypeVar('CSP', bound='CachedSlotProperty')
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -137,7 +136,7 @@ class CachedSlotProperty(Generic[T, T_co]):
         self.__doc__ = getattr(function, '__doc__')
 
     @overload
-    def __get__(self: CSP, instance: None, owner: Type[T]) -> CSP:
+    def __get__(self, instance: None, owner: Type[T]) -> CachedSlotProperty[T, T_co]:
         ...
 
     @overload

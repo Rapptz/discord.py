@@ -824,7 +824,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
     :type before: :class:`VoiceState`
-    :param after: The voice state after to the changes.
+    :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
 .. function:: on_member_ban(guild, user)
@@ -1130,6 +1130,9 @@ of :class:`enum.Enum`.
     .. attribute:: verified_bot_developer
 
         The user is an Early Verified Bot Developer.
+    .. attribute:: discord_certified_moderator
+
+        The user is a Discord Certified Moderator.
 
 .. class:: ActivityType
 
