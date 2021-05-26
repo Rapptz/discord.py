@@ -46,6 +46,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration
+from .discovery import DiscoveryMetadata
 
 __all__ = (
     'Guild',
@@ -146,6 +147,7 @@ class Guild(Hashable):
         - ``PARTNERED``: Guild is a partnered server.
         - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
+        - ``DISCOERABLE_DISABLED``: Guild cannot show up in Server Discovery.
         - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
         - ``COMMUNITY``: Guild is a community server.
         - ``COMMERCE``: Guild can sell things using store channels.
@@ -2317,6 +2319,37 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
+
+    async def discovery_metadata(self) -> DiscoveryMetadata:
+        """|coro|
+
+        Returns the discovery metadata of the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        .. note::
+
+            The guild must have ``DISCOVERABLE`` in :attr:`.features` to
+            get this information.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to access the discovery metadata.
+        HTTPException
+            Retrieving the discovery metadata failed.
+
+        Returns
+        --------
+        :class:`DiscoveryMetadata`
+            The guild's discovery metadata.
+        """
+        data = await self._state.http.get_guild_discovery_metadata(self.id)
+
+        return DiscoveryMetadata(state=self._state, data=data, guild=self)
 
     async def chunk(self, *, cache: bool = True) -> None:
         """|coro|

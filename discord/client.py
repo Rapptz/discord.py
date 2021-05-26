@@ -55,6 +55,7 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
+from .discovery import DiscoveryCategory
 
 __all__ = (
     'Client',
@@ -1260,7 +1261,7 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. 
+        Retrieves a :class:`~discord.User` based on their ID.
         You do not have to share any guilds with the user to get this information,
         however many operations do require that you do.
 
@@ -1351,6 +1352,27 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def fetch_discovery_categories(self) -> List[DiscoveryCategory]:
+        """|coro|
+
+        Retrieves a list of :class:`DiscoveryCategory` that can be
+        used when editing a guild's discovery metadata.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the discovery categories failed.
+
+        Returns
+        --------
+        List[:class:`DiscoveryCategory`]
+            The discovery categories.
+        """
+        data = await self.http.get_discovery_categories()
+        return [DiscoveryCategory(data=d) for d in data]
 
     async def create_dm(self, user):
         """|coro|
