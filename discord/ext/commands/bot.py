@@ -110,7 +110,6 @@ class BotBase(GroupMixin):
         self._before_invoke = None
         self._after_invoke = None
         self._help_command = None
-        self._skip_check = lambda x, y: x != y
         self.description = inspect.cleandoc(description) if description else ''
         self.owner_id = options.get('owner_id')
         self.owner_ids = options.get('owner_ids', set())
@@ -902,7 +901,7 @@ class BotBase(GroupMixin):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if self._skip_check(message.author.id, self.user.id):
+        if message.author.id == self.user.id:
             return ctx
 
         prefix = await self.get_prefix(message)
