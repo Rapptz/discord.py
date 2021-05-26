@@ -1301,22 +1301,9 @@ of :class:`enum.Enum`.
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
-    .. attribute:: table_flip
-
-        An alias for :attr:`high`.
-    .. attribute:: extreme
+    .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
-
-    .. attribute:: double_table_flip
-
-        An alias for :attr:`extreme`.
-
-    .. attribute:: very_high
-
-        An alias for :attr:`extreme`.
-
-        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 
