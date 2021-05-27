@@ -27,5 +27,5 @@ async def ping(ctx):
 async def cmd1(ctx):
     ctx.send("reply 1)
 
-bot.run("Nzk1NTg5MzI3MTE0NjAwNTE4.X_LkTA.UByVoav6Fil8wx9syCaENdDsjLU")
+bot.run("Token")
     
