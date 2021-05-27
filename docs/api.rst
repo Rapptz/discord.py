@@ -1243,7 +1243,7 @@ of :class:`enum.Enum`.
     .. attribute:: danger
 
         Represents a red button for a dangerous action.
-    .. attribute:: link::
+    .. attribute:: link
 
         Represents a link button.
 
