@@ -179,6 +179,24 @@ class View:
         item._view = self
         self.children.append(item)
 
+    def remove_item(self, item: Item) -> None:
+        """Removes an item from the view.
+
+        Parameters
+        -----------
+        item: :class:`Item`
+            The item to remove from the view.
+        """
+
+        try:
+            self.children.remove(item)
+        except ValueError:
+            pass
+
+    def clear_items(self) -> None:
+        """Removes all items from the view."""
+        self.children.clear()
+
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|
 
