@@ -11,6 +11,18 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p7p2:
+
+v1.7.2
+-------
+
+Bug Fixes
+~~~~~~~~~~~
+
+- Fix ``fail_if_not_exists`` causing certain message references to not be usable within :meth:`abc.Messageable.send` and :meth:`Message.reply` (:issue:`6726`)
+- Fix :meth:`Guild.chunk` hanging when the user left the guild. (:issue:`6730`)
+- Fix loop sleeping after final iteration rather than before (:issue:`6744`)
+
 .. _vp1p7p1:
 
 v1.7.1

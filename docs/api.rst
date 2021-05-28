@@ -275,7 +275,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     If you want exception to propagate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
-    :ref:`py:raise`.  Exceptions raised by ``on_error`` will not be
+    :ref:`raise statement <py:raise>`. Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
 
     .. note::
@@ -375,7 +375,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_delete` event instead.
 
     This requires :attr:`Intents.messages` to be enabled.
@@ -392,7 +392,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     the messages list. Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_bulk_message_delete` event instead.
 
     This requires :attr:`Intents.messages` to be enabled.
@@ -433,7 +433,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Messages might not be in cache if the message is too old
     or the client is participating in high traffic guilds.
 
-    If this occurs increase the :attr:`Client.max_messages` attribute
+    If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_edit` event instead.
 
     The following non-exhaustive cases trigger this event:
@@ -832,7 +832,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
     :type before: :class:`VoiceState`
-    :param after: The voice state after to the changes.
+    :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
 .. function:: on_member_ban(guild, user)
@@ -1086,6 +1086,62 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+.. class:: UserFlags
+
+    Represents Discord User flags.
+
+    .. attribute:: staff
+
+        The user is a Discord Employee.
+    .. attribute:: partner
+
+        The user is a Discord Partner.
+    .. attribute:: hypesquad
+
+        The user is a HypeSquad Events member.
+    .. attribute:: bug_hunter
+
+        The user is a Bug Hunter.
+    .. attribute:: mfa_sms
+
+        The user has SMS recovery for Multi Factor Authentication enabled.
+    .. attribute:: premium_promo_dismissed
+
+        The user has dismissed the Discord Nitro promotion.
+    .. attribute:: hypesquad_bravery
+
+        The user is a HypeSquad Bravery member.
+    .. attribute:: hypesquad_brilliance
+
+        The user is a HypeSquad Brilliance member.
+    .. attribute:: hypesquad_balance
+
+        The user is a HypeSquad Balance member.
+    .. attribute:: early_supporter
+
+        The user is an Early Supporter.
+    .. attribute:: team_user
+
+        The user is a Team User.
+    .. attribute:: system
+
+        The user is a system user (i.e. represents Discord officially).
+    .. attribute:: has_unread_urgent_messages
+
+        The user has an unready system message.
+    .. attribute:: bug_hunter_level_2
+
+        The user is a Bug Hunter Level 2.
+    .. attribute:: verified_bot
+
+        The user is a Verified Bot.
+    .. attribute:: verified_bot_developer
+
+        The user is an Early Verified Bot Developer.
+    .. attribute:: discord_certified_moderator
+
+        The user is a Discord Certified Moderator.
+
 .. class:: ActivityType
 
     Specifies the type of :class:`Activity`. This is used to check how to
@@ -1124,10 +1180,97 @@ of :class:`enum.Enum`.
     .. attribute:: ping
 
         Represents Discord pinging to see if the interaction response server is alive.
-
     .. attribute:: application_command
 
         Represents a slash command interaction.
+    .. attribute:: component
+
+        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+
+.. class:: InteractionResponseType
+
+    Specifies the response type for the interaction.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: pong
+
+        Pongs the interaction when given a ping.
+
+        See also :meth:`InteractionResponse.pong`
+    .. attribute:: channel_message
+
+        Respond to the interaction with a message.
+
+        See also :meth:`InteractionResponse.send_message`
+    .. attribute:: deferred_channel_message
+
+        Responds to the interaction with a message at a later time.
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: deferred_message_update
+
+        Acknowledges the component interaction with a promise that
+        the message will update later (though there is no need to actually update the message).
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: message_update
+
+        Responds to the interaction by editing the message.
+
+        See also :meth:`InteractionResponse.edit_message`
+
+.. class:: ComponentType
+
+    Represents the component type of a component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: action_row
+
+        Represents the group component which holds different components in a row.
+    .. attribute:: button
+
+        Represents a button component.
+    .. attribute:: select
+
+        Represents a select component.
+
+
+.. class:: ButtonStyle
+
+    Represents the style of the button component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: primary
+
+        Represents a blurple button for the primary action.
+    .. attribute:: secondary
+
+        Represents a grey button for the secondary action.
+    .. attribute:: success
+
+        Represents a green button for a successful action.
+    .. attribute:: danger
+
+        Represents a red button for a dangerous action.
+    .. attribute:: link
+
+        Represents a link button.
+
+    .. attribute:: blurple
+
+        An alias for :attr:`primary`.
+    .. attribute:: grey
+
+        An alias for :attr:`secondary`.
+    .. attribute:: green
+
+        An alias for :attr:`success`.
+    .. attribute:: red
+
+        An alias for :attr:`danger`.
 
 .. class:: VoiceRegion
 
@@ -1253,22 +1396,9 @@ of :class:`enum.Enum`.
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
-    .. attribute:: table_flip
-
-        An alias for :attr:`high`.
-    .. attribute:: extreme
+    .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
-
-    .. attribute:: double_table_flip
-
-        An alias for :attr:`extreme`.
-
-    .. attribute:: very_high
-
-        An alias for :attr:`extreme`.
-
-        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 
@@ -1862,7 +1992,7 @@ of :class:`enum.Enum`.
 
 .. class:: TeamMembershipState
 
-    Represents the membership state of a team member retrieved through :func:`Bot.application_info`.
+    Represents the membership state of a team member retrieved through :func:`Client.application_info`.
 
     .. versionadded:: 1.3
 
@@ -1964,11 +2094,11 @@ of :class:`enum.Enum`.
 
     .. attribute:: stream
 
-        A stream invite that targets a user.
-    
+        The invite targets a stream.
+
     .. attribute:: embedded_application
 
-        A stream invite that targets an embedded application.
+        The invite targets an embedded application activity.
 
 .. class:: VideoQualityMode
 
@@ -2494,7 +2624,7 @@ AuditLogDiff
 
         See also :attr:`Invite.inviter`.
 
-        :type: :class:`User`
+        :type: Optional[:class:`User`]
 
     .. attribute:: max_uses
 
@@ -2590,6 +2720,7 @@ Webhook
 
 .. autoclass:: Webhook()
     :members:
+    :inherited-members:
 
 WebhookMessage
 ~~~~~~~~~~~~~~~~
@@ -2606,6 +2737,7 @@ SyncWebhook
 
 .. autoclass:: SyncWebhook()
     :members:
+    :inherited-members:
 
 SyncWebhookMessage
 ~~~~~~~~~~~~~~~~~~~
@@ -2758,6 +2890,41 @@ Message
 .. autoclass:: Message()
     :members:
 
+Component
+~~~~~~~~~~
+
+.. attributetable:: Component
+
+.. autoclass:: Component()
+    :members:
+
+ActionRow
+~~~~~~~~~~
+
+.. attributetable:: ActionRow
+
+.. autoclass:: ActionRow()
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: Button
+
+.. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+SelectMenu
+~~~~~~~~~~~
+
+.. attributetable:: SelectMenu
+
+.. autoclass:: SelectMenu()
+    :members:
+    :inherited-members:
+
+
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2825,6 +2992,14 @@ Interaction
 .. attributetable:: Interaction
 
 .. autoclass:: Interaction()
+    :members:
+
+InteractionResponse
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionResponse
+
+.. autoclass:: InteractionResponse()
     :members:
 
 Member
@@ -3163,6 +3338,14 @@ PartialMessage
 .. autoclass:: PartialMessage
     :members:
 
+SelectOption
+~~~~~~~~~~~~~
+
+.. attributetable:: SelectOption
+
+.. autoclass:: SelectOption
+    :members:
+
 Intents
 ~~~~~~~~~~
 
@@ -3290,6 +3473,41 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
+
+.. _discord_ui_kit:
+
+Bot UI Kit
+-------------
+
+The library has helpers to help create component-based UIs.
+
+View
+~~~~~~~
+
+.. attributetable:: discord.ui.View
+
+.. autoclass:: discord.ui.View
+    :members:
+
+Item
+~~~~~~~
+
+.. attributetable:: discord.ui.Item
+
+.. autoclass:: discord.ui.Item
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: discord.ui.Button
+
+.. autoclass:: discord.ui.Button
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.button
+
 
 Exceptions
 ------------

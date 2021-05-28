@@ -30,6 +30,14 @@ from .user import User
 from .team import Team
 from .snowflake import Snowflake
 
+class BaseAppInfo(TypedDict):
+    id: Snowflake
+    name: str
+    verify_key: str
+    icon: Optional[str]
+    summary: str
+    description: str
+
 class _AppInfoOptional(TypedDict, total=False):
     team: Team
     guild_id: Snowflake
@@ -40,15 +48,8 @@ class _AppInfoOptional(TypedDict, total=False):
     hook: bool
     max_participants: int
 
-class AppInfo(_AppInfoOptional):
-    id: Snowflake
-    name: str
+class AppInfo(BaseAppInfo, _AppInfoOptional):
     rpc_origins: List[str]
-    verify_key: str
-    icon: str
-    summary: str
-    description: str
-    icon: str
     owner: User
     bot_public: bool
     bot_require_code_grant: bool
@@ -61,10 +62,5 @@ class _PartialAppInfoOptional(TypedDict, total=False):
     privacy_policy_url: str
     max_participants: int
 
-class PartialAppInfo(_PartialAppInfoOptional):
-    id: Snowflake
-    name: str
-    verify_key: str
-    icon: Optional[str]
-    summary: str
-    description: str
+class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
+    pass

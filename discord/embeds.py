@@ -273,11 +273,11 @@ class Embed:
             total += len(field['name']) + len(field['value'])
 
         try:
-            footer = self._footer
-        except AttributeError:
+            footer_text = self._footer['text']
+        except (AttributeError, KeyError):
             pass
         else:
-            total += len(footer['text'])
+            total += len(footer_text)
 
         try:
             author = self._author

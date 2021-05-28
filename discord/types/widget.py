@@ -22,20 +22,37 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import Snowflake, SnowflakeList
+from typing import List, TypedDict
+from .activity import Activity
+from .snowflake import Snowflake
 from .user import User
 
 
-class PartialEmoji(TypedDict):
-    id: Optional[Snowflake]
-    name: Optional[str]
+class WidgetChannel(TypedDict):
+    id: Snowflake
+    name: str
+    position: int
 
 
-class Emoji(PartialEmoji, total=False):
-    roles: SnowflakeList
-    user: User
-    require_colons: bool
-    managed: bool
-    animated: bool
-    available: bool
+class WidgetMember(User, total=False):
+    nick: str
+    game: Activity
+    status: str
+    avatar_url: str
+    deaf: bool
+    self_deaf: bool
+    mute: bool
+    self_mute: bool
+    suppress: bool
+
+
+class _WidgetOptional(TypedDict, total=False):
+    channels: List[WidgetChannel]
+    members: List[WidgetMember]
+    presence_count: int
+
+
+class Widget(_WidgetOptional):
+    id: Snowflake
+    name: str
+    instant_invite: str

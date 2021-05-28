@@ -40,6 +40,7 @@ extensions = [
     'exception_hierarchy',
     'attributetable',
     'resourcelinks',
+    'nitpick_file_ignorer',
 ]
 
 autodoc_member_order = 'bysource'
@@ -53,7 +54,7 @@ extlinks = {
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
-  'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
+  'req': ('https://docs.python-requests.org/en/latest/', None)
 }
 
 rst_prolog = """
@@ -139,6 +140,13 @@ pygments_style = 'friendly'
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
 
+
+# Nitpicky mode options
+nitpick_ignore_files = [
+  "migrating_to_async",
+  "migrating",
+  "whats_new",
+]
 
 # -- Options for HTML output ----------------------------------------------
 

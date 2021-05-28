@@ -332,6 +332,79 @@ class AsyncWebhookAdapter:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
+    def create_interaction_response(
+        self,
+        interaction_id: int,
+        token: str,
+        *,
+        session: aiohttp.ClientSession,
+        type: int,
+        data: Optional[Dict[str, Any]] = None,
+    ):
+        payload: Dict[str, Any] = {
+            'type': type,
+        }
+
+        if data is not None:
+            payload['data'] = data
+
+        route = Route(
+            'POST',
+            '/interactions/{webhook_id}/{webhook_token}/callback',
+            webhook_id=interaction_id,
+            webhook_token=token,
+        )
+
+        return self.request(route, session=session, payload=payload)
+
+    def get_original_interaction_response(
+        self,
+        application_id: int,
+        token: str,
+        *,
+        session: aiohttp.ClientSession,
+    ):
+        r = Route(
+            'GET',
+            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
+            webhook_id=application_id,
+            webhook_token=token,
+        )
+        return self.request(r, session=session)
+
+    def edit_original_interaction_response(
+        self,
+        application_id: int,
+        token: str,
+        *,
+        session: aiohttp.ClientSession,
+        payload: Optional[Dict[str, Any]] = None,
+        multipart: Optional[List[Dict[str, Any]]] = None,
+        files: Optional[List[File]] = None,
+    ):
+        r = Route(
+            'PATCH',
+            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
+            webhook_id=application_id,
+            webhook_token=token,
+        )
+        return self.request(r, session, payload=payload, multipart=multipart, files=files)
+
+    def delete_original_interaction_response(
+        self,
+        application_id: int,
+        token: str,
+        *,
+        session: aiohttp.ClientSession,
+    ):
+        r = Route(
+            'DELETE',
+            '/webhooks/{webhook_id}/{wehook_token}/messages/@original',
+            webhook_id=application_id,
+            wehook_token=token,
+        )
+        return self.request(r, session=session)
+
 
 class ExecuteWebhookParameters(NamedTuple):
     payload: Optional[Dict[str, Any]]
@@ -740,7 +813,7 @@ class Webhook(BaseWebhook):
 
     .. code-block:: python3
 
-        from discord import Webhook, AsyncWebhookAdapter
+        from discord import Webhook
         import aiohttp
 
         async def foo():
@@ -788,8 +861,6 @@ class Webhook(BaseWebhook):
         received without authentication then this will be ``None``.
     name: Optional[:class:`str`]
         The default name of the webhook.
-    avatar: Optional[:class:`str`]
-        The default avatar of the webhook.
     source_guild: Optional[:class:`PartialWebhookGuild`]
         The guild of the channel that this webhook is following.
         Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
@@ -1162,16 +1233,16 @@ class Webhook(BaseWebhook):
         Forbidden
             The authorization token for the webhook is incorrect.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
-            The length of ``embeds`` was invalid
+            The length of ``embeds`` was invalid.
         InvalidArgument
             There was no token associated with this webhook.
 
         Returns
         ---------
         Optional[:class:`WebhookMessage`]
-            The message that was sent.
+            If ``wait`` is ``True`` then the message that was sent, otherwise ``None``.
         """
 
         if self.token is None:
@@ -1179,7 +1250,7 @@ class Webhook(BaseWebhook):
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
-            content = ...  # type: ignore
+            content = MISSING
 
         params = handle_message_parameters(
             content=content,

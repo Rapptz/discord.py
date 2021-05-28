@@ -73,7 +73,7 @@ class AudioSource:
         If the audio is complete, then returning an empty
         :term:`py:bytes-like object` to signal this is the way to do so.
 
-        If :meth:`is_opus` method returns ``True``, then it must return
+        If :meth:`~AudioSource.is_opus` method returns ``True``, then it must return
         20ms worth of Opus encoded audio. Otherwise, it must be 20ms
         worth of 16-bit 48KHz stereo PCM, which is about 3,840 bytes
         per frame (20ms worth of audio).

@@ -478,8 +478,6 @@ class SyncWebhook(BaseWebhook):
         received without authentication then this will be ``None``.
     name: Optional[:class:`str`]
         The default name of the webhook.
-    avatar: Optional[:class:`str`]
-        The default avatar of the webhook.
     source_guild: Optional[:class:`PartialWebhookGuild`]
         The guild of the channel that this webhook is following.
         Only given if :attr:`type` is :attr:`WebhookType.channel_follower`.
@@ -845,7 +843,7 @@ class SyncWebhook(BaseWebhook):
         Returns
         ---------
         Optional[:class:`SyncWebhookMessage`]
-            The message that was sent.
+            If ``wait`` is ``True`` then the message that was sent, otherwise ``None``.
         """
 
         if self.token is None:
@@ -853,7 +851,7 @@ class SyncWebhook(BaseWebhook):
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
-            content = ...  # type: ignore
+            content = MISSING
 
         params = handle_message_parameters(
             content=content,

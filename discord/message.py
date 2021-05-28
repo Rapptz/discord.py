@@ -29,14 +29,15 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar
+from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
 
 from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
-from .errors import InvalidArgument, ClientException, HTTPException
+from .errors import InvalidArgument, HTTPException
+from .components import _component_factory
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -56,13 +57,16 @@ if TYPE_CHECKING:
         Reaction as ReactionPayload,
     )
 
+    from .types.components import Component as ComponentPayload
+
     from .types.member import Member as MemberPayload
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
-    from .abc import GuildChannel, PrivateChannel, Messageable
+    from .abc import GuildChannel
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
+    from .mentions import AllowedMentions
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -398,7 +402,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True):
+    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -445,13 +449,13 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
+        result = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result
+        return result  # type: ignore
 
     to_message_reference_dict = to_dict
 
@@ -580,6 +584,10 @@ class Message(Hashable):
         A list of stickers given to the message.
 
         .. versionadded:: 1.6
+    components: List[:class:`Component`]
+        A list of components in the message.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -612,6 +620,7 @@ class Message(Hashable):
         'application',
         'activity',
         'stickers',
+        'components',
     )
 
     if TYPE_CHECKING:
@@ -642,7 +651,8 @@ class Message(Hashable):
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
-        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
+        self.stickers = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.components = [_component_factory(d) for d in data.get('components', [])]
 
         try:
             ref = data['message_reference']
@@ -835,6 +845,9 @@ class Message(Hashable):
                 role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
+
+    def _handle_components(self, components: List[ComponentPayload]):
+        self.components = [_component_factory(d) for d in components]
 
     def _rebind_channel_reference(self, new_channel: Union[TextChannel, DMChannel, GroupChannel]) -> None:
         self.channel = new_channel
@@ -1077,7 +1090,24 @@ class Message(Hashable):
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
-    async def edit(self, **fields: Any) -> None:
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: List[Attachment] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
+    async def edit(self, **fields) -> None:
         """|coro|
 
         Edits the message.
@@ -1116,6 +1146,11 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1156,7 +1191,7 @@ class Message(Hashable):
         try:
             allowed_mentions = fields.pop('allowed_mentions')
         except KeyError:
-            if self._state.allowed_mentions is not None:
+            if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
                 fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
         else:
             if allowed_mentions is not None:
@@ -1173,9 +1208,23 @@ class Message(Hashable):
         else:
             fields['attachments'] = [a.to_dict() for a in attachments]
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
             self._update(data)
+
+        if view:
+            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1185,8 +1234,10 @@ class Message(Hashable):
 
         Publishes this message to your announcement channel.
 
+        You must have the :attr:`~Permissions.send_messages` permission to do this.
+
         If the message is not your own then the :attr:`~Permissions.manage_messages`
-        permission is needed.
+        permission is also needed.
 
         Raises
         -------
@@ -1480,7 +1531,7 @@ class PartialMessage(Hashable):
     to_reference = Message.to_reference
     to_message_reference_dict = Message.to_message_reference_dict
 
-    def __init__(self, *, channel: Union[GuildChannel, PrivateChannel], id: int):
+    def __init__(self, *, channel: Union[TextChannel, DMChannel], id: int):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
             raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
 

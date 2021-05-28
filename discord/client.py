@@ -22,12 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 import signal
 import sys
 import traceback
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, TYPE_CHECKING, Union
 
 import aiohttp
 
@@ -57,6 +59,9 @@ from .appinfo import AppInfo
 __all__ = (
     'Client',
 )
+
+if TYPE_CHECKING:
+    from .abc import SnowflakeTime
 
 log = logging.getLogger(__name__)
 
@@ -172,7 +177,7 @@ class Client:
     ws
         The websocket gateway the client is currently connected to. Could be ``None``.
     loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the client uses for HTTP requests and websocket operations.
+        The event loop that the client uses for asynchronous operations.
     """
     def __init__(self, *, loop=None, **options):
         self.ws = None
@@ -287,13 +292,13 @@ class Client:
 
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
-        after :func:`on_connect` is called.
+        after :func:`~discord.on_connect` is called.
         """
         return self._connection.application_id
 
     @property
     def application_flags(self) -> ApplicationFlags:
-        """:class:`ApplicationFlags`: The client's application flags.
+        """:class:`~discord.ApplicationFlags`: The client's application flags.
 
         .. versionadded: 2.0
         """
@@ -968,7 +973,7 @@ class Client:
 
     # Guild stuff
 
-    def fetch_guilds(self, *, limit=100, before=None, after=None):
+    def fetch_guilds(self, *, limit: int = 100, before: SnowflakeTime = None, after: SnowflakeTime = None) -> List[Guild]:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
@@ -1255,14 +1260,13 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. This can only
-        be used by bot accounts. You do not have to share any guilds
-        with the user to get this information, however many operations
-        do require that you do.
+        Retrieves a :class:`~discord.User` based on their ID. 
+        You do not have to share any guilds with the user to get this information,
+        however many operations do require that you do.
 
         .. note::
 
-            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
         Parameters
         -----------
@@ -1347,3 +1351,31 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def create_dm(self, user):
+        """|coro|
+
+        Creates a :class:`.DMChannel` with this user.
+
+        This should be rarely called, as this is done transparently for most
+        people.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to create a DM with.
+
+        Returns
+        -------
+        :class:`.DMChannel`
+            The channel that was created.
+        """
+        state = self._connection
+        found = state._get_private_channel_by_user(user.id)
+        if found:
+            return found
+
+        data = await state.http.start_private_message(user.id)
+        return state.add_dm_channel(data)

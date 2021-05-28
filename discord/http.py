@@ -28,7 +28,7 @@ import asyncio
 import json
 import logging
 import sys
-from typing import Any, Coroutine, List, TYPE_CHECKING, TypeVar
+from typing import Any, Coroutine, List, Optional, TYPE_CHECKING, TypeVar
 from urllib.parse import quote as _uriquote
 import weakref
 
@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from .types import (
         interactions,
+        invite,
     )
 
     T = TypeVar('T')
@@ -353,6 +354,7 @@ class HTTPClient:
         nonce=None,
         allowed_mentions=None,
         message_reference=None,
+        components=None,
     ):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
@@ -375,6 +377,9 @@ class HTTPClient:
         if message_reference:
             payload['message_reference'] = message_reference
 
+        if components:
+            payload['components'] = components
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id):
@@ -392,6 +397,7 @@ class HTTPClient:
         nonce=None,
         allowed_mentions=None,
         message_reference=None,
+        components=None,
     ):
         form = []
 
@@ -408,6 +414,8 @@ class HTTPClient:
             payload['allowed_mentions'] = allowed_mentions
         if message_reference:
             payload['message_reference'] = message_reference
+        if components:
+            payload['components'] = components
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
@@ -444,6 +452,7 @@ class HTTPClient:
         nonce=None,
         allowed_mentions=None,
         message_reference=None,
+        components=None,
     ):
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         return self.send_multipart_helper(
@@ -455,6 +464,7 @@ class HTTPClient:
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
+            components=components,
         )
 
     def delete_message(self, channel_id, message_id, *, reason=None):
@@ -785,6 +795,8 @@ class HTTPClient:
             'owner_id',
             'afk_channel_id',
             'splash',
+            'discovery_splash',
+            'features',
             'verification_level',
             'system_channel_id',
             'default_message_notifications',
@@ -902,11 +914,7 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, reason=reason)
 
-    def edit_custom_emoji(self, guild_id, emoji_id, *, name, roles=None, reason=None):
-        payload = {
-            'name': name,
-            'roles': roles or [],
-        }
+    def edit_custom_emoji(self, guild_id: int, emoji_id: int, *, payload, reason: Optional[str] = None):
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
 
@@ -964,29 +972,35 @@ class HTTPClient:
 
     # Invite management
 
-    def create_invite(self, channel_id, *, reason=None, **options):
+    def create_invite(
+        self,
+        channel_id: int,
+        *,
+        reason: Optional[str] = None,
+        max_age: int = 0,
+        max_uses: int = 0,
+        temporary: bool = False,
+        unique: bool = True,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[int] = None,
+        target_application_id: Optional[int] = None
+    ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
-            'max_age': options.get('max_age', 0),
-            'max_uses': options.get('max_uses', 0),
-            'temporary': options.get('temporary', False),
-            'unique': options.get('unique', True),
+            'max_age': max_age,
+            'max_uses': max_uses,
+            'temporary': temporary,
+            'unique': unique,
         }
-
-        target_type = options.get('target_type')
 
         if target_type:
             payload['target_type'] = target_type
 
-        target_user = options.get('target_user')
+        if target_user_id:
+            payload['target_user_id'] = target_user_id
 
-        if target_user:
-            payload['target_user_id'] = target_user.id
-
-        target_application = options.get('target_application_id')
-
-        if target_application:
-            payload['target_application_id'] = str(target_application)
+        if target_application_id:
+            payload['target_application_id'] = str(target_application_id)
 
         return self.request(r, reason=reason, json=payload)
 
@@ -1217,14 +1231,21 @@ class HTTPClient:
 
         return self.request(route, form=form, files=[file])
 
-    def create_interaction_response(self, interaction_id, token):
+    def create_interaction_response(self, interaction_id, token, *, type, data=None):
         r = Route(
             'POST',
             '/interactions/{interaction_id}/{interaction_token}/callback',
             interaction_id=interaction_id,
             interaction_token=token,
         )
-        return self.request(r)
+        payload = {
+            'type': type,
+        }
+
+        if data is not None:
+            payload['data'] = data
+
+        return self.request(r, json=payload)
 
     def get_original_interaction_response(
         self,

@@ -47,12 +47,12 @@ class Context(discord.abc.Messageable):
         The bot that contains the command being executed.
     args: :class:`list`
         The list of transformed arguments that were passed into the command.
-        If this is accessed during the :func:`on_command_error` event
+        If this is accessed during the :func:`.on_command_error` event
         then this list could be incomplete.
     kwargs: :class:`dict`
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
-        :func:`on_command_error` event then this dict could be incomplete.
+        :func:`.on_command_error` event then this dict could be incomplete.
     current_parameter: Optional[:class:`inspect.Parameter`]
         The parameter that is currently being inspected and converted.
         This is only of use for within converters.
@@ -143,7 +143,7 @@ class Context(discord.abc.Messageable):
         ret = await command.callback(*arguments, **kwargs)
         return ret
 
-    async def reinvoke(self, *, call_hooks=False, restart=True):
+    async def reinvoke(self, *, call_hooks: bool = False, restart: bool = True):
         """|coro|
 
         Calls the command again.

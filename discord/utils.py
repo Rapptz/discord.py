@@ -127,7 +127,6 @@ else:
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterator[T], AsyncIterator[T]]
-CSP = TypeVar('CSP', bound='CachedSlotProperty')
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -137,7 +136,7 @@ class CachedSlotProperty(Generic[T, T_co]):
         self.__doc__ = getattr(function, '__doc__')
 
     @overload
-    def __get__(self: CSP, instance: None, owner: Type[T]) -> CSP:
+    def __get__(self, instance: None, owner: Type[T]) -> CachedSlotProperty[T, T_co]:
         ...
 
     @overload
@@ -154,6 +153,17 @@ class CachedSlotProperty(Generic[T, T_co]):
             value = self.function(instance)
             setattr(instance, self.name, value)
             return value
+
+
+class classproperty(Generic[T_co]):
+    def __init__(self, fget: Callable[[Any], T_co]) -> None:
+        self.fget = fget
+
+    def __get__(self, instance: Optional[Any], owner: Type[Any]) -> T_co:
+        return self.fget(owner)
+
+    def __set__(self, instance, value) -> None:
+        raise AttributeError('cannot set attribute')
 
 
 def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlotProperty[T, T_co]]:
@@ -342,7 +352,7 @@ def find(predicate: Callable[[T], Any], seq: Iterable[T]) -> Optional[T]:
     -----------
     predicate
         A function that returns a boolean-like result.
-    seq: iterable
+    seq: :class:`collections.abc.Iterable`
         The iterable to search through.
     """
 
@@ -492,6 +502,21 @@ async def sane_wait_for(futures, *, timeout):
     return done
 
 
+def get_slots(cls: Type[Any]) -> Iterator[str]:
+    for mro in reversed(cls.__mro__):
+        try:
+            yield from mro.__slots__
+        except AttributeError:
+            continue
+
+
+def compute_timedelta(dt: datetime.datetime):
+    if dt.tzinfo is None:
+        dt = dt.astimezone()
+    now = datetime.datetime.now(datetime.timezone.utc)
+    return max((dt - now).total_seconds(), 0)
+
+
 async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Optional[T]:
     """|coro|
 
@@ -509,17 +534,14 @@ async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Op
     result: Any
         If provided is returned to the caller when the coroutine completes.
     """
-    if when.tzinfo is None:
-        when = when.astimezone()
-    now = datetime.datetime.now(datetime.timezone.utc)
-    delta = (when - now).total_seconds()
-    return await asyncio.sleep(max(delta, 0), result)
+    delta = compute_timedelta(when)
+    return await asyncio.sleep(delta, result)
 
 
 def utcnow() -> datetime.datetime:
     """A helper function to return an aware UTC datetime representing the current time.
 
-    This should be preferred to :func:`datetime.datetime.utcnow` since it is an aware
+    This should be preferred to :meth:`datetime.datetime.utcnow` since it is an aware
     datetime, compared to the naive datetime in the standard library.
 
     .. versionadded:: 2.0
@@ -551,7 +573,12 @@ class SnowflakeList(array.array):
 
     __slots__ = ()
 
-    def __new__(cls, data: Sequence[int], *, is_sorted: bool = False):
+    if TYPE_CHECKING:
+
+        def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
+            ...
+
+    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False):
         return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
 
     def add(self, element: int) -> None:

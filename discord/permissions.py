@@ -471,6 +471,14 @@ class Permissions(BaseFlags):
         """
         return 1 << 32
 
+    @flag_value
+    def manage_events(self):
+        """:class:`bool`: Returns ``True`` if a user can manage guild events.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 33
+
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
     aliases = set()
