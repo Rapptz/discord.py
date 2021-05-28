@@ -41,12 +41,11 @@ class _ButtonComponentOptional(TypedDict, total=False):
     url: str
     disabled: bool
     emoji: PartialEmoji
-
+    label: str
 
 class ButtonComponent(_ButtonComponentOptional):
     type: Literal[2]
     style: ButtonStyle
-    label: str
 
 
 Component = Union[ComponentContainer, ButtonComponent]

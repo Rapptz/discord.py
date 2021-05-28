@@ -106,8 +106,8 @@ class Button(Component):
         The URL this button sends you to.
     disabled: :class:`bool`
         Whether the button is disabled or not.
-    label: :class:`str`
-        The label of the button.
+    label: Optional[:class:`str`]
+        The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
     """
@@ -127,7 +127,7 @@ class Button(Component):
         self.custom_id: Optional[str] = data.get('custom_id')
         self.url: Optional[str] = data.get('url')
         self.disabled: bool = data.get('disabled', False)
-        self.label: str = data['label']
+        self.label: Optional[str] = data.get('label')
         self.emoji: Optional[PartialEmoji]
         try:
             self.emoji = PartialEmoji.from_dict(data['emoji'])

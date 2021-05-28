@@ -82,8 +82,8 @@ class Button(Item[V]):
         The URL this button sends you to.
     disabled: :class:`bool`
         Whether the button is disabled or not.
-    label: :class:`str`
-        The label of the button.
+    label: Optional[:class:`str`]
+        The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
     """
@@ -101,7 +101,7 @@ class Button(Item[V]):
         self,
         *,
         style: ButtonStyle,
-        label: str,
+        label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,
         url: Optional[str] = None,
@@ -174,13 +174,13 @@ class Button(Item[V]):
         self._underlying.disabled = bool(value)
 
     @property
-    def label(self) -> str:
-        """:class:`str`: The label of the button."""
+    def label(self) -> Optional[str]:
+        """Optional[:class:`str`]: The label of the button, if available."""
         return self._underlying.label
 
     @label.setter
-    def label(self, value: str):
-        self._underlying.label = str(value)
+    def label(self, value: Optional[str]):
+        self._underlying.label = str(value) if value is not None else value
 
     @property
     def emoji(self) -> Optional[PartialEmoji]:
@@ -221,8 +221,8 @@ class Button(Item[V]):
 
 
 def button(
-    label: str,
     *,
+    label: Optional[str] = None,
     custom_id: Optional[str] = None,
     disabled: bool = False,
     style: ButtonStyle = ButtonStyle.secondary,
@@ -245,8 +245,8 @@ def button(
 
     Parameters
     ------------
-    label: :class:`str`
-        The label of the button.
+    label: Optional[:class:`str`]
+        The label of the button, if any.
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         It is recommended not to set this parameter to prevent conflicts.
