@@ -87,13 +87,6 @@ class View:
         The list of children attached to this view.
     """
 
-    __slots__ = (
-        'timeout',
-        'children',
-        'id',
-        '_cancel_callback',
-    )
-
     __discord_ui_view__: ClassVar[bool] = True
     __view_children_items__: ClassVar[List[ItemCallbackType]] = []
 
