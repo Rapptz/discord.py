@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 from .enums import try_enum, ComponentType, ButtonStyle
 from .utils import get_slots
 from .partial_emoji import PartialEmoji
@@ -288,12 +288,16 @@ class SelectOption:
         label: str,
         value: str,
         description: Optional[str] = None,
-        emoji: Optional[PartialEmoji] = None,
+        emoji: Optional[Union[str, PartialEmoji]] = None,
         default: bool = False,
     ) -> None:
         self.label = label
         self.value = value
         self.description = description
+
+        if isinstance(emoji, str):
+            emoji = PartialEmoji.from_str(emoji)
+
         self.emoji = emoji
         self.default = default
 
