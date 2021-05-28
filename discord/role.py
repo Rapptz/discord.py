@@ -259,7 +259,7 @@ class Role(Hashable):
         return self.tags is not None and self.tags.is_integration()
 
     def is_assignable(self):
-        """:class:`bool`: Whether the role is able to be assigned by the logged in user.
+        """:class:`bool`: Whether the role is able to be assigned or removed by the bot.
 
         .. versionadded:: 2.0
         """
