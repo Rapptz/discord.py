@@ -1231,19 +1231,19 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.0
 
-    .. attribute:: primary::
+    .. attribute:: primary
 
         Represents a blurple button for the primary action.
-    .. attribute:: secondary::
+    .. attribute:: secondary
 
         Represents a grey button for the secondary action.
-    .. attribute:: success::
+    .. attribute:: success
 
         Represents a green button for a successful action.
-    .. attribute:: danger::
+    .. attribute:: danger
 
         Represents a red button for a dangerous action.
-    .. attribute:: link::
+    .. attribute:: link
 
         Represents a link button.
 
