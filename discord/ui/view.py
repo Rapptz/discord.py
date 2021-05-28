@@ -117,10 +117,11 @@ class View:
             item._view = self
             self.children.append(item)
 
+        loop = asyncio.get_running_loop()
         self.id = os.urandom(16).hex()
         self._cancel_callback: Optional[Callable[[View], None]] = None
         self._timeout_handler: Optional[asyncio.TimerHandle] = None
-        self._stopped = asyncio.Event()
+        self._stopped = loop.create_future()
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
@@ -254,6 +255,7 @@ class View:
             self._timeout_handler = loop.call_later(self.timeout, self.dispatch_timeout)
 
     def dispatch_timeout(self):
+        self._stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
@@ -285,19 +287,26 @@ class View:
 
         This operation cannot be undone.
         """
-        self._stopped.set()
+        self._stopped.set_result(False)
         if self._timeout_handler:
             self._timeout_handler.cancel()
 
         if self._cancel_callback:
             self._cancel_callback(self)
 
-    async def wait(self) -> None:
+    async def wait(self) -> bool:
         """Waits until the view has finished interacting.
 
-        A view is considered finished when :meth:`stop` is called.
+        A view is considered finished when :meth:`stop` is called
+        or it times out.
+
+        Returns
+        --------
+        :class:`bool`
+            If ``True``, then the view timed out. If ``False`` then
+            the view finished normally.
         """
-        await self._stopped.wait()
+        return await self._stopped
 
 
 class ViewStore:
