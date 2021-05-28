@@ -258,6 +258,13 @@ class Role(Hashable):
         """
         return self.tags is not None and self.tags.is_integration()
 
+    def is_assignable(self):
+        """:class:`bool`: Whether the role is able to be assigned or removed by the bot.
+
+        .. versionadded:: 2.0
+        """
+        return not self.is_default() and not self.managed and self.guild.me.top_role > self
+
     @property
     def permissions(self):
         """:class:`Permissions`: Returns the role's permissions."""
