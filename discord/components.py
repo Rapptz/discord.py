@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 from .enums import try_enum, ComponentType, ButtonStyle
-from .utils import get_slots
+from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji
 
 if TYPE_CHECKING:
@@ -264,7 +264,8 @@ class SelectOption:
         Can only be up to 25 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
-        Can only be up to 100 characters.
+        If not provided when constructed then it defaults to the
+        label. Can only be up to 100 characters.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 50 characters.
@@ -286,13 +287,13 @@ class SelectOption:
         self,
         *,
         label: str,
-        value: str,
+        value: str = MISSING,
         description: Optional[str] = None,
         emoji: Optional[Union[str, PartialEmoji]] = None,
         default: bool = False,
     ) -> None:
         self.label = label
-        self.value = value
+        self.value = label if value is MISSING else value
         self.description = description
 
         if isinstance(emoji, str):

@@ -158,7 +158,7 @@ class Select(Item[V]):
         self,
         *,
         label: str,
-        value: str,
+        value: str = MISSING,
         description: Optional[str] = None,
         emoji: Optional[Union[str, PartialEmoji]] = None,
         default: bool = False,
@@ -175,7 +175,7 @@ class Select(Item[V]):
             Can only be up to 25 characters.
         value: :class:`str`
             The value of the option. This is not displayed to users.
-            Can only be up to 100 characters.
+            If not given, defaults to the label. Can only be up to 100 characters.
         description: Optional[:class:`str`]
             An additional description of the option, if any.
             Can only be up to 50 characters.
