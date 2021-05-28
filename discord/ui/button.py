@@ -26,7 +26,6 @@ from __future__ import annotations
 
 from typing import Callable, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 import inspect
-import re
 import os
 
 
@@ -42,25 +41,6 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .view import View
-
-_custom_emoji = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
-
-
-def _to_partial_emoji(obj: Union[str, PartialEmoji], *, _custom_emoji=_custom_emoji) -> PartialEmoji:
-    if isinstance(obj, PartialEmoji):
-        return obj
-
-    obj = str(obj)
-    match = _custom_emoji.match(obj)
-    if match is not None:
-        groups = match.groupdict()
-        animated = bool(groups['animated'])
-        emoji_id = int(groups['id'])
-        name = groups['name']
-        return PartialEmoji(name=name, animated=animated, id=emoji_id)
-
-    return PartialEmoji(name=obj, id=None, animated=False)
-
 
 B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
@@ -118,6 +98,9 @@ class Button(Item[V]):
         if url is not None:
             style = ButtonStyle.link
 
+        if isinstance(emoji, str):
+            emoji = PartialEmoji.from_str(emoji)
+
         self._underlying = ButtonComponent._raw_construct(
             type=ComponentType.button,
             custom_id=custom_id,
@@ -125,7 +108,7 @@ class Button(Item[V]):
             disabled=disabled,
             label=label,
             style=style,
-            emoji=None if emoji is None else _to_partial_emoji(emoji),
+            emoji=emoji,
         )
         self.group_id = group
 
@@ -190,7 +173,10 @@ class Button(Item[V]):
     @emoji.setter
     def emoji(self, value: Optional[Union[str, PartialEmoji]]):  # type: ignore
         if value is not None:
-            self._underlying.emoji = _to_partial_emoji(value)
+            if isinstance(value, str):
+                self._underlying.emoji = PartialEmoji.from_str(value)
+            else:
+                self._underlying.emoji = value
         else:
             self._underlying.emoji = None
 
