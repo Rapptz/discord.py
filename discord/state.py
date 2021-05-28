@@ -52,6 +52,7 @@ from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
 from .interactions import Interaction
+from .ui.view import ViewStore
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -187,6 +188,7 @@ class ConnectionState:
         self._users = weakref.WeakValueDictionary()
         self._emojis = {}
         self._guilds = {}
+        self._view_store = ViewStore(self)
         self._voice_clients = {}
 
         # LRU of max size 128
@@ -277,6 +279,9 @@ class ConnectionState:
         emoji_id = int(data['id'])
         self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
         return emoji
+
+    def store_view(self, view, message_id=None):
+        self._view_store.add_view(view, message_id)
 
     @property
     def guilds(self):
@@ -509,6 +514,9 @@ class ConnectionState:
         else:
             self.dispatch('raw_message_edit', raw)
 
+        if 'components' in data and self._view_store.is_message_tracked(raw.message_id):
+            self._view_store.update_view(raw.message_id, data['components'])
+
     def parse_message_reaction_add(self, data):
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')
@@ -581,6 +589,11 @@ class ConnectionState:
 
     def parse_interaction_create(self, data):
         interaction = Interaction(data=data, state=self)
+        if data['type'] == 3:  # interaction component
+            custom_id = interaction.data['custom_id']  # type: ignore
+            component_type = interaction.data['component_type']  # type: ignore
+            self._view_store.dispatch(component_type, custom_id, interaction)
+
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data):

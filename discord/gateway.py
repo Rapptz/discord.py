@@ -718,7 +718,7 @@ class DiscordVoiceWebSocket:
         if hook:
             self._hook = hook
 
-    async def _hook(self, msg):
+    async def _hook(self, *args):
         pass
     
     async def send_as_json(self, data):

@@ -48,6 +48,8 @@ __all__ = (
     'StickerType',
     'InviteTarget',
     'VideoQualityMode',
+    'ComponentType',
+    'ButtonStyle',
 )
 
 def _create_value_cls(name):
@@ -225,14 +227,11 @@ class SpeakingState(Enum):
         return self.value
 
 class VerificationLevel(Enum):
-    none              = 0
-    low               = 1
-    medium            = 2
-    high              = 3
-    table_flip        = 3
-    extreme           = 4
-    double_table_flip = 4
-    very_high         = 4
+    none    = 0
+    low     = 1
+    medium  = 2
+    high    = 3
+    highest = 4
 
     def __str__(self):
         return self.name
@@ -438,10 +437,43 @@ class InviteTarget(Enum):
 class InteractionType(Enum):
     ping = 1
     application_command = 2
+    component = 3
+
+class InteractionResponseType(Enum):
+    pong = 1
+    # ack = 2 (deprecated)
+    # channel_message = 3 (deprecated)
+    channel_message = 4  # (with source)
+    deferred_channel_message = 5  # (with source)
+    deferred_message_update = 6  # for components
+    message_update = 7 # for components
 
 class VideoQualityMode(Enum):
     auto = 1
     full = 2
+
+    def __int__(self):
+        return self.value
+
+class ComponentType(Enum):
+    action_row = 1
+    button = 2
+
+    def __int__(self):
+        return self.value
+
+class ButtonStyle(Enum):
+    primary = 1
+    secondary = 2
+    success = 3
+    danger = 4
+    link = 5
+
+    # Aliases
+    blurple = 1
+    grey = 2
+    green = 3
+    red = 4
 
     def __int__(self):
         return self.value

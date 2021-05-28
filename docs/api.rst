@@ -1172,10 +1172,93 @@ of :class:`enum.Enum`.
     .. attribute:: ping
 
         Represents Discord pinging to see if the interaction response server is alive.
-
     .. attribute:: application_command
 
         Represents a slash command interaction.
+    .. attribute:: component
+
+        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+
+.. class:: InteractionResponseType
+
+    Specifies the response type for the interaction.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: pong
+
+        Pongs the interaction when given a ping.
+
+        See also :meth:`InteractionResponse.pong`
+    .. attribute:: channel_message
+
+        Respond to the interaction with a message.
+
+        See also :meth:`InteractionResponse.send_message`
+    .. attribute:: deferred_channel_message
+
+        Responds to the interaction with a message at a later time.
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: deferred_message_update
+
+        Acknowledges the component interaction with a promise that
+        the message will update later (though there is no need to actually update the message).
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: message_update
+
+        Responds to the interaction by editing the message.
+
+        See also :meth:`InteractionResponse.edit_message`
+
+.. class:: ComponentType
+
+    Represents the component type of a component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: action_row
+
+        Represents the group component which holds different components in a row.
+    .. attribute:: button
+
+        Represents a button component.
+
+.. class:: ButtonStyle
+
+    Represents the style of the button component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: primary::
+
+        Represents a blurple button for the primary action.
+    .. attribute:: secondary::
+
+        Represents a grey button for the secondary action.
+    .. attribute:: success::
+
+        Represents a green button for a successful action.
+    .. attribute:: danger::
+
+        Represents a red button for a dangerous action.
+    .. attribute:: link::
+
+        Represents a link button.
+
+    .. attribute:: blurple
+
+        An alias for :attr:`primary`.
+    .. attribute:: grey
+
+        An alias for :attr:`secondary`.
+    .. attribute:: green
+
+        An alias for :attr:`success`.
+    .. attribute:: red
+
+        An alias for :attr:`danger`.
 
 .. class:: VoiceRegion
 
@@ -1301,22 +1384,9 @@ of :class:`enum.Enum`.
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
-    .. attribute:: table_flip
-
-        An alias for :attr:`high`.
-    .. attribute:: extreme
+    .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
-
-    .. attribute:: double_table_flip
-
-        An alias for :attr:`extreme`.
-
-    .. attribute:: very_high
-
-        An alias for :attr:`extreme`.
-
-        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 
@@ -2807,6 +2877,24 @@ Message
 .. autoclass:: Message()
     :members:
 
+Component
+~~~~~~~~~~
+
+.. attributetable:: Component
+
+.. autoclass:: Component()
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: Button
+
+.. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2874,6 +2962,14 @@ Interaction
 .. attributetable:: Interaction
 
 .. autoclass:: Interaction()
+    :members:
+
+InteractionResponse
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionResponse
+
+.. autoclass:: InteractionResponse()
     :members:
 
 Member
@@ -3339,6 +3435,41 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
+
+.. _discord_ui_kit:
+
+Bot UI Kit
+-------------
+
+The library has helpers to help create component-based UIs.
+
+View
+~~~~~~~
+
+.. attributetable:: discord.ui.View
+
+.. autoclass:: discord.ui.View
+    :members:
+
+Item
+~~~~~~~
+
+.. attributetable:: discord.ui.Item
+
+.. autoclass:: discord.ui.Item
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: discord.ui.Button
+
+.. autoclass:: discord.ui.Button
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.button
+
 
 Exceptions
 ------------
