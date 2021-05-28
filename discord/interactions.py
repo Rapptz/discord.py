@@ -315,6 +315,7 @@ class InteractionResponse:
         *,
         content: Optional[Any] = MISSING,
         embed: Optional[Embed] = MISSING,
+        embeds: List[Embed] = MISSING,
         attachments: List[Attachment] = MISSING,
         view: Optional[View] = MISSING,
     ) -> None:
@@ -327,8 +328,11 @@ class InteractionResponse:
         -----------
         content: Optional[:class:`str`]
             The new content to replace the message with. ``None`` removes the content.
+        embeds: List[:class:`Embed`]
+            A list of embeds to edit the message with.
         embed: Optional[:class:`Embed`]
-            The new embed to replace the embed with. ``None`` removes the embed.
+            The embed to edit the message with. ``None`` suppresses the embeds.
+            This should not be mixed with the ``embeds`` parameter.
         attachments: List[:class:`Attachment`]
             A list of attachments to keep in the message. If ``[]`` is passed
             then all attachments are removed.
@@ -340,6 +344,8 @@ class InteractionResponse:
         -------
         HTTPException
             Editing the message failed.
+        TypeError
+            You specified both ``embed`` and ``embeds``.
         """
         if self._responded:
             return
@@ -356,11 +362,17 @@ class InteractionResponse:
             else:
                 payload['content'] = str(content)
 
+        if embed is not MISSING and embeds is not MISSING:
+            raise TypeError('cannot mix both embed and embeds keyword arguments')
+
         if embed is not MISSING:
             if embed is None:
-                payload['embed'] = None
+                embeds = []
             else:
-                payload['embed'] = embed.to_dict()
+                embeds = [embed]
+
+        if embeds is not MISSING:
+            payload['embeds'] = [e.to_dict() for e in embeds]
 
         if attachments is not MISSING:
             payload['attachments'] = [a.to_dict() for a in attachments]
