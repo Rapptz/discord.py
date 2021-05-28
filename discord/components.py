@@ -33,6 +33,8 @@ if TYPE_CHECKING:
     from .types.components import (
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
+        SelectMenu as SelectMenuPayload,
+        SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
     )
 
@@ -41,6 +43,8 @@ __all__ = (
     'Component',
     'ActionRow',
     'Button',
+    'SelectMenu',
+    'SelectOption',
 )
 
 C = TypeVar('C', bound='Component')
@@ -53,6 +57,7 @@ class Component:
 
     - :class:`ActionRow`
     - :class:`Button`
+    - :class:`SelectMenu`
 
     This class is abstract and cannot be instantiated.
 
@@ -71,7 +76,7 @@ class Component:
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
-        return f'<{self.__class__.__name__} type={self.type!r} {attrs}>'
+        return f'<{self.__class__.__name__} {attrs}>'
 
     @classmethod
     def _raw_construct(cls: Type[C], **kwargs) -> C:
@@ -93,6 +98,8 @@ class ActionRow(Component):
     """Represents a Discord Bot UI Kit Action Row.
 
     This is a component that holds up to 5 children components in a row.
+
+    This inherits from :class:`Component`.
 
     .. versionadded:: 2.0
 
@@ -186,12 +193,155 @@ class Button(Component):
         return payload  # type: ignore
 
 
+class SelectMenu(Component):
+    """Represents a select menu from the Discord Bot UI Kit.
+
+    A select menu is functionally the same as a dropdown, however
+    on mobile it renders a bit differently.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the select menu that gets received during an interaction.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    options: List[:class:`SelectOption`]
+        A list of options that can be selected in this menu.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'custom_id',
+        'placeholder',
+        'min_values',
+        'max_values',
+        'options',
+    )
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: SelectMenuPayload):
+        self.type = ComponentType.select
+        self.custom_id: str = data['custom_id']
+        self.placeholder: Optional[str] = data.get('placeholder')
+        self.min_values: int = data.get('min_values', 1)
+        self.max_values: int = data.get('max_values', 1)
+        self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
+
+    def to_dict(self) -> SelectMenuPayload:
+        payload: SelectMenuPayload = {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'min_values': self.min_values,
+            'max_values': self.max_values,
+            'options': [op.to_dict() for op in self.options],
+        }
+
+        if self.placeholder:
+            payload['placeholder'] = self.placeholder
+
+        return payload
+
+
+class SelectOption:
+    """Represents a select menu's option.
+
+    These can be created by users.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+        Can only be up to 25 characters.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        Can only be up to 100 characters.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+        Can only be up to 50 characters.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the option, if available.
+    default: :class:`bool`
+        Whether this option is selected by default.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'label',
+        'value',
+        'description',
+        'emoji',
+        'default',
+    )
+
+    def __init__(
+        self,
+        *,
+        label: str,
+        value: str,
+        description: Optional[str] = None,
+        emoji: Optional[PartialEmoji] = None,
+        default: bool = False,
+    ) -> None:
+        self.label = label
+        self.value = value
+        self.description = description
+        self.emoji = emoji
+        self.default = default
+
+    def __repr__(self) -> str:
+        return (
+            f'<SelectOption label={self.label!r} value={self.value!r} description={self.description!r} '
+            f'emoji={self.emoji!r} default={self.default!r}>'
+        )
+
+    @classmethod
+    def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
+        try:
+            emoji = PartialEmoji.from_dict(data['emoji'])
+        except KeyError:
+            emoji = None
+
+        return cls(
+            label=data['label'],
+            value=data['value'],
+            description=data.get('description'),
+            emoji=emoji,
+            default=data.get('default', False),
+        )
+
+    def to_dict(self) -> SelectOptionPayload:
+        payload: SelectOptionPayload = {
+            'label': self.label,
+            'value': self.value,
+            'default': self.default,
+        }
+
+        if self.emoji:
+            payload['emoji'] = self.emoji.to_dict()  # type: ignore
+
+        if self.description:
+            payload['description'] = self.description
+
+        return payload
+
+
 def _component_factory(data: ComponentPayload) -> Component:
     component_type = data['type']
     if component_type == 1:
         return ActionRow(data)
     elif component_type == 2:
         return Button(data)  # type: ignore
+    elif component_type == 3:
+        return SelectMenu(data)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
         return Component._raw_construct(type=as_enum)

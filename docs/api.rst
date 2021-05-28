@@ -1224,6 +1224,10 @@ of :class:`enum.Enum`.
     .. attribute:: button
 
         Represents a button component.
+    .. attribute:: select
+
+        Represents a select component.
+
 
 .. class:: ButtonStyle
 
@@ -2902,6 +2906,15 @@ Button
     :members:
     :inherited-members:
 
+SelectMenu
+~~~~~~~~~~~
+
+.. attributetable:: SelectMenu
+
+.. autoclass:: SelectMenu()
+    :members:
+    :inherited-members:
+
 
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3314,6 +3327,14 @@ PartialMessage
 .. attributetable:: PartialMessage
 
 .. autoclass:: PartialMessage
+    :members:
+
+SelectOption
+~~~~~~~~~~~~~
+
+.. attributetable:: SelectOption
+
+.. autoclass:: SelectOption
     :members:
 
 Intents
