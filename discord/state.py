@@ -515,7 +515,7 @@ class ConnectionState:
             self.dispatch('raw_message_edit', raw)
 
         if 'components' in data and self._view_store.is_message_tracked(raw.message_id):
-            self._view_store.update_view(raw.message_id, data['components'])
+            self._view_store.update_from_message(raw.message_id, data['components'])
 
     def parse_message_reaction_add(self, data):
         emoji = data['emoji']

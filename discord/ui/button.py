@@ -202,7 +202,7 @@ class Button(Item[V]):
     def is_dispatchable(self) -> bool:
         return True
 
-    def refresh_state(self, button: ButtonComponent) -> None:
+    def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
 

@@ -59,7 +59,10 @@ class Item(Generic[V]):
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def refresh_state(self, component: Component) -> None:
+    def refresh_component(self, component: Component) -> None:
+        return None
+
+    def refresh_state(self, interaction: Interaction) -> None:
         return None
 
     @classmethod

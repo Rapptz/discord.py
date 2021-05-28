@@ -35,6 +35,7 @@ from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..components import (
     Component,
+    ActionRow as ActionRowComponent,
     _component_factory,
     Button as ButtonComponent,
 )
@@ -52,7 +53,7 @@ if TYPE_CHECKING:
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
     for item in components:
-        if item.type is ComponentType.action_row:
+        if isinstance(item, ActionRowComponent):
             yield from item.children
         else:
             yield item
@@ -115,6 +116,7 @@ class View:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = partial(func, self, item)
             item._view = self
+            setattr(self, func.__name__, item)
             self.children.append(item)
 
         loop = asyncio.get_running_loop()
@@ -277,7 +279,7 @@ class View:
             except (KeyError, AttributeError):
                 children.append(_component_to_item(component))
             else:
-                older.refresh_state(component)
+                older.refresh_component(component)
                 children.append(older)
 
         self.children = children
@@ -358,12 +360,13 @@ class ViewStore:
 
         view, item, _ = value
         self._views[key] = (view, item, view._expires_at)
+        item.refresh_state(interaction)
         view.dispatch(self._state, item, interaction)
 
     def is_message_tracked(self, message_id: int):
         return message_id in self._synced_message_views
 
-    def update_view(self, message_id: int, components: List[ComponentPayload]):
+    def update_from_message(self, message_id: int, components: List[ComponentPayload]):
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]
         view.refresh([_component_factory(d) for d in components])
