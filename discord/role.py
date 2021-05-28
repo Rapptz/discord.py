@@ -139,6 +139,15 @@ class Role(Hashable):
     position: :class:`int`
         The position of the role. This number is usually positive. The bottom
         role has a position of 0.
+
+        .. warning::
+
+            Multiple roles can have the same position number. As a consequence
+            of this, comparing via role position is prone to subtle bugs if
+            checking for role hierarchy. The recommended and correct way to
+            compare for roles in the hierarchy is using the comparison
+            operators on the role objects themselves.
+
     managed: :class:`bool`
         Indicates if the role is managed by the guild through some form of
         integrations such as Twitch.
