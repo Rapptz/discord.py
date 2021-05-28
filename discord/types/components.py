@@ -24,16 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict, Union
+from typing import List, Literal, TypedDict, Union
 from .emoji import PartialEmoji
 
 ComponentType = Literal[1, 2]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
 
 
-class ComponentContainer(TypedDict):
+class ActionRow(TypedDict):
     type: Literal[1]
-    components: Component
+    components: List[Component]
 
 
 class _ButtonComponentOptional(TypedDict, total=False):
@@ -48,4 +48,4 @@ class ButtonComponent(_ButtonComponentOptional):
     style: ButtonStyle
 
 
-Component = Union[ComponentContainer, ButtonComponent]
+Component = Union[ActionRow, ButtonComponent]

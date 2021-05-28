@@ -24,29 +24,75 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 from .enums import try_enum, ComponentType, ButtonStyle
+from .utils import get_slots
 from .partial_emoji import PartialEmoji
 
 if TYPE_CHECKING:
     from .types.components import (
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
-        ComponentContainer as ComponentContainerPayload,
+        ActionRow as ActionRowPayload,
     )
 
 
 __all__ = (
     'Component',
+    'ActionRow',
     'Button',
 )
 
 C = TypeVar('C', bound='Component')
 
+
 class Component:
     """Represents a Discord Bot UI Kit Component.
 
-    Currently, the only components supported by Discord are buttons and button groups.
+    Currently, the only components supported by Discord are:
+
+    - :class:`ActionRow`
+    - :class:`Button`
+
+    This class is abstract and cannot be instantiated.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    type: :class:`ComponentType`
+        The type of component.
+    """
+
+    __slots__: Tuple[str, ...] = ('type',)
+
+    __repr_info__: ClassVar[Tuple[str, ...]]
+    type: ComponentType
+
+    def __repr__(self) -> str:
+        attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
+        return f'<{self.__class__.__name__} type={self.type!r} {attrs}>'
+
+    @classmethod
+    def _raw_construct(cls: Type[C], **kwargs) -> C:
+        self: C = cls.__new__(cls)
+        for slot in get_slots(cls):
+            try:
+                value = kwargs[slot]
+            except KeyError:
+                pass
+            else:
+                setattr(self, slot, value)
+        return self
+
+    def to_dict(self) -> Dict[str, Any]:
+        raise NotImplementedError
+
+
+class ActionRow(Component):
+    """Represents a Discord Bot UI Kit Action Row.
+
+    This is a component that holds up to 5 children components in a row.
 
     .. versionadded:: 2.0
 
@@ -58,34 +104,19 @@ class Component:
         The children components that this holds, if any.
     """
 
-    __slots__: Tuple[str, ...] = (
-        'type',
-        'children',
-    )
+    __slots__: Tuple[str, ...] = ('children',)
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ComponentPayload):
         self.type: ComponentType = try_enum(ComponentType, data['type'])
         self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
-    def __repr__(self) -> str:
-        attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__slots__)
-        return f'<{self.__class__.__name__} type={self.type!r} {attrs}>'
-
-    def to_dict(self) -> ComponentContainerPayload:
+    def to_dict(self) -> ActionRowPayload:
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
         }  # type: ignore
-
-
-    @classmethod
-    def _raw_construct(cls: Type[C], **kwargs) -> C:
-        self: C = cls.__new__(cls)
-        slots = cls.__slots__
-        for attr, value in kwargs.items():
-            if attr in slots:
-                setattr(self, attr, value)
-        return self
 
 
 class Button(Component):
@@ -112,7 +143,7 @@ class Button(Component):
         The emoji of the button, if available.
     """
 
-    __slots__: Tuple[str, ...] = Component.__slots__ + (
+    __slots__: Tuple[str, ...] = (
         'style',
         'custom_id',
         'url',
@@ -120,6 +151,8 @@ class Button(Component):
         'label',
         'emoji',
     )
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ButtonComponentPayload):
         self.type: ComponentType = try_enum(ComponentType, data['type'])
@@ -152,11 +185,13 @@ class Button(Component):
 
         return payload  # type: ignore
 
+
 def _component_factory(data: ComponentPayload) -> Component:
     component_type = data['type']
     if component_type == 1:
-        return Component(data)
+        return ActionRow(data)
     elif component_type == 2:
         return Button(data)  # type: ignore
     else:
-        return Component(data)
+        as_enum = try_enum(ComponentType, component_type)
+        return Component._raw_construct(type=as_enum)

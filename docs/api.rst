@@ -2885,6 +2885,14 @@ Component
 .. autoclass:: Component()
     :members:
 
+ActionRow
+~~~~~~~~~~
+
+.. attributetable:: ActionRow
+
+.. autoclass:: ActionRow()
+    :members:
+
 Button
 ~~~~~~~
 
