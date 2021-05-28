@@ -91,6 +91,8 @@ class View:
         'children',
         'id',
         '_cancel_callback',
+        '_timeout_handler',
+        '_stopped'
     )
 
     __discord_ui_view__: ClassVar[bool] = True
