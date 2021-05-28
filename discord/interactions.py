@@ -85,7 +85,8 @@ class Interaction:
         The token to continue the interaction. These are valid
         for 15 minutes.
     custom_id: Optional[:class:`str`]
-        The custom ID of the interaction. ``None`` if the interaction is not a Message Component.
+        The custom ID of the interaction. ``None`` if the 
+        interaction is not a Message Component.
     """
 
     __slots__: Tuple[str, ...] = (
