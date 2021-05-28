@@ -263,7 +263,12 @@ class Role(Hashable):
 
         .. versionadded:: 2.0
         """
-        return not self.is_default() and not self.managed and (self.guild.me.top_role > self or self.guild.me == self.guild.owner)
+        me = self.guild.me
+        return (
+            not self.is_default()
+            and not self.managed
+            and (me.top_role > self or me.id == self.guild.owner_id)
+        )
 
     @property
     def permissions(self):
