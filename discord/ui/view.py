@@ -179,7 +179,43 @@ class View:
         item._view = self
         self.children.append(item)
 
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        """|coro|
+
+        A callback that is called when an interaction happens within the view
+        that checks whether the view should process item callbacks for the interaction.
+
+        This is useful to override if for example you want to ensure that the
+        interaction author is a given user.
+
+        The default implementation of this returns ``True``.
+
+        .. note::
+
+            If an exception occurs within the body then the interaction
+            check is considered failed.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that occurred.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether the view children's callbacks should be called.
+        """
+        return True
+
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
+        try:
+            allow = await self.interaction_check(interaction)
+        except Exception:
+            allow = False
+
+        if not allow:
+            return
+
         await item.callback(interaction)
         if not interaction.response._responded:
             await interaction.response.defer()
