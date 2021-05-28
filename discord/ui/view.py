@@ -118,6 +118,7 @@ class View:
 
         self.id = os.urandom(16).hex()
         self._cancel_callback: Optional[Callable[[View], None]] = None
+        self._stopped = asyncio.Event()
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
@@ -212,8 +213,16 @@ class View:
 
         This operation cannot be undone.
         """
+        self._stopped.set()
         if self._cancel_callback:
             self._cancel_callback(self)
+
+    async def wait(self) -> None:
+        """Waits until the view has finished interacting.
+
+        A view is considered finished when :meth:`stop` is called.
+        """
+        await self._stopped.wait()
 
 
 class ViewStore:
