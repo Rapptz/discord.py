@@ -84,6 +84,8 @@ class Interaction:
     token: :class:`str`
         The token to continue the interaction. These are valid
         for 15 minutes.
+    custom_id: Optional[:class:`str`]
+        The custom ID of the interaction. ``None`` if the interaction is not a Message Component.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -97,6 +99,7 @@ class Interaction:
         'user',
         'token',
         'version',
+        'custom_id',
         '_state',
         '_session',
         '_cs_response',
@@ -116,6 +119,7 @@ class Interaction:
         self.channel_id = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.application_id = utils._get_as_snowflake(data, 'application_id')
+        self.custom_id = self.data.get('custom_id')
 
         channel = self.channel or Object(id=self.channel_id)
         try:
