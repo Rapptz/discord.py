@@ -63,6 +63,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Message, MessageReference
     from .enums import InviteTarget
+    from .ui.view import View
 
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -1147,6 +1148,7 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 
@@ -1163,6 +1165,7 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 
