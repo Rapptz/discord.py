@@ -45,7 +45,7 @@ from .iterators import AuditLogIterator, MemberIterator
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
-from .integrations import BotIntegration, StreamIntegration, _integration_factory
+from .integrations import Integration, _integration_factory
 
 __all__ = (
     'Guild',
@@ -1805,7 +1805,7 @@ class Guild(Hashable):
         data = await self._state.http.get_all_integrations(self.id)
         
         def convert(d):
-            factory, itype = _integration_factory(d['type'])
+            factory, _ = _integration_factory(d['type'])
             if factory is None:
                 raise InvalidData('Unknown integration type {type!r} for integration ID {id}'.format_map(d))
             return factory(guild=self, data=d)

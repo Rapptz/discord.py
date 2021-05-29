@@ -43,6 +43,8 @@ if TYPE_CHECKING:
     from .types.integration import (
         IntegrationAccount as IntegrationAccountPayload,
         Integration as IntegrationPayload,
+        StreamIntegration as StreamIntegrationPayload,
+        BotIntegration as BotIntegrationPayload,
         IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload,
     )
@@ -142,6 +144,7 @@ class Integration:
         """
         await self._state.http.delete_integration(self.guild.id, self.id)
 
+
 class StreamIntegration(Integration):
     """Represents a stream integration for Twitch or YouTube.
 
@@ -187,7 +190,7 @@ class StreamIntegration(Integration):
         'subscriber_count',
     )
 
-    def _from_data(self, data: IntegrationPayload) -> None:
+    def _from_data(self, data: StreamIntegrationPayload) -> None:
         super()._from_data(data)
         self.revoked: bool = data['revoked']
         self.expire_behaviour: ExpireBehaviour = try_enum(ExpireBehaviour, data['expire_behavior'])
@@ -290,6 +293,7 @@ class StreamIntegration(Integration):
         await self._state.http.sync_integration(self.guild.id, self.id)
         self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
+
 class IntegrationApplication:
     """Represents an application for a bot integration.
 
@@ -312,14 +316,14 @@ class IntegrationApplication:
     """
 
     __slots__ = (
-        'id', 
-        'name', 
-        'icon', 
-        'description', 
-        'summary', 
+        'id',
+        'name',
+        'icon',
+        'description',
+        'summary',
         'user',
     )
-    
+
     def __init__(self, *, data: IntegrationApplicationPayload, state):
         self.id: int = int(data['id'])
         self.name: str = data['name']
@@ -329,9 +333,10 @@ class IntegrationApplication:
         user = data.get('bot')
         self.user: Optional[User] = User(state=state, data=user) if user else None
 
+
 class BotIntegration(Integration):
     """Represents a bot integration on discord.
-    
+
     .. versionadded:: 2.0
 
     Attributes
@@ -354,9 +359,9 @@ class BotIntegration(Integration):
         The application tied to this integration.
     """
 
-    __slots__ = Integration.__slots__ + ('application',)
+    __slots__ = ('application',)
 
-    def _from_data(self, data: IntegrationPayload) -> None:
+    def _from_data(self, data: BotIntegrationPayload) -> None:
         super()._from_data(data)
         self.application = IntegrationApplication(data=data['application'], state=self._state)
 
