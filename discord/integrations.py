@@ -175,7 +175,7 @@ class StreamIntegration(Integration):
         An aware UTC datetime representing when the integration was last synced.
     """
 
-    __slots__ = Integration.__slots__ + (
+    __slots__ = (
         'revoked',
         'expire_behaviour',
         'expire_behavior',
@@ -184,7 +184,7 @@ class StreamIntegration(Integration):
         '_role_id',
         'syncing',
         'enable_emoticons',
-        'subscriber_count'
+        'subscriber_count',
     )
 
     def _from_data(self, data: IntegrationPayload) -> None:
@@ -258,9 +258,11 @@ class StreamIntegration(Integration):
             'expire_grace_period': expire_grace_period,
         }
 
-        enable_emoticons = fields.get('enable_emoticons')
-
-        if enable_emoticons is not None:
+        try:
+            enable_emoticons = fields['enable_emoticons']
+        except KeyError:
+            enable_emoticons = self.enable_emoticons
+        else:
             payload['enable_emoticons'] = enable_emoticons
 
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
