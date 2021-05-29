@@ -2730,7 +2730,7 @@ Integration
 .. autoclass:: IntegrationApplication()
     :members:
 
-.. autoclass: StreamIntegration()
+.. autoclass:: StreamIntegration()
     :members:
 
 Interaction

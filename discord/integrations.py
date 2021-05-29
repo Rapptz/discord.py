@@ -38,7 +38,6 @@ __all__ = (
     'Integration',
     'StreamIntegration',
     'BotIntegration',
-    '_integration_factory'
 )
 
 if TYPE_CHECKING:
@@ -46,7 +45,7 @@ if TYPE_CHECKING:
         IntegrationAccount as IntegrationAccountPayload,
         Integration as IntegrationPayload,
         IntegrationType,
-        IntegrationApplication as IntegrationApplicationPayload
+        IntegrationApplication as IntegrationApplicationPayload,
     )
     from .guild import Guild
 
@@ -105,7 +104,7 @@ class Integration:
         'name',
         'account',
         'user',
-        'enabled'
+        'enabled',
     )
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
@@ -117,7 +116,7 @@ class Integration:
         return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
 
     def _from_data(self, data: IntegrationPayload) -> None:
-        self.id: int = _get_as_snowflake(data, 'id')
+        self.id: int = int(data['id'])
         self.type: IntegrationType = data['type']
         self.name: str = data['name']
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
@@ -197,7 +196,7 @@ class StreamIntegration(Integration):
         self.expire_behaviour: ExpireBehaviour = try_enum(ExpireBehaviour, data['expire_behavior'])
         self.expire_grace_period: int = data['expire_grace_period']
         self.synced_at: datetime.datetime = parse_time(data['synced_at'])
-        self._role_id: int = _get_as_snowflake(data, 'role_id')
+        self._role_id: int = int(data['role_id'])
         self.role: Role = self.guild.get_role(self._role_id)
         self.syncing: bool = data['syncing']
         self.enable_emoticons: bool = data['enable_emoticons']
@@ -309,10 +308,17 @@ class IntegrationApplication:
         The bot user on this application.
     """
 
-    __slots__ = ('id', 'name', 'icon', 'description', 'summary', 'user')
+    __slots__ = (
+        'id', 
+        'name', 
+        'icon', 
+        'description', 
+        'summary', 
+        'user',
+    )
     
     def __init__(self, *, data: IntegrationApplicationPayload, state):
-        self.id: int = _get_as_snowflake(data, 'id')
+        self.id: int = int(data['id'])
         self.name: str = data['name']
         self.icon: Optional[str] = data['icon']
         self.description: str = data['description']
@@ -355,7 +361,7 @@ class BotIntegration(Integration):
 def _integration_factory(value):
     if value == 'discord':
         return BotIntegration, value
-    elif value in {'twitch', 'youtube'}:
+    elif value in ('twitch', 'youtube'):
         return StreamIntegration, value
     else:
-        return None, value
+        return Integration, value
