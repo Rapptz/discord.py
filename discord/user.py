@@ -340,6 +340,8 @@ class User(BaseUser, discord.abc.Messageable):
     @property
     def mutual_guilds(self):
         """List[:class:`Guild`]: The guilds that the user shares with the client.
+        
+        This requires :meth:`Intents.members` to be enabled.
 
         .. note::
 
