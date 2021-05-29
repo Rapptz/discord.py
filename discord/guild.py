@@ -1911,6 +1911,36 @@ class Guild(Hashable):
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
+    async def delete_custom_emoji(
+        self,
+        emoji: abc.Snowflake,
+        *,
+        reason: Optional[str] = None
+    ) -> None:
+        """|coro|
+
+        Deletes the custom :class:`Emoji` from the guild.
+
+        You must have :attr:`~Permissions.manage_emojis` permission to
+        do this.
+
+        Parameters
+        -----------
+        emoji: :class:`abc.Snowflake`
+            The emoji you are deleting.
+        reason: Optional[:class:`str`]
+            The reason for deleting this emoji. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete emojis.
+        HTTPException
+            An error occurred deleting the emoji.
+        """
+
+        await self._state.http.delete_custom_emoji(self.id, emoji.id, reason=reason)
+
     async def fetch_roles(self):
         """|coro|
 
