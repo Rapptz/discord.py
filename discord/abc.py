@@ -1106,14 +1106,8 @@ class GuildChannel:
 
         state = self._state
         data = await state.http.invites_from_channel(self.id)
-        result = []
-
-        for invite in data:
-            invite['channel'] = self
-            invite['guild'] = self.guild
-            result.append(Invite(state=state, data=invite))
-
-        return result
+        guild = self.guild
+        return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
 
 
 class Messageable(Protocol):

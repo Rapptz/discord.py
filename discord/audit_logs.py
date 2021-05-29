@@ -441,12 +441,10 @@ class AuditLogEntry(Hashable):
             'max_uses': changeset.max_uses,
             'code': changeset.code,
             'temporary': changeset.temporary,
-            'channel': changeset.channel,
             'uses': changeset.uses,
-            'guild': self.guild,
         }
 
-        obj = Invite(state=self._state, data=fake_payload)
+        obj = Invite(state=self._state, data=fake_payload, guild=self.guild, channel=changeset.channel)
         try:
             obj.inviter = changeset.inviter
         except AttributeError:

@@ -24,8 +24,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import Literal, Optional, TypedDict, Union
 
+from .snowflake import Snowflake
 from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
@@ -45,6 +46,7 @@ class _InviteOptional(TypedDict, total=False):
 class _InviteMetadata(TypedDict, total=False):
     uses: int
     max_uses: int
+    max_age: int
     temporary: bool
     created_at: str
 
@@ -60,3 +62,33 @@ class Invite(IncompleteInvite, _InviteOptional):
 
 class InviteWithCounts(Invite, _GuildPreviewUnique):
     ...
+
+
+class _GatewayInviteCreateOptional(TypedDict, total=False):
+    guild_id: Snowflake
+    inviter: PartialUser
+    target_type: InviteTargetType
+    target_user: PartialUser
+    target_application: PartialAppInfo
+
+
+class GatewayInviteCreate(_GatewayInviteCreateOptional):
+    channel_id: Snowflake
+    code: str
+    created_at: str
+    max_age: int
+    max_uses: int
+    temporary: bool
+    uses: bool
+
+
+class _GatewayInviteDeleteOptional(TypedDict, total=False):
+    guild_id: Snowflake
+
+
+class GatewayInviteDelete(_GatewayInviteDeleteOptional):
+    channel_id: Snowflake
+    code: str
+
+
+GatewayInvite = Union[GatewayInviteCreate, GatewayInviteDelete]

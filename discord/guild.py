@@ -1718,9 +1718,7 @@ class Guild(Hashable):
         result = []
         for invite in data:
             channel = self.get_channel(int(invite['channel']['id']))
-            invite['channel'] = channel
-            invite['guild'] = self
-            result.append(Invite(state=self._state, data=invite))
+            result.append(Invite(state=self._state, data=invite, guild=self, channel=channel))
 
         return result
 
@@ -2219,13 +2217,12 @@ class Guild(Hashable):
         # reliable or a thing anymore
         data = await self._state.http.get_invite(payload['code'])
 
-        payload['guild'] = self
-        payload['channel'] = self.get_channel(int(data['channel']['id']))
+        channel = self.get_channel(int(data['channel']['id']))
         payload['revoked'] = False
         payload['temporary'] = False
         payload['max_uses'] = 0
         payload['max_age'] = 0
-        return Invite(state=self._state, data=payload)
+        return Invite(state=self._state, data=payload, guild=self, channel=channel)
 
     def audit_logs(
         self,
