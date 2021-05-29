@@ -2986,6 +2986,15 @@ Integration
 .. autoclass:: IntegrationAccount()
     :members:
 
+.. autoclass:: BotIntegration()
+    :members:
+
+.. autoclass:: IntegrationApplication()
+    :members:
+
+.. autoclass:: StreamIntegration()
+    :members:
+
 Interaction
 ~~~~~~~~~~~~
 
