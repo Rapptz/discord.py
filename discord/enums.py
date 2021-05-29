@@ -431,7 +431,7 @@ class StickerType(Enum):
 
 class InviteTarget(Enum):
     unknown = 0
-    stream  = 1
+    stream = 1
     embedded_application = 2
 
 class InteractionType(Enum):

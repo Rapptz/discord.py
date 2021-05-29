@@ -30,6 +30,7 @@ from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, InviteTarget, try_enum
+from .appinfo import PartialAppInfo
 
 __all__ = (
     'PartialInviteChannel',
@@ -277,12 +278,18 @@ class Invite(Hashable):
 
     channel: Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]
         The channel the invite is for.
+    target_type: :class:`InviteTarget`
+        The type of target for the voice channel invite.
+        
+        .. versionadded:: 2.0
+    
     target_user: Optional[:class:`User`]
-        The target of this invite in the case of stream invites.
+        The user whose stream to display for this invite, if any.
 
         .. versionadded:: 2.0
-    target_type: :class:`InviteTarget`
-        The invite's target type.
+
+    target_application: Optional[:class:`PartialAppInfo`]
+        The embedded application the invite targets, if any.
 
         .. versionadded:: 2.0
     """
@@ -303,6 +310,7 @@ class Invite(Hashable):
         '_state',
         'approximate_member_count',
         'approximate_presence_count',
+        'target_application',
         'expires_at',
     )
 
@@ -328,7 +336,11 @@ class Invite(Hashable):
         self.channel = data.get('channel')
         target_user_data = data.get('target_user')
         self.target_user = None if target_user_data is None else self._state.store_user(target_user_data)
-        self.target_type = try_enum(InviteTarget, data.get('target_type', 0))
+
+        self.target_type = try_enum(InviteTarget, data.get("target_type", 0))
+
+        application = data.get('target_application')
+        self.target_application = PartialAppInfo(data=application, state=state) if application else None
 
     @classmethod
     def from_incomplete(cls, *, state, data):

@@ -24,39 +24,20 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import TypedDict, List
 
-from .guild import InviteGuild, _GuildPreviewUnique
-from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import PartialAppInfo
+from .snowflake import Snowflake
 
-InviteTargetType = Literal[1, 2]
+class TeamMember(TypedDict):
+    user: PartialUser
+    membership_state: int
+    permissions: List[str]
+    team_id: Snowflake
 
-
-class _InviteOptional(TypedDict, total=False):
-    guild: InviteGuild
-    inviter: PartialUser
-    target_user: PartialUser
-    target_type: InviteTargetType
-    target_application: PartialAppInfo
-
-
-class _InviteMetadata(TypedDict, total=False):
-    uses: int
-    max_uses: int
-    temporary: bool
-    created_at: str
-
-
-class IncompleteInvite(_InviteMetadata):
-    code: str
-    channel: PartialChannel
-
-
-class Invite(IncompleteInvite, _InviteOptional):
-    ...
-
-
-class InviteWithCounts(Invite, _GuildPreviewUnique):
-    ...
+class Team(TypedDict):
+    id: Snowflake
+    name: str
+    owner_id: Snowflake
+    members: List[TeamMember]
+    icon: str

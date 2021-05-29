@@ -981,6 +981,9 @@ class HTTPClient:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[int] = None,
+        target_application_id: Optional[int] = None
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -989,6 +992,15 @@ class HTTPClient:
             'temporary': temporary,
             'unique': unique,
         }
+
+        if target_type:
+            payload['target_type'] = target_type
+
+        if target_user_id:
+            payload['target_user_id'] = target_user_id
+
+        if target_application_id:
+            payload['target_application_id'] = str(target_application_id)
 
         return self.request(r, reason=reason, json=payload)
 

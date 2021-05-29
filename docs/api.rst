@@ -64,6 +64,14 @@ AppInfo
 .. autoclass:: AppInfo()
     :members:
 
+PartialAppInfo
+~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialAppInfo
+
+.. autoclass:: PartialAppInfo()
+    :members:
+
 Team
 ~~~~~
 
@@ -2076,7 +2084,7 @@ of :class:`enum.Enum`.
 
 .. class:: InviteTarget
 
-    Represents the type of target an invite contains.
+    Represents the invite type for voice channel invites.
 
     .. versionadded:: 2.0
 
@@ -2086,11 +2094,11 @@ of :class:`enum.Enum`.
 
     .. attribute:: stream
 
-        The invite targets a stream.
+        A stream invite that targets a user.
 
     .. attribute:: embedded_application
 
-        The invite targets an embedded application activity.
+        A stream invite that targets an embedded application.
 
 .. class:: VideoQualityMode
 
@@ -2105,6 +2113,7 @@ of :class:`enum.Enum`.
     .. attribute:: full
 
         Represents full camera video quality.
+
 
 Async Iterator
 ----------------
