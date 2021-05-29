@@ -22,18 +22,24 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import TypeVar
+
 __all__ = (
     'EqualityComparable',
     'Hashable',
 )
 
+E = TypeVar('E', bound='EqualityComparable')
+
 class EqualityComparable:
     __slots__ = ()
 
-    def __eq__(self, other):
+    id: int
+
+    def __eq__(self: E, other: E) -> bool:
         return isinstance(other, self.__class__) and other.id == self.id
 
-    def __ne__(self, other):
+    def __ne__(self: E, other: E) -> bool:
         if isinstance(other, self.__class__):
             return other.id != self.id
         return True
@@ -41,5 +47,5 @@ class EqualityComparable:
 class Hashable(EqualityComparable):
     __slots__ = ()
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return self.id >> 22
