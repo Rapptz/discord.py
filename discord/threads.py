@@ -23,14 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, Dict, Iterable, List, Optional, Sequence, TYPE_CHECKING
+from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
 import time
 import asyncio
 
 from .mixins import Hashable
 from .abc import Messageable
 from .enums import ChannelType, try_enum
-from .errors import ClientException, NoMoreItems
+from .errors import ClientException
 from .utils import MISSING, parse_time, _get_as_snowflake
 
 __all__ = (
@@ -50,6 +50,8 @@ if TYPE_CHECKING:
     from .member import Member
     from .message import Message
     from .abc import Snowflake, SnowflakeTime
+    from .role import Role
+    from .permissions import Permissions
     from .state import ConnectionState
 
 
@@ -233,6 +235,38 @@ class Thread(Messageable, Hashable):
         i.e. :meth:`.TextChannel.is_news` is ``True``.
         """
         return self._type is ChannelType.news_thread
+
+    def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
+        """Handles permission resolution for the :class:`~discord.Member`
+        or :class:`~discord.Role`.
+
+        Since threads do not have their own permissions, they inherit them
+        from the parent channel. This is a convenience method for
+        calling :meth:`~discord.TextChannel.permissions_for` on the
+        parent channel.
+
+        Parameters
+        ----------
+        obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]
+            The object to resolve permissions for. This could be either
+            a member or a role. If it's a role then member overwrites
+            are not computed.
+
+        Raises
+        -------
+        ClientException
+            The parent channel was not cached and returned ``None``
+
+        Returns
+        -------
+        :class:`~discord.Permissions`
+            The resolved permissions for the member or role.
+        """
+
+        parent = self.parent
+        if parent is None:
+            raise ClientException('Parent channel not found')
+        return parent.permissions_for(obj)
 
     async def delete_messages(self, messages: Iterable[Snowflake]) -> None:
         """|coro|
