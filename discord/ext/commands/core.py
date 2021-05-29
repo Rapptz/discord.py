@@ -215,6 +215,10 @@ class Command(_BaseCommand):
         If ``True``\, cooldown processing is done after argument parsing,
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
+    extras: :class:`dict`
+        A dict of user provided extras to attach to the Command.
+
+        .. versionadded:: 2.0
     """
 
     def __new__(cls, *args, **kwargs):
@@ -258,6 +262,7 @@ class Command(_BaseCommand):
         self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
+        self.extras = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
             raise TypeError("Aliases of a command must be a list or a tuple of strings.")
@@ -393,6 +398,8 @@ class Command(_BaseCommand):
             other._buckets = self._buckets.copy()
         if self._max_concurrency != other._max_concurrency:
             other._max_concurrency = self._max_concurrency.copy()
+        if self.extras != other.extras:
+            other.extras = self.extras.copy()
 
         try:
             other.on_error = self.on_error
