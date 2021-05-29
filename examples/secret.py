@@ -5,7 +5,7 @@ from discord.ext import commands
 
 bot = commands.Bot(command_prefix=commands.when_mentioned, description="Nothing to see here!")
 
-# the `hidden` keyword argument hides it from the help command. 
+# the `hidden` keyword argument hides it from the help command.
 @bot.group(hidden=True)
 async def secret(ctx: commands.Context):
     """What is this "secret" you speak of?"""
@@ -13,7 +13,7 @@ async def secret(ctx: commands.Context):
         await ctx.send('Shh!', delete_after=5)
 
 def create_overwrites(ctx, *objects):
-    """This is just a helper function that creates the overwrites for the 
+    """This is just a helper function that creates the overwrites for the
     voice/text channels.
 
     A `discord.PermissionOverwrite` allows you to determine the permissions
@@ -45,10 +45,10 @@ def create_overwrites(ctx, *objects):
 @secret.command()
 @commands.guild_only()
 async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]):
-    """This makes a text channel with a specified name 
+    """This makes a text channel with a specified name
     that is only visible to roles or members that are specified.
     """
-    
+
     overwrites = create_overwrites(ctx, *objects)
 
     await ctx.guild.create_text_channel(

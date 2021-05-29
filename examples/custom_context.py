@@ -27,7 +27,7 @@ class MyBot(commands.Bot):
         # subclass to the super() method, which tells the bot to
         # use the new MyContext class
         return await super().get_context(message, cls=cls)
-        
+
 
 bot = MyBot(command_prefix='!')
 
@@ -43,7 +43,7 @@ async def guess(ctx, number: int):
     await ctx.tick(number == value)
 
 # important: you shouldnt hard code your token
-# these are very important, and leaking them can 
+# these are very important, and leaking them can
 # let people do very malicious things with your
 # bot. try to use a file or something to keep
 # them private, and dont commit it to GitHub

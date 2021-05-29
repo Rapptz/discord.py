@@ -1044,9 +1044,9 @@ class GuildChannel:
             The reason for creating this invite. Shows up on the audit log.
         target_type: Optional[:class:`InviteTarget`]
             The type of target for the voice channel invite, if any.
-            
+
             .. versionadded:: 2.0
-        
+
         target_user: Optional[:class:`User`]
             The user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. The user must be streaming in the channel.
 
@@ -1344,8 +1344,8 @@ class Messageable(Protocol):
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
-            async with channel.typing(): 
-                # simulate something heavy 
+            async with channel.typing():
+                # simulate something heavy
                 await asyncio.sleep(10)
 
             await channel.send('done!')

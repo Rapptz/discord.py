@@ -1801,7 +1801,7 @@ class Guild(Hashable):
             The list of integrations that are attached to the guild.
         """
         data = await self._state.http.get_all_integrations(self.id)
-        
+
         def convert(d):
             factory, _ = _integration_factory(d['type'])
             if factory is None:

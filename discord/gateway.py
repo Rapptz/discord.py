@@ -719,7 +719,7 @@ class DiscordVoiceWebSocket:
 
     async def _hook(self, *args):
         pass
-    
+
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -824,7 +824,7 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
-            
+
         await self._hook(self, msg)
 
     async def initial_connection(self, data):

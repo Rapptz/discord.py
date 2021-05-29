@@ -27,13 +27,13 @@ from __future__ import annotations
 import asyncio
 import datetime
 from typing import (
-    Any, 
-    Awaitable, 
-    Callable, 
+    Any,
+    Awaitable,
+    Callable,
     Generic,
-    List, 
-    Optional, 
-    Type, 
+    List,
+    Optional,
+    Type,
     TypeVar,
     Union,
     cast,
@@ -147,7 +147,7 @@ class Loop(Generic[LF]):
         else:
             await coro(*args, **kwargs)
 
-    
+
     def _try_sleep_until(self, dt: datetime.datetime):
         self._handle = SleepHandle(dt=dt, loop=self.loop)  # type: ignore
         return self._handle.wait()
@@ -178,7 +178,7 @@ class Loop(Generic[LF]):
                     await asyncio.sleep(backoff.delay())
                 else:
                     await self._try_sleep_until(self._next_iteration)
-                    
+
                     if self._stop_next_iteration:
                         return
 
@@ -212,13 +212,13 @@ class Loop(Generic[LF]):
             return self
 
         copy = Loop(
-            self.coro, 
-            seconds=self._seconds, 
-            hours=self._hours, 
+            self.coro,
+            seconds=self._seconds,
+            hours=self._hours,
             minutes=self._minutes,
-            time=self._time, 
+            time=self._time,
             count=self.count,
-            reconnect=self.reconnect, 
+            reconnect=self.reconnect,
             loop=self.loop,
         )
         copy._injected = obj
@@ -237,7 +237,7 @@ class Loop(Generic[LF]):
         """
         if self._seconds is not MISSING:
             return self._seconds
-    
+
     @property
     def minutes(self) -> Optional[float]:
         """Optional[:class:`float`]: Read-only value for the number of minutes
@@ -247,7 +247,7 @@ class Loop(Generic[LF]):
         """
         if self._minutes is not MISSING:
             return self._minutes
-    
+
     @property
     def hours(self) -> Optional[float]:
         """Optional[:class:`float`]: Read-only value for the number of hours
@@ -707,7 +707,7 @@ def loop(
     time: Union[:class:`datetime.time`, Sequence[:class:`datetime.time`]]
         The exact times to run this loop at. Either a non-empty list or a single
         value of :class:`datetime.time` should be passed. Timezones are supported.
-        If no timezone is given for the times, it is assumed to represent UTC time. 
+        If no timezone is given for the times, it is assumed to represent UTC time.
 
         This cannot be used in conjunction with the relative time parameters.
 

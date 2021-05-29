@@ -216,8 +216,8 @@ class Command(_BaseCommand):
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
     extras: :class:`dict`
-        A dict of user provided extras to attach to the Command. 
-        
+        A dict of user provided extras to attach to the Command.
+
         .. note::
             This object may be copied by the library.
 

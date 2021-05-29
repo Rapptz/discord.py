@@ -1261,7 +1261,7 @@ class Client:
     async def fetch_user(self, user_id):
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID. 
+        Retrieves a :class:`~discord.User` based on their ID.
         You do not have to share any guilds with the user to get this information,
         however many operations do require that you do.
 
