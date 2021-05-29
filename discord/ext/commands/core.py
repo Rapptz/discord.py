@@ -216,7 +216,11 @@ class Command(_BaseCommand):
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
     extras: :class:`dict`
-        A dict of user provided extras to attach to the Command.
+        A dict of user provided extras to attach to the Command. 
+        
+        .. note::
+            This object may be copied by the library.
+
 
         .. versionadded:: 2.0
     """
@@ -398,8 +402,6 @@ class Command(_BaseCommand):
             other._buckets = self._buckets.copy()
         if self._max_concurrency != other._max_concurrency:
             other._max_concurrency = self._max_concurrency.copy()
-        if self.extras != other.extras:
-            other.extras = self.extras.copy()
 
         try:
             other.on_error = self.on_error
