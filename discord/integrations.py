@@ -25,9 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Optional, TYPE_CHECKING, overload
+from typing import Optional, TYPE_CHECKING, overload, Type, Tuple
 from .utils import _get_as_snowflake, get, parse_time
-from .role import Role
 from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
@@ -48,6 +47,7 @@ if TYPE_CHECKING:
         IntegrationApplication as IntegrationApplicationPayload,
     )
     from .guild import Guild
+    from .role import Role
 
 
 class IntegrationAccount:
@@ -161,8 +161,6 @@ class StreamIntegration(Integration):
         Whether the integration is currently enabled.
     syncing: :class:`bool`
         Where the integration is currently syncing.
-    role: :class:`Role`
-        The role which the integration uses for subscribers.
     enable_emoticons: Optional[:class:`bool`]
         Whether emoticons should be synced for this integration (currently twitch only).
     expire_behaviour: :class:`ExpireBehaviour`
@@ -184,7 +182,6 @@ class StreamIntegration(Integration):
         'expire_grace_period',
         'synced_at',
         '_role_id',
-        'role',
         'syncing',
         'enable_emoticons',
         'subscriber_count'
@@ -197,10 +194,14 @@ class StreamIntegration(Integration):
         self.expire_grace_period: int = data['expire_grace_period']
         self.synced_at: datetime.datetime = parse_time(data['synced_at'])
         self._role_id: int = int(data['role_id'])
-        self.role: Role = self.guild.get_role(self._role_id)
         self.syncing: bool = data['syncing']
         self.enable_emoticons: bool = data['enable_emoticons']
         self.subscriber_count: int = data['subscriber_count']
+
+    @property
+    def role(self) -> Optional[Role]:
+        """Optional[:class:`Role`] The role which the integration uses for subscribers."""
+        return self.guild.get_role(self._role_id)
 
     @overload
     async def edit(
@@ -358,7 +359,7 @@ class BotIntegration(Integration):
         self.application = IntegrationApplication(data=data['application'], state=self._state)
 
 
-def _integration_factory(value):
+def _integration_factory(value: str) -> Tuple[Type[Integration], str]:
     if value == 'discord':
         return BotIntegration, value
     elif value in ('twitch', 'youtube'):
