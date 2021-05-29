@@ -55,6 +55,7 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
+from .ui.view import View
 
 __all__ = (
     'Client',
@@ -1379,3 +1380,29 @@ class Client:
 
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
+
+    def add_view(self, view: View, *, message_id: Optional[int] = None) -> None:
+        """Registers a :class:`~discord.ui.View` for persistent listening.
+
+        This method should be used for when a view is comprised of components
+        that last longer than the lifecycle of the program.
+
+        Parameters
+        ------------
+        view: :class:`discord.ui.View`
+            The view to register for dispatching.
+        message_id: Optional[:class:`int`]
+            The message ID that the view is attached to. This is currently used to
+            refresh the view's state during message update events. If not given
+            then message update events are not propagated for the view.
+
+        Raises
+        -------
+        TypeError
+            A view was not passed.
+        """
+
+        if not isinstance(view, View):
+            raise TypeError(f'expected an instance of View not {view.__class__!r}')
+
+        self._connection.store_view(view, message_id)
