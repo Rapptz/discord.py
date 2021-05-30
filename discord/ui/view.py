@@ -160,6 +160,9 @@ class View:
         self._timeout_handler: Optional[asyncio.TimerHandle] = None
         self._stopped = loop.create_future()
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self.children)}>'
+
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
             return item._rendered_row or 0
