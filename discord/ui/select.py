@@ -160,6 +160,15 @@ class Select(Item[V]):
         """List[:class:`discord.SelectOption`]: A list of options that can be selected in this menu."""
         return self._underlying.options
 
+    @options.setter
+    def options(self, value: List[SelectOption]):
+        if not isinstance(value, list):
+            raise TypeError('options must be a list of SelectOption')
+        if not all(isinstance(obj, SelectOption) for obj in value):
+            raise TypeError('all list items must subclass SelectOption')
+
+        self._underlying.options = value
+
     def add_option(
         self,
         *,
