@@ -50,11 +50,12 @@ class Item(Generic[V]):
     - :class:`discord.ui.Button`
     """
 
-    __item_repr_attributes__: Tuple[str, ...] = ('group_id',)
+    __item_repr_attributes__: Tuple[str, ...] = ('row',)
 
     def __init__(self):
         self._view: Optional[V] = None
-        self.group_id: Optional[int] = None
+        self._row: Optional[int] = None
+        self._rendered_row: Optional[int] = None
 
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
@@ -79,6 +80,24 @@ class Item(Generic[V]):
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__item_repr_attributes__)
         return f'<{self.__class__.__name__} {attrs}>'
+
+    @property
+    def row(self) -> Optional[int]:
+        return self._row
+
+    @row.setter
+    def row(self, value: Optional[int]):
+        if value is None:
+            self._row = None
+        elif 5 > value >= 0:
+            self._row = value
+        else:
+            raise ValueError('row cannot be negative or greater than or equal to 5')
+
+    @property
+    def width(self) -> int:
+        """:class:`int`: The width of the item."""
+        return 1
 
     @property
     def view(self) -> Optional[V]:

@@ -67,6 +67,47 @@ def _component_to_item(component: Component) -> Item:
     return Item.from_component(component)
 
 
+class _ViewWeights:
+    __slots__ = (
+        'weights',
+    )
+
+    def __init__(self, children: List[Item]):
+        self.weights: List[int] = [0, 0, 0, 0, 0]
+
+        key = lambda i: sys.maxsize if i.row is None else i.row
+        children = sorted(children, key=key)
+        for row, group in groupby(children, key=key):
+            for item in group:
+                self.add_item(item)
+
+    def find_open_space(self, item: Item) -> int:
+        for index, weight in enumerate(self.weights):
+            if weight + item.width <= 5:
+                return index
+
+        raise ValueError('could not find open space for item')
+
+    def add_item(self, item: Item) -> None:
+        if item.row is not None:
+            total = self.weights[item.row] + item.width
+            if total > 5:
+                raise ValueError(f'item would not fit at row {item.row} ({total} > 5 width)')
+            self.weights[item.row] = total
+            item._rendered_row = item.row
+        else:
+            index = self.find_open_space(item)
+            self.weights[index] += item.width
+            item._rendered_row = index
+
+    def remove_item(self, item: Item) -> None:
+        if item._rendered_row is not None:
+            self.weights[item._rendered_row] -= item.width
+            item._rendered_row = None
+
+    def clear(self) -> None:
+        self.weights = [0, 0, 0, 0, 0]
+
 class View:
     """Represents a UI view.
 
@@ -112,6 +153,7 @@ class View:
             setattr(self, func.__name__, item)
             self.children.append(item)
 
+        self.__weights = _ViewWeights(self.children)
         loop = asyncio.get_running_loop()
         self.id = os.urandom(16).hex()
         self._cancel_callback: Optional[Callable[[View], None]] = None
@@ -120,29 +162,21 @@ class View:
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
-            if item.group_id is None:
-                return sys.maxsize
-            return item.group_id
+            return item._rendered_row or 0
 
         children = sorted(self.children, key=key)
         components: List[Dict[str, Any]] = []
         for _, group in groupby(children, key=key):
-            group = list(group)
-            if len(group) <= 5:
-                components.append(
-                    {
-                        'type': 1,
-                        'components': [item.to_component_dict() for item in group],
-                    }
-                )
-            else:
-                components.extend(
-                    {
-                        'type': 1,
-                        'components': [item.to_component_dict() for item in group[index : index + 5]],
-                    }
-                    for index in range(0, len(group), 5)
-                )
+            children = [item.to_component_dict() for item in group]
+            if not children:
+                continue
+
+            components.append(
+                {
+                    'type': 1,
+                    'components': children,
+                }
+            )
 
         return components
 
@@ -165,7 +199,8 @@ class View:
         TypeError
             A :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25).
+            Maximum number of children has been exceeded (25)
+            or the row the item is trying to be added to is full.
         """
 
         if len(self.children) > 25:
@@ -173,6 +208,8 @@ class View:
 
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__!r}')
+
+        self.__weights.add_item(item)
 
         item._view = self
         self.children.append(item)
@@ -190,10 +227,13 @@ class View:
             self.children.remove(item)
         except ValueError:
             pass
+        else:
+            self.__weights.remove_item(item)
 
     def clear_items(self) -> None:
         """Removes all items from the view."""
         self.children.clear()
+        self.__weights.clear()
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|

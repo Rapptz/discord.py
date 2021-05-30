@@ -66,6 +66,12 @@ class Button(Item[V]):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    row: Optional[:class:`int`]
+        The relative row this button belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number cannot be negative or greater than 5.
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -74,7 +80,7 @@ class Button(Item[V]):
         'disabled',
         'label',
         'emoji',
-        'group_id',
+        'row',
     )
 
     def __init__(
@@ -86,7 +92,7 @@ class Button(Item[V]):
         custom_id: Optional[str] = None,
         url: Optional[str] = None,
         emoji: Optional[Union[str, PartialEmoji]] = None,
-        group: Optional[int] = None,
+        row: Optional[int] = None,
     ):
         super().__init__()
         if custom_id is not None and url is not None:
@@ -110,7 +116,7 @@ class Button(Item[V]):
             style=style,
             emoji=emoji,
         )
-        self.group_id = group
+        self.row = row
 
     @property
     def style(self) -> ButtonStyle:
@@ -189,7 +195,7 @@ class Button(Item[V]):
             custom_id=button.custom_id,
             url=button.url,
             emoji=button.emoji,
-            group=None,
+            row=None,
         )
 
     @property
@@ -213,7 +219,7 @@ def button(
     disabled: bool = False,
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, PartialEmoji]] = None,
-    group: Optional[int] = None,
+    row: Optional[int] = None,
 ) -> Callable[[ItemCallbackType], ItemCallbackType]:
     """A decorator that attaches a button to a component.
 
@@ -242,12 +248,12 @@ def button(
         Whether the button is disabled or not. Defaults to ``False``.
     emoji: Optional[Union[:class:`str`, :class:`PartialEmoji`]]
         The emoji of the button. This can be in string form or a :class:`PartialEmoji`.
-    group: Optional[:class:`int`]
-        The relative group this button belongs to. A Discord component can only have 5
-        groups. By default, items are arranged automatically into those 5 groups. If you'd
-        like to control the relative positioning of the group then passing an index is advised.
-        For example, group=1 will show up before group=2. Defaults to ``None``, which is automatic
-        ordering.
+    row: Optional[:class:`int`]
+        The relative row this button belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number cannot be negative or greater than 5.
     """
 
     def decorator(func: ItemCallbackType) -> ItemCallbackType:
@@ -264,7 +270,7 @@ def button(
             'disabled': disabled,
             'label': label,
             'emoji': emoji,
-            'group': group,
+            'row': row,
         }
         return func
 
