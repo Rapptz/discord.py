@@ -383,7 +383,7 @@ class ViewStore:
     def remove_view(self, view: View):
         for item in view.children:
             if item.is_dispatchable():
-                self._views.pop((item.type.value, item.custom_id))  # type: ignore
+                self._views.pop((item.type.value, item.custom_id), None)  # type: ignore
 
         for key, value in self._synced_message_views.items():
             if value.id == view.id:
