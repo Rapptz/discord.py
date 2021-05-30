@@ -244,6 +244,7 @@ class InteractionResponse:
         *,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
+        view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
     ) -> None:
@@ -263,8 +264,12 @@ class InteractionResponse:
             ``embeds`` parameter.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
+        view: :class:`discord.ui.View`
+            The view to send with the message.
         ephemeral: :class:`bool`
             Indicates if the message should only be visible to the user who started the interaction.
+            If a view is sent with an ephemeral message and it has no timeout set then the timeout
+            is set to 15 minutes.
 
         Raises
         -------
@@ -299,6 +304,9 @@ class InteractionResponse:
         if ephemeral:
             payload['flags'] = 64
 
+        if view is not MISSING:
+            payload['components'] = view.to_components()
+
         parent = self._parent
         adapter = async_context.get()
         await adapter.create_interaction_response(
@@ -308,6 +316,13 @@ class InteractionResponse:
             type=InteractionResponseType.channel_message.value,
             data=payload,
         )
+
+        if view is not MISSING:
+            if ephemeral and view.timeout is None:
+                view.timeout = 15 * 60.0
+
+            self._parent._state.store_view(view)
+
         self._responded = True
 
     async def edit_message(
