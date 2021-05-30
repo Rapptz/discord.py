@@ -849,12 +849,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`StageInstance` is updated.
 
-    .. versionadded:: 2.0
-
     The following, but not limited to, examples illustrate when this event is called:
 
     - The topic is changed.
     - The privacy level is changed.
+
+    .. versionadded:: 2.0
 
     :param before: The stage instance before the update.
     :type before: :class:`StageInstance`

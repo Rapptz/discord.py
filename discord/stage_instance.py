@@ -71,7 +71,7 @@ class StageInstance(Hashable):
         The ID of the channel that the stage instance is running in.
     topic: :class:`str`
         The topic of the stage instance.
-    privacy_level: :class:`PrivacyLevel`
+    privacy_level: :class:`StagePrivacyLevel`
         The privacy level of the stage instance.
     discoverable_disabled: :class:`bool`
         Whether the stage instance is discoverable.
@@ -116,11 +116,14 @@ class StageInstance(Hashable):
 
         Edits the stage instance.
 
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
         Parameters
         -----------
         topic: :class:`str`
             The stage instance's new topic.
-        privacy_level: :class:`PrivacyLevel`
+        privacy_level: :class:`StagePrivacyLevel`
             The stage instance's new privacy level.
 
         Raises
@@ -151,6 +154,9 @@ class StageInstance(Hashable):
         """|coro|
 
         Deletes the stage instance.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
 
         Raises
         ------

@@ -927,13 +927,16 @@ class StageChannel(VocalGuildChannel):
 
         Create a stage instance.
 
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
         .. versionadded:: 2.0
 
         Parameters
         -----------
         topic: :class:`str`
             The stage instance's topic.
-        privacy_level: :class:`PrivacyLevel`
+        privacy_level: :class:`StagePrivacyLevel`
             The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
 
         Raises
