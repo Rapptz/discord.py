@@ -417,6 +417,7 @@ class TeamMembershipState(Enum):
 class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
+    application = 3
 
 class ExpireBehaviour(Enum):
     remove_role = 0

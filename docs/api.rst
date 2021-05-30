@@ -2018,6 +2018,12 @@ of :class:`enum.Enum`.
 
         Represents a webhook that is internally managed by Discord, used for following channels.
 
+    .. attribute:: application
+
+        Represents a webhook that is used for interactions or applications.
+
+        .. versionadded:: 2.0
+
 .. class:: ExpireBehaviour
 
     Represents the behaviour the :class:`Integration` should perform

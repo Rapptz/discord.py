@@ -41,7 +41,7 @@ class _WebhookOptional(TypedDict, total=False):
     token: str
 
 
-WebhookType = Literal[1, 2]
+WebhookType = Literal[1, 2, 3]
 
 
 class _FollowerWebhookOptional(TypedDict, total=False):
