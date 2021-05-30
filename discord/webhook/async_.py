@@ -418,6 +418,7 @@ def handle_message_parameters(
     username: str = MISSING,
     avatar_url: str = MISSING,
     tts: bool = False,
+    ephemeral: bool = False,
     file: File = MISSING,
     files: List[File] = MISSING,
     embed: Optional[Embed] = MISSING,
@@ -453,6 +454,8 @@ def handle_message_parameters(
         payload['avatar_url'] = str(avatar_url)
     if username:
         payload['username'] = username
+    if ephemeral:
+        payload['flags'] = 64
 
     if allowed_mentions:
         if previous_allowed_mentions is not None:
@@ -1139,6 +1142,7 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: str = MISSING,
         tts: bool = MISSING,
+        ephemeral: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
@@ -1156,6 +1160,7 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: str = MISSING,
         tts: bool = MISSING,
+        ephemeral: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
@@ -1172,6 +1177,7 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: str = MISSING,
         tts: bool = False,
+        ephemeral: bool = False,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
@@ -1199,7 +1205,8 @@ class Webhook(BaseWebhook):
         wait: :class:`bool`
             Whether the server should wait before sending a response. This essentially
             means that the return type of this function changes from ``None`` to
-            a :class:`WebhookMessage` if set to ``True``.
+            a :class:`WebhookMessage` if set to ``True``. If the type of webhook
+            is :attr:`WebhookType.application` then this is always set to ``True``.
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
@@ -1208,6 +1215,9 @@ class Webhook(BaseWebhook):
             then the default avatar for the webhook is used.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
+        ephemeral: :class:`bool`
+            Indicates if the message should only be visible to the user.
+            This is only available to :attr:`WebhookType.application` webhooks.
         file: :class:`File`
             The file to upload. This cannot be mixed with ``files`` parameter.
         files: List[:class:`File`]
@@ -1237,7 +1247,8 @@ class Webhook(BaseWebhook):
         ValueError
             The length of ``embeds`` was invalid.
         InvalidArgument
-            There was no token associated with this webhook.
+            There was no token associated with this webhook or ``ephemeral``
+            was passed with the improper webhook type.
 
         Returns
         ---------
@@ -1252,6 +1263,13 @@ class Webhook(BaseWebhook):
         if content is None:
             content = MISSING
 
+        application_webhook = self.type is WebhookType.application
+        if ephemeral and not application_webhook:
+            raise InvalidArgument('ephemeral messages can only be sent from application webhooks')
+
+        if application_webhook:
+            wait = True
+
         params = handle_message_parameters(
             content=content,
             username=username,
@@ -1261,6 +1279,7 @@ class Webhook(BaseWebhook):
             files=files,
             embed=embed,
             embeds=embeds,
+            ephemeral=ephemeral,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
