@@ -50,6 +50,7 @@ __all__ = (
     'VideoQualityMode',
     'ComponentType',
     'ButtonStyle',
+    'StagePrivacyLevel',
 )
 
 def _create_value_cls(name):
@@ -479,6 +480,11 @@ class ButtonStyle(Enum):
 
     def __int__(self):
         return self.value
+
+class StagePrivacyLevel(Enum):
+    public = 1
+    closed = 2
+    guild_only = 2
 
 T = TypeVar('T')
 

@@ -46,6 +46,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
+from .stage_instance import StageInstance
 
 __all__ = (
     'Guild',
@@ -182,7 +183,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', '_discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id', 'nsfw')
+                 '_public_updates_channel_id', '_stage_instances', 'nsfw')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -318,6 +319,11 @@ class Guild(Hashable):
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
         self.nsfw = guild.get('nsfw', False)
+
+        self._stage_instances = {}
+        for s in guild.get('stage_instances', []):
+            stage_instance = StageInstance(guild=self, data=s, state=state)
+            self._stage_instances[stage_instance.id] = stage_instance
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
@@ -612,6 +618,32 @@ class Guild(Hashable):
             if tags and tags.bot_id == self_id:
                 return role
         return None
+
+    @property
+    def stage_instances(self) -> List[StageInstance]:
+        """List[:class:`StageInstance`]: Returns a :class:`list` of the guild's stage instances that
+        are currently running.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._stage_instances.values())
+
+    def get_stage_instance(self, stage_instance_id: int) -> Optional[StageInstance]:
+        """Returns a stage instance with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        stage_instance_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`StageInstance`]
+            The stage instance or ``None`` if not found.
+        """
+        return self._stage_instances.get(stage_instance_id)
 
     @property
     def owner(self):
@@ -1801,7 +1833,7 @@ class Guild(Hashable):
             The list of integrations that are attached to the guild.
         """
         data = await self._state.http.get_all_integrations(self.id)
-        
+
         def convert(d):
             factory, _ = _integration_factory(d['type'])
             if factory is None:

@@ -835,6 +835,32 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
+.. function:: on_stage_instance_create(stage_instance)
+              on_stage_instance_delete(stage_instance)
+
+    Called when a :class:`StageInstance` is created or deleted for a :class:`StageChannel`.
+
+    .. versionadded:: 2.0
+
+    :param stage_instance: The stage instance that was created or deleted.
+    :type stage_instance: :class:`StageInstance`
+
+.. function:: on_stage_instance_update(before, after)
+
+    Called when a :class:`StageInstance` is updated.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - The topic is changed.
+    - The privacy level is changed.
+
+    .. versionadded:: 2.0
+
+    :param before: The stage instance before the update.
+    :type before: :class:`StageInstance`
+    :param after: The stage instance after the update.
+    :type after: :class:`StageInstance`
+
 .. function:: on_member_ban(guild, user)
 
     Called when user gets banned from a :class:`Guild`.
@@ -2120,6 +2146,23 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
+.. class:: PrivacyLevel
+
+    Represents a stage instance's privacy level.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: public
+
+        The stage instance can be joined by external users.
+
+    .. attribute:: closed
+
+        The stage instance can only be joined by members of the guild.
+
+    .. attribute:: guild_only
+
+        Alias for :attr:`.closed`
 
 Async Iterator
 ----------------
@@ -3125,6 +3168,15 @@ StageChannel
 .. autoclass:: StageChannel()
     :members:
     :inherited-members:
+
+
+StageInstance
+~~~~~~~~~~~~~~
+
+.. attributetable:: StageInstance
+
+.. autoclass:: StageInstance()
+    :members:
 
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
