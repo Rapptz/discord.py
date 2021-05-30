@@ -35,7 +35,7 @@ from .user import User
 from .member import Member
 from .message import Message, Attachment
 from .object import Object
-from .webhook.async_ import async_context
+from .webhook.async_ import async_context, Webhook
 
 __all__ = (
     'Interaction',
@@ -100,6 +100,7 @@ class Interaction:
         '_state',
         '_session',
         '_cs_response',
+        '_cs_followup',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -157,6 +158,16 @@ class Interaction:
     def response(self) -> InteractionResponse:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction."""
         return InteractionResponse(self)
+
+    @utils.cached_slot_property('_cs_followup')
+    def followup(self) -> Webhook:
+        """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
+        payload = {
+            'id': self.application_id,
+            'type': 3,
+            'token': self.token,
+        }
+        return Webhook.from_state(data=payload, state=self._state)
 
 
 class InteractionResponse:
