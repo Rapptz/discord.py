@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union, ClassVar, Generator
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Union
 
 from . import enums, utils
 from .asset import Asset
@@ -49,7 +49,8 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .role import Role
-    from .types.audit_log import AuditLogChange as AuditLogChangePayload, AuditLogEntry as AuditLogEntryPayload
+    from .types.audit_log import AuditLogChange as AuditLogChangePayload
+    from .types.audit_log import AuditLogEntry as AuditLogEntryPayload
     from .types.channel import PermissionOverwrite as PermissionOverwritePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
@@ -145,7 +146,7 @@ def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Ass
     return Asset._from_avatar(entry._state, entry._target_id, data)
 
 
-def _guild_hash_transformer(path: str) -> Callable[["AuditLogEntry", Optional[str]], Optional[Asset]]:
+def _guild_hash_transformer(path: str) -> Callable[['AuditLogEntry', Optional[str]], Optional[Asset]]:
     def _transform(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
         if data is None:
             return None
@@ -263,9 +264,7 @@ class AuditLogChanges:
     def __repr__(self) -> str:
         return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
-    def _handle_role(
-        self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, elem: List[RolePayload]
-    ) -> None:
+    def _handle_role(self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, elem: List[RolePayload]) -> None:
         if not hasattr(first, 'roles'):
             setattr(first, 'roles', [])
 
