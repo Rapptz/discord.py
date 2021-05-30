@@ -67,6 +67,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
     from .mentions import AllowedMentions
+    from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -1100,6 +1101,7 @@ class Message(Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
     ) -> None:
         ...
 
