@@ -51,6 +51,8 @@ __all__ = (
     'ComponentType',
     'ButtonStyle',
     'StagePrivacyLevel',
+    'InteractionType',
+    'InteractionResponseType',
 )
 
 def _create_value_cls(name):
