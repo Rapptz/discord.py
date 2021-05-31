@@ -81,25 +81,27 @@ def _transform_snowflake(entry: AuditLogEntry, data: Snowflake) -> int:
     return int(data)
 
 
-def _transform_channel(entry: AuditLogEntry, data) -> Optional[Object]:
+def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Object]:
     if data is None:
         return None
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
 
-def _transform_owner_id(entry: AuditLogEntry, data: Snowflake) -> Union[Member, User, None]:
+def _transform_owner_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
     return entry._get_member(int(data))
 
 
-def _transform_inviter_id(entry: AuditLogEntry, data: Snowflake) -> Union[Member, User, None]:
+def _transform_inviter_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
     return entry._get_member(int(data))
 
 
-def _transform_overwrites(entry: AuditLogEntry, data: List[PermissionOverwritePayload]):
+def _transform_overwrites(
+    entry: AuditLogEntry, data: List[PermissionOverwritePayload]
+) -> List[Tuple[Object, PermissionOverwrite]]:
     overwrites = []
     for elem in data:
         allow = Permissions(elem['allow'])
@@ -175,9 +177,12 @@ class AuditLogDiff:
             ...
 
 
+Transformer = Callable[["AuditLogEntry", Any], Any]
+
+
 class AuditLogChanges:
     # fmt: off
-    TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Callable[["AuditLogEntry", Any], Any]]]]] = {
+    TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Transformer]]]] = {
         'verification_level':            (None, _transform_verification_level),
         'explicit_content_filter':       (None, _transform_explicit_content_filter),
         'allow':                         (None, _transform_permissions),
@@ -360,7 +365,7 @@ class AuditLogEntry(Hashable):
         self.reason = data.get('reason')
         self.extra = data.get('options')
 
-        if self.extra:
+        if isinstance(self.action, enums.AuditLogAction) and self.extra:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
                 self.extra: _AuditLogProxyMemberPrune = type(
