@@ -236,7 +236,7 @@ class AuditLogChanges:
                 if key:
                     attr = key
 
-            transformer: Optional[Callable[[AuditLogEntry, Any], Any]]
+            transformer: Optional[Transformer]
 
             try:
                 before = elem['old_value']
