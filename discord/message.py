@@ -1620,6 +1620,11 @@ class PartialMessage(Hashable):
             to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
             If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
             are used instead.
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1676,6 +1681,17 @@ class PartialMessage(Hashable):
                     allowed_mentions = allowed_mentions.to_dict()
                 fields['allowed_mentions'] = allowed_mentions
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
 
@@ -1683,4 +1699,7 @@ class PartialMessage(Hashable):
             await self.delete(delay=delete_after)  # type: ignore
 
         if fields:
-            return self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            if view:
+                self._state.store_view(view, self.id)
+            return msg
