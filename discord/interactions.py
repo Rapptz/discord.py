@@ -377,6 +377,9 @@ class InteractionResponse:
             return
 
         parent = self._parent
+        msg = parent.message
+        state = parent._state
+        message_id = msg.id if msg else None
         if parent.type is not InteractionType.component:
             return
 
@@ -404,6 +407,7 @@ class InteractionResponse:
             payload['attachments'] = [a.to_dict() for a in attachments]
 
         if view is not MISSING:
+            state.prevent_view_updates_for(message_id)
             if view is None:
                 payload['components'] = []
             else:
@@ -419,8 +423,6 @@ class InteractionResponse:
         )
 
         if view is not MISSING and not view.is_finished():
-            msg = self._parent.message
-            message_id = msg.id if msg else None
-            self._parent._state.store_view(view, message_id)
+            state.store_view(view, message_id)
 
         self._responded = True

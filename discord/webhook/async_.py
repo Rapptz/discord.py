@@ -1437,8 +1437,11 @@ class Webhook(BaseWebhook):
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        if view is not MISSING and isinstance(self._state, _WebhookState):
-            raise InvalidArgument('This webhook does not have state associated with it')
+        if view is not MISSING:
+            if isinstance(self._state, _WebhookState):
+                raise InvalidArgument('This webhook does not have state associated with it')
+
+            self._state.prevent_view_updates_for(message_id)
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         params = handle_message_parameters(
@@ -1462,7 +1465,7 @@ class Webhook(BaseWebhook):
             files=params.files,
         )
 
-        if view:
+        if view and not view.is_finished():
             self._state.store_view(view, message_id)
 
     async def delete_message(self, message_id: int):

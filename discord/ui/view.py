@@ -409,6 +409,9 @@ class ViewStore:
     def is_message_tracked(self, message_id: int):
         return message_id in self._synced_message_views
 
+    def remove_message_tracking(self, message_id: int) -> Optional[View]:
+        return self._synced_message_views.pop(message_id, None)
+
     def update_from_message(self, message_id: int, components: List[ComponentPayload]):
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]

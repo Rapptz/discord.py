@@ -1216,6 +1216,7 @@ class Message(Hashable):
             # To check for the view afterwards
             view = None
         else:
+            self._state.prevent_view_updates_for(self.id)
             if view:
                 fields['components'] = view.to_components()
             else:
@@ -1687,6 +1688,7 @@ class PartialMessage(Hashable):
             # To check for the view afterwards
             view = None
         else:
+            self._state.prevent_view_updates_for(self.id)
             if view:
                 fields['components'] = view.to_components()
             else:

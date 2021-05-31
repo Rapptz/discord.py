@@ -284,6 +284,9 @@ class ConnectionState:
     def store_view(self, view, message_id=None):
         self._view_store.add_view(view, message_id)
 
+    def prevent_view_updates_for(self, message_id):
+        return self._view_store.remove_message_tracking(message_id)
+
     @property
     def guilds(self):
         return list(self._guilds.values())
