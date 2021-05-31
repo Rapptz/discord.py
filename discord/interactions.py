@@ -418,7 +418,7 @@ class InteractionResponse:
             data=payload,
         )
 
-        if view is not MISSING:
+        if view is not MISSING and not view.is_finished():
             msg = self._parent.message
             message_id = msg.id if msg else None
             self._parent._state.store_view(view, message_id)

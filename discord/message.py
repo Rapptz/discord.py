@@ -1225,7 +1225,7 @@ class Message(Hashable):
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
             self._update(data)
 
-        if view:
+        if view and not view.is_finished():
             self._state.store_view(view, self.id)
 
         if delete_after is not None:
@@ -1700,6 +1700,6 @@ class PartialMessage(Hashable):
 
         if fields:
             msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
-            if view:
+            if view and not view.is_finished():
                 self._state.store_view(view, self.id)
             return msg
