@@ -335,6 +335,10 @@ class View:
         if self._cancel_callback:
             self._cancel_callback(self)
 
+    def is_finished(self) -> bool:
+        """:class:`bool`: Whether the view has finished interacting."""
+        return self._stopped.done()
+
     async def wait(self) -> bool:
         """Waits until the view has finished interacting.
 
