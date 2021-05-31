@@ -417,4 +417,10 @@ class InteractionResponse:
             type=InteractionResponseType.message_update.value,
             data=payload,
         )
+
+        if view is not MISSING:
+            msg = self._parent.message
+            message_id = msg.id if msg else None
+            self._parent._state.store_view(view, message_id)
+
         self._responded = True
