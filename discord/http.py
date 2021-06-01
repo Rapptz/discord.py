@@ -972,11 +972,7 @@ class HTTPClient:
     def get_widget(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
     
-    def edit_widget(self, guild_id, enabled, channel_id):
-        payload = {
-            'enabled': enabled,
-            'channel': channel_id
-        }
+    def edit_widget(self, guild_id, **payload):
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
 
     # Invite management

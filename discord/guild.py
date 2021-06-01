@@ -2354,7 +2354,7 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
     
-    async def edit_widget(self, *, enabled: bool, channel: abc.Snowflake) -> None:
+    async def edit_widget(self, *, enabled: bool = None, channel: abc.Snowflake = None) -> None:
         """|coro|
 
         Edits the widget of the guild.
@@ -2367,7 +2367,7 @@ class Guild(Hashable):
         enabled: :class:`bool`
             Whether to enabled the widget for the guild.
         channel: :class:`abc.Snowflake`
-            The channel to set the widget to.
+            The widget channel.
 
         Raises
         -------
@@ -2376,7 +2376,8 @@ class Guild(Hashable):
         HTTPException
             Editing the widget failed.
         """
-        await self._state.http.edit_widget(self.id, enabled, channel.id)
+        channel = getattr(channel, 'id', None)
+        await self._state.http.edit_widget(self.id, enabled=enabled, channel_id=channel)
 
     async def chunk(self, *, cache: bool = True) -> None:
         """|coro|
