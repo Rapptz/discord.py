@@ -2353,6 +2353,30 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
+    
+    async def edit_widget(self, *, enabled: bool, channel: abc.Snowflake) -> None:
+        """|coro|
+
+        Edits the widget of the guild.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        use this
+
+        Parameters
+        -----------
+        enabled: :class:`bool`
+            Whether to enabled the widget for the guild.
+        channel: :class:`abc.Snowflake`
+            The channel to set the widget to.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to edit the widget
+        HTTPException
+            Editing the widget failed.
+        """
+        await self._state.http.edit_widget(self.id, enabled, channel.id)
 
     async def chunk(self, *, cache: bool = True) -> None:
         """|coro|
