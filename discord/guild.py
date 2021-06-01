@@ -2372,7 +2372,7 @@ class Guild(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permission to edit the widget
+            You do not have permission to edit the widget.
         HTTPException
             Editing the widget failed.
         """
