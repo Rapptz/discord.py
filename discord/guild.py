@@ -2365,7 +2365,7 @@ class Guild(Hashable):
         Parameters
         -----------
         enabled: :class:`bool`
-            Whether to enabled the widget for the guild.
+            Whether to enable the widget for the guild.
         channel: :class:`abc.Snowflake`
             The widget channel.
 
