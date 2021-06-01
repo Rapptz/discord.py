@@ -80,7 +80,7 @@ class Select(Item[V]):
         rows. By default, items are arranged automatically into those 5 rows. If you'd
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number cannot be negative or greater than 5.
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -305,7 +305,7 @@ def select(
         rows. By default, items are arranged automatically into those 5 rows. If you'd
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number cannot be negative or greater than 5.
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     min_values: :class:`int`
         The minimum number of items that must be chosen for this select menu.
         Defaults to 1 and must be between 1 and 25.
