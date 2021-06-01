@@ -56,6 +56,13 @@ class Item(Generic[V]):
         self._view: Optional[V] = None
         self._row: Optional[int] = None
         self._rendered_row: Optional[int] = None
+        # This works mostly well but there is a gotcha with
+        # the interaction with from_component, since that technically provides
+        # a custom_id most dispatchable items would get this set to True even though
+        # it might not be provided by the library user. However, this edge case doesn't
+        # actually affect the intended purpose of this check because from_component is
+        # only called upon edit and we're mainly interested during initial creation time.
+        self._provided_custom_id: bool = False
 
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
@@ -76,6 +83,9 @@ class Item(Generic[V]):
 
     def is_dispatchable(self) -> bool:
         return False
+
+    def is_persistent(self) -> bool:
+        return self._provided_custom_id
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__item_repr_attributes__)

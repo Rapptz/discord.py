@@ -1451,9 +1451,15 @@ class Client:
         -------
         TypeError
             A view was not passed.
+        ValueError
+            The view is not persistent. A persistent view has no timeout
+            and all their components have an explicitly provided custom_id.
         """
 
         if not isinstance(view, View):
             raise TypeError(f'expected an instance of View not {view.__class__!r}')
+
+        if not view.is_persistent():
+            raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')
 
         self._connection.store_view(view, message_id)

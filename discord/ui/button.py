@@ -98,6 +98,7 @@ class Button(Item[V]):
         if custom_id is not None and url is not None:
             raise TypeError('cannot mix both url and custom_id with Button')
 
+        self._provided_custom_id = custom_id is not None
         if url is None and custom_id is None:
             custom_id = os.urandom(16).hex()
 

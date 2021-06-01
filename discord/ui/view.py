@@ -339,6 +339,14 @@ class View:
         """:class:`bool`: Whether the view has finished interacting."""
         return self._stopped.done()
 
+    def is_persistent(self) -> bool:
+        """:class:`bool`: Whether the view is set up as persistent.
+
+        A persistent view has all their components with a set ``custom_id`` and
+        a :attr:`timeout` set to ``None``.
+        """
+        return self.timeout is None and all(item.is_persistent() for item in self.children)
+
     async def wait(self) -> bool:
         """Waits until the view has finished interacting.
 
