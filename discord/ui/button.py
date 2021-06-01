@@ -206,7 +206,7 @@ class Button(Item[V]):
         return self._underlying.to_dict()
 
     def is_dispatchable(self) -> bool:
-        return True
+        return self.custom_id is not None
 
     def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
