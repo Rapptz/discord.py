@@ -29,7 +29,7 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, Generator, List, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import Any, Generator, List, Optional, Sequence, TYPE_CHECKING, TypeVar, Union
 
 import aiohttp
 
@@ -1463,3 +1463,8 @@ class Client:
             raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')
 
         self._connection.store_view(view, message_id)
+
+    @property
+    def persistent_views(self) -> Sequence[View]:
+        """Sequence[:class:`View`]: A sequence of persistent views added to the client."""
+        return self._connection.persistent_views

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
 from functools import partial
 from itertools import groupby
 
@@ -369,6 +369,15 @@ class ViewStore:
         # message_id: View
         self._synced_message_views: Dict[int, View] = {}
         self._state: ConnectionState = state
+
+    @property
+    def persistent_views(self) -> Sequence[View]:
+        views = {
+            view.id: view
+            for (_, (view, _, _)) in self._views.items()
+            if view.is_persistent()
+        }
+        return list(views.values())
 
     def __verify_integrity(self):
         to_remove: List[Tuple[int, str]] = []

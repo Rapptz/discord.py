@@ -288,6 +288,10 @@ class ConnectionState:
         return self._view_store.remove_message_tracking(message_id)
 
     @property
+    def persistent_views(self):
+        return self._view_store.persistent_views
+
+    @property
     def guilds(self):
         return list(self._guilds.values())
 
