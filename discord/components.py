@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 from .enums import try_enum, ComponentType, ButtonStyle
 from .utils import get_slots, MISSING
-from .partial_emoji import PartialEmoji
+from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
     from .types.components import (
