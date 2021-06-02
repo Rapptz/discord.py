@@ -51,7 +51,7 @@ from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
-from .integrations import _integration_factory # type: ignore
+from .integrations import _integration_factory
 from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
@@ -962,7 +962,8 @@ class ConnectionState:
         guild_id = int(data.pop('guild_id'))
         guild = self._get_guild(guild_id)
         if guild is not None:
-            integration = _integration_factory(data=data, guild=guild)
+            cls, type = _integration_factory(data['type'])
+            integration = cls(data=data, guild=guild)
             self.dispatch('integration_create', integration)
         else:
             log.debug('INTEGRATION_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
@@ -971,8 +972,9 @@ class ConnectionState:
         guild_id = int(data.pop('guild_id'))
         guild = self._get_guild(guild_id)
         if guild is not None:
-            integration = _integration_factory(data=data, guild=guild)
-            self.dispatch('integration_update', integration)
+            cls, type = _integration_factory(data['type'])
+            integration = cls(data=data, guild=guild)
+            self.dispatch('integration_create', integration)
         else:
             log.debug('INTEGRATION_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
