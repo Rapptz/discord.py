@@ -1911,12 +1911,7 @@ class Guild(Hashable):
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=roles, reason=reason)
         return self._state.store_emoji(self, data)
 
-    async def delete_custom_emoji(
-        self,
-        emoji: abc.Snowflake,
-        *,
-        reason: Optional[str] = None
-    ) -> None:
+    async def delete_emoji(self, emoji: abc.Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the custom :class:`Emoji` from the guild.
