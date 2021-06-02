@@ -45,6 +45,9 @@ class _EmojiTag:
 
     id: int
 
+    def _to_partial(self) -> PartialEmoji:
+        raise NotImplementedError
+
 
 PE = TypeVar('PE', bound='PartialEmoji')
 
@@ -150,6 +153,9 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         if self.animated:
             o['animated'] = self.animated
         return o
+
+    def _to_partial(self) -> PartialEmoji:
+        return self
 
     @classmethod
     def with_state(

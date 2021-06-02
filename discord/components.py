@@ -37,6 +37,7 @@ if TYPE_CHECKING:
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
     )
+    from .emoji import Emoji
 
 
 __all__ = (
@@ -269,7 +270,7 @@ class SelectOption:
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 50 characters.
-    emoji: Optional[:class:`PartialEmoji`]
+    emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
         The emoji of the option, if available.
     default: :class:`bool`
         Whether this option is selected by default.
@@ -289,15 +290,20 @@ class SelectOption:
         label: str,
         value: str = MISSING,
         description: Optional[str] = None,
-        emoji: Optional[Union[str, PartialEmoji]] = None,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         default: bool = False,
     ) -> None:
         self.label = label
         self.value = label if value is MISSING else value
         self.description = description
 
-        if isinstance(emoji, str):
-            emoji = PartialEmoji.from_str(emoji)
+        if emoji is not None:
+            if isinstance(emoji, str):
+                emoji = PartialEmoji.from_str(emoji)
+            elif isinstance(emoji, _EmojiTag):
+                emoji = emoji._to_partial()
+            else:
+                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
 
         self.emoji = emoji
         self.default = default

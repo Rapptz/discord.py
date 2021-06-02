@@ -27,7 +27,7 @@ from typing import Any, Iterator, List, Optional, TYPE_CHECKING, Tuple
 
 from .asset import Asset, AssetMixin
 from .utils import SnowflakeList, snowflake_time, MISSING
-from .partial_emoji import _EmojiTag
+from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
 
 __all__ = (
@@ -121,6 +121,9 @@ class Emoji(_EmojiTag, AssetMixin):
         self._roles: SnowflakeList = SnowflakeList(map(int, emoji.get('roles', [])))
         user = emoji.get('user')
         self.user: Optional[User] = User(state=self._state, data=user) if user else None
+
+    def _to_partial(self) -> PartialEmoji:
+        return PartialEmoji(name=self.name, animated=self.animated, id=self.id)
 
     def __iter__(self) -> Iterator[Tuple[str, Any]]:
         for attr in self.__slots__:
