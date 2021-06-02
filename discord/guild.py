@@ -2378,8 +2378,13 @@ class Guild(Hashable):
         HTTPException
             Editing the widget failed.
         """
-        channel = getattr(channel, 'id', None)
-        await self._state.http.edit_widget(self.id, enabled=enabled, channel_id=channel)
+        payload = {}
+        if channel is not utils.MISSING:
+            payload['channel_id'] = None if channel is None else channel.id
+        if enabled is not utils.MISSING:
+            payload['enabled'] = enabled
+
+        await self._state.http.edit_widget(self.id, payload=payload)
 
     async def chunk(self, *, cache: bool = True) -> None:
         """|coro|
