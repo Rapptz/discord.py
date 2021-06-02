@@ -188,10 +188,25 @@ class Emoji(_EmojiTag, AssetMixin):
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
-
-        Deletes this emoji. Equivalent to :meth:`Guild.delete_custom_emoji`.
+        
+        Deletes the custom emoji.
+        
+        You must have :attr:`~Permissions.manage_emojis` permission to
+        do this.
+        
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for deleting this emoji. Shows up on the audit log.
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete emojis.
+        HTTPException
+            An error occurred deleting the emoji.
         """
-        await self.guild.delete_custom_emoji(self, reason=reason)
+
+        await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
     async def edit(self, *, name: str = MISSING, roles: List[Snowflake] = MISSING, reason: Optional[str] = None) -> None:
         r"""|coro|
