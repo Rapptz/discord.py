@@ -37,7 +37,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .enums import AuditLogAction, VideoQualityMode, VoiceRegion, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel
+from .enums import AuditLogAction, VideoQualityMode, VoiceRegion, ChannelType, try_enum, VerificationLevel, ContentFilter, NotificationLevel, NSFWLevel
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
@@ -172,6 +172,10 @@ class Guild(Hashable):
         If the guild is marked as "not safe for work".
 
         .. versionadded:: 2.0
+    nsfw_level: :class:`NSFWLevel`
+        The guild's NSFW level.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('afk_timeout', 'afk_channel', '_members', '_channels', '_icon',
@@ -183,7 +187,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', '_discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id', '_stage_instances', 'nsfw')
+                 '_public_updates_channel_id', '_stage_instances', 'nsfw', 'nsfw_level')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -319,6 +323,7 @@ class Guild(Hashable):
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
         self.nsfw = guild.get('nsfw', False)
+        self.nsfw_level = try_enum(NSFWLevel, guild.get('nsfw_level'))
 
         self._stage_instances = {}
         for s in guild.get('stage_instances', []):
