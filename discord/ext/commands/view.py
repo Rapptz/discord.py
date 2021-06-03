@@ -67,7 +67,6 @@ class Separator:
             await ctx.send(', '.join(c))
 
         # ?foo a b, c, d, e
-
         # -> "a b,c,d,e"
         # trailing whitespace is stripped by default.
 
@@ -309,6 +308,7 @@ class StringView:
                 r = ''.join(result)
                 if self.separator.strip_ws:
                     r = r.strip()
+
                 return r
 
             # currently we accept strings in the format of "hello world"

@@ -280,9 +280,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     separator: :class:`Separator`
         The separator which separates each argument. By default, it is a whitespace
         :class:`Separator`.
+
+        .. versionadded:: 2.0
     quotation: :class:`Quotation`
         The quotations for each argument. By default, it is ``None``.
 
+        .. versionadded:: 2.0
     """
     __original_kwargs__: Dict[str, Any]
 
@@ -715,7 +718,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         view = ctx.view
         iterator = iter(self.params.items())
         view.separator = self._get_separator(ctx)
-        view.quotation = self._get_quotation(ctx)  
+        view.quotation = self._get_quotation(ctx)
 
         if self.cog is not None:
             # we have 'self' as the first parameter so just advance
@@ -1033,7 +1036,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if ctx.bot.command_separator and not ctx.command.separator.key:
                 return ctx.bot.command_separator
             return ctx.command.separator
-    
+
     def _get_quotation(self, ctx):
         if ctx.command.quotation:
             return ctx.command.quotation
