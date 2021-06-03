@@ -192,7 +192,7 @@ class AuditLogChanges:
         'region':                        (None, _enum_transformer(enums.VoiceRegion)),
         'rtc_region':                    (None, _enum_transformer(enums.VoiceRegion)),
         'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
-        'privacy_level':                 (None, _enum_transformer(enums.PrivacyLevel)),
+        'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
         'type':                          (None, _enum_transformer(enums.ChannelType)),
     }
     # fmt: on
@@ -291,6 +291,8 @@ class _AuditLogProxyPinAction:
     channel: abc.GuildChannel
     message_id: int
 
+class _AuditLogProxyStageInstanceAction:
+    channel: abc.GuildChannel
 
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
@@ -355,13 +357,7 @@ class AuditLogEntry(Hashable):
                 self.extra: _AuditLogProxyMemberPrune = type(
                     '_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()}
                 )()
-            elif (
-                self.action is enums.AuditLogAction.member_move
-                or self.action is enums.AuditLogAction.message_delete
-                or self.action is enums.AuditLogAction.stage_instance_create
-                or self.action is enums.AuditLogAction.stage_instance_update
-                or self.action is enums.AuditLogAction.stage_instance_delete
-            ):
+            elif self.action is enums.AuditLogAction.member_move or self.action is enums.AuditLogAction.message_delete:
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'count': int(self.extra['count']),
@@ -394,6 +390,12 @@ class AuditLogEntry(Hashable):
                         role = Object(id=instance_id)
                         role.name = self.extra.get('role_name')  # type: ignore
                     self.extra: Role = role
+            elif self.action.name.startswith('stage_instance'):
+                channel_id = int(self.extra['channel_id'])
+                elems = {
+                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
+                }
+                self.extra: _AuditLogProxyStageInstanceAction = type('_AuditLogProxy', (), elems)()
 
         # fmt: off
         self.extra: Union[
@@ -401,6 +403,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyMemberMoveOrMessageDelete,
             _AuditLogProxyMemberDisconnect,
             _AuditLogProxyPinAction,
+            _AuditLogProxyStageInstanceAction,
             Member, User, None,
             Role,
         ]
