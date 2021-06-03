@@ -979,7 +979,7 @@ class ConnectionState:
             log.debug('INTEGRATION_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_integration_delete(self, data):
-        guild_id = int(data.pop('guild_id'))
+        guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
         if guild is not None:
             raw = RawIntegrationDeleteEvent(data)

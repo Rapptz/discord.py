@@ -242,7 +242,7 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
     __slots__ = ('integration_id', 'application_id', 'guild_id')
 
     def __init__(self, data):
-        self.integration_id = int(data['integration_id'])
+        self.integration_id = int(data['id'])
         self.guild_id = int(data['guild_id'])
 
         try:
