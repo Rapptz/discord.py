@@ -291,8 +291,10 @@ class _AuditLogProxyPinAction:
     channel: abc.GuildChannel
     message_id: int
 
+
 class _AuditLogProxyStageInstanceAction:
     channel: abc.GuildChannel
+
 
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
@@ -392,9 +394,7 @@ class AuditLogEntry(Hashable):
                     self.extra: Role = role
             elif self.action.name.startswith('stage_instance'):
                 channel_id = int(self.extra['channel_id'])
-                elems = {
-                    'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)
-                }
+                elems = {'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)}
                 self.extra: _AuditLogProxyStageInstanceAction = type('_AuditLogProxy', (), elems)()
 
         # fmt: off
