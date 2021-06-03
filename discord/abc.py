@@ -62,6 +62,8 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference
+    from .enums import InviteTarget
+    from .ui.view import View
 
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -1013,6 +1015,9 @@ class GuildChannel:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        target_type: Optional[InviteTarget] = None,
+        target_user: Optional[User] = None,
+        target_application_id: Optional[int] = None
     ) -> Invite:
         """|coro|
 
@@ -1038,6 +1043,20 @@ class GuildChannel:
             invite.
         reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
+        target_type: Optional[:class:`InviteTarget`]
+            The type of target for the voice channel invite, if any.
+            
+            .. versionadded:: 2.0
+        
+        target_user: Optional[:class:`User`]
+            The user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. The user must be streaming in the channel.
+
+            .. versionadded:: 2.0
+
+        target_application_id:: Optional[:class:`int`]
+            The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1060,6 +1079,9 @@ class GuildChannel:
             max_uses=max_uses,
             temporary=temporary,
             unique=unique,
+            target_type=target_type.value if target_type else None,
+            target_user_id=target_user.id if target_user else None,
+            target_application_id=target_application_id
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
@@ -1085,14 +1107,8 @@ class GuildChannel:
 
         state = self._state
         data = await state.http.invites_from_channel(self.id)
-        result = []
-
-        for invite in data:
-            invite['channel'] = self
-            invite['guild'] = self.guild
-            result.append(Invite(state=state, data=invite))
-
-        return result
+        guild = self.guild
+        return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
 
 
 class Messageable(Protocol):
@@ -1132,6 +1148,7 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 
@@ -1148,6 +1165,7 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 

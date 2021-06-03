@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, Optional, TypedDict
+from typing import Literal, Optional, TypedDict, Union
 from .snowflake import Snowflake
 from .user import User
 
@@ -56,21 +56,27 @@ class PartialIntegration(TypedDict):
     account: IntegrationAccount
 
 
-class _IntegrationOptional(TypedDict, total=False):
-    role_id: Snowflake
-    enable_emoticons: bool
-    subscriber_count: int
-    revoked: bool
-    application: IntegrationApplication
-
-
 IntegrationType = Literal['twitch', 'youtube', 'discord']
 
 
-class Integration(PartialIntegration, _IntegrationOptional):
+class BaseIntegration(PartialIntegration):
     enabled: bool
     syncing: bool
     synced_at: str
     user: User
     expire_behavior: IntegrationExpireBehavior
     expire_grace_period: int
+
+
+class StreamIntegration(BaseIntegration):
+    role_id: Snowflake
+    enable_emoticons: bool
+    subscriber_count: int
+    revoked: bool
+
+
+class BotIntegration(BaseIntegration):
+    application: IntegrationApplication
+
+
+Integration = Union[BaseIntegration, StreamIntegration, BotIntegration]

@@ -59,7 +59,7 @@ To install the development version, do the following:
 Optional Packages
 ~~~~~~~~~~~~~~~~~~
 
-* PyNaCl (for voice support)
+* `PyNaCl <https://pypi.org/project/PyNaCl/>`__ (for voice support)
 
 Please note that on Linux installing voice you must install the following packages via your favourite package manager (e.g. ``apt``, ``dnf``, etc) before running the above commands:
 

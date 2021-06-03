@@ -35,7 +35,7 @@ from .user import User
 from .member import Member
 from .message import Message, Attachment
 from .object import Object
-from .webhook.async_ import async_context
+from .webhook.async_ import async_context, Webhook
 
 __all__ = (
     'Interaction',
@@ -100,6 +100,7 @@ class Interaction:
         '_state',
         '_session',
         '_cs_response',
+        '_cs_followup',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -157,6 +158,16 @@ class Interaction:
     def response(self) -> InteractionResponse:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction."""
         return InteractionResponse(self)
+
+    @utils.cached_slot_property('_cs_followup')
+    def followup(self) -> Webhook:
+        """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
+        payload = {
+            'id': self.application_id,
+            'type': 3,
+            'token': self.token,
+        }
+        return Webhook.from_state(data=payload, state=self._state)
 
 
 class InteractionResponse:
@@ -244,6 +255,7 @@ class InteractionResponse:
         *,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
+        view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
     ) -> None:
@@ -263,8 +275,12 @@ class InteractionResponse:
             ``embeds`` parameter.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
+        view: :class:`discord.ui.View`
+            The view to send with the message.
         ephemeral: :class:`bool`
             Indicates if the message should only be visible to the user who started the interaction.
+            If a view is sent with an ephemeral message and it has no timeout set then the timeout
+            is set to 15 minutes.
 
         Raises
         -------
@@ -299,6 +315,9 @@ class InteractionResponse:
         if ephemeral:
             payload['flags'] = 64
 
+        if view is not MISSING:
+            payload['components'] = view.to_components()
+
         parent = self._parent
         adapter = async_context.get()
         await adapter.create_interaction_response(
@@ -308,6 +327,13 @@ class InteractionResponse:
             type=InteractionResponseType.channel_message.value,
             data=payload,
         )
+
+        if view is not MISSING:
+            if ephemeral and view.timeout is None:
+                view.timeout = 15 * 60.0
+
+            self._parent._state.store_view(view)
+
         self._responded = True
 
     async def edit_message(
@@ -351,6 +377,9 @@ class InteractionResponse:
             return
 
         parent = self._parent
+        msg = parent.message
+        state = parent._state
+        message_id = msg.id if msg else None
         if parent.type is not InteractionType.component:
             return
 
@@ -378,6 +407,7 @@ class InteractionResponse:
             payload['attachments'] = [a.to_dict() for a in attachments]
 
         if view is not MISSING:
+            state.prevent_view_updates_for(message_id)
             if view is None:
                 payload['components'] = []
             else:
@@ -391,4 +421,8 @@ class InteractionResponse:
             type=InteractionResponseType.message_update.value,
             data=payload,
         )
+
+        if view is not MISSING and not view.is_finished():
+            state.store_view(view, message_id)
+
         self._responded = True

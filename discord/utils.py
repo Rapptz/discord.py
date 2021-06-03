@@ -502,6 +502,14 @@ async def sane_wait_for(futures, *, timeout):
     return done
 
 
+def get_slots(cls: Type[Any]) -> Iterator[str]:
+    for mro in reversed(cls.__mro__):
+        try:
+            yield from mro.__slots__
+        except AttributeError:
+            continue
+
+
 def compute_timedelta(dt: datetime.datetime):
     if dt.tzinfo is None:
         dt = dt.astimezone()

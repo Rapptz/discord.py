@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
 from functools import partial
 from itertools import groupby
 
@@ -35,6 +35,7 @@ from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..components import (
     Component,
+    ActionRow as ActionRowComponent,
     _component_factory,
     Button as ButtonComponent,
 )
@@ -47,11 +48,12 @@ __all__ = (
 if TYPE_CHECKING:
     from ..interactions import Interaction
     from ..types.components import Component as ComponentPayload
+    from ..state import ConnectionState
 
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
     for item in components:
-        if item.type is ComponentType.action_row:
+        if isinstance(item, ActionRowComponent):
             yield from item.children
         else:
             yield item
@@ -64,6 +66,47 @@ def _component_to_item(component: Component) -> Item:
         return Button.from_component(component)
     return Item.from_component(component)
 
+
+class _ViewWeights:
+    __slots__ = (
+        'weights',
+    )
+
+    def __init__(self, children: List[Item]):
+        self.weights: List[int] = [0, 0, 0, 0, 0]
+
+        key = lambda i: sys.maxsize if i.row is None else i.row
+        children = sorted(children, key=key)
+        for row, group in groupby(children, key=key):
+            for item in group:
+                self.add_item(item)
+
+    def find_open_space(self, item: Item) -> int:
+        for index, weight in enumerate(self.weights):
+            if weight + item.width <= 5:
+                return index
+
+        raise ValueError('could not find open space for item')
+
+    def add_item(self, item: Item) -> None:
+        if item.row is not None:
+            total = self.weights[item.row] + item.width
+            if total > 5:
+                raise ValueError(f'item would not fit at row {item.row} ({total} > 5 width)')
+            self.weights[item.row] = total
+            item._rendered_row = item.row
+        else:
+            index = self.find_open_space(item)
+            self.weights[index] += item.width
+            item._rendered_row = index
+
+    def remove_item(self, item: Item) -> None:
+        if item._rendered_row is not None:
+            self.weights[item._rendered_row] -= item.width
+            item._rendered_row = None
+
+    def clear(self) -> None:
+        self.weights = [0, 0, 0, 0, 0]
 
 class View:
     """Represents a UI view.
@@ -84,13 +127,6 @@ class View:
     children: List[:class:`Item`]
         The list of children attached to this view.
     """
-
-    __slots__ = (
-        'timeout',
-        'children',
-        'id',
-        '_cancel_callback',
-    )
 
     __discord_ui_view__: ClassVar[bool] = True
     __view_children_items__: ClassVar[List[ItemCallbackType]] = []
@@ -114,36 +150,36 @@ class View:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = partial(func, self, item)
             item._view = self
+            setattr(self, func.__name__, item)
             self.children.append(item)
 
+        self.__weights = _ViewWeights(self.children)
+        loop = asyncio.get_running_loop()
         self.id = os.urandom(16).hex()
         self._cancel_callback: Optional[Callable[[View], None]] = None
+        self._timeout_handler: Optional[asyncio.TimerHandle] = None
+        self._stopped = loop.create_future()
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self.children)}>'
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:
-            if item.group_id is None:
-                return sys.maxsize
-            return item.group_id
+            return item._rendered_row or 0
 
         children = sorted(self.children, key=key)
         components: List[Dict[str, Any]] = []
         for _, group in groupby(children, key=key):
-            group = list(group)
-            if len(group) <= 5:
-                components.append(
-                    {
-                        'type': 1,
-                        'components': [item.to_component_dict() for item in group],
-                    }
-                )
-            else:
-                components.extend(
-                    {
-                        'type': 1,
-                        'components': [item.to_component_dict() for item in group[index : index + 5]],
-                    }
-                    for index in range(0, len(group), 5)
-                )
+            children = [item.to_component_dict() for item in group]
+            if not children:
+                continue
+
+            components.append(
+                {
+                    'type': 1,
+                    'components': children,
+                }
+            )
 
         return components
 
@@ -166,7 +202,8 @@ class View:
         TypeError
             A :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25).
+            Maximum number of children has been exceeded (25)
+            or the row the item is trying to be added to is full.
         """
 
         if len(self.children) > 25:
@@ -175,13 +212,90 @@ class View:
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__!r}')
 
+        self.__weights.add_item(item)
+
         item._view = self
         self.children.append(item)
 
+    def remove_item(self, item: Item) -> None:
+        """Removes an item from the view.
+
+        Parameters
+        -----------
+        item: :class:`Item`
+            The item to remove from the view.
+        """
+
+        try:
+            self.children.remove(item)
+        except ValueError:
+            pass
+        else:
+            self.__weights.remove_item(item)
+
+    def clear_items(self) -> None:
+        """Removes all items from the view."""
+        self.children.clear()
+        self.__weights.clear()
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        """|coro|
+
+        A callback that is called when an interaction happens within the view
+        that checks whether the view should process item callbacks for the interaction.
+
+        This is useful to override if for example you want to ensure that the
+        interaction author is a given user.
+
+        The default implementation of this returns ``True``.
+
+        .. note::
+
+            If an exception occurs within the body then the interaction
+            check is considered failed.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that occurred.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether the view children's callbacks should be called.
+        """
+        return True
+
+    async def on_timeout(self) -> None:
+        """|coro|
+
+        A callback that is called when a view's timeout elapses without being explicitly stopped.
+        """
+        pass
+
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
+        try:
+            allow = await self.interaction_check(interaction)
+        except Exception:
+            allow = False
+
+        if not allow:
+            return
+
         await item.callback(interaction)
         if not interaction.response._responded:
             await interaction.response.defer()
+
+    def _start_listening(self, store: ViewStore) -> None:
+        self._cancel_callback = partial(store.remove_view)
+        if self.timeout:
+            loop = asyncio.get_running_loop()
+            self._timeout_handler = loop.call_later(self.timeout, self.dispatch_timeout)
+
+    def dispatch_timeout(self):
+        if not self._stopped.done():
+            self._stopped.set_result(True)
+        asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
         asyncio.create_task(self._scheduled_task(state, item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
@@ -202,7 +316,7 @@ class View:
             except (KeyError, AttributeError):
                 children.append(_component_to_item(component))
             else:
-                older.refresh_state(component)
+                older.refresh_component(component)
                 children.append(older)
 
         self.children = children
@@ -212,17 +326,58 @@ class View:
 
         This operation cannot be undone.
         """
+        if not self._stopped.done():
+            self._stopped.set_result(False)
+
+        if self._timeout_handler:
+            self._timeout_handler.cancel()
+
         if self._cancel_callback:
             self._cancel_callback(self)
 
+    def is_finished(self) -> bool:
+        """:class:`bool`: Whether the view has finished interacting."""
+        return self._stopped.done()
+
+    def is_persistent(self) -> bool:
+        """:class:`bool`: Whether the view is set up as persistent.
+
+        A persistent view has all their components with a set ``custom_id`` and
+        a :attr:`timeout` set to ``None``.
+        """
+        return self.timeout is None and all(item.is_persistent() for item in self.children)
+
+    async def wait(self) -> bool:
+        """Waits until the view has finished interacting.
+
+        A view is considered finished when :meth:`stop` is called
+        or it times out.
+
+        Returns
+        --------
+        :class:`bool`
+            If ``True``, then the view timed out. If ``False`` then
+            the view finished normally.
+        """
+        return await self._stopped
+
 
 class ViewStore:
-    def __init__(self, state):
+    def __init__(self, state: ConnectionState):
         # (component_type, custom_id): (View, Item, Expiry)
         self._views: Dict[Tuple[int, str], Tuple[View, Item, Optional[float]]] = {}
         # message_id: View
         self._synced_message_views: Dict[int, View] = {}
-        self._state = state
+        self._state: ConnectionState = state
+
+    @property
+    def persistent_views(self) -> Sequence[View]:
+        views = {
+            view.id: view
+            for (_, (view, _, _)) in self._views.items()
+            if view.is_persistent()
+        }
+        return list(views.values())
 
     def __verify_integrity(self):
         to_remove: List[Tuple[int, str]] = []
@@ -238,7 +393,7 @@ class ViewStore:
         self.__verify_integrity()
 
         expiry = view._expires_at
-        view._cancel_callback = partial(self.remove_view)
+        view._start_listening(self)
         for item in view.children:
             if item.is_dispatchable():
                 self._views[(item.type.value, item.custom_id)] = (view, item, expiry)  # type: ignore
@@ -249,7 +404,7 @@ class ViewStore:
     def remove_view(self, view: View):
         for item in view.children:
             if item.is_dispatchable():
-                self._views.pop((item.type.value, item.custom_id))  # type: ignore
+                self._views.pop((item.type.value, item.custom_id), None)  # type: ignore
 
         for key, value in self._synced_message_views.items():
             if value.id == view.id:
@@ -265,12 +420,16 @@ class ViewStore:
 
         view, item, _ = value
         self._views[key] = (view, item, view._expires_at)
+        item.refresh_state(interaction)
         view.dispatch(self._state, item, interaction)
 
     def is_message_tracked(self, message_id: int):
         return message_id in self._synced_message_views
 
-    def update_view(self, message_id: int, components: List[ComponentPayload]):
+    def remove_message_tracking(self, message_id: int) -> Optional[View]:
+        return self._synced_message_views.pop(message_id, None)
+
+    def update_from_message(self, message_id: int, components: List[ComponentPayload]):
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]
         view.refresh([_component_factory(d) for d in components])

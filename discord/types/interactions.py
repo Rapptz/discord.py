@@ -124,7 +124,11 @@ class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOption
     name: str
 
 
-class ComponentInteractionData(TypedDict):
+class _ComponentInteractionDataOptional(TypedDict, total=False):
+    values: List[str]
+
+
+class ComponentInteractionData(_ComponentInteractionDataOptional):
     custom_id: str
     component_type: ComponentType
 
@@ -154,7 +158,7 @@ class InteractionApplicationCommandCallbackData(TypedDict, total=False):
     flags: int
 
 
-InteractionResponseType = Literal[1, 2, 3, 4, 5]
+InteractionResponseType = Literal[1, 2, 3, 4, 5, 6, 7]
 
 
 class _InteractionResponseOptional(TypedDict, total=False):

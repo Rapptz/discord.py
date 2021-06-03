@@ -830,3 +830,20 @@ class Member(discord.abc.Messageable, _BaseUser):
             user_id = self.id
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
+
+    def get_role(self, role_id: int) -> Optional[discord.Role]:
+        """Returns a role with the given ID from roles which the member has.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        role_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Role`]
+            The role or ``None`` if not found in the member's roles.
+        """
+        return self.guild.get_role(role_id) if self._roles.has(role_id) else None

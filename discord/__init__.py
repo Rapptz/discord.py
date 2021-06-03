@@ -55,6 +55,7 @@ from .audit_logs import *
 from .raw_models import *
 from .team import *
 from .sticker import *
+from .stage_instance import *
 from .interactions import *
 from .sink import *
 from .components import *

@@ -44,7 +44,9 @@ if TYPE_CHECKING:
     from .types import (
         interactions,
         invite,
+        stage_instance,
     )
+    from .types.snowflake import Snowflake
 
     T = TypeVar('T')
     Response = Coroutine[Any, Any, T]
@@ -969,6 +971,9 @@ class HTTPClient:
 
     def get_widget(self, guild_id):
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
+    
+    def edit_widget(self, guild_id, payload):
+        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
 
     # Invite management
 
@@ -981,6 +986,9 @@ class HTTPClient:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[int] = None,
+        target_application_id: Optional[int] = None
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -989,6 +997,15 @@ class HTTPClient:
             'temporary': temporary,
             'unique': unique,
         }
+
+        if target_type:
+            payload['target_type'] = target_type
+
+        if target_user_id:
+            payload['target_user_id'] = target_user_id
+
+        if target_application_id:
+            payload['target_application_id'] = str(target_application_id)
 
         return self.request(r, reason=reason, json=payload)
 
@@ -1067,6 +1084,33 @@ class HTTPClient:
 
     def move_member(self, user_id, guild_id, channel_id, *, reason=None):
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
+
+    # Stage instance management
+
+    def get_stage_instance(self, channel_id: Snowflake) -> Response[stage_instance.StageInstance]:
+        return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
+
+    def create_stage_instance(self, **payload) -> Response[stage_instance.StageInstance]:
+        valid_keys = (
+            'channel_id',
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(Route('POST', '/stage-instances'), json=payload)
+
+    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+        valid_keys = (
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
+
+    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
 
     # Application commands (global)
 

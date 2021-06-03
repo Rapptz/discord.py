@@ -64,6 +64,14 @@ AppInfo
 .. autoclass:: AppInfo()
     :members:
 
+PartialAppInfo
+~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialAppInfo
+
+.. autoclass:: PartialAppInfo()
+    :members:
+
 Team
 ~~~~~
 
@@ -813,8 +821,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The following, but not limited to, examples illustrate when this event is called:
 
-    - A member joins a voice channel.
-    - A member leaves a voice channel.
+    - A member joins a voice or stage channel.
+    - A member leaves a voice or stage channel.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
@@ -826,6 +834,32 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type before: :class:`VoiceState`
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
+
+.. function:: on_stage_instance_create(stage_instance)
+              on_stage_instance_delete(stage_instance)
+
+    Called when a :class:`StageInstance` is created or deleted for a :class:`StageChannel`.
+
+    .. versionadded:: 2.0
+
+    :param stage_instance: The stage instance that was created or deleted.
+    :type stage_instance: :class:`StageInstance`
+
+.. function:: on_stage_instance_update(before, after)
+
+    Called when a :class:`StageInstance` is updated.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - The topic is changed.
+    - The privacy level is changed.
+
+    .. versionadded:: 2.0
+
+    :param before: The stage instance before the update.
+    :type before: :class:`StageInstance`
+    :param after: The stage instance after the update.
+    :type after: :class:`StageInstance`
 
 .. function:: on_member_ban(guild, user)
 
@@ -1224,6 +1258,10 @@ of :class:`enum.Enum`.
     .. attribute:: button
 
         Represents a button component.
+    .. attribute:: select
+
+        Represents a select component.
+
 
 .. class:: ButtonStyle
 
@@ -1231,19 +1269,19 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.0
 
-    .. attribute:: primary::
+    .. attribute:: primary
 
         Represents a blurple button for the primary action.
-    .. attribute:: secondary::
+    .. attribute:: secondary
 
         Represents a grey button for the secondary action.
-    .. attribute:: success::
+    .. attribute:: success
 
         Represents a green button for a successful action.
-    .. attribute:: danger::
+    .. attribute:: danger
 
         Represents a red button for a dangerous action.
-    .. attribute:: link::
+    .. attribute:: link
 
         Represents a link button.
 
@@ -2006,6 +2044,12 @@ of :class:`enum.Enum`.
 
         Represents a webhook that is internally managed by Discord, used for following channels.
 
+    .. attribute:: application
+
+        Represents a webhook that is used for interactions or applications.
+
+        .. versionadded:: 2.0
+
 .. class:: ExpireBehaviour
 
     Represents the behaviour the :class:`Integration` should perform
@@ -2072,7 +2116,7 @@ of :class:`enum.Enum`.
 
 .. class:: InviteTarget
 
-    Represents the type of target an invite contains.
+    Represents the invite type for voice channel invites.
 
     .. versionadded:: 2.0
 
@@ -2082,11 +2126,11 @@ of :class:`enum.Enum`.
 
     .. attribute:: stream
 
-        The invite targets a stream.
+        A stream invite that targets a user.
 
     .. attribute:: embedded_application
 
-        The invite targets an embedded application activity.
+        A stream invite that targets an embedded application.
 
 .. class:: VideoQualityMode
 
@@ -2101,6 +2145,24 @@ of :class:`enum.Enum`.
     .. attribute:: full
 
         Represents full camera video quality.
+
+.. class:: PrivacyLevel
+
+    Represents a stage instance's privacy level.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: public
+
+        The stage instance can be joined by external users.
+
+    .. attribute:: closed
+
+        The stage instance can only be joined by members of the guild.
+
+    .. attribute:: guild_only
+
+        Alias for :attr:`.closed`
 
 Async Iterator
 ----------------
@@ -2885,12 +2947,29 @@ Component
 .. autoclass:: Component()
     :members:
 
+ActionRow
+~~~~~~~~~~
+
+.. attributetable:: ActionRow
+
+.. autoclass:: ActionRow()
+    :members:
+
 Button
 ~~~~~~~
 
 .. attributetable:: Button
 
 .. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+SelectMenu
+~~~~~~~~~~~
+
+.. attributetable:: SelectMenu
+
+.. autoclass:: SelectMenu()
     :members:
     :inherited-members:
 
@@ -2954,6 +3033,15 @@ Integration
     :members:
 
 .. autoclass:: IntegrationAccount()
+    :members:
+
+.. autoclass:: BotIntegration()
+    :members:
+
+.. autoclass:: IntegrationApplication()
+    :members:
+
+.. autoclass:: StreamIntegration()
     :members:
 
 Interaction
@@ -3080,6 +3168,15 @@ StageChannel
 .. autoclass:: StageChannel()
     :members:
     :inherited-members:
+
+
+StageInstance
+~~~~~~~~~~~~~~
+
+.. attributetable:: StageInstance
+
+.. autoclass:: StageInstance()
+    :members:
 
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
@@ -3306,6 +3403,14 @@ PartialMessage
 .. attributetable:: PartialMessage
 
 .. autoclass:: PartialMessage
+    :members:
+
+SelectOption
+~~~~~~~~~~~~~
+
+.. attributetable:: SelectOption
+
+.. autoclass:: SelectOption
     :members:
 
 Intents

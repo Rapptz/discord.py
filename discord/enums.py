@@ -50,6 +50,9 @@ __all__ = (
     'VideoQualityMode',
     'ComponentType',
     'ButtonStyle',
+    'StagePrivacyLevel',
+    'InteractionType',
+    'InteractionResponseType',
 )
 
 def _create_value_cls(name):
@@ -417,6 +420,7 @@ class TeamMembershipState(Enum):
 class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
+    application = 3
 
 class ExpireBehaviour(Enum):
     remove_role = 0
@@ -431,7 +435,7 @@ class StickerType(Enum):
 
 class InviteTarget(Enum):
     unknown = 0
-    stream  = 1
+    stream = 1
     embedded_application = 2
 
 class InteractionType(Enum):
@@ -458,6 +462,7 @@ class VideoQualityMode(Enum):
 class ComponentType(Enum):
     action_row = 1
     button = 2
+    select = 3
 
     def __int__(self):
         return self.value
@@ -477,6 +482,11 @@ class ButtonStyle(Enum):
 
     def __int__(self):
         return self.value
+
+class StagePrivacyLevel(Enum):
+    public = 1
+    closed = 2
+    guild_only = 2
 
 T = TypeVar('T')
 

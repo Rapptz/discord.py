@@ -53,6 +53,7 @@ from .object import Object
 from .invite import Invite
 from .interactions import Interaction
 from .ui.view import ViewStore
+from .stage_instance import StageInstance
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -282,6 +283,13 @@ class ConnectionState:
 
     def store_view(self, view, message_id=None):
         self._view_store.add_view(view, message_id)
+
+    def prevent_view_updates_for(self, message_id):
+        return self._view_store.remove_message_tracking(message_id)
+
+    @property
+    def persistent_views(self):
+        return self._view_store.persistent_views
 
     @property
     def guilds(self):
@@ -515,7 +523,7 @@ class ConnectionState:
             self.dispatch('raw_message_edit', raw)
 
         if 'components' in data and self._view_store.is_message_tracked(raw.message_id):
-            self._view_store.update_view(raw.message_id, data['components'])
+            self._view_store.update_from_message(raw.message_id, data['components'])
 
     def parse_message_reaction_add(self, data):
         emoji = data['emoji']
@@ -955,6 +963,40 @@ class ConnectionState:
             self.dispatch('webhooks_update', channel)
         else:
             log.debug('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
+
+    def parse_stage_instance_create(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            stage_instance = StageInstance(guild=guild, state=self, data=data)
+            guild._stage_instances[stage_instance.id] = stage_instance
+            self.dispatch('stage_instance_create', stage_instance)
+        else:
+            log.debug('STAGE_INSTANCE_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_stage_instance_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            stage_instance = guild._stage_instances.get(int(data['id']))
+            if stage_instance is not None:
+                old_stage_instance = copy.copy(stage_instance)
+                stage_instance._update(data)
+                self.dispatch('stage_instance_update', old_stage_instance, stage_instance)
+            else:
+                log.debug('STAGE_INSTANCE_UPDATE referencing unknown stage instance ID: %s. Discarding.', data['id'])
+        else:
+            log.debug('STAGE_INSTANCE_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_stage_instance_delete(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            try:
+                stage_instance = guild._stage_instances.pop(int(data['id']))
+            except KeyError:
+                pass
+            else:
+                self.dispatch('stage_instance_delete', stage_instance)
+        else:
+            log.debug('STAGE_INSTANCE_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))

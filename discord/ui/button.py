@@ -26,13 +26,12 @@ from __future__ import annotations
 
 from typing import Callable, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 import inspect
-import re
 import os
 
 
 from .item import Item, ItemCallbackType
 from ..enums import ButtonStyle, ComponentType
-from ..partial_emoji import PartialEmoji
+from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
 
 __all__ = (
@@ -42,25 +41,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .view import View
-
-_custom_emoji = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
-
-
-def _to_partial_emoji(obj: Union[str, PartialEmoji], *, _custom_emoji=_custom_emoji) -> PartialEmoji:
-    if isinstance(obj, PartialEmoji):
-        return obj
-
-    obj = str(obj)
-    match = _custom_emoji.match(obj)
-    if match is not None:
-        groups = match.groupdict()
-        animated = bool(groups['animated'])
-        emoji_id = int(groups['id'])
-        name = groups['name']
-        return PartialEmoji(name=name, animated=animated, id=emoji_id)
-
-    return PartialEmoji(name=obj, id=None, animated=False)
-
+    from ..emoji import Emoji
 
 B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
@@ -82,10 +63,16 @@ class Button(Item[V]):
         The URL this button sends you to.
     disabled: :class:`bool`
         Whether the button is disabled or not.
-    label: :class:`str`
-        The label of the button.
-    emoji: Optional[:class:`PartialEmoji`]
+    label: Optional[:class:`str`]
+        The label of the button, if any.
+    emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
         The emoji of the button, if available.
+    row: Optional[:class:`int`]
+        The relative row this button belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -94,29 +81,38 @@ class Button(Item[V]):
         'disabled',
         'label',
         'emoji',
-        'group_id',
+        'row',
     )
 
     def __init__(
         self,
         *,
         style: ButtonStyle,
-        label: str,
+        label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,
         url: Optional[str] = None,
-        emoji: Optional[Union[str, PartialEmoji]] = None,
-        group: Optional[int] = None,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+        row: Optional[int] = None,
     ):
         super().__init__()
         if custom_id is not None and url is not None:
             raise TypeError('cannot mix both url and custom_id with Button')
 
+        self._provided_custom_id = custom_id is not None
         if url is None and custom_id is None:
             custom_id = os.urandom(16).hex()
 
         if url is not None:
             style = ButtonStyle.link
+
+        if emoji is not None:
+            if isinstance(emoji, str):
+                emoji = PartialEmoji.from_str(emoji)
+            elif isinstance(emoji, _EmojiTag):
+                emoji = emoji._to_partial()
+            else:
+                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
 
         self._underlying = ButtonComponent._raw_construct(
             type=ComponentType.button,
@@ -125,9 +121,9 @@ class Button(Item[V]):
             disabled=disabled,
             label=label,
             style=style,
-            emoji=None if emoji is None else _to_partial_emoji(emoji),
+            emoji=emoji,
         )
-        self.group_id = group
+        self.row = row
 
     @property
     def style(self) -> ButtonStyle:
@@ -174,13 +170,13 @@ class Button(Item[V]):
         self._underlying.disabled = bool(value)
 
     @property
-    def label(self) -> str:
-        """:class:`str`: The label of the button."""
+    def label(self) -> Optional[str]:
+        """Optional[:class:`str`]: The label of the button, if available."""
         return self._underlying.label
 
     @label.setter
-    def label(self, value: str):
-        self._underlying.label = str(value)
+    def label(self, value: Optional[str]):
+        self._underlying.label = str(value) if value is not None else value
 
     @property
     def emoji(self) -> Optional[PartialEmoji]:
@@ -188,9 +184,14 @@ class Button(Item[V]):
         return self._underlying.emoji
 
     @emoji.setter
-    def emoji(self, value: Optional[Union[str, PartialEmoji]]):  # type: ignore
+    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]):  # type: ignore
         if value is not None:
-            self._underlying.emoji = _to_partial_emoji(value)
+            if isinstance(value, str):
+                self._underlying.emoji = PartialEmoji.from_str(value)
+            elif isinstance(value, _EmojiTag):
+                self._underlying.emoji = value._to_partial()
+            else:
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__} instead')
         else:
             self._underlying.emoji = None
 
@@ -203,7 +204,7 @@ class Button(Item[V]):
             custom_id=button.custom_id,
             url=button.url,
             emoji=button.emoji,
-            group=None,
+            row=None,
         )
 
     @property
@@ -214,20 +215,20 @@ class Button(Item[V]):
         return self._underlying.to_dict()
 
     def is_dispatchable(self) -> bool:
-        return True
+        return self.custom_id is not None
 
-    def refresh_state(self, button: ButtonComponent) -> None:
+    def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
 
 def button(
-    label: str,
     *,
+    label: Optional[str] = None,
     custom_id: Optional[str] = None,
     disabled: bool = False,
     style: ButtonStyle = ButtonStyle.secondary,
-    emoji: Optional[Union[str, PartialEmoji]] = None,
-    group: Optional[int] = None,
+    emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+    row: Optional[int] = None,
 ) -> Callable[[ItemCallbackType], ItemCallbackType]:
     """A decorator that attaches a button to a component.
 
@@ -245,8 +246,8 @@ def button(
 
     Parameters
     ------------
-    label: :class:`str`
-        The label of the button.
+    label: Optional[:class:`str`]
+        The label of the button, if any.
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         It is recommended not to set this parameter to prevent conflicts.
@@ -254,14 +255,15 @@ def button(
         The style of the button. Defaults to :attr:`ButtonStyle.grey`.
     disabled: :class:`bool`
         Whether the button is disabled or not. Defaults to ``False``.
-    emoji: Optional[Union[:class:`str`, :class:`PartialEmoji`]]
-        The emoji of the button. This can be in string form or a :class:`PartialEmoji`.
-    group: Optional[:class:`int`]
-        The relative group this button belongs to. A Discord component can only have 5
-        groups. By default, items are arranged automatically into those 5 groups. If you'd
-        like to control the relative positioning of the group then passing an index is advised.
-        For example, group=1 will show up before group=2. Defaults to ``None``, which is automatic
-        ordering.
+    emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
+        The emoji of the button. This can be in string form or a :class:`PartialEmoji`
+        or a full :class:`Emoji`.
+    row: Optional[:class:`int`]
+        The relative row this button belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
     def decorator(func: ItemCallbackType) -> ItemCallbackType:
@@ -278,7 +280,7 @@ def button(
             'disabled': disabled,
             'label': label,
             'emoji': emoji,
-            'group': group,
+            'row': row,
         }
         return func
 

@@ -22,30 +22,45 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import TypeVar
+from __future__ import annotations
 
-__all__ = (
-    'EqualityComparable',
-    'Hashable',
-)
+from typing import TypedDict, List, Optional
 
-E = TypeVar('E', bound='EqualityComparable')
+from .user import User
+from .team import Team
+from .snowflake import Snowflake
 
-class EqualityComparable:
-    __slots__ = ()
+class BaseAppInfo(TypedDict):
+    id: Snowflake
+    name: str
+    verify_key: str
+    icon: Optional[str]
+    summary: str
+    description: str
 
-    id: int
+class _AppInfoOptional(TypedDict, total=False):
+    team: Team
+    guild_id: Snowflake
+    primary_sku_id: Snowflake
+    slug: str
+    terms_of_service_url: str
+    privacy_policy_url: str
+    hook: bool
+    max_participants: int
 
-    def __eq__(self: E, other: E) -> bool:
-        return isinstance(other, self.__class__) and other.id == self.id
+class AppInfo(BaseAppInfo, _AppInfoOptional):
+    rpc_origins: List[str]
+    owner: User
+    bot_public: bool
+    bot_require_code_grant: bool
 
-    def __ne__(self: E, other: E) -> bool:
-        if isinstance(other, self.__class__):
-            return other.id != self.id
-        return True
+class _PartialAppInfoOptional(TypedDict, total=False):
+    rpc_origins: List[str]
+    cover_image: str
+    hook: bool
+    terms_of_service_url: str
+    privacy_policy_url: str
+    max_participants: int
 
-class Hashable(EqualityComparable):
-    __slots__ = ()
-
-    def __hash__(self) -> int:
-        return self.id >> 22
+class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
+    pass
