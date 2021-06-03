@@ -962,7 +962,7 @@ class ConnectionState:
         guild_id = int(data.pop('guild_id'))
         guild = self._get_guild(guild_id)
         if guild is not None:
-            cls, type = _integration_factory(data['type'])
+            cls, _ = _integration_factory(data['type'])
             integration = cls(data=data, guild=guild)
             self.dispatch('integration_create', integration)
         else:
@@ -972,9 +972,9 @@ class ConnectionState:
         guild_id = int(data.pop('guild_id'))
         guild = self._get_guild(guild_id)
         if guild is not None:
-            cls, type = _integration_factory(data['type'])
+            cls, _ = _integration_factory(data['type'])
             integration = cls(data=data, guild=guild)
-            self.dispatch('integration_create', integration)
+            self.dispatch('integration_update', integration)
         else:
             log.debug('INTEGRATION_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
@@ -982,9 +982,8 @@ class ConnectionState:
         guild_id = int(data.pop('guild_id'))
         guild = self._get_guild(guild_id)
         if guild is not None:
-            integration_id = int(data.pop('id'))
-            application_id = utils._get_as_snowflake(data, 'application_id')
-            self.dispatch('integration_delete', guild, integration_id, application_id)
+            raw = RawIntegrationDeleteEvent(data)
+            self.dispatch('raw_integration_delete', raw)
         else:
             log.debug('INTEGRATION_DELETE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
