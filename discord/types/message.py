@@ -102,7 +102,6 @@ class Sticker(_StickerOptional):
     name: str
     description: str
     asset: str
-    preview_asset: str
     format_type: StickerFormatType
 
 
@@ -115,6 +114,7 @@ class _MessageOptional(TypedDict, total=False):
     webhook_id: Snowflake
     activity: MessageActivity
     application: MessageApplication
+    application_id: Snowflake
     message_reference: MessageReference
     flags: int
     stickers: List[Sticker]
