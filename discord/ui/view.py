@@ -334,10 +334,15 @@ class View:
 
         if self._cancel_callback:
             self._cancel_callback(self)
+            self._cancel_callback = None
 
     def is_finished(self) -> bool:
         """:class:`bool`: Whether the view has finished interacting."""
         return self._stopped.done()
+
+    def is_dispatching(self) -> bool:
+        """:class:`bool`: Whether the view has been added for dispatching purposes."""
+        return self._cancel_callback is not None
 
     def is_persistent(self) -> bool:
         """:class:`bool`: Whether the view is set up as persistent.
