@@ -2182,7 +2182,7 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
-.. class:: PrivacyLevel
+.. class:: StagePrivacyLevel
 
     Represents a stage instance's privacy level.
 
@@ -2624,7 +2624,7 @@ AuditLogDiff
 
         The privacy level of the stage instance.
 
-        :type: :class:`PrivacyLevel`
+        :type: :class:`StagePrivacyLevel`
 
     .. attribute:: roles
 
