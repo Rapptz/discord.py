@@ -27,6 +27,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequ
 from functools import partial
 from itertools import groupby
 
+import traceback
 import asyncio
 import sys
 import time
@@ -252,7 +253,8 @@ class View:
         .. note::
 
             If an exception occurs within the body then the interaction
-            check is considered failed.
+            check then :meth:`on_error` is called and it is considered
+            a failure.
 
         Parameters
         -----------
@@ -273,18 +275,37 @@ class View:
         """
         pass
 
+    async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
+        """|coro|
+
+        A callback that is called when an item's callback or :meth:`interaction_check`
+        fails with an error.
+
+        The default implementation prints the traceback to stderr.
+
+        Parameters
+        -----------
+        error: :class:`Exception`
+            The exception that was raised.
+        item: :class:`Item`
+            The item that failed the dispatch.
+        interaction: :class:`~discord.Interaction`
+            The interaction that led to the failure.
+        """
+        print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
+        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
         try:
             allow = await self.interaction_check(interaction)
-        except Exception:
-            allow = False
+            if not allow:
+                return
 
-        if not allow:
-            return
-
-        await item.callback(interaction)
-        if not interaction.response._responded:
-            await interaction.response.defer()
+            await item.callback(interaction)
+            if not interaction.response._responded:
+                await interaction.response.defer()
+        except Exception as e:
+            return await self.on_error(e, item, interaction)
 
     def _start_listening(self, store: ViewStore) -> None:
         self._cancel_callback = partial(store.remove_view)
