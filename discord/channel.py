@@ -1519,6 +1519,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         """
 
         base = Permissions.text()
+        base.read_messages = True
         base.send_tts_messages = False
         base.manage_messages = False
         return base
@@ -1661,6 +1662,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         """
 
         base = Permissions.text()
+        base.read_messages = True
         base.send_tts_messages = False
         base.manage_messages = False
         base.mention_everyone = True
