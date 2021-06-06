@@ -314,8 +314,10 @@ class View:
             self._timeout_handler = loop.call_later(self.timeout, self.dispatch_timeout)
 
     def dispatch_timeout(self):
-        if not self._stopped.done():
-            self._stopped.set_result(True)
+        if self._stopped.done():
+            return
+
+        self._stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
