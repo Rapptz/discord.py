@@ -365,7 +365,7 @@ class Embed:
 
         return self
     
-    def remove_author(self: E) -> E:
+    def remove_footer(self: E) -> E:
         """Clears embed's footer information.
 
         This function returns the class instance to allow for fluent-style
