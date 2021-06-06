@@ -975,9 +975,9 @@ class Message(Hashable):
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
-        In the case of :attr:`MessageType.default`\, this just returns the
-        regular :attr:`Message.content`. Otherwise this returns an English
-        message denoting the contents of the system message.
+        In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\,
+        this just returns the regular :attr:`Message.content`. Otherwise this
+        returns an English message denoting the contents of the system message.
         """
 
         if self.type is MessageType.default:
@@ -1047,6 +1047,9 @@ class Message(Hashable):
 
         if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
+
+        if self.type is MessageType.reply:
+            return self.content
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
