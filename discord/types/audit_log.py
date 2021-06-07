@@ -104,7 +104,19 @@ class _AuditLogChange_Snowflake(TypedDict):
 
 
 class _AuditLogChange_Bool(TypedDict):
-    key: Literal['widget_enabled', 'nsfw', 'hoist', 'mentionable', 'temporary', 'deaf', 'mute', 'nick', 'enabled_emoticons', 'region', 'rtc_region']
+    key: Literal[
+        'widget_enabled',
+        'nsfw',
+        'hoist',
+        'mentionable',
+        'temporary',
+        'deaf',
+        'mute',
+        'nick',
+        'enabled_emoticons',
+        'region',
+        'rtc_region',
+    ]
     new_value: bool
     old_value: bool
 
