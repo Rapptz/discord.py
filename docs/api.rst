@@ -660,14 +660,47 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_guild_integrations_update(guild)
 
-    .. versionadded:: 1.4
-
     Called whenever an integration is created, modified, or removed from a guild.
 
     This requires :attr:`Intents.integrations` to be enabled.
 
+    .. versionadded:: 1.4
+
     :param guild: The guild that had its integrations updated.
     :type guild: :class:`Guild`
+
+.. function:: on_integration_create(integration)
+
+    Called when an integration is created.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_integration_update(integration)
+
+    Called when an integration is updated.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_raw_integration_delete(payload)
+
+    Called when an integration is deleted.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawIntegrationDeleteEvent`
 
 .. function:: on_webhooks_update(channel)
 
@@ -3330,6 +3363,14 @@ RawReactionClearEmojiEvent
 .. attributetable:: RawReactionClearEmojiEvent
 
 .. autoclass:: RawReactionClearEmojiEvent()
+    :members:
+
+RawIntegrationDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawIntegrationDeleteEvent
+
+.. autoclass:: RawIntegrationDeleteEvent()
     :members:
 
 PartialWebhookGuild
