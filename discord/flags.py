@@ -574,7 +574,7 @@ class Intents(BaseFlags):
         - :func:`on_guild_integrations_update`
         - :func:`on_integration_create`
         - :func:`on_integration_update`
-        - :func:`on_integration_delete`
+        - :func:`on_raw_integration_delete`
 
         This does not correspond to any attributes or classes in the library in terms of cache.
         """
