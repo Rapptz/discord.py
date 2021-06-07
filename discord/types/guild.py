@@ -66,29 +66,6 @@ class _GuildOptional(TypedDict, total=False):
     max_video_channel_users: int
 
 
-VoiceRegion = Literal[
-    'us-west',
-    'us-east',
-    'us-central',
-    'us-south',
-    'singapore',
-    'southafrica',
-    'sydney',
-    'europe',
-    'brazil',
-    'hongkong',
-    'russia',
-    'japan',
-    'india',
-    'dubai',
-    'atlanta',
-    'st-pete',
-    'amsterdam',
-    'london',
-    'frankfurt',
-    'eu-central',
-    'eu-west',
-]
 DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
 MFALevel = Literal[0, 1]
@@ -134,7 +111,7 @@ class GuildPreview(_BaseGuildPreview, _GuildPreviewUnique):
 
 class Guild(_BaseGuildPreview, _GuildOptional):
     owner_id: Snowflake
-    region: VoiceRegion
+    region: str
     afk_channel_id: Optional[Snowflake]
     afk_timeout: int
     verification_level: VerificationLevel

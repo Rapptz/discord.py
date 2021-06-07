@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict, Union
-from .guild import VoiceRegion
 from .user import PartialUser
 from .snowflake import Snowflake
 
@@ -74,7 +73,7 @@ VideoQualityMode = Literal[1, 2]
 
 
 class _VoiceChannelOptional(TypedDict, total=False):
-    rtc_region: Optional[VoiceRegion]
+    rtc_region: Optional[str]
     bitrate: int
     user_limit: int
     video_quality_mode: VideoQualityMode

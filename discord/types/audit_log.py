@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
 from .webhook import Webhook
-from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel, VoiceRegion
+from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
 from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .snowflake import Snowflake
@@ -104,7 +104,7 @@ class _AuditLogChange_Snowflake(TypedDict):
 
 
 class _AuditLogChange_Bool(TypedDict):
-    key: Literal['widget_enabled', 'nsfw', 'hoist', 'mentionable', 'temporary', 'deaf', 'mute', 'nick', 'enabled_emoticons']
+    key: Literal['widget_enabled', 'nsfw', 'hoist', 'mentionable', 'temporary', 'deaf', 'mute', 'nick', 'enabled_emoticons', 'region', 'rtc_region']
     new_value: bool
     old_value: bool
 
@@ -167,12 +167,6 @@ class _AuditLogChange_IntegrationExpireBehaviour(TypedDict):
     old_value: IntegrationExpireBehavior
 
 
-class _AuditLogChange_VoiceRegion(TypedDict):
-    key: Literal['region', 'rtc_region']
-    new_value: VoiceRegion
-    old_value: VoiceRegion
-
-
 class _AuditLogChange_VideoQualityMode(TypedDict):
     key: Literal['video_quality_mode']
     new_value: VideoQualityMode
@@ -198,7 +192,6 @@ AuditLogChange = Union[
     _AuditLogChange_DefaultMessageNotificationLevel,
     _AuditLogChange_ChannelType,
     _AuditLogChange_IntegrationExpireBehaviour,
-    _AuditLogChange_VoiceRegion,
     _AuditLogChange_VideoQualityMode,
     _AuditLogChange_Overwrites,
 ]
