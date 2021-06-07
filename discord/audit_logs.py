@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
 from . import enums, utils
 from .asset import Asset
@@ -121,10 +121,10 @@ def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry._target_id, data)
+    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore
 
 
-def _guild_hash_transformer(path: str) -> Callable[['AuditLogEntry', Optional[str]], Optional[Asset]]:
+def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
     def _transform(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
         if data is None:
             return None
@@ -133,8 +133,11 @@ def _guild_hash_transformer(path: str) -> Callable[['AuditLogEntry', Optional[st
     return _transform
 
 
-def _enum_transformer(enum):
-    def _transform(entry, data):
+T = TypeVar('T', bound=enums.Enum)
+
+
+def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
+    def _transform(entry: AuditLogEntry, data: int) -> T:
         return enums.try_enum(enum, data)
 
     return _transform
