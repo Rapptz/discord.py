@@ -167,11 +167,6 @@ class Guild(Hashable):
     preferred_locale: Optional[:class:`str`]
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
-
-    nsfw: :class:`bool`
-        If the guild is marked as "not safe for work".
-
-        .. versionadded:: 2.0
     nsfw_level: :class:`NSFWLevel`
         The guild's NSFW level.
 
@@ -187,7 +182,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', '_discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id', '_stage_instances', 'nsfw', 'nsfw_level')
+                 '_public_updates_channel_id', '_stage_instances', 'nsfw_level')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -322,8 +317,7 @@ class Guild(Hashable):
         self._discovery_splash = guild.get('discovery_splash')
         self._rules_channel_id = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id = utils._get_as_snowflake(guild, 'public_updates_channel_id')
-        self.nsfw = guild.get('nsfw', False)
-        self.nsfw_level = try_enum(NSFWLevel, guild.get('nsfw_level'))
+        self.nsfw_level = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
 
         self._stage_instances = {}
         for s in guild.get('stage_instances', []):
