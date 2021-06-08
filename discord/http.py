@@ -107,12 +107,12 @@ class Route:
     BASE: Final[ClassVar[str]] = 'https://discord.com/api/v8'
 
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
-        self.path = path
-        self.method = method
+        self.path: str = path
+        self.method: str = method
         url = self.BASE + self.path
         if parameters:
             url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
-        self.url = url
+        self.url: str = url
 
         # major parameters:
         self.channel_id: Optional[int] = parameters.get('channel_id')
@@ -128,8 +128,8 @@ class Route:
 
 class MaybeUnlock:
     def __init__(self, lock: asyncio.Lock) -> None:
-        self.lock = lock
-        self._unlock = True
+        self.lock: asyncio.Lock = lock
+        self._unlock: bool = True
 
     def __enter__(self: MU) -> MU:
         return self
@@ -159,27 +159,27 @@ class HTTPClient:
 
     def __init__(
         self,
-        connector=None,
+        connector: Optional[aiohttp.BaseConnector] = None,
         *,
-        proxy=None,
-        proxy_auth=None,
+        proxy: Optional[str] = None,
+        proxy_auth: Optional[aiohttp.BasicAuth] = None,
         loop: Optional[asyncio.AbstractEventLoop] = None,
         unsync_clock: bool = True
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self.__session = None  # filled in static_login
-        self._locks = weakref.WeakValueDictionary()
-        self._global_over = asyncio.Event()
+        self.__session: Optional[aiohttp.ClientSession] = None  # filled in static_login
+        self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
+        self._global_over: asyncio.Event = asyncio.Event()
         self._global_over.set()
-        self.token = None
-        self.bot_token = False
-        self.proxy = proxy
-        self.proxy_auth = proxy_auth
-        self.use_clock = not unsync_clock
+        self.token: Optional[str] = None
+        self.bot_token: bool = False
+        self.proxy: Optional[str] = proxy
+        self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
+        self.use_clock: bool = not unsync_clock
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
-        self.user_agent = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
+        self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
     def recreate(self) -> None:
         if self.__session.closed:
