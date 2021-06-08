@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, Type, TypedDict
+from typing import Optional, TypedDict
 from .snowflake import Snowflake
 from .member import Member
 
