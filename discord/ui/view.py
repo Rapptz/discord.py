@@ -201,9 +201,9 @@ class View:
         Raises
         --------
         TypeError
-            A :class:`Item` was not passed.
+            An :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25)
+            Maximum number of children has been exceeded (25),
             or the row the item is trying to be added to is full.
         """
 
@@ -245,7 +245,7 @@ class View:
         A callback that is called when an interaction happens within the view
         that checks whether the view should process item callbacks for the interaction.
 
-        This is useful to override if for example you want to ensure that the
+        This is useful to override if, for example, you want to ensure that the
         interaction author is a given user.
 
         The default implementation of this returns ``True``.
