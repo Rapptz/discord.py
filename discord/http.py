@@ -116,9 +116,9 @@ class Route:
         self.url: str = url
 
         # major parameters:
-        self.channel_id: Optional[int] = parameters.get('channel_id')
-        self.guild_id: Optional[int] = parameters.get('guild_id')
-        self.webhook_id: Optional[int] = parameters.get('webhook_id')
+        self.channel_id: Optional[Snowflake] = parameters.get('channel_id')
+        self.guild_id: Optional[Snowflake] = parameters.get('guild_id')
+        self.webhook_id: Optional[Snowflake] = parameters.get('webhook_id')
         self.webhook_token: Optional[str] = parameters.get('webhook_token')
 
     @property
@@ -456,7 +456,7 @@ class HTTPClient:
         embeds: Iterable[Optional[embed.Embed]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
-        message_reference: Optional[int] = None,
+        message_reference: Optional[Snowflake] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
@@ -511,7 +511,7 @@ class HTTPClient:
         embed: Optional[embed.Embed] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
-        message_reference: Optional[int] = None,
+        message_reference: Optional[Snowflake] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -629,9 +629,9 @@ class HTTPClient:
         self,
         channel_id: Snowflake,
         limit: int,
-        before: Optional[int] = None,
-        after: Optional[int] = None,
-        around: Optional[int] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        around: Optional[Snowflake] = None,
     ) -> Response[List[message.Message]]:
         params: Dict[str, Any] = {
             'limit': limit,
@@ -1001,8 +1001,8 @@ class HTTPClient:
     def get_guilds(
         self,
         limit: int,
-        before: Optional[int] = None,
-        after: Optional[int] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
             'limit': limit,
@@ -1109,7 +1109,7 @@ class HTTPClient:
     def get_all_guild_channels(self, guild_id: Snowflake) -> Response[List[guild.GuildChannel]]:
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
-    def get_members(self, guild_id: Snowflake, limit: int, after: Optional[int]) -> Response[List[member.Member]]:
+    def get_members(self, guild_id: Snowflake, limit: int, after: Optional[Snowflake]) -> Response[List[member.Member]]:
         params: Dict[str, Any] = {
             'limit': limit,
         }
@@ -1238,9 +1238,9 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         limit: int = 100,
-        before: Optional[int] = None,
-        after: Optional[int] = None,
-        user_id: Optional[int] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        user_id: Optional[Snowflake] = None,
         action_type: Optional[AuditLogAction] = None,
     ) -> Response[audit_log.AuditLog]:
         params: Dict[str, Any] = {'limit': limit}
@@ -1273,9 +1273,9 @@ class HTTPClient:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
-        target_type: Optional[int] = None,
-        target_user_id: Optional[int] = None,
-        target_application_id: Optional[int] = None
+        target_type: Optional[invite.InviteTargetType] = None,
+        target_user_id: Optional[Snowflake] = None,
+        target_application_id: Optional[Snowflake] = None
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1374,10 +1374,10 @@ class HTTPClient:
     def edit_channel_permissions(
         self,
         channel_id: Snowflake,
-        target: int,
+        target: Snowflake,
         allow: str,
         deny: str,
-        type: int,
+        type: channel.OverwriteType,
         *,
         reason: Optional[str] = None,
     ) -> Response[None]:
@@ -1385,7 +1385,13 @@ class HTTPClient:
         r = Route('PUT', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, json=payload, reason=reason)
 
-    def delete_channel_permissions(self, channel_id: Snowflake, target: int, *, reason: Optional[str] = None) -> Response[None]:
+    def delete_channel_permissions(
+        self,
+        channel_id: Snowflake,
+        target: channel.OverwriteType,
+        *,
+        reason: Optional[str] = None
+    ) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, reason=reason)
 
@@ -1808,5 +1814,5 @@ class HTTPClient:
             value = '{0}?encoding={1}&v=9'
         return data['shards'], value.format(data['url'], encoding)
 
-    def get_user(self, user_id) -> Response[user.User]:
+    def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
