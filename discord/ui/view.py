@@ -203,7 +203,7 @@ class View:
         TypeError
             An :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25),
+            Maximum number of children has been exceeded (25)
             or the row the item is trying to be added to is full.
         """
 
