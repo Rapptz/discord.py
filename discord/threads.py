@@ -154,6 +154,9 @@ class Thread(Messageable, Hashable):
             f' owner_id={self.owner_id!r} locked={self.locked} archived={self.archived}>'
         )
 
+    def __str__(self) -> str:
+        return self.name
+
     def _from_data(self, data: ThreadPayload):
         self.id = int(data['id'])
         self.parent_id = int(data['parent_id'])
