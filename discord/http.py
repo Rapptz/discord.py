@@ -105,7 +105,7 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Any:
 
 
 class Route:
-    BASE: Final[ClassVar[str]] = 'https://discord.com/api/v8'
+    BASE: ClassVar[str] = 'https://discord.com/api/v8'
 
     def __init__(self, method: str, path: str, **parameters: Any) -> None:
         self.path: str = path
