@@ -140,7 +140,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b111111111111111111111111111111111)
+        return cls(0b111111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls):
@@ -478,6 +478,31 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 33
+
+    @flag_value
+    def manage_threads(self):
+        """:class:`bool`: Returns ``True`` if a user can manage threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 34
+
+    @flag_value
+    def use_threads(self):
+        """:class:`bool`: Returns ``True`` if a user can create and participate in public threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 35
+
+    @flag_value
+    def use_private_threads(self):
+        """:class:`bool`: Returns ``True`` if a user can create and participate in private threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 36
+
 
 def augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)

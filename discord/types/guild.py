@@ -60,6 +60,7 @@ class _GuildOptional(TypedDict, total=False):
     members: List[Member]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
+    threads: List[GuildChannel]
     max_presences: Optional[int]
     max_members: int
     premium_subscription_count: int

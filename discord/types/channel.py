@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict, Union
+
 from .user import PartialUser
 from .snowflake import Snowflake
-from typing import List, Literal, Optional, TypedDict, Union
+from .threads import ThreadMetadata, ThreadMember
 
 
 class PermissionOverwrite(TypedDict):
@@ -35,7 +36,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
 
 
 class _BaseChannel(TypedDict):
@@ -103,7 +104,28 @@ class StageChannel(_BaseGuildChannel, _StageChannelOptional):
     type: Literal[13]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StoreChannel, StageChannel]
+class _ThreadChannelOptional(TypedDict, total=False):
+    member: ThreadMember
+    owner_id: Snowflake
+    rate_limit_per_user: int
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: str
+
+
+class ThreadChannel(_BaseChannel, _ThreadChannelOptional):
+    type: Literal[11, 12]
+    guild_id: Snowflake
+    parent_id: Snowflake
+    owner_id: Snowflake
+    nsfw: bool
+    last_message_id: Optional[Snowflake]
+    rate_limit_per_user: int
+    message_count: int
+    member_count: int
+    thread_metadata: ThreadMetadata
+
+
+GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StoreChannel, StageChannel, ThreadChannel]
 
 
 class DMChannel(_BaseChannel):

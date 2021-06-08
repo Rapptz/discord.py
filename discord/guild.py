@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import copy
 from collections import namedtuple
-from typing import Dict, List, Literal, Optional, TYPE_CHECKING, Union, overload
+from typing import Dict, List, Set, Literal, Optional, TYPE_CHECKING, Union, overload
 
 from . import utils, abc
 from .role import Role
@@ -47,6 +47,7 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
 from .stage_instance import StageInstance
+from .threads import Thread
 
 __all__ = (
     'Guild',
@@ -182,7 +183,7 @@ class Guild(Hashable):
                  'description', 'max_presences', 'max_members', 'max_video_channel_users',
                  'premium_tier', 'premium_subscription_count', '_system_channel_flags',
                  'preferred_locale', '_discovery_splash', '_rules_channel_id',
-                 '_public_updates_channel_id', '_stage_instances', 'nsfw_level')
+                 '_public_updates_channel_id', '_stage_instances', 'nsfw_level', '_threads')
 
     _PREMIUM_GUILD_LIMITS = {
         None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
@@ -196,6 +197,7 @@ class Guild(Hashable):
         self._channels = {}
         self._members = {}
         self._voice_states = {}
+        self._threads = {}
         self._state = state
         self._from_data(data)
 
@@ -211,8 +213,33 @@ class Guild(Hashable):
     def _add_member(self, member):
         self._members[member.id] = member
 
+    def _store_thread(self, payload) -> Thread:
+        thread = Thread(guild=self, data=payload)
+        self._threads[thread.id] = thread
+        return thread
+
     def _remove_member(self, member):
         self._members.pop(member.id, None)
+
+    def _add_thread(self, thread):
+        self._threads[thread.id] = thread
+
+    def _remove_thread(self, thread):
+        self._threads.pop(thread.id, None)
+
+    def _clear_threads(self):
+        self._threads.clear()
+
+    def _remove_threads_by_channel(self, channel_id: int):
+        to_remove = [k for k, t in self._threads.items() if t.parent_id == channel_id]
+        for k in to_remove:
+            del self._threads[k]
+
+    def _filter_threads(self, channel_ids: Set[int]) -> Dict[int, Thread]:
+        to_remove: Dict[int, Thread] = {k: t for k, t in self._threads.items() if t.parent_id in channel_ids}
+        for k in to_remove:
+            del self._threads[k]
+        return to_remove
 
     def __str__(self):
         return self.name or ''
@@ -360,10 +387,23 @@ class Guild(Hashable):
                 if factory:
                     self._add_channel(factory(guild=self, data=c, state=self._state))
 
+        if 'threads' in data:
+            threads = data['threads']
+            for thread in threads:
+                self._add_thread(Thread(guild=self, data=thread))
+
     @property
     def channels(self):
         """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
         return list(self._channels.values())
+
+    @property
+    def threads(self):
+        """List[:class:`Thread`]: A list of threads that you have permission to view.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._threads.values())
 
     @property
     def large(self):
@@ -472,6 +512,10 @@ class Guild(Hashable):
     def get_channel(self, channel_id):
         """Returns a channel with the given ID.
 
+        .. note::
+
+            This does *not* search for threads.
+
         Parameters
         -----------
         channel_id: :class:`int`
@@ -483,6 +527,23 @@ class Guild(Hashable):
             The returned channel or ``None`` if not found.
         """
         return self._channels.get(channel_id)
+
+    def get_thread(self, thread_id):
+        """Returns a thread with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        thread_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Thread`]
+            The returned thread or ``None`` if not found.
+        """
+        return self._threads.get(thread_id)
 
     @property
     def system_channel(self):
@@ -2377,7 +2438,7 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
-    
+
     async def edit_widget(self, *, enabled: bool = utils.MISSING, channel: Optional[abc.Snowflake] = utils.MISSING) -> None:
         """|coro|
 

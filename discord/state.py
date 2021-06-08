@@ -28,6 +28,7 @@ import copy
 import datetime
 import itertools
 import logging
+from typing import Optional
 import weakref
 import warnings
 import inspect
@@ -55,6 +56,8 @@ from .integrations import _integration_factory
 from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
+from .threads import Thread, ThreadMember
+from discord import guild
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -379,7 +382,7 @@ class ConnectionState:
             channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
-            channel = guild and guild.get_channel(channel_id)
+            channel = guild and (guild.get_channel(channel_id) or guild.get_thread(channel_id))
 
         return channel or Object(id=channel_id), guild
 
@@ -483,7 +486,7 @@ class ConnectionState:
         self.dispatch('message', message)
         if self._messages is not None:
             self._messages.append(message)
-        if channel and channel.__class__ is TextChannel:
+        if channel and channel.__class__ in (TextChannel, Thread):
             channel.last_message_id = message.id
 
     def parse_message_delete(self, data):
@@ -703,6 +706,132 @@ class ConnectionState:
             self.dispatch('private_channel_pins_update', channel, last_pin)
         else:
             self.dispatch('guild_channel_pins_update', channel, last_pin)
+
+    def parse_thread_create(self, data):
+        guild_id = int(data['guild_id'])
+        guild: Optional[Guild] = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread = Thread(guild=guild, data=data)
+        has_thread = guild.get_thread(thread.id)
+        guild._add_thread(thread)
+        if not has_thread:
+            self.dispatch('thread_join', thread)
+
+    def parse_thread_update(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread = guild.get_thread(thread_id)
+        if thread is not None:
+            old = copy.copy(thread)
+            thread._update(data)
+            self.dispatch('thread_update', old, thread)
+
+    def parse_thread_delete(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_DELETE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread = guild.get_thread(thread_id)
+        if thread is not None:
+            guild._remove_thread(thread)
+            self.dispatch('thread_delete', thread)
+
+    def parse_thread_list_sync(self, data):
+        guild_id = int(data['guild_id'])
+        guild: Optional[Guild] = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_LIST_SYNC referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        try:
+            channel_ids = set(data['channel_ids'])
+        except KeyError:
+            # If not provided, then the entire guild is being synced
+            # So all previous thread data should be overwritten
+            previous_threads = guild._threads.copy()
+            guild._clear_threads()
+        else:
+            previous_threads = guild._filter_threads(channel_ids)
+
+        threads = {
+            d['id']: guild._store_thread(d)
+            for d in data.get('threads', [])
+        }
+
+        for member in data.get('members', []):
+            try:
+                # note: member['id'] is the thread_id
+                thread = threads[member['id']]
+            except KeyError:
+                continue
+            else:
+                thread._add_member(ThreadMember(thread, member))
+
+        for thread in threads.values():
+            old = previous_threads.pop(thread.id, None)
+            if old is None:
+                self.dispatch('thread_join', thread)
+
+        for thread in previous_threads.values():
+            self.dispatch('thread_remove', thread)
+
+    def parse_thread_member_update(self, data):
+        guild_id = int(data['guild_id'])
+        guild: Optional[Guild] = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_MEMBER_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread: Optional[Thread] = guild.get_thread(thread_id)
+        if thread is None:
+            log.debug('THREAD_MEMBER_UPDATE referencing an unknown thread ID: %s. Discarding', thread_id)
+            return
+
+        member = ThreadMember(thread, data)
+        thread.me = member
+
+    def parse_thread_members_update(self, data):
+        guild_id = int(data['guild_id'])
+        guild: Optional[Guild] = self._get_guild(guild_id)
+        if guild is None:
+            log.debug('THREAD_MEMBERS_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            return
+
+        thread_id = int(data['id'])
+        thread: Optional[Thread] = guild.get_thread(thread_id)
+        if thread is None:
+            log.debug('THREAD_MEMBERS_UPDATE referencing an unknown thread ID: %s. Discarding', thread_id)
+            return
+
+        added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
+        removed_member_ids = data.get('removed_member_ids', [])
+        self_id = self.self_id
+        for member in added_members:
+            if member.id != self_id:
+                thread._add_member(member)
+                self.dispatch('thread_member_join', member)
+            else:
+                thread.me = member
+                self.dispatch('thread_join', thread)
+
+        for member_id in removed_member_ids:
+            if member_id != self_id:
+                member = thread._pop_member(member_id)
+                self.dispatch('thread_member_leave', member)
+            else:
+                self.dispatch('thread_remove', thread)
 
     def parse_guild_member_add(self, data):
         guild = self._get_guild(int(data['guild_id']))
@@ -1120,7 +1249,7 @@ class ConnectionState:
             return pm
 
         for guild in self.guilds:
-            channel = guild.get_channel(id)
+            channel = guild.get_channel(id) or guild.get_thread(id)
             if channel is not None:
                 return channel
 
@@ -1142,7 +1271,7 @@ class AutoShardedConnectionState(ConnectionState):
             new_guild = self._get_guild(msg.guild.id)
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
-                channel = new_guild.get_channel(channel_id) or Object(id=channel_id)
+                channel = new_guild.get_channel(channel_id) or new_guild.get_thread(channel_id) or Object(id=channel_id)
                 msg._rebind_channel_reference(channel)
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):

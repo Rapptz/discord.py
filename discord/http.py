@@ -80,6 +80,7 @@ if TYPE_CHECKING:
         webhook,
         channel,
         widget,
+        threads,
     )
     from .types.snowflake import Snowflake
 
@@ -805,6 +806,9 @@ class HTTPClient:
             'type',
             'rtc_region',
             'video_quality_mode',
+            'archived',
+            'auto_archive_duration',
+            'locked',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
@@ -843,6 +847,7 @@ class HTTPClient:
             'rate_limit_per_user',
             'rtc_region',
             'video_quality_mode',
+            'auto_archive_duration',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
 
@@ -855,6 +860,100 @@ class HTTPClient:
         reason: Optional[str] = None,
     ) -> Response[None]:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
+
+    # Thread management
+
+    def start_public_thread(
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        *,
+        name: str,
+        auto_archive_duration: int,
+        type: int,
+    ) -> Response[threads.Thread]:
+        payload = {
+            'name': name,
+            'auto_archive_duration': auto_archive_duration,
+            'type': type,
+        }
+
+        route = Route(
+            'POST', '/channels/{channel_id}/messages/{message_id}/threads', channel_id=channel_id, message_id=message_id
+        )
+        return self.request(route, json=payload)
+
+    def start_private_thread(
+        self,
+        channel_id: Snowflake,
+        *,
+        name: str,
+        auto_archive_duration: int,
+        type: int,
+    ) -> Response[threads.Thread]:
+        payload = {
+            'name': name,
+            'auto_archive_duration': auto_archive_duration,
+            'type': type,
+        }
+
+        route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
+        return self.request(route, json=payload)
+
+    def join_thread(self, channel_id: Snowflake) -> Response[None]:
+        return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
+
+    def add_user_to_thread(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route('PUT', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
+        )
+
+    def leave_thread(self, channel_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
+
+    def remove_user_from_thread(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:
+        route = Route('DELETE', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
+        return self.request(route)
+
+    def get_public_archived_threads(
+        self, channel_id: Snowflake, before=None, limit: int = 50
+    ) -> Response[threads.ThreadPaginationPayload]:
+        route = Route('GET', '/channels/{channel_id}/threads/archived/public', channel_id=channel_id)
+
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
+
+    def get_private_archived_threads(
+        self, channel_id: Snowflake, before=None, limit: int = 50
+    ) -> Response[threads.ThreadPaginationPayload]:
+        route = Route('GET', '/channels/{channel_id}/threads/archived/private', channel_id=channel_id)
+
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
+
+    def get_joined_private_archived_threads(
+        self, channel_id: Snowflake, before=None, limit: int = 50
+    ) -> Response[threads.ThreadPaginationPayload]:
+        route = Route('GET', '/channels/{channel_id}/users/@me/threads/archived/private', channel_id=channel_id)
+        params = {}
+        if before:
+            params['before'] = before
+        params['limit'] = limit
+        return self.request(route, params=params)
+
+    def get_active_threads(self, channel_id: Snowflake) -> Response[threads.ThreadPaginationPayload]:
+        route = Route('GET', '/channels/{channel_id}/threads/active', channel_id=channel_id)
+        return self.request(route)
+
+    def get_thread_members(self, channel_id: Snowflake) -> Response[List[threads.ThreadMember]]:
+        route = Route('GET', '/channels/{channel_id}/thread-members', channel_id=channel_id)
+        return self.request(route)
 
     # Webhook management
 
@@ -1692,9 +1791,9 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return value.format(data['url'], encoding)
 
     async def get_bot_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> Tuple[int, str]:
@@ -1704,9 +1803,9 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v=8&compress=zlib-stream'
+            value = '{0}?encoding={1}&v=9&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=8'
+            value = '{0}?encoding={1}&v=9'
         return data['shards'], value.format(data['url'], encoding)
 
     def get_user(self, user_id) -> Response[user.User]:
