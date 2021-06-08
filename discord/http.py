@@ -65,7 +65,9 @@ if TYPE_CHECKING:
         appinfo,
         audit_log,
         channel,
+        components,
         emoji,
+        embed,
         guild,
         integration,
         interactions,
@@ -407,11 +409,11 @@ class HTTPClient:
         content: str,
         *,
         tts: bool = False,
-        embed: Optional[Dict[str, Any]] = None,
+        embed: Optional[embed.Embed] = None,
         nonce: Optional[str] =  None,
         allowed_mentions: bool = None,
         message_reference: bool = None,
-        components: Optional[List[Dict[str, Any]]] = None,
+        components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
@@ -449,12 +451,12 @@ class HTTPClient:
         files: Sequence[File],
         content: Optional[str] = None,
         tts: bool = False,
-        embed: Optional[Dict[str, Any]] = None,
-        embeds: Iterable[Optional[Dict[str, Any]]] = None,
+        embed: Optional[embed.Embed] = None,
+        embeds: Iterable[Optional[embed.Embed]] = None,
         nonce: Optional[str] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[int] = None,
-        components: Optional[List[Dict[str, Any]]] = None,
+        components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
 
@@ -505,11 +507,11 @@ class HTTPClient:
         files: Sequence[File],
         content: Optional[str] = None,
         tts: bool = False,
-        embed: Optional[Dict[str, Any]] = None,
+        embed: Optional[embed.Embed] = None,
         nonce: Optional[str] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[int] = None,
-        components: Optional[List[Dict[str, Any]]] = None,
+        components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         return self.send_multipart_helper(
@@ -1474,8 +1476,8 @@ class HTTPClient:
         route: Route,
         file: Optional[File] = None,
         content: Optional[str] = None,
-        embeds: Optional[List[Dict[str, Any]]] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        embeds: Optional[List[embed.Embed]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
     ):
 
         payload: Dict[str, Any] = {}
@@ -1511,7 +1513,7 @@ class HTTPClient:
         token: str,
         *,
         type: InteractionResponseType,
-        data: Optional[Dict[str, Any]] = None
+        data: Optional[interactions.InteractionApplicationCommandCallbackData] = None
     ) -> Response[None]:
         r = Route(
             'POST',
@@ -1547,8 +1549,8 @@ class HTTPClient:
         token: str,
         file: Optional[File] = None,
         content: Optional[str] = None,
-        embeds: Optional[List[Dict[str, Any]]] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        embeds: Optional[List[embed.Embed]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
     ) -> Response[message.Message]:
         r = Route(
             'PATCH',
@@ -1574,8 +1576,8 @@ class HTTPClient:
         files: List[File] = [],
         content: Optional[str] = None,
         tts: bool = False,
-        embeds: Optional[List[Dict[str, Any]]] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        embeds: Optional[List[embed.Embed]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
     ) -> Response[message.Message]:
         r = Route(
             'POST',
@@ -1599,8 +1601,8 @@ class HTTPClient:
         message_id: Snowflake,
         file: Optional[File] = None,
         content: Optional[str] = None,
-        embeds: Optional[List[Dict[str, Any]]] = None,
-        allowed_mentions: Optional[Dict[str, Any]] = None,
+        embeds: Optional[List[embed.Embed]] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
     )-> Response[message.Message]:
         r = Route(
             'PATCH',
