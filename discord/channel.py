@@ -48,7 +48,6 @@ __all__ = (
     'CategoryChannel',
     'StoreChannel',
     'GroupChannel',
-    '_channel_factory',
 )
 
 if TYPE_CHECKING:
@@ -1834,18 +1833,19 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         await self._state.http.leave_group(self.id)
 
-def _channel_factory(channel_type):
-    value = try_enum(ChannelType, channel_type)
+def _coerce_channel_type(value: Union[ChannelType, int]) -> ChannelType:
+    if isinstance(value, ChannelType):
+        return value
+    return try_enum(ChannelType, value)
+
+def _guild_channel_factory(channel_type: Union[ChannelType, int]):
+    value = _coerce_channel_type(channel_type)
     if value is ChannelType.text:
         return TextChannel, value
     elif value is ChannelType.voice:
         return VoiceChannel, value
-    elif value is ChannelType.private:
-        return DMChannel, value
     elif value is ChannelType.category:
         return CategoryChannel, value
-    elif value is ChannelType.group:
-        return GroupChannel, value
     elif value is ChannelType.news:
         return TextChannel, value
     elif value is ChannelType.store:
@@ -1854,3 +1854,12 @@ def _channel_factory(channel_type):
         return StageChannel, value
     else:
         return None, value
+
+def _channel_factory(channel_type: Union[ChannelType, int]):
+    cls, value = _guild_channel_factory(channel_type)
+    if value is ChannelType.private:
+        return DMChannel, value
+    elif value is ChannelType.group:
+        return GroupChannel, value
+    else:
+        return cls, value

@@ -44,6 +44,7 @@ from .mentions import AllowedMentions
 from .partial_emoji import PartialEmoji
 from .message import Message
 from .channel import *
+from .channel import _channel_factory
 from .raw_models import *
 from .member import Member
 from .role import Role
