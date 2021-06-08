@@ -32,8 +32,7 @@ class _PartialVoiceStateOptional(TypedDict, total=False):
     self_stream: bool
 
 
-class PartialVoiceState(_PartialVoiceStateOptional):
-    channel_id: Optional[Snowflake]
+class _VoiceState(_PartialVoiceStateOptional):
     user_id: Snowflake
     session_id: str
     deaf: bool
@@ -44,7 +43,12 @@ class PartialVoiceState(_PartialVoiceStateOptional):
     suppress: bool
 
 
-class VoiceState(PartialVoiceState, total=False):
+class GuildVoiceState(_VoiceState):
+    channel_id: Snowflake
+
+
+class VoiceState(_VoiceState, total=False):
+    channel_id: Optional[Snowflake]
     guild_id: Snowflake
 
 

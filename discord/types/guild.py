@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict
 from .snowflake import Snowflake
 from .channel import GuildChannel
-from .voice import PartialVoiceState
+from .voice import GuildVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
 from .role import Role
@@ -56,7 +56,7 @@ class _GuildOptional(TypedDict, total=False):
     joined_at: Optional[str]
     large: bool
     member_count: int
-    voice_states: List[PartialVoiceState]
+    voice_states: List[GuildVoiceState]
     members: List[Member]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
