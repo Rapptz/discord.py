@@ -32,6 +32,7 @@ from .role import Role
 from .member import Member
 from .emoji import Emoji
 from .user import User
+from .threads import Thread
 
 
 class Ban(TypedDict):
@@ -60,7 +61,7 @@ class _GuildOptional(TypedDict, total=False):
     members: List[Member]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
-    threads: List[GuildChannel]
+    threads: List[Thread]
     max_presences: Optional[int]
     max_members: int
     premium_subscription_count: int
