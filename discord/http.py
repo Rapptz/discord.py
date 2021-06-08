@@ -869,8 +869,8 @@ class HTTPClient:
         message_id: Snowflake,
         *,
         name: str,
-        auto_archive_duration: int,
-        type: int,
+        auto_archive_duration: threads.ThreadArchiveDuration,
+        type: threads.ThreadType,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
@@ -888,8 +888,8 @@ class HTTPClient:
         channel_id: Snowflake,
         *,
         name: str,
-        auto_archive_duration: int,
-        type: int,
+        auto_archive_duration: threads.ThreadArchiveDuration,
+        type: threads.ThreadType,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
