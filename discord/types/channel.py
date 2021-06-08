@@ -22,9 +22,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import List, Literal, Optional, TypedDict, Union
 from .user import PartialUser
 from .snowflake import Snowflake
-from typing import List, Literal, Optional, TypedDict
 
 
 class PermissionOverwrite(TypedDict):
@@ -37,43 +37,12 @@ class PermissionOverwrite(TypedDict):
 ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 13]
 
 
-class PartialChannel(TypedDict):
-    id: str
-    type: ChannelType
+class _BaseChannel(TypedDict):
+    id: Snowflake
     name: str
 
 
-class _TextChannelOptional(PartialChannel, total=False):
-    topic: str
-    last_message_id: Optional[Snowflake]
-    last_pin_timestamp: str
-    rate_limit_per_user: int
-
-
-class _VoiceChannelOptional(PartialChannel, total=False):
-    rtc_region: Optional[str]
-    bitrate: int
-    user_limit: int
-
-
-class _CategoryChannelOptional(PartialChannel, total=False):
-    ...
-
-
-class _StoreChannelOptional(PartialChannel, total=False):
-    ...
-
-
-class _StageChannelOptional(PartialChannel, total=False):
-    rtc_region: Optional[str]
-    bitrate: int
-    user_limit: int
-    topic: str
-
-
-class GuildChannel(
-    _TextChannelOptional, _VoiceChannelOptional, _CategoryChannelOptional, _StoreChannelOptional, _StageChannelOptional
-):
+class _BaseGuildChannel(_BaseChannel):
     guild_id: Snowflake
     position: int
     permission_overwrites: List[PermissionOverwrite]
@@ -81,15 +50,74 @@ class GuildChannel(
     parent_id: Optional[Snowflake]
 
 
-class DMChannel(PartialChannel):
+class PartialChannel(_BaseChannel):
+    type: ChannelType
+
+
+class _TextChannelOptional(TypedDict, total=False):
+    topic: str
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: str
+    rate_limit_per_user: int
+
+
+class TextChannel(_BaseGuildChannel, _TextChannelOptional):
+    type: Literal[0]
+
+
+class NewsChannel(_BaseGuildChannel, _TextChannelOptional):
+    type: Literal[5]
+
+
+VideoQualityMode = Literal[1, 2]
+
+
+class _VoiceChannelOptional(TypedDict, total=False):
+    rtc_region: Optional[str]
+    bitrate: int
+    user_limit: int
+    video_quality_mode: VideoQualityMode
+
+
+class VoiceChannel(_BaseGuildChannel, _VoiceChannelOptional):
+    type: Literal[2]
+
+
+class CategoryChannel(_BaseGuildChannel):
+    type: Literal[4]
+
+
+class StoreChannel(_BaseGuildChannel):
+    type: Literal[6]
+
+
+class _StageChannelOptional(TypedDict, total=False):
+    rtc_region: Optional[str]
+    bitrate: int
+    user_limit: int
+    topic: str
+
+
+class StageChannel(_BaseGuildChannel, _StageChannelOptional):
+    type: Literal[13]
+
+
+GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StoreChannel, StageChannel]
+
+
+class DMChannel(_BaseChannel):
+    type: Literal[1]
     last_message_id: Optional[Snowflake]
     recipients: List[PartialUser]
 
 
-class GroupDMChannel(DMChannel):
+class GroupDMChannel(_BaseChannel):
+    type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
 
+
+Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
 
 PrivacyLevel = Literal[1, 2]
 

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
-from .components import ComponentType
+from .components import Component, ComponentType
 from .embed import Embed
 from .channel import ChannelType
 from .member import Member
@@ -87,7 +87,7 @@ class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissio
     guild_id: Snowflake
 
 
-InteractionType = Literal[1, 2]
+InteractionType = Literal[1, 2, 3]
 
 
 class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
@@ -149,16 +149,16 @@ class Interaction(_InteractionOptional):
     token: str
     version: int
 
-
 class InteractionApplicationCommandCallbackData(TypedDict, total=False):
     tts: bool
     content: str
     embeds: List[Embed]
     allowed_mentions: AllowedMentions
     flags: int
+    components: List[Component]
 
 
-InteractionResponseType = Literal[1, 2, 3, 4, 5, 6, 7]
+InteractionResponseType = Literal[1, 4, 5, 6, 7]
 
 
 class _InteractionResponseOptional(TypedDict, total=False):

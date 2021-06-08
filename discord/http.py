@@ -44,7 +44,8 @@ if TYPE_CHECKING:
     from .types import (
         interactions,
         invite,
-        stage_instance,
+        channel,
+        widget,
     )
     from .types.snowflake import Snowflake
 
@@ -969,10 +970,10 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
 
-    def get_widget(self, guild_id):
+    def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
-    
-    def edit_widget(self, guild_id, payload):
+
+    def edit_widget(self, guild_id: Snowflake, payload) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
 
     # Invite management
@@ -1009,20 +1010,20 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(self, invite_id, *, with_counts=True, with_expiration=True):
+    def get_invite(self, invite_id: str, *, with_counts: bool = True, with_expiration: bool = True) -> Response[invite.Invite]:
         params = {
             'with_counts': int(with_counts),
             'with_expiration': int(with_expiration),
         }
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
-    def invites_from(self, guild_id):
+    def invites_from(self, guild_id: Snowflake) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
 
-    def invites_from_channel(self, channel_id):
+    def invites_from_channel(self, channel_id: Snowflake) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def delete_invite(self, invite_id, *, reason=None):
+    def delete_invite(self, invite_id: str, *, reason: bool = None) -> Response[None]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
     # Role management
@@ -1087,10 +1088,10 @@ class HTTPClient:
 
     # Stage instance management
 
-    def get_stage_instance(self, channel_id: Snowflake) -> Response[stage_instance.StageInstance]:
+    def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, **payload) -> Response[stage_instance.StageInstance]:
+    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
         valid_keys = (
             'channel_id',
             'topic',

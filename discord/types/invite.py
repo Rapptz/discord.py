@@ -49,6 +49,7 @@ class _InviteMetadata(TypedDict, total=False):
     max_age: int
     temporary: bool
     created_at: str
+    expires_at: Optional[str]
 
 
 class IncompleteInvite(_InviteMetadata):
