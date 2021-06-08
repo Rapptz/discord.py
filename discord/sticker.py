@@ -22,6 +22,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, List, Optional
+
 from .mixins import Hashable
 from .asset import Asset
 from .utils import snowflake_time
@@ -30,6 +33,12 @@ from .enums import StickerType, try_enum
 __all__ = (
     'Sticker',
 )
+
+if TYPE_CHECKING:
+    import datetime
+    from .state import ConnectionState
+    from .types.message import Sticker as StickerPayload
+
 
 class Sticker(Hashable):
     """Represents a sticker.
@@ -65,35 +74,36 @@ class Sticker(Hashable):
     tags: List[:class:`str`]
         A list of tags for the sticker.
     """
+
     __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', '_image', 'tags')
 
-    def __init__(self, *, state, data):
-        self._state = state
-        self.id = int(data['id'])
-        self.name = data['name']
-        self.description = data['description']
-        self.pack_id = int(data['pack_id'])
-        self.format = try_enum(StickerType, data['format_type'])
-        self._image = data['asset']
+    def __init__(self, *, state: ConnectionState, data: StickerPayload):
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.description: str = data['description']
+        self.pack_id: int = int(data['pack_id'])
+        self.format: StickerType = try_enum(StickerType, data['format_type'])
+        self._image: str = data['asset']
 
         try:
-            self.tags = [tag.strip() for tag in data['tags'].split(',')]
+            self.tags: List[str] = [tag.strip() for tag in data['tags'].split(',')]
         except KeyError:
             self.tags = []
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
     @property
-    def created_at(self):
+    def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the sticker's creation time in UTC."""
         return snowflake_time(self.id)
 
     @property
-    def image(self):
+    def image(self) -> Optional[Asset]:
         """Returns an :class:`Asset` for the sticker's image.
 
         .. note::

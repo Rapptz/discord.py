@@ -16,8 +16,8 @@ class MyContext(commands.Context):
             await self.message.add_reaction(emoji)
         except discord.HTTPException:
             # sometimes errors occur during this, for example
-            # maybe you dont have permission to do that
-            # we dont mind, so we can just ignore them
+            # maybe you don't have permission to do that
+            # we don't mind, so we can just ignore them
             pass
 
 
@@ -39,13 +39,13 @@ async def guess(ctx, number: int):
     value = random.randint(1, 6)
     # with your new helper function, you can add a
     # green check mark if the guess was correct,
-    # or a red cross mark if it wasnt
+    # or a red cross mark if it wasn't
     await ctx.tick(number == value)
 
-# important: you shouldnt hard code your token
+# IMPORTANT: You shouldn't hard code your token
 # these are very important, and leaking them can 
 # let people do very malicious things with your
-# bot. try to use a file or something to keep
-# them private, and dont commit it to GitHub
+# bot. Try to use a file or something to keep
+# them private, and don't commit it to GitHub
 token = "your token here"
 bot.run(token)

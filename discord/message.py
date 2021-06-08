@@ -37,6 +37,7 @@ from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, HTTPException
+from .components import _component_factory
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -56,6 +57,8 @@ if TYPE_CHECKING:
         Reaction as ReactionPayload,
     )
 
+    from .types.components import Component as ComponentPayload
+
     from .types.member import Member as MemberPayload
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
@@ -64,6 +67,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
     from .mentions import AllowedMentions
+    from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -581,6 +585,10 @@ class Message(Hashable):
         A list of stickers given to the message.
 
         .. versionadded:: 1.6
+    components: List[:class:`Component`]
+        A list of components in the message.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -613,6 +621,7 @@ class Message(Hashable):
         'application',
         'activity',
         'stickers',
+        'components',
     )
 
     if TYPE_CHECKING:
@@ -643,7 +652,8 @@ class Message(Hashable):
         self.tts = data['tts']
         self.content = data['content']
         self.nonce = data.get('nonce')
-        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
+        self.stickers = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.components = [_component_factory(d) for d in data.get('components', [])]
 
         try:
             ref = data['message_reference']
@@ -837,6 +847,9 @@ class Message(Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
+    def _handle_components(self, components: List[ComponentPayload]):
+        self.components = [_component_factory(d) for d in components]
+
     def _rebind_channel_reference(self, new_channel: Union[TextChannel, DMChannel, GroupChannel]) -> None:
         self.channel = new_channel
 
@@ -962,9 +975,9 @@ class Message(Hashable):
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
-        In the case of :attr:`MessageType.default`\, this just returns the
-        regular :attr:`Message.content`. Otherwise this returns an English
-        message denoting the contents of the system message.
+        In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\,
+        this just returns the regular :attr:`Message.content`. Otherwise this
+        returns an English message denoting the contents of the system message.
         """
 
         if self.type is MessageType.default:
@@ -1035,6 +1048,9 @@ class Message(Hashable):
         if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
+        if self.type is MessageType.reply:
+            return self.content
+
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
@@ -1088,6 +1104,7 @@ class Message(Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
     ) -> None:
         ...
 
@@ -1134,6 +1151,11 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1191,9 +1213,24 @@ class Message(Hashable):
         else:
             fields['attachments'] = [a.to_dict() for a in attachments]
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            self._state.prevent_view_updates_for(self.id)
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
             self._update(data)
+
+        if view and not view.is_finished():
+            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1587,6 +1624,11 @@ class PartialMessage(Hashable):
             to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
             If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
             are used instead.
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1643,6 +1685,18 @@ class PartialMessage(Hashable):
                     allowed_mentions = allowed_mentions.to_dict()
                 fields['allowed_mentions'] = allowed_mentions
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            self._state.prevent_view_updates_for(self.id)
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
 
@@ -1650,4 +1704,7 @@ class PartialMessage(Hashable):
             await self.delete(delay=delete_after)  # type: ignore
 
         if fields:
-            return self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            if view and not view.is_finished():
+                self._state.store_view(view, self.id)
+            return msg

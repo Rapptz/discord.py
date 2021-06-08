@@ -56,7 +56,10 @@ log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .file import File
-    from .enums import AuditLogAction
+    from .enums import (
+        AuditLogAction,
+        InteractionResponseType,
+    )
 
     from .types import (
         appinfo,
@@ -73,8 +76,10 @@ if TYPE_CHECKING:
         role,
         user,
         webhook,
+        channel,
         widget,
     )
+    from .types.snowflake import Snowflake
 
     from types import TracebackType
 
@@ -377,7 +382,7 @@ class HTTPClient:
 
     # Group functionality
 
-    def start_group(self, user_id: int, recipients: List[int]) -> Response[channel.GroupDMChannel]:
+    def start_group(self, user_id: Snowflake, recipients: List[int]) -> Response[channel.GroupDMChannel]:
         payload = {
             'recipients': recipients,
         }
@@ -389,7 +394,7 @@ class HTTPClient:
 
     # Message management
 
-    def start_private_message(self, user_id: int) -> Response[channel.DMChannel]:
+    def start_private_message(self, user_id: Snowflake) -> Response[channel.DMChannel]:
         payload = {
             'recipient_id': user_id,
         }
@@ -398,7 +403,7 @@ class HTTPClient:
 
     def send_message(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         content: str,
         *,
         tts: bool = False,
@@ -406,6 +411,7 @@ class HTTPClient:
         nonce: Optional[str] =  None,
         allowed_mentions: bool = None,
         message_reference: bool = None,
+        components: Optional[List[Dict[str, Any]]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         payload = {}
@@ -428,9 +434,12 @@ class HTTPClient:
         if message_reference:
             payload['message_reference'] = message_reference
 
+        if components:
+            payload['components'] = components
+
         return self.request(r, json=payload)
 
-    def send_typing(self, channel_id: int) -> Response[None]:
+    def send_typing(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
     def send_multipart_helper(
@@ -445,6 +454,7 @@ class HTTPClient:
         nonce: Optional[str] = None,
         allowed_mentions: Optional[Dict[str, Any]] = None,
         message_reference: Optional[int] = None,
+        components: Optional[List[Dict[str, Any]]] = None,
     ) -> Response[message.Message]:
         form = []
 
@@ -461,6 +471,8 @@ class HTTPClient:
             payload['allowed_mentions'] = allowed_mentions
         if message_reference:
             payload['message_reference'] = message_reference
+        if components:
+            payload['components'] = components
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
@@ -488,7 +500,7 @@ class HTTPClient:
 
     def send_files(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         *,
         files: Sequence[File],
         content: Optional[str] = None,
@@ -497,6 +509,7 @@ class HTTPClient:
         nonce: Optional[str] = None,
         allowed_mentions: Optional[Dict[str, Any]] = None,
         message_reference: Optional[int] = None,
+        components: Optional[List[Dict[str, Any]]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         return self.send_multipart_helper(
@@ -508,13 +521,14 @@ class HTTPClient:
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
+            components=components,
         )
 
-    def delete_message(self, channel_id: int, message_id: int, *, reason: Optional[str] = None) -> Response[None]:
+    def delete_message(self, channel_id: Snowflake, message_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, reason=reason)
 
-    def delete_messages(self, channel_id: int, message_ids: List[int], *, reason: Optional[str] = None) -> Response[None]:
+    def delete_messages(self, channel_id: Snowflake, message_ids: List[int], *, reason: Optional[str] = None) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
             'messages': message_ids,
@@ -522,11 +536,11 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_message(self, channel_id: int, message_id: int, **fields: Any) -> Response[message.Message]:
+    def edit_message(self, channel_id: Snowflake, message_id: Snowflake, **fields: Any) -> Response[message.Message]:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, json=fields)
 
-    def add_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
+    def add_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
         r = Route(
             'PUT',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
@@ -536,7 +550,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def remove_reaction(self, channel_id: int, message_id: int, emoji: str, member_id: int) -> Response[None]:
+    def remove_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str, member_id: Snowflake) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
@@ -547,7 +561,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def remove_own_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
+    def remove_own_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
@@ -559,8 +573,8 @@ class HTTPClient:
 
     def get_reaction_users(
         self,
-        channel_id: int,
-        message_id: int,
+        channel_id: Snowflake,
+        message_id: Snowflake,
         emoji: str,
         limit: int,
         after=None,
@@ -580,7 +594,7 @@ class HTTPClient:
             params['after'] = after
         return self.request(r, params=params)
 
-    def clear_reactions(self, channel_id: int, message_id: int) -> Response[None]:
+    def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions',
@@ -590,7 +604,7 @@ class HTTPClient:
 
         return self.request(r)
 
-    def clear_single_reaction(self, channel_id: int, message_id: int, emoji: str) -> Response[None]:
+    def clear_single_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}',
@@ -600,17 +614,17 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def get_message(self, channel_id: int, message_id: int) -> Response[message.Message]:
+    def get_message(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
         r = Route('GET', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r)
 
-    def get_channel(self, channel_id: int) -> Response[channel.Channel]:
+    def get_channel(self, channel_id: Snowflake) -> Response[channel.Channel]:
         r = Route('GET', '/channels/{channel_id}', channel_id=channel_id)
         return self.request(r)
 
     def logs_from(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         limit: int,
         before: Optional[int] = None,
         after: Optional[int] = None,
@@ -629,7 +643,7 @@ class HTTPClient:
 
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
 
-    def publish_message(self, channel_id: int, message_id: int) -> Response[message.Message]:
+    def publish_message(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
         return self.request(
             Route(
                 'POST',
@@ -639,7 +653,7 @@ class HTTPClient:
             )
         )
 
-    def pin_message(self, channel_id: int, message_id: int, reason: Optional[str] = None) -> Response[None]:
+    def pin_message(self, channel_id: Snowflake, message_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'PUT',
             '/channels/{channel_id}/pins/{message_id}',
@@ -648,7 +662,7 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def unpin_message(self, channel_id: int, message_id: int, reason: Optional[str] = None) -> Response[None]:
+    def unpin_message(self, channel_id: Snowflake, message_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE',
             '/channels/{channel_id}/pins/{message_id}',
@@ -657,12 +671,12 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def pins_from(self, channel_id: int) -> Response[List[message.Message]]:
+    def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
     # Member management
 
-    def kick(self, user_id: int, guild_id: int, reason: Optional[str] = None) -> Response[None]:
+    def kick(self, user_id: Snowflake, guild_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         if reason:
             # thanks aiohttp
@@ -672,8 +686,8 @@ class HTTPClient:
 
     def ban(
         self,
-        user_id: int,
-        guild_id: int,
+        user_id: Snowflake,
+        guild_id: Snowflake,
         delete_message_days: int = 1,
         reason: Optional[str] = None,
     ) -> Response[None]:
@@ -688,14 +702,14 @@ class HTTPClient:
 
         return self.request(r, params=params)
 
-    def unban(self, user_id: int, guild_id: int, *, reason: Optional[str] = None) -> Response[None]:
+    def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
 
     def guild_voice_state(
         self,
-        user_id: int,
-        guild_id: int,
+        user_id: Snowflake,
+        guild_id: Snowflake,
         *,
         mute: Optional[bool] = None,
         deafen: Optional[bool] = None,
@@ -722,7 +736,7 @@ class HTTPClient:
 
     def change_my_nickname(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         nickname: str,
         *,
         reason: Optional[str] = None,
@@ -735,8 +749,8 @@ class HTTPClient:
 
     def change_nickname(
         self,
-        guild_id: int,
-        user_id: int,
+        guild_id: Snowflake,
+        user_id: Snowflake,
         nickname: str,
         *,
         reason: Optional[str] = None,
@@ -747,18 +761,18 @@ class HTTPClient:
         }
         return self.request(r, json=payload, reason=reason)
 
-    def edit_my_voice_state(self, guild_id: int, payload) -> Response[None]:
+    def edit_my_voice_state(self, guild_id: Snowflake, payload) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_voice_state(self, guild_id: int, user_id: int, payload) -> Response[None]:
+    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=payload)
 
     def edit_member(
         self,
-        guild_id: int,
-        user_id: int,
+        guild_id: Snowflake,
+        user_id: Snowflake,
         *,
         reason: Optional[str] = None,
         **fields: Any,
@@ -770,7 +784,7 @@ class HTTPClient:
 
     def edit_channel(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         *,
         reason: Optional[str] = None,
         **options: Any,
@@ -795,7 +809,7 @@ class HTTPClient:
 
     def bulk_channel_update(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         data,
         *,
         reason: Optional[str] = None,
@@ -805,7 +819,7 @@ class HTTPClient:
 
     def create_channel(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         channel_type: channel.ChannelType,
         *,
         reason: Optional[str] = None,
@@ -834,7 +848,7 @@ class HTTPClient:
 
     def delete_channel(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         *,
         reason: Optional[str] = None,
     ) -> Response[None]:
@@ -844,7 +858,7 @@ class HTTPClient:
 
     def create_webhook(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         *,
         name: str,
         avatar: Optional[bytes] = None,
@@ -859,19 +873,19 @@ class HTTPClient:
         r = Route('POST', '/channels/{channel_id}/webhooks', channel_id=channel_id)
         return self.request(r, json=payload, reason=reason)
 
-    def channel_webhooks(self, channel_id):
+    def channel_webhooks(self, channel_id: Snowflake) -> Response[List[webhook.Webhook]]:
         return self.request(Route('GET', '/channels/{channel_id}/webhooks', channel_id=channel_id))
 
-    def guild_webhooks(self, guild_id):
+    def guild_webhooks(self, guild_id: Snowflake) -> Response[List[webhook.Webhook]]:
         return self.request(Route('GET', '/guilds/{guild_id}/webhooks', guild_id=guild_id))
 
-    def get_webhook(self, webhook_id):
+    def get_webhook(self, webhook_id: Snowflake) -> Response[webhook.Webhook]:
         return self.request(Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id))
 
     def follow_webhook(
         self,
-        channel_id: int,
-        webhook_channel_id: int,
+        channel_id: Snowflake,
+        webhook_channel_id: Snowflake,
         reason: Optional[str] = None,
     ) -> Response[None]:
         payload = {
@@ -900,13 +914,13 @@ class HTTPClient:
 
         return self.request(Route('GET', '/users/@me/guilds'), params=params)
 
-    def leave_guild(self, guild_id: int) -> Response[None]:
+    def leave_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id))
 
-    def get_guild(self, guild_id: int) -> Response[guild.Guild]:
+    def get_guild(self, guild_id: Snowflake) -> Response[guild.Guild]:
         return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def delete_guild(self, guild_id: int) -> Response[None]:
+    def delete_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
     def create_guild(self, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
@@ -918,7 +932,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds'), json=payload)
 
-    def edit_guild(self, guild_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[guild.Guild]:
+    def edit_guild(self, guild_id: Snowflake, *, reason: Optional[str] = None, **fields: Any) -> Response[guild.Guild]:
         valid_keys = (
             'name',
             'region',
@@ -948,16 +962,16 @@ class HTTPClient:
     def get_template(self, code: str) -> Response[template.Template]:
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
 
-    def guild_templates(self, guild_id: int) -> Response[List[template.Template]]:
+    def guild_templates(self, guild_id: Snowflake) -> Response[List[template.Template]]:
         return self.request(Route('GET', '/guilds/{guild_id}/templates', guild_id=guild_id))
 
-    def create_template(self, guild_id: int, payload) -> Response[template.Template]:
+    def create_template(self, guild_id: Snowflake, payload) -> Response[template.Template]:
         return self.request(Route('POST', '/guilds/{guild_id}/templates', guild_id=guild_id), json=payload)
 
-    def sync_template(self, guild_id: int, code: str) -> Response[template.Template]:
+    def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def edit_template(self, guild_id: int, code: str, payload) -> Response[template.Template]:
+    def edit_template(self, guild_id: Snowflake, code: str, payload) -> Response[template.Template]:
         valid_keys = (
             'name',
             'description',
@@ -967,7 +981,7 @@ class HTTPClient:
             Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code), json=payload
         )
 
-    def delete_template(self, guild_id: int, code: str) -> Response[None]:
+    def delete_template(self, guild_id: Snowflake, code: str) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
     def create_from_template(self, code: str, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
@@ -978,23 +992,23 @@ class HTTPClient:
         }
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
-    def get_bans(self, guild_id: int) -> Response[List[guild.Ban]]:
+    def get_bans(self, guild_id: Snowflake) -> Response[List[guild.Ban]]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
 
-    def get_ban(self, user_id: int, guild_id: int) -> Response[guild.Ban]:
+    def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
 
-    def get_vanity_code(self, guild_id: int) -> Response[invite.VanityInvite]:
+    def get_vanity_code(self, guild_id: Snowflake) -> Response[invite.VanityInvite]:
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 
-    def change_vanity_code(self, guild_id: int, code: str, *, reason: Optional[str] = None) -> Response[None]:
+    def change_vanity_code(self, guild_id: Snowflake, code: str, *, reason: Optional[str] = None) -> Response[None]:
         payload: Dict[str, Any] = {'code': code}
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
-    def get_all_guild_channels(self, guild_id: int) -> Response[List[guild.GuildChannel]]:
+    def get_all_guild_channels(self, guild_id: Snowflake) -> Response[List[guild.GuildChannel]]:
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
-    def get_members(self, guild_id: int, limit: int, after: Optional[int]) -> Response[List[member.Member]]:
+    def get_members(self, guild_id: Snowflake, limit: int, after: Optional[int]) -> Response[List[member.Member]]:
         params: Dict[str, Any] = {
             'limit': limit,
         }
@@ -1004,12 +1018,12 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/members', guild_id=guild_id)
         return self.request(r, params=params)
 
-    def get_member(self, guild_id: int, member_id: int) -> Response[member.Member]:
+    def get_member(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.Member]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 
     def prune_members(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         days: int,
         compute_prune_count: bool,
         roles: List[str],
@@ -1027,7 +1041,7 @@ class HTTPClient:
 
     def estimate_pruned_members(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         days: int,
         roles: List[str],
     ) -> Response[guild.GuildPrune]:
@@ -1039,15 +1053,15 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
-    def get_all_custom_emojis(self, guild_id: int) -> Response[List[emoji.Emoji]]:
+    def get_all_custom_emojis(self, guild_id: Snowflake) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
 
-    def get_custom_emoji(self, guild_id: int, emoji_id: int) -> Response[emoji.Emoji]:
+    def get_custom_emoji(self, guild_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
 
     def create_custom_emoji(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         name: str,
         image: bytes,
         *,
@@ -1065,8 +1079,8 @@ class HTTPClient:
 
     def delete_custom_emoji(
         self,
-        guild_id: int,
-        emoji_id: int,
+        guild_id: Snowflake,
+        emoji_id: Snowflake,
         *,
         reason: Optional[str] = None,
     ) -> Response[None]:
@@ -1075,8 +1089,8 @@ class HTTPClient:
 
     def edit_custom_emoji(
         self,
-        guild_id: int,
-        emoji_id: int,
+        guild_id: Snowflake,
+        emoji_id: Snowflake,
         *,
         payload,
         reason: Optional[str] = None,
@@ -1084,12 +1098,12 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
         return self.request(r, json=payload, reason=reason)
 
-    def get_all_integrations(self, guild_id: int) -> Response[List[integration.Integration]]:
+    def get_all_integrations(self, guild_id: Snowflake) -> Response[List[integration.Integration]]:
         r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
 
         return self.request(r)
 
-    def create_integration(self, guild_id: int, type: integration.IntegrationType, id: int) -> Response[None]:
+    def create_integration(self, guild_id: Snowflake, type: integration.IntegrationType, id: int) -> Response[None]:
         payload = {
             'type': type,
             'id': id,
@@ -1098,21 +1112,21 @@ class HTTPClient:
         r = Route('POST', '/guilds/{guild_id}/integrations', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_integration(self, guild_id: int, integration_id: int, **payload: Any) -> Response[None]:
+    def edit_integration(self, guild_id: Snowflake, integration_id: Snowflake, **payload: Any) -> Response[None]:
         r = Route(
             'PATCH', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
         return self.request(r, json=payload)
 
-    def sync_integration(self, guild_id: int, integration_id: int) -> Response[None]:
+    def sync_integration(self, guild_id: Snowflake, integration_id: Snowflake) -> Response[None]:
         r = Route(
             'POST', '/guilds/{guild_id}/integrations/{integration_id}/sync', guild_id=guild_id, integration_id=integration_id
         )
 
         return self.request(r)
 
-    def delete_integration(self, guild_id: int, integration_id: int) -> Response[None]:
+    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake) -> Response[None]:
         r = Route(
             'DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
@@ -1121,7 +1135,7 @@ class HTTPClient:
 
     def get_audit_logs(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         limit: int = 100,
         before: Optional[int] = None,
         after: Optional[int] = None,
@@ -1141,20 +1155,26 @@ class HTTPClient:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         return self.request(r, params=params)
 
-    def get_widget(self, guild_id: int) -> Response[widget.Widget]:
+    def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
+
+    def edit_widget(self, guild_id: Snowflake, payload) -> Response[widget.WidgetSettings]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
 
     # Invite management
 
     def create_invite(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         *,
         reason: Optional[str] = None,
         max_age: int = 0,
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        target_type: Optional[int] = None,
+        target_user_id: Optional[int] = None,
+        target_application_id: Optional[int] = None
     ) -> Response[invite.Invite]:
         r = Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id)
         payload = {
@@ -1164,25 +1184,28 @@ class HTTPClient:
             'unique': unique,
         }
 
+        if target_type:
+            payload['target_type'] = target_type
+
+        if target_user_id:
+            payload['target_user_id'] = target_user_id
+
+        if target_application_id:
+            payload['target_application_id'] = str(target_application_id)
+
         return self.request(r, reason=reason, json=payload)
 
-    def get_invite(
-        self,
-        invite_id: str,
-        *,
-        with_counts: bool = True,
-        with_expiration: bool = True,
-    ) -> Response[invite.Invite]:
+    def get_invite(self, invite_id: str, *, with_counts: bool = True, with_expiration: bool = True) -> Response[invite.Invite]:
         params = {
             'with_counts': int(with_counts),
             'with_expiration': int(with_expiration),
         }
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
-    def invites_from(self, guild_id: int) -> Response[List[invite.Invite]]:
+    def invites_from(self, guild_id: Snowflake) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
 
-    def invites_from_channel(self, channel_id: int) -> Response[List[invite.Invite]]:
+    def invites_from_channel(self, channel_id: Snowflake) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
     def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[None]:
@@ -1190,36 +1213,36 @@ class HTTPClient:
 
     # Role management
 
-    def get_roles(self, guild_id: int) -> Response[List[role.Role]]:
+    def get_roles(self, guild_id: Snowflake) -> Response[List[role.Role]]:
         return self.request(Route('GET', '/guilds/{guild_id}/roles', guild_id=guild_id))
 
-    def edit_role(self, guild_id: int, role_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
+    def edit_role(self, guild_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
         payload = {k: v for k, v in fields.items() if k in valid_keys}
         return self.request(r, json=payload, reason=reason)
 
-    def delete_role(self, guild_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
+    def delete_role(self, guild_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
         return self.request(r, reason=reason)
 
     def replace_roles(
         self,
-        user_id: int,
-        guild_id: int,
+        user_id: Snowflake,
+        guild_id: Snowflake,
         role_ids: List[int],
         *,
         reason: Optional[str] = None,
     ) -> Response[member.Member]:
         return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids, reason=reason)
 
-    def create_role(self, guild_id: int, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
+    def create_role(self, guild_id: Snowflake, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
         r = Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r, json=fields, reason=reason)
 
     def move_role_position(
         self,
-        guild_id: int,
+        guild_id: Snowflake,
         positions,
         *,
         reason: Optional[str] = None,
@@ -1227,7 +1250,7 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/roles', guild_id=guild_id)
         return self.request(r, json=positions, reason=reason)
 
-    def add_role(self, guild_id: int, user_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
+    def add_role(self, guild_id: Snowflake, user_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'PUT',
             '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
@@ -1237,7 +1260,7 @@ class HTTPClient:
         )
         return self.request(r, reason=reason)
 
-    def remove_role(self, guild_id: int, user_id: int, role_id: int, *, reason: Optional[str] = None) -> Response[None]:
+    def remove_role(self, guild_id: Snowflake, user_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE',
             '/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
@@ -1249,7 +1272,7 @@ class HTTPClient:
 
     def edit_channel_permissions(
         self,
-        channel_id: int,
+        channel_id: Snowflake,
         target: int,
         allow: str,
         deny: str,
@@ -1261,7 +1284,7 @@ class HTTPClient:
         r = Route('PUT', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, json=payload, reason=reason)
 
-    def delete_channel_permissions(self, channel_id: int, target: int, *, reason: Optional[str] = None) -> Response[None]:
+    def delete_channel_permissions(self, channel_id: Snowflake, target: int, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/permissions/{target}', channel_id=channel_id, target=target)
         return self.request(r, reason=reason)
 
@@ -1269,20 +1292,47 @@ class HTTPClient:
 
     def move_member(
         self,
-        user_id: int,
-        guild_id: int,
-        channel_id: int,
+        user_id: Snowflake,
+        guild_id: Snowflake,
+        channel_id: Snowflake,
         *,
         reason: Optional[str] = None,
     ) -> Response[member.Member]:
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
+    # Stage instance management
+
+    def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
+        return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
+
+    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
+        valid_keys = (
+            'channel_id',
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(Route('POST', '/stage-instances'), json=payload)
+
+    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+        valid_keys = (
+            'topic',
+            'privacy_level',
+        )
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
+
+    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
+
     # Application commands (global)
 
-    def get_global_commands(self, application_id: int) -> Response[List[interactions.ApplicationCommand]]:
+    def get_global_commands(self, application_id: Snowflake) -> Response[List[interactions.ApplicationCommand]]:
         return self.request(Route('GET', '/applications/{application_id}/commands', application_id=application_id))
 
-    def get_global_command(self, application_id: int, command_id: int) -> Response[interactions.ApplicationCommand]:
+    def get_global_command(self, application_id: Snowflake, command_id: Snowflake) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/commands/{command_id}',
@@ -1291,13 +1341,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id: int, payload) -> Response[interactions.ApplicationCommand]:
+    def upsert_global_command(self, application_id: Snowflake, payload) -> Response[interactions.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
     def edit_global_command(self,
-        application_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        command_id: Snowflake,
         payload,
     ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
@@ -1314,7 +1364,7 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def delete_global_command(self, application_id: int, command_id: int) -> Response[None]:
+    def delete_global_command(self, application_id: Snowflake, command_id: Snowflake) -> Response[None]:
         r = Route(
             'DELETE',
             '/applications/{application_id}/commands/{command_id}',
@@ -1323,13 +1373,13 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id: int, payload) -> Response[List[interactions.ApplicationCommand]]:
+    def bulk_upsert_global_commands(self, application_id: Snowflake, payload) -> Response[List[interactions.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
     # Application commands (guild)
 
-    def get_guild_commands(self, application_id: int, guild_id: int) -> Response[List[interactions.ApplicationCommand]]:
+    def get_guild_commands(self, application_id: Snowflake, guild_id: Snowflake) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1340,9 +1390,9 @@ class HTTPClient:
 
     def get_guild_command(
         self,
-        application_id: int,
-        guild_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
+        command_id: Snowflake,
     ) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'GET',
@@ -1355,8 +1405,8 @@ class HTTPClient:
 
     def upsert_guild_command(
         self,
-        application_id: int,
-        guild_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
         payload,
     ) -> Response[interactions.ApplicationCommand]:
         r = Route(
@@ -1368,9 +1418,9 @@ class HTTPClient:
         return self.request(r, json=payload)
 
     def edit_guild_command(self,
-        application_id: int,
-        guild_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
+        command_id: Snowflake,
         payload,
     ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
@@ -1390,9 +1440,9 @@ class HTTPClient:
 
     def delete_guild_command(
         self,
-        application_id: int,
-        guild_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
+        command_id: Snowflake,
     ) -> Response[None]:
         r = Route(
             'DELETE',
@@ -1405,8 +1455,8 @@ class HTTPClient:
 
     def bulk_upsert_guild_commands(
         self, 
-        application_id: int,
-        guild_id: int, 
+        application_id: Snowflake,
+        guild_id: Snowflake, 
         payload,
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
@@ -1455,18 +1505,32 @@ class HTTPClient:
 
         return self.request(route, form=form, files=[file] if file else None)
 
-    def create_interaction_response(self, interaction_id: int, token: str) -> Response[None]:
+    def create_interaction_response(
+        self,
+        interaction_id: Snowflake,
+        token: str,
+        *,
+        type: InteractionResponseType,
+        data: Optional[Dict[str, Any]] = None
+    ) -> Response[None]:
         r = Route(
             'POST',
             '/interactions/{interaction_id}/{interaction_token}/callback',
             interaction_id=interaction_id,
             interaction_token=token,
         )
-        return self.request(r)
+        payload: Dict[str, Any] = {
+            'type': type,
+        }
+
+        if data is not None:
+            payload['data'] = data
+
+        return self.request(r, json=payload)
 
     def get_original_interaction_response(
         self,
-        application_id: int,
+        application_id: Snowflake,
         token: str,
     ) -> Response[message.Message]:
         r = Route(
@@ -1479,7 +1543,7 @@ class HTTPClient:
 
     def edit_original_interaction_response(
         self,
-        application_id: int,
+        application_id: Snowflake,
         token: str,
         file: Optional[File] = None,
         content: Optional[str] = None,
@@ -1494,7 +1558,7 @@ class HTTPClient:
         )
         return self._edit_webhook_helper(r, file=file, content=content, embeds=embeds, allowed_mentions=allowed_mentions)
 
-    def delete_original_interaction_response(self, application_id: int, token: str) -> Response[None]:
+    def delete_original_interaction_response(self, application_id: Snowflake, token: str) -> Response[None]:
         r = Route(
             'DELETE',
             '/webhooks/{application_id}/{interaction_token}/messages/@original',
@@ -1505,7 +1569,7 @@ class HTTPClient:
 
     def create_followup_message(
         self,
-        application_id: int,
+        application_id: Snowflake,
         token: str,
         files: List[File] = [],
         content: Optional[str] = None,
@@ -1530,9 +1594,9 @@ class HTTPClient:
 
     def edit_followup_message(
         self,
-        application_id: int,
+        application_id: Snowflake,
         token: str,
-        message_id: int,
+        message_id: Snowflake,
         file: Optional[File] = None,
         content: Optional[str] = None,
         embeds: Optional[List[Dict[str, Any]]] = None,
@@ -1547,7 +1611,7 @@ class HTTPClient:
         )
         return self._edit_webhook_helper(r, file=file, content=content, embeds=embeds, allowed_mentions=allowed_mentions)
 
-    def delete_followup_message(self, application_id: int, token: str, message_id: int) -> Response[None]:
+    def delete_followup_message(self, application_id: Snowflake, token: str, message_id: Snowflake) -> Response[None]:
         r = Route(
             'DELETE',
             '/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
@@ -1559,8 +1623,8 @@ class HTTPClient:
 
     def get_guild_application_command_permissions(
         self,
-        application_id: int,
-        guild_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
     ) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
         r = Route(
             'GET',
@@ -1572,9 +1636,9 @@ class HTTPClient:
 
     def get_application_command_permissions(
         self,
-        application_id: int,
-        guild_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
+        command_id: Snowflake,
     ) -> Response[interactions.GuildApplicationCommandPermissions]:
         r = Route(
             'GET',
@@ -1587,9 +1651,9 @@ class HTTPClient:
 
     def edit_application_command_permissions(
         self,
-        application_id: int,
-        guild_id: int,
-        command_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
+        command_id: Snowflake,
         payload,
     ) -> Response[None]:
         r = Route(
@@ -1603,8 +1667,8 @@ class HTTPClient:
 
     def bulk_edit_guild_application_command_permissions(
         self,
-        application_id: int,
-        guild_id: int,
+        application_id: Snowflake,
+        guild_id: Snowflake,
         payload
     ) -> Response[None]:
         r = Route(

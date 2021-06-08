@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import (
     Any,
+    Callable,
     Dict,
     Literal,
     Union,
@@ -69,8 +70,18 @@ __all__ = (
     'bot_has_guild_permissions'
 )
 
-def get_signature_parameters(function: types.FunctionType) -> Dict[str, inspect.Parameter]:
-    globalns = function.__globals__
+def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
+    partial = functools.partial
+    while True:
+        if hasattr(function, '__wrapped__'):
+            function = function.__wrapped__
+        elif isinstance(function, partial):
+            function = function.func
+        else:
+            return function
+
+
+def get_signature_parameters(function: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, inspect.Parameter]:
     signature = inspect.signature(function)
     params = {}
     cache: Dict[str, Any] = {}
@@ -215,6 +226,14 @@ class Command(_BaseCommand):
         If ``True``\, cooldown processing is done after argument parsing,
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
+    extras: :class:`dict`
+        A dict of user provided extras to attach to the Command. 
+        
+        .. note::
+            This object may be copied by the library.
+
+
+        .. versionadded:: 2.0
     """
 
     def __new__(cls, *args, **kwargs):
@@ -258,6 +277,7 @@ class Command(_BaseCommand):
         self.usage = kwargs.get('usage')
         self.rest_is_raw = kwargs.get('rest_is_raw', False)
         self.aliases = kwargs.get('aliases', [])
+        self.extras = kwargs.get('extras', {})
 
         if not isinstance(self.aliases, (list, tuple)):
             raise TypeError("Aliases of a command must be a list or a tuple of strings.")
@@ -320,8 +340,15 @@ class Command(_BaseCommand):
     @callback.setter
     def callback(self, function):
         self._callback = function
-        self.module = function.__module__
-        self.params = get_signature_parameters(function)
+        unwrap = unwrap_function(function)
+        self.module = unwrap.__module__
+
+        try:
+            globalns = unwrap.__globals__
+        except AttributeError:
+            globalns = {}
+
+        self.params = get_signature_parameters(function, globalns)
 
     def add_check(self, func):
         """Adds a check to the command.

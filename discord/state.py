@@ -51,7 +51,10 @@ from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .object import Object
 from .invite import Invite
+from .integrations import _integration_factory
 from .interactions import Interaction
+from .ui.view import ViewStore
+from .stage_instance import StageInstance
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -187,6 +190,7 @@ class ConnectionState:
         self._users = weakref.WeakValueDictionary()
         self._emojis = {}
         self._guilds = {}
+        self._view_store = ViewStore(self)
         self._voice_clients = {}
 
         # LRU of max size 128
@@ -277,6 +281,16 @@ class ConnectionState:
         emoji_id = int(data['id'])
         self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
         return emoji
+
+    def store_view(self, view, message_id=None):
+        self._view_store.add_view(view, message_id)
+
+    def prevent_view_updates_for(self, message_id):
+        return self._view_store.remove_message_tracking(message_id)
+
+    @property
+    def persistent_views(self):
+        return self._view_store.persistent_views
 
     @property
     def guilds(self):
@@ -509,6 +523,9 @@ class ConnectionState:
         else:
             self.dispatch('raw_message_edit', raw)
 
+        if 'components' in data and self._view_store.is_message_tracked(raw.message_id):
+            self._view_store.update_from_message(raw.message_id, data['components'])
+
     def parse_message_reaction_add(self, data):
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')
@@ -581,6 +598,11 @@ class ConnectionState:
 
     def parse_interaction_create(self, data):
         interaction = Interaction(data=data, state=self)
+        if data['type'] == 3:  # interaction component
+            custom_id = interaction.data['custom_id']  # type: ignore
+            component_type = interaction.data['component_type']  # type: ignore
+            self._view_store.dispatch(component_type, custom_id, interaction)
+
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data):
@@ -936,12 +958,75 @@ class ConnectionState:
         else:
             log.debug('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
+    def parse_integration_create(self, data):
+        guild_id = int(data.pop('guild_id'))
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            cls, _ = _integration_factory(data['type'])
+            integration = cls(data=data, guild=guild)
+            self.dispatch('integration_create', integration)
+        else:
+            log.debug('INTEGRATION_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+
+    def parse_integration_update(self, data):
+        guild_id = int(data.pop('guild_id'))
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            cls, _ = _integration_factory(data['type'])
+            integration = cls(data=data, guild=guild)
+            self.dispatch('integration_update', integration)
+        else:
+            log.debug('INTEGRATION_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+
+    def parse_integration_delete(self, data):
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is not None:
+            raw = RawIntegrationDeleteEvent(data)
+            self.dispatch('raw_integration_delete', raw)
+        else:
+            log.debug('INTEGRATION_DELETE referencing an unknown guild ID: %s. Discarding.', guild_id)
+
     def parse_webhooks_update(self, data):
         channel = self.get_channel(int(data['channel_id']))
         if channel is not None:
             self.dispatch('webhooks_update', channel)
         else:
             log.debug('WEBHOOKS_UPDATE referencing an unknown channel ID: %s. Discarding.', data['channel_id'])
+
+    def parse_stage_instance_create(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            stage_instance = StageInstance(guild=guild, state=self, data=data)
+            guild._stage_instances[stage_instance.id] = stage_instance
+            self.dispatch('stage_instance_create', stage_instance)
+        else:
+            log.debug('STAGE_INSTANCE_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_stage_instance_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            stage_instance = guild._stage_instances.get(int(data['id']))
+            if stage_instance is not None:
+                old_stage_instance = copy.copy(stage_instance)
+                stage_instance._update(data)
+                self.dispatch('stage_instance_update', old_stage_instance, stage_instance)
+            else:
+                log.debug('STAGE_INSTANCE_UPDATE referencing unknown stage instance ID: %s. Discarding.', data['id'])
+        else:
+            log.debug('STAGE_INSTANCE_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_stage_instance_delete(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            try:
+                stage_instance = guild._stage_instances.pop(int(data['id']))
+            except KeyError:
+                pass
+            else:
+                self.dispatch('stage_instance_delete', stage_instance)
+        else:
+            log.debug('STAGE_INSTANCE_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_voice_state_update(self, data):
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))

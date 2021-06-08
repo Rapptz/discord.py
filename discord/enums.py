@@ -48,6 +48,12 @@ __all__ = (
     'StickerType',
     'InviteTarget',
     'VideoQualityMode',
+    'ComponentType',
+    'ButtonStyle',
+    'StagePrivacyLevel',
+    'InteractionType',
+    'InteractionResponseType',
+    'NSFWLevel',
 )
 
 def _create_value_cls(name):
@@ -225,14 +231,11 @@ class SpeakingState(Enum):
         return self.value
 
 class VerificationLevel(Enum):
-    none              = 0
-    low               = 1
-    medium            = 2
-    high              = 3
-    table_flip        = 3
-    extreme           = 4
-    double_table_flip = 4
-    very_high         = 4
+    none    = 0
+    low     = 1
+    medium  = 2
+    high    = 3
+    highest = 4
 
     def __str__(self):
         return self.name
@@ -397,6 +400,7 @@ class UserFlags(Enum):
     bug_hunter_level_2 = 16384
     verified_bot = 65536
     verified_bot_developer = 131072
+    discord_certified_moderator = 262144
 
 class ActivityType(Enum):
     unknown = -1
@@ -417,6 +421,7 @@ class TeamMembershipState(Enum):
 class WebhookType(Enum):
     incoming = 1
     channel_follower = 2
+    application = 3
 
 class ExpireBehaviour(Enum):
     remove_role = 0
@@ -431,12 +436,22 @@ class StickerType(Enum):
 
 class InviteTarget(Enum):
     unknown = 0
-    stream  = 1
+    stream = 1
     embedded_application = 2
 
 class InteractionType(Enum):
     ping = 1
     application_command = 2
+    component = 3
+
+class InteractionResponseType(Enum):
+    pong = 1
+    # ack = 2 (deprecated)
+    # channel_message = 3 (deprecated)
+    channel_message = 4  # (with source)
+    deferred_channel_message = 5  # (with source)
+    deferred_message_update = 6  # for components
+    message_update = 7 # for components
 
 class VideoQualityMode(Enum):
     auto = 1
@@ -444,6 +459,41 @@ class VideoQualityMode(Enum):
 
     def __int__(self):
         return self.value
+
+class ComponentType(Enum):
+    action_row = 1
+    button = 2
+    select = 3
+
+    def __int__(self):
+        return self.value
+
+class ButtonStyle(Enum):
+    primary = 1
+    secondary = 2
+    success = 3
+    danger = 4
+    link = 5
+
+    # Aliases
+    blurple = 1
+    grey = 2
+    green = 3
+    red = 4
+
+    def __int__(self):
+        return self.value
+
+class StagePrivacyLevel(Enum):
+    public = 1
+    closed = 2
+    guild_only = 2
+
+class NSFWLevel(Enum):
+    default = 0
+    explicit = 1
+    safe = 2
+    age_restricted = 3
 
 T = TypeVar('T')
 

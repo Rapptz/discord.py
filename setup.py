@@ -42,6 +42,15 @@ extras_require = {
     ]
 }
 
+packages = [
+    'discord',
+    'discord.types',
+    'discord.ui',
+    'discord.webhook',
+    'discord.ext.commands',
+    'discord.ext.tasks',
+]
+
 setup(name='discord.py',
       author='Rapptz',
       url='https://github.com/Rapptz/discord.py',
@@ -50,7 +59,7 @@ setup(name='discord.py',
         "Issue tracker": "https://github.com/Rapptz/discord.py/issues",
       },
       version=version,
-      packages=['discord', 'discord.types', 'discord.webhook', 'discord.ext.commands', 'discord.ext.tasks'],
+      packages=packages,
       license='MIT',
       description='A Python wrapper for the Discord API',
       long_description=readme,
