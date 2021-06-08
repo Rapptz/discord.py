@@ -70,6 +70,7 @@ DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
 MFALevel = Literal[0, 1]
 VerificationLevel = Literal[0, 1, 2, 3, 4]
+NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
 GuildFeature = Literal[
     'INVITE_SPLASH',
@@ -119,7 +120,7 @@ class Guild(_BaseGuildPreview, _GuildOptional):
     explicit_content_filter: ExplicitContentFilterLevel
     roles: List[Role]
     mfa_level: MFALevel
-    nsfw: bool
+    nsfw_level: NSFWLevel
     application_id: Optional[Snowflake]
     system_channel_id: Optional[Snowflake]
     system_channel_flags: int

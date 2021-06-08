@@ -53,6 +53,7 @@ __all__ = (
     'StagePrivacyLevel',
     'InteractionType',
     'InteractionResponseType',
+    'NSFWLevel',
 )
 
 def _create_value_cls(name):
@@ -487,6 +488,12 @@ class StagePrivacyLevel(Enum):
     public = 1
     closed = 2
     guild_only = 2
+
+class NSFWLevel(Enum):
+    default = 0
+    explicit = 1
+    safe = 2
+    age_restricted = 3
 
 T = TypeVar('T')
 
