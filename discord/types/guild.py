@@ -143,3 +143,10 @@ class GuildWithCounts(Guild, _GuildPreviewUnique):
 
 class GuildPrune(TypedDict):
     pruned: Optional[int]
+
+
+class ChannelPositionUpdate(TypedDict):
+    id: Snowflake
+    position: Optional[int]
+    lock_permissions: Optional[bool]
+    parent_id: Optional[Snowflake]

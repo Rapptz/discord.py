@@ -81,6 +81,7 @@ if TYPE_CHECKING:
         channel,
         widget,
         threads,
+        voice,
     )
     from .types.snowflake import Snowflake
 
@@ -764,11 +765,11 @@ class HTTPClient:
         }
         return self.request(r, json=payload, reason=reason)
 
-    def edit_my_voice_state(self, guild_id: Snowflake, payload) -> Response[None]:
+    def edit_my_voice_state(self, guild_id: Snowflake, payload: voice.VoiceState) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload) -> Response[None]:
+    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: voice.VoiceState) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=payload)
 
@@ -816,7 +817,7 @@ class HTTPClient:
     def bulk_channel_update(
         self,
         guild_id: Snowflake,
-        data,
+        data: List[guild.ChannelPositionUpdate],
         *,
         reason: Optional[str] = None,
     ) -> Response[None]:
@@ -916,7 +917,7 @@ class HTTPClient:
         return self.request(route)
 
     def get_public_archived_threads(
-        self, channel_id: Snowflake, before=None, limit: int = 50
+        self, channel_id: Snowflake, before: Optional[Snowflake] = None, limit: int = 50
     ) -> Response[threads.ThreadPaginationPayload]:
         route = Route('GET', '/channels/{channel_id}/threads/archived/public', channel_id=channel_id)
 
@@ -927,7 +928,7 @@ class HTTPClient:
         return self.request(route, params=params)
 
     def get_private_archived_threads(
-        self, channel_id: Snowflake, before=None, limit: int = 50
+        self, channel_id: Snowflake, before: Optional[Snowflake] = None, limit: int = 50
     ) -> Response[threads.ThreadPaginationPayload]:
         route = Route('GET', '/channels/{channel_id}/threads/archived/private', channel_id=channel_id)
 
@@ -938,7 +939,7 @@ class HTTPClient:
         return self.request(route, params=params)
 
     def get_joined_private_archived_threads(
-        self, channel_id: Snowflake, before=None, limit: int = 50
+        self, channel_id: Snowflake, before: Optional[Snowflake] = None, limit: int = 50
     ) -> Response[threads.ThreadPaginationPayload]:
         route = Route('GET', '/channels/{channel_id}/users/@me/threads/archived/private', channel_id=channel_id)
         params = {}
@@ -1066,7 +1067,7 @@ class HTTPClient:
     def guild_templates(self, guild_id: Snowflake) -> Response[List[template.Template]]:
         return self.request(Route('GET', '/guilds/{guild_id}/templates', guild_id=guild_id))
 
-    def create_template(self, guild_id: Snowflake, payload) -> Response[template.Template]:
+    def create_template(self, guild_id: Snowflake, payload: template.CreateTemplate) -> Response[template.Template]:
         return self.request(Route('POST', '/guilds/{guild_id}/templates', guild_id=guild_id), json=payload)
 
     def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
@@ -1455,14 +1456,14 @@ class HTTPClient:
     def edit_global_command(self,
         application_id: Snowflake,
         command_id: Snowflake,
-        payload,
+        payload: interactions.EditApplicationCommand,
     ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
             'options',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
         r = Route(
             'PATCH',
             '/applications/{application_id}/commands/{command_id}',
@@ -1514,7 +1515,7 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload,
+        payload: interactions.EditApplicationCommand,
     ) -> Response[interactions.ApplicationCommand]:
         r = Route(
             'POST',
@@ -1528,14 +1529,14 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-        payload,
+        payload: interactions.EditApplicationCommand,
     ) -> Response[interactions.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
             'options',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
         r = Route(
             'PATCH',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
@@ -1564,7 +1565,7 @@ class HTTPClient:
         self, 
         application_id: Snowflake,
         guild_id: Snowflake, 
-        payload,
+        payload: List[interactions.EditApplicationCommand],
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(
             'PUT',
@@ -1761,7 +1762,7 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-        payload,
+        payload: interactions.BaseGuildApplicationCommandPermissions,
     ) -> Response[None]:
         r = Route(
             'PUT',
@@ -1776,7 +1777,7 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload
+        payload: List[interactions.PartialGuildApplicationCommandPermissions],
     ) -> Response[None]:
         r = Route(
             'PUT',
