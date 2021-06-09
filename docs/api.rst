@@ -2134,6 +2134,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.3
 
+    .. attribute:: stage_instance_create
+
+        A stage instance was started.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_update
+
+        A stage instance was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_delete
+
+        A stage instance was ended.
+
+        .. versionadded:: 2.0
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -2282,7 +2318,7 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
-.. class:: PrivacyLevel
+.. class:: StagePrivacyLevel
 
     Represents a stage instance's privacy level.
 
@@ -2715,9 +2751,9 @@ AuditLogDiff
 
     .. attribute:: topic
 
-        The topic of a :class:`TextChannel`.
+        The topic of a :class:`TextChannel` or :class:`StageChannel`.
 
-        See also :attr:`TextChannel.topic`.
+        See also :attr:`TextChannel.topic` or :attr:`StageChannel.topic`.
 
         :type: :class:`str`
 
@@ -2741,6 +2777,12 @@ AuditLogDiff
         decide what type of ID it is.
 
         :type: List[Tuple[target, :class:`PermissionOverwrite`]]
+
+    .. attribute:: privacy_level
+
+        The privacy level of the stage instance.
+
+        :type: :class:`StagePrivacyLevel`
 
     .. attribute:: roles
 
