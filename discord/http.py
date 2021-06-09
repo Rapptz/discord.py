@@ -142,7 +142,7 @@ class MaybeUnlock:
     def __exit__(self,
         exc_type: Optional[Type[BE]],
         exc: Optional[BE],
-        traceback: TracebackType,
+        traceback: Optional[TracebackType],
     ) -> None:
         if self._unlock:
             self.lock.release()
