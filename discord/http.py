@@ -209,7 +209,7 @@ class HTTPClient:
         route: Route,
         *,
         files: Optional[Sequence[File]] = None,
-        form: Iterable[Dict[str, Any]] = None,
+        form: Optional[Iterable[Dict[str, Any]]] = None,
         **kwargs: Any
     ) -> Any:
         bucket = route.bucket
