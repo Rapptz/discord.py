@@ -223,6 +223,26 @@ class Thread(Messageable, Hashable):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    @property
+    def category_id(self) -> Optional[int]:
+        """The category channel ID the parent channel belongs to, if applicable.
+
+        Raises
+        -------
+        ClientException
+            The parent channel was not cached and returned ``None``.
+
+        Returns
+        -------
+        Optional[:class:`int`]
+            The parent channel's category ID.
+        """
+
+        parent = self.parent
+        if parent is None:
+            raise ClientException('Parent channel not found')
+        return parent.category_id
+
     def is_private(self) -> bool:
         """:class:`bool`: Whether the thread is a private thread.
 
