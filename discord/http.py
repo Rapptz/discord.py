@@ -581,7 +581,7 @@ class HTTPClient:
         message_id: Snowflake,
         emoji: str,
         limit: int,
-        after=None,
+        after: Optional[Snowflake] = None,
     ) -> Response[List[user.User]]:
         r = Route(
             'GET',
