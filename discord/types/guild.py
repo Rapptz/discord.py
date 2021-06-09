@@ -150,3 +150,9 @@ class ChannelPositionUpdate(TypedDict):
     position: Optional[int]
     lock_permissions: Optional[bool]
     parent_id: Optional[Snowflake]
+
+class _RolePositionRequired(TypedDict):
+    id: Snowflake
+
+class RolePositionUpdate(_RolePositionRequired, total=False):
+    position: Optional[Snowflake]

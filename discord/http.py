@@ -83,7 +83,7 @@ if TYPE_CHECKING:
         threads,
         voice,
     )
-    from .types.snowflake import Snowflake
+    from .types.snowflake import Snowflake, SnowflakeList
 
     from types import TracebackType
 
@@ -532,7 +532,7 @@ class HTTPClient:
         r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         return self.request(r, reason=reason)
 
-    def delete_messages(self, channel_id: Snowflake, message_ids: List[int], *, reason: Optional[str] = None) -> Response[None]:
+    def delete_messages(self, channel_id: Snowflake, message_ids: SnowflakeList, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/messages/bulk-delete', channel_id=channel_id)
         payload = {
             'messages': message_ids,
@@ -1167,7 +1167,7 @@ class HTTPClient:
         name: str,
         image: bytes,
         *,
-        roles: Optional[List[int]] = None,
+        roles: Optional[SnowflakeList] = None,
         reason: Optional[str] = None,
     ) -> Response[emoji.Emoji]:
         payload = {
@@ -1194,7 +1194,7 @@ class HTTPClient:
         guild_id: Snowflake,
         emoji_id: Snowflake,
         *,
-        payload,
+        payload: Dict[str, Any],
         reason: Optional[str] = None,
     ) -> Response[emoji.Emoji]:
         r = Route('PATCH', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id)
@@ -1345,7 +1345,7 @@ class HTTPClient:
     def move_role_position(
         self,
         guild_id: Snowflake,
-        positions,
+        positions: List[guild.RolePositionUpdate],
         *,
         reason: Optional[str] = None,
     ) -> Response[List[role.Role]]:
