@@ -155,7 +155,7 @@ class Reaction:
         """
         await self.message.clear_reaction(self.emoji)
 
-    def users(self, limit: Optional[int] = None, after: Optional[Snowflake] = None) -> ReactionIterator:
+    def users(self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None) -> ReactionIterator:
         """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
