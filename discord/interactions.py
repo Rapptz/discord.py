@@ -422,7 +422,7 @@ class InteractionResponse:
             data=payload,
         )
 
-        if view is not MISSING and view is not None and not view.is_finished():
+        if view and not view.is_finished():
             state.store_view(view, message_id)
 
         self._responded = True
