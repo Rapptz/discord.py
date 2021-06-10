@@ -518,7 +518,7 @@ class BotBase(GroupMixin):
             raise TypeError('cogs must derive from Cog')
 
         cog_name = cog.__cog_name__
-        existing = self.__cogs.get(cog_name)
+        existing = self.get_cog(cog_name)
 
         if existing is not None:
             if not override:
@@ -545,6 +545,12 @@ class BotBase(GroupMixin):
         Optional[:class:`Cog`]
             The cog that was requested. If not found, returns ``None``.
         """
+
+        if self.case_insensitive:
+            for k in self.__cogs.keys():
+                if k.casefold() == name.casefold():
+                    return self.__cogs[k]
+            
         return self.__cogs.get(name)
 
     def remove_cog(self, name):
