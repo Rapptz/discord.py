@@ -625,6 +625,8 @@ class WebhookMessage(Message):
     .. versionadded:: 1.6
     """
 
+    _state: _WebhookState
+
     async def edit(
         self,
         content: Optional[str] = MISSING,
@@ -794,7 +796,7 @@ class BaseWebhook(Hashable):
         If this is a partial webhook, then this will always return ``None``.
         """
         guild = self.guild
-        return guild and guild.get_channel(self.channel_id)
+        return guild and guild.get_channel(self.channel_id)  # type: ignore
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -1148,7 +1150,7 @@ class Webhook(BaseWebhook):
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
         channel = self.channel or Object(id=int(data['channel_id']))
-        return WebhookMessage(data=data, state=state, channel=channel)
+        return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 
     @overload
     async def send(
