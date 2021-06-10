@@ -73,8 +73,7 @@ class Reaction:
         self.count = data.get('count', 1)
         self.me = data.get('me')
 
-    @property
-    def custom_emoji(self):
+    def is_custom_emoji(self):
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
@@ -190,7 +189,7 @@ class Reaction:
             if the member has left the guild.
         """
 
-        if self.custom_emoji:
+        if not isinstance(self.emoji, str):
             emoji = f'{self.emoji.name}:{self.emoji.id}'
         else:
             emoji = self.emoji
