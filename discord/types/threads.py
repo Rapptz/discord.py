@@ -27,7 +27,7 @@ from typing import List, Literal, Optional, TypedDict
 
 from .snowflake import Snowflake
 
-ThreadTypes = Literal[10, 11, 12]
+ThreadType = Literal[10, 11, 12]
 ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
 
 
@@ -61,7 +61,7 @@ class Thread(_ThreadOptional):
     parent_id: Snowflake
     owner_id: Snowflake
     name: str
-    type: ThreadTypes
+    type: ThreadType
     member_count: int
     message_count: int
     rate_limit_per_user: int

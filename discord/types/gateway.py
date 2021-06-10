@@ -22,28 +22,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from __future__ import annotations
-
-from typing import Optional, TypedDict
-from .snowflake import Snowflake
-from .user import User
-from .guild import Guild
+from typing import TypedDict
 
 
-class CreateTemplate(TypedDict):
-    name: str
-    icon: Optional[bytes]
+class SessionStartLimit(TypedDict):
+    total: int
+    remaining: int
+    reset_after: int
+    max_concurrency: int
 
 
-class Template(TypedDict):
-    code: str
-    name: str
-    description: Optional[str]
-    usage_count: int
-    creator_id: Snowflake
-    creator: User
-    created_at: str
-    updated_at: str
-    source_guild_id: Snowflake
-    serialized_source_guild: Guild
-    is_dirty: Optional[bool]
+class Gateway(TypedDict):
+    url: str
+
+
+class GatewayBot(Gateway):
+    shards: int
+    session_start_limit: SessionStartLimit

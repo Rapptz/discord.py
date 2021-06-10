@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, TypedDict, Union, List, Literal
+from typing import Optional, TYPE_CHECKING, Dict, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
 from .components import Component, ComponentType
 from .embed import Embed
@@ -77,9 +77,12 @@ class ApplicationCommandPermissions(TypedDict):
     permission: bool
 
 
-class PartialGuildApplicationCommandPermissions(TypedDict):
-    id: Snowflake
+class BaseGuildApplicationCommandPermissions(TypedDict):
     permissions: List[ApplicationCommandPermissions]
+
+
+class PartialGuildApplicationCommandPermissions(BaseGuildApplicationCommandPermissions):
+    id: Snowflake
 
 
 class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissions):
@@ -95,7 +98,9 @@ class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
 
 
-class ApplicationCommandInteractionDataOption(_ApplicationCommandInteractionDataOptionOptional):
+class ApplicationCommandInteractionDataOption(
+    _ApplicationCommandInteractionDataOptionOptional
+):
     name: str
     type: ApplicationCommandOptionType
 
@@ -149,6 +154,7 @@ class Interaction(_InteractionOptional):
     token: str
     version: int
 
+
 class InteractionApplicationCommandCallbackData(TypedDict, total=False):
     tts: bool
     content: str
@@ -174,3 +180,10 @@ class MessageInteraction(TypedDict):
     type: InteractionType
     name: str
     user: User
+
+
+class EditApplicationCommand(TypedDict):
+    name: str
+    description: str
+    options: Optional[List[ApplicationCommandOption]]
+    default_permission: bool

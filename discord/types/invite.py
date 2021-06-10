@@ -52,6 +52,10 @@ class _InviteMetadata(TypedDict, total=False):
     expires_at: Optional[str]
 
 
+class VanityInvite(_InviteMetadata):
+    code: Optional[str]
+
+
 class IncompleteInvite(_InviteMetadata):
     code: str
     channel: PartialChannel

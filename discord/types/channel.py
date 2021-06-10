@@ -28,9 +28,12 @@ from .snowflake import Snowflake
 from .threads import ThreadMetadata, ThreadMember
 
 
+OverwriteType = Literal[0, 1]
+
+
 class PermissionOverwrite(TypedDict):
     id: Snowflake
-    type: Literal[0, 1]
+    type: OverwriteType
     allow: str
     deny: str
 
