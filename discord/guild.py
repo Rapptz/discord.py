@@ -388,7 +388,9 @@ class Guild(Hashable):
         self.name: str = guild.get('name')
         self.region: VoiceRegion = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
-        self.default_notifications: NotificationLevel = try_enum(NotificationLevel, guild.get('default_message_notifications'))
+        self.default_notifications: NotificationLevel = try_enum(
+            NotificationLevel, guild.get('default_message_notifications')
+        )
         self.explicit_content_filter: ContentFilter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout: int = guild.get('afk_timeout')
         self._icon: Optional[str] = guild.get('icon')
@@ -1302,7 +1304,6 @@ class Guild(Hashable):
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
     ) -> None:
-        ...
         r"""|coro|
 
         Edits the guild.
@@ -2185,7 +2186,6 @@ class Guild(Hashable):
         mentionable: str = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
-        ...
         """|coro|
 
         Creates a :class:`Role` for the guild.
