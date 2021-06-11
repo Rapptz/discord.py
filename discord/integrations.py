@@ -59,7 +59,7 @@ class IntegrationAccount:
 
     Attributes
     -----------
-    id: :class:`int`
+    id: :class:`str`
         The account ID.
     name: :class:`str`
         The account name.
@@ -68,8 +68,8 @@ class IntegrationAccount:
     __slots__ = ('id', 'name')
 
     def __init__(self, data: IntegrationAccountPayload) -> None:
-        self.id: Optional[int] = _get_as_snowflake(data, 'id')
-        self.name: str = data.pop('name')
+        self.id: str = data['id']
+        self.name: str = data['name']
 
     def __repr__(self) -> str:
         return f'<IntegrationAccount id={self.id} name={self.name!r}>'
