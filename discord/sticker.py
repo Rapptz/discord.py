@@ -82,7 +82,7 @@ class Sticker(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data['description']
-        self.pack_id: int = int(data['pack_id'])
+        self.pack_id: int = int(data.get('pack_id', 0))
         self.format: StickerType = try_enum(StickerType, data['format_type'])
         self._image: str = data['asset']
 
