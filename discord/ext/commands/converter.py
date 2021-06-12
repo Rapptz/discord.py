@@ -726,11 +726,7 @@ class EmojiConverter(IDConverter[discord.Emoji]):
             emoji_id = int(match.group(1))
 
             # Try to look up emoji by id.
-            if guild:
-                result = discord.utils.get(guild.emojis, id=emoji_id)
-
-            if result is None:
-                result = discord.utils.get(bot.emojis, id=emoji_id)
+            result = bot.get_emoji(emoji_id)
 
         if result is None:
             raise EmojiNotFound(argument)
