@@ -11,6 +11,17 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp1p7p3:
+
+v1.7.3
+--------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix a crash involving guild uploaded stickers
+- Fix :meth:`DMChannel.permissions_for` not having :attr:`Permissions.read_messages` set.
+
 .. _vp1p7p2:
 
 v1.7.2
