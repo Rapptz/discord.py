@@ -216,7 +216,8 @@ class Command(_BaseCommand):
         the user to specify at least one argument. Defaults to ``False``.
 
         .. versionadded:: 1.5
-
+    slash: :class:`bool`
+        If ``True``, register a slash command.
     ignore_extra: :class:`bool`
         If ``True``\, ignores extraneous strings passed to a command if all its
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
@@ -256,10 +257,12 @@ class Command(_BaseCommand):
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('Callback must be a coroutine.')
 
-        self.name = name = kwargs.get('name') or func.__name__
+        self.name = name = kwargs.get('name', func.__name__)
         if not isinstance(name, str):
             raise TypeError('Name of a command must be a string.')
-
+        if kwargs.get('slash', False):
+            # Register a slash command
+            ...
         self.callback = func
         self.enabled = kwargs.get('enabled', True)
 
