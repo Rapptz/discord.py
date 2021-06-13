@@ -260,9 +260,6 @@ class Command(_BaseCommand):
         self.name = name = kwargs.get('name', func.__name__)
         if not isinstance(name, str):
             raise TypeError('Name of a command must be a string.')
-        if kwargs.get('slash', False):
-            # Register a slash command
-            ...
         self.callback = func
         self.enabled = kwargs.get('enabled', True)
 
