@@ -17,4 +17,13 @@ class SlashOption:
                 raise Exception("You need choices for this option")
         else:
             self.choices = None
-        
+    def __dict__(self):
+        return_val = {
+            "name": self.name,
+            "description": self.description,
+            "type": self.type,
+            "required": self.required
+        }
+        if self.choices:
+            return_val[self.choices] = dict(self.choices)
+        return return_val
