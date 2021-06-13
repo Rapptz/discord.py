@@ -710,8 +710,14 @@ class HTTPClient:
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
-    def register_slash_command(self, name: str, description: str, options: List[SlashOption]):
-        pass
+    def register_slash_command(self, name: str, description: str, options: List[SlashOption], client_id: int):
+        r = Route('POST', '/applications/{client_id}/commands', client_id=client_id)
+        params = {
+            "name": name,
+            "description": description,
+            "options": dict(options)
+        }
+        return self.request(r, params=params)
     def guild_voice_state(
         self,
         user_id: Snowflake,
