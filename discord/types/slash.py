@@ -3,6 +3,11 @@ class SlashChoice:
     def __init__(self, name: str, value: str):
         self.name = name
         self.value = value
+    def __dict__(self):
+        return {
+            'name': self.name,
+            'value': self.value
+        }
 class SlashOption:
     def __init__(self, name: str, description: str, type_: int, required: bool, choices: Optional[List[SlashChoice]]):
         self.name = name
