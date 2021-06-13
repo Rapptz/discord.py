@@ -377,8 +377,9 @@ class BadInviteArgument(BadArgument):
 
     .. versionadded:: 1.5
     """
-    def __init__(self):
-        super().__init__('Invite is invalid or expired.')
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Invite "{argument}" is invalid or expired.')
 
 class EmojiNotFound(BadArgument):
     """Exception raised when the bot can not find the emoji.
