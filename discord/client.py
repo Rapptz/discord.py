@@ -57,7 +57,7 @@ from .iterators import GuildIterator
 from .appinfo import AppInfo
 from .ui.view import View
 from .stage_instance import StageInstance
-
+from discord.types.slash import SlashOption
 __all__ = (
     'Client',
 )
@@ -246,6 +246,8 @@ class Client:
             return self.ws.is_ratelimited()
         return False
 
+    def register_slash_command(self, name: str, description: str, options: List[SlashOption], client_id: int):
+        self.http.register_slash_command(name, description, options, client_id)
     @property
     def user(self):
         """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
