@@ -709,7 +709,7 @@ class HTTPClient:
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
-    def register_global_slash_command(self, name: str, description: str, options: List[])
+
     def guild_voice_state(
         self,
         user_id: Snowflake,
