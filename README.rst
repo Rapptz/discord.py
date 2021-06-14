@@ -4,6 +4,9 @@ discord.py
 .. image:: https://discord.com/api/guilds/336642139381301249/embed.png
    :target: https://discord.gg/r3sSKJJ
    :alt: Discord server invite
+.. image:: https://img.shields.io/conda/vn/conda-forge/discord.py.svg
+   :target: https://anaconda.org/conda-forge/discord.py
+   :alt: Conda version info
 .. image:: https://img.shields.io/pypi/v/discord.py.svg
    :target: https://pypi.python.org/pypi/discord.py
    :alt: PyPI version info
@@ -36,6 +39,9 @@ To install the library without full voice support, you can just run the followin
     # Windows
     py -3 -m pip install -U discord.py
 
+    # Conda
+    conda install -c conda-forge discord.py
+
 Otherwise to get voice support you should run the following command:
 
 .. code:: sh
@@ -46,6 +52,8 @@ Otherwise to get voice support you should run the following command:
     # Windows
     py -3 -m pip install -U discord.py[voice]
 
+    # Conda
+    conda install -c conda-forge discord.py pynacl
 
 To install the development version, do the following:
 
