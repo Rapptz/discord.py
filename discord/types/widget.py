@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 from .activity import Activity
 from .snowflake import Snowflake
 from .user import User
@@ -56,3 +56,8 @@ class Widget(_WidgetOptional):
     id: Snowflake
     name: str
     instant_invite: str
+
+
+class WidgetSettings(TypedDict):
+    enabled: bool
+    channel_id: Optional[Snowflake]

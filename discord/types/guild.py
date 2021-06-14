@@ -25,13 +25,14 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict
 from .snowflake import Snowflake
 from .channel import GuildChannel
-from .voice import PartialVoiceState
+from .voice import GuildVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
 from .role import Role
 from .member import Member
 from .emoji import Emoji
 from .user import User
+from .threads import Thread
 
 
 class Ban(TypedDict):
@@ -56,10 +57,11 @@ class _GuildOptional(TypedDict, total=False):
     joined_at: Optional[str]
     large: bool
     member_count: int
-    voice_states: List[PartialVoiceState]
+    voice_states: List[GuildVoiceState]
     members: List[Member]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
+    threads: List[Thread]
     max_presences: Optional[int]
     max_members: int
     premium_subscription_count: int
@@ -70,6 +72,7 @@ DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
 MFALevel = Literal[0, 1]
 VerificationLevel = Literal[0, 1, 2, 3, 4]
+NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
 GuildFeature = Literal[
     'INVITE_SPLASH',
@@ -119,7 +122,7 @@ class Guild(_BaseGuildPreview, _GuildOptional):
     explicit_content_filter: ExplicitContentFilterLevel
     roles: List[Role]
     mfa_level: MFALevel
-    nsfw: bool
+    nsfw_level: NSFWLevel
     application_id: Optional[Snowflake]
     system_channel_id: Optional[Snowflake]
     system_channel_flags: int
@@ -137,3 +140,20 @@ class InviteGuild(Guild, total=False):
 
 class GuildWithCounts(Guild, _GuildPreviewUnique):
     ...
+
+
+class GuildPrune(TypedDict):
+    pruned: Optional[int]
+
+
+class ChannelPositionUpdate(TypedDict):
+    id: Snowflake
+    position: Optional[int]
+    lock_permissions: Optional[bool]
+    parent_id: Optional[Snowflake]
+
+class _RolePositionRequired(TypedDict):
+    id: Snowflake
+
+class RolePositionUpdate(_RolePositionRequired, total=False):
+    position: Optional[Snowflake]

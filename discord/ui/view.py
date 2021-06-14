@@ -27,6 +27,7 @@ from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequ
 from functools import partial
 from itertools import groupby
 
+import traceback
 import asyncio
 import sys
 import time
@@ -143,7 +144,7 @@ class View:
 
         cls.__view_children_items__ = children
 
-    def __init__(self, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0):
         self.timeout = timeout
         self.children: List[Item] = []
         for func in self.__view_children_items__:
@@ -200,7 +201,7 @@ class View:
         Raises
         --------
         TypeError
-            A :class:`Item` was not passed.
+            An :class:`Item` was not passed.
         ValueError
             Maximum number of children has been exceeded (25)
             or the row the item is trying to be added to is full.
@@ -244,7 +245,7 @@ class View:
         A callback that is called when an interaction happens within the view
         that checks whether the view should process item callbacks for the interaction.
 
-        This is useful to override if for example you want to ensure that the
+        This is useful to override if, for example, you want to ensure that the
         interaction author is a given user.
 
         The default implementation of this returns ``True``.
@@ -252,7 +253,8 @@ class View:
         .. note::
 
             If an exception occurs within the body then the interaction
-            check is considered failed.
+            check then :meth:`on_error` is called and it is considered
+            a failure.
 
         Parameters
         -----------
@@ -273,18 +275,37 @@ class View:
         """
         pass
 
+    async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
+        """|coro|
+
+        A callback that is called when an item's callback or :meth:`interaction_check`
+        fails with an error.
+
+        The default implementation prints the traceback to stderr.
+
+        Parameters
+        -----------
+        error: :class:`Exception`
+            The exception that was raised.
+        item: :class:`Item`
+            The item that failed the dispatch.
+        interaction: :class:`~discord.Interaction`
+            The interaction that led to the failure.
+        """
+        print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
+        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+
     async def _scheduled_task(self, state: Any, item: Item, interaction: Interaction):
         try:
             allow = await self.interaction_check(interaction)
-        except Exception:
-            allow = False
+            if not allow:
+                return
 
-        if not allow:
-            return
-
-        await item.callback(interaction)
-        if not interaction.response._responded:
-            await interaction.response.defer()
+            await item.callback(interaction)
+            if not interaction.response._responded:
+                await interaction.response.defer()
+        except Exception as e:
+            return await self.on_error(e, item, interaction)
 
     def _start_listening(self, store: ViewStore) -> None:
         self._cancel_callback = partial(store.remove_view)
@@ -293,8 +314,10 @@ class View:
             self._timeout_handler = loop.call_later(self.timeout, self.dispatch_timeout)
 
     def dispatch_timeout(self):
-        if not self._stopped.done():
-            self._stopped.set_result(True)
+        if self._stopped.done():
+            return
+
+        self._stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def dispatch(self, state: Any, item: Item, interaction: Interaction):
@@ -334,10 +357,15 @@ class View:
 
         if self._cancel_callback:
             self._cancel_callback(self)
+            self._cancel_callback = None
 
     def is_finished(self) -> bool:
         """:class:`bool`: Whether the view has finished interacting."""
         return self._stopped.done()
+
+    def is_dispatching(self) -> bool:
+        """:class:`bool`: Whether the view has been added for dispatching purposes."""
+        return self._cancel_callback is not None
 
     def is_persistent(self) -> bool:
         """:class:`bool`: Whether the view is set up as persistent.

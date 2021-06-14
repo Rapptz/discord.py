@@ -58,6 +58,7 @@ from .sticker import *
 from .stage_instance import *
 from .interactions import *
 from .components import *
+from .threads import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

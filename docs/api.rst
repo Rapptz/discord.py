@@ -654,20 +654,124 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This requires :attr:`Intents.guilds` to be enabled.
 
     :param channel: The guild channel that had its pins updated.
-    :type channel: :class:`abc.GuildChannel`
+    :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
     :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
-.. function:: on_guild_integrations_update(guild)
+.. function:: on_thread_join(thread)
 
-    .. versionadded:: 1.4
+    Called whenever a thread is joined.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got joined.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_remove(thread)
+
+    Called whenever a thread is removed. This is different from a thread being deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. warning::
+
+        Due to technical limitations, this event might not be called
+        as soon as one expects. Since the library tracks thread membership
+        locally, the API only sends updated thread membership status upon being
+        synced by joining a thread.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got removed.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_delete(thread)
+
+    Called whenever a thread is deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got deleted.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_member_join(member)
+              on_thread_member_remove(member)
+
+    Called when a :class:`ThreadMember` leaves or joins a :class:`Thread`.
+
+    You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who joined or left.
+    :type member: :class:`ThreadMember`
+
+.. function:: on_thread_update(before, after)
+
+    Called whenever a thread is updated.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param before: The updated thread's old info.
+    :type before: :class:`Thread`
+    :param after: The updated thread's new info.
+    :type after: :class:`Thread`
+
+.. function:: on_guild_integrations_update(guild)
 
     Called whenever an integration is created, modified, or removed from a guild.
 
     This requires :attr:`Intents.integrations` to be enabled.
 
+    .. versionadded:: 1.4
+
     :param guild: The guild that had its integrations updated.
     :type guild: :class:`Guild`
+
+.. function:: on_integration_create(integration)
+
+    Called when an integration is created.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_integration_update(integration)
+
+    Called when an integration is updated.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_raw_integration_delete(payload)
+
+    Called when an integration is deleted.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawIntegrationDeleteEvent`
 
 .. function:: on_webhooks_update(channel)
 
@@ -1005,6 +1109,24 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
 
+    .. attribute:: news_thread
+
+        A news thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: public_thread
+
+        A public thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: private_thread
+
+        A private thread
+
+        .. versionadded:: 1.8
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -1024,12 +1146,12 @@ of :class:`enum.Enum`.
         The default message type. This is the same as regular messages.
     .. attribute:: recipient_add
 
-        The system message when a recipient is added to a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is added to a group private
+        message or a thread.
     .. attribute:: recipient_remove
 
-        The system message when a recipient is removed from a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is removed from a group private
+        message or a thread.
     .. attribute:: call
 
         The system message denoting call state, e.g. missed call, started call,
@@ -1096,9 +1218,17 @@ of :class:`enum.Enum`.
         Discovery requirements for 3 weeks in a row.
 
         .. versionadded:: 1.7
+    .. attribute:: thread_created
+
+        The system message denoting that a thread has been created. This is only
+        sent if the thread has been created from an older message. The period of time
+        required for a message to be considered old cannot be relied upon and is up to
+        Discord.
+
+        .. versionadded:: 2.0
     .. attribute:: reply
 
-        The message type denoting that the author is replying to a message.
+        The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
     .. attribute:: application_command
@@ -1109,6 +1239,12 @@ of :class:`enum.Enum`.
     .. attribute:: guild_invite_reminder
 
         The system message sent as a reminder to invite people to the guild.
+
+        .. versionadded:: 2.0
+    .. attribute:: thread_starter_message
+
+        The system message denoting the message in the thread that is the one that started the
+        thread's conversation topic.
 
         .. versionadded:: 2.0
 
@@ -1998,6 +2134,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.3
 
+    .. attribute:: stage_instance_create
+
+        A stage instance was started.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_update
+
+        A stage instance was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_delete
+
+        A stage instance was ended.
+
+        .. versionadded:: 2.0
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -2146,7 +2318,7 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
-.. class:: PrivacyLevel
+.. class:: StagePrivacyLevel
 
     Represents a stage instance's privacy level.
 
@@ -2163,6 +2335,28 @@ of :class:`enum.Enum`.
     .. attribute:: guild_only
 
         Alias for :attr:`.closed`
+
+.. class:: NSFWLevel
+
+    Represents the NSFW level of a guild.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: default
+
+        The guild has not been categorised yet.
+
+    .. attribute:: explicit
+
+        The guild contains NSFW content.
+
+    .. attribute:: safe
+
+        The guild does not contain any NSFW content.
+
+    .. attribute:: age_restricted
+
+        The guild may contain NSFW content.
 
 Async Iterator
 ----------------
@@ -2557,9 +2751,9 @@ AuditLogDiff
 
     .. attribute:: topic
 
-        The topic of a :class:`TextChannel`.
+        The topic of a :class:`TextChannel` or :class:`StageChannel`.
 
-        See also :attr:`TextChannel.topic`.
+        See also :attr:`TextChannel.topic` or :attr:`StageChannel.topic`.
 
         :type: :class:`str`
 
@@ -2583,6 +2777,12 @@ AuditLogDiff
         decide what type of ID it is.
 
         :type: List[Tuple[target, :class:`PermissionOverwrite`]]
+
+    .. attribute:: privacy_level
+
+        The privacy level of the stage instance.
+
+        :type: :class:`StagePrivacyLevel`
 
     .. attribute:: roles
 
@@ -3142,6 +3342,30 @@ TextChannel
     .. automethod:: typing
         :async-with:
 
+Thread
+~~~~~~~~
+
+.. attributetable:: Thread
+
+.. autoclass:: Thread()
+    :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. automethod:: history
+        :async-for:
+
+    .. automethod:: typing
+        :async-with:
+
+ThreadMember
+~~~~~~~~~~~~~
+
+.. attributetable:: ThreadMember
+
+.. autoclass:: ThreadMember()
+    :members:
+
 StoreChannel
 ~~~~~~~~~~~~~
 
@@ -3330,6 +3554,14 @@ RawReactionClearEmojiEvent
 .. attributetable:: RawReactionClearEmojiEvent
 
 .. autoclass:: RawReactionClearEmojiEvent()
+    :members:
+
+RawIntegrationDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawIntegrationDeleteEvent
+
+.. autoclass:: RawIntegrationDeleteEvent()
     :members:
 
 PartialWebhookGuild

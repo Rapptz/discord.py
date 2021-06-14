@@ -102,7 +102,6 @@ class Sticker(_StickerOptional):
     name: str
     description: str
     asset: str
-    preview_asset: str
     format_type: StickerFormatType
 
 
@@ -115,6 +114,7 @@ class _MessageOptional(TypedDict, total=False):
     webhook_id: Snowflake
     activity: MessageActivity
     application: MessageApplication
+    application_id: Snowflake
     message_reference: MessageReference
     flags: int
     stickers: List[Sticker]
@@ -123,7 +123,7 @@ class _MessageOptional(TypedDict, total=False):
     components: List[Component]
 
 
-MessageType = Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 19, 20]
+MessageType = Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 19, 20, 21]
 
 
 class Message(_MessageOptional):

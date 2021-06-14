@@ -267,11 +267,9 @@ def button(
     """
 
     def decorator(func: ItemCallbackType) -> ItemCallbackType:
-        nonlocal custom_id
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
-        custom_id = custom_id or os.urandom(32).hex()
         func.__discord_ui_model_type__ = Button
         func.__discord_ui_model_kwargs__ = {
             'style': style,

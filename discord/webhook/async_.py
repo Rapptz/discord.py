@@ -253,9 +253,12 @@ class AsyncWebhookAdapter:
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[List[File]] = None,
+        thread_id: Optional[int] = None,
         wait: bool = False,
     ):
         params = {'wait': int(wait)}
+        if thread_id:
+            params['thread_id'] = thread_id
         route = Route('POST', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
@@ -622,6 +625,8 @@ class WebhookMessage(Message):
     .. versionadded:: 1.6
     """
 
+    _state: _WebhookState
+
     async def edit(
         self,
         content: Optional[str] = MISSING,
@@ -791,7 +796,7 @@ class BaseWebhook(Hashable):
         If this is a partial webhook, then this will always return ``None``.
         """
         guild = self.guild
-        return guild and guild.get_channel(self.channel_id)
+        return guild and guild.get_channel(self.channel_id)  # type: ignore
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -1145,7 +1150,7 @@ class Webhook(BaseWebhook):
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
         channel = self.channel or Object(id=int(data['channel_id']))
-        return WebhookMessage(data=data, state=state, channel=channel)
+        return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 
     @overload
     async def send(
@@ -1162,6 +1167,7 @@ class Webhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
+        thread: Snowflake = MISSING,
         wait: Literal[True],
     ) -> WebhookMessage:
         ...
@@ -1181,6 +1187,7 @@ class Webhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
+        thread: Snowflake = MISSING,
         wait: Literal[False] = ...,
     ) -> None:
         ...
@@ -1199,6 +1206,7 @@ class Webhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
+        thread: Snowflake = MISSING,
         wait: bool = False,
     ) -> Optional[WebhookMessage]:
         """|coro|
@@ -1249,11 +1257,19 @@ class Webhook(BaseWebhook):
             be mixed with the ``embed`` parameter.
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
+
+            .. versionadded:: 1.4
         view: :class:`discord.ui.View`
             The view to send with the message. You can only send a view
             if this webhook is not partial and has state attached. A
             webhook has state attached if the webhook is managed by the
             library.
+
+            .. versionadded:: 2.0
+        thread: :class:`~discord.abc.Snowflake`
+            The thread to send this webhook to.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1313,6 +1329,10 @@ class Webhook(BaseWebhook):
             previous_allowed_mentions=previous_mentions,
         )
         adapter = async_context.get()
+        thread_id: Optional[int] = None
+        if thread is not MISSING:
+            thread_id = thread.id
+
         data = await adapter.execute_webhook(
             self.id,
             self.token,
@@ -1320,6 +1340,7 @@ class Webhook(BaseWebhook):
             payload=params.payload,
             multipart=params.multipart,
             files=params.files,
+            thread_id=thread_id,
             wait=wait,
         )
 

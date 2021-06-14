@@ -30,6 +30,11 @@ from .user import User
 from .guild import Guild
 
 
+class CreateTemplate(TypedDict):
+    name: str
+    icon: Optional[bytes]
+
+
 class Template(TypedDict):
     code: str
     name: str

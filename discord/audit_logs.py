@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
 from . import enums, utils
 from .asset import Asset
@@ -55,18 +55,6 @@ if TYPE_CHECKING:
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
     from .user import User
-
-
-def _transform_verification_level(entry: AuditLogEntry, data: int) -> enums.VerificationLevel:
-    return enums.try_enum(enums.VerificationLevel, data)
-
-
-def _transform_default_notifications(entry: AuditLogEntry, data: int) -> enums.NotificationLevel:
-    return enums.try_enum(enums.NotificationLevel, data)
-
-
-def _transform_explicit_content_filter(entry: AuditLogEntry, data: int) -> enums.ContentFilter:
-    return enums.try_enum(enums.ContentFilter, data)
 
 
 def _transform_permissions(entry: AuditLogEntry, data: str) -> Permissions:
@@ -124,18 +112,6 @@ def _transform_overwrites(
     return overwrites
 
 
-def _transform_channeltype(entry: AuditLogEntry, data: int) -> enums.ChannelType:
-    return enums.try_enum(enums.ChannelType, data)
-
-
-def _transform_voiceregion(entry: AuditLogEntry, data: int) -> enums.VoiceRegion:
-    return enums.try_enum(enums.VoiceRegion, data)
-
-
-def _transform_video_quality_mode(entry: AuditLogEntry, data: int) -> enums.VideoQualityMode:
-    return enums.try_enum(enums.VideoQualityMode, data)
-
-
 def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
@@ -145,14 +121,24 @@ def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry._target_id, data)
+    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore
 
 
-def _guild_hash_transformer(path: str) -> Callable[['AuditLogEntry', Optional[str]], Optional[Asset]]:
+def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
     def _transform(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
         if data is None:
             return None
         return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
+
+    return _transform
+
+
+T = TypeVar('T', bound=enums.Enum)
+
+
+def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
+    def _transform(entry: AuditLogEntry, data: int) -> T:
+        return enums.try_enum(enum, data)
 
     return _transform
 
@@ -183,8 +169,8 @@ Transformer = Callable[["AuditLogEntry", Any], Any]
 class AuditLogChanges:
     # fmt: off
     TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Transformer]]]] = {
-        'verification_level':            (None, _transform_verification_level),
-        'explicit_content_filter':       (None, _transform_explicit_content_filter),
+        'verification_level':            (None, _enum_transformer(enums.VerificationLevel)),
+        'explicit_content_filter':       (None, _enum_transformer(enums.ContentFilter)),
         'allow':                         (None, _transform_permissions),
         'deny':                          (None, _transform_permissions),
         'permissions':                   (None, _transform_permissions),
@@ -205,11 +191,12 @@ class AuditLogChanges:
         'icon_hash':                     ('icon', _transform_icon),
         'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
-        'default_message_notifications': ('default_notifications', _transform_default_notifications),
-        'region':                        (None, _transform_voiceregion),
-        'rtc_region':                    (None, _transform_voiceregion),
-        'video_quality_mode':            (None, _transform_video_quality_mode),
-        'type':                          (None, _transform_channeltype),
+        'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
+        'region':                        (None, _enum_transformer(enums.VoiceRegion)),
+        'rtc_region':                    (None, _enum_transformer(enums.VoiceRegion)),
+        'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
+        'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
+        'type':                          (None, _enum_transformer(enums.ChannelType)),
     }
     # fmt: on
 
@@ -222,10 +209,10 @@ class AuditLogChanges:
 
             # special cases for role add/remove
             if attr == '$add':
-                self._handle_role(self.before, self.after, entry, elem['new_value'])
+                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore
                 continue
             elif attr == '$remove':
-                self._handle_role(self.after, self.before, entry, elem['new_value'])
+                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore
                 continue
 
             try:
@@ -306,6 +293,10 @@ class _AuditLogProxyMemberDisconnect:
 class _AuditLogProxyPinAction:
     channel: abc.GuildChannel
     message_id: int
+
+
+class _AuditLogProxyStageInstanceAction:
+    channel: abc.GuildChannel
 
 
 class AuditLogEntry(Hashable):
@@ -404,6 +395,10 @@ class AuditLogEntry(Hashable):
                         role = Object(id=instance_id)
                         role.name = self.extra.get('role_name')  # type: ignore
                     self.extra: Role = role
+            elif self.action.name.startswith('stage_instance'):
+                channel_id = int(self.extra['channel_id'])
+                elems = {'channel': self.guild.get_channel(channel_id) or Object(id=channel_id)}
+                self.extra: _AuditLogProxyStageInstanceAction = type('_AuditLogProxy', (), elems)()
 
         # fmt: off
         self.extra: Union[
@@ -411,6 +406,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyMemberMoveOrMessageDelete,
             _AuditLogProxyMemberDisconnect,
             _AuditLogProxyPinAction,
+            _AuditLogProxyStageInstanceAction,
             Member, User, None,
             Role,
         ]

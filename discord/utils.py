@@ -464,8 +464,8 @@ def to_json(obj: Any) -> str:
     return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
 
-def _parse_ratelimit_header(request: _RequestLike, *, use_clock: bool = False) -> float:
-    reset_after = request.headers.get('X-Ratelimit-Reset-After')
+def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
+    reset_after: Optional[str] = request.headers.get('X-Ratelimit-Reset-After')
     if use_clock or not reset_after:
         utc = datetime.timezone.utc
         now = datetime.datetime.now(utc)

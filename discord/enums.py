@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import types
 from collections import namedtuple
-from typing import Any, TYPE_CHECKING, Type, TypeVar
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar
 
 __all__ = (
     'Enum',
@@ -53,6 +53,7 @@ __all__ = (
     'StagePrivacyLevel',
     'InteractionType',
     'InteractionResponseType',
+    'NSFWLevel',
 )
 
 def _create_value_cls(name):
@@ -154,14 +155,17 @@ else:
                 return value
 
 class ChannelType(Enum):
-    text     = 0
-    private  = 1
-    voice    = 2
-    group    = 3
-    category = 4
-    news     = 5
-    store    = 6
-    stage_voice = 13
+    text           = 0
+    private        = 1
+    voice          = 2
+    group          = 3
+    category       = 4
+    news           = 5
+    store          = 6
+    news_thread    = 10
+    public_thread  = 11
+    private_thread = 12
+    stage_voice    = 13
 
     def __str__(self):
         return self.name
@@ -185,8 +189,10 @@ class MessageType(Enum):
     guild_discovery_requalified                  = 15
     guild_discovery_grace_period_initial_warning = 16
     guild_discovery_grace_period_final_warning   = 17
+    thread_created                               = 18
     reply                                        = 19
     application_command                          = 20
+    thread_starter_message                       = 21
     guild_invite_reminder                        = 22
 
 class VoiceRegion(Enum):
@@ -314,50 +320,56 @@ class AuditLogAction(Enum):
     integration_create       = 80
     integration_update       = 81
     integration_delete       = 82
+    stage_instance_create    = 83
+    stage_instance_update    = 84
+    stage_instance_delete    = 85
 
     @property
-    def category(self):
-        lookup = {
-            AuditLogAction.guild_update:        AuditLogActionCategory.update,
-            AuditLogAction.channel_create:      AuditLogActionCategory.create,
-            AuditLogAction.channel_update:      AuditLogActionCategory.update,
-            AuditLogAction.channel_delete:      AuditLogActionCategory.delete,
-            AuditLogAction.overwrite_create:    AuditLogActionCategory.create,
-            AuditLogAction.overwrite_update:    AuditLogActionCategory.update,
-            AuditLogAction.overwrite_delete:    AuditLogActionCategory.delete,
-            AuditLogAction.kick:                None,
-            AuditLogAction.member_prune:        None,
-            AuditLogAction.ban:                 None,
-            AuditLogAction.unban:               None,
-            AuditLogAction.member_update:       AuditLogActionCategory.update,
-            AuditLogAction.member_role_update:  AuditLogActionCategory.update,
-            AuditLogAction.member_move:         None,
-            AuditLogAction.member_disconnect:   None,
-            AuditLogAction.bot_add:             None,
-            AuditLogAction.role_create:         AuditLogActionCategory.create,
-            AuditLogAction.role_update:         AuditLogActionCategory.update,
-            AuditLogAction.role_delete:         AuditLogActionCategory.delete,
-            AuditLogAction.invite_create:       AuditLogActionCategory.create,
-            AuditLogAction.invite_update:       AuditLogActionCategory.update,
-            AuditLogAction.invite_delete:       AuditLogActionCategory.delete,
-            AuditLogAction.webhook_create:      AuditLogActionCategory.create,
-            AuditLogAction.webhook_update:      AuditLogActionCategory.update,
-            AuditLogAction.webhook_delete:      AuditLogActionCategory.delete,
-            AuditLogAction.emoji_create:        AuditLogActionCategory.create,
-            AuditLogAction.emoji_update:        AuditLogActionCategory.update,
-            AuditLogAction.emoji_delete:        AuditLogActionCategory.delete,
-            AuditLogAction.message_delete:      AuditLogActionCategory.delete,
-            AuditLogAction.message_bulk_delete: AuditLogActionCategory.delete,
-            AuditLogAction.message_pin:         None,
-            AuditLogAction.message_unpin:       None,
-            AuditLogAction.integration_create:  AuditLogActionCategory.create,
-            AuditLogAction.integration_update:  AuditLogActionCategory.update,
-            AuditLogAction.integration_delete:  AuditLogActionCategory.delete,
+    def category(self) -> Optional[AuditLogActionCategory]:
+        lookup: Dict[AuditLogAction, Optional[AuditLogActionCategory]] = {
+            AuditLogAction.guild_update:          AuditLogActionCategory.update,
+            AuditLogAction.channel_create:        AuditLogActionCategory.create,
+            AuditLogAction.channel_update:        AuditLogActionCategory.update,
+            AuditLogAction.channel_delete:        AuditLogActionCategory.delete,
+            AuditLogAction.overwrite_create:      AuditLogActionCategory.create,
+            AuditLogAction.overwrite_update:      AuditLogActionCategory.update,
+            AuditLogAction.overwrite_delete:      AuditLogActionCategory.delete,
+            AuditLogAction.kick:                  None,
+            AuditLogAction.member_prune:          None,
+            AuditLogAction.ban:                   None,
+            AuditLogAction.unban:                 None,
+            AuditLogAction.member_update:         AuditLogActionCategory.update,
+            AuditLogAction.member_role_update:    AuditLogActionCategory.update,
+            AuditLogAction.member_move:           None,
+            AuditLogAction.member_disconnect:     None,
+            AuditLogAction.bot_add:               None,
+            AuditLogAction.role_create:           AuditLogActionCategory.create,
+            AuditLogAction.role_update:           AuditLogActionCategory.update,
+            AuditLogAction.role_delete:           AuditLogActionCategory.delete,
+            AuditLogAction.invite_create:         AuditLogActionCategory.create,
+            AuditLogAction.invite_update:         AuditLogActionCategory.update,
+            AuditLogAction.invite_delete:         AuditLogActionCategory.delete,
+            AuditLogAction.webhook_create:        AuditLogActionCategory.create,
+            AuditLogAction.webhook_update:        AuditLogActionCategory.update,
+            AuditLogAction.webhook_delete:        AuditLogActionCategory.delete,
+            AuditLogAction.emoji_create:          AuditLogActionCategory.create,
+            AuditLogAction.emoji_update:          AuditLogActionCategory.update,
+            AuditLogAction.emoji_delete:          AuditLogActionCategory.delete,
+            AuditLogAction.message_delete:        AuditLogActionCategory.delete,
+            AuditLogAction.message_bulk_delete:   AuditLogActionCategory.delete,
+            AuditLogAction.message_pin:           None,
+            AuditLogAction.message_unpin:         None,
+            AuditLogAction.integration_create:    AuditLogActionCategory.create,
+            AuditLogAction.integration_update:    AuditLogActionCategory.update,
+            AuditLogAction.integration_delete:    AuditLogActionCategory.delete,
+            AuditLogAction.stage_instance_create: AuditLogActionCategory.create,
+            AuditLogAction.stage_instance_update: AuditLogActionCategory.update,
+            AuditLogAction.stage_instance_delete: AuditLogActionCategory.delete,
         }
         return lookup[self]
 
     @property
-    def target_type(self):
+    def target_type(self) -> Optional[str]:
         v = self.value
         if v == -1:
             return 'all'
@@ -379,8 +391,10 @@ class AuditLogAction(Enum):
             return 'channel'
         elif v < 80:
             return 'message'
-        elif v < 90:
+        elif v < 83:
             return 'integration'
+        elif v < 90:
+            return 'stage_instance'
 
 class UserFlags(Enum):
     staff = 1
@@ -487,6 +501,12 @@ class StagePrivacyLevel(Enum):
     public = 1
     closed = 2
     guild_only = 2
+
+class NSFWLevel(Enum):
+    default = 0
+    explicit = 1
+    safe = 2
+    age_restricted = 3
 
 T = TypeVar('T')
 
