@@ -123,7 +123,7 @@ class Item(Generic[V]):
 
         Parameters
         -----------
-        interaction: :class:`Interaction`
+        interaction: :class:`.Interaction`
             The interaction that triggered this UI item.
         """
         pass

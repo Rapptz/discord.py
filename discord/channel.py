@@ -1083,7 +1083,7 @@ class StageChannel(VocalGuildChannel):
         topic: :class:`str`
             The stage instance's topic.
         privacy_level: :class:`StagePrivacyLevel`
-            The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
+            The stage instance's privacy level. Defaults to :attr:`StagePrivacyLevel.guild_only`.
 
         Raises
         ------

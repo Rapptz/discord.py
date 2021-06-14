@@ -136,7 +136,7 @@ class Button(Component):
 
     Attributes
     -----------
-    style: :class:`ComponentButtonStyle`
+    style: :class:`.ButtonStyle`
         The style of the button.
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
