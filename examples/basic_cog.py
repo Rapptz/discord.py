@@ -110,4 +110,4 @@ class Miscellaneous(commands.Cog, name='Misc'):
 
 # Cogs have to be explicitly added.
 bot.add_cog(Miscellaneous(bot))
-bot.run('token')
+bot.run('discord_bot_token')
