@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar
+import re
 
 from .asset import Asset, AssetMixin
 from .errors import InvalidArgument
@@ -43,6 +44,9 @@ class _EmojiTag:
     __slots__ = ()
 
     id: int
+
+    def _to_partial(self) -> PartialEmoji:
+        raise NotImplementedError
 
 
 PE = TypeVar('PE', bound='PartialEmoji')
@@ -88,6 +92,8 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
     __slots__ = ('animated', 'name', 'id', '_state')
 
+    _CUSTOM_EMOJI_RE = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
+
     if TYPE_CHECKING:
         id: Optional[int]
 
@@ -105,6 +111,41 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             name=data.get('name', ''),
         )
 
+    @classmethod
+    def from_str(cls: Type[PE], value: str) -> PE:
+        """Converts a Discord string representation of an emoji to a :class:`PartialEmoji`.
+
+        The formats accepted are:
+
+        - ``a:name:id``
+        - ``<a:name:id>``
+        - ``name:id``
+        - ``<:name:id>``
+
+        If the format does not match then it is assumed to be a unicode emoji.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        value: :class:`str`
+            The string representation of an emoji.
+
+        Returns
+        --------
+        :class:`PartialEmoji`
+            The partial emoji from this string.
+        """
+        match = cls._CUSTOM_EMOJI_RE.match(value)
+        if match is not None:
+            groups = match.groupdict()
+            animated = bool(groups['animated'])
+            emoji_id = int(groups['id'])
+            name = groups['name']
+            return cls(name=name, animated=animated, id=emoji_id)
+
+        return cls(name=value, id=None, animated=False)
+
     def to_dict(self) -> Dict[str, Any]:
         o: Dict[str, Any] = {'name': self.name}
         if self.id:
@@ -112,6 +153,9 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         if self.animated:
             o['animated'] = self.animated
         return o
+
+    def _to_partial(self) -> PartialEmoji:
+        return self
 
     @classmethod
     def with_state(

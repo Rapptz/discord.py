@@ -270,9 +270,14 @@ class Colour:
     darker_gray = darker_grey
 
     @classmethod
-    def blurple(cls: Type[CT]) -> CT:
+    def og_blurple(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x7289da``."""
         return cls(0x7289da)
+
+    @classmethod
+    def blurple(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x5865F2``."""
+        return cls(0x5865F2)
 
     @classmethod
     def greyple(cls: Type[CT]) -> CT:
@@ -287,5 +292,22 @@ class Colour:
         .. versionadded:: 1.5
         """
         return cls(0x36393F)
+
+    @classmethod
+    def fuchsia(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xEB459E``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xEB459E)
+
+    @classmethod
+    def yellow(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xFEE75C``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xFEE75C)
+
 
 Color = Colour

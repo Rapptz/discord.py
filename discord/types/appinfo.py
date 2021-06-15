@@ -22,40 +22,45 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from __future__ import annotations
+
+from typing import TypedDict, List, Optional
+
+from .user import User
+from .team import Team
 from .snowflake import Snowflake
-from .member import Member
 
-
-class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
-    self_stream: bool
-
-
-class _VoiceState(_PartialVoiceStateOptional):
-    user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
-
-
-class GuildVoiceState(_VoiceState):
-    channel_id: Snowflake
-
-
-class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
-    guild_id: Snowflake
-
-
-class VoiceRegion(TypedDict):
-    id: str
+class BaseAppInfo(TypedDict):
+    id: Snowflake
     name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+    verify_key: str
+    icon: Optional[str]
+    summary: str
+    description: str
+
+class _AppInfoOptional(TypedDict, total=False):
+    team: Team
+    guild_id: Snowflake
+    primary_sku_id: Snowflake
+    slug: str
+    terms_of_service_url: str
+    privacy_policy_url: str
+    hook: bool
+    max_participants: int
+
+class AppInfo(BaseAppInfo, _AppInfoOptional):
+    rpc_origins: List[str]
+    owner: User
+    bot_public: bool
+    bot_require_code_grant: bool
+
+class _PartialAppInfoOptional(TypedDict, total=False):
+    rpc_origins: List[str]
+    cover_image: str
+    hook: bool
+    terms_of_service_url: str
+    privacy_policy_url: str
+    max_participants: int
+
+class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
+    pass

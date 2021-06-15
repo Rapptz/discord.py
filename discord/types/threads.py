@@ -22,40 +22,53 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from __future__ import annotations
+from typing import List, Literal, Optional, TypedDict
+
 from .snowflake import Snowflake
-from .member import Member
+
+ThreadType = Literal[10, 11, 12]
+ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
 
 
-class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
-    self_stream: bool
-
-
-class _VoiceState(_PartialVoiceStateOptional):
+class ThreadMember(TypedDict):
+    id: Snowflake
     user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
+    join_timestamp: str
+    flags: int
 
 
-class GuildVoiceState(_VoiceState):
-    channel_id: Snowflake
+class _ThreadMetadataOptional(TypedDict, total=False):
+    archiver_id: Snowflake
+    locked: bool
 
 
-class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
+class ThreadMetadata(_ThreadMetadataOptional):
+    archived: bool
+    auto_archive_duration: ThreadArchiveDuration
+    archive_timestamp: str
+
+
+class _ThreadOptional(TypedDict, total=False):
+    member: ThreadMember
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: Optional[Snowflake]
+
+
+class Thread(_ThreadOptional):
+    id: Snowflake
     guild_id: Snowflake
-
-
-class VoiceRegion(TypedDict):
-    id: str
+    parent_id: Snowflake
+    owner_id: Snowflake
     name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+    type: ThreadType
+    member_count: int
+    message_count: int
+    rate_limit_per_user: int
+    thread_metadata: ThreadMetadata
+
+
+class ThreadPaginationPayload(TypedDict):
+    threads: List[Thread]
+    members: List[ThreadMember]
+    has_more: bool

@@ -64,6 +64,14 @@ AppInfo
 .. autoclass:: AppInfo()
     :members:
 
+PartialAppInfo
+~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialAppInfo
+
+.. autoclass:: PartialAppInfo()
+    :members:
+
 Team
 ~~~~~
 
@@ -267,7 +275,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     If you want exception to propagate out of the :class:`Client` class
     you can define an ``on_error`` handler consisting of a single empty
-    :ref:`py:raise`.  Exceptions raised by ``on_error`` will not be
+    :ref:`raise statement <py:raise>`. Exceptions raised by ``on_error`` will not be
     handled in any way by :class:`Client`.
 
     .. note::
@@ -646,20 +654,124 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This requires :attr:`Intents.guilds` to be enabled.
 
     :param channel: The guild channel that had its pins updated.
-    :type channel: :class:`abc.GuildChannel`
+    :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
     :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
     :type last_pin: Optional[:class:`datetime.datetime`]
 
-.. function:: on_guild_integrations_update(guild)
+.. function:: on_thread_join(thread)
 
-    .. versionadded:: 1.4
+    Called whenever a thread is joined.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got joined.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_remove(thread)
+
+    Called whenever a thread is removed. This is different from a thread being deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. warning::
+
+        Due to technical limitations, this event might not be called
+        as soon as one expects. Since the library tracks thread membership
+        locally, the API only sends updated thread membership status upon being
+        synced by joining a thread.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got removed.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_delete(thread)
+
+    Called whenever a thread is deleted.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that got deleted.
+    :type thread: :class:`Thread`
+
+.. function:: on_thread_member_join(member)
+              on_thread_member_remove(member)
+
+    Called when a :class:`ThreadMember` leaves or joins a :class:`Thread`.
+
+    You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who joined or left.
+    :type member: :class:`ThreadMember`
+
+.. function:: on_thread_update(before, after)
+
+    Called whenever a thread is updated.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param before: The updated thread's old info.
+    :type before: :class:`Thread`
+    :param after: The updated thread's new info.
+    :type after: :class:`Thread`
+
+.. function:: on_guild_integrations_update(guild)
 
     Called whenever an integration is created, modified, or removed from a guild.
 
     This requires :attr:`Intents.integrations` to be enabled.
 
+    .. versionadded:: 1.4
+
     :param guild: The guild that had its integrations updated.
     :type guild: :class:`Guild`
+
+.. function:: on_integration_create(integration)
+
+    Called when an integration is created.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_integration_update(integration)
+
+    Called when an integration is updated.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param integration: The integration that was created.
+    :type integration: :class:`Integration`
+
+.. function:: on_raw_integration_delete(payload)
+
+    Called when an integration is deleted.
+
+    This requires :attr:`Intents.integrations` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawIntegrationDeleteEvent`
 
 .. function:: on_webhooks_update(channel)
 
@@ -813,8 +925,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The following, but not limited to, examples illustrate when this event is called:
 
-    - A member joins a voice channel.
-    - A member leaves a voice channel.
+    - A member joins a voice or stage channel.
+    - A member leaves a voice or stage channel.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
@@ -824,8 +936,34 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
     :type before: :class:`VoiceState`
-    :param after: The voice state after to the changes.
+    :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
+
+.. function:: on_stage_instance_create(stage_instance)
+              on_stage_instance_delete(stage_instance)
+
+    Called when a :class:`StageInstance` is created or deleted for a :class:`StageChannel`.
+
+    .. versionadded:: 2.0
+
+    :param stage_instance: The stage instance that was created or deleted.
+    :type stage_instance: :class:`StageInstance`
+
+.. function:: on_stage_instance_update(before, after)
+
+    Called when a :class:`StageInstance` is updated.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - The topic is changed.
+    - The privacy level is changed.
+
+    .. versionadded:: 2.0
+
+    :param before: The stage instance before the update.
+    :type before: :class:`StageInstance`
+    :param after: The stage instance after the update.
+    :type after: :class:`StageInstance`
 
 .. function:: on_member_ban(guild, user)
 
@@ -971,6 +1109,24 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.7
 
+    .. attribute:: news_thread
+
+        A news thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: public_thread
+
+        A public thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: private_thread
+
+        A private thread
+
+        .. versionadded:: 1.8
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -990,12 +1146,12 @@ of :class:`enum.Enum`.
         The default message type. This is the same as regular messages.
     .. attribute:: recipient_add
 
-        The system message when a recipient is added to a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is added to a group private
+        message or a thread.
     .. attribute:: recipient_remove
 
-        The system message when a recipient is removed from a group private
-        message, i.e. a private channel of type :attr:`ChannelType.group`.
+        The system message when a user is removed from a group private
+        message or a thread.
     .. attribute:: call
 
         The system message denoting call state, e.g. missed call, started call,
@@ -1062,9 +1218,17 @@ of :class:`enum.Enum`.
         Discovery requirements for 3 weeks in a row.
 
         .. versionadded:: 1.7
+    .. attribute:: thread_created
+
+        The system message denoting that a thread has been created. This is only
+        sent if the thread has been created from an older message. The period of time
+        required for a message to be considered old cannot be relied upon and is up to
+        Discord.
+
+        .. versionadded:: 2.0
     .. attribute:: reply
 
-        The message type denoting that the author is replying to a message.
+        The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
     .. attribute:: application_command
@@ -1075,6 +1239,12 @@ of :class:`enum.Enum`.
     .. attribute:: guild_invite_reminder
 
         The system message sent as a reminder to invite people to the guild.
+
+        .. versionadded:: 2.0
+    .. attribute:: thread_starter_message
+
+        The system message denoting the message in the thread that is the one that started the
+        thread's conversation topic.
 
         .. versionadded:: 2.0
 
@@ -1130,6 +1300,9 @@ of :class:`enum.Enum`.
     .. attribute:: verified_bot_developer
 
         The user is an Early Verified Bot Developer.
+    .. attribute:: discord_certified_moderator
+
+        The user is a Discord Certified Moderator.
 
 .. class:: ActivityType
 
@@ -1169,10 +1342,97 @@ of :class:`enum.Enum`.
     .. attribute:: ping
 
         Represents Discord pinging to see if the interaction response server is alive.
-
     .. attribute:: application_command
 
         Represents a slash command interaction.
+    .. attribute:: component
+
+        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+
+.. class:: InteractionResponseType
+
+    Specifies the response type for the interaction.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: pong
+
+        Pongs the interaction when given a ping.
+
+        See also :meth:`InteractionResponse.pong`
+    .. attribute:: channel_message
+
+        Respond to the interaction with a message.
+
+        See also :meth:`InteractionResponse.send_message`
+    .. attribute:: deferred_channel_message
+
+        Responds to the interaction with a message at a later time.
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: deferred_message_update
+
+        Acknowledges the component interaction with a promise that
+        the message will update later (though there is no need to actually update the message).
+
+        See also :meth:`InteractionResponse.defer`
+    .. attribute:: message_update
+
+        Responds to the interaction by editing the message.
+
+        See also :meth:`InteractionResponse.edit_message`
+
+.. class:: ComponentType
+
+    Represents the component type of a component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: action_row
+
+        Represents the group component which holds different components in a row.
+    .. attribute:: button
+
+        Represents a button component.
+    .. attribute:: select
+
+        Represents a select component.
+
+
+.. class:: ButtonStyle
+
+    Represents the style of the button component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: primary
+
+        Represents a blurple button for the primary action.
+    .. attribute:: secondary
+
+        Represents a grey button for the secondary action.
+    .. attribute:: success
+
+        Represents a green button for a successful action.
+    .. attribute:: danger
+
+        Represents a red button for a dangerous action.
+    .. attribute:: link
+
+        Represents a link button.
+
+    .. attribute:: blurple
+
+        An alias for :attr:`primary`.
+    .. attribute:: grey
+
+        An alias for :attr:`secondary`.
+    .. attribute:: green
+
+        An alias for :attr:`success`.
+    .. attribute:: red
+
+        An alias for :attr:`danger`.
 
 .. class:: VoiceRegion
 
@@ -1298,22 +1558,9 @@ of :class:`enum.Enum`.
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
-    .. attribute:: table_flip
-
-        An alias for :attr:`high`.
-    .. attribute:: extreme
+    .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
-
-    .. attribute:: double_table_flip
-
-        An alias for :attr:`extreme`.
-
-    .. attribute:: very_high
-
-        An alias for :attr:`extreme`.
-
-        .. versionadded:: 1.4
 
 .. class:: NotificationLevel
 
@@ -1887,6 +2134,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.3
 
+    .. attribute:: stage_instance_create
+
+        A stage instance was started.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_update
+
+        A stage instance was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        either :class:`Object` with the stage instance ID of the stage instance
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.topic`
+        - :attr:`~AuditLogDiff.privacy_level`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: stage_instance_delete
+
+        A stage instance was ended.
+
+        .. versionadded:: 2.0
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -1932,6 +2215,12 @@ of :class:`enum.Enum`.
     .. attribute:: channel_follower
 
         Represents a webhook that is internally managed by Discord, used for following channels.
+
+    .. attribute:: application
+
+        Represents a webhook that is used for interactions or applications.
+
+        .. versionadded:: 2.0
 
 .. class:: ExpireBehaviour
 
@@ -1999,7 +2288,7 @@ of :class:`enum.Enum`.
 
 .. class:: InviteTarget
 
-    Represents the type of target an invite contains.
+    Represents the invite type for voice channel invites.
 
     .. versionadded:: 2.0
 
@@ -2009,11 +2298,11 @@ of :class:`enum.Enum`.
 
     .. attribute:: stream
 
-        The invite targets a stream.
+        A stream invite that targets a user.
 
     .. attribute:: embedded_application
 
-        The invite targets an embedded application activity.
+        A stream invite that targets an embedded application.
 
 .. class:: VideoQualityMode
 
@@ -2028,6 +2317,46 @@ of :class:`enum.Enum`.
     .. attribute:: full
 
         Represents full camera video quality.
+
+.. class:: StagePrivacyLevel
+
+    Represents a stage instance's privacy level.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: public
+
+        The stage instance can be joined by external users.
+
+    .. attribute:: closed
+
+        The stage instance can only be joined by members of the guild.
+
+    .. attribute:: guild_only
+
+        Alias for :attr:`.closed`
+
+.. class:: NSFWLevel
+
+    Represents the NSFW level of a guild.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: default
+
+        The guild has not been categorised yet.
+
+    .. attribute:: explicit
+
+        The guild contains NSFW content.
+
+    .. attribute:: safe
+
+        The guild does not contain any NSFW content.
+
+    .. attribute:: age_restricted
+
+        The guild may contain NSFW content.
 
 Async Iterator
 ----------------
@@ -2422,9 +2751,9 @@ AuditLogDiff
 
     .. attribute:: topic
 
-        The topic of a :class:`TextChannel`.
+        The topic of a :class:`TextChannel` or :class:`StageChannel`.
 
-        See also :attr:`TextChannel.topic`.
+        See also :attr:`TextChannel.topic` or :attr:`StageChannel.topic`.
 
         :type: :class:`str`
 
@@ -2448,6 +2777,12 @@ AuditLogDiff
         decide what type of ID it is.
 
         :type: List[Tuple[target, :class:`PermissionOverwrite`]]
+
+    .. attribute:: privacy_level
+
+        The privacy level of the stage instance.
+
+        :type: :class:`StagePrivacyLevel`
 
     .. attribute:: roles
 
@@ -2804,6 +3139,41 @@ Message
 .. autoclass:: Message()
     :members:
 
+Component
+~~~~~~~~~~
+
+.. attributetable:: Component
+
+.. autoclass:: Component()
+    :members:
+
+ActionRow
+~~~~~~~~~~
+
+.. attributetable:: ActionRow
+
+.. autoclass:: ActionRow()
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: Button
+
+.. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+SelectMenu
+~~~~~~~~~~~
+
+.. attributetable:: SelectMenu
+
+.. autoclass:: SelectMenu()
+    :members:
+    :inherited-members:
+
+
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2865,12 +3235,29 @@ Integration
 .. autoclass:: IntegrationAccount()
     :members:
 
+.. autoclass:: BotIntegration()
+    :members:
+
+.. autoclass:: IntegrationApplication()
+    :members:
+
+.. autoclass:: StreamIntegration()
+    :members:
+
 Interaction
 ~~~~~~~~~~~~
 
 .. attributetable:: Interaction
 
 .. autoclass:: Interaction()
+    :members:
+
+InteractionResponse
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionResponse
+
+.. autoclass:: InteractionResponse()
     :members:
 
 Member
@@ -2955,6 +3342,30 @@ TextChannel
     .. automethod:: typing
         :async-with:
 
+Thread
+~~~~~~~~
+
+.. attributetable:: Thread
+
+.. autoclass:: Thread()
+    :members:
+    :inherited-members:
+    :exclude-members: history, typing
+
+    .. automethod:: history
+        :async-for:
+
+    .. automethod:: typing
+        :async-with:
+
+ThreadMember
+~~~~~~~~~~~~~
+
+.. attributetable:: ThreadMember
+
+.. autoclass:: ThreadMember()
+    :members:
+
 StoreChannel
 ~~~~~~~~~~~~~
 
@@ -2981,6 +3392,15 @@ StageChannel
 .. autoclass:: StageChannel()
     :members:
     :inherited-members:
+
+
+StageInstance
+~~~~~~~~~~~~~~
+
+.. attributetable:: StageInstance
+
+.. autoclass:: StageInstance()
+    :members:
 
 CategoryChannel
 ~~~~~~~~~~~~~~~~~
@@ -3136,6 +3556,14 @@ RawReactionClearEmojiEvent
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
 
+RawIntegrationDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawIntegrationDeleteEvent
+
+.. autoclass:: RawIntegrationDeleteEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -3207,6 +3635,14 @@ PartialMessage
 .. attributetable:: PartialMessage
 
 .. autoclass:: PartialMessage
+    :members:
+
+SelectOption
+~~~~~~~~~~~~~
+
+.. attributetable:: SelectOption
+
+.. autoclass:: SelectOption
     :members:
 
 Intents
@@ -3336,6 +3772,41 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
+
+.. _discord_ui_kit:
+
+Bot UI Kit
+-------------
+
+The library has helpers to help create component-based UIs.
+
+View
+~~~~~~~
+
+.. attributetable:: discord.ui.View
+
+.. autoclass:: discord.ui.View
+    :members:
+
+Item
+~~~~~~~
+
+.. attributetable:: discord.ui.Item
+
+.. autoclass:: discord.ui.Item
+    :members:
+
+Button
+~~~~~~~
+
+.. attributetable:: discord.ui.Button
+
+.. autoclass:: discord.ui.Button
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.button
+
 
 Exceptions
 ------------

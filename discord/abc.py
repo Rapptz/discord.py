@@ -62,6 +62,8 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference
+    from .enums import InviteTarget
+    from .ui.view import View
 
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -704,6 +706,10 @@ class GuildChannel:
 
         You must have the :attr:`~discord.Permissions.manage_roles` permission to use this.
 
+        .. note::
+
+            This method *replaces* the old overwrites with the ones given.
+
         Examples
         ----------
 
@@ -1009,6 +1015,9 @@ class GuildChannel:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        target_type: Optional[InviteTarget] = None,
+        target_user: Optional[User] = None,
+        target_application_id: Optional[int] = None
     ) -> Invite:
         """|coro|
 
@@ -1034,6 +1043,20 @@ class GuildChannel:
             invite.
         reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
+        target_type: Optional[:class:`InviteTarget`]
+            The type of target for the voice channel invite, if any.
+            
+            .. versionadded:: 2.0
+        
+        target_user: Optional[:class:`User`]
+            The user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. The user must be streaming in the channel.
+
+            .. versionadded:: 2.0
+
+        target_application_id:: Optional[:class:`int`]
+            The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1056,6 +1079,9 @@ class GuildChannel:
             max_uses=max_uses,
             temporary=temporary,
             unique=unique,
+            target_type=target_type.value if target_type else None,
+            target_user_id=target_user.id if target_user else None,
+            target_application_id=target_application_id
         )
         return Invite.from_incomplete(data=data, state=self._state)
 
@@ -1081,14 +1107,8 @@ class GuildChannel:
 
         state = self._state
         data = await state.http.invites_from_channel(self.id)
-        result = []
-
-        for invite in data:
-            invite['channel'] = self
-            invite['guild'] = self.guild
-            result.append(Invite(state=state, data=invite))
-
-        return result
+        guild = self.guild
+        return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
 
 
 class Messageable(Protocol):
@@ -1128,6 +1148,7 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 
@@ -1144,13 +1165,14 @@ class Messageable(Protocol):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference] = ...,
         mention_author: bool = ...,
+        view: View = ...,
     ) -> Message:
         ...
 
     async def send(self, content=None, *, tts=False, embed=None, file=None,
                                           files=None, delete_after=None, nonce=None,
                                           allowed_mentions=None, reference=None,
-                                          mention_author=None):
+                                          mention_author=None, view=None):
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1208,6 +1230,10 @@ class Messageable(Protocol):
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
+        view: :class:`discord.ui.View`
+            A Discord UI View to add to the message.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1251,6 +1277,14 @@ class Messageable(Protocol):
             except AttributeError:
                 raise InvalidArgument('reference parameter must be Message or MessageReference') from None
 
+        if view:
+            if not hasattr(view, '__discord_ui_view__'):
+                raise InvalidArgument(f'view parameter must be View not {view.__class__!r}')
+
+            components = view.to_components()
+        else:
+            components = None
+
         if file is not None and files is not None:
             raise InvalidArgument('cannot pass both file and files parameter to send()')
 
@@ -1261,7 +1295,7 @@ class Messageable(Protocol):
             try:
                 data = await state.http.send_files(channel.id, files=[file], allowed_mentions=allowed_mentions,
                                                    content=content, tts=tts, embed=embed, nonce=nonce,
-                                                   message_reference=reference)
+                                                   message_reference=reference, components=components)
             finally:
                 file.close()
 
@@ -1274,16 +1308,19 @@ class Messageable(Protocol):
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
                                                    embed=embed, nonce=nonce, allowed_mentions=allowed_mentions,
-                                                   message_reference=reference)
+                                                   message_reference=reference, components=components)
             finally:
                 for f in files:
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
                                                  nonce=nonce, allowed_mentions=allowed_mentions,
-                                                 message_reference=reference)
+                                                 message_reference=reference, components=components)
 
         ret = state.create_message(channel=channel, data=data)
+        if view:
+            state.store_view(view, ret.id)
+
         if delete_after is not None:
             await ret.delete(delay=delete_after)
         return ret
@@ -1310,10 +1347,11 @@ class Messageable(Protocol):
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
+            async with channel.typing(): 
+                # simulate something heavy 
+                await asyncio.sleep(10)
 
-            async with channel.typing():
-                # do expensive stuff here
-                await channel.send('done!')
+            await channel.send('done!')
 
         """
         return Typing(self)

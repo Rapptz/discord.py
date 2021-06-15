@@ -22,40 +22,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from __future__ import annotations
+
+from typing import TypedDict, List, Optional
+
+from .user import PartialUser
 from .snowflake import Snowflake
-from .member import Member
 
+class TeamMember(TypedDict):
+    user: PartialUser
+    membership_state: int
+    permissions: List[str]
+    team_id: Snowflake
 
-class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
-    self_stream: bool
-
-
-class _VoiceState(_PartialVoiceStateOptional):
-    user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
-
-
-class GuildVoiceState(_VoiceState):
-    channel_id: Snowflake
-
-
-class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
-    guild_id: Snowflake
-
-
-class VoiceRegion(TypedDict):
-    id: str
+class Team(TypedDict):
+    id: Snowflake
     name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+    owner_id: Snowflake
+    members: List[TeamMember]
+    icon: Optional[str]

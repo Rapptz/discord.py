@@ -24,14 +24,17 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Dict, TypedDict, Union, List, Literal
+from typing import Optional, TYPE_CHECKING, Dict, TypedDict, Union, List, Literal
 from .snowflake import Snowflake
-from .message import AllowedMentions
-from .channel import PartialChannel
+from .components import Component, ComponentType
 from .embed import Embed
+from .channel import ChannelType
 from .member import Member
 from .role import Role
 from .user import User
+
+if TYPE_CHECKING:
+    from .message import AllowedMentions, Message
 
 
 class _ApplicationCommandOptional(TypedDict, total=False):
@@ -74,9 +77,12 @@ class ApplicationCommandPermissions(TypedDict):
     permission: bool
 
 
-class PartialGuildApplicationCommandPermissions(TypedDict):
-    id: Snowflake
+class BaseGuildApplicationCommandPermissions(TypedDict):
     permissions: List[ApplicationCommandPermissions]
+
+
+class PartialGuildApplicationCommandPermissions(BaseGuildApplicationCommandPermissions):
+    id: Snowflake
 
 
 class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissions):
@@ -84,7 +90,7 @@ class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissio
     guild_id: Snowflake
 
 
-InteractionType = Literal[1, 2]
+InteractionType = Literal[1, 2, 3]
 
 
 class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
@@ -92,16 +98,25 @@ class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
 
 
-class ApplicationCommandInteractionDataOption(_ApplicationCommandInteractionDataOptionOptional):
+class ApplicationCommandInteractionDataOption(
+    _ApplicationCommandInteractionDataOptionOptional
+):
     name: str
     type: ApplicationCommandOptionType
+
+
+class ApplicationCommandResolvedPartialChannel(TypedDict):
+    id: Snowflake
+    type: ChannelType
+    permissions: str
+    name: str
 
 
 class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
     users: Dict[Snowflake, User]
     members: Dict[Snowflake, Member]
     roles: Dict[Snowflake, Role]
-    channels: Dict[Snowflake, PartialChannel]
+    channels: Dict[Snowflake, ApplicationCommandResolvedPartialChannel]
 
 
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
@@ -114,12 +129,22 @@ class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOption
     name: str
 
 
+class _ComponentInteractionDataOptional(TypedDict, total=False):
+    values: List[str]
+
+
+class ComponentInteractionData(_ComponentInteractionDataOptional):
+    custom_id: str
+    component_type: ComponentType
+
+
 class _InteractionOptional(TypedDict, total=False):
-    data: ApplicationCommandInteractionData
+    data: Union[ApplicationCommandInteractionData, ComponentInteractionData]
     guild_id: Snowflake
     channel_id: Snowflake
     member: Member
     user: User
+    message: Message
 
 
 class Interaction(_InteractionOptional):
@@ -136,9 +161,10 @@ class InteractionApplicationCommandCallbackData(TypedDict, total=False):
     embeds: List[Embed]
     allowed_mentions: AllowedMentions
     flags: int
+    components: List[Component]
 
 
-InteractionResponseType = Literal[1, 2, 3, 4, 5]
+InteractionResponseType = Literal[1, 4, 5, 6, 7]
 
 
 class _InteractionResponseOptional(TypedDict, total=False):
@@ -154,3 +180,10 @@ class MessageInteraction(TypedDict):
     type: InteractionType
     name: str
     user: User
+
+
+class EditApplicationCommand(TypedDict):
+    name: str
+    description: str
+    options: Optional[List[ApplicationCommandOption]]
+    default_permission: bool

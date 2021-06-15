@@ -24,11 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, List, Literal, Optional, TypedDict
+from typing import List, Literal, Optional, TypedDict, Union
 from .webhook import Webhook
-from .integration import PartialIntegration
+from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
+from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .snowflake import Snowflake
+from .role import Role
+from .channel import ChannelType, VideoQualityMode, PermissionOverwrite
 
 AuditLogEvent = Literal[
     1,
@@ -69,10 +72,141 @@ AuditLogEvent = Literal[
 ]
 
 
-class AuditLogChange(TypedDict):
-    key: str
-    new_value: Any
-    old_value: Any
+class _AuditLogChange_Str(TypedDict):
+    key: Literal[
+        'name', 'description', 'preferred_locale', 'vanity_url_code', 'topic', 'code', 'allow', 'deny', 'permissions'
+    ]
+    new_value: str
+    old_value: str
+
+
+class _AuditLogChange_AssetHash(TypedDict):
+    key: Literal['icon_hash', 'splash_hash', 'discovery_splash_hash', 'banner_hash', 'avatar_hash']
+    new_value: str
+    old_value: str
+
+
+class _AuditLogChange_Snowflake(TypedDict):
+    key: Literal[
+        'id',
+        'owner_id',
+        'afk_channel_id',
+        'rules_channel_id',
+        'public_updates_channel_id',
+        'widget_channel_id',
+        'system_channel_id',
+        'application_id',
+        'channel_id',
+        'inviter_id',
+    ]
+    new_value: Snowflake
+    old_value: Snowflake
+
+
+class _AuditLogChange_Bool(TypedDict):
+    key: Literal[
+        'widget_enabled',
+        'nsfw',
+        'hoist',
+        'mentionable',
+        'temporary',
+        'deaf',
+        'mute',
+        'nick',
+        'enabled_emoticons',
+        'region',
+        'rtc_region',
+    ]
+    new_value: bool
+    old_value: bool
+
+
+class _AuditLogChange_Int(TypedDict):
+    key: Literal[
+        'afk_timeout',
+        'prune_delete_days',
+        'position',
+        'bitrate',
+        'rate_limit_per_user',
+        'color',
+        'max_uses',
+        'max_age',
+        'user_limit',
+    ]
+    new_value: int
+    old_value: int
+
+
+class _AuditLogChange_ListRole(TypedDict):
+    key: Literal['$add', '$remove']
+    new_value: List[Role]
+    old_value: List[Role]
+
+
+class _AuditLogChange_MFALevel(TypedDict):
+    key: Literal['mfa_level']
+    new_value: MFALevel
+    old_value: MFALevel
+
+
+class _AuditLogChange_VerificationLevel(TypedDict):
+    key: Literal['verification_level']
+    new_value: VerificationLevel
+    old_value: VerificationLevel
+
+
+class _AuditLogChange_ExplicitContentFilter(TypedDict):
+    key: Literal['explicit_content_filter']
+    new_value: ExplicitContentFilterLevel
+    old_value: ExplicitContentFilterLevel
+
+
+class _AuditLogChange_DefaultMessageNotificationLevel(TypedDict):
+    key: Literal['default_message_notifications']
+    new_value: DefaultMessageNotificationLevel
+    old_value: DefaultMessageNotificationLevel
+
+
+class _AuditLogChange_ChannelType(TypedDict):
+    key: Literal['type']
+    new_value: ChannelType
+    old_value: ChannelType
+
+
+class _AuditLogChange_IntegrationExpireBehaviour(TypedDict):
+    key: Literal['expire_behavior']
+    new_value: IntegrationExpireBehavior
+    old_value: IntegrationExpireBehavior
+
+
+class _AuditLogChange_VideoQualityMode(TypedDict):
+    key: Literal['video_quality_mode']
+    new_value: VideoQualityMode
+    old_value: VideoQualityMode
+
+
+class _AuditLogChange_Overwrites(TypedDict):
+    key: Literal['permission_overwrites']
+    new_value: List[PermissionOverwrite]
+    old_value: List[PermissionOverwrite]
+
+
+AuditLogChange = Union[
+    _AuditLogChange_Str,
+    _AuditLogChange_AssetHash,
+    _AuditLogChange_Snowflake,
+    _AuditLogChange_Int,
+    _AuditLogChange_Bool,
+    _AuditLogChange_ListRole,
+    _AuditLogChange_MFALevel,
+    _AuditLogChange_VerificationLevel,
+    _AuditLogChange_ExplicitContentFilter,
+    _AuditLogChange_DefaultMessageNotificationLevel,
+    _AuditLogChange_ChannelType,
+    _AuditLogChange_IntegrationExpireBehaviour,
+    _AuditLogChange_VideoQualityMode,
+    _AuditLogChange_Overwrites,
+]
 
 
 class AuditEntryInfo(TypedDict):
@@ -94,7 +228,7 @@ class _AuditLogEntryOptional(TypedDict, total=False):
 
 class AuditLogEntry(_AuditLogEntryOptional):
     target_id: Optional[str]
-    user_id: Snowflake
+    user_id: Optional[Snowflake]
     id: Snowflake
     action_type: AuditLogEvent
 

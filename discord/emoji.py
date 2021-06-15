@@ -27,7 +27,7 @@ from typing import Any, Iterator, List, Optional, TYPE_CHECKING, Tuple
 
 from .asset import Asset, AssetMixin
 from .utils import SnowflakeList, snowflake_time, MISSING
-from .partial_emoji import _EmojiTag
+from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
 
 __all__ = (
@@ -107,20 +107,23 @@ class Emoji(_EmojiTag, AssetMixin):
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload):
-        self.guild_id = guild.id
-        self._state = state
+        self.guild_id: int = guild.id
+        self._state: ConnectionState = state
         self._from_data(data)
 
     def _from_data(self, emoji: EmojiPayload):
-        self.require_colons = emoji.get('require_colons', False)
-        self.managed = emoji.get('managed', False)
-        self.id = int(emoji['id'])  # type: ignore
-        self.name = emoji['name']
-        self.animated = emoji.get('animated', False)
-        self.available = emoji.get('available', True)
-        self._roles = SnowflakeList(map(int, emoji.get('roles', [])))
+        self.require_colons: bool = emoji.get('require_colons', False)
+        self.managed: bool = emoji.get('managed', False)
+        self.id: int = int(emoji['id'])  # type: ignore
+        self.name: str = emoji['name']  # type: ignore
+        self.animated: bool = emoji.get('animated', False)
+        self.available: bool = emoji.get('available', True)
+        self._roles: SnowflakeList = SnowflakeList(map(int, emoji.get('roles', [])))
         user = emoji.get('user')
-        self.user = User(state=self._state, data=user) if user else None
+        self.user: Optional[User] = User(state=self._state, data=user) if user else None
+
+    def _to_partial(self) -> PartialEmoji:
+        return PartialEmoji(name=self.name, animated=self.animated, id=self.id)
 
     def __iter__(self) -> Iterator[Tuple[str, Any]]:
         for attr in self.__slots__:

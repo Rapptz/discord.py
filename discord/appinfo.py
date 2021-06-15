@@ -22,13 +22,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING, Optional
+
 from . import utils
-from .user import User
 from .asset import Asset
-from .team import Team
+
+if TYPE_CHECKING:
+    from .guild import Guild
+    from .types.appinfo import (
+        AppInfo as AppInfoPayload,
+        PartialAppInfo as PartialAppInfoPayload,
+        Team as TeamPayload,
+    )
+    from .user import User
+    from .state import ConnectionState
 
 __all__ = (
     'AppInfo',
+    'PartialAppInfo',
 )
 
 
@@ -49,7 +62,7 @@ class AppInfo:
 
         .. versionadded:: 1.3
 
-    description: Optional[:class:`str`]
+    description: :class:`str`
         The application description.
     bot_public: :class:`bool`
         Whether the bot can be invited by anyone or if it is locked
@@ -122,33 +135,34 @@ class AppInfo:
         'privacy_policy_url',
     )
 
-    def __init__(self, state, data):
-        self._state = state
+    def __init__(self, state: ConnectionState, data: AppInfoPayload):
+        from .team import Team
 
-        self.id = int(data['id'])
-        self.name = data['name']
-        self.description = data['description']
-        self._icon = data['icon']
-        self.rpc_origins = data['rpc_origins']
-        self.bot_public = data['bot_public']
-        self.bot_require_code_grant = data['bot_require_code_grant']
-        self.owner = User(state=self._state, data=data['owner'])
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.description: str = data['description']
+        self._icon: Optional[str] = data['icon']
+        self.rpc_origins: List[str] = data['rpc_origins']
+        self.bot_public: bool = data['bot_public']
+        self.bot_require_code_grant: bool = data['bot_require_code_grant']
+        self.owner: User = state.store_user(data['owner'])
 
-        team = data.get('team')
-        self.team = Team(state, team) if team else None
+        team: Optional[TeamPayload] = data.get('team')
+        self.team: Optional[Team] = Team(state, team) if team else None
 
-        self.summary = data['summary']
-        self.verify_key = data['verify_key']
+        self.summary: str = data['summary']
+        self.verify_key: str = data['verify_key']
 
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
 
-        self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
-        self.slug = data.get('slug')
-        self._cover_image = data.get('cover_image')
-        self.terms_of_service_url = data.get('terms_of_service_url')
-        self.privacy_policy_url = data.get('privacy_policy_url')
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
+        self.slug: Optional[str] = data.get('slug')
+        self._cover_image: Optional[str] = data.get('cover_image')
+        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
+        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
             f'description={self.description!r} public={self.bot_public} '
@@ -156,14 +170,14 @@ class AppInfo:
         )
 
     @property
-    def icon(self):
+    def icon(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
 
     @property
-    def cover_image(self):
+    def cover_image(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
 
         This is only available if the application is a game sold on Discord.
@@ -173,10 +187,61 @@ class AppInfo:
         return Asset._from_cover_image(self._state, self.id, self._cover_image)
 
     @property
-    def guild(self):
+    def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
         this field will be the guild to which it has been linked
 
         .. versionadded:: 1.3
         """
-        return self._state._get_guild(int(self.guild_id))
+        return self._state._get_guild(self.guild_id)
+
+class PartialAppInfo:
+    """Represents a partial AppInfo given by :func:`~GuildChannel.create_invite`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -------------
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    description: :class:`str`
+        The application description.
+    rpc_origins: Optional[List[:class:`str`]]
+        A list of RPC origin URLs, if RPC is enabled.
+    summary: :class:`str`
+        If this application is a game sold on Discord,
+        this field will be the summary field for the store page of its primary SKU.
+    verify_key: :class:`str`
+        The hex encoded key for verification in interactions and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+    terms_of_service_url: Optional[:class:`str`]
+        The application's terms of service URL, if set.
+    privacy_policy_url: Optional[:class:`str`]
+        The application's privacy policy URL, if set.
+    """
+
+    __slots__ = ('_state', 'id', 'name', 'description', 'rpc_origins', 'summary', 'verify_key', 'terms_of_service_url', 'privacy_policy_url', '_icon')
+
+    def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data.get('icon')
+        self.description: str = data['description']
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
+        self.summary: str = data['summary']
+        self.verify_key: str = data['verify_key']
+        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
+        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='app')

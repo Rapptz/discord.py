@@ -279,6 +279,13 @@ class MessageFlags(BaseFlags):
         """
         return 16
 
+    @flag_value
+    def has_thread(self):
+        """:class:`bool`: Returns ``True`` if the source message is associated with a thread.
+
+        .. versionadded:: 2.0
+        """
+        return 32
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
@@ -385,6 +392,14 @@ class PublicUserFlags(BaseFlags):
         .. versionadded:: 1.5
         """
         return UserFlags.verified_bot_developer.value
+
+    @flag_value
+    def discord_certified_moderator(self):
+        """:class:`bool`: Returns ``True`` if the user is a Discord Certified Moderator.
+
+        .. versionadded:: 2.0
+        """
+        return UserFlags.discord_certified_moderator.value
 
     def all(self) -> List[UserFlags]:
         """List[:class:`UserFlags`]: Returns all public flags the user has."""
@@ -564,6 +579,9 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_guild_integrations_update`
+        - :func:`on_integration_create`
+        - :func:`on_integration_update`
+        - :func:`on_raw_integration_delete`
 
         This does not correspond to any attributes or classes in the library in terms of cache.
         """

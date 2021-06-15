@@ -121,11 +121,6 @@ class BotBase(GroupMixin):
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
             raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
 
-        if options.pop('self_bot', False):
-            self._skip_check = lambda x, y: x != y
-        else:
-            self._skip_check = lambda x, y: x == y
-
         if help_command is _default:
             self.help_command = DefaultHelpCommand()
         else:
@@ -906,7 +901,7 @@ class BotBase(GroupMixin):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if self._skip_check(message.author.id, self.user.id):
+        if message.author.id == self.user.id:
             return ctx
 
         prefix = await self.get_prefix(message)
@@ -1051,10 +1046,6 @@ class Bot(BotBase, discord.Client):
         you require group commands to be case insensitive as well.
     description: :class:`str`
         The content prefixed into the default help message.
-    self_bot: :class:`bool`
-        If ``True``, the bot will only listen to commands invoked by itself rather
-        than ignoring itself. If ``False`` (the default) then the bot will ignore
-        itself. This cannot be changed once initialised.
     help_command: Optional[:class:`.HelpCommand`]
         The help command implementation to use. This can be dynamically
         set at runtime. To remove the help command pass ``None``. For more

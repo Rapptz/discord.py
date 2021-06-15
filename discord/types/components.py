@@ -22,40 +22,54 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import Snowflake
-from .member import Member
+from __future__ import annotations
+
+from typing import List, Literal, TypedDict, Union
+from .emoji import PartialEmoji
+
+ComponentType = Literal[1, 2, 3]
+ButtonStyle = Literal[1, 2, 3, 4, 5]
 
 
-class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
-    self_stream: bool
+class ActionRow(TypedDict):
+    type: Literal[1]
+    components: List[Component]
 
 
-class _VoiceState(_PartialVoiceStateOptional):
-    user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
+class _ButtonComponentOptional(TypedDict, total=False):
+    custom_id: str
+    url: str
+    disabled: bool
+    emoji: PartialEmoji
+    label: str
 
 
-class GuildVoiceState(_VoiceState):
-    channel_id: Snowflake
+class ButtonComponent(_ButtonComponentOptional):
+    type: Literal[2]
+    style: ButtonStyle
 
 
-class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
-    guild_id: Snowflake
+class _SelectMenuOptional(TypedDict, total=False):
+    placeholder: str
+    min_values: int
+    max_values: int
 
 
-class VoiceRegion(TypedDict):
-    id: str
-    name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+class _SelectOptionsOptional(TypedDict, total=False):
+    description: str
+    emoji: PartialEmoji
+
+
+class SelectOption(_SelectOptionsOptional):
+    label: str
+    value: str
+    default: bool
+
+
+class SelectMenu(_SelectMenuOptional):
+    type: Literal[3]
+    custom_id: str
+    options: List[SelectOption]
+
+
+Component = Union[ActionRow, ButtonComponent, SelectMenu]
