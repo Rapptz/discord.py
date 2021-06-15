@@ -682,7 +682,7 @@ class Spotify:
     
     @property
     def elapsed(self):
-        """:class:`datetime.timedelta`: The elapsed time of the song being played.."""
+        """:class:`datetime.timedelta`: The elapsed time of the song being played."""
         return datetime.datetime.utcnow() - self.start
 
     @property
