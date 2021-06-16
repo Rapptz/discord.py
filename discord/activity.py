@@ -676,7 +676,7 @@ class Spotify:
         return self._sync_id
     
     @property
-    def track_url(self)
+    def track_url(self):
         """:class:`str`: The track URL to listen on Spotify."""
         return 'https://open.spotify.com/track/' + self.track_id
 
