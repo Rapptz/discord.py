@@ -87,6 +87,7 @@ if TYPE_CHECKING:
         threads,
         scheduled_event,
         sticker,
+        welcome_screen,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -1212,10 +1213,10 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id), params=params)
 
-    def get_welcome_screen(self, guild_id):
+    def get_welcome_screen(self, guild_id: Snowflake) -> Response[welcome_screen.WelcomeScreen]:
         return self.request(Route('GET', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id))
 
-    def edit_welcome_screen(self, guild_id, payload):
+    def edit_welcome_screen(self, guild_id: Snowflake, payload: Any) -> Response[welcome_screen.WelcomeScreen]:
         valid_keys = (
             'description',
             'welcome_channels',
