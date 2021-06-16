@@ -69,7 +69,7 @@ class BaseIntegration(PartialIntegration):
 
 
 class StreamIntegration(BaseIntegration):
-    role_id: Snowflake
+    role_id: Optional[Snowflake]
     enable_emoticons: bool
     subscriber_count: int
     revoked: bool
