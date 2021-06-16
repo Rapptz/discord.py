@@ -677,7 +677,10 @@ class Spotify:
     
     @property
     def track_url(self):
-        """:class:`str`: The track URL to listen on Spotify."""
+        """:class:`str`: The track URL to listen on Spotify.
+        
+        .. versionadded:: 2.0
+        """
         return 'https://open.spotify.com/track/' + self.track_id
 
     @property
