@@ -674,6 +674,11 @@ class Spotify:
     def track_id(self):
         """:class:`str`: The track ID used by Spotify to identify this song."""
         return self._sync_id
+    
+    @property
+    def track_url(self)
+        """:class:`str`: The track URL to listen on Spotify."""
+        return 'https://open.spotify.com/track/' + self.track_id
 
     @property
     def start(self):
