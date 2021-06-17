@@ -257,7 +257,7 @@ def oauth_url(
     guild: Snowflake = MISSING,
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
-    disable_guild_select: bool = MISSING,
+    disable_guild_select: bool = False,
 ):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
@@ -288,7 +288,7 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url += '&scope=' + '+'.join(scopes if scopes is not MISSING else ('bot',))
+    url += '&scope=' + '+'.join(scopes or ('bot',))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
@@ -297,9 +297,8 @@ def oauth_url(
         from urllib.parse import urlencode
 
         url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
-    if disable_guild_select is not MISSING:
-        url += '&disable_guild_select='
-        url += 'true' if disable_guild_select else 'false'
+    if disable_guild_select:
+        url += '&disable_guild_select=true'
     return url
 
 
