@@ -2360,6 +2360,48 @@ of :class:`enum.Enum`.
 
         The guild may contain NSFW content.
 
+.. class:: TimeMentionType
+
+    Represents the type of time mention.
+
+    .. versionadded:: 2.0
+    
+    .. attribute:: default
+
+        Short date and time, like ``June 1, 2021 8:17 AM``.
+    
+    .. attribute:: short_date_time
+
+        Same as ``default``.
+    
+    .. attribute:: long_date_time
+
+        Long date and time, like ``Saturday, June 19, 2021 8:18 AM``.
+    
+    .. attribute:: short_date
+
+        Short date, like ``06/19/2021``.
+    
+    .. attribute:: long_date
+
+        Long date, like ``June 19, 2021``.
+    
+    .. attribute:: short_time
+
+        Short time, like ``8:18 AM``.
+    
+    .. attribute:: long_time
+
+        Long time, like ``8:18:09 AM``.
+    
+    .. attribute:: relative
+
+        Relative time from now, like ``10 hours ago``.
+
+    .. note::
+
+        Format changes by language setting of client.
+
 Async Iterator
 ----------------
 
