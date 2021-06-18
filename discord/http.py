@@ -412,6 +412,7 @@ class HTTPClient:
         *,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
+        embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] =  None,
         allowed_mentions: bool = None,
         message_reference: bool = None,
@@ -428,6 +429,9 @@ class HTTPClient:
 
         if embed:
             payload['embed'] = embed
+        
+        if embeds:
+            payload['embeds'] = embeds
 
         if nonce:
             payload['nonce'] = nonce
