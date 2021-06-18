@@ -561,8 +561,13 @@ def to_time_mention(time: datetime.datetime) -> str:
 
     Parameters
     -----------
-    when: :class:`datetime.datetime`
+    time: :class:`datetime.datetime`
         The ``datetime`` to make mention.
+
+    Returns
+    --------
+    :class:`str`
+        A datetime mention for given datetime.
     """
     return "<t:{}>".format(int(time.timestamp()))
 
