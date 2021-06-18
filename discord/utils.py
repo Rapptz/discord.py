@@ -572,7 +572,7 @@ def to_time_mention(time: datetime.datetime, mention_type: Optional[TimeMentionT
     :class:`str`
         A datetime mention for given datetime.
     """
-    if mention_type is None:
+    if mention_type is None or mention_type is TimeMentionType.default:
         return f"<t:{int(time.timestamp())}>"
     else:
         return f"<t:{int(time.timestamp())}:{mention_type.value}>"
