@@ -569,7 +569,7 @@ def to_time_mention(time: datetime.datetime) -> str:
     :class:`str`
         A datetime mention for given datetime.
     """
-    return "<t:{}>".format(int(time.timestamp()))
+    return f"<t:{int(time.timestamp())}>"
 
 
 def valid_icon_size(size: int) -> bool:
