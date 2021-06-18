@@ -554,6 +554,19 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
+def to_time_mention(time: datetime.datetime) -> str:
+    """A helper function to make a time mention from ``datetime.datetime``.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    when: :class:`datetime.datetime`
+        The ``datetime`` to make mention.
+    """
+    return "<t:{}>".format(int(time.timestamp()))
+
+
 def valid_icon_size(size: int) -> bool:
     """Icons must be power of 2 within [16, 4096]."""
     return not size & (size - 1) and 4096 >= size >= 16
