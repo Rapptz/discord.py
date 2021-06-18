@@ -564,6 +564,8 @@ def to_time_mention(time: datetime.datetime, mention_type: Optional[TimeMentionT
     -----------
     time: :class:`datetime.datetime`
         The ``datetime`` to make mention.
+    mention_type: :class:`TimeMentionType`
+        Type of the mention.
 
     Returns
     --------
