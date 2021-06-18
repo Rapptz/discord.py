@@ -1065,6 +1065,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.as_chunks
 
+.. autofunction:: discord.utils.to_time_mention
+
 .. _discord-api-enums:
 
 Enumerations
