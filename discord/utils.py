@@ -61,6 +61,7 @@ import sys
 import types
 import warnings
 
+from .enums import TimeMentionType
 from .errors import InvalidArgument
 
 __all__ = (
@@ -554,7 +555,7 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def to_time_mention(time: datetime.datetime) -> str:
+def to_time_mention(time: datetime.datetime, mention_type: Optional[TimeMentionType] = None) -> str:
     """A helper function to make a time mention from ``datetime.datetime``.
 
     .. versionadded:: 2.0
@@ -569,7 +570,10 @@ def to_time_mention(time: datetime.datetime) -> str:
     :class:`str`
         A datetime mention for given datetime.
     """
-    return f"<t:{int(time.timestamp())}>"
+    if mention_type is None:
+        return f"<t:{int(time.timestamp())}>"
+    else:
+        return f"<t:{int(time.timestamp())}:{mention_type.value}>"
 
 
 def valid_icon_size(size: int) -> bool:

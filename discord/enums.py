@@ -508,6 +508,15 @@ class NSFWLevel(Enum):
     safe = 2
     age_restricted = 3
 
+class TimeMentionType(Enum):
+    short_date_time = "f"
+    long_date_time  = "F"
+    short_date      = "d"
+    long_date       = "D"
+    short_time      = "t"
+    long_time       = "T"
+    relative        = "R"
+
 T = TypeVar('T')
 
 def create_unknown_value(cls: Type[T], val: Any) -> T:
