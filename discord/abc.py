@@ -1185,9 +1185,13 @@ class Messageable(Protocol):
         single :class:`~discord.File` object. To upload multiple files, the ``files``
         parameter should be used with a :class:`list` of :class:`~discord.File` objects.
         **Specifying both parameters will lead to an exception**.
-
-        If the ``embed`` parameter is provided, it must be of type :class:`~discord.Embed` and
-        it must be a rich embed type.
+        
+        To upload a single embed, the ``embed`` parameter should be used with a
+        single :class:`~discord.Embed` object. To upload multiple embeds, the ``embeds``
+        parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
+        **Specifying both parameters will lead to an exception**.
+        If the ``embed`` or ``embeds`` parameter is provided, it must be of 
+        type :class:`~discord.Embed` and it must be a rich embed type.
 
         Parameters
         ------------
@@ -1246,6 +1250,8 @@ class Messageable(Protocol):
         ~discord.InvalidArgument
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
+            or the ``embeds`` list is not of the appropriate size,
+            you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`
             or :class:`~discord.MessageReference`.
 
