@@ -428,7 +428,7 @@ class HTTPClient:
             payload['tts'] = True
 
         if embed:
-            payload['embed'] = embed
+            payload['embeds'] = [embed]
         
         if embeds:
             payload['embeds'] = embeds
@@ -470,7 +470,7 @@ class HTTPClient:
         if content:
             payload['content'] = content
         if embed:
-            payload['embed'] = embed
+            payload['embeds'] = [embed]
         if embeds:
             payload['embeds'] = embeds
         if nonce:
