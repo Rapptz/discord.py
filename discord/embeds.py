@@ -39,6 +39,9 @@ class _EmptyEmbed:
     def __bool__(self) -> bool:
         return False
 
+    def __str__(self) -> str:
+        return ''
+
     def __repr__(self) -> str:
         return 'Embed.Empty'
 
