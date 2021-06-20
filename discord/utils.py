@@ -556,7 +556,7 @@ def utcnow() -> datetime.datetime:
 
 
 def to_timestamp_format(time: datetime.datetime, format_type: Optional[TimestampFormat] = None) -> str:
-    """A helper function to make a time mention from ``datetime.datetime``.
+    """A helper function to format ``datetime.datetime``.
 
     .. versionadded:: 2.0
 
@@ -565,7 +565,7 @@ def to_timestamp_format(time: datetime.datetime, format_type: Optional[Timestamp
     time: :class:`datetime.datetime`
         The ``datetime`` to make mention.
     format_type: :class:`TimestampFormat`
-        Type of the mention.
+        Type of format.
 
     Returns
     --------
