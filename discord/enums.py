@@ -508,7 +508,7 @@ class NSFWLevel(Enum):
     safe = 2
     age_restricted = 3
 
-class TimeMentionType(Enum):
+class TimestampFormat(Enum):
     default         = "f"
     short_date_time = "f"
     long_date_time  = "F"

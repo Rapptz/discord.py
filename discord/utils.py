@@ -61,7 +61,7 @@ import sys
 import types
 import warnings
 
-from .enums import TimeMentionType
+from .enums import TimestampFormat
 from .errors import InvalidArgument
 
 __all__ = (
@@ -555,7 +555,7 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def to_timestamp_format(time: datetime.datetime, mention_type: Optional[TimeMentionType] = None) -> str:
+def to_timestamp_format(time: datetime.datetime, format_type: Optional[TimestampFormat] = None) -> str:
     """A helper function to make a time mention from ``datetime.datetime``.
 
     .. versionadded:: 2.0
@@ -564,7 +564,7 @@ def to_timestamp_format(time: datetime.datetime, mention_type: Optional[TimeMent
     -----------
     time: :class:`datetime.datetime`
         The ``datetime`` to make mention.
-    mention_type: :class:`TimeMentionType`
+    format_type: :class:`TimestampFormat`
         Type of the mention.
 
     Returns
