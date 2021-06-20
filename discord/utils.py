@@ -555,7 +555,7 @@ def utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
-def to_time_mention(time: datetime.datetime, mention_type: Optional[TimeMentionType] = None) -> str:
+def to_timestamp_format(time: datetime.datetime, mention_type: Optional[TimeMentionType] = None) -> str:
     """A helper function to make a time mention from ``datetime.datetime``.
 
     .. versionadded:: 2.0
