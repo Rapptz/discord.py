@@ -1065,7 +1065,7 @@ Utility Functions
 
 .. autofunction:: discord.utils.as_chunks
 
-.. autofunction:: discord.utils.to_time_mention
+.. autofunction:: discord.utils.to_timestamp_format
 
 .. _discord-api-enums:
 
@@ -2360,9 +2360,9 @@ of :class:`enum.Enum`.
 
         The guild may contain NSFW content.
 
-.. class:: TimeMentionType
+.. class:: TimestampFormat
 
-    Represents the type of time mention.
+    Represents the format of :func:`utils.to_timestamp_format`.
 
     .. versionadded:: 2.0
     
