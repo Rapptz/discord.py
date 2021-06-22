@@ -782,7 +782,7 @@ div.admonition {
 
 p.admonition-title {
   font-weight: bold;
-  margin: 0 -0.8rem!important;
+  margin: 0 -0.8rem !important;
   padding: 0.4rem 0.6rem 0.4rem 2.5rem;
   position: relative;
   -moz-user-select: none;
