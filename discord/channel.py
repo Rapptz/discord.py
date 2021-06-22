@@ -1383,7 +1383,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
-    async def create_text_channel(self, name, *, overwrites=None, reason=None, **options):
+    async def create_text_channel(self, name, **options):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_text_channel` to create a :class:`TextChannel` in the category.
@@ -1393,9 +1393,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         :class:`TextChannel`
             The channel that was just created.
         """
-        return await self.guild.create_text_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+        return await self.guild.create_text_channel(name, category=self, **options)
 
-    async def create_voice_channel(self, name, *, overwrites=None, reason=None, **options):
+    async def create_voice_channel(self, name, **options):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_voice_channel` to create a :class:`VoiceChannel` in the category.
@@ -1405,9 +1405,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         :class:`VoiceChannel`
             The channel that was just created.
         """
-        return await self.guild.create_voice_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+        return await self.guild.create_voice_channel(name, category=self, **options)
 
-    async def create_stage_channel(self, name, *, overwrites=None, reason=None, **options):
+    async def create_stage_channel(self, name, **options):
         """|coro|
 
         A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category.
@@ -1419,7 +1419,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         :class:`StageChannel`
             The channel that was just created.
         """
-        return await self.guild.create_stage_channel(name, overwrites=overwrites, category=self, reason=reason, **options)
+        return await self.guild.create_stage_channel(name, category=self, **options)
 
 class StoreChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild store channel.
