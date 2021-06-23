@@ -657,7 +657,11 @@ class Message(Hashable):
         self.nonce = data.get('nonce')
         self.stickers = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
         self.components = [_component_factory(d) for d in data.get('components', [])]
-        self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+
+        try:
+            self.guild = channel.guild
+        except AttributeError:
+            self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
         try:
             ref = data['message_reference']
