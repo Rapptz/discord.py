@@ -858,13 +858,9 @@ class Message(Hashable):
     def _handle_components(self, components: List[ComponentPayload]):
         self.components = [_component_factory(d) for d in components]
 
-    def _rebind_channel_reference(self, new_channel: Union[TextChannel, Thread, DMChannel, GroupChannel]) -> None:
+    def _rebind_cached_references(self, new_guild: Optional[Guild], new_channel: Union[TextChannel, Thread, DMChannel, GroupChannel]) -> None:
+        self.guild = new_guild
         self.channel = new_channel
-
-        try:
-            del self._cs_guild  # type: ignore
-        except AttributeError:
-            pass
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
