@@ -590,6 +590,8 @@ class Message(Hashable):
         A list of components in the message.
 
         .. versionadded:: 2.0
+    guild: Optional[:class:`Guild`]
+        The guild that the message belongs to, if applicable.
     """
 
     __slots__ = (
@@ -601,7 +603,6 @@ class Message(Hashable):
         '_cs_raw_channel_mentions',
         '_cs_raw_role_mentions',
         '_cs_system_content',
-        '_cs_guild',
         'tts',
         'content',
         'channel',
@@ -623,6 +624,7 @@ class Message(Hashable):
         'activity',
         'stickers',
         'components',
+        'guild',
     )
 
     if TYPE_CHECKING:
@@ -655,6 +657,7 @@ class Message(Hashable):
         self.nonce = data.get('nonce')
         self.stickers = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
         self.components = [_component_factory(d) for d in data.get('components', [])]
+        self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
         try:
             ref = data['message_reference']
@@ -858,11 +861,6 @@ class Message(Hashable):
             del self._cs_guild  # type: ignore
         except AttributeError:
             pass
-
-    @utils.cached_slot_property('_cs_guild')
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
-        return getattr(self.channel, 'guild', None)
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
