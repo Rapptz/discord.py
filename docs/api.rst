@@ -1427,6 +1427,9 @@ of :class:`enum.Enum`.
     .. attribute:: grey
 
         An alias for :attr:`secondary`.
+    .. attribute:: gray
+
+        An alias for :attr:`secondary`.
     .. attribute:: green
 
         An alias for :attr:`success`.
