@@ -1110,7 +1110,17 @@ class Message(Hashable):
         ...
 
     @overload
-    async def edit(self) -> None:
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embeds: Optional[List[Embed]] = ...,
+        attachments: List[Attachment] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
+    ) -> None:
         ...
 
     async def edit(self, **fields) -> None:
@@ -1155,6 +1165,10 @@ class Message(Hashable):
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+        embeds: Optional[List[:class:`Embeds`]]
+            The new embeds to replace the original with.
+            Could be ``None`` to remove the embeds.
+            Must be a maximum of 10.
 
             .. versionadded:: 2.0
 
@@ -1165,6 +1179,8 @@ class Message(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        ~discord.InvalidArgument
+            You specified both ``embed`` and ``embeds``
         """
 
         try:
@@ -1176,12 +1192,24 @@ class Message(Hashable):
                 fields['content'] = str(content)
 
         try:
-            embed = fields['embed']
+            fields['embed']
+            fields['embeds']
         except KeyError:
             pass
         else:
-            if embed is not None:
-                fields['embed'] = embed.to_dict()
+            raise InvalidArgument('cannot pass both embed and embeds parameter to edit()')
+        try:
+            embeds = fields.pop('embeds')
+        except KeyError:
+            pass
+        else:
+            fields['embeds'] = [embed.to_dict() for embed in embeds]
+        try:
+            embed = fields.pop('embed')
+        except KeyError:
+            pass
+        else:
+            fields['embeds'] = [embed.to_dict()]
 
         try:
             suppress = fields.pop('suppress')
