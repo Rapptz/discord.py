@@ -572,10 +572,10 @@ def to_timestamp_format(time: datetime.datetime, format_type: Optional[Timestamp
     :class:`str`
         A datetime mention for given datetime.
     """
-    if mention_type is None or mention_type is TimeMentionType.default:
+    if format_type is None or format_type is TimestampFormat.default:
         return f"<t:{int(time.timestamp())}>"
     else:
-        return f"<t:{int(time.timestamp())}:{mention_type.value}>"
+        return f"<t:{int(time.timestamp())}:{format_type.value}>"
 
 
 def valid_icon_size(size: int) -> bool:
