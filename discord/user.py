@@ -39,7 +39,7 @@ _BaseUser = discord.abc.User
 
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
         name: str
@@ -75,6 +75,7 @@ class BaseUser(_BaseUser):
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
+        self._banner = data.get('banner', None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
@@ -87,6 +88,7 @@ class BaseUser(_BaseUser):
         self.id = user.id
         self.discriminator = user.discriminator
         self._avatar = user._avatar
+        self._banner = user._banner
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
@@ -122,6 +124,16 @@ class BaseUser(_BaseUser):
     def default_avatar(self):
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+
+    @property
+    def banner(self):
+        """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
+
+        ..versionadded: 2.0
+        """
+        if self._banner is None:
+            return None
+        return Asset._from_user_bannner(self._state, self.id, self._banner)
 
     @property
     def colour(self):
