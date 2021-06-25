@@ -1201,10 +1201,6 @@ class Messageable(Protocol):
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`~discord.Embed`
             The rich embed for the content.
-        embeds: List[:class:`~discord.Embed`]
-            A list of embeds to upload. Must be a maximum of 10.
-            
-            .. versionadded:: 2.0
         file: :class:`~discord.File`
             The file to upload.
         files: List[:class:`~discord.File`]
@@ -1240,6 +1236,8 @@ class Messageable(Protocol):
             .. versionadded:: 1.6
         view: :class:`discord.ui.View`
             A Discord UI View to add to the message.
+        embeds: List[:class:`~discord.Embed`]
+            A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
 
@@ -1252,8 +1250,7 @@ class Messageable(Protocol):
         ~discord.InvalidArgument
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
-            or the ``embeds`` list is not of the appropriate size,
-            you specified both ``embed`` and ``embeds``,
+            or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`
             or :class:`~discord.MessageReference`.
 
