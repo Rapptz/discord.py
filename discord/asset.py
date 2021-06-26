@@ -225,7 +225,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_user_bannner(cls, state, user_id: int, banner_hash: str) -> Asset:
+    def _from_user_banner(cls, state, user_id: int, banner_hash: str) -> Asset:
         animated = banner_hash.startswith('a_')
         format = 'gif' if animated else 'png'
         return cls(

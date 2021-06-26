@@ -133,7 +133,7 @@ class BaseUser(_BaseUser):
         """
         if self._banner is None:
             return None
-        return Asset._from_user_bannner(self._state, self.id, self._banner)
+        return Asset._from_user_banner(self._state, self.id, self._banner)
 
     @property
     def colour(self):
