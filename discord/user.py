@@ -129,7 +129,7 @@ class BaseUser(_BaseUser):
     def banner(self):
         """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
 
-        ..versionadded: 2.0
+        .. versionadded:: 2.0
         """
         if self._banner is None:
             return None
