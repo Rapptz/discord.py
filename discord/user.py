@@ -126,7 +126,7 @@ class BaseUser(_BaseUser):
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
 
     @property
-    def banner(self):
+    def banner(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
 
         .. versionadded:: 2.0
