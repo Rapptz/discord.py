@@ -39,9 +39,22 @@ __all__ = (
     'button',
 )
 
+class _EmptyButton:
+    def __bool__(self) -> bool:
+        return False
+
+    def __repr__(self) -> str:
+        return 'Button.Empty'
+
+    def __len__(self) -> int:
+        return 0
+
 if TYPE_CHECKING:
     from .view import View
     from ..emoji import Emoji
+   
+    T = TypeVar('T')
+    MaybeEmpty = Union[T, _EmptyEmbed]
 
 B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
@@ -63,8 +76,9 @@ class Button(Item[V]):
         The URL this button sends you to.
     disabled: :class:`bool`
         Whether the button is disabled or not.
-    label: Optional[:class:`str`]
+    label: :class:`str`
         The label of the button, if any.
+        This can be set during initialisation.
     emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
         The emoji of the button, if available.
     row: Optional[:class:`int`]
@@ -88,7 +102,7 @@ class Button(Item[V]):
         self,
         *,
         style: ButtonStyle,
-        label: Optional[str] = None,
+        label: MaybeEmpty[str] = _EmptyButton,
         disabled: bool = False,
         custom_id: Optional[str] = None,
         url: Optional[str] = None,
