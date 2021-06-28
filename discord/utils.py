@@ -975,6 +975,8 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
     Note that the exact output depends on the user's locale setting in the client. The example output
     presented is using the ``en-GB`` locale.
 
+    .. versionadded:: 2.0
+
     Parameters
     -----------
     dt: :class:`datetime.datetime`
