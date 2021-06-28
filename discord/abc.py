@@ -1190,8 +1190,6 @@ class Messageable(Protocol):
         single :class:`~discord.Embed` object. To upload multiple embeds, the ``embeds``
         parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
         **Specifying both parameters will lead to an exception**.
-        If the ``embed`` or ``embeds`` parameter is provided, it must be of 
-        type :class:`~discord.Embed` and it must be a rich embed type.
 
         Parameters
         ------------
