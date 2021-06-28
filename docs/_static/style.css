@@ -1040,10 +1040,16 @@ dl.function > dt,
 dl.attribute > dt,
 dl.classmethod > dt,
 dl.method > dt,
+dl.property > dt,
 dl.class > dt,
 dl.exception > dt {
   background-color: var(--api-entry-background);
   padding: 1px 10px;
+}
+
+/* bug in sphinx: https://github.com/sphinx-doc/sphinx/issues/9384 */
+dl.property > dt > span.descname + em.property {
+  display: none;
 }
 
 dd {
