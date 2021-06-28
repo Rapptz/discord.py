@@ -130,7 +130,7 @@ class BaseActivity:
         .. versionadded:: 1.3
         """
         if self._created_at is not None:
-            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000).replace(tzinfo=datetime.timezone.utc)
 
 
 class Activity(BaseActivity):
@@ -583,7 +583,7 @@ class Spotify:
         .. versionadded:: 1.3
         """
         if self._created_at is not None:
-            return datetime.datetime.utcfromtimestamp(self._created_at / 1000)
+            return datetime.datetime.utcfromtimestamp(self._created_at / 1000).replace(tzinfo=datetime.timezone.utc)
 
     @property
     def colour(self):
@@ -686,12 +686,12 @@ class Spotify:
     @property
     def start(self):
         """:class:`datetime.datetime`: When the user started playing this song in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._timestamps['start'] / 1000)
+        return datetime.datetime.utcfromtimestamp(self._timestamps['start'] / 1000).replace(tzinfo=datetime.timezone.utc)
 
     @property
     def end(self):
         """:class:`datetime.datetime`: When the user will stop playing this song in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._timestamps['end'] / 1000)
+        return datetime.datetime.utcfromtimestamp(self._timestamps['end'] / 1000).replace(tzinfo=datetime.timezone.utc)
 
     @property
     def duration(self):
