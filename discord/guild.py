@@ -2407,7 +2407,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self) -> Invite:
+    async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -2426,12 +2426,15 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Invite`
-            The special vanity invite.
+        Optional[:class:`Invite`]
+            The special vanity invite. If ``None`` then the guild does not
+            have a vanity invite set.
         """
 
         # we start with { code: abc }
         payload = await self._state.http.get_vanity_code(self.id)
+        if not payload['code']:
+            return None
 
         # get the vanity URL channel since default channels aren't
         # reliable or a thing anymore
@@ -2442,6 +2445,7 @@ class Guild(Hashable):
         payload['temporary'] = False
         payload['max_uses'] = 0
         payload['max_age'] = 0
+        payload['uses'] = payload.get('uses', 0)
         return Invite(state=self._state, data=payload, guild=self, channel=channel)
 
     # TODO: use MISSING when async iterators get refactored
