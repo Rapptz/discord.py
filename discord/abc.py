@@ -296,7 +296,7 @@ class GuildChannel:
             parent_id = parent and parent.id
 
         try:
-            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+            options['rate_limit_per_user'] = options.pop('slowmode')
         except KeyError:
             pass
 
