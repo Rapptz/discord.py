@@ -681,7 +681,7 @@ class Spotify:
         
         .. versionadded:: 2.0
         """
-        return 'https://open.spotify.com/track/' + self.track_id
+        return f'https://open.spotify.com/track/{self.track_id}'
 
     @property
     def start(self):
