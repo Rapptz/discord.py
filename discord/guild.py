@@ -2158,7 +2158,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         colour: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2171,7 +2171,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         color: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2183,7 +2183,7 @@ class Guild(Hashable):
         color: Union[Colour, int] = MISSING,
         colour: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
-        mentionable: str = MISSING,
+        mentionable: bool = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
         """|coro|
