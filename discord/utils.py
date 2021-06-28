@@ -251,18 +251,20 @@ def deprecated(instead: Optional[str] = None) -> Callable[[Callable[..., T]], Ca
 
 
 def oauth_url(
-    client_id: str,
-    permissions: Optional[Permissions] = None,
-    guild: Optional[Snowflake] = None,
-    redirect_uri: Optional[str] = None,
-    scopes: Optional[Iterable[str]] = None,
+    client_id: Union[int, str],
+    *,
+    permissions: Permissions = MISSING,
+    guild: Snowflake = MISSING,
+    redirect_uri: str = MISSING,
+    scopes: Iterable[str] = MISSING,
+    disable_guild_select: bool = False,
 ):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
     Parameters
     -----------
-    client_id: :class:`str`
+    client_id: Union[:class:`int`, :class:`str`]
         The client ID for your bot.
     permissions: :class:`~discord.Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
@@ -275,6 +277,10 @@ def oauth_url(
         An optional valid list of scopes. Defaults to ``('bot',)``.
 
         .. versionadded:: 1.7
+    disable_guild_select: :class:`bool`
+        Whether to disallow the user from changing the guild dropdown.
+
+        .. versionadded:: 2.0
 
     Returns
     --------
@@ -282,15 +288,17 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url = url + '&scope=' + '+'.join(scopes or ('bot',))
-    if permissions is not None:
-        url = url + '&permissions=' + str(permissions.value)
-    if guild is not None:
-        url = url + "&guild_id=" + str(guild.id)
-    if redirect_uri is not None:
+    url += '&scope=' + '+'.join(scopes or ('bot',))
+    if permissions is not MISSING:
+        url += f'&permissions={permissions.value}'
+    if guild is not MISSING:
+        url += f'&guild_id={guild.id}'
+    if redirect_uri is not MISSING:
         from urllib.parse import urlencode
 
-        url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if disable_guild_select:
+        url += '&disable_guild_select=true'
     return url
 
 
