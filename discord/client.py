@@ -706,7 +706,7 @@ class Client:
 
         Returns
         --------
-        Optional[:class:`StageInstance`]
+        Optional[:class:`.StageInstance`]
             The returns stage instance of ``None`` if not found.
         """
         from .channel import StageChannel
@@ -1162,7 +1162,7 @@ class Client:
     async def fetch_stage_instance(self, channel_id: int) -> StageInstance:
         """|coro|
 
-        Gets a :class:`StageInstance` for a stage channel id.
+        Gets a :class:`.StageInstance` for a stage channel id.
 
         .. versionadded:: 2.0
 
@@ -1180,7 +1180,7 @@ class Client:
 
         Returns
         --------
-        :class:`StageInstance`
+        :class:`.StageInstance`
             The stage instance from the stage channel ID.
         """
         data = await self.http.get_stage_instance(channel_id)
@@ -1466,5 +1466,5 @@ class Client:
 
     @property
     def persistent_views(self) -> Sequence[View]:
-        """Sequence[:class:`View`]: A sequence of persistent views added to the client."""
+        """Sequence[:class:`.View`]: A sequence of persistent views added to the client."""
         return self._connection.persistent_views

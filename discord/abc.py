@@ -1043,7 +1043,7 @@ class GuildChannel:
             invite.
         reason: Optional[:class:`str`]
             The reason for creating this invite. Shows up on the audit log.
-        target_type: Optional[:class:`InviteTarget`]
+        target_type: Optional[:class:`.InviteTarget`]
             The type of target for the voice channel invite, if any.
             
             .. versionadded:: 2.0
