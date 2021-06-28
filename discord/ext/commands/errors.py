@@ -608,13 +608,13 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
@@ -631,13 +631,13 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
