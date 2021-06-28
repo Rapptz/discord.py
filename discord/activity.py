@@ -687,6 +687,14 @@ class Spotify:
     def start(self):
         """:class:`datetime.datetime`: When the user started playing this song in UTC."""
         return datetime.datetime.utcfromtimestamp(self._timestamps['start'] / 1000)
+    
+    @property
+    def elapsed(self):
+        """:class:`datetime.timedelta`: The elapsed time of the song being played.
+        
+        .. versionadded:: 2.0
+        """
+        return datetime.datetime.utcnow() - self.start
 
     @property
     def end(self):
