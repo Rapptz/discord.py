@@ -570,7 +570,7 @@ class VoiceClient(VoiceProtocol):
         -----------
         source: :class:`AudioSource`
             The audio source we're reading from.
-        after: Callable[[:class:`Exception`], Any]
+        after: Callable[[Optional[:class:`Exception`]], Any]
             The finalizer that is called after the stream is exhausted.
             This function must have a single parameter, ``error``, that
             denotes an optional exception that was raised during playing.
