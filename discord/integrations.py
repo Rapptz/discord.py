@@ -196,7 +196,7 @@ class StreamIntegration(Integration):
         self.expire_behaviour: ExpireBehaviour = try_enum(ExpireBehaviour, data['expire_behavior'])
         self.expire_grace_period: int = data['expire_grace_period']
         self.synced_at: datetime.datetime = parse_time(data['synced_at'])
-        self._role_id: int = int(data['role_id'])
+        self._role_id: Optional[int] = _get_as_snowflake(data, 'role_id')
         self.syncing: bool = data['syncing']
         self.enable_emoticons: bool = data['enable_emoticons']
         self.subscriber_count: int = data['subscriber_count']
