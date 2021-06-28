@@ -31,19 +31,19 @@ from .utils import snowflake_time
 from .enums import StickerType, try_enum
 
 __all__ = (
-    'Sticker',
+    'StickerItem',
 )
 
 if TYPE_CHECKING:
     import datetime
     from .state import ConnectionState
-    from .types.message import Sticker as StickerPayload
+    from .types.message import StickerItem as StickerItemPayload
 
 
-class Sticker(Hashable):
-    """Represents a sticker.
+class StickerItem(Hashable):
+    """Represents a sticker item.
 
-    .. versionadded:: 1.6
+    .. versionadded:: 2.0
 
     .. container:: operations
 
@@ -65,31 +65,17 @@ class Sticker(Hashable):
         The sticker's name.
     id: :class:`int`
         The id of the sticker.
-    description: :class:`str`
-        The description of the sticker.
-    pack_id: :class:`int`
-        The id of the sticker's pack.
     format: :class:`StickerType`
         The format for the sticker's image.
-    tags: List[:class:`str`]
-        A list of tags for the sticker.
     """
 
-    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', '_image', 'tags')
+    __slots__ = ('_state', 'id', 'name', 'format')
 
-    def __init__(self, *, state: ConnectionState, data: StickerPayload):
+    def __init__(self, *, state: ConnectionState, data: StickerItemPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.name: str = data['name']
-        self.description: str = data['description']
-        self.pack_id: int = int(data.get('pack_id', 0))
         self.format: StickerType = try_enum(StickerType, data['format_type'])
-        self._image: str = data['asset']
-
-        try:
-            self.tags: List[str] = [tag.strip() for tag in data['tags'].split(',')]
-        except KeyError:
-            self.tags = []
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
@@ -101,20 +87,3 @@ class Sticker(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the sticker's creation time in UTC."""
         return snowflake_time(self.id)
-
-    @property
-    def image(self) -> Optional[Asset]:
-        """Returns an :class:`Asset` for the sticker's image.
-
-        .. note::
-            This will return ``None`` if the format is ``StickerType.lottie``.
-
-        Returns
-        -------
-        Optional[:class:`Asset`]
-            The resulting CDN asset.
-        """
-        if self.format is StickerType.lottie:
-            return None
-
-        return Asset._from_sticker(self._state, self.id, self._image)

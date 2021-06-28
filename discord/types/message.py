@@ -89,19 +89,12 @@ class MessageReference(TypedDict, total=False):
     fail_if_not_exists: bool
 
 
-class _StickerOptional(TypedDict, total=False):
-    tags: str
-
-
 StickerFormatType = Literal[1, 2, 3]
 
 
-class Sticker(_StickerOptional):
+class StickerItem(TypedDict):
     id: Snowflake
-    pack_id: Snowflake
     name: str
-    description: str
-    asset: str
     format_type: StickerFormatType
 
 
@@ -117,7 +110,7 @@ class _MessageOptional(TypedDict, total=False):
     application_id: Snowflake
     message_reference: MessageReference
     flags: int
-    stickers: List[Sticker]
+    sticker_items: List[StickerItem]
     referenced_message: Optional[Message]
     interaction: MessageInteraction
     components: List[Component]

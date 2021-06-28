@@ -3508,12 +3508,12 @@ Widget
 .. autoclass:: Widget()
     :members:
 
-Sticker
+StickerItem
 ~~~~~~~~~~~~~~~
 
-.. attributetable:: Sticker
+.. attributetable:: StickerItem
 
-.. autoclass:: Sticker()
+.. autoclass:: StickerItem()
     :members:
 
 RawMessageDeleteEvent

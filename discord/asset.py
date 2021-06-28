@@ -215,15 +215,6 @@ class Asset(AssetMixin):
             animated=animated,
         )
 
-    @classmethod
-    def _from_sticker(cls, state, sticker_id: int, sticker_hash: str) -> Asset:
-        return cls(
-            state,
-            url=f'{cls.BASE}/stickers/{sticker_id}/{sticker_hash}.png?size=1024',
-            key=sticker_hash,
-            animated=False,
-        )
-
     def __str__(self) -> str:
         return self._url
 
