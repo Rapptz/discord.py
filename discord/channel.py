@@ -101,7 +101,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
-    slowmode_delay: :class:`int`
+    slowmode: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of `0` denotes that it is disabled.
         Bots and users with :attr:`~Permissions.manage_channels` or
@@ -115,7 +115,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """
 
     __slots__ = ('name', 'id', 'guild', 'topic', '_state', 'nsfw',
-                 'category_id', 'position', 'slowmode_delay', '_overwrites',
+                 'category_id', 'position', 'slowmode', '_overwrites',
                  '_type', 'last_message_id')
 
     def __init__(self, *, state, guild, data):
@@ -144,7 +144,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.position = data['position']
         self.nsfw = data.get('nsfw', False)
         # Does this need coercion into `int`? No idea yet.
-        self.slowmode_delay = data.get('rate_limit_per_user', 0)
+        self.slowmode = data.get('rate_limit_per_user', 0)
         self._type = data.get('type', self._type)
         self.last_message_id = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -223,7 +223,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         nsfw: bool = ...,
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel] = ...,
-        slowmode_delay: int = ...,
+        slowmode: int = ...,
         type: ChannelType = ...,
         overwrites: Dict[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
     ) -> None:
@@ -263,7 +263,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
-        slowmode_delay: :class:`int`
+        slowmode: :class:`int`
             Specifies the slowmode rate limit for user in this channel, in seconds.
             A value of `0` disables slowmode. The maximum value possible is `21600`.
         type: :class:`ChannelType`
@@ -293,7 +293,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return await self._clone_impl({
             'topic': self.topic,
             'nsfw': self.nsfw,
-            'rate_limit_per_user': self.slowmode_delay
+            'rate_limit_per_user': self.slowmode
         }, name=name, reason=reason)
 
     async def delete_messages(self, messages):
