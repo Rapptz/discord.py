@@ -734,6 +734,10 @@ class ConnectionState:
             old = copy.copy(thread)
             thread._update(data)
             self.dispatch('thread_update', old, thread)
+        else:
+            thread = Thread(guild=guild, data=data)
+            guild._add_thread(thread)
+            self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data):
         guild_id = int(data['guild_id'])
