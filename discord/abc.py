@@ -1158,7 +1158,7 @@ class Messageable(Protocol):
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embed: Embed = ...,
+        embeds: List[Embed] = ...,
         files: List[File] = ...,
         delete_after: int = ...,
         nonce: Union[str, int] = ...,
@@ -1169,9 +1169,9 @@ class Messageable(Protocol):
     ) -> Message:
         ...
 
-    async def send(self, content=None, *, tts=False, embed=None, file=None,
-                                          files=None, delete_after=None, nonce=None,
-                                          allowed_mentions=None, reference=None,
+    async def send(self, content=None, *, tts=False, embed=None, embeds=None,
+                                          file=None, files=None, delete_after=None,
+                                          nonce=None, allowed_mentions=None, reference=None,
                                           mention_author=None, view=None):
         """|coro|
 
@@ -1185,9 +1185,11 @@ class Messageable(Protocol):
         single :class:`~discord.File` object. To upload multiple files, the ``files``
         parameter should be used with a :class:`list` of :class:`~discord.File` objects.
         **Specifying both parameters will lead to an exception**.
-
-        If the ``embed`` parameter is provided, it must be of type :class:`~discord.Embed` and
-        it must be a rich embed type.
+        
+        To upload a single embed, the ``embed`` parameter should be used with a
+        single :class:`~discord.Embed` object. To upload multiple embeds, the ``embeds``
+        parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
+        **Specifying both parameters will lead to an exception**.
 
         Parameters
         ------------
@@ -1232,6 +1234,8 @@ class Messageable(Protocol):
             .. versionadded:: 1.6
         view: :class:`discord.ui.View`
             A Discord UI View to add to the message.
+        embeds: List[:class:`~discord.Embed`]
+            A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
 
@@ -1244,6 +1248,7 @@ class Messageable(Protocol):
         ~discord.InvalidArgument
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
+            or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`
             or :class:`~discord.MessageReference`.
 
@@ -1256,8 +1261,17 @@ class Messageable(Protocol):
         channel = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
+        
+        if embed is not None and embeds is not None:
+            raise InvalidArgument('cannot pass both embed and embeds parameter to send()')
+   
         if embed is not None:
             embed = embed.to_dict()
+        
+        elif embeds is not None:
+            if len(embeds) > 10:
+                raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
+            embeds = [embed.to_dict() for embed in embeds]
 
         if allowed_mentions is not None:
             if state.allowed_mentions is not None:
@@ -1294,8 +1308,8 @@ class Messageable(Protocol):
 
             try:
                 data = await state.http.send_files(channel.id, files=[file], allowed_mentions=allowed_mentions,
-                                                   content=content, tts=tts, embed=embed, nonce=nonce,
-                                                   message_reference=reference, components=components)
+                                                   content=content, tts=tts, embed=embed, embeds=embeds,
+                                                   nonce=nonce, message_reference=reference, components=components)
             finally:
                 file.close()
 
@@ -1307,14 +1321,15 @@ class Messageable(Protocol):
 
             try:
                 data = await state.http.send_files(channel.id, files=files, content=content, tts=tts,
-                                                   embed=embed, nonce=nonce, allowed_mentions=allowed_mentions,
-                                                   message_reference=reference, components=components)
+                                                   embed=embed, embeds=embeds, nonce=nonce,
+                                                   allowed_mentions=allowed_mentions, message_reference=reference,
+                                                   components=components)
             finally:
                 for f in files:
                     f.close()
         else:
             data = await state.http.send_message(channel.id, content, tts=tts, embed=embed,
-                                                 nonce=nonce, allowed_mentions=allowed_mentions,
+                                                 embeds=embeds, nonce=nonce, allowed_mentions=allowed_mentions,
                                                  message_reference=reference, components=components)
 
         ret = state.create_message(channel=channel, data=data)

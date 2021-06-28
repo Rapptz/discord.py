@@ -412,6 +412,7 @@ class HTTPClient:
         *,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
+        embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] =  None,
         allowed_mentions: bool = None,
         message_reference: bool = None,
@@ -427,7 +428,10 @@ class HTTPClient:
             payload['tts'] = True
 
         if embed:
-            payload['embed'] = embed
+            payload['embeds'] = [embed]
+        
+        if embeds:
+            payload['embeds'] = embeds
 
         if nonce:
             payload['nonce'] = nonce
@@ -466,7 +470,7 @@ class HTTPClient:
         if content:
             payload['content'] = content
         if embed:
-            payload['embed'] = embed
+            payload['embeds'] = [embed]
         if embeds:
             payload['embeds'] = embeds
         if nonce:
@@ -510,6 +514,7 @@ class HTTPClient:
         content: Optional[str] = None,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
+        embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
@@ -522,6 +527,7 @@ class HTTPClient:
             content=content,
             tts=tts,
             embed=embed,
+            embeds=embeds,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
