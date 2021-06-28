@@ -40,7 +40,10 @@ Client
 
 .. autoclass:: Client
     :members:
-    :exclude-members: fetch_guilds
+    :exclude-members: fetch_guilds, event
+
+    .. automethod:: Client.event()
+        :decorator:
 
     .. automethod:: Client.fetch_guilds
         :async-for:
