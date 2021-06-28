@@ -301,10 +301,10 @@ Checks
 .. autofunction:: discord.ext.commands.bot_has_any_role(*items)
     :decorator:
 
-.. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.BucketType.default)
+.. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.ext.commands.BucketType.default)
     :decorator:
 
-.. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.BucketType.default, *, wait=False)
+.. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.ext.commands.BucketType.default, *, wait=False)
     :decorator:
 
 .. autofunction:: discord.ext.commands.before_invoke(coro)
