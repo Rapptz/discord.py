@@ -944,3 +944,49 @@ def resolve_annotation(
     if cache is None:
         cache = {}
     return evaluate_annotation(annotation, globalns, locals, cache)
+
+
+TimestampStyle = Literal['f', 'F', 'd', 'D', 't', 'T', 'R']
+
+
+def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) -> str:
+    """A helper function to format a :class:`datetime.datetime` for presentation within Discord.
+
+    This allows for a locale-independent way of presenting data using Discord specific Markdown.
+
+    +-------------+----------------------------+-----------------+
+    |    Style    |       Example Output       |   Description   |
+    +=============+============================+=================+
+    | t           | 22:57                      | Short Time      |
+    +-------------+----------------------------+-----------------+
+    | T           | 22:57:58                   | Long Time       |
+    +-------------+----------------------------+-----------------+
+    | d           | 17/05/2016                 | Short Date      |
+    +-------------+----------------------------+-----------------+
+    | D           | 17 May 2016                | Long Date       |
+    +-------------+----------------------------+-----------------+
+    | f (default) | 17 May 2016 22:57          | Short Date Time |
+    +-------------+----------------------------+-----------------+
+    | F           | Tuesday, 17 May 2016 22:57 | Long Date Time  |
+    +-------------+----------------------------+-----------------+
+    | R           | 5 years ago                | Relative Time   |
+    +-------------+----------------------------+-----------------+
+
+    Note that the exact output depends on the user's locale setting in the client. The example output
+    presented is using the ``en-GB`` locale.
+
+    Parameters
+    -----------
+    dt: :class:`datetime.datetime`
+        The datetime to format.
+    style: :class:`str`
+        The style to format the datetime with.
+
+    Returns
+    --------
+    :class:`str`
+        The formatted string.
+    """
+    if style is None:
+        return f'<t:{int(dt.timestamp())}>'
+    return f'<t:{int(dt.timestamp())}:{style}>'
