@@ -461,7 +461,7 @@ class Guild(Hashable):
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
-                    self._add_channel(factory(guild=self, data=c, state=self._state))
+                    self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
 
         if 'threads' in data:
             threads = data['threads']
