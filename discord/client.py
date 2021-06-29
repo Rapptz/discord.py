@@ -194,13 +194,13 @@ class Client:
         self,
         *,
         loop: Optional[asyncio.AbstractEventLoop] = None,
-        options: Any,
+        **options: Any,
     ):
         self.ws: DiscordWebSocket = None  # type: ignore
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.shard_id: Optional[int] = options.get('shard_id')
-        self.shard_count: int = options.get('shard_count')
+        self.shard_count: Optional[int] = options.get('shard_count')
 
         connector: Optional[aiohttp.BaseConnector] = options.pop('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
