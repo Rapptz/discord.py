@@ -256,6 +256,7 @@ class Asset(AssetMixin):
 
     def replace(
         self,
+        *,
         size: int = MISSING,
         format: ValidAssetFormatTypes = MISSING,
         static_format: ValidStaticFormatTypes = MISSING,
