@@ -25,8 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from os import stat
-from discord.abc import MISSING
 import logging
 import signal
 import sys
@@ -36,7 +34,7 @@ from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Op
 import aiohttp
 
 from .user import User
-from .invite import I, Invite
+from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild
@@ -46,7 +44,7 @@ from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
-from .flags import ApplicationFlags, Intents, MemberCacheFlags
+from .flags import ApplicationFlags, Intents
 from .gateway import *
 from .activity import BaseActivity, create_activity
 from .voice_client import VoiceClient
