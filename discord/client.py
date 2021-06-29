@@ -1025,7 +1025,7 @@ class Client:
     def fetch_guilds(
         self,
         *,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         before: SnowflakeTime = None,
         after: SnowflakeTime = None
     ) -> List[Guild]:
