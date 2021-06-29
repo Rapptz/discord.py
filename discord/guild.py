@@ -2190,9 +2190,9 @@ class Guild(Hashable):
         Raises
         -------
         Forbidden
-            You are not allowed to delete emojis.
+            You are not allowed to delete stickers.
         HTTPException
-            An error occurred deleting the emoji.
+            An error occurred deleting the sticker.
         """
         await self._state.http.delete_guild_sticker(self.id, sticker.id, reason)
 
