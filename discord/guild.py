@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
+import unicodedata
 from typing import (
     Any,
     ClassVar,
@@ -72,6 +73,9 @@ from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
 from .stage_instance import StageInstance
 from .threads import Thread
+from .sticker import GuildSticker
+from .file import File
+
 
 __all__ = (
     'Guild',
@@ -262,6 +266,7 @@ class Guild(Hashable):
         '_rules_channel_id',
         '_public_updates_channel_id',
         '_stage_instances',
+        '_stickers',
         '_threads',
     )
 
@@ -433,6 +438,11 @@ class Guild(Hashable):
             stage_instance = StageInstance(guild=self, data=s, state=state)
             self._stage_instances[stage_instance.id] = stage_instance
 
+        self._stickers: Dict[int, GuildSticker] = {}
+        for s in guild.get('stickers', []):
+            sticker = GuildSticker(state=self._state, data=s)
+            self._stickers[sticker.id] = sticker
+
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
@@ -523,6 +533,14 @@ class Guild(Hashable):
         r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
+
+    @property
+    def stickers(self) -> List[GuildSticker]:
+        """List[:class:`GuildSticker`]: A list of stickers that belong to this guild.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._stickers.values())
 
     @property
     def me(self) -> Member:
@@ -652,6 +670,23 @@ class Guild(Hashable):
             The returned thread or ``None`` if not found.
         """
         return self._threads.get(thread_id)
+
+    def get_sticker(self, sticker_id: int, /) -> Optional[GuildSticker]:
+        """Returns a sticker with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        sticker_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`GuildSticker`]
+            The returned sticker or ``None`` if not found.
+        """
+        return self._stickers.get(sticker_id)
 
     @property
     def system_channel(self) -> Optional[TextChannel]:
@@ -2026,6 +2061,140 @@ class Guild(Hashable):
             return factory(guild=self, data=d)
 
         return [convert(d) for d in data]
+
+    async def fetch_stickers(self) -> List[GuildSticker]:
+        r"""|coro|
+
+        Retrieves a list of all :class:`Sticker`\s for the guild.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`stickers` instead.
+
+        Raises
+        ---------
+        HTTPException
+            An error occurred fetching the stickers.
+
+        Returns
+        --------
+        List[:class:`Emoji`]
+            The retrieved stickers.
+        """
+        data = await self._state.http.get_all_guild_stickers(self.id)
+        return [GuildSticker(state=self._state, data=d) for d in data]
+
+    async def fetch_sticker(self, emoji_id: int, /) -> GuildSticker:
+        """|coro|
+
+        Retrieves a custom :class:`Sticker` from the guild.
+
+        .. note::
+
+            This method is an API call.
+            For general usage, consider iterating over :attr:`stickers` instead.
+
+        Parameters
+        -------------
+        sticker_id: :class:`int`
+            The sticker's ID.
+
+        Raises
+        ---------
+        NotFound
+            The sticker requested could not be found.
+        HTTPException
+            An error occurred fetching the sticker.
+
+        Returns
+        --------
+        :class:`Sticker`
+            The retrieved sticker.
+        """
+        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
+        return GuildSticker(state=self._state, data=data)
+
+    async def create_sticker(
+        self,
+        *,
+        name: str,
+        description: str = None,
+        emoji: str,
+        file: File,
+        reason: str,
+    ) -> GuildSticker:
+        """|coro|
+
+        Creates a :class:`Sticker`s for the guild.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The sticker name. Must be at least 2 characters.
+        description: Optional[:class:`str`]
+            The sticker's description. Can be ``None``.
+        emoji: :class:`str`
+            The name of a unicode emoji that represents the sticker's expression.
+        file: :class:`File`
+            The file of the sticker to upload.
+        reason: :class:`str`
+            The reason for creating this sticker. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to create stickers.
+        HTTPException
+            An error occurred creating an sticker.
+
+        Returns
+        --------
+        :class:`Sticker`
+            The created sticker.
+        """
+        payload = {
+            'name': name,
+        }
+
+        if description:
+            payload['description'] = description
+
+        try:
+            emoji = unicodedata.name(emoji)
+        except TypeError:
+            pass
+        else:
+            emoji = emoji.replace(' ', '_')
+
+        payload['tags'] = emoji
+
+        data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
+
+        return GuildSticker(state=self._state, data=data)
+
+    async def delete_sticker(self, sticker: Snowflake, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Deletes the custom :class:`Sticker` from the guild.
+
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        do this.
+
+        Parameters
+        -----------
+        emoji: :class:`abc.Snowflake`
+            The emoji you are deleting.
+        reason: Optional[:class:`str`]
+            The reason for deleting this sticker. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete emojis.
+        HTTPException
+            An error occurred deleting the emoji.
+        """
+        await self._state.http.delete_guild_sticker(self.id, sticker.id, reason)
 
     async def fetch_emojis(self) -> List[Emoji]:
         r"""|coro|

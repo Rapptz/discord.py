@@ -462,6 +462,14 @@ class Permissions(BaseFlags):
         """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis."""
         return 1 << 30
 
+    @make_permission_alias('manage_emojis')
+    def manage_emojis_and_stickers(self):
+        """:class:`bool`: An alias for :attr:`manage_emojis`.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 30
+
     @flag_value
     def use_slash_commands(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use slash commands.

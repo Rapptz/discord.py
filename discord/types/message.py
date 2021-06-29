@@ -33,6 +33,7 @@ from .embed import Embed
 from .channel import ChannelType
 from .components import Component
 from .interactions import MessageInteraction
+from .sticker import Sticker
 
 
 class ChannelMention(TypedDict):
@@ -87,22 +88,6 @@ class MessageReference(TypedDict, total=False):
     channel_id: Snowflake
     guild_id: Snowflake
     fail_if_not_exists: bool
-
-
-class _StickerOptional(TypedDict, total=False):
-    tags: str
-
-
-StickerFormatType = Literal[1, 2, 3]
-
-
-class Sticker(_StickerOptional):
-    id: Snowflake
-    pack_id: Snowflake
-    name: str
-    description: str
-    asset: str
-    format_type: StickerFormatType
 
 
 class _MessageOptional(TypedDict, total=False):

@@ -46,6 +46,7 @@ __all__ = (
     'ExpireBehaviour',
     'ExpireBehavior',
     'StickerType',
+    'StickerFormatType',
     'InviteTarget',
     'VideoQualityMode',
     'ComponentType',
@@ -484,6 +485,10 @@ ExpireBehavior = ExpireBehaviour
 
 
 class StickerType(Enum):
+    standard = 1
+    guild = 2
+
+class StickerFormatType(Enum):
     png = 1
     apng = 2
     lottie = 3

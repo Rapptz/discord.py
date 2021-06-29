@@ -84,6 +84,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -1159,6 +1160,27 @@ class HTTPClient:
             params['include_roles'] = ', '.join(roles)
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
+
+    def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
+        return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
+
+    def list_nitro_sticker_packs(self) -> Response[List[sticker.StandardSticker]]:
+        return self.request(Route('GET', '/sticker-packs'))
+
+    def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
+
+    def get_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake) -> Response[sticker.GuildSticker]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id))
+
+    def create_guild_sticker(self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str) -> Response[sticker.GuildSticker]:
+        return self.request(Route('POST', '/guilds/{guild_id}/stickers', guild_id=guild_id), json=payload, files=[file], reason=reason)
+
+    def modify_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: str) -> Response[sticker.GuildSticker]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), json=payload, reason=reason)
+
+    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: str) -> Response[None]:
+        return self.request(Route('DELETE', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), reason=reason)
 
     def get_all_custom_emojis(self, guild_id: Snowflake) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
