@@ -195,7 +195,7 @@ class Thread(Messageable, Hashable):
     @property
     def parent(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: The parent channel this thread belongs to."""
-        return self.guild.get_channel(self.parent_id)
+        return self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
     def owner(self) -> Optional[Member]:
