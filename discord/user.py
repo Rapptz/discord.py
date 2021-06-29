@@ -228,7 +228,7 @@ class ClientUser(BaseUser):
         Specifies if the user has MFA turned on and working.
     """
 
-    __slots__ = BaseUser.__slots__ + ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
+    __slots__ = ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
@@ -319,7 +319,7 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = BaseUser.__slots__ + ('__weakref__',)
+    __slots__ = ('__weakref__',)
 
     def __repr__(self):
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'

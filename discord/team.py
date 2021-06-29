@@ -130,7 +130,7 @@ class TeamMember(BaseUser):
         The membership state of the member (e.g. invited or accepted)
     """
 
-    __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
+    __slots__ = ('team', 'membership_state', 'permissions')
 
     def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload):
         self.team: Team = team

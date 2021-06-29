@@ -906,7 +906,7 @@ class Webhook(BaseWebhook):
         .. versionadded:: 2.0
     """
 
-    __slots__: Tuple[str, ...] = BaseWebhook.__slots__ + ('session',)
+    __slots__: Tuple[str, ...] = ('session',)
 
     def __init__(self, data: WebhookPayload, session: aiohttp.ClientSession, token: Optional[str] = None, state=None):
         super().__init__(data, token, state)
