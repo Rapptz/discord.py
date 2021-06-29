@@ -2078,7 +2078,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[:class:`Emoji`]
+        List[:class:`Sticker`]
             The retrieved stickers.
         """
         data = await self._state.http.get_all_guild_stickers(self.id)
