@@ -399,7 +399,7 @@ class GuildChannel:
             overwrite = _Overwrites(overridden)
             self._overwrites.append(overwrite)
 
-            if overridden['type'] == _Overwrites.MEMBER:
+            if overwrite.type == _Overwrites.MEMBER:
                 continue
 
             if overwrite.id == everyone_id:
