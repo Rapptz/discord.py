@@ -217,6 +217,11 @@ class Button(Item[V]):
     def is_dispatchable(self) -> bool:
         return self.custom_id is not None
 
+    def is_persistent(self) -> bool:
+        if self.style is ButtonStyle.link:
+            return self.url is not None
+        return super().is_persistent()
+
     def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
