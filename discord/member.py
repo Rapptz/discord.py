@@ -29,11 +29,12 @@ import inspect
 import itertools
 import sys
 from operator import attrgetter
-from typing import List, Literal, Optional, TYPE_CHECKING, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Union, overload
 
 import discord.abc
 
 from . import utils
+from .utils import MISSING
 from .user import BaseUser, User
 from .activity import create_activity
 from .permissions import Permissions
@@ -559,25 +560,17 @@ class Member(discord.abc.Messageable, _BaseUser):
         """
         await self.guild.kick(self, reason=reason)
 
-    @overload
     async def edit(
         self,
         *,
-        reason: Optional[str] = ...,
-        nick: Optional[str] = None,
-        mute: bool = ...,
-        deafen: bool = ...,
-        suppress: bool = ...,
-        roles: Optional[List[discord.abc.Snowflake]] = ...,
-        voice_channel: Optional[VocalGuildChannel] = ...,
+        nick: Optional[str] = MISSING,
+        mute: bool = MISSING,
+        deafen: bool = MISSING,
+        suppress: bool = MISSING,
+        roles: List[discord.abc.Snowflake] = MISSING,
+        voice_channel: Optional[VocalGuildChannel] = MISSING,
+        reason: Optional[str] = None,
     ) -> None:
-        ...
-
-    @overload
-    async def edit(self) -> None:
-        ...
-
-    async def edit(self, *, reason=None, **fields):
         """|coro|
 
         Edits the member's data.
@@ -616,7 +609,7 @@ class Member(discord.abc.Messageable, _BaseUser):
 
             .. versionadded:: 1.7
 
-        roles: Optional[List[:class:`Role`]]
+        roles: List[:class:`Role`]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
@@ -634,30 +627,22 @@ class Member(discord.abc.Messageable, _BaseUser):
         http = self._state.http
         guild_id = self.guild.id
         me = self._state.self_id == self.id
-        payload = {}
+        payload: Dict[str, Any] = {}
 
-        try:
-            nick = fields['nick']
-        except KeyError:
-            # nick not present so...
-            pass
-        else:
+        if nick is not MISSING:
             nick = nick or ''
             if me:
                 await http.change_my_nickname(guild_id, nick, reason=reason)
             else:
                 payload['nick'] = nick
 
-        deafen = fields.get('deafen')
-        if deafen is not None:
+        if deafen is not MISSING:
             payload['deaf'] = deafen
 
-        mute = fields.get('mute')
-        if mute is not None:
+        if mute is not MISSING:
             payload['mute'] = mute
 
-        suppress = fields.get('suppress')
-        if suppress is not None:
+        if suppress is not MISSING:
             voice_state_payload = {
                 'channel_id': self.voice.channel.id,
                 'suppress': suppress,
@@ -673,24 +658,15 @@ class Member(discord.abc.Messageable, _BaseUser):
                     voice_state_payload['request_to_speak_timestamp'] = datetime.datetime.utcnow().isoformat()
                 await http.edit_voice_state(guild_id, self.id, voice_state_payload)
 
-        try:
-            vc = fields['voice_channel']
-        except KeyError:
-            pass
-        else:
-            payload['channel_id'] = vc and vc.id
+        if voice_channel is not MISSING:
+            payload['channel_id'] = voice_channel and voice_channel.id
 
-        try:
-            roles = fields['roles']
-        except KeyError:
-            pass
-        else:
+        if roles is not MISSING:
             payload['roles'] = tuple(r.id for r in roles)
 
         if payload:
             await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
-        # TODO: wait for WS event for modify-in-place behaviour
 
     async def request_to_speak(self):
         """|coro|
