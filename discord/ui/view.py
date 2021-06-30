@@ -48,6 +48,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from ..interactions import Interaction
+    from ..message import Message
     from ..types.components import Component as ComponentPayload
     from ..state import ConnectionState
 
@@ -112,6 +113,7 @@ class _ViewWeights:
 
     def clear(self) -> None:
         self.weights = [0, 0, 0, 0, 0]
+
 
 class View:
     """Represents a UI view.
@@ -187,6 +189,33 @@ class View:
             )
 
         return components
+
+    @classmethod
+    def from_message(cls, message: Message, /, timeout: Optional[float] = 180.0) -> View:
+        """Converts a message's components into a :class:`View`.
+
+        The :attr:`Message.components` of a message are read-only
+        and separate types from those in the ``discord.ui`` namespace.
+        In order to modify and edit message components they must be
+        converted into a :class:`View` first.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message with components to convert into a view.
+        timeout: Optional[:class:`float`]
+            The timeout of the converted view.
+
+        Returns
+        --------
+        :class:`View`
+            The converted view. This always returns a :class:`View` and not
+            one of its subclasses.
+        """
+        view = View(timeout=timeout)
+        for component in _walk_all_components(message.components):
+            view.add_item(_component_to_item(component))
+        return view
 
     @property
     def _expires_at(self) -> Optional[float]:
@@ -404,11 +433,13 @@ class ViewStore:
 
     @property
     def persistent_views(self) -> Sequence[View]:
+        # fmt: off
         views = {
             view.id: view
             for (_, (view, _, _)) in self._views.items()
             if view.is_persistent()
         }
+        # fmt: on
         return list(views.values())
 
     def __verify_integrity(self):
