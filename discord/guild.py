@@ -454,7 +454,7 @@ class Guild(Hashable):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member._presence_update(presence, empty_tuple)
+                member._presence_update(presence, empty_tuple)  # type: ignore
 
         if 'channels' in data:
             channels = data['channels']

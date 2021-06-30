@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 from .asset import Asset
 from .enums import ActivityType, try_enum
@@ -92,6 +92,7 @@ t.ActivityFlags = {
 
 if TYPE_CHECKING:
     from .types.activity import (
+        Activity as ActivityPayload,
         ActivityTimestamps,
         ActivityParty,
         ActivityAssets,
@@ -801,7 +802,17 @@ class CustomActivity(BaseActivity):
         return f'<CustomActivity name={self.name!r} emoji={self.emoji!r}>'
 
 
-def create_activity(data: Optional[Dict[str, Any]]) -> Optional[Union[Activity, Game, CustomActivity, Streaming, Spotify]]:
+ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
+
+@overload
+def create_activity(data: ActivityPayload) -> ActivityTypes:
+    ...
+
+@overload
+def create_activity(data: None) -> None:
+    ...
+
+def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
     if not data:
         return None
 

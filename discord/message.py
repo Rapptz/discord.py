@@ -60,7 +60,10 @@ if TYPE_CHECKING:
 
     from .types.components import Component as ComponentPayload
     from .types.threads import ThreadArchiveDuration
-    from .types.member import Member as MemberPayload
+    from .types.member import (
+        Member as MemberPayload,
+        UserWithMember as UserWithMemberPayload,
+    )
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
@@ -839,7 +842,7 @@ class Message(Hashable):
             # TODO: consider adding to cache here
             self.author = Member._from_message(message=self, data=member)
 
-    def _handle_mentions(self, mentions: List[UserPayload]) -> None:
+    def _handle_mentions(self, mentions: List[UserWithMemberPayload]) -> None:
         self.mentions = r = []
         guild = self.guild
         state = self._state
