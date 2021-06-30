@@ -735,13 +735,7 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_profile(self, username: Optional[str], avatar: Optional[bytes]) -> Response[user.User]:
-        payload = {}
-        if avatar is not None:
-            payload['avatar'] = avatar
-        if username is not None:
-            payload['username'] = username
-
+    def edit_profile(self, payload: Dict[str, Any]) -> Response[user.User]:
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
     def change_my_nickname(
