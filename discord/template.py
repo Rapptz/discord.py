@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING, overload
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data
+from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
 
@@ -73,6 +73,9 @@ class _PartialTemplateState:
 
     def _get_message(self, id):
         return None
+
+    def _get_guild(self, id):
+        return self.__state._get_guild(id)
 
     async def query_members(self, **kwargs):
         return []
@@ -147,7 +150,7 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
-            guild = Guild(data=source_serialised, state=state)
+            guild = Guild(data=source_serialised, state=state)  # type: ignore
 
         self.source_guild = guild
         self.is_dirty = data.get('is_dirty', None)
@@ -221,20 +224,12 @@ class Template:
         data = await self._state.http.sync_template(self.source_guild.id, self.code)
         self._store(data)
 
-    @overload
     async def edit(
         self,
         *,
-        name: Optional[str] = ...,
-        description: Optional[str] = ...,
+        name: str = MISSING,
+        description: Optional[str] = MISSING,
     ) -> None:
-        ...
-
-    @overload
-    async def edit(self) -> None:
-        ...
-
-    async def edit(self, **kwargs) -> None:
         """|coro|
 
         Edit the template metadata.
@@ -246,10 +241,10 @@ class Template:
 
         Parameters
         ------------
-        name: Optional[:class:`str`]
+        name: :class:`str`
             The template's new name.
         description: Optional[:class:`str`]
-            The template's description.
+            The template's new description.
 
         Raises
         -------
@@ -260,7 +255,14 @@ class Template:
         NotFound
             This template does not exist.
         """
-        data = await self._state.http.edit_template(self.source_guild.id, self.code, kwargs)
+        payload = {}
+
+        if name is not MISSING:
+            payload['name'] = name
+        if description is not MISSING:
+            payload['description'] = description
+
+        data = await self._state.http.edit_template(self.source_guild.id, self.code, payload)
         self._store(data)
 
     async def delete(self) -> None:

@@ -25,8 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Optional, TYPE_CHECKING, overload, Type, Tuple
-from .utils import _get_as_snowflake, get, parse_time
+from typing import Any, Dict, Optional, TYPE_CHECKING, overload, Type, Tuple
+from .utils import _get_as_snowflake, parse_time, MISSING
 from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
@@ -181,7 +181,6 @@ class StreamIntegration(Integration):
     __slots__ = (
         'revoked',
         'expire_behaviour',
-        'expire_behavior',
         'expire_grace_period',
         'synced_at',
         '_role_id',
@@ -196,31 +195,28 @@ class StreamIntegration(Integration):
         self.expire_behaviour: ExpireBehaviour = try_enum(ExpireBehaviour, data['expire_behavior'])
         self.expire_grace_period: int = data['expire_grace_period']
         self.synced_at: datetime.datetime = parse_time(data['synced_at'])
-        self._role_id: int = int(data['role_id'])
+        self._role_id: Optional[int] = _get_as_snowflake(data, 'role_id')
         self.syncing: bool = data['syncing']
         self.enable_emoticons: bool = data['enable_emoticons']
         self.subscriber_count: int = data['subscriber_count']
 
     @property
+    def expire_behavior(self) -> ExpireBehaviour:
+        """:class:`ExpireBehaviour`: An alias for :attr:`expire_behaviour`."""
+        return self.expire_behaviour
+
+    @property
     def role(self) -> Optional[Role]:
         """Optional[:class:`Role`] The role which the integration uses for subscribers."""
-        return self.guild.get_role(self._role_id)
+        return self.guild.get_role(self._role_id)  # type: ignore
 
-    @overload
     async def edit(
         self,
         *,
-        expire_behaviour: Optional[ExpireBehaviour] = ...,
-        expire_grace_period: Optional[int] = ...,
-        enable_emoticons: Optional[bool] = ...,
+        expire_behaviour: ExpireBehaviour = MISSING,
+        expire_grace_period: int = MISSING,
+        enable_emoticons: bool = MISSING,
     ) -> None:
-        ...
-
-    @overload
-    async def edit(self, **fields) -> None:
-        ...
-
-    async def edit(self, **fields) -> None:
         """|coro|
 
         Edits the integration.
@@ -246,34 +242,29 @@ class StreamIntegration(Integration):
         InvalidArgument
             ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
-        try:
-            expire_behaviour = fields['expire_behaviour']
-        except KeyError:
-            expire_behaviour = fields.get('expire_behavior', self.expire_behaviour)
+        payload: Dict[str, Any] = {}
+        if expire_behaviour is not MISSING:
+            if not isinstance(expire_behaviour, ExpireBehaviour):
+                raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
 
-        if not isinstance(expire_behaviour, ExpireBehaviour):
-            raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
+            payload['expire_behavior'] = expire_behaviour.value
 
-        expire_grace_period = fields.get('expire_grace_period', self.expire_grace_period)
+        if expire_grace_period is not MISSING:
+            payload['expire_grace_period'] = expire_grace_period
 
-        payload = {
-            'expire_behavior': expire_behaviour.value,
-            'expire_grace_period': expire_grace_period,
-        }
-
-        try:
-            enable_emoticons = fields['enable_emoticons']
-        except KeyError:
-            enable_emoticons = self.enable_emoticons
-        else:
+        if enable_emoticons is not MISSING:
             payload['enable_emoticons'] = enable_emoticons
 
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
 
-        self.expire_behaviour = expire_behaviour
-        self.expire_behavior = self.expire_behaviour
-        self.expire_grace_period = expire_grace_period
-        self.enable_emoticons = enable_emoticons
+        if expire_behaviour is not MISSING:
+            self.expire_behaviour = expire_behaviour
+
+        if enable_emoticons is not MISSING:
+            self.enable_emoticons = enable_emoticons
+
+        if expire_grace_period is not MISSING:
+            self.expire_grace_period = expire_grace_period
 
     async def sync(self) -> None:
         """|coro|

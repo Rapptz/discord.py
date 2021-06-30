@@ -40,7 +40,10 @@ Client
 
 .. autoclass:: Client
     :members:
-    :exclude-members: fetch_guilds
+    :exclude-members: fetch_guilds, event
+
+    .. automethod:: Client.event()
+        :decorator:
 
     .. automethod:: Client.fetch_guilds
         :async-for:
@@ -1063,6 +1066,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.utcnow
 
+.. autofunction:: discord.utils.format_dt
+
 .. autofunction:: discord.utils.as_chunks
 
 .. _discord-api-enums:
@@ -1425,6 +1430,9 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`primary`.
     .. attribute:: grey
+
+        An alias for :attr:`secondary`.
+    .. attribute:: gray
 
         An alias for :attr:`secondary`.
     .. attribute:: green
@@ -2233,7 +2241,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: remove_role
 
-        This will remove the :attr:`Integration.role` from the user
+        This will remove the :attr:`StreamIntegration.role` from the user
         when their subscription is finished.
 
     .. attribute:: kick

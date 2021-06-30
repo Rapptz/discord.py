@@ -734,6 +734,10 @@ class ConnectionState:
             old = copy.copy(thread)
             thread._update(data)
             self.dispatch('thread_update', old, thread)
+        else:
+            thread = Thread(guild=guild, data=data)
+            guild._add_thread(thread)
+            self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data):
         guild_id = int(data['guild_id'])
@@ -1273,7 +1277,7 @@ class AutoShardedConnectionState(ConnectionState):
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
                 channel = new_guild.get_channel(channel_id) or new_guild.get_thread(channel_id) or Object(id=channel_id)
-                msg._rebind_channel_reference(channel)
+                msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
 from .snowflake import Snowflake, SnowflakeList
-from .member import Member
+from .member import Member, UserWithMember
 from .user import User
 from .emoji import PartialEmoji
 from .embed import Embed
@@ -135,7 +135,7 @@ class Message(_MessageOptional):
     edited_timestamp: Optional[str]
     tts: bool
     mention_everyone: bool
-    mentions: List[User]
+    mentions: List[UserWithMember]
     mention_roles: SnowflakeList
     attachments: List[Attachment]
     embeds: List[Embed]

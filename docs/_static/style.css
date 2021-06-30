@@ -772,8 +772,7 @@ li > blockquote {
 
 /* admonitions */
 div.admonition {
-  padding: 0 0.8em;
-  padding-bottom: 0.8em;
+  padding: 0 0.8em 0.8em 0.8em !important;
   margin: 0.8em 0;
   border-radius: 2.5px;
   border-left-width: 6px;
@@ -783,7 +782,7 @@ div.admonition {
 
 p.admonition-title {
   font-weight: bold;
-  margin: 0 -0.8rem;
+  margin: 0 -0.8rem !important;
   padding: 0.4rem 0.6rem 0.4rem 2.5rem;
   position: relative;
   -moz-user-select: none;
@@ -1041,10 +1040,16 @@ dl.function > dt,
 dl.attribute > dt,
 dl.classmethod > dt,
 dl.method > dt,
+dl.property > dt,
 dl.class > dt,
 dl.exception > dt {
   background-color: var(--api-entry-background);
   padding: 1px 10px;
+}
+
+/* bug in sphinx: https://github.com/sphinx-doc/sphinx/issues/9384 */
+dl.property > dt > span.descname + em.property {
+  display: none;
 }
 
 dd {
@@ -1140,6 +1145,10 @@ table.docutils thead tr td ol.last,
 table.docutils tfoot tr td ol.last,
 table.docutils tbody tr td ol.last {
   margin-bottom: 0;
+}
+
+.align-default {
+  text-align: left !important;
 }
 
 /* hide the welcome text */

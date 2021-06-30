@@ -22,9 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, List, Literal
 from .snowflake import Snowflake
 from .member import Member
+
+
+SupportedModes = Literal['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305']
 
 
 class _PartialVoiceStateOptional(TypedDict, total=False):
@@ -59,3 +62,24 @@ class VoiceRegion(TypedDict):
     optimal: bool
     deprecated: bool
     custom: bool
+
+
+class VoiceServerUpdate(TypedDict):
+    token: str
+    guild_id: Snowflake
+    endpoint: Optional[str]
+
+
+class VoiceIdentify(TypedDict):
+    server_id: Snowflake
+    user_id: Snowflake
+    session_id: str
+    token: str
+
+
+class VoiceReady(TypedDict):
+    ssrc: int
+    ip: str
+    port: int
+    modes: List[SupportedModes]
+    heartbeat_interval: int

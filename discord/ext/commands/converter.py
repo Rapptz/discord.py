@@ -663,7 +663,7 @@ class InviteConverter(Converter[discord.Invite]):
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise BadInviteArgument() from exc
+            raise BadInviteArgument(argument) from exc
 
 
 class GuildConverter(IDConverter[discord.Guild]):
