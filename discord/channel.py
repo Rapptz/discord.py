@@ -820,7 +820,13 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         Mapping[:class:`int`, :class:`VoiceState`]
             The mapping of member ID to a voice state.
         """
-        return {key: value for key, value in self.guild._voice_states.items() if value.channel.id == self.id}
+        # fmt: off
+        return {
+            key: value
+            for key, value in self.guild._voice_states.items()
+            if value.channel and value.channel.id == self.id
+        }
+        # fmt: on
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
