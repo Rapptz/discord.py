@@ -218,7 +218,7 @@ class Button(Item[V]):
         return self.custom_id is not None
 
     def is_persistent(self) -> bool:
-        if self.style == ButtonStyle.link:
+        if self.style is ButtonStyle.link:
             return self.url is not None
         return super().is_persistent()
 
