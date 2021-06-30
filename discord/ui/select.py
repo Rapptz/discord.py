@@ -274,6 +274,20 @@ class Select(Item[V]):
 
     def is_dispatchable(self) -> bool:
         return True
+    
+    async def callback(self, select: Select, interaction: Interaction):
+        """|coro|
+        The callback associated with this UI item.
+        This can be overriden by subclasses.
+        
+        Parameters
+        -----------
+        select: :class:`.Select`
+            The :class:`.Select` being pressed.
+        interaction: :class:`.Interaction`
+            The interaction that triggered this UI item.
+        """
+        pass
 
 
 def select(
