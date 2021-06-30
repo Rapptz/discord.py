@@ -191,7 +191,7 @@ class View:
         return components
 
     @classmethod
-    def from_message(cls, message: Message, /, timeout: Optional[float] = 180.0) -> View:
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
         """Converts a message's components into a :class:`View`.
 
         The :attr:`Message.components` of a message are read-only
