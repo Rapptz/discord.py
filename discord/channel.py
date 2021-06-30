@@ -1066,7 +1066,7 @@ class StageChannel(VocalGuildChannel):
     @property
     def requesting_to_speak(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
-        return [member for member in self.members if member.voice.requested_to_speak_at is not None]
+        return [member for member in self.members if member.voice and member.voice.requested_to_speak_at is not None]
 
     @property
     def speakers(self) -> List[Member]:
@@ -1075,7 +1075,9 @@ class StageChannel(VocalGuildChannel):
         .. versionadded:: 2.0
         """
         return [
-            member for member in self.members if not member.voice.suppress and member.voice.requested_to_speak_at is None
+            member
+            for member in self.members
+            if member.voice and not member.voice.suppress and member.voice.requested_to_speak_at is None
         ]
 
     @property
@@ -1084,7 +1086,7 @@ class StageChannel(VocalGuildChannel):
 
         .. versionadded:: 2.0
         """
-        return [member for member in self.members if member.voice.suppress]
+        return [member for member in self.members if member.voice and member.voice.suppress]
 
     @property
     def moderators(self) -> List[Member]:
