@@ -181,7 +181,6 @@ class StreamIntegration(Integration):
     __slots__ = (
         'revoked',
         'expire_behaviour',
-        'expire_behavior',
         'expire_grace_period',
         'synced_at',
         '_role_id',
@@ -200,6 +199,11 @@ class StreamIntegration(Integration):
         self.syncing: bool = data['syncing']
         self.enable_emoticons: bool = data['enable_emoticons']
         self.subscriber_count: int = data['subscriber_count']
+
+    @property
+    def expire_behavior(self) -> ExpireBehaviour:
+        """:class:`ExpireBehaviour`: An alias for :attr:`expire_behaviour`."""
+        return self.expire_behaviour
 
     @property
     def role(self) -> Optional[Role]:
