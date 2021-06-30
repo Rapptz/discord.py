@@ -74,6 +74,9 @@ class _PartialTemplateState:
     def _get_message(self, id):
         return None
 
+    def _get_guild(self, id):
+        return self.__state._get_guild(id)
+
     async def query_members(self, **kwargs):
         return []
 
@@ -147,7 +150,7 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
-            guild = Guild(data=source_serialised, state=state)
+            guild = Guild(data=source_serialised, state=state)  # type: ignore
 
         self.source_guild = guild
         self.is_dirty = data.get('is_dirty', None)
