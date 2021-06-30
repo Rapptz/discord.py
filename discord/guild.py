@@ -454,14 +454,14 @@ class Guild(Hashable):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member._presence_update(presence, empty_tuple)
+                member._presence_update(presence, empty_tuple)  # type: ignore
 
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
-                    self._add_channel(factory(guild=self, data=c, state=self._state))
+                    self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
 
         if 'threads' in data:
             threads = data['threads']
