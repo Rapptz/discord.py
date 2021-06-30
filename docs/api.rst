@@ -3815,6 +3815,17 @@ Button
 
 .. autofunction:: discord.ui.button
 
+Select
+~~~~~~~
+
+.. attributetable:: discord.ui.Select
+
+.. autoclass:: discord.ui.Select
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.select
+
 
 Exceptions
 ------------
