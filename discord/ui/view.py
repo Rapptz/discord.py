@@ -33,12 +33,12 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
-from ..enums import ComponentType
 from ..components import (
     Component,
     ActionRow as ActionRowComponent,
     _component_factory,
     Button as ButtonComponent,
+    SelectMenu as SelectComponent,
 )
 
 __all__ = (
@@ -65,6 +65,10 @@ def _component_to_item(component: Component) -> Item:
         from .button import Button
 
         return Button.from_component(component)
+    if isinstance(component, SelectComponent):
+        from .select import Select
+
+        return Select.from_component(component)
     return Item.from_component(component)
 
 
