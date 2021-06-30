@@ -1146,7 +1146,7 @@ class StageChannel(VocalGuildChannel):
 
             payload['privacy_level'] = privacy_level.value
 
-        data = await self._state.http.create_stage_instance(**payload)
+        data = await self._state.http.create_stage_instance(payload)
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     async def fetch_instance(self) -> StageInstance:

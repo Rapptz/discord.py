@@ -218,8 +218,11 @@ class MessageInteraction(TypedDict):
     user: User
 
 
-class EditApplicationCommand(TypedDict):
-    name: str
-    description: str
+class _EditApplicationCommandOptional(TypedDict, total=False):
     options: Optional[List[ApplicationCommandOption]]
     default_permission: bool
+
+class EditApplicationCommand(_EditApplicationCommandOptional):
+    name: str
+    description: str
+

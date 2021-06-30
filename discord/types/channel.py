@@ -147,10 +147,16 @@ Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
 PrivacyLevel = Literal[1, 2]
 
 
-class StageInstance(TypedDict):
-    id: Snowflake
-    guild_id: Snowflake
-    channel_id: Snowflake
+class EditStageInstance(TypedDict):
     topic: str
     privacy_level: PrivacyLevel
+
+
+class CreateStageInstance(EditStageInstance):
+    channel_id: Snowflake
+
+
+class StageInstance(CreateStageInstance):
+    id: Snowflake
+    guild_id: Snowflake
     discoverable_disabled: bool

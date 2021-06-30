@@ -35,10 +35,12 @@ class CreateTemplate(TypedDict):
     icon: Optional[bytes]
 
 
-class Template(TypedDict):
-    code: str
+class EditTemplate(TypedDict):
     name: str
     description: Optional[str]
+
+class Template(EditTemplate):
+    code: str
     usage_count: int
     creator_id: Snowflake
     creator: User

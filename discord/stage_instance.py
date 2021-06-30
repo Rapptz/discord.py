@@ -148,7 +148,7 @@ class StageInstance(Hashable):
             payload['privacy_level'] = privacy_level.value
 
         if payload:
-            await self._state.http.edit_stage_instance(self.channel_id, **payload)
+            await self._state.http.edit_stage_instance(self.channel_id, payload)
 
     async def delete(self) -> None:
         """|coro|

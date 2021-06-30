@@ -1079,12 +1079,12 @@ class HTTPClient:
     def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def edit_template(self, guild_id: Snowflake, code: str, payload) -> Response[template.Template]:
+    def edit_template(self, guild_id: Snowflake, code: str, payload: template.EditTemplate) -> Response[template.Template]:
         valid_keys = (
             'name',
             'description',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
         return self.request(
             Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code), json=payload
         )
@@ -1266,7 +1266,7 @@ class HTTPClient:
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
-    def edit_widget(self, guild_id: Snowflake, payload) -> Response[widget.WidgetSettings]:
+    def edit_widget(self, guild_id: Snowflake, payload: widget.WidgetSettings) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
 
     # Invite management
@@ -1419,22 +1419,22 @@ class HTTPClient:
     def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
+    def create_stage_instance(self, payload: channel.CreateStageInstance) -> Response[channel.StageInstance]:
         valid_keys = (
             'channel_id',
             'topic',
             'privacy_level',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
 
         return self.request(Route('POST', '/stage-instances'), json=payload)
 
-    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+    def edit_stage_instance(self, channel_id: Snowflake, payload: channel.EditStageInstance) -> Response[None]:
         valid_keys = (
             'topic',
             'privacy_level',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
 
         return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
 
@@ -1455,7 +1455,11 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id: Snowflake, payload) -> Response[interactions.ApplicationCommand]:
+    def upsert_global_command(
+        self,
+        application_id: Snowflake,
+        payload: interactions.EditApplicationCommand,
+    ) -> Response[interactions.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
@@ -1487,7 +1491,11 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id: Snowflake, payload) -> Response[List[interactions.ApplicationCommand]]:
+    def bulk_upsert_global_commands(
+        self,
+        application_id: Snowflake,
+        payload: List[interactions.EditApplicationCommand],
+    ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
