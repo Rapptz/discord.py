@@ -48,6 +48,7 @@ class Item(Generic[V]):
     The current UI items supported are:
 
     - :class:`discord.ui.Button`
+    - :class:`discord.ui.Select`
     """
 
     __item_repr_attributes__: Tuple[str, ...] = ('row',)
