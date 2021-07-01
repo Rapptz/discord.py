@@ -194,7 +194,7 @@ class Thread(Messageable, Hashable):
     @property
     def type(self) -> ChannelType:
         """:class:`ChannelType`: The channel's Discord type."""
-        return try_enum(ChannelType, self._type)
+        return self._type
 
     @property
     def parent(self) -> Optional[TextChannel]:
