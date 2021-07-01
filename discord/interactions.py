@@ -47,11 +47,14 @@ if TYPE_CHECKING:
         Interaction as InteractionPayload,
     )
     from .guild import Guild
-    from .abc import GuildChannel
     from .state import ConnectionState
     from aiohttp import ClientSession
     from .embeds import Embed
     from .ui.view import View
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel
+    from .threads import Thread
+
+    InteractionChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread]
 
 MISSING: Any = utils.MISSING
 
@@ -145,14 +148,14 @@ class Interaction:
         return self._state and self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[GuildChannel]:
-        """Optional[:class:`abc.GuildChannel`]: The channel the interaction was sent from.
+    def channel(self) -> Optional[InteractionChannel]:
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel the interaction was sent from.
 
         Note that due to a Discord limitation, DM channels are not resolved since there is
         no data to complete them.
         """
         guild = self.guild
-        return guild and guild.get_channel(self.channel_id)
+        return guild and guild._resolve_channel(self.channel_id)
 
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse:

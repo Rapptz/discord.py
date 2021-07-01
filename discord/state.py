@@ -383,7 +383,7 @@ class ConnectionState:
             channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
-            channel = guild and (guild.get_channel(channel_id) or guild.get_thread(channel_id))
+            channel = guild and guild._resolve_channel(channel_id)
 
         return channel or Object(id=channel_id), guild
 
@@ -1254,7 +1254,7 @@ class ConnectionState:
             return pm
 
         for guild in self.guilds:
-            channel = guild.get_channel(id) or guild.get_thread(id)
+            channel = guild._resolve_channel(id)
             if channel is not None:
                 return channel
 
@@ -1276,7 +1276,7 @@ class AutoShardedConnectionState(ConnectionState):
             new_guild = self._get_guild(msg.guild.id)
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
-                channel = new_guild.get_channel(channel_id) or new_guild.get_thread(channel_id) or Object(id=channel_id)
+                channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
                 msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
