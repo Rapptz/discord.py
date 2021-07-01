@@ -196,9 +196,9 @@ class Select(Item[V]):
         description: Optional[:class:`str`]
             An additional description of the option, if any.
             Can only be up to 50 characters.
-        emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
+        emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
-            the custom or unicode emoji or an instance of :class:`PartialEmoji` or :class:`Emoji`.
+            the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
         default: :class:`bool`
             Whether this option is selected by default.
 

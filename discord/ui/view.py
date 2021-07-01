@@ -194,7 +194,7 @@ class View:
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
         """Converts a message's components into a :class:`View`.
 
-        The :attr:`Message.components` of a message are read-only
+        The :attr:`.Message.components` of a message are read-only
         and separate types from those in the ``discord.ui`` namespace.
         In order to modify and edit message components they must be
         converted into a :class:`View` first.
