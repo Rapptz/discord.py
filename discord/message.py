@@ -1160,7 +1160,7 @@ class Message(Hashable):
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
-        embeds: List[:class:`Embeds`]
+        embeds: List[:class:`Embed`]
             The new embeds to replace the original with. Must be a maximum of 10.
             To remove all embeds ``[]`` should be passed.
 
