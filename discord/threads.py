@@ -162,7 +162,7 @@ class Thread(Messageable, Hashable):
         self.parent_id = int(data['parent_id'])
         self.owner_id = int(data['owner_id'])
         self.name = data['name']
-        self._type = try_enum(ChannelType, data['type'])
+        self._type = data['type']
         self.last_message_id = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self._unroll_metadata(data['thread_metadata'])
@@ -191,6 +191,10 @@ class Thread(Messageable, Hashable):
             self._unroll_metadata(data['thread_metadata'])
         except KeyError:
             pass
+    @property
+    def type(self) -> ChannelType:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return try_enum(ChannelType, self._type)
 
     @property
     def parent(self) -> Optional[TextChannel]:
@@ -249,7 +253,7 @@ class Thread(Messageable, Hashable):
         A private thread is only viewable by those that have been explicitly
         invited or have :attr:`~.Permissions.manage_threads`.
         """
-        return self._type is ChannelType.private_thread
+        return self.type is ChannelType.private_thread
 
     def is_news(self) -> bool:
         """:class:`bool`: Whether the thread is a news thread.
@@ -257,7 +261,7 @@ class Thread(Messageable, Hashable):
         A news thread is a thread that has a parent that is a news channel,
         i.e. :meth:`.TextChannel.is_news` is ``True``.
         """
-        return self._type is ChannelType.news_thread
+        return self.type is ChannelType.news_thread
 
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
