@@ -207,6 +207,11 @@ class Thread(Messageable, Hashable):
         return self.guild.get_member(self.owner_id)
 
     @property
+    def mention(self) -> str:
+        """:class:`str`: The string that allows you to mention the thread."""
+        return f'<#{self.id}>'
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Fetches the last message from this channel in cache.
 
