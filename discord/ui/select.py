@@ -59,6 +59,8 @@ class Select(Item[V]):
 
     This is usually represented as a drop down menu.
 
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
     .. versionadded:: 2.0
 
     Parameters
@@ -291,6 +293,8 @@ def select(
     the :class:`discord.ui.View`, the :class:`discord.ui.Select` being pressed and
     the :class:`discord.Interaction` you receive.
 
+    In order to get the selected items that the user has chosen within the callback
+    use :attr:`Select.values`.
 
     Parameters
     ------------
