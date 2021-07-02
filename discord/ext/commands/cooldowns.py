@@ -148,6 +148,10 @@ class CooldownMapping:
     def valid(self):
         return self._cooldown is not None
 
+    @property
+    def type(self):
+        return self._type
+
     @classmethod
     def from_cooldown(cls, rate, per, type):
         return cls(Cooldown(rate, per), type)

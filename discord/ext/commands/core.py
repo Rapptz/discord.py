@@ -731,7 +731,7 @@ class Command(_BaseCommand):
             if bucket is not None:
                 retry_after = bucket.update_rate_limit(current)
                 if retry_after:
-                    raise CommandOnCooldown(bucket, retry_after)
+                    raise CommandOnCooldown(bucket, retry_after, self._buckets.type)
 
     async def prepare(self, ctx):
         ctx.command = self

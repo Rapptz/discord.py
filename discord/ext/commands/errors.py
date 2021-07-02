@@ -460,14 +460,17 @@ class CommandOnCooldown(CommandError):
     Attributes
     -----------
     cooldown: ``Cooldown``
-        A class with attributes ``rate``, ``per``, and ``type`` similar to
-        the :func:`.cooldown` decorator.
+        A class with attributes ``rate`` and ``per`` similar to the
+        :func:`.cooldown` decorator.
+    type: :class:`BucketType`
+        The type associated with the cooldown.
     retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
-    def __init__(self, cooldown, retry_after):
+    def __init__(self, cooldown, retry_after, type):
         self.cooldown = cooldown
         self.retry_after = retry_after
+        self.type = type
         super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 class MaxConcurrencyReached(CommandError):
