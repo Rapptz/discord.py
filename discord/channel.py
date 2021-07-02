@@ -1907,6 +1907,8 @@ def _guild_channel_factory(channel_type: Union[ChannelType, int]):
         return StoreChannel, value
     elif value is ChannelType.stage_voice:
         return StageChannel, value
+    elif value in (ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread):
+        return Thread, value
     else:
         return None, value
 

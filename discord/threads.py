@@ -139,8 +139,8 @@ class Thread(Messageable, Hashable):
         'archive_timestamp',
     )
 
-    def __init__(self, *, guild: Guild, data: ThreadPayload):
-        self._state: ConnectionState = guild._state
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
+        self._state: ConnectionState = state
         self.guild = guild
         self._members: Dict[int, ThreadMember] = {}
         self._from_data(data)
