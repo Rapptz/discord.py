@@ -494,6 +494,7 @@ class ButtonStyle(Enum):
     gray = 2
     green = 3
     red = 4
+    url = 5
 
     def __int__(self):
         return self.value

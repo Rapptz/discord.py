@@ -1441,6 +1441,9 @@ of :class:`enum.Enum`.
     .. attribute:: red
 
         An alias for :attr:`danger`.
+    .. attribute:: url
+
+        An alias for :attr:`link`.
 
 .. class:: VoiceRegion
 
