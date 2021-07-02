@@ -191,6 +191,10 @@ class Thread(Messageable, Hashable):
             self._unroll_metadata(data['thread_metadata'])
         except KeyError:
             pass
+    @property
+    def type(self) -> ChannelType:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return self._type
 
     @property
     def parent(self) -> Optional[TextChannel]:
