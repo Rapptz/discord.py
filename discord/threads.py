@@ -268,6 +268,15 @@ class Thread(Messageable, Hashable):
         """
         return self._type is ChannelType.news_thread
 
+    def is_nsfw(self) -> bool:
+        """:class:`bool`: Whether the thread is NSFW or not.
+
+        An NSFW thread is a thread that has a parent that is an NSFW channel,
+        i.e. :meth:`.TextChannel.is_nsfw` is ``True``.
+        """
+        parent = self.parent
+        return parent is not None and parent.is_nsfw()
+
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
         or :class:`~discord.Role`.
