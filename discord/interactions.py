@@ -46,6 +46,7 @@ __all__ = (
 if TYPE_CHECKING:
     from .types.interactions import (
         Interaction as InteractionPayload,
+        InteractionData,
     )
     from .guild import Guild
     from .state import ConnectionState
@@ -107,23 +108,24 @@ class Interaction:
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
-        self._state = state
+        self._state: ConnectionState = state
         self._session: ClientSession = state.http._HTTPClient__session
         self._from_data(data)
 
     def _from_data(self, data: InteractionPayload):
-        self.id = int(data['id'])
-        self.type = try_enum(InteractionType, data['type'])
-        self.data = data.get('data')
-        self.token = data['token']
-        self.version = data['version']
-        self.channel_id = utils._get_as_snowflake(data, 'channel_id')
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
-        self.application_id = utils._get_as_snowflake(data, 'application_id')
+        self.id: int = int(data['id'])
+        self.type: InteractionType = try_enum(InteractionType, data['type'])
+        self.data: Optional[InteractionData] = data.get('data')
+        self.token: str = data['token']
+        self.version: int = data['version']
+        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
 
-        channel = self.channel or Object(id=self.channel_id)
+        channel = self.channel or Object(id=self.channel_id)  # type: ignore
+        self.message: Optional[Message]
         try:
-            self.message = Message(state=self._state, channel=channel, data=data['message'])
+            self.message = Message(state=self._state, channel=channel, data=data['message'])  # type: ignore
         except KeyError:
             self.message = None
 
@@ -133,7 +135,7 @@ class Interaction:
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
             try:
-                self.user = Member(state=self._state, guild=guild, data=data['member'])
+                self.user = Member(state=self._state, guild=guild, data=data['member'])  # type: ignore
             except KeyError:
                 pass
         else:
