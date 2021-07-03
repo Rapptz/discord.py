@@ -42,8 +42,6 @@ BF = TypeVar('BF', bound='BaseFlags')
 
 
 class flag_value(Generic[BF]):
-    __slots__ = ('flag', '__doc__')
-
     def __init__(self, func: Callable[[Any], int]):
         self.flag = func(None)
         self.__doc__ = func.__doc__
@@ -69,7 +67,7 @@ class flag_value(Generic[BF]):
 
 
 class alias_flag_value(flag_value):
-    __slots__ = ()
+    pass
 
 
 def fill_with_flags(*, inverted: bool = False):
