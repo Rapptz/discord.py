@@ -36,6 +36,7 @@ from .user import User
 from .member import Member
 from .message import Message, Attachment
 from .object import Object
+from .permissions import Permissions
 from .webhook.async_ import async_context, Webhook
 
 __all__ = (
@@ -101,6 +102,7 @@ class Interaction:
         'user',
         'token',
         'version',
+        '_permissions',
         '_state',
         '_session',
         '_cs_response',
@@ -130,14 +132,18 @@ class Interaction:
             self.message = None
 
         self.user: Optional[Union[User, Member]] = None
+        self._permissions: int = 0
 
         # TODO: there's a potential data loss here
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
             try:
-                self.user = Member(state=self._state, guild=guild, data=data['member'])  # type: ignore
+                member = data['member']  # type: ignore
             except KeyError:
                 pass
+            else:
+                self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
+                self._permissions = int(member.get('permissions', 0))
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])
@@ -158,6 +164,14 @@ class Interaction:
         """
         guild = self.guild
         return guild and guild._resolve_channel(self.channel_id)
+
+    @property
+    def permissions(self) -> Permissions:
+        """:class:`Permissions`: The resolved permissions of the member in the channel, including overwrites.
+
+        In a non-guild context where this doesn't apply, an empty permissions object is returned.
+        """
+        return Permissions(self._permissions)
 
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse:
