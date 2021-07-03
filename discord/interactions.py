@@ -231,7 +231,7 @@ class InteractionResponse:
         -------
         HTTPException
             Deferring the interaction failed.
-        InteractionResponsed
+        InteractionResponded
             This interaction has already been responded to before.
         """
         if self._responded:
@@ -265,7 +265,7 @@ class InteractionResponse:
         -------
         HTTPException
             Ponging the interaction failed.
-        InteractionResponsed
+        InteractionResponded
             This interaction has already been responded to before.
         """
         if self._responded:
@@ -320,7 +320,7 @@ class InteractionResponse:
             You specified both ``embed`` and ``embeds``.
         ValueError
             The length of ``embeds`` was invalid.
-        InteractionResponsed
+        InteractionResponded
             This interaction has already been responded to before.
         """
         if self._responded:
@@ -404,7 +404,7 @@ class InteractionResponse:
             Editing the message failed.
         TypeError
             You specified both ``embed`` and ``embeds``.
-        InteractionResponsed
+        InteractionResponded
             This interaction has already been responded to before.
         """
         if self._responded:
