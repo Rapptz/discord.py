@@ -1907,7 +1907,12 @@ def _guild_channel_factory(channel_type: Union[ChannelType, int]):
         return StoreChannel, value
     elif value is ChannelType.stage_voice:
         return StageChannel, value
-    elif value in (ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread):
+    else:
+        return None, value
+
+def _thread_factory(thread_type: Union[ChannelType, int]):
+    value = _coerce_channel_type(thread_type)
+    if value in (ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread):
         return Thread, value
     else:
         return None, value
@@ -1921,3 +1926,10 @@ def _channel_factory(channel_type: Union[ChannelType, int]):
         return GroupChannel, value
     else:
         return cls, value
+
+def _guild_messageable_factory(channel_type: Union[ChannelType, int]):
+    cls, value = _guild_channel_factory(channel_type)
+    if cls is not None:
+        return cls, value
+    cls, value = _thread_factory(channel_type)
+    return cls, value
