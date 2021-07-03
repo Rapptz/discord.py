@@ -703,8 +703,9 @@ class Message(Hashable):
                 continue
 
     def __repr__(self) -> str:
+        name = self.__class__.__name__
         return (
-            f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
+            f'<{name} id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
         )
 
     def _try_patch(self, data, key, transform=None) -> None:
@@ -1223,7 +1224,6 @@ class Message(Hashable):
             flags = MessageFlags._from_value(self.flags.value)
             flags.suppress_embeds = suppress
             payload['flags'] = flags.value
-
 
         if allowed_mentions is MISSING:
             if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
