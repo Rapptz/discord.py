@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 
 from . import utils
 from .enums import try_enum, InteractionType, InteractionResponseType
+from .errors import InteractionResponded
 
 from .user import User
 from .member import Member
@@ -189,6 +190,13 @@ class InteractionResponse:
         self._parent: Interaction = parent
         self._responded: bool = False
 
+    def is_done(self) -> bool:
+        """:class:`bool`: Indicates whether an interaction response has been done before.
+
+        An interaction can only be responded to once.
+        """
+        return self._responded
+
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
 
@@ -207,9 +215,11 @@ class InteractionResponse:
         -------
         HTTPException
             Deferring the interaction failed.
+        InteractionResponsed
+            This interaction has already been responded to before.
         """
         if self._responded:
-            return
+            raise InteractionResponded(self._parent)
 
         defer_type: int = 0
         data: Optional[Dict[str, Any]] = None
@@ -239,9 +249,11 @@ class InteractionResponse:
         -------
         HTTPException
             Ponging the interaction failed.
+        InteractionResponsed
+            This interaction has already been responded to before.
         """
         if self._responded:
-            return
+            raise InteractionResponded(self._parent)
 
         parent = self._parent
         if parent.type is InteractionType.ping:
@@ -292,9 +304,11 @@ class InteractionResponse:
             You specified both ``embed`` and ``embeds``.
         ValueError
             The length of ``embeds`` was invalid.
+        InteractionResponsed
+            This interaction has already been responded to before.
         """
         if self._responded:
-            return
+            raise InteractionResponded(self._parent)
 
         payload: Dict[str, Any] = {
             'tts': tts,
@@ -374,9 +388,11 @@ class InteractionResponse:
             Editing the message failed.
         TypeError
             You specified both ``embed`` and ``embeds``.
+        InteractionResponsed
+            This interaction has already been responded to before.
         """
         if self._responded:
-            return
+            raise InteractionResponded(self._parent)
 
         parent = self._parent
         msg = parent.message

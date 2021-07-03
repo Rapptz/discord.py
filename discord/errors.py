@@ -36,6 +36,7 @@ __all__ = (
     'LoginFailure',
     'ConnectionClosed',
     'PrivilegedIntentsRequired',
+    'InteractionResponded',
 )
 
 class DiscordException(Exception):
@@ -213,3 +214,21 @@ class PrivilegedIntentsRequired(ClientException):
               'and explicitly enable the privileged intents within your application\'s page. If this is not ' \
               'possible, then consider disabling the privileged intents instead.'
         super().__init__(msg % shard_id)
+
+class InteractionResponded(ClientException):
+    """Exception that's raised when sending another interaction response using
+    :class:`InteractionResponse` when one has already been done before.
+
+    An interaction can only respond once.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    interaction: :class:`Interaction`
+        The interaction that's already been responded to.
+    """
+
+    def __init__(self, interaction):
+        self.interaction = interaction
+        super().__init__('This interaction has already been responded to before')

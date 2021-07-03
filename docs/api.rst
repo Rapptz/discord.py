@@ -3862,6 +3862,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: PrivilegedIntentsRequired
 
+.. autoexception:: InteractionResponded
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -3879,6 +3881,7 @@ Exception Hierarchy
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
+                - :exc:`InteractionResponded`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
