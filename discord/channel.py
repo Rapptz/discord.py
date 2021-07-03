@@ -686,7 +686,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 type=ChannelType.public_thread.value,
             )
 
-        return Thread(guild=self.guild, data=data)
+        return Thread(guild=self.guild, state=self._state, data=data)
 
     def archived_threads(
         self,
@@ -748,7 +748,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         data = await self._state.http.get_active_threads(self.id)
         # TODO: thread members?
-        return [Thread(guild=self.guild, data=d) for d in data.get('threads', [])]
+        return [Thread(guild=self.guild, state=self._state, data=d) for d in data.get('threads', [])]
 
 
 class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):

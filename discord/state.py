@@ -715,7 +715,7 @@ class ConnectionState:
             log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
-        thread = Thread(guild=guild, data=data)
+        thread = Thread(guild=guild, state=guild._state, data=data)
         has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
         if not has_thread:
@@ -735,7 +735,7 @@ class ConnectionState:
             thread._update(data)
             self.dispatch('thread_update', old, thread)
         else:
-            thread = Thread(guild=guild, data=data)
+            thread = Thread(guild=guild, state=guild._state, data=data)
             guild._add_thread(thread)
             self.dispatch('thread_join', thread)
 

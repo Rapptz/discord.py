@@ -1486,7 +1486,7 @@ class Message(Hashable):
             auto_archive_duration=auto_archive_duration,
             type=ChannelType.public_thread.value,
         )
-        return Thread(guild=self.guild, data=data)  # type: ignore
+        return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
     async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
