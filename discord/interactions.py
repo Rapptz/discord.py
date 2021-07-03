@@ -41,6 +41,7 @@ from .webhook.async_ import async_context, Webhook, handle_message_parameters
 
 __all__ = (
     'Interaction',
+    'InteractionMessage',
     'InteractionResponse',
 )
 
