@@ -1130,7 +1130,7 @@ of :class:`enum.Enum`.
 
         A private thread
 
-        .. versionadded:: 1.8
+        .. versionadded:: 2.0
 
 .. class:: MessageType
 
