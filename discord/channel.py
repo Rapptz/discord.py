@@ -1910,13 +1910,6 @@ def _guild_channel_factory(channel_type: Union[ChannelType, int]):
     else:
         return None, value
 
-def _thread_factory(thread_type: Union[ChannelType, int]):
-    value = _coerce_channel_type(thread_type)
-    if value in (ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread):
-        return Thread, value
-    else:
-        return None, value
-
 
 def _channel_factory(channel_type: Union[ChannelType, int]):
     cls, value = _guild_channel_factory(channel_type)
@@ -1927,9 +1920,8 @@ def _channel_factory(channel_type: Union[ChannelType, int]):
     else:
         return cls, value
 
-def _guild_messageable_factory(channel_type: Union[ChannelType, int]):
-    cls, value = _guild_channel_factory(channel_type)
-    if cls is not None:
-        return cls, value
-    cls, value = _thread_factory(channel_type)
+def _threaded_channel_factory(channel_type: Union[ChannelType, int]):
+    cls, value = _channel_factory(channel_type)
+    if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
+        return Thread, value
     return cls, value

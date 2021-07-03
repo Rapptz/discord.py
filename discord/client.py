@@ -39,7 +39,7 @@ from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
-from .channel import _guild_messageable_factory
+from .channel import _threaded_channel_factory
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
@@ -1401,7 +1401,7 @@ class Client:
         """
         data = await self.http.get_channel(channel_id)
 
-        factory, ch_type = _guild_messageable_factory(data['type'])
+        factory, ch_type = _threaded_channel_factory(data['type'])
         if factory is None:
             raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 
