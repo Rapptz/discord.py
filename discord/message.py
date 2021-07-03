@@ -1475,6 +1475,11 @@ class Message(Hashable):
             Starting the thread failed.
         InvalidArgument
             This message does not have guild info attached.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The started thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')

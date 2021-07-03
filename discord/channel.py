@@ -668,6 +668,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             You do not have permissions to start a thread.
         HTTPException
             Starting the thread failed.
+
+        Returns
+        --------
+        :class:`Thread`
+            The started thread
         """
 
         if message is None:
