@@ -42,25 +42,24 @@ __all__ = (
 class DiscordException(Exception):
     """Base exception class for discord.py
 
-    Ideally speaking, this could be caught to handle any exceptions thrown from this library.
+    Ideally speaking, this could be caught to handle any exceptions raised from this library.
     """
     pass
 
 class ClientException(DiscordException):
-    """Exception that's thrown when an operation in the :class:`Client` fails.
+    """Exception that's raised when an operation in the :class:`Client` fails.
 
     These are usually for exceptions that happened due to user input.
     """
     pass
 
 class NoMoreItems(DiscordException):
-    """Exception that is thrown when an async iteration operation has no more
+    """Exception that is raised when an async iteration operation has no more
     items."""
     pass
 
 class GatewayNotFound(DiscordException):
-    """An exception that is usually thrown when the gateway hub
-    for the :class:`Client` websocket is not found."""
+    """An exception that is raised when the gateway for Discord could not be found"""
     def __init__(self):
         message = 'The gateway to connect to discord was not found.'
         super().__init__(message)
@@ -83,7 +82,7 @@ def flatten_error_dict(d, key=''):
     return dict(items)
 
 class HTTPException(DiscordException):
-    """Exception that's thrown when an HTTP request operation fails.
+    """Exception that's raised when an HTTP request operation fails.
 
     Attributes
     ------------
@@ -124,21 +123,21 @@ class HTTPException(DiscordException):
         super().__init__(fmt.format(self.response, self.code, self.text))
 
 class Forbidden(HTTPException):
-    """Exception that's thrown for when status code 403 occurs.
+    """Exception that's raised for when status code 403 occurs.
 
     Subclass of :exc:`HTTPException`
     """
     pass
 
 class NotFound(HTTPException):
-    """Exception that's thrown for when status code 404 occurs.
+    """Exception that's raised for when status code 404 occurs.
 
     Subclass of :exc:`HTTPException`
     """
     pass
 
 class DiscordServerError(HTTPException):
-    """Exception that's thrown for when a 500 range status code occurs.
+    """Exception that's raised for when a 500 range status code occurs.
 
     Subclass of :exc:`HTTPException`.
 
@@ -153,7 +152,7 @@ class InvalidData(ClientException):
     pass
 
 class InvalidArgument(ClientException):
-    """Exception that's thrown when an argument to a function
+    """Exception that's raised when an argument to a function
     is invalid some way (e.g. wrong value or wrong type).
 
     This could be considered the analogous of ``ValueError`` and
@@ -163,14 +162,14 @@ class InvalidArgument(ClientException):
     pass
 
 class LoginFailure(ClientException):
-    """Exception that's thrown when the :meth:`Client.login` function
+    """Exception that's raised when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
     pass
 
 class ConnectionClosed(ClientException):
-    """Exception that's thrown when the gateway connection is
+    """Exception that's raised when the gateway connection is
     closed for reasons that could not be handled internally.
 
     Attributes
@@ -192,7 +191,7 @@ class ConnectionClosed(ClientException):
         super().__init__(f'Shard ID {self.shard_id} WebSocket closed with {self.code}')
 
 class PrivilegedIntentsRequired(ClientException):
-    """Exception that's thrown when the gateway is requesting privileged intents
+    """Exception that's raised when the gateway is requesting privileged intents
     but they're not ticked in the developer page yet.
 
     Go to https://discord.com/developers/applications/ and enable the intents
