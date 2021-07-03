@@ -1375,7 +1375,7 @@ class Client:
     async def fetch_channel(self, channel_id: int) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
 
-        Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel` or :class:`.Thread` with the specified ID.
+        Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or :class:`.Thread` with the specified ID.
 
         .. note::
 
