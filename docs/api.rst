@@ -3271,6 +3271,14 @@ InteractionResponse
 .. autoclass:: InteractionResponse()
     :members:
 
+InteractionMessage
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionMessage
+
+.. autoclass:: InteractionMessage()
+    :members:
+
 Member
 ~~~~~~
 
