@@ -275,9 +275,7 @@ class Thread(Messageable, Hashable):
         i.e. :meth:`.TextChannel.is_nsfw` is ``True``.
         """
         parent = self.parent
-        if parent is None:
-            raise ClientException('Parent channel not found')
-        return parent.is_nsfw()
+        return parent is not None and parent.is_nsfw()
 
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
