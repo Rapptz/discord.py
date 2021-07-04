@@ -123,7 +123,7 @@ class View:
     Parameters
     -----------
     timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
