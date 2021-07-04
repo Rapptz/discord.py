@@ -750,4 +750,4 @@ class ArchivedThreadIterator(_AsyncIterator['Thread']):
 
     def create_thread(self, data: ThreadPayload) -> Thread:
         from .threads import Thread
-        return Thread(guild=self.guild, data=data)
+        return Thread(guild=self.guild, state=self.guild._state, data=data)

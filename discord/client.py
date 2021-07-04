@@ -39,7 +39,7 @@ from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
-from .channel import _channel_factory
+from .channel import _threaded_channel_factory
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
@@ -58,6 +58,7 @@ from .iterators import GuildIterator
 from .appinfo import AppInfo
 from .ui.view import View
 from .stage_instance import StageInstance
+from .threads import Thread
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
@@ -1371,10 +1372,10 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
-    async def fetch_channel(self, channel_id: int) -> Union[GuildChannel, PrivateChannel]:
+    async def fetch_channel(self, channel_id: int) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
 
-        Retrieves a :class:`.abc.GuildChannel` or :class:`.abc.PrivateChannel` with the specified ID.
+        Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or :class:`.Thread` with the specified ID.
 
         .. note::
 
@@ -1395,12 +1396,12 @@ class Client:
 
         Returns
         --------
-        Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]
+        Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, :class:`.Thread`]
             The channel from the ID.
         """
         data = await self.http.get_channel(channel_id)
 
-        factory, ch_type = _channel_factory(data['type'])
+        factory, ch_type = _threaded_channel_factory(data['type'])
         if factory is None:
             raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 

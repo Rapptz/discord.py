@@ -287,7 +287,7 @@ class Guild(Hashable):
         self._members[member.id] = member
 
     def _store_thread(self, payload: ThreadPayload, /) -> Thread:
-        thread = Thread(guild=self, data=payload)
+        thread = Thread(guild=self, state=self._state, data=payload)
         self._threads[thread.id] = thread
         return thread
 
@@ -466,7 +466,7 @@ class Guild(Hashable):
         if 'threads' in data:
             threads = data['threads']
             for thread in threads:
-                self._add_thread(Thread(guild=self, data=thread))
+                self._add_thread(Thread(guild=self, state=self._state, data=thread))
 
     @property
     def channels(self) -> List[GuildChannel]:
