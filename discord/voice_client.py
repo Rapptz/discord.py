@@ -592,7 +592,7 @@ class VoiceClient(VoiceProtocol):
             raise ClientException('Already playing audio.')
 
         if not isinstance(source, AudioSource):
-            raise TypeError(f'source must an AudioSource not {source.__class__.__name__}')
+            raise TypeError(f'source must be an AudioSource not {source.__class__.__name__}')
 
         if not self.encoder and not source.is_opus():
             self.encoder = opus.Encoder()
