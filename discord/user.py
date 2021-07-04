@@ -22,10 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 import discord.abc
 from .flags import PublicUserFlags
-from .utils import snowflake_time, _bytes_to_base64_data
+from .utils import snowflake_time, _bytes_to_base64_data, MISSING
 from .enums import DefaultAvatar
 from .colour import Colour
 from .asset import Asset
@@ -228,7 +228,7 @@ class ClientUser(BaseUser):
         Specifies if the user has MFA turned on and working.
     """
 
-    __slots__ = BaseUser.__slots__ + ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
+    __slots__ = ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
 
     def __init__(self, *, state, data):
         super().__init__(state=state, data=data)
@@ -247,7 +247,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = None, avatar:  Optional[bytes] = None) -> None:
+    async def edit(self, *, username: str = MISSING, avatar:  bytes = MISSING) -> None:
         """|coro|
 
         Edits the current profile of the client.
@@ -276,11 +276,14 @@ class ClientUser(BaseUser):
         InvalidArgument
             Wrong image format passed for ``avatar``.
         """
+        payload: Dict[str, Any] = {}
+        if username is not MISSING:
+            payload['username'] = username
 
-        if avatar is not None:
-            avatar = _bytes_to_base64_data(avatar)
+        if avatar is not MISSING:
+            payload['avatar'] = _bytes_to_base64_data(avatar)
 
-        data = await self._state.http.edit_profile(username=username, avatar=avatar)
+        data = await self._state.http.edit_profile(payload)
         self._update(data)
 
 
@@ -319,7 +322,7 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = BaseUser.__slots__ + ('__weakref__',)
+    __slots__ = ('__weakref__',)
 
     def __repr__(self):
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'

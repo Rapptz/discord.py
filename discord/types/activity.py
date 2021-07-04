@@ -41,9 +41,9 @@ class PartialPresenceUpdate(TypedDict):
 
 
 class ClientStatus(TypedDict, total=False):
-    desktop: bool
-    mobile: bool
-    web: bool
+    desktop: str
+    mobile: str
+    web: str
 
 
 class ActivityTimestamps(TypedDict, total=False):

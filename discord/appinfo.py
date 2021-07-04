@@ -196,7 +196,7 @@ class AppInfo:
         return self._state._get_guild(self.guild_id)
 
 class PartialAppInfo:
-    """Represents a partial AppInfo given by :func:`~GuildChannel.create_invite`
+    """Represents a partial AppInfo given by :func:`~discord.abc.GuildChannel.create_invite`
 
     .. versionadded:: 2.0
 

@@ -93,16 +93,42 @@ class GuildApplicationCommandPermissions(PartialGuildApplicationCommandPermissio
 InteractionType = Literal[1, 2, 3]
 
 
-class _ApplicationCommandInteractionDataOptionOptional(TypedDict, total=False):
-    value: ApplicationCommandOptionType
+class _ApplicationCommandInteractionDataOption(TypedDict):
+    name: str
+
+
+class _ApplicationCommandInteractionDataOptionSubcommand(_ApplicationCommandInteractionDataOption):
+    type: Literal[1, 2]
     options: List[ApplicationCommandInteractionDataOption]
 
 
-class ApplicationCommandInteractionDataOption(
-    _ApplicationCommandInteractionDataOptionOptional
-):
-    name: str
-    type: ApplicationCommandOptionType
+class _ApplicationCommandInteractionDataOptionString(_ApplicationCommandInteractionDataOption):
+    type: Literal[3]
+    value: str
+
+
+class _ApplicationCommandInteractionDataOptionInteger(_ApplicationCommandInteractionDataOption):
+    type: Literal[4]
+    value: int
+
+
+class _ApplicationCommandInteractionDataOptionBoolean(_ApplicationCommandInteractionDataOption):
+    type: Literal[5]
+    value: bool
+
+
+class _ApplicationCommandInteractionDataOptionSnowflake(_ApplicationCommandInteractionDataOption):
+    type: Literal[6, 7, 8, 9]
+    value: Snowflake
+
+
+ApplicationCommandInteractionDataOption = Union[
+    _ApplicationCommandInteractionDataOptionString,
+    _ApplicationCommandInteractionDataOptionInteger,
+    _ApplicationCommandInteractionDataOptionSubcommand,
+    _ApplicationCommandInteractionDataOptionBoolean,
+    _ApplicationCommandInteractionDataOptionSnowflake,
+]
 
 
 class ApplicationCommandResolvedPartialChannel(TypedDict):
@@ -138,8 +164,11 @@ class ComponentInteractionData(_ComponentInteractionDataOptional):
     component_type: ComponentType
 
 
+InteractionData = Union[ApplicationCommandInteractionData, ComponentInteractionData]
+
+
 class _InteractionOptional(TypedDict, total=False):
-    data: Union[ApplicationCommandInteractionData, ComponentInteractionData]
+    data: InteractionData
     guild_id: Snowflake
     channel_id: Snowflake
     member: Member

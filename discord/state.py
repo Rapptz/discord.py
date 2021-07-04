@@ -383,7 +383,7 @@ class ConnectionState:
             channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
-            channel = guild and (guild.get_channel(channel_id) or guild.get_thread(channel_id))
+            channel = guild and guild._resolve_channel(channel_id)
 
         return channel or Object(id=channel_id), guild
 
@@ -715,7 +715,7 @@ class ConnectionState:
             log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
-        thread = Thread(guild=guild, data=data)
+        thread = Thread(guild=guild, state=guild._state, data=data)
         has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
         if not has_thread:
@@ -734,6 +734,10 @@ class ConnectionState:
             old = copy.copy(thread)
             thread._update(data)
             self.dispatch('thread_update', old, thread)
+        else:
+            thread = Thread(guild=guild, state=guild._state, data=data)
+            guild._add_thread(thread)
+            self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data):
         guild_id = int(data['guild_id'])
@@ -1250,7 +1254,7 @@ class ConnectionState:
             return pm
 
         for guild in self.guilds:
-            channel = guild.get_channel(id) or guild.get_thread(id)
+            channel = guild._resolve_channel(id)
             if channel is not None:
                 return channel
 
@@ -1272,8 +1276,8 @@ class AutoShardedConnectionState(ConnectionState):
             new_guild = self._get_guild(msg.guild.id)
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
-                channel = new_guild.get_channel(channel_id) or new_guild.get_thread(channel_id) or Object(id=channel_id)
-                msg._rebind_channel_reference(channel)
+                channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
+                msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)

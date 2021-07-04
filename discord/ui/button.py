@@ -65,7 +65,7 @@ class Button(Item[V]):
         Whether the button is disabled or not.
     label: Optional[:class:`str`]
         The label of the button, if any.
-    emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
+    emoji: Optional[Union[:class:`.PartialEmoji`, :class:`.Emoji`, :class:`str`]]
         The emoji of the button, if available.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
@@ -87,7 +87,7 @@ class Button(Item[V]):
     def __init__(
         self,
         *,
-        style: ButtonStyle,
+        style: ButtonStyle = ButtonStyle.secondary,
         label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,
@@ -180,7 +180,7 @@ class Button(Item[V]):
 
     @property
     def emoji(self) -> Optional[PartialEmoji]:
-        """Optional[:class:`PartialEmoji`]: The emoji of the button, if available."""
+        """Optional[:class:`.PartialEmoji`]: The emoji of the button, if available."""
         return self._underlying.emoji
 
     @emoji.setter
@@ -217,6 +217,11 @@ class Button(Item[V]):
     def is_dispatchable(self) -> bool:
         return self.custom_id is not None
 
+    def is_persistent(self) -> bool:
+        if self.style is ButtonStyle.link:
+            return self.url is not None
+        return super().is_persistent()
+
     def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
@@ -251,13 +256,13 @@ def button(
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         It is recommended not to set this parameter to prevent conflicts.
-    style: :class:`ButtonStyle`
-        The style of the button. Defaults to :attr:`ButtonStyle.grey`.
+    style: :class:`.ButtonStyle`
+        The style of the button. Defaults to :attr:`.ButtonStyle.grey`.
     disabled: :class:`bool`
         Whether the button is disabled or not. Defaults to ``False``.
-    emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
-        The emoji of the button. This can be in string form or a :class:`PartialEmoji`
-        or a full :class:`Emoji`.
+    emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
+        The emoji of the button. This can be in string form or a :class:`.PartialEmoji`
+        or a full :class:`.Emoji`.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd

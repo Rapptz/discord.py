@@ -460,14 +460,17 @@ class CommandOnCooldown(CommandError):
     Attributes
     -----------
     cooldown: ``Cooldown``
-        A class with attributes ``rate``, ``per``, and ``type`` similar to
-        the :func:`.cooldown` decorator.
+        A class with attributes ``rate`` and ``per`` similar to the
+        :func:`.cooldown` decorator.
+    type: :class:`BucketType`
+        The type associated with the cooldown.
     retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
-    def __init__(self, cooldown, retry_after):
+    def __init__(self, cooldown, retry_after, type):
         self.cooldown = cooldown
         self.retry_after = retry_after
+        self.type = type
         super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 class MaxConcurrencyReached(CommandError):
@@ -608,13 +611,13 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
@@ -631,13 +634,13 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])

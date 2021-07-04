@@ -287,7 +287,7 @@ class Guild(Hashable):
         self._members[member.id] = member
 
     def _store_thread(self, payload: ThreadPayload, /) -> Thread:
-        thread = Thread(guild=self, data=payload)
+        thread = Thread(guild=self, state=self._state, data=payload)
         self._threads[thread.id] = thread
         return thread
 
@@ -454,19 +454,19 @@ class Guild(Hashable):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member._presence_update(presence, empty_tuple)
+                member._presence_update(presence, empty_tuple)  # type: ignore
 
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
-                    self._add_channel(factory(guild=self, data=c, state=self._state))
+                    self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
 
         if 'threads' in data:
             threads = data['threads']
             for thread in threads:
-                self._add_thread(Thread(guild=self, data=thread))
+                self._add_thread(Thread(guild=self, state=self._state, data=thread))
 
     @property
     def channels(self) -> List[GuildChannel]:
@@ -585,6 +585,12 @@ class Guild(Hashable):
         for _, channels in as_list:
             channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
+
+    def _resolve_channel(self, id: Optional[int], /) -> Optional[Union[GuildChannel, Thread]]:
+        if id is None:
+            return
+
+        return self._channels.get(id) or self._threads.get(id)
 
     def get_channel(self, channel_id: int, /) -> Optional[GuildChannel]:
         """Returns a channel with the given ID.
@@ -2158,7 +2164,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         colour: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2171,7 +2177,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         color: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2183,7 +2189,7 @@ class Guild(Hashable):
         color: Union[Colour, int] = MISSING,
         colour: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
-        mentionable: str = MISSING,
+        mentionable: bool = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
         """|coro|
@@ -2407,7 +2413,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self) -> Invite:
+    async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -2426,12 +2432,15 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Invite`
-            The special vanity invite.
+        Optional[:class:`Invite`]
+            The special vanity invite. If ``None`` then the guild does not
+            have a vanity invite set.
         """
 
         # we start with { code: abc }
         payload = await self._state.http.get_vanity_code(self.id)
+        if not payload['code']:
+            return None
 
         # get the vanity URL channel since default channels aren't
         # reliable or a thing anymore
@@ -2442,6 +2451,7 @@ class Guild(Hashable):
         payload['temporary'] = False
         payload['max_uses'] = 0
         payload['max_age'] = 0
+        payload['uses'] = payload.get('uses', 0)
         return Invite(state=self._state, data=payload, guild=self, channel=channel)
 
     # TODO: use MISSING when async iterators get refactored

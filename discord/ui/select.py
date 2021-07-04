@@ -59,6 +59,8 @@ class Select(Item[V]):
 
     This is usually represented as a drop down menu.
 
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
     .. versionadded:: 2.0
 
     Parameters
@@ -196,9 +198,9 @@ class Select(Item[V]):
         description: Optional[:class:`str`]
             An additional description of the option, if any.
             Can only be up to 50 characters.
-        emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
+        emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
-            the custom or unicode emoji or an instance of :class:`PartialEmoji` or :class:`Emoji`.
+            the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
         default: :class:`bool`
             Whether this option is selected by default.
 
@@ -291,6 +293,8 @@ def select(
     the :class:`discord.ui.View`, the :class:`discord.ui.Select` being pressed and
     the :class:`discord.Interaction` you receive.
 
+    In order to get the selected items that the user has chosen within the callback
+    use :attr:`Select.values`.
 
     Parameters
     ------------

@@ -139,8 +139,8 @@ class Thread(Messageable, Hashable):
         'archive_timestamp',
     )
 
-    def __init__(self, *, guild: Guild, data: ThreadPayload):
-        self._state: ConnectionState = guild._state
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
+        self._state: ConnectionState = state
         self.guild = guild
         self._members: Dict[int, ThreadMember] = {}
         self._from_data(data)
@@ -191,16 +191,25 @@ class Thread(Messageable, Hashable):
             self._unroll_metadata(data['thread_metadata'])
         except KeyError:
             pass
+    @property
+    def type(self) -> ChannelType:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return self._type
 
     @property
     def parent(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: The parent channel this thread belongs to."""
-        return self.guild.get_channel(self.parent_id)
+        return self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
     def owner(self) -> Optional[Member]:
         """Optional[:class:`Member`]: The member this thread belongs to."""
         return self.guild.get_member(self.owner_id)
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: The string that allows you to mention the thread."""
+        return f'<#{self.id}>'
 
     @property
     def last_message(self) -> Optional[Message]:
@@ -258,6 +267,15 @@ class Thread(Messageable, Hashable):
         i.e. :meth:`.TextChannel.is_news` is ``True``.
         """
         return self._type is ChannelType.news_thread
+
+    def is_nsfw(self) -> bool:
+        """:class:`bool`: Whether the thread is NSFW or not.
+
+        An NSFW thread is a thread that has a parent that is an NSFW channel,
+        i.e. :meth:`.TextChannel.is_nsfw` is ``True``.
+        """
+        parent = self.parent
+        return parent is not None and parent.is_nsfw()
 
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
