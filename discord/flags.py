@@ -287,6 +287,15 @@ class MessageFlags(BaseFlags):
         """
         return 32
 
+    @flag_value
+    def ephemeral(Self):
+        """:class:`bool`: Returns ``True`` if the source message is ephemeral.
+
+        .. versionadded:: 2.0
+        """
+        return 64
+
+
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
     r"""Wraps up the Discord User Public flags.
