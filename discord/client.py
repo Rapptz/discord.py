@@ -46,11 +46,12 @@ from .errors import *
 from .enums import Status, VoiceRegion
 from .flags import ApplicationFlags, Intents
 from .gateway import *
-from .activity import BaseActivity, create_activity
+from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
+from .utils import MISSING
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
@@ -649,14 +650,14 @@ class Client:
         return self._closed
 
     @property
-    def activity(self) -> Optional[BaseActivity]:
+    def activity(self) -> Optional[ActivityTypes]:
         """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
         """
         return create_activity(self._connection._activity)
 
     @activity.setter
-    def activity(self, value: Optional[BaseActivity]) -> None:
+    def activity(self, value: Optional[ActivityTypes]) -> None:
         if value is None:
             self._connection._activity = None
         elif isinstance(value, BaseActivity):
@@ -1029,7 +1030,7 @@ class Client:
         limit: Optional[int] = 100,
         before: SnowflakeTime = None,
         after: SnowflakeTime = None
-    ) -> List[Guild]:
+    ) -> GuildIterator:
         """Retrieves an :class:`.AsyncIterator` that enables receiving your guilds.
 
         .. note::
@@ -1144,7 +1145,14 @@ class Client:
         data = await self.http.get_guild(guild_id)
         return Guild(data=data, state=self._connection)
 
-    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None, *, code: str = None) -> Guild:
+    async def create_guild(
+        self,
+        *,
+        name: str,
+        region: Union[VoiceRegion, str] = VoiceRegion.us_west,
+        icon: bytes = MISSING,
+        code: str = MISSING,
+    ) -> Guild:
         """|coro|
 
         Creates a :class:`.Guild`.
@@ -1158,10 +1166,10 @@ class Client:
         region: :class:`.VoiceRegion`
             The region for the voice communication server.
             Defaults to :attr:`.VoiceRegion.us_west`.
-        icon: :class:`bytes`
+        icon: Optional[:class:`bytes`]
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
-        code: Optional[:class:`str`]
+        code: :class:`str`
             The code for a template to create the guild with.
 
             .. versionadded:: 1.4
@@ -1179,16 +1187,17 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
-        if icon is not None:
-            icon = utils._bytes_to_base64_data(icon)
+        if icon is not MISSING:
+            icon_base64 = utils._bytes_to_base64_data(icon)
+        else:
+            icon_base64 = None
 
-        region = region or VoiceRegion.us_west
-        region_value = region.value
+        region_value = str(region)
 
         if code:
-            data = await self.http.create_from_template(code, name, region_value, icon)
+            data = await self.http.create_from_template(code, name, region_value, icon_base64)
         else:
-            data = await self.http.create_guild(name, region_value, icon)
+            data = await self.http.create_guild(name, region_value, icon_base64)
         return Guild(data=data, state=self._connection)
 
     async def fetch_stage_instance(self, channel_id: int) -> StageInstance:

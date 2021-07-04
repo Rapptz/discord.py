@@ -133,6 +133,9 @@ class BaseActivity:
         if self._created_at is not None:
             return datetime.datetime.utcfromtimestamp(self._created_at / 1000).replace(tzinfo=datetime.timezone.utc)
 
+    def to_dict(self) -> ActivityPayload:
+        raise NotImplementedError
+
 
 class Activity(BaseActivity):
     """Represents an activity in Discord.
