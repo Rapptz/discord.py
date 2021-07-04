@@ -600,7 +600,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an interaction happened.
 
-    This currently happens due to slash command invocations.
+    This currently happens due to slash command invocations or components being used.
+
+    .. warning::
+
+        This is a low level function that is not generally meant to be used.
+        If you are working with components, consider using the callbacks associated
+        with the :class:`~discord.ui.View` instead as it provides a nicer user experience.
 
     .. versionadded:: 2.0
 
