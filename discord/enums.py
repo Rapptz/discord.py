@@ -167,71 +167,71 @@ else:
 
 
 class ChannelType(Enum):
-    text = 0
-    private = 1
-    voice = 2
-    group = 3
-    category = 4
-    news = 5
-    store = 6
-    news_thread = 10
-    public_thread = 11
+    text           = 0
+    private        = 1
+    voice          = 2
+    group          = 3
+    category       = 4
+    news           = 5
+    store          = 6
+    news_thread    = 10
+    public_thread  = 11
     private_thread = 12
-    stage_voice = 13
+    stage_voice    = 13
 
     def __str__(self):
         return self.name
 
 
 class MessageType(Enum):
-    default = 0
-    recipient_add = 1
-    recipient_remove = 2
-    call = 3
-    channel_name_change = 4
-    channel_icon_change = 5
-    pins_add = 6
-    new_member = 7
-    premium_guild_subscription = 8
-    premium_guild_tier_1 = 9
-    premium_guild_tier_2 = 10
-    premium_guild_tier_3 = 11
-    channel_follow_add = 12
-    guild_stream = 13
-    guild_discovery_disqualified = 14
-    guild_discovery_requalified = 15
+    default                                      = 0
+    recipient_add                                = 1
+    recipient_remove                             = 2
+    call                                         = 3
+    channel_name_change                          = 4
+    channel_icon_change                          = 5
+    pins_add                                     = 6
+    new_member                                   = 7
+    premium_guild_subscription                   = 8
+    premium_guild_tier_1                         = 9
+    premium_guild_tier_2                         = 10
+    premium_guild_tier_3                         = 11
+    channel_follow_add                           = 12
+    guild_stream                                 = 13
+    guild_discovery_disqualified                 = 14
+    guild_discovery_requalified                  = 15
     guild_discovery_grace_period_initial_warning = 16
-    guild_discovery_grace_period_final_warning = 17
-    thread_created = 18
-    reply = 19
-    application_command = 20
-    thread_starter_message = 21
-    guild_invite_reminder = 22
+    guild_discovery_grace_period_final_warning   = 17
+    thread_created                               = 18
+    reply                                        = 19
+    application_command                          = 20
+    thread_starter_message                       = 21
+    guild_invite_reminder                        = 22
 
 
 class VoiceRegion(Enum):
-    us_west = 'us-west'
-    us_east = 'us-east'
-    us_south = 'us-south'
-    us_central = 'us-central'
-    eu_west = 'eu-west'
-    eu_central = 'eu-central'
-    singapore = 'singapore'
-    london = 'london'
-    sydney = 'sydney'
-    amsterdam = 'amsterdam'
-    frankfurt = 'frankfurt'
-    brazil = 'brazil'
-    hongkong = 'hongkong'
-    russia = 'russia'
-    japan = 'japan'
-    southafrica = 'southafrica'
-    south_korea = 'south-korea'
-    india = 'india'
-    europe = 'europe'
-    dubai = 'dubai'
-    vip_us_east = 'vip-us-east'
-    vip_us_west = 'vip-us-west'
+    us_west       = 'us-west'
+    us_east       = 'us-east'
+    us_south      = 'us-south'
+    us_central    = 'us-central'
+    eu_west       = 'eu-west'
+    eu_central    = 'eu-central'
+    singapore     = 'singapore'
+    london        = 'london'
+    sydney        = 'sydney'
+    amsterdam     = 'amsterdam'
+    frankfurt     = 'frankfurt'
+    brazil        = 'brazil'
+    hongkong      = 'hongkong'
+    russia        = 'russia'
+    japan         = 'japan'
+    southafrica   = 'southafrica'
+    south_korea   = 'south-korea'
+    india         = 'india'
+    europe        = 'europe'
+    dubai         = 'dubai'
+    vip_us_east   = 'vip-us-east'
+    vip_us_west   = 'vip-us-west'
     vip_amsterdam = 'vip-amsterdam'
 
     def __str__(self):
@@ -239,10 +239,10 @@ class VoiceRegion(Enum):
 
 
 class SpeakingState(Enum):
-    none = 0
-    voice = 1
+    none       = 0
+    voice      = 1
     soundshare = 2
-    priority = 4
+    priority   = 4
 
     def __str__(self):
         return self.name
@@ -252,10 +252,10 @@ class SpeakingState(Enum):
 
 
 class VerificationLevel(Enum):
-    none = 0
-    low = 1
-    medium = 2
-    high = 3
+    none    = 0
+    low     = 1
+    medium  = 2
+    high    = 3
     highest = 4
 
     def __str__(self):
@@ -263,8 +263,8 @@ class VerificationLevel(Enum):
 
 
 class ContentFilter(Enum):
-    disabled = 0
-    no_role = 1
+    disabled    = 0
+    no_role     = 1
     all_members = 2
 
     def __str__(self):
@@ -272,12 +272,12 @@ class ContentFilter(Enum):
 
 
 class Status(Enum):
-    online = 'online'
-    offline = 'offline'
-    idle = 'idle'
-    dnd = 'dnd'
+    online         = 'online'
+    offline        = 'offline'
+    idle           = 'idle'
+    dnd            = 'dnd'
     do_not_disturb = 'dnd'
-    invisible = 'invisible'
+    invisible      = 'invisible'
 
     def __str__(self):
         return self.value
@@ -285,18 +285,18 @@ class Status(Enum):
 
 class DefaultAvatar(Enum):
     blurple = 0
-    grey = 1
-    gray = 1
-    green = 2
-    orange = 3
-    red = 4
+    grey    = 1
+    gray    = 1
+    green   = 2
+    orange  = 3
+    red     = 4
 
     def __str__(self):
         return self.name
 
 
 class NotificationLevel(Enum):
-    all_messages = 0
+    all_messages  = 0
     only_mentions = 1
 
 
@@ -424,32 +424,32 @@ class AuditLogAction(Enum):
 
 
 class UserFlags(Enum):
-    staff = 1
-    partner = 2
-    hypesquad = 4
-    bug_hunter = 8
-    mfa_sms = 16
-    premium_promo_dismissed = 32
-    hypesquad_bravery = 64
-    hypesquad_brilliance = 128
-    hypesquad_balance = 256
-    early_supporter = 512
-    team_user = 1024
-    system = 4096
-    has_unread_urgent_messages = 8192
-    bug_hunter_level_2 = 16384
-    verified_bot = 65536
-    verified_bot_developer = 131072
+    staff                       = 1
+    partner                     = 2
+    hypesquad                   = 4
+    bug_hunter                  = 8
+    mfa_sms                     = 16
+    premium_promo_dismissed     = 32
+    hypesquad_bravery           = 64
+    hypesquad_brilliance        = 128
+    hypesquad_balance           = 256
+    early_supporter             = 512
+    team_user                   = 1024
+    system                      = 4096
+    has_unread_urgent_messages  = 8192
+    bug_hunter_level_2          = 16384
+    verified_bot                = 65536
+    verified_bot_developer      = 131072
     discord_certified_moderator = 262144
 
 
 class ActivityType(Enum):
-    unknown = -1
-    playing = 0
+    unknown   = -1
+    playing   = 0
     streaming = 1
     listening = 2
-    watching = 3
-    custom = 4
+    watching  = 3
+    custom    = 4
     competing = 5
 
     def __int__(self):
@@ -457,50 +457,50 @@ class ActivityType(Enum):
 
 
 class TeamMembershipState(Enum):
-    invited = 1
+    invited  = 1
     accepted = 2
 
 
 class WebhookType(Enum):
-    incoming = 1
+    incoming         = 1
     channel_follower = 2
-    application = 3
+    application      = 3
 
 
 class ExpireBehaviour(Enum):
     remove_role = 0
-    kick = 1
+    kick        = 1
 
 
 ExpireBehavior = ExpireBehaviour
 
 
 class StickerType(Enum):
-    png = 1
-    apng = 2
+    png    = 1
+    apng   = 2
     lottie = 3
 
 
 class InviteTarget(Enum):
-    unknown = 0
-    stream = 1
+    unknown              = 0
+    stream               = 1
     embedded_application = 2
 
 
 class InteractionType(Enum):
-    ping = 1
+    ping                = 1
     application_command = 2
-    component = 3
+    component           = 3
 
 
 class InteractionResponseType(Enum):
-    pong = 1
-    # ack = 2 (deprecated)
-    # channel_message = 3 (deprecated)
-    channel_message = 4  # (with source)
+    pong                     = 1
+    # ack                    = 2 (deprecated)
+    # channel_message        = 3 (deprecated)
+    channel_message          = 4  # (with source)
     deferred_channel_message = 5  # (with source)
-    deferred_message_update = 6  # for components
-    message_update = 7  # for components
+    deferred_message_update  = 6  # for components
+    message_update           = 7  # for components
 
 
 class VideoQualityMode(Enum):
@@ -513,42 +513,42 @@ class VideoQualityMode(Enum):
 
 class ComponentType(Enum):
     action_row = 1
-    button = 2
-    select = 3
+    button     = 2
+    select     = 3
 
     def __int__(self):
         return self.value
 
 
 class ButtonStyle(Enum):
-    primary = 1
+    primary   = 1
     secondary = 2
-    success = 3
-    danger = 4
-    link = 5
+    success   = 3
+    danger    = 4
+    link      = 5
 
     # Aliases
     blurple = 1
-    grey = 2
-    gray = 2
-    green = 3
-    red = 4
-    url = 5
+    grey    = 2
+    gray    = 2
+    green   = 3
+    red     = 4
+    url     = 5
 
     def __int__(self):
         return self.value
 
 
 class StagePrivacyLevel(Enum):
-    public = 1
-    closed = 2
+    public     = 1
+    closed     = 2
     guild_only = 2
 
 
 class NSFWLevel(Enum):
-    default = 0
-    explicit = 1
-    safe = 2
+    default        = 0
+    explicit       = 1
+    safe           = 2
     age_restricted = 3
 
 
