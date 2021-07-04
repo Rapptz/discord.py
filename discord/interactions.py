@@ -258,6 +258,9 @@ class Interaction:
         This is a lower level interface to :meth:`InteractionMessage.edit` in case
         you do not want to fetch the message and save an HTTP request.
 
+        This method is also the only way to edit the original message if
+        the message sent was ephemeral.
+
         Parameters
         ------------
         content: Optional[:class:`str`]
