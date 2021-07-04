@@ -669,7 +669,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_thread_join(thread)
 
-    Called whenever a thread is joined.
+    Called whenever a thread is joined or created. Note that from the API's perspective there is no way to
+    differentiate between a thread being created or the bot joining a thread.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
