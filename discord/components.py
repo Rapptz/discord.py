@@ -324,6 +324,16 @@ class SelectOption:
             f'emoji={self.emoji!r} default={self.default!r}>'
         )
 
+    def __str__(self) -> str:
+        if self.emoji:
+            base = f'{self.emoji} {self.label}'
+        else:
+            base = self.label
+
+        if self.description:
+            return f'{base}\n{self.description}'
+        return base
+
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
         try:
