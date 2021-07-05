@@ -24,7 +24,7 @@ Key Features
 Installing
 ----------
 
-**Python 3.5.3 or higher is required**
+**Python 3.8 or higher is required**
 
 To install the library without full voice support, you can just run the following command:
 
