@@ -818,18 +818,20 @@ class clean_content(Converter[str]):
         .. versionadded:: 1.7
     """
 
-    def __init__(self,
-                 *,
-                 fix_channel_mentions: bool = False,
-                 use_nicknames: bool = True,
-                 escape_markdown: bool = False,
-                 remove_markdown: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        fix_channel_mentions: bool = False,
+        use_nicknames: bool = True,
+        escape_markdown: bool = False,
+        remove_markdown: bool = False
+    ) -> None:
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
         self.escape_markdown = escape_markdown
         self.remove_markdown = remove_markdown
 
-    async def convert(self, ctx, arg):
+    async def convert(self, ctx: Context, arg: str) -> str:
         msg = ctx.message
 
         if ctx.guild:
@@ -856,11 +858,12 @@ class clean_content(Converter[str]):
             def resolve_channel(id):
                 return
 
-        transforms = {'@': resolve_member,
-                      '@!': resolve_member,
-                      '#': resolve_channel,
-                      '@&': resolve_role,
-                      }
+        transforms = {
+            '@': resolve_member,
+            '@!': resolve_member,
+            '#': resolve_channel,
+            '@&': resolve_role,
+        }
 
         def repl(match):
             type = match[1]
@@ -868,8 +871,7 @@ class clean_content(Converter[str]):
             transformed = transforms[type](id)
             return transformed or match[0]
 
-        pattern = re.compile(r'<(@[!&]?|#)(\d{15,20})>')
-        result = pattern.sub(repl, arg)
+        result = re.sub(r'<(@[!&]?|#)([0-9]{15,20})>', repl, arg)
         if self.escape_markdown:
             result = discord.utils.escape_markdown(result)
         elif self.remove_markdown:
