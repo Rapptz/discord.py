@@ -831,32 +831,32 @@ class clean_content(Converter[str]):
         self.escape_markdown = escape_markdown
         self.remove_markdown = remove_markdown
 
-    async def convert(self, ctx: Context, arg: str) -> str:
+    async def convert(self, ctx: Context, argument: str) -> str:
         msg = ctx.message
 
         if ctx.guild:
-            def resolve_member(id):
+            def resolve_member(id: int) -> str:
                 m = _utils_get(msg.mentions, id=id) or ctx.guild.get_member(id)
                 return f'@{m.display_name if self.use_nicknames else m.name}' if m else '@deleted-user'
 
-            def resolve_role(id):
+            def resolve_role(id: int) -> str:
                 r = _utils_get(msg.role_mentions, id=id) or ctx.guild.get_role(id)
                 return f'@{r.name}' if r else '@deleted-role'
         else:
-            def resolve_member(id):
+            def resolve_member(id: int) -> str:
                 m = _utils_get(msg.mentions, id=id) or ctx.bot.get_user(id)
                 return f'@{m.name}' if m else '@deleted-user'
 
-            def resolve_role(id):
+            def resolve_role(id: int) -> str:
                 return '@deleted-role'
 
         if self.fix_channel_mentions and ctx.guild:
-            def resolve_channel(id):
+            def resolve_channel(id: int) -> str:
                 c = ctx.guild.get_channel(id)
                 return f'#{c.name}' if c else '#deleted-channel'
         else:
-            def resolve_channel(id):
-                return
+            def resolve_channel(id: int) -> str:
+                return f'<#{id}>'
 
         transforms = {
             '@': resolve_member,
@@ -865,13 +865,13 @@ class clean_content(Converter[str]):
             '@&': resolve_role,
         }
 
-        def repl(match):
+        def repl(match: re.Match) -> str:
             type = match[1]
             id = int(match[2])
             transformed = transforms[type](id)
-            return transformed or match[0]
+            return transformed
 
-        result = re.sub(r'<(@[!&]?|#)([0-9]{15,20})>', repl, arg)
+        result = re.sub(r'<(@[!&]?|#)([0-9]{15,20})>', repl, argument)
         if self.escape_markdown:
             result = discord.utils.escape_markdown(result)
         elif self.remove_markdown:
