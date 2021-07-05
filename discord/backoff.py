@@ -65,6 +65,10 @@ class ExponentialBackoff(Generic[T]):
     def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[True] = ...) -> ExponentialBackoff[int]:
         ...
 
+    @overload
+    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: bool = ...) -> ExponentialBackoff[Union[int, float]]:
+        ...
+
     def __new__(cls: Type[ExponentialBackoff], base: int = 1, *, integral: bool = False) -> ExponentialBackoff:
         return super().__new__(cls)
 
