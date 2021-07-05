@@ -27,9 +27,9 @@ from __future__ import annotations
 
 import time
 import random
-from typing import Callable, Generic, Literal, TypeVar, Type, overload, Union
+from typing import Callable, Generic, Literal, TypeVar, overload, Union
 
-T = TypeVar('T', float, int)
+T = TypeVar('T', bool, Literal[True], Literal[False])
 
 __all__ = (
     'ExponentialBackoff',
@@ -57,22 +57,7 @@ class ExponentialBackoff(Generic[T]):
         number in between may be returned.
     """
 
-    @overload
-    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[False] = ...) -> ExponentialBackoff[float]:
-        ...
-
-    @overload
-    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[True] = ...) -> ExponentialBackoff[int]:
-        ...
-
-    @overload
-    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: bool = ...) -> ExponentialBackoff[Union[int, float]]:
-        ...
-
-    def __new__(cls: Type[ExponentialBackoff], base: int = 1, *, integral: bool = False) -> ExponentialBackoff:
-        return super().__new__(cls)
-
-    def __init__(self, base: int = 1, *, integral: bool = False):
+    def __init__(self, base: int = 1, *, integral: T = False):
         self._base: int = base
 
         self._exp: int = 0
@@ -84,9 +69,21 @@ class ExponentialBackoff(Generic[T]):
         rand = random.Random()
         rand.seed()
 
-        self._randfunc: Callable[..., T] = rand.randrange if integral else rand.uniform   # type: ignore
+        self._randfunc: Callable[..., Union[int, float]] = rand.randrange if integral else rand.uniform   # type: ignore
 
-    def delay(self) -> T:
+    @overload
+    def delay(self: ExponentialBackoff[Literal[False]]) -> float:
+        ...
+
+    @overload
+    def delay(self: ExponentialBackoff[Literal[True]]) -> int:
+        ...
+
+    @overload
+    def delay(self: ExponentialBackoff[bool]) -> Union[int, float]:
+        ...
+
+    def delay(self) -> Union[int, float]:
         """Compute the next delay
 
         Returns the next delay to wait according to the exponential
