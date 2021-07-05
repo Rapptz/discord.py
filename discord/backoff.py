@@ -29,7 +29,7 @@ import time
 import random
 from typing import Callable, Generic, Literal, TypeVar, Type, overload, Union
 
-T = TypeVar('T', bound=Union[int, float])
+T = TypeVar('T', float, int)
 
 __all__ = (
     'ExponentialBackoff',
