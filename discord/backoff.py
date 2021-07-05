@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import time
 import random
-from typing import Any, Callable, Generic, Literal, TypeVar, Type, overload, Union
+from typing import Callable, Generic, Literal, TypeVar, Type, overload, Union
 
 T = TypeVar('T', bound=Union[int, float])
 
@@ -65,7 +65,7 @@ class ExponentialBackoff(Generic[T]):
     def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[True] = ...) -> ExponentialBackoff[int]:
         ...
 
-    def __new__(cls: Type[ExponentialBackoff], base: int = 1, *, integral: bool = False) -> ExponentialBackoff[Any]:
+    def __new__(cls: Type[ExponentialBackoff], base: int = 1, *, integral: bool = False) -> ExponentialBackoff:
         return super().__new__(cls)
 
     def __init__(self, base: int = 1, *, integral: bool = False):
