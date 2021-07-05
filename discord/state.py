@@ -628,7 +628,7 @@ class ConnectionState:
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
 
-        self.dispatch('member_update', old_member, member)
+        self.dispatch('presence_update', old_member, member)
 
     def parse_user_update(self, data):
         self.user._update(data)
