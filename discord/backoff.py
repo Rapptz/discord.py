@@ -22,14 +22,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+
 import time
 import random
+from typing import Any, Callable, Generic, Literal, TypeVar, Type, overload, Union
+
+T = TypeVar('T', bound=Union[int, float])
 
 __all__ = (
     'ExponentialBackoff',
 )
 
-class ExponentialBackoff:
+class ExponentialBackoff(Generic[T]):
     """An implementation of the exponential backoff algorithm
 
     Provides a convenient interface to implement an exponential backoff
@@ -51,7 +57,18 @@ class ExponentialBackoff:
         number in between may be returned.
     """
 
-    def __init__(self, base=1, *, integral=False):
+    @overload
+    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[False] = ...) -> ExponentialBackoff[float]:
+        ...
+
+    @overload
+    def __new__(cls: Type[ExponentialBackoff], base: int = ..., *, integral: Literal[True] = ...) -> ExponentialBackoff[int]:
+        ...
+
+    def __new__(cls: Type[ExponentialBackoff], base: int = 1, *, integral: bool = False) -> ExponentialBackoff[Any]:
+        return super().__new__(cls)
+
+    def __init__(self, base: int = 1, *, integral: bool = False):
         self._base = base
 
         self._exp = 0
@@ -63,9 +80,9 @@ class ExponentialBackoff:
         rand = random.Random()
         rand.seed()
 
-        self._randfunc = rand.randrange if integral else rand.uniform
+        self._randfunc: Callable[[float, float], T] = rand.randrange if integral else rand.uniform   # type: ignore
 
-    def delay(self):
+    def delay(self) -> T:
         """Compute the next delay
 
         Returns the next delay to wait according to the exponential
