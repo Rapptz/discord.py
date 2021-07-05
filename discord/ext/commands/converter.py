@@ -818,67 +818,58 @@ class clean_content(Converter[str]):
         .. versionadded:: 1.7
     """
 
-    def __init__(self, *, fix_channel_mentions: bool = False, use_nicknames: bool = True, escape_markdown: bool = False, remove_markdown: bool = False) -> None:
+    def __init__(self,
+                 *,
+                 fix_channel_mentions: bool = False,
+                 use_nicknames: bool = True,
+                 escape_markdown: bool = False,
+                 remove_markdown: bool = False) -> None:
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
         self.escape_markdown = escape_markdown
         self.remove_markdown = remove_markdown
 
-    async def convert(self, ctx: Context, argument: str) -> str:
-        message = ctx.message
-        transformations = {}
-
-        if self.fix_channel_mentions and ctx.guild:
-
-            def resolve_channel(id, *, _get=ctx.guild.get_channel):
-                ch = _get(id)
-                return f'<#{id}>', ('#' + ch.name if ch else '#deleted-channel')
-
-            transformations.update(resolve_channel(channel) for channel in message.raw_channel_mentions)
-
-        if self.use_nicknames and ctx.guild:
-
-            def resolve_member(id, *, _get=ctx.guild.get_member):
-                m = _get(id)
-                return '@' + m.display_name if m else '@deleted-user'
-
-        else:
-
-            def resolve_member(id, *, _get=ctx.bot.get_user):
-                m = _get(id)
-                return '@' + m.name if m else '@deleted-user'
-
-        # fmt: off
-        transformations.update(
-            (f'<@{member_id}>', resolve_member(member_id))
-            for member_id in message.raw_mentions
-        )
-
-        transformations.update(
-            (f'<@!{member_id}>', resolve_member(member_id))
-            for member_id in message.raw_mentions
-        )
-        # fmt: on
+    async def convert(self, ctx, arg):
+        msg = ctx.message
 
         if ctx.guild:
+            def resolve_member(id):
+                m = _utils_get(msg.mentions, id=id) or ctx.guild.get_member(id)
+                return f'@{m.display_name if self.use_nicknames else m.name}' if m else '@deleted-user'
 
-            def resolve_role(_id, *, _find=ctx.guild.get_role):
-                r = _find(_id)
-                return '@' + r.name if r else '@deleted-role'
+            def resolve_role(id):
+                r = _utils_get(msg.role_mentions, id=id) or ctx.guild.get_role(id)
+                return f'@{r.name}' if r else '@deleted-role'
+        else:
+            def resolve_member(id):
+                m = _utils_get(msg.mentions, id=id) or ctx.bot.get_user(id)
+                return f'@{m.name}' if m else '@deleted-user'
 
-            # fmt: off
-            transformations.update(
-                (f'<@&{role_id}>', resolve_role(role_id))
-                for role_id in message.raw_role_mentions
-            )
-            # fmt: on
+            def resolve_role(id):
+                return '@deleted-role'
 
-        def repl(obj):
-            return transformations.get(obj.group(0), '')
+        if self.fix_channel_mentions and ctx.guild:
+            def resolve_channel(id):
+                c = ctx.guild.get_channel(id)
+                return f'#{c.name}' if c else '#deleted-channel'
+        else:
+            def resolve_channel(id):
+                return
 
-        pattern = re.compile('|'.join(transformations.keys()))
-        result = pattern.sub(repl, argument)
+        transforms = {'@': resolve_member,
+                      '@!': resolve_member,
+                      '#': resolve_channel,
+                      '@&': resolve_role,
+                      }
 
+        def repl(match):
+            type = match[1]
+            id = int(match[2])
+            transformed = transforms[type](id)
+            return transformed or match[0]
+
+        pattern = re.compile(r'<(@[!&]?|#)(\d{15,20})>')
+        result = pattern.sub(repl, arg)
         if self.escape_markdown:
             result = discord.utils.escape_markdown(result)
         elif self.remove_markdown:
