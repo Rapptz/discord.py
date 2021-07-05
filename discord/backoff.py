@@ -69,18 +69,18 @@ class ExponentialBackoff(Generic[T]):
         return super().__new__(cls)
 
     def __init__(self, base: int = 1, *, integral: bool = False):
-        self._base = base
+        self._base: int = base
 
-        self._exp = 0
-        self._max = 10
-        self._reset_time = base * 2 ** 11
-        self._last_invocation = time.monotonic()
+        self._exp: int = 0
+        self._max: int = 10
+        self._reset_time: int = base * 2 ** 11
+        self._last_invocation: float = time.monotonic()
 
         # Use our own random instance to avoid messing with global one
         rand = random.Random()
         rand.seed()
 
-        self._randfunc: Callable[[float, float], T] = rand.randrange if integral else rand.uniform   # type: ignore
+        self._randfunc: Callable[..., T] = rand.randrange if integral else rand.uniform   # type: ignore
 
     def delay(self) -> T:
         """Compute the next delay
