@@ -986,6 +986,7 @@ CONVERTER_MAPPING: Dict[Type[Any], Any] = {
     discord.PartialEmoji: PartialEmojiConverter,
     discord.CategoryChannel: CategoryChannelConverter,
     discord.StoreChannel: StoreChannelConverter,
+    discord.Thread: ThreadConverter,
     discord.abc.GuildChannel: GuildChannelConverter,
 }
 
