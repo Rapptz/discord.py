@@ -47,6 +47,7 @@ __all__ = (
     'GuildNotFound',
     'UserNotFound',
     'ChannelNotFound',
+    'ThreadNotFound',
     'ChannelNotReadable',
     'BadColourArgument',
     'BadColorArgument',
@@ -335,6 +336,22 @@ class ChannelNotFound(BadArgument):
     def __init__(self, argument):
         self.argument = argument
         super().__init__(f'Channel "{argument}" not found.')
+
+class ThreadNotFound(BadArgument):
+    """Exception raised when the bot can not find the thread.
+
+    This inherits from :exc:`BadArgument`
+
+    ..versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The thread supplied by the caller that was not found
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Thread "{argument}" not found.')
 
 class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.

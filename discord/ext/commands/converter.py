@@ -71,6 +71,7 @@ __all__ = (
     'CategoryChannelConverter',
     'IDConverter',
     'StoreChannelConverter',
+    'ThreadConverter',
     'GuildChannelConverter',
     'clean_content',
     'Greedy',
@@ -426,6 +427,28 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
         return result
 
+    @staticmethod
+    def _resolve_thread(ctx: Context, argument: str, attribute: str, type: Type[CT]) -> CT:
+        bot = ctx.bot
+
+        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
+        result = None
+        guild = ctx.guild
+
+        if match is None:
+            # not a mention
+            if guild:
+                iterable: Iterable[CT] = getattr(guild, attribute)
+                result: Optional[CT] = discord.utils.get(iterable, name=argument)
+        else:
+            thread_id = int(match.group(1))
+            if guild:
+                result = guild.get_thread(thread_id)
+
+        if not result or not isinstance(result, type):
+            raise ThreadNotFound(argument)
+
+        return result
 
 class TextChannelConverter(IDConverter[discord.TextChannel]):
     """Converts to a :class:`~discord.TextChannel`.
@@ -524,6 +547,22 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
     async def convert(self, ctx: Context, argument: str) -> discord.StoreChannel:
         return GuildChannelConverter._resolve_channel(ctx, argument, 'channels', discord.StoreChannel)
 
+class ThreadConverter(IDConverter[discord.Thread]):
+    """Coverts to a :class:`~discord.Thread`.
+
+    All lookups are via the local guild.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name.
+
+    .. versionadded: 2.0
+    """
+
+    async def convert(self, ctx: Context, argument: str) -> discord.Thread:
+        return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
 
 class ColourConverter(Converter[discord.Colour]):
     """Converts to a :class:`~discord.Colour`.
