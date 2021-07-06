@@ -61,7 +61,9 @@ import sys
 import types
 import warnings
 
+from .emoji_table import EMOJI_TABLE
 from .errors import InvalidArgument
+
 
 __all__ = (
     'oauth_url',
@@ -75,6 +77,7 @@ __all__ = (
     'escape_markdown',
     'escape_mentions',
     'as_chunks',
+    "unicode_emoji",
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -565,6 +568,24 @@ def utcnow() -> datetime.datetime:
 def valid_icon_size(size: int) -> bool:
     """Icons must be power of 2 within [16, 4096]."""
     return not size & (size - 1) and 4096 >= size >= 16
+
+
+def unicode_emoji(name: str) -> Optional[str]:
+    """Get a unicode emoji from discord name.
+
+    ``:`` will be stripped.
+
+    Parameters
+    ----------
+    name : str
+        Name of the emoji.
+
+    Returns
+    -------
+    Optional[str]
+        The unicode emoji if found, None otherwise.
+    """
+    return EMOJI_TABLE.get(name.strip(":"), None)
 
 
 class SnowflakeList(array.array):
