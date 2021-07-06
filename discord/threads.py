@@ -26,6 +26,7 @@ from __future__ import annotations
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
 import time
 import asyncio
+import datetime
 
 from .mixins import Hashable
 from .abc import Messageable
@@ -191,6 +192,12 @@ class Thread(Messageable, Hashable):
             self._unroll_metadata(data['thread_metadata'])
         except KeyError:
             pass
+        
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the thread channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+    
     @property
     def type(self) -> ChannelType:
         """:class:`ChannelType`: The channel's Discord type."""
