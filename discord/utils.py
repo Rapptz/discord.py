@@ -575,6 +575,8 @@ def unicode_emoji(name: str) -> Optional[str]:
 
     ``:`` will be stripped.
 
+    .. versionadded:: 2.0
+
     Parameters
     ----------
     name : str
