@@ -196,10 +196,10 @@ class _Overwrites:
     MEMBER = 1
 
     def __init__(self, data: PermissionOverwritePayload):
-        self.id: int = int(data.pop('id'))
-        self.allow: int = int(data.pop('allow', 0))
-        self.deny: int = int(data.pop('deny', 0))
-        self.type: OverwriteType = data.pop('type')
+        self.id: int = int(data['id'])
+        self.allow: int = int(data.get('allow', 0))
+        self.deny: int = int(data.get('deny', 0))
+        self.type: OverwriteType = data['type']
 
     def _asdict(self) -> PermissionOverwritePayload:
         return {
