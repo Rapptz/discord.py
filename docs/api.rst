@@ -1093,6 +1093,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.as_chunks
 
+.. autofunction:: discord.utils.unicode_emoji
+
 .. _discord-api-enums:
 
 Enumerations
