@@ -308,6 +308,22 @@ class Colour:
         .. versionadded:: 2.0
         """
         return cls(0xFEE75C)
+    
+    @classmethod
+    def light_pink(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xF075E4``.
+        
+        .. versionadded:: 2.0
+        """
+        return cls(0xF075E4)
+    
+    @classmethod
+    def aqua(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x7CF2ED``.
+        
+        .. versionadded:: 2.0
+        """
+        return cls(0x7CF2ED)
 
-
+    
 Color = Colour
