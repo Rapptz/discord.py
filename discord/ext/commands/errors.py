@@ -342,7 +342,7 @@ class ThreadNotFound(BadArgument):
 
     This inherits from :exc:`BadArgument`
 
-    ..versionadded:: 2.0
+    .. versionadded:: 2.0
 
     Attributes
     -----------
