@@ -317,6 +317,22 @@ def snowflake_time(id: int) -> datetime.datetime:
     timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
     return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
 
+def discord_timestamp(dt: datetime.datetime, style: Literal["t", "T", "d", "D", "f", "F", "R"] = "f") -> str:
+    """A helper function that returns a string used to create a timestamp in Discord.
+    Parameters
+    -----------
+    dt: `datetime.datetime`
+        The datetime to use in the timestamp.
+    style: Literal["t", "T", "d", "D", "f", "F", "R"]
+        The style for the timestamp. Default to ``f``.
+
+    Returns
+    --------
+    :class:`str`
+        The timestamp to use directly in discord in the following style:
+        ``<t:UNIX:STYLE>``
+    """
+    return f"<t:{str(round(dt.timestamp()))}:{style}>"
 
 def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
