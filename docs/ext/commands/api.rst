@@ -405,6 +405,9 @@ Converters
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
     :members:
 
+.. autoclass:: discord.ext.commands.ThreadConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
@@ -512,6 +515,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
+.. autoexception:: discord.ext.commands.ThreadNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadColourArgument
     :members:
 
@@ -611,6 +617,7 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`
                         - :exc:`~.commands.MissingFlagArgument`
