@@ -35,10 +35,13 @@ __all__ = (
     'ClientUser',
 )
 
-_BaseUser = discord.abc.User
+
+class _UserTag:
+    __slots__ = ()
+    id: int
 
 
-class BaseUser(_BaseUser):
+class BaseUser(_UserTag):
     __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
@@ -62,7 +65,7 @@ class BaseUser(_BaseUser):
         return f'{self.name}#{self.discriminator}'
 
     def __eq__(self, other):
-        return isinstance(other, _BaseUser) and other.id == self.id
+        return isinstance(other, _UserTag) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -118,6 +121,7 @@ class BaseUser(_BaseUser):
             return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
         else:
             return Asset._from_avatar(self._state, self.id, self._avatar)
+
     @property
     def default_avatar(self):
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
@@ -247,7 +251,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar:  bytes = MISSING) -> None:
+    async def edit(self, *, username: str = MISSING, avatar: bytes = MISSING) -> None:
         """|coro|
 
         Edits the current profile of the client.
@@ -322,10 +326,27 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = ('__weakref__',)
+    __slots__ = ('_stored',)
+
+    def __init__(self, *, state, data):
+        super().__init__(state=state, data=data)
+        self._stored = False
 
     def __repr__(self):
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
+
+    def __del__(self) -> None:
+        try:
+            if self._stored:
+                self._state.deref_user(self.id)
+        except Exception:
+            pass
+
+    @classmethod
+    def _copy(cls, user):
+        self = super()._copy(user)
+        self._stored = getattr(user, '_stored', False)
+        return self
 
     async def _get_channel(self):
         ch = await self.create_dm()

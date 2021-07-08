@@ -511,7 +511,6 @@ class ViewStore:
             return
 
         view, item = value
-        self._views[key] = (view, item)
         item.refresh_state(interaction)
         view._dispatch_item(item, interaction)
 

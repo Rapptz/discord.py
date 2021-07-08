@@ -1892,14 +1892,8 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         await self._state.http.leave_group(self.id)
 
 
-def _coerce_channel_type(value: Union[ChannelType, int]) -> ChannelType:
-    if isinstance(value, ChannelType):
-        return value
-    return try_enum(ChannelType, value)
-
-
-def _guild_channel_factory(channel_type: Union[ChannelType, int]):
-    value = _coerce_channel_type(channel_type)
+def _guild_channel_factory(channel_type: int):
+    value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
         return TextChannel, value
     elif value is ChannelType.voice:
@@ -1916,7 +1910,7 @@ def _guild_channel_factory(channel_type: Union[ChannelType, int]):
         return None, value
 
 
-def _channel_factory(channel_type: Union[ChannelType, int]):
+def _channel_factory(channel_type: int):
     cls, value = _guild_channel_factory(channel_type)
     if value is ChannelType.private:
         return DMChannel, value
@@ -1925,7 +1919,7 @@ def _channel_factory(channel_type: Union[ChannelType, int]):
     else:
         return cls, value
 
-def _threaded_channel_factory(channel_type: Union[ChannelType, int]):
+def _threaded_channel_factory(channel_type: int):
     cls, value = _channel_factory(channel_type)
     if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
         return Thread, value

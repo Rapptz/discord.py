@@ -28,11 +28,10 @@ import copy
 import datetime
 import itertools
 import logging
-from typing import Optional
+from typing import Dict, Optional
 import weakref
 import warnings
 import inspect
-import gc
 
 import os
 
@@ -58,7 +57,6 @@ from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
-from discord import guild
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -181,6 +179,7 @@ class ConnectionState:
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents
+            self.deref_user = self.deref_user_no_intents
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
@@ -191,7 +190,19 @@ class ConnectionState:
 
     def clear(self):
         self.user = None
-        self._users = weakref.WeakValueDictionary()
+        # Originally, this code used WeakValueDictionary to maintain references to the
+        # global user mapping.
+
+        # However, profiling showed that this came with two cons:
+
+        # 1. The __weakref__ slot caused a non-trivial increase in memory
+        # 2. The performance of the mapping caused store_user to be a bottleneck.
+
+        # Since this is undesirable, a mapping is now used instead with stored
+        # references now using a regular dictionary with eviction being done
+        # using __del__. Testing this for memory leaks led to no discernable leaks,
+        # though more testing will have to be done.
+        self._users: Dict[int, User] = {}
         self._emojis = {}
         self._guilds = {}
         self._view_store = ViewStore(self)
@@ -202,11 +213,6 @@ class ConnectionState:
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
         self._messages = self.max_messages and deque(maxlen=self.max_messages)
-
-        # In cases of large deallocations the GC should be called explicitly
-        # To free the memory more immediately, especially true when it comes
-        # to reconnect loops which cause mass allocations and deallocations.
-        gc.collect()
 
     def process_chunk_requests(self, guild_id, nonce, members, complete):
         removed = []
@@ -265,7 +271,6 @@ class ConnectionState:
             vc.main_ws = ws
 
     def store_user(self, data):
-        # this way is 300% faster than `dict.setdefault`.
         user_id = int(data['id'])
         try:
             return self._users[user_id]
@@ -273,10 +278,17 @@ class ConnectionState:
             user = User(state=self, data=data)
             if user.discriminator != '0000':
                 self._users[user_id] = user
+                user._stored = True
             return user
+
+    def deref_user(self, user_id):
+        self._users.pop(user_id, None)
 
     def store_user_no_intents(self, data):
         return User(state=self, data=data)
+
+    def deref_user_no_intents(self, user_id):
+        return
 
     def get_user(self, id):
         return self._users.get(id)
@@ -313,10 +325,6 @@ class ConnectionState:
             self._emojis.pop(emoji.id, None)
 
         del guild
-
-        # Much like clear(), if we have a massive deallocation
-        # then it's better to explicitly call the GC
-        gc.collect()
 
     @property
     def emojis(self):
@@ -461,7 +469,7 @@ class ConnectionState:
         self._ready_state = asyncio.Queue()
         self.clear()
         self.user = user = ClientUser(state=self, data=data['user'])
-        self._users[user.id] = user
+        self.store_user(data['user'])
 
         if self.application_id is None:
             try:
@@ -632,6 +640,9 @@ class ConnectionState:
 
     def parse_user_update(self, data):
         self.user._update(data)
+        ref = self._users.get(self.user.id)
+        if ref:
+            ref._update(data)
 
     def parse_invite_create(self, data):
         invite = Invite.from_gateway(state=self, data=data)
@@ -1374,14 +1385,6 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.dispatch('connect')
         self.dispatch('shard_connect', data['__shard_id__'])
-
-        # Much like clear(), if we have a massive deallocation
-        # then it's better to explicitly call the GC
-        # Note that in the original ready parsing code this was done
-        # implicitly via clear() but in the auto sharded client clearing
-        # the cache would have the consequence of clearing data on other
-        # shards as well.
-        gc.collect()
 
         if self._ready_task is None:
             self._ready_task = asyncio.create_task(self._delay_ready())
