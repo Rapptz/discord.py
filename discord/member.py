@@ -35,7 +35,7 @@ import discord.abc
 
 from . import utils
 from .utils import MISSING
-from .user import BaseUser, User
+from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
@@ -194,13 +194,11 @@ def flatten_user(cls):
     return cls
 
 
-_BaseUser = discord.abc.User
-
 M = TypeVar('M', bound='Member')
 
 
 @flatten_user
-class Member(discord.abc.Messageable, _BaseUser):
+class Member(discord.abc.Messageable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -301,7 +299,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         )
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, _BaseUser) and other.id == self.id
+        return isinstance(other, _UserTag) and other.id == self.id
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
