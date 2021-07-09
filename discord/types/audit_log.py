@@ -69,6 +69,12 @@ AuditLogEvent = Literal[
     80,
     81,
     82,
+    83,
+    84,
+    85,
+    110,
+    111,
+    112,
 ]
 
 
@@ -116,6 +122,8 @@ class _AuditLogChange_Bool(TypedDict):
         'enabled_emoticons',
         'region',
         'rtc_region',
+        'archived',
+        'locked',
     ]
     new_value: bool
     old_value: bool
@@ -132,6 +140,7 @@ class _AuditLogChange_Int(TypedDict):
         'max_uses',
         'max_age',
         'user_limit',
+        'auto_archive_duration',
     ]
     new_value: int
     old_value: int
