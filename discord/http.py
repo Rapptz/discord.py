@@ -321,8 +321,8 @@ class HTTPClient:
 
                             continue
 
-                        # we've received a 500 or 502, unconditional retry
-                        if response.status in {500, 502}:
+                        # we've received a 500, 502, or 504, unconditional retry
+                        if response.status in {500, 502, 504}:
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
@@ -331,7 +331,7 @@ class HTTPClient:
                             raise Forbidden(response, data)
                         elif response.status == 404:
                             raise NotFound(response, data)
-                        elif response.status == 503:
+                        elif response.status >= 500:
                             raise DiscordServerError(response, data)
                         else:
                             raise HTTPException(response, data)
