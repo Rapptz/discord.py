@@ -1234,8 +1234,7 @@ class ConnectionState:
                 member = utils.find(lambda x: x.id == user_id, channel.recipients)
 
             if member is not None:
-                timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
-                timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+                timestamp = datetime.datetime.fromtimestamp(data.get('timestamp'), tz=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
 
     def _get_reaction_user(self, channel, user_id):
