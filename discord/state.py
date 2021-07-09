@@ -1135,7 +1135,12 @@ class ConnectionState:
             log.debug('INTEGRATION_DELETE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_webhooks_update(self, data):
-        channel = self.get_channel(int(data['channel_id']))
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            log.debug('WEBHOOKS_UPDATE referencing an unknown guild ID: %s. Discarding', data['guild_id'])
+            return
+
+        channel = guild.get_channel(int(data['channel_id']))
         if channel is not None:
             self.dispatch('webhooks_update', channel)
         else:
