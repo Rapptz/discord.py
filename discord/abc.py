@@ -86,7 +86,8 @@ if TYPE_CHECKING:
         OverwriteType,
     )
 
-    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel]
+    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel]
+    MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING

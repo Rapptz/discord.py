@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
-    from .abc import GuildChannel
+    from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
@@ -657,7 +657,7 @@ class Message(Hashable):
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.application: Optional[MessageApplicationPayload] = data.get('application')
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
-        self.channel: Union[TextChannel, Thread, DMChannel, GroupChannel] = channel
+        self.channel: MessageableChannel = channel
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.type: MessageType = try_enum(MessageType, data['type'])
         self.pinned: bool = data['pinned']
@@ -1557,8 +1557,11 @@ class PartialMessage(Hashable):
     a message and channel ID are present.
 
     There are two ways to construct this class. The first one is through
-    the constructor itself, and the second is via
-    :meth:`TextChannel.get_partial_message` or :meth:`DMChannel.get_partial_message`.
+    the constructor itself, and the second is via the following:
+
+    - :meth:`TextChannel.get_partial_message`
+    - :meth:`Thread.get_partial_message`
+    - :meth:`DMChannel.get_partial_message`
 
     Note that this class is trimmed down and has no rich attributes.
 
@@ -1580,7 +1583,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`TextChannel`, :class:`DMChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1601,11 +1604,11 @@ class PartialMessage(Hashable):
     to_reference = Message.to_reference
     to_message_reference_dict = Message.to_message_reference_dict
 
-    def __init__(self, *, channel: Union[TextChannel, DMChannel], id: int):
+    def __init__(self, *, channel: PartialMessageableChannel, id: int):
         if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
             raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
 
-        self.channel: Union[TextChannel, DMChannel] = channel
+        self.channel: PartialMessageableChannel = channel
         self._state: ConnectionState = channel._state
         self.id: int = id
 
