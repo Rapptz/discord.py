@@ -107,7 +107,6 @@ class Item(Generic[V]):
 
     @property
     def width(self) -> int:
-        """:class:`int`: The width of the item."""
         return 1
 
     @property
