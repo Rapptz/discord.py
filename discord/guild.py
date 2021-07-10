@@ -81,7 +81,7 @@ MISSING = utils.MISSING
 
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
-    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel
+    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel, GuildFeature
     from .types.threads import (
         Thread as ThreadPayload,
     )
@@ -182,26 +182,33 @@ class Guild(Hashable):
     default_notifications: :class:`NotificationLevel`
         The guild's notification settings.
     features: List[:class:`str`]
-        A list of features that the guild has. They are currently as follows:
+        A list of features that the guild has. The features that a guild can have are
+        subject to arbitrary change by Discord.
 
-        - ``VIP_REGIONS``: Guild has VIP voice regions
-        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api)
-        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
-        - ``VERIFIED``: Guild is a verified server.
-        - ``PARTNERED``: Guild is a partnered server.
-        - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
+        They are currently as follows:
+
+        - ``ANIMATED_ICON``: Guild can upload an animated icon.
+        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
+        - ``COMMERCE``: Guild can sell things using store channels.
+        - ``COMMUNITY``: Guild is a community server.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
-        - ``COMMUNITY``: Guild is a community server.
-        - ``COMMERCE``: Guild can sell things using store channels.
-        - ``PUBLIC``: Guild is a public guild.
-        - ``NEWS``: Guild can create news channels.
-        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
-        - ``ANIMATED_ICON``: Guild can upload an animated icon.
-        - ``PUBLIC_DISABLED``: Guild cannot be public.
-        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
+        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
         - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
+        - ``MONETIZATION_ENABLED``: Guild has enabled monetization.
+        - ``MORE_EMOJI``: Guild has increased custom emoji slots.
+        - ``MORE_STICKERS``: Guild has increased custom sticker slots.
+        - ``NEWS``: Guild can create news channels.
+        - ``PARTNERED``: Guild is a partnered server.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
+        - ``PRIVATE_THREADS``: Guild has access to create private threads.
+        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
+        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
+        - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
+        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
+        - ``VERIFIED``: Guild is a verified server.
+        - ``VIP_REGIONS``: Guild has VIP voice regions.
+        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
 
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
@@ -405,7 +412,7 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.features: List[str] = guild.get('features', [])
+        self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description: Optional[str] = guild.get('description')
