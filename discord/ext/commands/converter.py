@@ -93,6 +93,7 @@ _utils_get = discord.utils.get
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 CT = TypeVar('CT', bound=discord.abc.GuildChannel)
+TT = TypeVar('TT', bound=discord.Thread)
 
 
 @runtime_checkable
@@ -449,7 +450,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         return result
 
     @staticmethod
-    def _resolve_thread(ctx: Context, argument: str, attribute: str, type: Type[CT]) -> CT:
+    def _resolve_thread(ctx: Context, argument: str, attribute: str, type: Type[TT]) -> TT:
         bot = ctx.bot
 
         match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
@@ -459,8 +460,8 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         if match is None:
             # not a mention
             if guild:
-                iterable: Iterable[CT] = getattr(guild, attribute)
-                result: Optional[CT] = discord.utils.get(iterable, name=argument)
+                iterable: Iterable[TT] = getattr(guild, attribute)
+                result: Optional[TT] = discord.utils.get(iterable, name=argument)
         else:
             thread_id = int(match.group(1))
             if guild:
