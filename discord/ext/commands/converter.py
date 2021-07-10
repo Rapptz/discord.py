@@ -48,6 +48,7 @@ from .errors import *
 
 if TYPE_CHECKING:
     from .context import Context
+    from discord.message import PartialMessageableChannel
 
 
 __all__ = (
@@ -349,11 +350,11 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
         return guild_id, message_id, channel_id
 
     @staticmethod
-    def _resolve_channel(ctx, guild_id, channel_id):
+    def _resolve_channel(ctx, guild_id, channel_id) -> Optional[PartialMessageableChannel]:
         if guild_id is not None:
             guild = ctx.bot.get_guild(guild_id)
             if guild is not None and channel_id is not None:
-                return guild.get_channel(channel_id)
+                return guild._resolve_channel(channel_id)  # type: ignore
             else:
                 return None
         else:
@@ -470,6 +471,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
         return result
 
+
 class TextChannelConverter(IDConverter[discord.TextChannel]):
     """Converts to a :class:`~discord.TextChannel`.
 
@@ -567,6 +569,7 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
     async def convert(self, ctx: Context, argument: str) -> discord.StoreChannel:
         return GuildChannelConverter._resolve_channel(ctx, argument, 'channels', discord.StoreChannel)
 
+
 class ThreadConverter(IDConverter[discord.Thread]):
     """Coverts to a :class:`~discord.Thread`.
 
@@ -583,6 +586,7 @@ class ThreadConverter(IDConverter[discord.Thread]):
 
     async def convert(self, ctx: Context, argument: str) -> discord.Thread:
         return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
+
 
 class ColourConverter(Converter[discord.Colour]):
     """Converts to a :class:`~discord.Colour`.
@@ -844,7 +848,7 @@ class clean_content(Converter[str]):
         fix_channel_mentions: bool = False,
         use_nicknames: bool = True,
         escape_markdown: bool = False,
-        remove_markdown: bool = False
+        remove_markdown: bool = False,
     ) -> None:
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
@@ -855,6 +859,7 @@ class clean_content(Converter[str]):
         msg = ctx.message
 
         if ctx.guild:
+
             def resolve_member(id: int) -> str:
                 m = _utils_get(msg.mentions, id=id) or ctx.guild.get_member(id)
                 return f'@{m.display_name if self.use_nicknames else m.name}' if m else '@deleted-user'
@@ -862,7 +867,9 @@ class clean_content(Converter[str]):
             def resolve_role(id: int) -> str:
                 r = _utils_get(msg.role_mentions, id=id) or ctx.guild.get_role(id)
                 return f'@{r.name}' if r else '@deleted-role'
+
         else:
+
             def resolve_member(id: int) -> str:
                 m = _utils_get(msg.mentions, id=id) or ctx.bot.get_user(id)
                 return f'@{m.name}' if m else '@deleted-user'
@@ -871,10 +878,13 @@ class clean_content(Converter[str]):
                 return '@deleted-role'
 
         if self.fix_channel_mentions and ctx.guild:
+
             def resolve_channel(id: int) -> str:
                 c = ctx.guild.get_channel(id)
                 return f'#{c.name}' if c else '#deleted-channel'
+
         else:
+
             def resolve_channel(id: int) -> str:
                 return f'<#{id}>'
 
