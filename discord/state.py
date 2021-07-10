@@ -501,6 +501,7 @@ class ConnectionState:
     def parse_message_delete(self, data):
         raw = RawMessageDeleteEvent(data)
         found = self._get_message(raw.message_id)
+        self.prevent_view_updates_for(raw.message_id)
         raw.cached_message = found
         self.dispatch('raw_message_delete', raw)
         if self._messages is not None and found is not None:
@@ -513,6 +514,8 @@ class ConnectionState:
             found_messages = [message for message in self._messages if message.id in raw.message_ids]
         else:
             found_messages = []
+        for id in raw.message_ids:
+            self.prevent_view_updates_for(id)
         raw.cached_messages = found_messages
         self.dispatch('raw_bulk_message_delete', raw)
         if found_messages:
