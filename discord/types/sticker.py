@@ -30,6 +30,10 @@ from .user import User
 
 StickerFormatType = Literal[1, 2, 3]
 
+class StickerItem(TypedDict):
+    id: Snowflake
+    name: str
+    format_type: StickerFormatType
 
 class BaseSticker(TypedDict):
     id: Snowflake
@@ -42,6 +46,7 @@ class BaseSticker(TypedDict):
 class StandardSticker(BaseSticker):
     type: Literal[1]
     sort_value: int
+    pack_id: Snowflake
 
 
 class GuildSticker(BaseSticker):

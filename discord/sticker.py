@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from .user import User
     from .guild import Guild
     from .types.sticker import (
+        StickerItem as StickerItemPayload,
         Sticker as StickerPayload,
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
@@ -81,7 +82,7 @@ class Sticker(Hashable):
         The format for the sticker's image.
     """
 
-    __slots__ = ('_state', 'id', 'name', 'description', 'pack_id', 'format', '_image', 'tags')
+    __slots__ = ('_state', 'id', 'name', 'description', 'format', 'tags')
 
     def __init__(self, *, state: ConnectionState, data: StickerPayload) -> None:
         self._state: ConnectionState = state
@@ -92,6 +93,16 @@ class Sticker(Hashable):
         self.name: str = data['name']
         self.description: str = data['description']
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
+
+    @classmethod
+    def _from_sticker_item(cls, *, state: ConnectionState, data: StickerItemPayload):
+        return cls(state=state, data={
+            'id': data['id'],
+            'name': data['name'],
+            'description': '',
+            'tags': '',
+            'format_type': data['format_type'],
+        })
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
@@ -142,11 +153,13 @@ class StandardSticker(Sticker):
         The sticker's sort order within its pack.
     """
 
-    __slots__ = 'sort_value'
+    __slots__ = ('sort_value', 'pack_id', 'type')
 
     def _from_data(self, data: StandardStickerPayload) -> None:
         super()._from_data(data)
         self.sort_value = data['sort_value']
+        self.pack_id = data['pack_id']
+        self.type = StickerType.standard
 
         try:
             self.tags: List[str] = [tag.strip() for tag in data['tags'].split(',')]
@@ -181,8 +194,6 @@ class GuildSticker(Sticker):
         The id of the sticker.
     description: :class:`str`
         The description of the sticker.
-    pack_id: :class:`int`
-        The id of the sticker's pack.
     format: :class:`StickerType`
         The format for the sticker's image.
     available: :class:`bool`
@@ -195,7 +206,7 @@ class GuildSticker(Sticker):
         The name of a unicode emoji that represents this sticker
     """
 
-    __slots__ = ('available', 'guild_id', 'creator', '_cs_guild')
+    __slots__ = ('available', 'guild_id', 'creator', 'emoji', 'type', '_cs_guild')
 
     def _from_data(self, data: GuildStickerPayload) -> None:
         super()._from_data(data)
@@ -203,6 +214,7 @@ class GuildSticker(Sticker):
         self.guild_id = data['guild_id']
         self.creator: User = self._state.store_user(data['user'])  # Union[User, Member]?
         self.emoji: str = data['tags']
+        self.type = StickerType.guild
 
     @cached_slot_property('_cs_guild')
     def guild(self) -> Optional[Guild]:

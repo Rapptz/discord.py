@@ -347,6 +347,9 @@ class AuditLogAction(Enum):
     stage_instance_create    = 83
     stage_instance_update    = 84
     stage_instance_delete    = 85
+    sticker_create           = 90
+    sticker_update           = 91
+    sticker_delete           = 92
     thread_create            = 110
     thread_update            = 111
     thread_delete            = 112
@@ -394,6 +397,9 @@ class AuditLogAction(Enum):
             AuditLogAction.stage_instance_create: AuditLogActionCategory.create,
             AuditLogAction.stage_instance_update: AuditLogActionCategory.update,
             AuditLogAction.stage_instance_delete: AuditLogActionCategory.delete,
+            AuditLogAction.sticker_create:        AuditLogActionCategory.create,
+            AuditLogAction.sticker_update:        AuditLogActionCategory.update,
+            AuditLogAction.sticker_delete:        AuditLogActionCategory.delete,
             AuditLogAction.thread_create:         AuditLogActionCategory.create,
             AuditLogAction.thread_update:         AuditLogActionCategory.update,
             AuditLogAction.thread_delete:         AuditLogActionCategory.delete,
@@ -428,6 +434,8 @@ class AuditLogAction(Enum):
             return 'integration'
         elif v < 90:
             return 'stage_instance'
+        elif v < 93:
+            return 'sticker'
         elif v < 113:
             return 'thread'
 

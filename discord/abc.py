@@ -53,6 +53,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
+from .sticker import GuildSticker
 from . import utils
 
 __all__ = (
@@ -1164,6 +1165,60 @@ class Messageable:
         tts: bool = ...,
         embed: Embed = ...,
         file: File = ...,
+        stickers: List[GuildSticker] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        files: List[File] = ...,
+        stickers: List[GuildSticker] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embeds: List[Embed] = ...,
+        file: File = ...,
+        stickers: List[GuildSticker] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        file: File = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1233,6 +1288,7 @@ class Messageable:
         embeds=None,
         file=None,
         files=None,
+        stickers=None,
         delete_after=None,
         nonce=None,
         allowed_mentions=None,
@@ -1339,6 +1395,9 @@ class Messageable:
             if len(embeds) > 10:
                 raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
             embeds = [embed.to_dict() for embed in embeds]
+
+        if stickers:
+            stickers = [sticker.id for sticker in stickers]
 
         if allowed_mentions is not None:
             if state.allowed_mentions is not None:

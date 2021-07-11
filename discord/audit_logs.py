@@ -79,16 +79,15 @@ def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optio
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
 
-def _transform_owner_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
+def _transform_member_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
     return entry._get_member(int(data))
 
-
-def _transform_inviter_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
+def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Guild]:
     if data is None:
         return None
-    return entry._get_member(int(data))
+    return entry._state._get_guild(data)
 
 
 def _transform_overwrites(
@@ -180,8 +179,8 @@ class AuditLogChanges:
         'permissions':                   (None, _transform_permissions),
         'id':                            (None, _transform_snowflake),
         'color':                         ('colour', _transform_color),
-        'owner_id':                      ('owner', _transform_owner_id),
-        'inviter_id':                    ('inviter', _transform_inviter_id),
+        'owner_id':                      ('owner', _transform_member_id),
+        'inviter_id':                    ('inviter', _transform_member_id),
         'channel_id':                    ('channel', _transform_channel),
         'afk_channel_id':                ('afk_channel', _transform_channel),
         'system_channel_id':             ('system_channel', _transform_channel),
@@ -195,11 +194,13 @@ class AuditLogChanges:
         'icon_hash':                     ('icon', _transform_icon),
         'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
+        'guild_id':                      ('guild', _transform_guild_id),
         'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
         'region':                        (None, _enum_transformer(enums.VoiceRegion)),
         'rtc_region':                    (None, _enum_transformer(enums.VoiceRegion)),
         'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
         'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
+        'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
         'type':                          (None, _enum_transformer(enums.ChannelType)),
     }
     # fmt: on
