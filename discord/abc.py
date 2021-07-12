@@ -1311,8 +1311,8 @@ class Messageable:
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
-            or the ``reference`` object is not a :class:`~discord.Message`
-            or :class:`~discord.MessageReference`.
+            or the ``reference`` object is not a :class:`~discord.Message`,
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
 
         Returns
         ---------
@@ -1351,7 +1351,7 @@ class Messageable:
             try:
                 reference = reference.to_message_reference_dict()
             except AttributeError:
-                raise InvalidArgument('reference parameter must be Message or MessageReference') from None
+                raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
 
         if view:
             if not hasattr(view, '__discord_ui_view__'):
