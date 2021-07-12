@@ -366,7 +366,7 @@ class Thread(Messageable, Hashable):
     async def purge(
         self,
         *,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         check: Callable[[Message], bool] = MISSING,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
