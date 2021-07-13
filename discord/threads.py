@@ -188,6 +188,8 @@ class Thread(Messageable, Hashable):
         except KeyError:
             pass
 
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
+
         try:
             self._unroll_metadata(data['thread_metadata'])
         except KeyError:
