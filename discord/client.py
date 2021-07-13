@@ -967,7 +967,6 @@ class Client:
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
-        afk: bool = False,
     ):
         """|coro|
 
@@ -988,10 +987,6 @@ class Client:
         status: Optional[:class:`.Status`]
             Indicates what status to change to. If ``None``, then
             :attr:`.Status.online` is used.
-        afk: Optional[:class:`bool`]
-            Indicates if you are going AFK. This allows the discord
-            client to know how to handle push notifications better
-            for you in case you are actually idle and not lying.
 
         Raises
         ------
@@ -1008,7 +1003,7 @@ class Client:
         else:
             status_str = str(status)
 
-        await self.ws.change_presence(activity=activity, status=status_str, afk=afk)
+        await self.ws.change_presence(activity=activity, status=status_str)
 
         for guild in self._connection.guilds:
             me = guild.me
