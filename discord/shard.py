@@ -446,6 +446,9 @@ class AutoShardedClient(Client):
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
 
+        .. versionchanged:: 2.0
+            Removed the ``afk`` keyword-only parameter.
+
         Parameters
         ----------
         activity: Optional[:class:`BaseActivity`]
