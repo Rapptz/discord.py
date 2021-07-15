@@ -586,7 +586,7 @@ class GuildChannel:
 
         # Handle the role case first
         if isinstance(obj, Role):
-            base.value |= obj.permissions.value
+            base.value |= obj._permissions
 
             if base.administrator:
                 return Permissions.all()
