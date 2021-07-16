@@ -25,7 +25,7 @@ class PaginationView(discord.ui.View):
                                                 ephemeral=True)
         return False
 
-    async def update_buttons(self, button: discord.ui.Button):
+    def update_buttons(self, button: discord.ui.Button):
         if button == self.previous:
             self.current -= 1
             self.next.disabled = False
@@ -44,7 +44,7 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.red, disabled=True)  # you can add emojis too..
     async def previous(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.update_buttons(button)
+        self.update_buttons(button)
         await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
 
     @discord.ui.button(disabled=True, style=discord.ButtonStyle.blurple)
@@ -53,7 +53,7 @@ class PaginationView(discord.ui.View):
 
     @discord.ui.button(label="Next", style=discord.ButtonStyle.green)
     async def next(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await self.update_buttons(button)
+        self.update_buttons(button)
         await interaction.response.edit_message(embed=self.embed_list[self.current], view=self)
 
     # Starting the pagination view
