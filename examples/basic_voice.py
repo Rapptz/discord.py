@@ -128,9 +128,7 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
 
 @bot.event
 async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
 
 bot.add_cog(Music(bot))

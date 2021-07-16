@@ -47,6 +47,7 @@ __all__ = (
     'GuildNotFound',
     'UserNotFound',
     'ChannelNotFound',
+    'ThreadNotFound',
     'ChannelNotReadable',
     'BadColourArgument',
     'BadColorArgument',
@@ -336,6 +337,22 @@ class ChannelNotFound(BadArgument):
         self.argument = argument
         super().__init__(f'Channel "{argument}" not found.')
 
+class ThreadNotFound(BadArgument):
+    """Exception raised when the bot can not find the thread.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The thread supplied by the caller that was not found
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Thread "{argument}" not found.')
+
 class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.
 
@@ -377,8 +394,9 @@ class BadInviteArgument(BadArgument):
 
     .. versionadded:: 1.5
     """
-    def __init__(self):
-        super().__init__('Invite is invalid or expired.')
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Invite "{argument}" is invalid or expired.')
 
 class EmojiNotFound(BadArgument):
     """Exception raised when the bot can not find the emoji.
@@ -459,14 +477,17 @@ class CommandOnCooldown(CommandError):
     Attributes
     -----------
     cooldown: ``Cooldown``
-        A class with attributes ``rate``, ``per``, and ``type`` similar to
-        the :func:`.cooldown` decorator.
+        A class with attributes ``rate`` and ``per`` similar to the
+        :func:`.cooldown` decorator.
+    type: :class:`BucketType`
+        The type associated with the cooldown.
     retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
-    def __init__(self, cooldown, retry_after):
+    def __init__(self, cooldown, retry_after, type):
         self.cooldown = cooldown
         self.retry_after = retry_after
+        self.type = type
         super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 class MaxConcurrencyReached(CommandError):
@@ -607,13 +628,13 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
@@ -630,13 +651,13 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_perms: :class:`list`
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_perms, *args):
-        self.missing_perms = missing_perms
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_perms]
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
             fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])

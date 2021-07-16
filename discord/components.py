@@ -132,11 +132,16 @@ class Button(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type to create a button is :class:`discord.ui.Button`
+        not this one.
+
     .. versionadded:: 2.0
 
     Attributes
     -----------
-    style: :class:`ComponentButtonStyle`
+    style: :class:`.ButtonStyle`
         The style of the button.
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
@@ -199,6 +204,11 @@ class SelectMenu(Component):
 
     A select menu is functionally the same as a dropdown, however
     on mobile it renders a bit differently.
+
+    .. note::
+
+        The user constructible and usable type to create a select menu is
+        :class:`discord.ui.Select` not this one.
 
     .. versionadded:: 2.0
 
@@ -313,6 +323,16 @@ class SelectOption:
             f'<SelectOption label={self.label!r} value={self.value!r} description={self.description!r} '
             f'emoji={self.emoji!r} default={self.default!r}>'
         )
+
+    def __str__(self) -> str:
+        if self.emoji:
+            base = f'{self.emoji} {self.label}'
+        else:
+            base = self.label
+
+        if self.description:
+            return f'{base}\n{self.description}'
+        return base
 
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:

@@ -29,9 +29,11 @@ from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 if TYPE_CHECKING:
+    from .state import ConnectionState
+
     from .types.team import (
         Team as TeamPayload,
         TeamMember as TeamMemberPayload,
@@ -62,14 +64,14 @@ class Team:
 
     __slots__ = ('_state', 'id', 'name', '_icon', 'owner_id', 'members')
 
-    def __init__(self, state, data: TeamPayload):
-        self._state = state
+    def __init__(self, state: ConnectionState, data: TeamPayload):
+        self._state: ConnectionState = state
 
-        self.id = int(data['id'])
-        self.name = data['name']
-        self._icon = data['icon']
-        self.owner_id = utils._get_as_snowflake(data, 'owner_user_id')
-        self.members = [TeamMember(self, self._state, member) for member in data['members']]
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data['icon']
+        self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_user_id')
+        self.members: List[TeamMember] = [TeamMember(self, self._state, member) for member in data['members']]
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
@@ -128,12 +130,12 @@ class TeamMember(BaseUser):
         The membership state of the member (e.g. invited or accepted)
     """
 
-    __slots__ = BaseUser.__slots__ + ('team', 'membership_state', 'permissions')
+    __slots__ = ('team', 'membership_state', 'permissions')
 
-    def __init__(self, team: Team, state, data: TeamMemberPayload):
-        self.team = team
-        self.membership_state = try_enum(TeamMembershipState, data['membership_state'])
-        self.permissions = data['permissions']
+    def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload):
+        self.team: Team = team
+        self.membership_state: TeamMembershipState = try_enum(TeamMembershipState, data['membership_state'])
+        self.permissions: List[str] = data['permissions']
         super().__init__(state=state, data=data['user'])
 
     def __repr__(self) -> str:

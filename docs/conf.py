@@ -45,6 +45,8 @@ extensions = [
 
 autodoc_member_order = 'bysource'
 autodoc_typehints = 'none'
+# maybe consider this?
+# napoleon_attr_annotations = False
 
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
