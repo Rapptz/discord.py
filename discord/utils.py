@@ -83,7 +83,7 @@ __all__ = (
     'escape_markdown',
     'escape_mentions',
     'as_chunks',
-    'format_dt'
+    'format_dt',
 )
 
 DISCORD_EPOCH = 1420070400000
