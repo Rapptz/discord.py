@@ -14,7 +14,7 @@ class Dropdown(discord.ui.View):
     def __init__(self):
         super().__init__()
 
-    #Send a message pinging the user with their selected choice
+    # Send a message pinging the user with their selected choice
     @discord.ui.select(options=[
         discord.SelectOption(label="Red"), 
         discord.SelectOption(label="Green"), 
@@ -32,7 +32,7 @@ async def select(ctx : commands.Context):
     # Creating the view
     view = Dropdown()
 
-    #Sending the message with the view
+    # Sending the message with the view
     await ctx.send("Pick your favourite color:", view = view)
 
 bot.run(TOKEN)
