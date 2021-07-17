@@ -23,7 +23,7 @@ class Dropdown(discord.ui.View):
         discord.SelectOption(label='Blue')
     ])
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
-        await interaction.response.send_message(f'{interaction.user.mention}'s favourite color is {select.values[0]}!')
+        await interaction.response.send_message(f"{interaction.user.mention}'s favourite color is {select.values[0]}!")
 
 bot = Bot()
 
