@@ -1,6 +1,7 @@
 import typing
 
 import discord
+from discord import emoji
 from discord.ext import commands
 
 class Bot(commands.Bot):
@@ -18,12 +19,12 @@ class Dropdown(discord.ui.View):
 
     # Send a message pinging the user with their selected choice
     @discord.ui.select(options=[
-        discord.SelectOption(label='Red'), 
-        discord.SelectOption(label='Green'), 
-        discord.SelectOption(label='Blue')
-    ])
+        discord.SelectOption(label='Red', description = 'Your favourite color is red', emoji='🟥'), 
+        discord.SelectOption(label='Green', description = 'Your favourite color is green', emoji='🟩'), 
+        discord.SelectOption(label='Blue', description = 'Your favourite color is blue', emoji = '🟦')
+    ], placeholder="Choose your favourite color...")
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
-        await interaction.response.send_message(f'{interaction.user.mention}'s favourite color is {select.values[0]}!')
+        await interaction.response.send_message(f"{interaction.user.mention}'s favourite color is {select.values[0]}!")
 
 bot = Bot()
 
@@ -37,4 +38,5 @@ async def select(ctx: commands.Context):
     # Sending the message with the view
     await ctx.send('Pick your favourite color:', view = view)
 
-bot.run(TOKEN)
+import os
+bot.run(os.getenv('TOKEN'))
