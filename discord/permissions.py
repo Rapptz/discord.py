@@ -518,6 +518,22 @@ class Permissions(BaseFlags):
         """
         return 1 << 36
 
+    @flag_value
+    def external_stickers(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use stickers from other guilds.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 37
+
+    @make_permission_alias('external_stickers')
+    def use_external_stickers(self) -> int:
+        """:class:`bool`: An alias for :attr:`external_stickers`.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 37
+
 PO = TypeVar('PO', bound='PermissionOverwrite')
 
 def _augment_from_permissions(cls):
