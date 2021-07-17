@@ -38,5 +38,4 @@ async def select(ctx: commands.Context):
     # Sending the message with the view
     await ctx.send('Pick your favourite color:', view = view)
 
-import os
-bot.run(os.getenv('TOKEN'))
+bot.run('token')
