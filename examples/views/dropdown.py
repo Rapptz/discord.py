@@ -9,7 +9,7 @@ class Bot(commands.Bot):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-#Gives us a view containing a dropdown menu
+# Gives us a view containing a dropdown menu
 class Dropdown(discord.ui.View):
     def __init__(self):
         super().__init__()
