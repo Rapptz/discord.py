@@ -29,7 +29,7 @@ bot = Bot()
 async def select(ctx : commands.Context):
     """Sends a message with a dropdown."""
 
-    #Creating the view
+    # Creating the view
     view = Dropdown()
 
     #Sending the message with the view
