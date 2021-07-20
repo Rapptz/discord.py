@@ -1350,7 +1350,7 @@ class Messageable:
                 raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
             embeds = [embed.to_dict() for embed in embeds]
 
-        if stickers:
+        if stickers is not None:
             stickers = [sticker.id for sticker in stickers]
 
         if allowed_mentions is not None:

@@ -2125,7 +2125,7 @@ class Guild(Hashable):
     ) -> GuildSticker:
         """|coro|
 
-        Creates a :class:`Sticker`s for the guild.
+        Creates a :class:`Sticker` for the guild.
 
         Parameters
         -----------
