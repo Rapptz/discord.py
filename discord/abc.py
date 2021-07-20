@@ -1397,6 +1397,7 @@ class Messageable:
                     embeds=embeds,
                     nonce=nonce,
                     message_reference=reference,
+                    stickers=stickers,
                     components=components,
                 )
             finally:
@@ -1419,6 +1420,7 @@ class Messageable:
                     nonce=nonce,
                     allowed_mentions=allowed_mentions,
                     message_reference=reference,
+                    stickers=stickers,
                     components=components,
                 )
             finally:
@@ -1434,6 +1436,7 @@ class Messageable:
                 nonce=nonce,
                 allowed_mentions=allowed_mentions,
                 message_reference=reference,
+                stickers=stickers,
                 components=components,
             )
 

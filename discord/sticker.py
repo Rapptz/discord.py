@@ -409,7 +409,7 @@ class GuildSticker(Sticker):
     ) -> None:
         """|coro|
 
-        Creates a :class:`Sticker` for the guild.
+        Edits a :class:`Sticker` for the guild.
 
         Parameters
         -----------
