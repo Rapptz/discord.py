@@ -1217,59 +1217,9 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embed: Embed = ...,
-        file: File = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embed: Embed = ...,
-        files: List[File] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embeds: List[Embed] = ...,
-        file: File = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
         embeds: List[Embed] = ...,
         files: List[File] = ...,
+        stickers: List[GuildSticker] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,

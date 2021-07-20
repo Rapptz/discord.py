@@ -431,6 +431,27 @@ class GuildSticker(Sticker):
 
         return await self._state.http.modify_guild_sticker(self.guild_id, self.id, payload, reason)
 
+    async def delete(self, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Deletes the custom :class:`Sticker` from the guild.
+
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        do this.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for deleting this sticker. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete stickers.
+        HTTPException
+            An error occurred deleting the sticker.
+        """
+        await self._state.http.delete_guild_sticker(self.guild_id, self.id, reason)
 
 def _sticker_factory(type: StickerType) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
     if type == StickerType.standard:

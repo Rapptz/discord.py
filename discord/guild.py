@@ -2182,7 +2182,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        emoji: :class:`abc.Snowflake`
+        sticker: :class:`abc.Snowflake`
             The emoji you are deleting.
         reason: Optional[:class:`str`]
             The reason for deleting this sticker. Shows up on the audit log.
