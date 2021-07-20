@@ -279,6 +279,11 @@ class Client:
         return self._connection.emojis
 
     @property
+    def stickers(self) -> List[GuildSticker]:
+        """List[:class:`GuildSticker`: The stickers that the connected client has."""
+        return self._connection.stickers
+
+    @property
     def cached_messages(self) -> Sequence[Message]:
         """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
@@ -777,6 +782,21 @@ class Client:
             The custom emoji or ``None`` if not found.
         """
         return self._connection.get_emoji(id)
+
+    def get_sticker(self, id) -> Optional[GuildSticker]:
+        """Returns a guild emoji with the given ID.
+
+        .. note::
+
+            To retrieve standard stickers, use :meth:`.fetch_sticker`.
+            or :meth:`.fetch_nitro_sticker_packs`.
+
+        Returns
+        --------
+        Optional[:class:`.Sticker`]
+            The sticker or ``None`` if not found.
+        """
+        return self._connection.get_sticker(id)
 
     def get_all_channels(self) -> Generator[GuildChannel, None, None]:
         """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
