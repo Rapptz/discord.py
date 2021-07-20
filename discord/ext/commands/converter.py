@@ -179,6 +179,7 @@ class MemberConverter(IDConverter[discord.Member]):
     3. Lookup by name#discrim
     4. Lookup by name
     5. Lookup by nickname
+    6. Lookup by nickname without first at sign
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -229,6 +230,8 @@ class MemberConverter(IDConverter[discord.Member]):
             # not a mention...
             if guild:
                 result = guild.get_member_named(argument)
+                if result is None and argument.startswith("@"):
+                    result = guild.get_member_named(argument[1:])
             else:
                 result = _get_from_guilds(bot, 'get_member_named', argument)
         else:
