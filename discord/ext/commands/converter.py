@@ -187,7 +187,7 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
-    
+
     .. versionchanged:: 2.0
         Added support for nickname that starts with an at sign.
     """
@@ -233,8 +233,6 @@ class MemberConverter(IDConverter[discord.Member]):
             # not a mention...
             if guild:
                 result = guild.get_member_named(argument)
-                if result is None and argument.startswith("@"):
-                    result = guild.get_member_named(argument[1:])
             else:
                 result = _get_from_guilds(bot, 'get_member_named', argument)
         else:
@@ -252,6 +250,8 @@ class MemberConverter(IDConverter[discord.Member]):
                 result = await self.query_member_by_id(bot, guild, user_id)
             else:
                 result = await self.query_member_named(guild, argument)
+                if result is None and argument.startswith('@'):
+                    result = await self.query_member_named(guild, argument[1:])
 
             if not result:
                 raise MemberNotFound(argument)
