@@ -2371,6 +2371,20 @@ of :class:`enum.Enum`.
 
 .. class:: StickerType
 
+    Represents the type of sticker.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: standard
+
+        Represents a standard sticker that all Nitro users can use.
+
+    .. attribute:: guild
+
+        Represents a custom sticker created in a guild.
+
+.. class:: StickerFormatType
+
     Represents the type of sticker images.
 
     .. versionadded:: 1.6
