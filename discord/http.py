@@ -421,9 +421,10 @@ class HTTPClient:
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
-        nonce: Optional[str] =  None,
+        nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -453,6 +454,9 @@ class HTTPClient:
         if components:
             payload['components'] = components
 
+        if stickers:
+            payload['sticker_items'] = stickers
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
@@ -466,10 +470,11 @@ class HTTPClient:
         content: Optional[str] = None,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
-        embeds: Iterable[Optional[embed.Embed]] = None,
+        embeds: Optional[Iterable[Optional[embed.Embed]]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
@@ -489,6 +494,8 @@ class HTTPClient:
             payload['message_reference'] = message_reference
         if components:
             payload['components'] = components
+        if stickers:
+            payload['sticker_items'] = stickers
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:

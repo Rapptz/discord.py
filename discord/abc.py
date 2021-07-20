@@ -1361,6 +1361,10 @@ class Messageable:
             A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
+        stickers: List[Union[:class:`GuildSticker`, :class:`StickerItem`]]
+            A list of stickers to upload. Must be a maximum of 3.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
