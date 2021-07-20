@@ -33,7 +33,7 @@ from .embed import Embed
 from .channel import ChannelType
 from .components import Component
 from .interactions import MessageInteraction
-from .sticker import Sticker
+from .sticker import StickerItem
 
 
 class ChannelMention(TypedDict):
@@ -102,7 +102,7 @@ class _MessageOptional(TypedDict, total=False):
     application_id: Snowflake
     message_reference: MessageReference
     flags: int
-    stickers: List[Sticker]
+    sticker_items: List[StickerItem]
     referenced_message: Optional[Message]
     interaction: MessageInteraction
     components: List[Component]

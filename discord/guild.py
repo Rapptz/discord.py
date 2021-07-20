@@ -2084,7 +2084,7 @@ class Guild(Hashable):
         data = await self._state.http.get_all_guild_stickers(self.id)
         return [GuildSticker(state=self._state, data=d) for d in data]
 
-    async def fetch_sticker(self, emoji_id: int, /) -> GuildSticker:
+    async def fetch_sticker(self, sticker_id: int, /) -> GuildSticker:
         """|coro|
 
         Retrieves a custom :class:`Sticker` from the guild.
@@ -2111,17 +2111,17 @@ class Guild(Hashable):
         :class:`Sticker`
             The retrieved sticker.
         """
-        data = await self._state.http.get_custom_emoji(self.id, emoji_id)
+        data = await self._state.http.get_guild_sticker(self.id, sticker_id)
         return GuildSticker(state=self._state, data=data)
 
     async def create_sticker(
         self,
         *,
         name: str,
-        description: str = None,
+        description: str = MISSING,
         emoji: str,
         file: File,
-        reason: str,
+        reason: Optional[str] = None,
     ) -> GuildSticker:
         """|coro|
 
@@ -2156,7 +2156,7 @@ class Guild(Hashable):
             'name': name,
         }
 
-        if description:
+        if description is not MISSING:
             payload['description'] = description
 
         try:

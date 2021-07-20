@@ -926,7 +926,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Guild` adds or removes :class:`Emoji`.
 
-    This requires :attr:`Intents.emojis` to be enabled.
+    This requires :attr:`Intents.emojis_and_stickers` to be enabled.
 
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
@@ -934,6 +934,21 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type before: Sequence[:class:`Emoji`]
     :param after: A list of emojis after the update.
     :type after: Sequence[:class:`Emoji`]
+
+.. function:: on_guild_stickers_update(guild, before, after)
+
+    Called when a :class:`Guild` updates its stickers.
+
+    This requires :attr:`Intents.emojis_and_stickers` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param guild: The guild who got their stickers updated.
+    :type guild: :class:`Guild`
+    :param before: A list of stickers before the update.
+    :type before: Sequence[:class:`Sticker`]
+    :param after: A list of stickers after the update.
+    :type after: Sequence[:class:`Sticker`]
 
 .. function:: on_guild_available(guild)
               on_guild_unavailable(guild)
@@ -3620,12 +3635,44 @@ Widget
 .. autoclass:: Widget()
     :members:
 
+StickerPack
+~~~~~~~~~~~~~
+
+.. attributetable:: StickerPack
+
+.. autoclass:: StickerPack()
+    :members:
+
+StickerItem
+~~~~~~~~~~~~~
+
+.. attributetable:: StickerItem
+
+.. autoclass:: StickerItem()
+    :members:
+
 Sticker
 ~~~~~~~~~~~~~~~
 
 .. attributetable:: Sticker
 
 .. autoclass:: Sticker()
+    :members:
+
+StandardSticker
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: StandardSticker
+
+.. autoclass:: StandardSticker()
+    :members:
+
+GuildSticker
+~~~~~~~~~~~~~
+
+.. attributetable:: GuildSticker
+
+.. autoclass:: GuildSticker()
     :members:
 
 RawMessageDeleteEvent

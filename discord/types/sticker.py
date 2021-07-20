@@ -30,10 +30,12 @@ from .user import User
 
 StickerFormatType = Literal[1, 2, 3]
 
+
 class StickerItem(TypedDict):
     id: Snowflake
     name: str
     format_type: StickerFormatType
+
 
 class BaseSticker(TypedDict):
     id: Snowflake
@@ -68,14 +70,21 @@ class StickerPack(TypedDict):
     description: str
     banner_asset_id: Snowflake
 
+
 class _CreateGuildStickerOptional(TypedDict, total=False):
     description: str
+
 
 class CreateGuildSticker(_CreateGuildStickerOptional):
     name: str
     tags: str
 
+
 class EditGuildSticker(TypedDict):
     name: str
     tags: str
     description: str
+
+
+class ListNitroStickerPacks(TypedDict):
+    sticker_packs: List[StandardSticker]

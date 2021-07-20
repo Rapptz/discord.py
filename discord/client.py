@@ -60,6 +60,7 @@ from .appinfo import AppInfo
 from .ui.view import View
 from .stage_instance import StageInstance
 from .threads import Thread
+from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
@@ -1442,6 +1443,45 @@ class Client:
         """
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
+
+    async def fetch_sticker(self, sticker_id: int) -> Union[StandardSticker, GuildSticker]:
+        """|coro|
+
+        Retrieves a :class:`.Sticker` with the specified ID.
+
+        Raises
+        --------
+        :exc:`.HTTPException`
+            Retrieving the sticker failed.
+        :exc:`.NotFound`
+            Invalid sticker ID.
+
+        Returns
+        --------
+        Union[:class:`.StandardSticker`, :class:`.GuildSticker`]
+            The sticker you requested.
+        """
+        data = await self.http.get_sticker(sticker_id)
+        cls, _ = _sticker_factory(data['type'])  # type: ignore
+        return cls(state=self._connection, data=data) # type: ignore
+
+    async def fetch_nitro_sticker_packs(self) -> List[StickerPack]:
+        """|coro|
+
+        Retrieves all available nitro sticker packs.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the sticker packs failed.
+
+        Returns
+        ---------
+        List[:class:`.StickerPack`]
+            All available nitro sticker packs.
+        """
+        data = await self.http.list_nitro_sticker_packs()
+        return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
