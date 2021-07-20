@@ -121,6 +121,12 @@ class StickerPack(Hashable):
         self._banner = int(data['banner_asset_id'])
         self.banner = Asset._from_sticker_banner(self._state, self._banner)
 
+    def __repr__(self) -> str:
+        return f'<StickerPack id={self.id} name={self.name!r} description={self.description!r}>'
+
+    def __str__(self) -> str:
+        return self.name
+
 
 class _StickerTag(Hashable, AssetMixin):
     __slots__ = ()
@@ -163,15 +169,15 @@ class StickerItem(_StickerTag):
 
         .. describe:: str(x)
 
-            Returns the name of the sticker.
+            Returns the name of the sticker item.
 
         .. describe:: x == y
 
-           Checks if the sticker is equal to another sticker.
+           Checks if the sticker item is equal to another sticker item.
 
         .. describe:: x != y
 
-           Checks if the sticker is not equal to another sticker.
+           Checks if the sticker item is not equal to another sticker item.
 
     Attributes
     -----------
@@ -191,6 +197,12 @@ class StickerItem(_StickerTag):
         self.id = int(data['id'])
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
         self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension or self.format.value}'
+
+    def __repr__(self) -> str:
+        return f'<StickerItem id={self.id} name={self.name!r} format={self.format}>'
+
+    def __str__(self) -> str:
+        return self.name
 
     async def fetch(self) -> Union[Sticker, StandardSticker, GuildSticker]:
         """|coro|
@@ -261,7 +273,7 @@ class Sticker(_StickerTag):
         self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension or self.format.value}'
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
+        return f'<Sticker id={self.id} name={self.name!r}>'
 
     def __str__(self) -> str:
         return self.name
@@ -322,6 +334,9 @@ class StandardSticker(Sticker):
         except KeyError:
             self.tags = []
 
+    def __repr__(self) -> str:
+        return f'<StandardSticker id={self.id} name={self.name!r} pack_id={self.pack_id}>'
+
 
 class GuildSticker(Sticker):
     """Represents a sticker that belongs to a guild.
@@ -371,6 +386,9 @@ class GuildSticker(Sticker):
         self.creator: User = self._state.store_user(data['user'])
         self.emoji: str = data['tags']
         self.type = StickerType.guild
+
+    def __repr__(self) -> str:
+        return f'<GuildSticker name={self.name!r} id={self.id} guild_id={self.guild_id} creator={self.creator!r}>'
 
     @cached_slot_property('_cs_guild')
     def guild(self) -> Optional[Guild]:
@@ -452,6 +470,7 @@ class GuildSticker(Sticker):
             An error occurred deleting the sticker.
         """
         await self._state.http.delete_guild_sticker(self.guild_id, self.id, reason)
+
 
 def _sticker_factory(type: StickerType) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
     if type == StickerType.standard:
