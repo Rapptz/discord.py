@@ -187,6 +187,9 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
+    
+    .. versionchanged:: 2.0
+        Added support for nickname that starts with an at sign.
     """
 
     async def query_member_named(self, guild, argument):
