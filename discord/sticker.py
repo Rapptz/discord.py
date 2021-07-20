@@ -273,7 +273,7 @@ class Sticker(_StickerTag):
 
 
 class StandardSticker(Sticker):
-    """Represents a sticker that belongs to a guild.
+    """Represents a sticker that is found in a standard sticker pack.
 
     .. versionadded:: 2.0
 
