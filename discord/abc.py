@@ -1169,7 +1169,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1187,7 +1187,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1205,7 +1205,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
