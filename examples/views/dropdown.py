@@ -57,7 +57,7 @@ async def colour(ctx):
     view = DropdownView()
 
     # Sending a message containing our view
-    await ctx.send("Pick your favourite colour:", view=view)
+    await ctx.send('Pick your favourite colour:', view=view)
 
 
 bot.run('token')
