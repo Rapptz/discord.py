@@ -1,8 +1,41 @@
 import typing
 
 import discord
-from discord import emoji
 from discord.ext import commands
+
+# Defines a custom Select containing colour options
+# that the user can choose. The callback function
+# of this class is called when the user changes their choice
+class Dropdown(discord.ui.Select):
+    def __init__(self):
+
+        # Set the options that will be presented inside the dropdown
+        options = [
+            discord.SelectOption(label='Red', description='Your favourite colour is red', emoji='🟥'),
+            discord.SelectOption(label='Green', description='Your favourite colour is green', emoji='🟩'),
+            discord.SelectOption(label='Blue', description='Your favourite colour is blue', emoji='🟦')
+        ]
+
+        # The placeholder is what will be shown when no option is chosen
+        # The min and max values indicate we can only pick one of the three options
+        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(placeholder='Choose your favourite colour...', min_values=1, max_values=1, options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        # Use the interaction object to send a response message containing
+        # the user's favourite colour or choice. The self object refers to the
+        # Select object, and the values attribute gets a list of the user's 
+        # selected options. We only want the first one.
+        await interaction.response.send_message(f'Your favourite colour is {self.values[0]}')
+
+
+class DropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
+        # Adds the dropdown to our view object.
+        self.add_item(Dropdown())
+
 
 class Bot(commands.Bot):
     def __init__(self):
@@ -11,31 +44,20 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
-
-# Gives us a view containing a dropdown menu
-class Dropdown(discord.ui.View):
-    def __init__(self, *, timeout: typing.Optional[float] = 180):
-        super().__init__(timeout=timeout)
-
-    # Send a message pinging the user with their selected choice
-    @discord.ui.select(options=[
-        discord.SelectOption(label='Red', description = 'Your favourite color is red', emoji='🟥'), 
-        discord.SelectOption(label='Green', description = 'Your favourite color is green', emoji='🟩'), 
-        discord.SelectOption(label='Blue', description = 'Your favourite color is blue', emoji = '🟦')
-    ], placeholder="Choose your favourite color...")
-    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
-        await interaction.response.send_message(f"{interaction.user.mention}'s favourite color is {select.values[0]}!")
-
+    
+    
 bot = Bot()
 
+
 @bot.command()
-async def select(ctx: commands.Context):
-    """Sends a message with a dropdown."""
+async def colour(ctx):
+    """Sends a message with our dropdown containing colours"""
 
-    # Creating the view
-    view = Dropdown()
+    # Create the view containing our dropdown
+    view = DropdownView()
 
-    # Sending the message with the view
-    await ctx.send('Pick your favourite color:', view = view)
+    # Sending a message containing our view
+    await ctx.send("Pick your favourite colour:", view=view)
+
 
 bot.run('token')
