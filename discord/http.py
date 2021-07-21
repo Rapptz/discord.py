@@ -421,7 +421,7 @@ class HTTPClient:
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] =  None,
-        allowed_mentions: bool = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
