@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional, Tuple, Type, Union
+from typing import Literal, TYPE_CHECKING, List, Optional, Tuple, Type, Union
 import unicodedata
 
 from .mixins import Hashable
@@ -187,6 +187,8 @@ class StickerItem(_StickerTag):
         The id of the sticker.
     format: :class:`StickerFormatType`
         The format for the sticker's image.
+    url: :class:`str`
+        The URL for the sticker's image.
     """
 
     __slots__ = ('_state', 'name', 'id', 'format', 'url')
@@ -259,7 +261,7 @@ class Sticker(_StickerTag):
         The URL for the sticker's image.
     """
 
-    __slots__ = ('_state', 'id', 'name', 'description', 'format', 'tags')
+    __slots__ = ('_state', 'id', 'name', 'description', 'format', 'url')
 
     def __init__(self, *, state: ConnectionState, data: StickerPayload) -> None:
         self._state: ConnectionState = state
@@ -270,7 +272,7 @@ class Sticker(_StickerTag):
         self.name: str = data['name']
         self.description: str = data['description']
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension or self.format.value}'
+        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<Sticker id={self.id} name={self.name!r}>'
@@ -321,7 +323,7 @@ class StandardSticker(Sticker):
         The sticker's sort order within its pack.
     """
 
-    __slots__ = ('sort_value', 'pack_id', 'type')
+    __slots__ = ('sort_value', 'pack_id', 'type', 'tags')
 
     def _from_data(self, data: StandardStickerPayload) -> None:
         super()._from_data(data)
@@ -375,7 +377,7 @@ class GuildSticker(Sticker):
         The user that created this sticker. This can only be retrieved using :meth:`Guild.fetch_sticker` and
         having the :attr:`~Permissions.manage_emojis_and_stickers` permission.
     emoji: :class:`str`
-        The name of a unicode emoji that represents this sticker
+        The name of a unicode emoji that represents this sticker.
     """
 
     __slots__ = ('available', 'guild_id', 'user', 'emoji', 'type', '_cs_guild')
@@ -474,10 +476,11 @@ class GuildSticker(Sticker):
         await self._state.http.delete_guild_sticker(self.guild_id, self.id, reason)
 
 
-def _sticker_factory(type: StickerType) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
-    if type == StickerType.standard:
-        return StandardSticker, type
-    elif type == StickerType.guild:
-        return GuildSticker, type
+def _sticker_factory(sticker_type: Literal[1, 2]) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
+    value = try_enum(StickerType, sticker_type)
+    if value == StickerType.standard:
+        return StandardSticker, value
+    elif value == StickerType.guild:
+        return GuildSticker, value
     else:
-        return Sticker, type
+        return Sticker, value
