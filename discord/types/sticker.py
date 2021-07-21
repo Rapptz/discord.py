@@ -83,7 +83,7 @@ class CreateGuildSticker(_CreateGuildStickerOptional):
     tags: str
 
 
-class EditGuildSticker(TypedDict):
+class EditGuildSticker(TypedDict, total=False):
     name: str
     tags: str
     description: str

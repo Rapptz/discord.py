@@ -406,10 +406,10 @@ class GuildSticker(Sticker):
     async def edit(
         self,
         *,
-        name: str,
+        name: str = MISSING,
         description: str = MISSING,
-        emoji: str,
-        reason: str,
+        emoji: str = MISSING,
+        reason: Optional[str] = None,
     ) -> None:
         """|coro|
 
@@ -435,23 +435,27 @@ class GuildSticker(Sticker):
         HTTPException
             An error occurred creating an sticker.
         """
-        payload = {
-            'name': name,
-        }
+        payload = {}
+
+        if name is not MISSING:
+            payload['name'] = name
 
         if description is not MISSING:
             payload['description'] = description
 
-        try:
-            emoji = unicodedata.name(emoji)
-        except TypeError:
-            pass
-        else:
-            emoji = emoji.replace(' ', '_')
+        if emoji is not MISSING:
+            try:
+                emoji = unicodedata.name(emoji)
+            except TypeError:
+                pass
+            else:
+                emoji = emoji.replace(' ', '_')
 
-        payload['tags'] = emoji
+            payload['tags'] = emoji
 
-        return await self._state.http.modify_guild_sticker(self.guild_id, self.id, payload, reason)
+        data: GuildStickerPayload = await self._state.http.modify_guild_sticker(self.guild_id, self.id, payload, reason)
+
+        self._from_data(data)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
