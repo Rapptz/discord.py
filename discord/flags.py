@@ -288,7 +288,7 @@ class MessageFlags(BaseFlags):
         return 32
 
     @flag_value
-    def ephemeral(Self):
+    def ephemeral(self):
         """:class:`bool`: Returns ``True`` if the source message is ephemeral.
 
         .. versionadded:: 2.0
