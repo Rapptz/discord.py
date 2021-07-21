@@ -30,7 +30,6 @@ from .mixins import Hashable
 from .asset import Asset, AssetMixin
 from .utils import cached_slot_property, snowflake_time, get, MISSING
 from .enums import StickerType, StickerFormatType, try_enum
-from .user import User
 
 __all__ = (
     'StickerPack',
@@ -43,6 +42,7 @@ __all__ = (
 if TYPE_CHECKING:
     import datetime
     from .state import ConnectionState
+    from .user import User
     from .guild import Guild
     from .types.sticker import (
         StickerPack as StickerPackPayload,
