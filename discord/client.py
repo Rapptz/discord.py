@@ -280,7 +280,7 @@ class Client:
 
     @property
     def stickers(self) -> List[GuildSticker]:
-        """List[:class:`GuildSticker`: The stickers that the connected client has."""
+        """List[:class:`GuildSticker`]: The stickers that the connected client has."""
         return self._connection.stickers
 
     @property
@@ -784,7 +784,7 @@ class Client:
         return self._connection.get_emoji(id)
 
     def get_sticker(self, id) -> Optional[GuildSticker]:
-        """Returns a guild emoji with the given ID.
+        """Returns a guild sticker with the given ID.
 
         .. note::
 
