@@ -421,8 +421,8 @@ class HTTPClient:
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] =  None,
-        allowed_mentions: bool = None,
-        message_reference: bool = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
+        message_reference: Optional[message.MessageReference] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
