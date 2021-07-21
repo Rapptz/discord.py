@@ -637,6 +637,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: str,
         message: Optional[Snowflake] = None,
         auto_archive_duration: ThreadArchiveDuration = 1440,
+        reason: Optional[str] = None
     ) -> Thread:
         """|coro|
 
@@ -650,6 +651,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         you must have :attr:`~discord.Permissions.send_messages` and
         :attr:`~discord.Permissions.use_threads` in order to start the thread.
 
+        .. versionadded:: 2.0
+
         Parameters
         -----------
         name: :class:`str`
@@ -661,6 +664,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
+        reason: :class:`str`
+            The reason for starting a new thread. Shows up on the audit log.
 
         Raises
         -------
@@ -681,6 +686,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 name=name,
                 auto_archive_duration=auto_archive_duration,
                 type=ChannelType.private_thread.value,
+                reason=reason,
             )
         else:
             data = await self._state.http.start_public_thread(
@@ -689,6 +695,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 name=name,
                 auto_archive_duration=auto_archive_duration,
                 type=ChannelType.public_thread.value,
+                reason=reason,
             )
 
         return Thread(guild=self.guild, state=self._state, data=data)
@@ -705,6 +712,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
         then :attr:`~Permissions.manage_threads` is also required.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -1119,7 +1128,7 @@ class StageChannel(VocalGuildChannel):
         """
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
-    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING) -> StageInstance:
+    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -1135,6 +1144,8 @@ class StageChannel(VocalGuildChannel):
             The stage instance's topic.
         privacy_level: :class:`StagePrivacyLevel`
             The stage instance's privacy level. Defaults to :attr:`StagePrivacyLevel.guild_only`.
+        reason: :class:`str`
+            The reason the stage instance was created. Shows up on the audit log.
 
         Raises
         ------
@@ -1159,7 +1170,7 @@ class StageChannel(VocalGuildChannel):
 
             payload['privacy_level'] = privacy_level.value
 
-        data = await self._state.http.create_stage_instance(**payload)
+        data = await self._state.http.create_stage_instance(**payload, reason=reason)
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     async def fetch_instance(self) -> StageInstance:
