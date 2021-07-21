@@ -196,7 +196,7 @@ class StickerItem(_StickerTag):
         self.name = data['name']
         self.id = int(data['id'])
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension or self.format.value}'
+        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<StickerItem id={self.id} name={self.name!r} format={self.format}>'

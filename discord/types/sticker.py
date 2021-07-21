@@ -89,4 +89,4 @@ class EditGuildSticker(TypedDict):
 
 
 class ListNitroStickerPacks(TypedDict):
-    sticker_packs: List[StandardSticker]
+    sticker_packs: List[StickerPack]

@@ -2067,6 +2067,8 @@ class Guild(Hashable):
 
         Retrieves a list of all :class:`Sticker`\s for the guild.
 
+        .. versionadded:: 2.0
+
         .. note::
 
             This method is an API call. For general usage, consider :attr:`stickers` instead.
@@ -2088,6 +2090,8 @@ class Guild(Hashable):
         """|coro|
 
         Retrieves a custom :class:`Sticker` from the guild.
+
+        .. versionadded:: 2.0
 
         .. note::
 
@@ -2126,6 +2130,8 @@ class Guild(Hashable):
         """|coro|
 
         Creates a :class:`Sticker` for the guild.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -2179,6 +2185,8 @@ class Guild(Hashable):
 
         You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
         do this.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------

@@ -503,7 +503,7 @@ class StickerFormatType(Enum):
     lottie = 3
 
     @property
-    def file_extension(self) -> Optional[str]:
+    def file_extension(self) -> str:
         # fmt: off
         lookup: Dict[StickerFormatType, str] = {
             StickerFormatType.png: 'png',

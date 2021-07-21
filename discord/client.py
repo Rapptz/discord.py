@@ -280,7 +280,10 @@ class Client:
 
     @property
     def stickers(self) -> List[GuildSticker]:
-        """List[:class:`GuildSticker`]: The stickers that the connected client has."""
+        """List[:class:`GuildSticker`]: The stickers that the connected client has.
+
+        .. versionadded:: 2.0
+        """
         return self._connection.stickers
 
     @property
@@ -785,6 +788,8 @@ class Client:
 
     def get_sticker(self, id) -> Optional[GuildSticker]:
         """Returns a guild sticker with the given ID.
+
+        .. versionadded:: 2.0
 
         .. note::
 
@@ -1469,6 +1474,8 @@ class Client:
 
         Retrieves a :class:`.Sticker` with the specified ID.
 
+        .. versionadded:: 2.0
+
         Raises
         --------
         :exc:`.HTTPException`
@@ -1489,6 +1496,8 @@ class Client:
         """|coro|
 
         Retrieves all available nitro sticker packs.
+
+        .. versionadded:: 2.0
 
         Raises
         -------
