@@ -18,7 +18,7 @@ __version__ = '2.0.0a'
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
 import logging
-from typing import NamedTuple
+from typing import NamedTuple, Literal
 
 from .client import *
 from .appinfo import *
@@ -64,7 +64,7 @@ class VersionInfo(NamedTuple):
 	major: int
 	minor: int
 	micro: int
-	releaselevel: str
+	releaselevel: Literal["alpha", "beta", "candidate", "final"]
 	serial: int
 
 version_info = VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
