@@ -385,7 +385,7 @@ class GuildSticker(Sticker):
         self.available = data['available']
         self.guild_id = data['guild_id']
         user = data.get('user')
-        self.user: Optional[User] = User(state=self._state, data=user) if user else None
+        self.user: Optional[User] = self._state.store_user(user) if user else None
         self.emoji: str = data['tags']
         self.type = StickerType.guild
 
