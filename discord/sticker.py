@@ -378,7 +378,7 @@ class GuildSticker(Sticker):
         The name of a unicode emoji that represents this sticker
     """
 
-    __slots__ = ('available', 'guild_id', 'creator', 'emoji', 'type', '_cs_guild')
+    __slots__ = ('available', 'guild_id', 'user', 'emoji', 'type', '_cs_guild')
 
     def _from_data(self, data: GuildStickerPayload) -> None:
         super()._from_data(data)
@@ -390,7 +390,7 @@ class GuildSticker(Sticker):
         self.type = StickerType.guild
 
     def __repr__(self) -> str:
-        return f'<GuildSticker name={self.name!r} id={self.id} guild_id={self.guild_id} creator={self.creator!r}>'
+        return f'<GuildSticker name={self.name!r} id={self.id} guild_id={self.guild_id} creator={self.user!r}>'
 
     @cached_slot_property('_cs_guild')
     def guild(self) -> Optional[Guild]:
