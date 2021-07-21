@@ -594,7 +594,7 @@ class DiscordWebSocket:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
 
-    async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
+    async def change_presence(self, *, activity=None, status=None, since=0.0):
         if activity is not None:
             if not isinstance(activity, BaseActivity):
                 raise InvalidArgument('activity must derive from BaseActivity.')
@@ -609,7 +609,7 @@ class DiscordWebSocket:
             'op': self.PRESENCE,
             'd': {
                 'activities': activity,
-                'afk': afk,
+                'afk': False,
                 'since': since,
                 'status': status
             }
@@ -718,7 +718,7 @@ class DiscordVoiceWebSocket:
 
     async def _hook(self, *args):
         pass
-    
+
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -823,7 +823,7 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
-            
+
         await self._hook(self, msg)
 
     async def initial_connection(self, data):
