@@ -421,7 +421,7 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.stickers: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
+        self.stickers: Tuple[GuildSticker, ...] = tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
         self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
@@ -2072,7 +2072,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[:class:`Sticker`]
+        List[:class:`GuildSticker`]
             The retrieved stickers.
         """
         data = await self._state.http.get_all_guild_stickers(self.id)
@@ -2104,7 +2104,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Sticker`
+        :class:`GuildSticker`
             The retrieved sticker.
         """
         data = await self._state.http.get_guild_sticker(self.id, sticker_id)
@@ -2150,7 +2150,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Sticker`
+        :class:`GuildSticker`
             The created sticker.
         """
         payload = {
@@ -2185,7 +2185,7 @@ class Guild(Hashable):
         Parameters
         -----------
         sticker: :class:`abc.Snowflake`
-            The emoji you are deleting.
+            The sticker you are deleting.
         reason: Optional[:class:`str`]
             The reason for deleting this sticker. Shows up on the audit log.
 

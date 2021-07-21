@@ -786,7 +786,7 @@ class Client:
         """
         return self._connection.get_emoji(id)
 
-    def get_sticker(self, id) -> Optional[GuildSticker]:
+    def get_sticker(self, id: int) -> Optional[GuildSticker]:
         """Returns a guild sticker with the given ID.
 
         .. versionadded:: 2.0
@@ -798,7 +798,7 @@ class Client:
 
         Returns
         --------
-        Optional[:class:`.Sticker`]
+        Optional[:class:`.GuildSticker`]
             The sticker or ``None`` if not found.
         """
         return self._connection.get_sticker(id)
