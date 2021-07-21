@@ -2170,8 +2170,7 @@ class Guild(Hashable):
         payload['tags'] = emoji
 
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
-
-        return GuildSticker(state=self._state, data=data)
+        return self._state.store_sticker(self, data)
 
     async def delete_sticker(self, sticker: Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
