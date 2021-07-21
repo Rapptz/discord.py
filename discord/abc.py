@@ -75,7 +75,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .channel import CategoryChannel
     from .embeds import Embed
-    from .message import Message, MessageReference
+    from .message import Message, MessageReference, PartialMessage
     from .channel import TextChannel, DMChannel, GroupChannel
     from .threads import Thread
     from .enums import InviteTarget
@@ -1162,7 +1162,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1179,7 +1179,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1196,7 +1196,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1213,7 +1213,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1282,7 +1282,7 @@ class Messageable:
 
             .. versionadded:: 1.4
 
-        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`]
+        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`, :class:`~discord.PartialMessage`]
             A reference to the :class:`~discord.Message` to which you are replying, this can be created using
             :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
             whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
@@ -1311,8 +1311,8 @@ class Messageable:
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
-            or the ``reference`` object is not a :class:`~discord.Message`
-            or :class:`~discord.MessageReference`.
+            or the ``reference`` object is not a :class:`~discord.Message`,
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
 
         Returns
         ---------
@@ -1351,7 +1351,7 @@ class Messageable:
             try:
                 reference = reference.to_message_reference_dict()
             except AttributeError:
-                raise InvalidArgument('reference parameter must be Message or MessageReference') from None
+                raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
 
         if view:
             if not hasattr(view, '__discord_ui_view__'):
