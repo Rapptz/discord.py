@@ -1144,7 +1144,7 @@ class HTTPClient:
             'compute_prune_count': compute_prune_count,
         }
         if roles:
-            payload['include_roles'] = ', '.join(roles)
+            payload['include_roles'] = roles
 
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
@@ -1158,7 +1158,7 @@ class HTTPClient:
             'days': days,
         }
         if roles:
-            params['include_roles'] = ', '.join(roles)
+            params['include_roles'] = roles
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
