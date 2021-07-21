@@ -544,6 +544,7 @@ class GuildChannel:
         someone with that role would have, which is essentially:
 
         - The default role permissions
+        - The permissions of the role used as a parameter
         - The default role permission overwrites
         - The permission overwrites of the role used as a parameter
 
@@ -585,24 +586,26 @@ class GuildChannel:
 
         # Handle the role case first
         if isinstance(obj, Role):
+            base.value |= obj._permissions
+
+            if base.administrator:
+                return Permissions.all()
+
+            # Apply @everyone allow/deny first since it's special
+            try:
+                maybe_everyone = self._overwrites[0]
+                if maybe_everyone.id == self.guild.id:
+                    base.handle_overwrite(allow=maybe_everyone.allow, deny=maybe_everyone.deny)
+            except IndexError:
+                pass
+
             if obj.is_default():
-                overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
-                if overwrite is not None:
-                    base.handle_overwrite(overwrite.allow, overwrite.deny)
                 return base
 
-            denies = 0
-            allows = 0
-            guild_id = self.guild.id
-            for overwrite in self._overwrites:
-                if not overwrite.is_role():
-                    continue
+            overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
+            if overwrite is not None:
+                base.handle_overwrite(overwrite.allow, overwrite.deny)
 
-                if overwrite.id in (obj.id, guild_id):
-                    denies |= overwrite.deny
-                    allows |= overwrite.allow
-
-            base.handle_overwrite(allows, denies)
             return base
 
         roles = obj._roles
