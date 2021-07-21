@@ -219,7 +219,7 @@ class StickerItem(_StickerTag):
         Union[:class:`StandardSticker`, :class:`GuildSticker`]
             The retrieved sticker.
         """
-        data: StickerPayload = self._state.http.get_sticker(self.id)
+        data: StickerPayload = await self._state.http.get_sticker(self.id)
         cls, _ = _sticker_factory(data['type'])  # type: ignore
         return cls(state=self._state, data=data)
 
