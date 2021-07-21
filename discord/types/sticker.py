@@ -50,12 +50,14 @@ class StandardSticker(BaseSticker):
     sort_value: int
     pack_id: Snowflake
 
+class _GuildStickerOptional(TypedDict, total=False):
+    user: User
 
-class GuildSticker(BaseSticker):
+
+class GuildSticker(BaseSticker, _GuildStickerOptional):
     type: Literal[2]
     available: bool
     guild_id: Snowflake
-    user: User
 
 
 Sticker = Union[BaseSticker, StandardSticker, GuildSticker]

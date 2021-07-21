@@ -30,6 +30,7 @@ from .mixins import Hashable
 from .asset import Asset, AssetMixin
 from .utils import cached_slot_property, snowflake_time, get, MISSING
 from .enums import StickerType, StickerFormatType, try_enum
+from .user import User
 
 __all__ = (
     'StickerPack',
@@ -42,7 +43,6 @@ __all__ = (
 if TYPE_CHECKING:
     import datetime
     from .state import ConnectionState
-    from .user import User
     from .guild import Guild
     from .types.sticker import (
         StickerPack as StickerPackPayload,
@@ -371,8 +371,9 @@ class GuildSticker(Sticker):
         Whether this sticker is available for use.
     guild_id: :class:`int`
         The ID of the guild that this sticker is from.
-    creator: :class:`User`
-        The user that created this sticker.
+    user: :class:`User`
+        The user that created this sticker. This can only be retrieved using :meth:`Guild.fetch_sticker` and
+        having the :attr:`~Permissions.manage_emojis_and_stickers` permission.
     emoji: :class:`str`
         The name of a unicode emoji that represents this sticker
     """
@@ -383,7 +384,8 @@ class GuildSticker(Sticker):
         super()._from_data(data)
         self.available = data['available']
         self.guild_id = data['guild_id']
-        self.creator: User = self._state.store_user(data['user'])
+        user = data.get('user')
+        self.user: Optional[User] = User(state=self._state, data=user) if user else None
         self.emoji: str = data['tags']
         self.type = StickerType.guild
 
