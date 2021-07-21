@@ -663,23 +663,6 @@ class Guild(Hashable):
         """
         return self._threads.get(thread_id)
 
-    def get_sticker(self, sticker_id: int, /) -> Optional[GuildSticker]:
-        """Returns a sticker with the given ID.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        -----------
-        sticker_id: :class:`int`
-            The ID to search for.
-
-        Returns
-        --------
-        Optional[:class:`GuildSticker`]
-            The returned sticker or ``None`` if not found.
-        """
-        return self._stickers.get(sticker_id)
-
     @property
     def system_channel(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
