@@ -1318,7 +1318,7 @@ of :class:`enum.Enum`.
         The user is a system user (i.e. represents Discord officially).
     .. attribute:: has_unread_urgent_messages
 
-        The user has an unready system message.
+        The user has an unread system message.
     .. attribute:: bug_hunter_level_2
 
         The user is a Bug Hunter Level 2.
