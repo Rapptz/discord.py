@@ -50,6 +50,7 @@ class StandardSticker(BaseSticker):
     sort_value: int
     pack_id: Snowflake
 
+
 class _GuildStickerOptional(TypedDict, total=False):
     user: User
 

@@ -144,6 +144,10 @@ class Guild(Hashable):
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
         All emojis that the guild owns.
+    stickers: Tuple[:class:`GuildSticker`, ...]
+        All stickers that the guild owns.
+
+        .. versionadded:: 2.0
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
         will be a :class:`str` if the value is not recognised by the enumerator.
@@ -238,6 +242,7 @@ class Guild(Hashable):
         'owner_id',
         'mfa_level',
         'emojis',
+        'stickers',
         'features',
         'verification_level',
         'explicit_content_filter',
@@ -266,7 +271,6 @@ class Guild(Hashable):
         '_rules_channel_id',
         '_public_updates_channel_id',
         '_stage_instances',
-        '_stickers',
         '_threads',
     )
 
@@ -417,6 +421,7 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
+        self.stickers: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
         self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
@@ -437,11 +442,6 @@ class Guild(Hashable):
         for s in guild.get('stage_instances', []):
             stage_instance = StageInstance(guild=self, data=s, state=state)
             self._stage_instances[stage_instance.id] = stage_instance
-
-        self._stickers: Dict[int, GuildSticker] = {}
-        for s in guild.get('stickers', []):
-            sticker = GuildSticker(state=self._state, data=s)
-            self._stickers[sticker.id] = sticker
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
@@ -533,14 +533,6 @@ class Guild(Hashable):
         r = [ch for ch in self._channels.values() if isinstance(ch, StageChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
-
-    @property
-    def stickers(self) -> List[GuildSticker]:
-        """List[:class:`GuildSticker`]: A list of stickers that belong to this guild.
-
-        .. versionadded:: 2.0
-        """
-        return list(self._stickers.values())
 
     @property
     def me(self) -> Member:
@@ -2122,7 +2114,7 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        description: str = MISSING,
+        description: Optional[str] = None,
         emoji: str,
         file: File,
         reason: Optional[str] = None,
@@ -2130,6 +2122,9 @@ class Guild(Hashable):
         """|coro|
 
         Creates a :class:`Sticker` for the guild.
+
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        do this.
 
         .. versionadded:: 2.0
 
@@ -2162,7 +2157,7 @@ class Guild(Hashable):
             'name': name,
         }
 
-        if description is not MISSING:
+        if description:
             payload['description'] = description
 
         try:

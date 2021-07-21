@@ -302,7 +302,7 @@ class ConnectionState:
 
     def store_sticker(self, guild, data):
         sticker_id = int(data['id'])
-        self._stickers[sticker_id] = sticker = GuildSticker(guild=guild, state=self, data=data)
+        self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker
 
     def store_view(self, view, message_id=None):
