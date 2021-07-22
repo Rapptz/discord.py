@@ -23,27 +23,52 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+from typing import List, Literal, Optional, TypedDict
 
-from typing import Optional, TypedDict
 from .snowflake import Snowflake
-from .user import User
-from .guild import Guild
+
+ThreadType = Literal[10, 11, 12]
+ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
 
 
-class CreateTemplate(TypedDict):
+class ThreadMember(TypedDict):
+    id: Snowflake
+    user_id: Snowflake
+    join_timestamp: str
+    flags: int
+
+
+class _ThreadMetadataOptional(TypedDict, total=False):
+    archiver_id: Snowflake
+    locked: bool
+
+
+class ThreadMetadata(_ThreadMetadataOptional):
+    archived: bool
+    auto_archive_duration: ThreadArchiveDuration
+    archive_timestamp: str
+
+
+class _ThreadOptional(TypedDict, total=False):
+    member: ThreadMember
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: Optional[Snowflake]
+
+
+class Thread(_ThreadOptional):
+    id: Snowflake
+    guild_id: Snowflake
+    parent_id: Snowflake
+    owner_id: Snowflake
     name: str
-    icon: Optional[bytes]
+    type: ThreadType
+    member_count: int
+    message_count: int
+    rate_limit_per_user: int
+    thread_metadata: ThreadMetadata
 
 
-class Template(TypedDict):
-    code: str
-    name: str
-    description: Optional[str]
-    usage_count: int
-    creator_id: Snowflake
-    creator: User
-    created_at: str
-    updated_at: str
-    source_guild_id: Snowflake
-    serialized_source_guild: Guild
-    is_dirty: Optional[bool]
+class ThreadPaginationPayload(TypedDict):
+    threads: List[Thread]
+    members: List[ThreadMember]
+    has_more: bool

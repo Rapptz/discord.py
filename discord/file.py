@@ -109,7 +109,7 @@ class File:
 
         self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
 
-    def reset(self, *, seek: bool = True) -> None:
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
         # starting from 0, as an implementation quirk

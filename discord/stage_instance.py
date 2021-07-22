@@ -51,7 +51,7 @@ class StageInstance(Hashable):
 
         .. describe:: x == y
 
-            Checks if two stagea instances are equal.
+            Checks if two stage instances are equal.
 
         .. describe:: x != y
 

@@ -48,6 +48,9 @@ class Item(Generic[V]):
     The current UI items supported are:
 
     - :class:`discord.ui.Button`
+    - :class:`discord.ui.Select`
+
+    .. versionadded:: 2.0
     """
 
     __item_repr_attributes__: Tuple[str, ...] = ('row',)
@@ -106,7 +109,6 @@ class Item(Generic[V]):
 
     @property
     def width(self) -> int:
-        """:class:`int`: The width of the item."""
         return 1
 
     @property
@@ -123,7 +125,7 @@ class Item(Generic[V]):
 
         Parameters
         -----------
-        interaction: :class:`Interaction`
+        interaction: :class:`.Interaction`
             The interaction that triggered this UI item.
         """
         pass

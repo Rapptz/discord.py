@@ -31,7 +31,7 @@ import os
 
 from .item import Item, ItemCallbackType
 from ..enums import ButtonStyle, ComponentType
-from ..partial_emoji import PartialEmoji
+from ..partial_emoji import PartialEmoji, _EmojiTag
 from ..components import Button as ButtonComponent
 
 __all__ = (
@@ -41,6 +41,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .view import View
+    from ..emoji import Emoji
 
 B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
@@ -64,7 +65,7 @@ class Button(Item[V]):
         Whether the button is disabled or not.
     label: Optional[:class:`str`]
         The label of the button, if any.
-    emoji: Optional[:class:`PartialEmoji`]
+    emoji: Optional[Union[:class:`.PartialEmoji`, :class:`.Emoji`, :class:`str`]]
         The emoji of the button, if available.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
@@ -86,12 +87,12 @@ class Button(Item[V]):
     def __init__(
         self,
         *,
-        style: ButtonStyle,
+        style: ButtonStyle = ButtonStyle.secondary,
         label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,
         url: Optional[str] = None,
-        emoji: Optional[Union[str, PartialEmoji]] = None,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         row: Optional[int] = None,
     ):
         super().__init__()
@@ -105,8 +106,13 @@ class Button(Item[V]):
         if url is not None:
             style = ButtonStyle.link
 
-        if isinstance(emoji, str):
-            emoji = PartialEmoji.from_str(emoji)
+        if emoji is not None:
+            if isinstance(emoji, str):
+                emoji = PartialEmoji.from_str(emoji)
+            elif isinstance(emoji, _EmojiTag):
+                emoji = emoji._to_partial()
+            else:
+                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
 
         self._underlying = ButtonComponent._raw_construct(
             type=ComponentType.button,
@@ -174,16 +180,18 @@ class Button(Item[V]):
 
     @property
     def emoji(self) -> Optional[PartialEmoji]:
-        """Optional[:class:`PartialEmoji`]: The emoji of the button, if available."""
+        """Optional[:class:`.PartialEmoji`]: The emoji of the button, if available."""
         return self._underlying.emoji
 
     @emoji.setter
-    def emoji(self, value: Optional[Union[str, PartialEmoji]]):  # type: ignore
+    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]):  # type: ignore
         if value is not None:
             if isinstance(value, str):
                 self._underlying.emoji = PartialEmoji.from_str(value)
+            elif isinstance(value, _EmojiTag):
+                self._underlying.emoji = value._to_partial()
             else:
-                self._underlying.emoji = value
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__} instead')
         else:
             self._underlying.emoji = None
 
@@ -209,6 +217,11 @@ class Button(Item[V]):
     def is_dispatchable(self) -> bool:
         return self.custom_id is not None
 
+    def is_persistent(self) -> bool:
+        if self.style is ButtonStyle.link:
+            return self.url is not None
+        return super().is_persistent()
+
     def refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
@@ -219,7 +232,7 @@ def button(
     custom_id: Optional[str] = None,
     disabled: bool = False,
     style: ButtonStyle = ButtonStyle.secondary,
-    emoji: Optional[Union[str, PartialEmoji]] = None,
+    emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
 ) -> Callable[[ItemCallbackType], ItemCallbackType]:
     """A decorator that attaches a button to a component.
@@ -243,12 +256,13 @@ def button(
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         It is recommended not to set this parameter to prevent conflicts.
-    style: :class:`ButtonStyle`
-        The style of the button. Defaults to :attr:`ButtonStyle.grey`.
+    style: :class:`.ButtonStyle`
+        The style of the button. Defaults to :attr:`.ButtonStyle.grey`.
     disabled: :class:`bool`
         Whether the button is disabled or not. Defaults to ``False``.
-    emoji: Optional[Union[:class:`str`, :class:`PartialEmoji`]]
-        The emoji of the button. This can be in string form or a :class:`PartialEmoji`.
+    emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
+        The emoji of the button. This can be in string form or a :class:`.PartialEmoji`
+        or a full :class:`.Emoji`.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -258,11 +272,9 @@ def button(
     """
 
     def decorator(func: ItemCallbackType) -> ItemCallbackType:
-        nonlocal custom_id
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
-        custom_id = custom_id or os.urandom(32).hex()
         func.__discord_ui_model_type__ = Button
         func.__discord_ui_model_kwargs__ = {
             'style': style,

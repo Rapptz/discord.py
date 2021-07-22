@@ -436,7 +436,7 @@ class AutoShardedClient(Client):
         await self.http.close()
         self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
-    async def change_presence(self, *, activity=None, status=None, afk=False, shard_id=None):
+    async def change_presence(self, *, activity=None, status=None, shard_id=None):
         """|coro|
 
         Changes the client's presence.
@@ -446,6 +446,9 @@ class AutoShardedClient(Client):
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
 
+        .. versionchanged:: 2.0
+            Removed the ``afk`` keyword-only parameter.
+
         Parameters
         ----------
         activity: Optional[:class:`BaseActivity`]
@@ -453,10 +456,6 @@ class AutoShardedClient(Client):
         status: Optional[:class:`Status`]
             Indicates what status to change to. If ``None``, then
             :attr:`Status.online` is used.
-        afk: :class:`bool`
-            Indicates if you are going AFK. This allows the discord
-            client to know how to handle push notifications better
-            for you in case you are actually idle and not lying.
         shard_id: Optional[:class:`int`]
             The shard_id to change the presence to. If not specified
             or ``None``, then it will change the presence of every
@@ -480,12 +479,12 @@ class AutoShardedClient(Client):
 
         if shard_id is None:
             for shard in self.__shards.values():
-                await shard.ws.change_presence(activity=activity, status=status, afk=afk)
+                await shard.ws.change_presence(activity=activity, status=status)
 
             guilds = self._connection.guilds
         else:
             shard = self.__shards[shard_id]
-            await shard.ws.change_presence(activity=activity, status=status, afk=afk)
+            await shard.ws.change_presence(activity=activity, status=status)
             guilds = [g for g in self._connection.guilds if g.shard_id == shard_id]
 
         activities = () if activity is None else (activity,)

@@ -18,6 +18,31 @@ Bot
 .. autoclass:: discord.ext.commands.Bot
     :members:
     :inherited-members:
+    :exclude-members: after_invoke, before_invoke, check, check_once, command, event, group, listen
+
+    .. automethod:: Bot.after_invoke()
+        :decorator:
+
+    .. automethod:: Bot.before_invoke()
+        :decorator:
+
+    .. automethod:: Bot.check()
+        :decorator:
+
+    .. automethod:: Bot.check_once()
+        :decorator:
+
+    .. automethod:: Bot.command(*args, **kwargs)
+        :decorator:
+    
+    .. automethod:: Bot.event()
+        :decorator:
+
+    .. automethod:: Bot.group(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: Bot.listen(name=None)
+        :decorator:
 
 AutoShardedBot
 ~~~~~~~~~~~~~~~~
@@ -84,8 +109,10 @@ Decorators
 ~~~~~~~~~~~~
 
 .. autofunction:: discord.ext.commands.command
+    :decorator:
 
 .. autofunction:: discord.ext.commands.group
+    :decorator:
 
 Command
 ~~~~~~~~~
@@ -95,6 +122,16 @@ Command
 .. autoclass:: discord.ext.commands.Command
     :members:
     :special-members: __call__
+    :exclude-members: after_invoke, before_invoke, error
+
+    .. automethod:: Command.after_invoke()
+        :decorator:
+
+    .. automethod:: Command.before_invoke()
+        :decorator:
+
+    .. automethod:: Command.error()
+        :decorator:
 
 Group
 ~~~~~~
@@ -104,6 +141,22 @@ Group
 .. autoclass:: discord.ext.commands.Group
     :members:
     :inherited-members:
+    :exclude-members: after_invoke, before_invoke, command, error, group
+
+    .. automethod:: Group.after_invoke()
+        :decorator:
+
+    .. automethod:: Group.before_invoke()
+        :decorator:
+
+    .. automethod:: Group.command(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: Group.error()
+        :decorator:
+
+    .. automethod:: Group.group(*args, **kwargs)
+        :decorator:
 
 GroupMixin
 ~~~~~~~~~~~
@@ -112,6 +165,13 @@ GroupMixin
 
 .. autoclass:: discord.ext.commands.GroupMixin
     :members:
+    :exclude-members: command, group
+
+    .. automethod:: GroupMixin.command(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: GroupMixin.group(*args, **kwargs)
+        :decorator:
 
 .. _ext_commands_api_cogs:
 
@@ -211,41 +271,59 @@ Enums
 Checks
 -------
 
-.. autofunction:: discord.ext.commands.check
+.. autofunction:: discord.ext.commands.check(predicate)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.check_any
+.. autofunction:: discord.ext.commands.check_any(*checks)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.has_role
+.. autofunction:: discord.ext.commands.has_role(item)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.has_permissions
+.. autofunction:: discord.ext.commands.has_permissions(**perms)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.has_guild_permissions
+.. autofunction:: discord.ext.commands.has_guild_permissions(**perms)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.has_any_role
+.. autofunction:: discord.ext.commands.has_any_role(*items)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.bot_has_role
+.. autofunction:: discord.ext.commands.bot_has_role(item)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.bot_has_permissions
+.. autofunction:: discord.ext.commands.bot_has_permissions(**perms)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.bot_has_guild_permissions
+.. autofunction:: discord.ext.commands.bot_has_guild_permissions(**perms)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.bot_has_any_role
+.. autofunction:: discord.ext.commands.bot_has_any_role(*items)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.cooldown
+.. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.ext.commands.BucketType.default)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.max_concurrency
+.. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.ext.commands.BucketType.default, *, wait=False)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.before_invoke
+.. autofunction:: discord.ext.commands.before_invoke(coro)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.after_invoke
+.. autofunction:: discord.ext.commands.after_invoke(coro)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.guild_only
+.. autofunction:: discord.ext.commands.guild_only(,)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.dm_only
+.. autofunction:: discord.ext.commands.dm_only(,)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.is_owner
+.. autofunction:: discord.ext.commands.is_owner(,)
+    :decorator:
 
-.. autofunction:: discord.ext.commands.is_nsfw
+.. autofunction:: discord.ext.commands.is_nsfw(,)
+    :decorator:
 
 .. _ext_commands_api_context:
 
@@ -325,6 +403,9 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.ThreadConverter
     :members:
 
 .. autoclass:: discord.ext.commands.clean_content
@@ -434,6 +515,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
+.. autoexception:: discord.ext.commands.ThreadNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadColourArgument
     :members:
 
@@ -533,6 +617,7 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`
                         - :exc:`~.commands.MissingFlagArgument`

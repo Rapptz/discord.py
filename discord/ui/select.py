@@ -30,6 +30,7 @@ import os
 from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..partial_emoji import PartialEmoji
+from ..emoji import Emoji
 from ..interactions import Interaction
 from ..utils import MISSING
 from ..components import (
@@ -57,6 +58,8 @@ class Select(Item[V]):
     """Represents a UI select menu.
 
     This is usually represented as a drop down menu.
+
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
 
     .. versionadded:: 2.0
 
@@ -176,7 +179,7 @@ class Select(Item[V]):
         label: str,
         value: str = MISSING,
         description: Optional[str] = None,
-        emoji: Optional[Union[str, PartialEmoji]] = None,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         default: bool = False,
     ):
         """Adds an option to the select menu.
@@ -195,9 +198,9 @@ class Select(Item[V]):
         description: Optional[:class:`str`]
             An additional description of the option, if any.
             Can only be up to 50 characters.
-        emoji: Optional[Union[:class:`str`, :class:`PartialEmoji`]]
+        emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
-            the custom or unicode emoji or an instance of :class:`PartialEmoji`.
+            the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
         default: :class:`bool`
             Whether this option is selected by default.
 
@@ -206,9 +209,6 @@ class Select(Item[V]):
         ValueError
             The number of options exceeds 25.
         """
-
-        if isinstance(emoji, str):
-            emoji = PartialEmoji.from_str(emoji)
 
         option = SelectOption(
             label=label,
@@ -293,6 +293,8 @@ def select(
     the :class:`discord.ui.View`, the :class:`discord.ui.Select` being pressed and
     the :class:`discord.Interaction` you receive.
 
+    In order to get the selected items that the user has chosen within the callback
+    use :attr:`Select.values`.
 
     Parameters
     ------------

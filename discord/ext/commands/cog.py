@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import inspect
-import copy
 from ._types import _BaseCommand
 
 __all__ = (

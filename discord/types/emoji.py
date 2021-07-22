@@ -39,3 +39,8 @@ class Emoji(PartialEmoji, total=False):
     managed: bool
     animated: bool
     available: bool
+
+
+class EditEmoji(TypedDict):
+    name: str
+    roles: Optional[SnowflakeList]

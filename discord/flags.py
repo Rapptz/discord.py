@@ -279,6 +279,22 @@ class MessageFlags(BaseFlags):
         """
         return 16
 
+    @flag_value
+    def has_thread(self):
+        """:class:`bool`: Returns ``True`` if the source message is associated with a thread.
+
+        .. versionadded:: 2.0
+        """
+        return 32
+
+    @flag_value
+    def ephemeral(self):
+        """:class:`bool`: Returns ``True`` if the source message is ephemeral.
+
+        .. versionadded:: 2.0
+        """
+        return 64
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
@@ -508,7 +524,7 @@ class Intents(BaseFlags):
 
         - :func:`on_member_join`
         - :func:`on_member_remove`
-        - :func:`on_member_update` (nickname, roles)
+        - :func:`on_member_update`
         - :func:`on_user_update`
 
         This also corresponds to the following attributes and classes in terms of cache:
@@ -572,6 +588,9 @@ class Intents(BaseFlags):
         This corresponds to the following events:
 
         - :func:`on_guild_integrations_update`
+        - :func:`on_integration_create`
+        - :func:`on_integration_update`
+        - :func:`on_raw_integration_delete`
 
         This does not correspond to any attributes or classes in the library in terms of cache.
         """
@@ -624,7 +643,7 @@ class Intents(BaseFlags):
 
         This corresponds to the following events:
 
-        - :func:`on_member_update` (activities, status)
+        - :func:`on_presence_update`
 
         This also corresponds to the following attributes and classes in terms of cache:
 

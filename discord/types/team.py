@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, List
+from typing import TypedDict, List, Optional
 
 from .user import PartialUser
 from .snowflake import Snowflake
@@ -40,4 +40,4 @@ class Team(TypedDict):
     name: str
     owner_id: Snowflake
     members: List[TeamMember]
-    icon: str
+    icon: Optional[str]
