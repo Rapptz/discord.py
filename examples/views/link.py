@@ -33,7 +33,7 @@ bot = GoogleBot()
 @bot.command()
 async def google(ctx: commands.Context, *, query: str):
     """Returns a google link for a query"""
-    await ctx.send(f"Google Result for: `{query}`", view=Google(query))
+    await ctx.send(f'Google Result for: `{query}`', view=Google(query))
 
 
 bot.run('token')
