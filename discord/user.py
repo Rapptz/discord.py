@@ -39,7 +39,7 @@ _BaseUser = discord.abc.User
 
 
 class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', '_accent_colour', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
         name: str
