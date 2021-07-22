@@ -76,6 +76,7 @@ class BaseUser(_BaseUser):
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
         self._banner = data.get('banner', None)
+        self._accent_color = data.get("accent_color", None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
@@ -89,6 +90,7 @@ class BaseUser(_BaseUser):
         self.discriminator = user.discriminator
         self._avatar = user._avatar
         self._banner = user._banner
+        self._accent_color = user._accent_color
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
@@ -130,10 +132,44 @@ class BaseUser(_BaseUser):
         """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
 
         .. versionadded:: 2.0
+
+
+        .. note::
+            This information is only available via :meth:`Client.fetch_user`.
         """
         if self._banner is None:
             return None
         return Asset._from_user_banner(self._state, self.id, self._banner)
+
+    @property
+    def accent_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent colour, if applicable.
+
+        There is an alias for this named :attr:`accent_color`.
+
+        .. versionadded:: 2.0
+
+
+        .. note::
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        if self._accent_color is None:
+            return None
+        return Colour(self._accent_color)
+
+    @property
+    def accent_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent color, if applicable.
+
+        There is an alias for this named :attr:`accent_colour`.
+
+        .. versionadded:: 2.0
+
+
+        .. note::
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        return self.accent_colour
 
     @property
     def colour(self):
