@@ -709,11 +709,11 @@ class HTTPClient:
         reason: Optional[str] = None,
     ) -> Response[None]:
         r = Route('PUT', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
-        payload = {
+        params = {
             'delete_message_days': delete_message_days,
         }
 
-        return self.request(r, json=payload, reason=reason)
+        return self.request(r, params=params, reason=reason)
 
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
@@ -1141,10 +1141,10 @@ class HTTPClient:
     ) -> Response[guild.GuildPrune]:
         payload: Dict[str, Any] = {
             'days': days,
-            'compute_prune_count': compute_prune_count,
+            'compute_prune_count': 'true' if compute_prune_count else 'false',
         }
         if roles:
-            payload['include_roles'] = roles
+            payload['include_roles'] = ', '.join(roles)
 
         return self.request(Route('POST', '/guilds/{guild_id}/prune', guild_id=guild_id), json=payload, reason=reason)
 
@@ -1158,7 +1158,7 @@ class HTTPClient:
             'days': days,
         }
         if roles:
-            params['include_roles'] = roles
+            params['include_roles'] = ', '.join(roles)
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
