@@ -1,5 +1,8 @@
 import discord
 
+with open('token.txt') as f:
+    token = f.read()
+
 class MyClient(discord.Client):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -18,4 +21,4 @@ class MyClient(discord.Client):
         await message.channel.send(msg)
 
 client = MyClient()
-client.run('token')
+client.run(token)

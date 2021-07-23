@@ -1,6 +1,9 @@
 import discord
 import asyncio
 
+with open('token.txt') as f:
+    token = f.read()
+
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,4 +26,4 @@ class MyClient(discord.Client):
 
 
 client = MyClient()
-client.run('token')
+client.run(token)

@@ -1,6 +1,9 @@
 from discord.ext import tasks
-
 import discord
+
+with open('token.txt') as f:
+    token = f.read()
+
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
@@ -27,4 +30,4 @@ class MyClient(discord.Client):
         await self.wait_until_ready() # wait until the bot logs in
 
 client = MyClient()
-client.run('token')
+client.run(token)

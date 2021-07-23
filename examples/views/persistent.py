@@ -1,6 +1,8 @@
 from discord.ext import commands
 import discord
 
+with open('token.txt') as f:
+    token = f.read()
 
 # Define a simple View that persists between bot restarts
 # In order a view to persist between restarts it needs to meet the following conditions:
@@ -60,4 +62,4 @@ async def prepare(ctx: commands.Context):
     await ctx.send("What's your favourite colour?", view=PersistentView())
 
 
-bot.run('token')
+bot.run(token)

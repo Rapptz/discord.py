@@ -1,8 +1,9 @@
 import random
-
 import discord
 from discord.ext import commands
 
+with open('token.txt') as f:
+    token = f.read()
 
 class MyContext(commands.Context):
     async def tick(self, value):
@@ -47,5 +48,4 @@ async def guess(ctx, number: int):
 # let people do very malicious things with your
 # bot. Try to use a file or something to keep
 # them private, and don't commit it to GitHub
-token = "your token here"
 bot.run(token)

@@ -1,7 +1,9 @@
 import typing
-
 import discord
 from discord.ext import commands
+
+with open('token.txt') as f:
+    token = f.read()
 
 bot = commands.Bot(command_prefix=commands.when_mentioned, description="Nothing to see here!")
 
@@ -93,4 +95,4 @@ async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: disc
     )
 
 
-bot.run('token')
+bot.run(token)

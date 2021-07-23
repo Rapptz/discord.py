@@ -2,6 +2,9 @@
 
 import discord
 
+with open('token.txt') as f:
+    token = f.read()
+
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,4 +85,4 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = MyClient(intents=intents)
-client.run('token')
+client.run(token)

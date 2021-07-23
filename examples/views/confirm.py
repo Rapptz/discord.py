@@ -1,7 +1,8 @@
 from discord.ext import commands
-
 import discord
 
+with open('token.txt') as f:
+    token = f.read()
 
 class Bot(commands.Bot):
     def __init__(self):
@@ -53,5 +54,4 @@ async def ask(ctx: commands.Context):
     else:
         print('Cancelled...')
 
-
-bot.run('token')
+bot.run(token)

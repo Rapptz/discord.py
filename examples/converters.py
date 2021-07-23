@@ -1,9 +1,10 @@
 # This example requires the 'members' privileged intent to use the Member converter.
-
 import typing
-
 import discord
 from discord.ext import commands
+
+with open('token.txt') as f:
+    token = f.read()
 
 intents = discord.Intents.default()
 intents.members = True
@@ -110,4 +111,4 @@ async def multiply(ctx: commands.Context, number: int, maybe: bool):
         return await ctx.send(number * 2)
     await ctx.send(number * 5)
 
-bot.run('token')
+bot.run(token)

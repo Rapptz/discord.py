@@ -1,7 +1,9 @@
 from discord.ext import commands
-
 import discord
 from urllib.parse import quote_plus
+
+with open('token.txt') as f:
+    token = f.read()
 
 class GoogleBot(commands.Bot):
     def __init__(self):
@@ -36,4 +38,4 @@ async def google(ctx: commands.Context, *, query: str):
     await ctx.send(f'Google Result for: `{query}`', view=Google(query))
 
 
-bot.run('token')
+bot.run(token)

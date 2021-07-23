@@ -2,6 +2,9 @@ from typing import List
 from discord.ext import commands
 import discord
 
+with open('token.txt') as f:
+    token = f.read()
+
 # Defines a custom button that contains the logic of the game.
 # The ['TicTacToe'] bit is for type hinting purposes to tell your IDE or linter
 # what the type of `self.view` is. It is not required.
@@ -136,4 +139,4 @@ async def tic(ctx: commands.Context):
     await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
 
 
-bot.run('token')
+bot.run(token)
