@@ -72,6 +72,9 @@ Quick Example
 .. code:: py
 
     import discord
+    
+    with open('token.txt') as f:
+      token = f.read()
 
     class MyClient(discord.Client):
         async def on_ready(self):
@@ -86,7 +89,7 @@ Quick Example
                 await message.channel.send('pong')
 
     client = MyClient()
-    client.run('token')
+    client.run(token)
 
 Bot Example
 ~~~~~~~~~~~~~
@@ -95,6 +98,9 @@ Bot Example
 
     import discord
     from discord.ext import commands
+    
+    with open('token.txt') as f:
+      token = f.read()
 
     bot = commands.Bot(command_prefix='>')
 
@@ -102,7 +108,7 @@ Bot Example
     async def ping(ctx):
         await ctx.send('pong')
 
-    bot.run('token')
+    bot.run(token)
 
 You can find more examples in the examples directory.
 
