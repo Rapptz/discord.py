@@ -74,7 +74,7 @@ Quick Example
     import discord
     
     with open('token.txt') as f:
-      token = f.read()
+        token = f.read()
 
     class MyClient(discord.Client):
         async def on_ready(self):
@@ -100,7 +100,7 @@ Bot Example
     from discord.ext import commands
     
     with open('token.txt') as f:
-      token = f.read()
+         token = f.read()
 
     bot = commands.Bot(command_prefix='>')
 
