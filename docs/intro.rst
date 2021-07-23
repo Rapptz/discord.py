@@ -100,6 +100,9 @@ A quick example to showcase how events work:
 .. code-block:: python3
 
     import discord
+    
+    with open('token.txt') as f:
+        token = f.read()
 
     class MyClient(discord.Client):
         async def on_ready(self):
@@ -109,5 +112,5 @@ A quick example to showcase how events work:
             print(f'Message from {messsage.author}: {message.content}')
 
     client = MyClient()
-    client.run('my token goes here')
+    client.run(token)
 
