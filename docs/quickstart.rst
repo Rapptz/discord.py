@@ -22,6 +22,9 @@ It looks something like this:
     import discord
 
     client = discord.Client()
+    
+    with open('token.txt') as f:
+        token = f.read()
 
     @client.event
     async def on_ready():
@@ -35,7 +38,7 @@ It looks something like this:
         if message.content.startswith('$hello'):
             await message.channel.send('Hello!')
 
-    client.run('your token here')
+    client.run(token)
 
 Let's name this file ``example_bot.py``. Make sure not to name it ``discord.py`` as that'll conflict
 with the library.
