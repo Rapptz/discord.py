@@ -40,7 +40,10 @@ Client
 
 .. autoclass:: Client
     :members:
-    :exclude-members: fetch_guilds
+    :exclude-members: fetch_guilds, event
+
+    .. automethod:: Client.event()
+        :decorator:
 
     .. automethod:: Client.fetch_guilds
         :async-for:
@@ -597,7 +600,13 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an interaction happened.
 
-    This currently happens due to slash command invocations.
+    This currently happens due to slash command invocations or components being used.
+
+    .. warning::
+
+        This is a low level function that is not generally meant to be used.
+        If you are working with components, consider using the callbacks associated
+        with the :class:`~discord.ui.View` instead as it provides a nicer user experience.
 
     .. versionadded:: 2.0
 
@@ -660,7 +669,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_thread_join(thread)
 
-    Called whenever a thread is joined.
+    Called whenever a thread is joined or created. Note that from the API's perspective there is no way to
+    differentiate between a thread being created or the bot joining a thread.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
@@ -798,13 +808,29 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This is called when one or more of the following things change:
 
-    - status
-    - activity
     - nickname
     - roles
     - pending
 
     This requires :attr:`Intents.members` to be enabled.
+
+    :param before: The updated member's old info.
+    :type before: :class:`Member`
+    :param after: The updated member's updated info.
+    :type after: :class:`Member`
+
+.. function:: on_presence_update(before, after)
+
+    Called when a :class:`Member` updates their presence.
+
+    This is called when one or more of the following things change:
+
+    - status
+    - activity
+
+    This requires :attr:`Intents.presences` and :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.0
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
@@ -1063,6 +1089,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.utcnow
 
+.. autofunction:: discord.utils.format_dt
+
 .. autofunction:: discord.utils.as_chunks
 
 .. _discord-api-enums:
@@ -1125,7 +1153,7 @@ of :class:`enum.Enum`.
 
         A private thread
 
-        .. versionadded:: 1.8
+        .. versionadded:: 2.0
 
 .. class:: MessageType
 
@@ -1290,7 +1318,7 @@ of :class:`enum.Enum`.
         The user is a system user (i.e. represents Discord officially).
     .. attribute:: has_unread_urgent_messages
 
-        The user has an unready system message.
+        The user has an unread system message.
     .. attribute:: bug_hunter_level_2
 
         The user is a Bug Hunter Level 2.
@@ -1427,12 +1455,18 @@ of :class:`enum.Enum`.
     .. attribute:: grey
 
         An alias for :attr:`secondary`.
+    .. attribute:: gray
+
+        An alias for :attr:`secondary`.
     .. attribute:: green
 
         An alias for :attr:`success`.
     .. attribute:: red
 
         An alias for :attr:`danger`.
+    .. attribute:: url
+
+        An alias for :attr:`link`.
 
 .. class:: VoiceRegion
 
@@ -2233,7 +2267,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: remove_role
 
-        This will remove the :attr:`Integration.role` from the user
+        This will remove the :attr:`StreamIntegration.role` from the user
         when their subscription is finished.
 
     .. attribute:: kick
@@ -3260,6 +3294,14 @@ InteractionResponse
 .. autoclass:: InteractionResponse()
     :members:
 
+InteractionMessage
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: InteractionMessage
+
+.. autoclass:: InteractionMessage()
+    :members:
+
 Member
 ~~~~~~
 
@@ -3807,6 +3849,17 @@ Button
 
 .. autofunction:: discord.ui.button
 
+Select
+~~~~~~~
+
+.. attributetable:: discord.ui.Select
+
+.. autoclass:: discord.ui.Select
+    :members:
+    :inherited-members:
+
+.. autofunction:: discord.ui.select
+
 
 Exceptions
 ------------
@@ -3840,6 +3893,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: PrivilegedIntentsRequired
 
+.. autoexception:: InteractionResponded
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -3857,6 +3912,7 @@ Exception Hierarchy
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
+                - :exc:`InteractionResponded`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`

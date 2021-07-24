@@ -81,7 +81,7 @@ MISSING = utils.MISSING
 
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
-    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel
+    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel, GuildFeature
     from .types.threads import (
         Thread as ThreadPayload,
     )
@@ -182,26 +182,33 @@ class Guild(Hashable):
     default_notifications: :class:`NotificationLevel`
         The guild's notification settings.
     features: List[:class:`str`]
-        A list of features that the guild has. They are currently as follows:
+        A list of features that the guild has. The features that a guild can have are
+        subject to arbitrary change by Discord.
 
-        - ``VIP_REGIONS``: Guild has VIP voice regions
-        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api)
-        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
-        - ``VERIFIED``: Guild is a verified server.
-        - ``PARTNERED``: Guild is a partnered server.
-        - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
+        They are currently as follows:
+
+        - ``ANIMATED_ICON``: Guild can upload an animated icon.
+        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
+        - ``COMMERCE``: Guild can sell things using store channels.
+        - ``COMMUNITY``: Guild is a community server.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
-        - ``COMMUNITY``: Guild is a community server.
-        - ``COMMERCE``: Guild can sell things using store channels.
-        - ``PUBLIC``: Guild is a public guild.
-        - ``NEWS``: Guild can create news channels.
-        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
-        - ``ANIMATED_ICON``: Guild can upload an animated icon.
-        - ``PUBLIC_DISABLED``: Guild cannot be public.
-        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
+        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
         - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
+        - ``MONETIZATION_ENABLED``: Guild has enabled monetization.
+        - ``MORE_EMOJI``: Guild has increased custom emoji slots.
+        - ``MORE_STICKERS``: Guild has increased custom sticker slots.
+        - ``NEWS``: Guild can create news channels.
+        - ``PARTNERED``: Guild is a partnered server.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
+        - ``PRIVATE_THREADS``: Guild has access to create private threads.
+        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
+        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
+        - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
+        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
+        - ``VERIFIED``: Guild is a verified server.
+        - ``VIP_REGIONS``: Guild has VIP voice regions.
+        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
 
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
@@ -287,7 +294,7 @@ class Guild(Hashable):
         self._members[member.id] = member
 
     def _store_thread(self, payload: ThreadPayload, /) -> Thread:
-        thread = Thread(guild=self, data=payload)
+        thread = Thread(guild=self, state=self._state, data=payload)
         self._threads[thread.id] = thread
         return thread
 
@@ -405,7 +412,7 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.features: List[str] = guild.get('features', [])
+        self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description: Optional[str] = guild.get('description')
@@ -454,19 +461,19 @@ class Guild(Hashable):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
-                member._presence_update(presence, empty_tuple)
+                member._presence_update(presence, empty_tuple)  # type: ignore
 
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
-                    self._add_channel(factory(guild=self, data=c, state=self._state))
+                    self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
 
         if 'threads' in data:
             threads = data['threads']
             for thread in threads:
-                self._add_thread(Thread(guild=self, data=thread))
+                self._add_thread(Thread(guild=self, state=self._state, data=thread))
 
     @property
     def channels(self) -> List[GuildChannel]:
@@ -585,6 +592,12 @@ class Guild(Hashable):
         for _, channels in as_list:
             channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
+
+    def _resolve_channel(self, id: Optional[int], /) -> Optional[Union[GuildChannel, Thread]]:
+        if id is None:
+            return
+
+        return self._channels.get(id) or self._threads.get(id)
 
     def get_channel(self, channel_id: int, /) -> Optional[GuildChannel]:
         """Returns a channel with the given ID.
@@ -2158,7 +2171,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         colour: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2171,7 +2184,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         color: Union[Colour, int] = ...,
         hoist: bool = ...,
-        mentionable: str = ...,
+        mentionable: bool = ...,
     ) -> Role:
         ...
 
@@ -2183,7 +2196,7 @@ class Guild(Hashable):
         color: Union[Colour, int] = MISSING,
         colour: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
-        mentionable: str = MISSING,
+        mentionable: bool = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
         """|coro|
@@ -2407,7 +2420,7 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
-    async def vanity_invite(self) -> Invite:
+    async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
 
         Returns the guild's special vanity invite.
@@ -2426,12 +2439,15 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`Invite`
-            The special vanity invite.
+        Optional[:class:`Invite`]
+            The special vanity invite. If ``None`` then the guild does not
+            have a vanity invite set.
         """
 
         # we start with { code: abc }
         payload = await self._state.http.get_vanity_code(self.id)
+        if not payload['code']:
+            return None
 
         # get the vanity URL channel since default channels aren't
         # reliable or a thing anymore
@@ -2442,6 +2458,7 @@ class Guild(Hashable):
         payload['temporary'] = False
         payload['max_uses'] = 0
         payload['max_age'] = 0
+        payload['uses'] = payload.get('uses', 0)
         return Invite(state=self._state, data=payload, guild=self, channel=channel)
 
     # TODO: use MISSING when async iterators get refactored

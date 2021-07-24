@@ -48,6 +48,7 @@ from .errors import *
 
 if TYPE_CHECKING:
     from .context import Context
+    from discord.message import PartialMessageableChannel
 
 
 __all__ = (
@@ -71,6 +72,7 @@ __all__ = (
     'CategoryChannelConverter',
     'IDConverter',
     'StoreChannelConverter',
+    'ThreadConverter',
     'GuildChannelConverter',
     'clean_content',
     'Greedy',
@@ -91,6 +93,7 @@ _utils_get = discord.utils.get
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 CT = TypeVar('CT', bound=discord.abc.GuildChannel)
+TT = TypeVar('TT', bound=discord.Thread)
 
 
 @runtime_checkable
@@ -325,22 +328,42 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
     """
 
     @staticmethod
-    def _get_id_matches(argument):
+    def _get_id_matches(ctx, argument):
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,20})-)?(?P<message_id>[0-9]{15,20})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
-            r'(?:[0-9]{15,20}|@me)'
+            r'(?P<guild_id>[0-9]{15,20}|@me)'
             r'/(?P<channel_id>[0-9]{15,20})/(?P<message_id>[0-9]{15,20})/?$'
         )
         match = id_regex.match(argument) or link_regex.match(argument)
         if not match:
             raise MessageNotFound(argument)
-        channel_id = match.group('channel_id')
-        return int(match.group('message_id')), int(channel_id) if channel_id else None
+        data = match.groupdict()
+        channel_id = discord.utils._get_as_snowflake(data, 'channel_id')
+        message_id = int(data['message_id'])
+        guild_id = data.get('guild_id')
+        if guild_id is None:
+            guild_id = ctx.guild and ctx.guild.id
+        elif guild_id == '@me':
+            guild_id = None
+        else:
+            guild_id = int(guild_id)
+        return guild_id, message_id, channel_id
+
+    @staticmethod
+    def _resolve_channel(ctx, guild_id, channel_id) -> Optional[PartialMessageableChannel]:
+        if guild_id is not None:
+            guild = ctx.bot.get_guild(guild_id)
+            if guild is not None and channel_id is not None:
+                return guild._resolve_channel(channel_id)  # type: ignore
+            else:
+                return None
+        else:
+            return ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
 
     async def convert(self, ctx: Context, argument: str) -> discord.PartialMessage:
-        message_id, channel_id = self._get_id_matches(argument)
-        channel = ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
+        guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
+        channel = self._resolve_channel(ctx, guild_id, channel_id)
         if not channel:
             raise ChannelNotFound(channel_id)
         return discord.PartialMessage(channel=channel, id=message_id)
@@ -362,11 +385,11 @@ class MessageConverter(IDConverter[discord.Message]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.Message:
-        message_id, channel_id = PartialMessageConverter._get_id_matches(argument)
+        guild_id, message_id, channel_id = PartialMessageConverter._get_id_matches(ctx, argument)
         message = ctx.bot._connection._get_message(message_id)
         if message:
             return message
-        channel = ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
+        channel = PartialMessageConverter._resolve_channel(ctx, guild_id, channel_id)
         if not channel:
             raise ChannelNotFound(channel_id)
         try:
@@ -393,10 +416,10 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.abc.GuildChannel:
-        return self._resolve_channel(ctx, argument, ctx.guild.channels, discord.abc.GuildChannel)
+        return self._resolve_channel(ctx, argument, 'channels', discord.abc.GuildChannel)
 
     @staticmethod
-    def _resolve_channel(ctx: Context, argument: str, iterable: Iterable[CT], type: Type[CT]) -> CT:
+    def _resolve_channel(ctx: Context, argument: str, attribute: str, type: Type[CT]) -> CT:
         bot = ctx.bot
 
         match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
@@ -406,6 +429,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         if match is None:
             # not a mention
             if guild:
+                iterable: Iterable[CT] = getattr(guild, attribute)
                 result: Optional[CT] = discord.utils.get(iterable, name=argument)
             else:
 
@@ -422,6 +446,29 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
         if not isinstance(result, type):
             raise ChannelNotFound(argument)
+
+        return result
+
+    @staticmethod
+    def _resolve_thread(ctx: Context, argument: str, attribute: str, type: Type[TT]) -> TT:
+        bot = ctx.bot
+
+        match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
+        result = None
+        guild = ctx.guild
+
+        if match is None:
+            # not a mention
+            if guild:
+                iterable: Iterable[TT] = getattr(guild, attribute)
+                result: Optional[TT] = discord.utils.get(iterable, name=argument)
+        else:
+            thread_id = int(match.group(1))
+            if guild:
+                result = guild.get_thread(thread_id)
+
+        if not result or not isinstance(result, type):
+            raise ThreadNotFound(argument)
 
         return result
 
@@ -443,7 +490,7 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.TextChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.text_channels, discord.TextChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'text_channels', discord.TextChannel)
 
 
 class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
@@ -463,7 +510,7 @@ class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.VoiceChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.voice_channels, discord.VoiceChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'voice_channels', discord.VoiceChannel)
 
 
 class StageChannelConverter(IDConverter[discord.StageChannel]):
@@ -482,7 +529,7 @@ class StageChannelConverter(IDConverter[discord.StageChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StageChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.stage_channels, discord.StageChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'stage_channels', discord.StageChannel)
 
 
 class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
@@ -502,7 +549,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.CategoryChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.categories, discord.CategoryChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'categories', discord.CategoryChannel)
 
 
 class StoreChannelConverter(IDConverter[discord.StoreChannel]):
@@ -521,7 +568,25 @@ class StoreChannelConverter(IDConverter[discord.StoreChannel]):
     """
 
     async def convert(self, ctx: Context, argument: str) -> discord.StoreChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, ctx.guild.channels, discord.StoreChannel)
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'channels', discord.StoreChannel)
+
+
+class ThreadConverter(IDConverter[discord.Thread]):
+    """Coverts to a :class:`~discord.Thread`.
+
+    All lookups are via the local guild.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name.
+
+    .. versionadded: 2.0
+    """
+
+    async def convert(self, ctx: Context, argument: str) -> discord.Thread:
+        return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
 
 
 class ColourConverter(Converter[discord.Colour]):
@@ -663,7 +728,7 @@ class InviteConverter(Converter[discord.Invite]):
             invite = await ctx.bot.fetch_invite(argument)
             return invite
         except Exception as exc:
-            raise BadInviteArgument() from exc
+            raise BadInviteArgument(argument) from exc
 
 
 class GuildConverter(IDConverter[discord.Guild]):
@@ -778,67 +843,66 @@ class clean_content(Converter[str]):
         .. versionadded:: 1.7
     """
 
-    def __init__(self, *, fix_channel_mentions: bool = False, use_nicknames: bool = True, escape_markdown: bool = False, remove_markdown: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        fix_channel_mentions: bool = False,
+        use_nicknames: bool = True,
+        escape_markdown: bool = False,
+        remove_markdown: bool = False,
+    ) -> None:
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
         self.escape_markdown = escape_markdown
         self.remove_markdown = remove_markdown
 
     async def convert(self, ctx: Context, argument: str) -> str:
-        message = ctx.message
-        transformations = {}
-
-        if self.fix_channel_mentions and ctx.guild:
-
-            def resolve_channel(id, *, _get=ctx.guild.get_channel):
-                ch = _get(id)
-                return f'<#{id}>', ('#' + ch.name if ch else '#deleted-channel')
-
-            transformations.update(resolve_channel(channel) for channel in message.raw_channel_mentions)
-
-        if self.use_nicknames and ctx.guild:
-
-            def resolve_member(id, *, _get=ctx.guild.get_member):
-                m = _get(id)
-                return '@' + m.display_name if m else '@deleted-user'
-
-        else:
-
-            def resolve_member(id, *, _get=ctx.bot.get_user):
-                m = _get(id)
-                return '@' + m.name if m else '@deleted-user'
-
-        # fmt: off
-        transformations.update(
-            (f'<@{member_id}>', resolve_member(member_id))
-            for member_id in message.raw_mentions
-        )
-
-        transformations.update(
-            (f'<@!{member_id}>', resolve_member(member_id))
-            for member_id in message.raw_mentions
-        )
-        # fmt: on
+        msg = ctx.message
 
         if ctx.guild:
 
-            def resolve_role(_id, *, _find=ctx.guild.get_role):
-                r = _find(_id)
-                return '@' + r.name if r else '@deleted-role'
+            def resolve_member(id: int) -> str:
+                m = _utils_get(msg.mentions, id=id) or ctx.guild.get_member(id)
+                return f'@{m.display_name if self.use_nicknames else m.name}' if m else '@deleted-user'
 
-            # fmt: off
-            transformations.update(
-                (f'<@&{role_id}>', resolve_role(role_id))
-                for role_id in message.raw_role_mentions
-            )
-            # fmt: on
+            def resolve_role(id: int) -> str:
+                r = _utils_get(msg.role_mentions, id=id) or ctx.guild.get_role(id)
+                return f'@{r.name}' if r else '@deleted-role'
 
-        def repl(obj):
-            return transformations.get(obj.group(0), '')
+        else:
 
-        pattern = re.compile('|'.join(transformations.keys()))
-        result = pattern.sub(repl, argument)
+            def resolve_member(id: int) -> str:
+                m = _utils_get(msg.mentions, id=id) or ctx.bot.get_user(id)
+                return f'@{m.name}' if m else '@deleted-user'
 
+            def resolve_role(id: int) -> str:
+                return '@deleted-role'
+
+        if self.fix_channel_mentions and ctx.guild:
+
+            def resolve_channel(id: int) -> str:
+                c = ctx.guild.get_channel(id)
+                return f'#{c.name}' if c else '#deleted-channel'
+
+        else:
+
+            def resolve_channel(id: int) -> str:
+                return f'<#{id}>'
+
+        transforms = {
+            '@': resolve_member,
+            '@!': resolve_member,
+            '#': resolve_channel,
+            '@&': resolve_role,
+        }
+
+        def repl(match: re.Match) -> str:
+            type = match[1]
+            id = int(match[2])
+            transformed = transforms[type](id)
+            return transformed
+
+        result = re.sub(r'<(@[!&]?|#)([0-9]{15,20})>', repl, argument)
         if self.escape_markdown:
             result = discord.utils.escape_markdown(result)
         elif self.remove_markdown:
@@ -946,6 +1010,7 @@ CONVERTER_MAPPING: Dict[Type[Any], Any] = {
     discord.PartialEmoji: PartialEmojiConverter,
     discord.CategoryChannel: CategoryChannelConverter,
     discord.StoreChannel: StoreChannelConverter,
+    discord.Thread: ThreadConverter,
     discord.abc.GuildChannel: GuildChannelConverter,
 }
 

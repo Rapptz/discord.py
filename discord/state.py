@@ -28,11 +28,10 @@ import copy
 import datetime
 import itertools
 import logging
-from typing import Optional
+from typing import Dict, Optional
 import weakref
 import warnings
 import inspect
-import gc
 
 import os
 
@@ -58,7 +57,6 @@ from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
-from discord import guild
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -181,6 +179,7 @@ class ConnectionState:
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents
+            self.deref_user = self.deref_user_no_intents
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
@@ -191,7 +190,19 @@ class ConnectionState:
 
     def clear(self):
         self.user = None
-        self._users = weakref.WeakValueDictionary()
+        # Originally, this code used WeakValueDictionary to maintain references to the
+        # global user mapping.
+
+        # However, profiling showed that this came with two cons:
+
+        # 1. The __weakref__ slot caused a non-trivial increase in memory
+        # 2. The performance of the mapping caused store_user to be a bottleneck.
+
+        # Since this is undesirable, a mapping is now used instead with stored
+        # references now using a regular dictionary with eviction being done
+        # using __del__. Testing this for memory leaks led to no discernable leaks,
+        # though more testing will have to be done.
+        self._users: Dict[int, User] = {}
         self._emojis = {}
         self._guilds = {}
         self._view_store = ViewStore(self)
@@ -202,11 +213,6 @@ class ConnectionState:
         # extra dict to look up private channels by user id
         self._private_channels_by_user = {}
         self._messages = self.max_messages and deque(maxlen=self.max_messages)
-
-        # In cases of large deallocations the GC should be called explicitly
-        # To free the memory more immediately, especially true when it comes
-        # to reconnect loops which cause mass allocations and deallocations.
-        gc.collect()
 
     def process_chunk_requests(self, guild_id, nonce, members, complete):
         removed = []
@@ -265,7 +271,6 @@ class ConnectionState:
             vc.main_ws = ws
 
     def store_user(self, data):
-        # this way is 300% faster than `dict.setdefault`.
         user_id = int(data['id'])
         try:
             return self._users[user_id]
@@ -273,10 +278,17 @@ class ConnectionState:
             user = User(state=self, data=data)
             if user.discriminator != '0000':
                 self._users[user_id] = user
+                user._stored = True
             return user
+
+    def deref_user(self, user_id):
+        self._users.pop(user_id, None)
 
     def store_user_no_intents(self, data):
         return User(state=self, data=data)
+
+    def deref_user_no_intents(self, user_id):
+        return
 
     def get_user(self, id):
         return self._users.get(id)
@@ -313,10 +325,6 @@ class ConnectionState:
             self._emojis.pop(emoji.id, None)
 
         del guild
-
-        # Much like clear(), if we have a massive deallocation
-        # then it's better to explicitly call the GC
-        gc.collect()
 
     @property
     def emojis(self):
@@ -383,7 +391,7 @@ class ConnectionState:
             channel = DMChannel._from_message(self, channel_id)
             guild = None
         else:
-            channel = guild and (guild.get_channel(channel_id) or guild.get_thread(channel_id))
+            channel = guild and guild._resolve_channel(channel_id)
 
         return channel or Object(id=channel_id), guild
 
@@ -461,7 +469,7 @@ class ConnectionState:
         self._ready_state = asyncio.Queue()
         self.clear()
         self.user = user = ClientUser(state=self, data=data['user'])
-        self._users[user.id] = user
+        self.store_user(data['user'])
 
         if self.application_id is None:
             try:
@@ -628,10 +636,13 @@ class ConnectionState:
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
 
-        self.dispatch('member_update', old_member, member)
+        self.dispatch('presence_update', old_member, member)
 
     def parse_user_update(self, data):
         self.user._update(data)
+        ref = self._users.get(self.user.id)
+        if ref:
+            ref._update(data)
 
     def parse_invite_create(self, data):
         invite = Invite.from_gateway(state=self, data=data)
@@ -691,19 +702,21 @@ class ConnectionState:
 
     def parse_channel_pins_update(self, data):
         channel_id = int(data['channel_id'])
-        channel = self.get_channel(channel_id)
+        try:
+            guild = self._get_guild(int(data['guild_id']))
+        except KeyError:
+            guild = None
+            channel = self._get_private_channel(channel_id)
+        else:
+            channel = guild and guild._resolve_channel(channel_id)
+
         if channel is None:
             log.debug('CHANNEL_PINS_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
             return
 
         last_pin = utils.parse_time(data['last_pin_timestamp']) if data['last_pin_timestamp'] else None
 
-        try:
-            # I have not imported discord.abc in this file
-            # the isinstance check is also 2x slower than just checking this attribute
-            # so we're just gonna check it since it's easier and faster and lazier
-            channel.guild
-        except AttributeError:
+        if guild is None:
             self.dispatch('private_channel_pins_update', channel, last_pin)
         else:
             self.dispatch('guild_channel_pins_update', channel, last_pin)
@@ -715,7 +728,7 @@ class ConnectionState:
             log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
-        thread = Thread(guild=guild, data=data)
+        thread = Thread(guild=guild, state=guild._state, data=data)
         has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
         if not has_thread:
@@ -734,6 +747,10 @@ class ConnectionState:
             old = copy.copy(thread)
             thread._update(data)
             self.dispatch('thread_update', old, thread)
+        else:
+            thread = Thread(guild=guild, state=guild._state, data=data)
+            guild._add_thread(thread)
+            self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data):
         guild_id = int(data['guild_id'])
@@ -1118,7 +1135,12 @@ class ConnectionState:
             log.debug('INTEGRATION_DELETE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_webhooks_update(self, data):
-        channel = self.get_channel(int(data['channel_id']))
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            log.debug('WEBHOOKS_UPDATE referencing an unknown guild ID: %s. Discarding', data['guild_id'])
+            return
+
+        channel = guild.get_channel(int(data['channel_id']))
         if channel is not None:
             self.dispatch('webhooks_update', channel)
         else:
@@ -1212,8 +1234,7 @@ class ConnectionState:
                 member = utils.find(lambda x: x.id == user_id, channel.recipients)
 
             if member is not None:
-                timestamp = datetime.datetime.utcfromtimestamp(data.get('timestamp'))
-                timestamp = timestamp.replace(tzinfo=datetime.timezone.utc)
+                timestamp = datetime.datetime.fromtimestamp(data.get('timestamp'), tz=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
 
     def _get_reaction_user(self, channel, user_id):
@@ -1250,7 +1271,7 @@ class ConnectionState:
             return pm
 
         for guild in self.guilds:
-            channel = guild.get_channel(id) or guild.get_thread(id)
+            channel = guild._resolve_channel(id)
             if channel is not None:
                 return channel
 
@@ -1272,8 +1293,8 @@ class AutoShardedConnectionState(ConnectionState):
             new_guild = self._get_guild(msg.guild.id)
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
-                channel = new_guild.get_channel(channel_id) or new_guild.get_thread(channel_id) or Object(id=channel_id)
-                msg._rebind_channel_reference(channel)
+                channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
+                msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
         ws = self._get_websocket(guild_id, shard_id=shard_id)
@@ -1370,14 +1391,6 @@ class AutoShardedConnectionState(ConnectionState):
 
         self.dispatch('connect')
         self.dispatch('shard_connect', data['__shard_id__'])
-
-        # Much like clear(), if we have a massive deallocation
-        # then it's better to explicitly call the GC
-        # Note that in the original ready parsing code this was done
-        # implicitly via clear() but in the auto sharded client clearing
-        # the cache would have the consequence of clearing data on other
-        # shards as well.
-        gc.collect()
 
         if self._ready_task is None:
             self._ready_task = asyncio.create_task(self._delay_ready())

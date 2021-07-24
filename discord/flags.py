@@ -287,6 +287,15 @@ class MessageFlags(BaseFlags):
         """
         return 32
 
+    @flag_value
+    def ephemeral(self):
+        """:class:`bool`: Returns ``True`` if the source message is ephemeral.
+
+        .. versionadded:: 2.0
+        """
+        return 64
+
+
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
     r"""Wraps up the Discord User Public flags.
@@ -515,7 +524,7 @@ class Intents(BaseFlags):
 
         - :func:`on_member_join`
         - :func:`on_member_remove`
-        - :func:`on_member_update` (nickname, roles)
+        - :func:`on_member_update`
         - :func:`on_user_update`
 
         This also corresponds to the following attributes and classes in terms of cache:
@@ -634,7 +643,7 @@ class Intents(BaseFlags):
 
         This corresponds to the following events:
 
-        - :func:`on_member_update` (activities, status)
+        - :func:`on_presence_update`
 
         This also corresponds to the following attributes and classes in terms of cache:
 

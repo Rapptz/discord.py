@@ -92,8 +92,8 @@ def _transform_overwrites(
 ) -> List[Tuple[Object, PermissionOverwrite]]:
     overwrites = []
     for elem in data:
-        allow = Permissions(elem['allow'])
-        deny = Permissions(elem['deny'])
+        allow = Permissions(int(elem['allow']))
+        deny = Permissions(int(elem['deny']))
         ow = PermissionOverwrite.from_pair(allow, deny)
 
         ow_type = elem['type']

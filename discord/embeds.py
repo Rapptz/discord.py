@@ -202,8 +202,6 @@ class Embed:
             self.url = str(self.url)
 
         if timestamp:
-            if timestamp.tzinfo is None:
-                timestamp = timestamp.astimezone()
             self.timestamp = timestamp
 
     @classmethod
@@ -327,7 +325,11 @@ class Embed:
 
     @timestamp.setter
     def timestamp(self, value: MaybeEmpty[datetime.datetime]):
-        if isinstance(value, (datetime.datetime, _EmptyEmbed)):
+        if isinstance(value, datetime.datetime):
+            if value.tzinfo is None:
+                value = value.astimezone()
+            self._timestamp = value
+        elif isinstance(value, _EmptyEmbed):
             self._timestamp = value
         else:
             raise TypeError(f"Expected datetime.datetime or Embed.Empty received {value.__class__.__name__} instead")

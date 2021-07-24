@@ -63,6 +63,14 @@ import warnings
 
 from .errors import InvalidArgument
 
+try:
+    import orjson
+except ModuleNotFoundError:
+    HAS_ORJSON = False
+else:
+    HAS_ORJSON = True
+
+
 __all__ = (
     'oauth_url',
     'snowflake_time',
@@ -75,6 +83,7 @@ __all__ = (
     'escape_markdown',
     'escape_mentions',
     'as_chunks',
+    'format_dt',
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -251,18 +260,20 @@ def deprecated(instead: Optional[str] = None) -> Callable[[Callable[..., T]], Ca
 
 
 def oauth_url(
-    client_id: str,
-    permissions: Optional[Permissions] = None,
-    guild: Optional[Snowflake] = None,
-    redirect_uri: Optional[str] = None,
-    scopes: Optional[Iterable[str]] = None,
+    client_id: Union[int, str],
+    *,
+    permissions: Permissions = MISSING,
+    guild: Snowflake = MISSING,
+    redirect_uri: str = MISSING,
+    scopes: Iterable[str] = MISSING,
+    disable_guild_select: bool = False,
 ):
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
     Parameters
     -----------
-    client_id: :class:`str`
+    client_id: Union[:class:`int`, :class:`str`]
         The client ID for your bot.
     permissions: :class:`~discord.Permissions`
         The permissions you're requesting. If not given then you won't be requesting any
@@ -275,6 +286,10 @@ def oauth_url(
         An optional valid list of scopes. Defaults to ``('bot',)``.
 
         .. versionadded:: 1.7
+    disable_guild_select: :class:`bool`
+        Whether to disallow the user from changing the guild dropdown.
+
+        .. versionadded:: 2.0
 
     Returns
     --------
@@ -282,15 +297,17 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url = url + '&scope=' + '+'.join(scopes or ('bot',))
-    if permissions is not None:
-        url = url + '&permissions=' + str(permissions.value)
-    if guild is not None:
-        url = url + "&guild_id=" + str(guild.id)
-    if redirect_uri is not None:
+    url += '&scope=' + '+'.join(scopes or ('bot',))
+    if permissions is not MISSING:
+        url += f'&permissions={permissions.value}'
+    if guild is not MISSING:
+        url += f'&guild_id={guild.id}'
+    if redirect_uri is not MISSING:
         from urllib.parse import urlencode
 
-        url = url + "&response_type=code&" + urlencode({'redirect_uri': redirect_uri})
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if disable_guild_select:
+        url += '&disable_guild_select=true'
     return url
 
 
@@ -307,7 +324,7 @@ def snowflake_time(id: int) -> datetime.datetime:
         An aware datetime in UTC representing the creation time of the snowflake.
     """
     timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
-    return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
 def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
@@ -460,8 +477,19 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
-def to_json(obj: Any) -> str:
-    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+if HAS_ORJSON:
+
+    def to_json(obj: Any) -> str:  # type: ignore
+        return orjson.dumps(obj).decode('utf-8')
+
+    from_json = orjson.loads  # type: ignore
+
+else:
+
+    def to_json(obj: Any) -> str:
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
+    from_json = json.loads
 
 
 def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
@@ -888,7 +916,7 @@ def evaluate_annotation(
         is_literal = False
         args = tp.__args__
         if not hasattr(tp, '__origin__'):
-            if PY_310 and tp.__class__ is types.Union:
+            if PY_310 and tp.__class__ is types.Union:  # type: ignore
                 converted = Union[args]  # type: ignore
                 return evaluate_annotation(converted, globals, locals, cache)
 
@@ -936,3 +964,51 @@ def resolve_annotation(
     if cache is None:
         cache = {}
     return evaluate_annotation(annotation, globalns, locals, cache)
+
+
+TimestampStyle = Literal['f', 'F', 'd', 'D', 't', 'T', 'R']
+
+
+def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) -> str:
+    """A helper function to format a :class:`datetime.datetime` for presentation within Discord.
+
+    This allows for a locale-independent way of presenting data using Discord specific Markdown.
+
+    +-------------+----------------------------+-----------------+
+    |    Style    |       Example Output       |   Description   |
+    +=============+============================+=================+
+    | t           | 22:57                      | Short Time      |
+    +-------------+----------------------------+-----------------+
+    | T           | 22:57:58                   | Long Time       |
+    +-------------+----------------------------+-----------------+
+    | d           | 17/05/2016                 | Short Date      |
+    +-------------+----------------------------+-----------------+
+    | D           | 17 May 2016                | Long Date       |
+    +-------------+----------------------------+-----------------+
+    | f (default) | 17 May 2016 22:57          | Short Date Time |
+    +-------------+----------------------------+-----------------+
+    | F           | Tuesday, 17 May 2016 22:57 | Long Date Time  |
+    +-------------+----------------------------+-----------------+
+    | R           | 5 years ago                | Relative Time   |
+    +-------------+----------------------------+-----------------+
+
+    Note that the exact output depends on the user's locale setting in the client. The example output
+    presented is using the ``en-GB`` locale.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    dt: :class:`datetime.datetime`
+        The datetime to format.
+    style: :class:`str`
+        The style to format the datetime with.
+
+    Returns
+    --------
+    :class:`str`
+        The formatted string.
+    """
+    if style is None:
+        return f'<t:{int(dt.timestamp())}>'
+    return f'<t:{int(dt.timestamp())}:{style}>'

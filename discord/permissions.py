@@ -22,6 +22,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Type, TypeVar, Optional
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -32,14 +35,18 @@ __all__ = (
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
 class permission_alias(alias_flag_value):
-    pass
+    alias: str
 
-def make_permission_alias(alias):
-    def decorator(func):
+
+def make_permission_alias(alias: str) -> Callable[[Callable[[Any], int]], permission_alias]:
+    def decorator(func: Callable[[Any], int]) -> permission_alias:
         ret = permission_alias(func)
         ret.alias = alias
         return ret
+
     return decorator
+
+P = TypeVar('P', bound='Permissions')
 
 @fill_with_flags()
 class Permissions(BaseFlags):
@@ -92,7 +99,7 @@ class Permissions(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, permissions=0, **kwargs):
+    def __init__(self, permissions: int = 0, **kwargs: bool):
         if not isinstance(permissions, int):
             raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
@@ -102,25 +109,25 @@ class Permissions(BaseFlags):
                 raise TypeError(f'{key!r} is not a valid permission name.')
             setattr(self, key, value)
 
-    def is_subset(self, other):
+    def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
         if isinstance(other, Permissions):
             return (self.value & other.value) == self.value
         else:
             raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
-    def is_superset(self, other):
+    def is_superset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or more permissions as other."""
         if isinstance(other, Permissions):
             return (self.value | other.value) == self.value
         else:
             raise TypeError(f"cannot compare {self.__class__.__name__} with {other.__class__.__name__}")
 
-    def is_strict_subset(self, other):
+    def is_strict_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if the permissions on other are a strict subset of those on self."""
         return self.is_subset(other) and self != other
 
-    def is_strict_superset(self, other):
+    def is_strict_superset(self, other: Permissions) -> bool:
         """Returns ``True`` if the permissions on other are a strict superset of those on self."""
         return self.is_superset(other) and self != other
 
@@ -130,20 +137,20 @@ class Permissions(BaseFlags):
     __gt__ = is_strict_superset
 
     @classmethod
-    def none(cls):
+    def none(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``False``."""
         return cls(0)
 
     @classmethod
-    def all(cls):
+    def all(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
         return cls(0b111111111111111111111111111111111111)
 
     @classmethod
-    def all_channel(cls):
+    def all_channel(cls: Type[P]) -> P:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
@@ -164,7 +171,7 @@ class Permissions(BaseFlags):
         return cls(0b10110011111101111111111101010001)
 
     @classmethod
-    def general(cls):
+    def general(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to ``True``.
 
@@ -177,7 +184,7 @@ class Permissions(BaseFlags):
         return cls(0b01110000000010000000010010110000)
 
     @classmethod
-    def membership(cls):
+    def membership(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Membership" permissions from the official Discord UI set to ``True``.
 
@@ -186,7 +193,7 @@ class Permissions(BaseFlags):
         return cls(0b00001100000000000000000000000111)
 
     @classmethod
-    def text(cls):
+    def text(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to ``True``.
 
@@ -197,13 +204,13 @@ class Permissions(BaseFlags):
         return cls(0b10000000000001111111100001000000)
 
     @classmethod
-    def voice(cls):
+    def voice(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
         return cls(0b00000011111100000000001100000000)
 
     @classmethod
-    def stage(cls):
+    def stage(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Stage Channel" permissions from the official Discord UI set to ``True``.
 
@@ -212,7 +219,7 @@ class Permissions(BaseFlags):
         return cls(1 << 32)
 
     @classmethod
-    def stage_moderator(cls):
+    def stage_moderator(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Stage Moderator" permissions from the official Discord UI set to ``True``.
 
@@ -221,7 +228,7 @@ class Permissions(BaseFlags):
         return cls(0b100000001010000000000000000000000)
 
     @classmethod
-    def advanced(cls):
+    def advanced(cls: Type[P]) -> P:
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
 
@@ -229,7 +236,7 @@ class Permissions(BaseFlags):
         """
         return cls(1 << 3)
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: bool) -> None:
         r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
@@ -245,7 +252,7 @@ class Permissions(BaseFlags):
             if key in self.VALID_FLAGS:
                 setattr(self, key, value)
 
-    def handle_overwrite(self, allow, deny):
+    def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
         # We have an original bit array, e.g. 1010
         # Then we have another bit array that is 'denied', e.g. 1111
@@ -261,22 +268,22 @@ class Permissions(BaseFlags):
         self.value = (self.value & ~deny) | allow
 
     @flag_value
-    def create_instant_invite(self):
+    def create_instant_invite(self) -> int:
         """:class:`bool`: Returns ``True`` if the user can create instant invites."""
         return 1 << 0
 
     @flag_value
-    def kick_members(self):
+    def kick_members(self) -> int:
         """:class:`bool`: Returns ``True`` if the user can kick users from the guild."""
         return 1 << 1
 
     @flag_value
-    def ban_members(self):
+    def ban_members(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can ban users from the guild."""
         return 1 << 2
 
     @flag_value
-    def administrator(self):
+    def administrator(self) -> int:
         """:class:`bool`: Returns ``True`` if a user is an administrator. This role overrides all other permissions.
 
         This also bypasses all channel-specific overrides.
@@ -284,44 +291,44 @@ class Permissions(BaseFlags):
         return 1 << 3
 
     @flag_value
-    def manage_channels(self):
+    def manage_channels(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can edit, delete, or create channels in the guild.
 
         This also corresponds to the "Manage Channel" channel-specific override."""
         return 1 << 4
 
     @flag_value
-    def manage_guild(self):
+    def manage_guild(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can edit guild properties."""
         return 1 << 5
 
     @flag_value
-    def add_reactions(self):
+    def add_reactions(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can add reactions to messages."""
         return 1 << 6
 
     @flag_value
-    def view_audit_log(self):
+    def view_audit_log(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can view the guild's audit log."""
         return 1 << 7
 
     @flag_value
-    def priority_speaker(self):
+    def priority_speaker(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can be more easily heard while talking."""
         return 1 << 8
 
     @flag_value
-    def stream(self):
+    def stream(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can stream in a voice channel."""
         return 1 << 9
 
     @flag_value
-    def read_messages(self):
+    def read_messages(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can read messages from all or specific text channels."""
         return 1 << 10
 
     @make_permission_alias('read_messages')
-    def view_channel(self):
+    def view_channel(self) -> int:
         """:class:`bool`: An alias for :attr:`read_messages`.
 
         .. versionadded:: 1.3
@@ -329,17 +336,17 @@ class Permissions(BaseFlags):
         return 1 << 10
 
     @flag_value
-    def send_messages(self):
+    def send_messages(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send messages from all or specific text channels."""
         return 1 << 11
 
     @flag_value
-    def send_tts_messages(self):
+    def send_tts_messages(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send TTS messages from all or specific text channels."""
         return 1 << 12
 
     @flag_value
-    def manage_messages(self):
+    def manage_messages(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can delete or pin messages in a text channel.
 
         .. note::
@@ -349,32 +356,32 @@ class Permissions(BaseFlags):
         return 1 << 13
 
     @flag_value
-    def embed_links(self):
+    def embed_links(self) -> int:
         """:class:`bool`: Returns ``True`` if a user's messages will automatically be embedded by Discord."""
         return 1 << 14
 
     @flag_value
-    def attach_files(self):
+    def attach_files(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send files in their messages."""
         return 1 << 15
 
     @flag_value
-    def read_message_history(self):
+    def read_message_history(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can read a text channel's previous messages."""
         return 1 << 16
 
     @flag_value
-    def mention_everyone(self):
+    def mention_everyone(self) -> int:
         """:class:`bool`: Returns ``True`` if a user's @everyone or @here will mention everyone in the text channel."""
         return 1 << 17
 
     @flag_value
-    def external_emojis(self):
+    def external_emojis(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use emojis from other guilds."""
         return 1 << 18
 
     @make_permission_alias('external_emojis')
-    def use_external_emojis(self):
+    def use_external_emojis(self) -> int:
         """:class:`bool`: An alias for :attr:`external_emojis`.
 
         .. versionadded:: 1.3
@@ -382,7 +389,7 @@ class Permissions(BaseFlags):
         return 1 << 18
 
     @flag_value
-    def view_guild_insights(self):
+    def view_guild_insights(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can view the guild's insights.
 
         .. versionadded:: 1.3
@@ -390,47 +397,47 @@ class Permissions(BaseFlags):
         return 1 << 19
 
     @flag_value
-    def connect(self):
+    def connect(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can connect to a voice channel."""
         return 1 << 20
 
     @flag_value
-    def speak(self):
+    def speak(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can speak in a voice channel."""
         return 1 << 21
 
     @flag_value
-    def mute_members(self):
+    def mute_members(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can mute other users."""
         return 1 << 22
 
     @flag_value
-    def deafen_members(self):
+    def deafen_members(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can deafen other users."""
         return 1 << 23
 
     @flag_value
-    def move_members(self):
+    def move_members(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can move users between other voice channels."""
         return 1 << 24
 
     @flag_value
-    def use_voice_activation(self):
+    def use_voice_activation(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use voice activation in voice channels."""
         return 1 << 25
 
     @flag_value
-    def change_nickname(self):
+    def change_nickname(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can change their nickname in the guild."""
         return 1 << 26
 
     @flag_value
-    def manage_nicknames(self):
+    def manage_nicknames(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can change other user's nickname in the guild."""
         return 1 << 27
 
     @flag_value
-    def manage_roles(self):
+    def manage_roles(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create or edit roles less than their role's position.
 
         This also corresponds to the "Manage Permissions" channel-specific override.
@@ -438,7 +445,7 @@ class Permissions(BaseFlags):
         return 1 << 28
 
     @make_permission_alias('manage_roles')
-    def manage_permissions(self):
+    def manage_permissions(self) -> int:
         """:class:`bool`: An alias for :attr:`manage_roles`.
 
         .. versionadded:: 1.3
@@ -446,17 +453,17 @@ class Permissions(BaseFlags):
         return 1 << 28
 
     @flag_value
-    def manage_webhooks(self):
+    def manage_webhooks(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create, edit, or delete webhooks."""
         return 1 << 29
 
     @flag_value
-    def manage_emojis(self):
+    def manage_emojis(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis."""
         return 1 << 30
 
     @flag_value
-    def use_slash_commands(self):
+    def use_slash_commands(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use slash commands.
 
         .. versionadded:: 1.7
@@ -464,7 +471,7 @@ class Permissions(BaseFlags):
         return 1 << 31
 
     @flag_value
-    def request_to_speak(self):
+    def request_to_speak(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can request to speak in a stage channel.
 
         .. versionadded:: 1.7
@@ -472,7 +479,7 @@ class Permissions(BaseFlags):
         return 1 << 32
 
     @flag_value
-    def manage_events(self):
+    def manage_events(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can manage guild events.
 
         .. versionadded:: 2.0
@@ -480,7 +487,7 @@ class Permissions(BaseFlags):
         return 1 << 33
 
     @flag_value
-    def manage_threads(self):
+    def manage_threads(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can manage threads.
 
         .. versionadded:: 2.0
@@ -488,7 +495,7 @@ class Permissions(BaseFlags):
         return 1 << 34
 
     @flag_value
-    def use_threads(self):
+    def use_threads(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create and participate in public threads.
 
         .. versionadded:: 2.0
@@ -496,15 +503,16 @@ class Permissions(BaseFlags):
         return 1 << 35
 
     @flag_value
-    def use_private_threads(self):
+    def use_private_threads(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create and participate in private threads.
 
         .. versionadded:: 2.0
         """
         return 1 << 36
 
+PO = TypeVar('PO', bound='PermissionOverwrite')
 
-def augment_from_permissions(cls):
+def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
     aliases = set()
 
@@ -521,6 +529,7 @@ def augment_from_permissions(cls):
         # god bless Python
         def getter(self, x=key):
             return self._values.get(x)
+
         def setter(self, value, x=key):
             self._set(x, value)
 
@@ -530,7 +539,8 @@ def augment_from_permissions(cls):
     cls.PURE_FLAGS = cls.VALID_NAMES - aliases
     return cls
 
-@augment_from_permissions
+
+@_augment_from_permissions
 class PermissionOverwrite:
     r"""A type that is used to represent a channel specific permission.
 
@@ -565,8 +575,53 @@ class PermissionOverwrite:
 
     __slots__ = ('_values',)
 
-    def __init__(self, **kwargs):
-        self._values = {}
+    if TYPE_CHECKING:
+        VALID_NAMES: ClassVar[Set[str]]
+        PURE_FLAGS: ClassVar[Set[str]]
+        # I wish I didn't have to do this
+        create_instant_invite: Optional[bool]
+        kick_members: Optional[bool]
+        ban_members: Optional[bool]
+        administrator: Optional[bool]
+        manage_channels: Optional[bool]
+        manage_guild: Optional[bool]
+        add_reactions: Optional[bool]
+        view_audit_log: Optional[bool]
+        priority_speaker: Optional[bool]
+        stream: Optional[bool]
+        read_messages: Optional[bool]
+        view_channel: Optional[bool]
+        send_messages: Optional[bool]
+        send_tts_messages: Optional[bool]
+        manage_messages: Optional[bool]
+        embed_links: Optional[bool]
+        attach_files: Optional[bool]
+        read_message_history: Optional[bool]
+        mention_everyone: Optional[bool]
+        external_emojis: Optional[bool]
+        use_external_emojis: Optional[bool]
+        view_guild_insights: Optional[bool]
+        connect: Optional[bool]
+        speak: Optional[bool]
+        mute_members: Optional[bool]
+        deafen_members: Optional[bool]
+        move_members: Optional[bool]
+        use_voice_activation: Optional[bool]
+        change_nickname: Optional[bool]
+        manage_nicknames: Optional[bool]
+        manage_roles: Optional[bool]
+        manage_permissions: Optional[bool]
+        manage_webhooks: Optional[bool]
+        manage_emojis: Optional[bool]
+        use_slash_commands: Optional[bool]
+        request_to_speak: Optional[bool]
+        manage_events: Optional[bool]
+        manage_threads: Optional[bool]
+        use_threads: Optional[bool]
+        use_private_threads: Optional[bool]
+
+    def __init__(self, **kwargs: Optional[bool]):
+        self._values: Dict[str, Optional[bool]] = {}
 
         for key, value in kwargs.items():
             if key not in self.VALID_NAMES:
@@ -574,10 +629,10 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, PermissionOverwrite) and self._values == other._values
 
-    def _set(self, key, value):
+    def _set(self, key: str, value: Optional[bool]) -> None:
         if value not in (True, None, False):
             raise TypeError(f'Expected bool or NoneType, received {value.__class__.__name__}')
 
@@ -601,7 +656,7 @@ class PermissionOverwrite:
         return allow, deny
 
     @classmethod
-    def from_pair(cls, allow, deny):
+    def from_pair(cls: Type[PO], allow: Permissions, deny: Permissions) -> PO:
         """Creates an overwrite from an allow/deny pair of :class:`Permissions`."""
         ret = cls()
         for key, value in allow:
@@ -614,7 +669,7 @@ class PermissionOverwrite:
 
         return ret
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Checks if the permission overwrite is currently empty.
 
         An empty permission overwrite is one that has no overwrites set
@@ -627,7 +682,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs):
+    def update(self, **kwargs: bool) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword
@@ -645,6 +700,6 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Tuple[str, Optional[bool]]]:
         for key in self.PURE_FLAGS:
             yield key, self._values.get(key)

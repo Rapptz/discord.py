@@ -75,21 +75,28 @@ VerificationLevel = Literal[0, 1, 2, 3, 4]
 NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
 GuildFeature = Literal[
-    'INVITE_SPLASH',
-    'VIP_REGIONS',
-    'VANITY_URL',
-    'VERIFIED',
-    'PARTNERED',
-    'COMMUNITY',
-    'COMMERCE',
-    'NEWS',
-    'DISCOVERABLE',
-    'FEATURABLE',
     'ANIMATED_ICON',
     'BANNER',
-    'WELCOME_SCREEN_ENABLED',
+    'COMMERCE',
+    'COMMUNITY',
+    'DISCOVERABLE',
+    'FEATURABLE',
+    'INVITE_SPLASH',
     'MEMBER_VERIFICATION_GATE_ENABLED',
+    'MONETIZATION_ENABLED',
+    'MORE_EMOJI',
+    'MORE_STICKERS',
+    'NEWS',
+    'PARTNERED',
     'PREVIEW_ENABLED',
+    'PRIVATE_THREADS',
+    'SEVEN_DAY_THREAD_ARCHIVE',
+    'THREE_DAY_THREAD_ARCHIVE',
+    'TICKETED_EVENTS_ENABLED',
+    'VANITY_URL',
+    'VERIFIED',
+    'VIP_REGIONS',
+    'WELCOME_SCREEN_ENABLED',
 ]
 
 
@@ -152,8 +159,10 @@ class ChannelPositionUpdate(TypedDict):
     lock_permissions: Optional[bool]
     parent_id: Optional[Snowflake]
 
+
 class _RolePositionRequired(TypedDict):
     id: Snowflake
+
 
 class RolePositionUpdate(_RolePositionRequired, total=False):
     position: Optional[Snowflake]
