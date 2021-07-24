@@ -31,7 +31,7 @@ from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .snowflake import Snowflake
 from .role import Role
-from .channel import ChannelType, VideoQualityMode, PermissionOverwrite
+from .channel import ChannelType, ThreadChannel, VideoQualityMode, PermissionOverwrite
 
 AuditLogEvent = Literal[
     1,
@@ -141,6 +141,7 @@ class _AuditLogChange_Int(TypedDict):
         'max_age',
         'user_limit',
         'auto_archive_duration',
+        'default_auto_archive_duration',
     ]
     new_value: int
     old_value: int
@@ -247,3 +248,4 @@ class AuditLog(TypedDict):
     users: List[User]
     audit_log_entries: List[AuditLogEntry]
     integrations: List[PartialIntegration]
+    threads: List[ThreadChannel]
