@@ -752,7 +752,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type after: :class:`Thread`
 
 
-.. function:: on_thread_update(thread)
+.. function:: on_raw_thread_update(thread)
 
     Called whenever a thread is updated, regardless on if the previous state was cached or not.
 
