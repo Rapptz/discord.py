@@ -681,6 +681,18 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param thread: The thread that got joined.
     :type thread: :class:`Thread`
 
+.. function:: on_raw_thread_create(thread)
+
+    Called whenever a thread is created. Unlike :func:`on_thread_join` this
+    is only called when a thread is created.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that was created.
+    :type payload: :class:`Thread`
+
 .. function:: on_thread_remove(thread)
 
     Called whenever a thread is removed. This is different from a thread being deleted.
@@ -738,6 +750,18 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :type before: :class:`Thread`
     :param after: The updated thread's new info.
     :type after: :class:`Thread`
+
+
+.. function:: on_thread_update(thread)
+
+    Called whenever a thread is updated, regardless on if the previous state was cached or not.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The current state of the thread that was updated.
+    :type before: :class:`Thread`
 
 .. function:: on_guild_integrations_update(guild)
 
