@@ -512,8 +512,8 @@ class AuditLogEntry(Hashable):
     def _convert_target_message(self, target_id: int) -> Union[Member, User, None]:
         return self._get_member(target_id)
 
-    def _convert_target_stage_instance(self, target_id: int) -> Optional[StageInstance]:
-        return self.guild.get_stage_instance(target_id)
+    def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
+        return self.guild.get_stage_instance(target_id) or Object(id=target_id)
 
-    def _convert_target_thread(self, target_id: int) -> Optional[Thread]:
-        return self._threads.get(target_id)
+    def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
+        return self.guild.get_thread(target_id) or self._threads.get(target_id) or Object(id=target_id)
