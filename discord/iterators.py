@@ -411,6 +411,8 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
         self.action_type = action_type
         self.after = OLDEST_OBJECT
         self._users = {}
+        self._webhooks = {}
+        self._threads = {}
         self._state = guild._state
 
         self._filter = None  # entry dict -> bool
@@ -437,7 +439,7 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
             if self.limit is not None:
                 self.limit -= retrieve
             self.before = Object(id=int(entries[-1]['id']))
-        return data.get('users', []), entries
+        return data.get('users', []), data.get('webhooks', []), data.get('threads', []), entries
 
     async def _after_strategy(self, retrieve):
         after = self.after.id if self.after else None
@@ -449,7 +451,7 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
             if self.limit is not None:
                 self.limit -= retrieve
             self.after = Object(id=int(entries[0]['id']))
-        return data.get('users', []), entries
+        return data.get('users', []), data.get('webhooks', []), data.get('threads', []), entries
 
     async def next(self) -> AuditLogEntry:
         if self.entries.empty():
@@ -471,9 +473,11 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
 
     async def _fill(self):
         from .user import User
+        from .webhook import Webhook
+        from .threads import Thread
 
         if self._get_retrieve():
-            users, data = await self._strategy(self.retrieve)
+            users, webhooks, threads, data = await self._strategy(self.retrieve)
             if len(data) < 100:
                 self.limit = 0  # terminate the infinite loop
 
@@ -486,12 +490,20 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
                 u = User(data=user, state=self._state)
                 self._users[u.id] = u
 
+            for webhook in webhooks:
+                w = Webhook.from_state(webhook, self._state)
+                self._webhooks[w.id] = w
+
+            for thread in threads:
+                t = Thread(guild=self.guild, state=self._state, data=thread)
+                self._threads[t.id] = t
+
             for element in data:
                 # TODO: remove this if statement later
                 if element['action_type'] is None:
                     continue
 
-                await self.entries.put(AuditLogEntry(data=element, users=self._users, guild=self.guild))
+                await self.entries.put(AuditLogEntry(data=element, users=self._users, webhooks=self._webhooks, threads=self._threads, guild=self.guild))
 
 
 class GuildIterator(_AsyncIterator['Guild']):

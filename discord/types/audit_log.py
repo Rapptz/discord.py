@@ -31,7 +31,8 @@ from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .snowflake import Snowflake
 from .role import Role
-from .channel import ChannelType, ThreadChannel, VideoQualityMode, PermissionOverwrite
+from .channel import ChannelType, VideoQualityMode, PermissionOverwrite
+from .threads import Thread
 
 AuditLogEvent = Literal[
     1,
@@ -248,4 +249,4 @@ class AuditLog(TypedDict):
     users: List[User]
     audit_log_entries: List[AuditLogEntry]
     integrations: List[PartialIntegration]
-    threads: List[ThreadChannel]
+    threads: List[Thread]
