@@ -744,14 +744,15 @@ class ConnectionState:
 
         thread_id = int(data['id'])
         thread = guild.get_thread(thread_id)
-        self.dispatch('raw_thread_update', thread)
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
+            self.dispatch('raw_thread_update', thread)
             self.dispatch('thread_update', old, thread)
         else:
             thread = Thread(guild=guild, state=guild._state, data=data)
             guild._add_thread(thread)
+            self.dispatch('raw_thread_update', thread)
             self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data):
