@@ -58,7 +58,6 @@ if TYPE_CHECKING:
     from .types.snowflake import Snowflake
     from .user import User
     from .stage_instance import StageInstance
-    from .webhook import Webhook
     from .threads import Thread
 
 
@@ -347,12 +346,10 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users: Dict[int, User], webhooks: Dict[int, Webhook], threads: Dict[int, Thread], data: AuditLogEntryPayload, guild: Guild):
+    def __init__(self, *, users: Dict[int, User], data: AuditLogEntryPayload, guild: Guild):
         self._state = guild._state
         self.guild = guild
         self._users = users
-        self._webhooks = webhooks
-        self._threads = threads
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -441,7 +438,7 @@ class AuditLogEntry(Hashable):
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
-    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, Webhook, Thread, None]:
+    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, Thread, None]:
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
@@ -503,9 +500,6 @@ class AuditLogEntry(Hashable):
             pass
         return obj
 
-    def _convert_target_webhook(self, target_id: int) -> Optional[Webhook]:
-        return self._webhooks.get(target_id)
-
     def _convert_target_emoji(self, target_id: int) -> Union[Emoji, Object]:
         return self._state.get_emoji(target_id) or Object(id=target_id)
 
@@ -516,4 +510,4 @@ class AuditLogEntry(Hashable):
         return self.guild.get_stage_instance(target_id) or Object(id=target_id)
 
     def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
-        return self.guild.get_thread(target_id) or self._threads.get(target_id) or Object(id=target_id)
+        return self.guild.get_thread(target_id) or Object(id=target_id)

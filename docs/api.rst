@@ -2014,7 +2014,7 @@ of :class:`enum.Enum`.
         A webhook was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Webhook` or :class:`Object` with the webhook ID.
+        the :class:`Object` with the webhook ID.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2030,7 +2030,7 @@ of :class:`enum.Enum`.
         - The webhook channel changed
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Webhook` or :class:`Object` with the webhook ID.
+        the :class:`Object` with the webhook ID.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2043,7 +2043,7 @@ of :class:`enum.Enum`.
         A webhook was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Webhook` or :class:`Object` with the webhook ID.
+        the :class:`Object` with the webhook ID.
 
         Possible attributes for :class:`AuditLogDiff`:
 
