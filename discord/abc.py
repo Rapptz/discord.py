@@ -28,6 +28,7 @@ import copy
 import asyncio
 from typing import (
     Any,
+    Callable,
     Dict,
     List,
     Mapping,
@@ -68,6 +69,7 @@ T = TypeVar('T', bound=VoiceProtocol)
 if TYPE_CHECKING:
     from datetime import datetime
 
+    from .client import Client
     from .user import ClientUser
     from .asset import Asset
     from .state import ConnectionState
@@ -1610,7 +1612,13 @@ class Connectable(Protocol):
     def _get_voice_state_pair(self) -> Tuple[int, int]:
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float = 60.0, reconnect: bool = True, cls: Type[T] = VoiceClient) -> T:
+    async def connect(
+        self,
+        *,
+        timeout: float = 60.0,
+        reconnect: bool = True,
+        cls: Callable[[Client, Connectable], T] = VoiceClient,
+    ) -> T:
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish
