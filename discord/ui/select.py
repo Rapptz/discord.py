@@ -103,10 +103,10 @@ class Select(Item[V]):
         options: List[SelectOption] = MISSING,
         row: Optional[int] = None,
     ) -> None:
-        self._selected_values: List[str] = []
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         options = [] if options is MISSING else options
+        self._selected_values: List[str] = [i.value for i in options if i.default]
         self._underlying = SelectMenu._raw_construct(
             custom_id=custom_id,
             type=ComponentType.select,
