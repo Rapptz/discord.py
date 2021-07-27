@@ -93,7 +93,7 @@ class Select(Item[V]):
         'min_values',
         'max_values',
         'options',
-        'disabled'
+        'disabled',
     )
 
     def __init__(
