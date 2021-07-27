@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import time
 import asyncio
-from typing import Any, Callable, Dict, Iterable, List, MutableMapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
 import datetime
 
 import discord.abc
