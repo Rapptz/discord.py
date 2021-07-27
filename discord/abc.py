@@ -473,7 +473,7 @@ class GuildChannel:
         return PermissionOverwrite()
 
     @property
-    def overwrites(self) -> Mapping[Union[Role, Member], PermissionOverwrite]:
+    def overwrites(self) -> Dict[Union[Role, Member], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
@@ -482,7 +482,7 @@ class GuildChannel:
 
         Returns
         --------
-        Mapping[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
+        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
