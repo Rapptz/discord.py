@@ -275,14 +275,14 @@ class Select(Item[V]):
         self._selected_values = data.get('values', [])
 
     @classmethod
-    def from_component(cls: Type[S], select: SelectMenu) -> S:
+    def from_component(cls: Type[S], component: SelectMenu) -> S:
         return cls(
-            custom_id=select.custom_id,
-            placeholder=select.placeholder,
-            min_values=select.min_values,
-            max_values=select.max_values,
-            options=select.options,
-            disabled=select.disabled,
+            custom_id=component.custom_id,
+            placeholder=component.placeholder,
+            min_values=component.min_values,
+            max_values=component.max_values,
+            options=component.options,
+            disabled=component.disabled,
             row=None,
         )
 
