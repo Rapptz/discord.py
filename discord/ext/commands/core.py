@@ -385,7 +385,7 @@ class Command(_BaseCommand):
             pass
 
     def update(self, **kwargs):
-        """Updates :class:`Command` instance with updated attribute.
+        """Updates :class:`Command` instance with updated attributes.
 
         This works similarly to the :func:`.command` decorator in terms
         of parameters in that they are passed to the :class:`Command` or
