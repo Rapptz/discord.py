@@ -53,6 +53,7 @@ class _SelectMenuOptional(TypedDict, total=False):
     placeholder: str
     min_values: int
     max_values: int
+    disabled: bool
 
 
 class _SelectOptionsOptional(TypedDict, total=False):
