@@ -79,7 +79,7 @@ class BaseUser(_BaseUser):
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
         self._banner = data.get('banner', None)
-        self._accent_colour = data.get("accent_color", None)
+        self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
