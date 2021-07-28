@@ -1605,8 +1605,15 @@ class PartialMessage(Hashable):
     to_message_reference_dict = Message.to_message_reference_dict
 
     def __init__(self, *, channel: PartialMessageableChannel, id: int):
-        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
+        if channel.type not in (
+            ChannelType.text,
+            ChannelType.news,
+            ChannelType.private,
+            ChannelType.news_thread,
+            ChannelType.public_thread,
+            ChannelType.private_thread
+        ):
+            raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 
         self.channel: PartialMessageableChannel = channel
         self._state: ConnectionState = channel._state
