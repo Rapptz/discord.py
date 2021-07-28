@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import time
 import asyncio
-from typing import Any, Callable, Dict, Iterable, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
 import datetime
 
 import discord.abc
@@ -251,7 +251,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
         type: ChannelType = ...,
-        overwrites: Dict[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
     ) -> None:
         ...
 
@@ -298,8 +298,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
@@ -939,7 +939,7 @@ class VoiceChannel(VocalGuildChannel):
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         rtc_region: Optional[VoiceRegion] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
@@ -979,8 +979,8 @@ class VoiceChannel(VocalGuildChannel):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the voice channel's voice communication.
@@ -1204,7 +1204,7 @@ class StageChannel(VocalGuildChannel):
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         rtc_region: Optional[VoiceRegion] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
@@ -1240,8 +1240,8 @@ class StageChannel(VocalGuildChannel):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the stage channel's voice communication.
@@ -1348,7 +1348,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         name: str = ...,
         position: int = ...,
         nsfw: bool = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
     ) -> None:
         ...
@@ -1378,8 +1378,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To mark the category as NSFW or not.
         reason: Optional[:class:`str`]
             The reason for editing this category. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
@@ -1581,7 +1581,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel],
         reason: Optional[str],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite],
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite],
     ) -> None:
         ...
 
@@ -1613,8 +1613,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
             .. versionadded:: 1.3
