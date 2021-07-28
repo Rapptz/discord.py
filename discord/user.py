@@ -153,8 +153,8 @@ class BaseUser(_BaseUser):
 
         .. versionadded:: 2.0
 
-
         .. note::
+
             This information is only available via :meth:`Client.fetch_user`.
         """
         if self._accent_color is None:
