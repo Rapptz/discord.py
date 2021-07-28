@@ -49,12 +49,16 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .role import Role
-    from .types.audit_log import AuditLogChange as AuditLogChangePayload
-    from .types.audit_log import AuditLogEntry as AuditLogEntryPayload
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
     from .types.channel import PermissionOverwrite as PermissionOverwritePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
     from .user import User
+    from .stage_instance import StageInstance
+    from .threads import Thread
 
 
 def _transform_permissions(entry: AuditLogEntry, data: str) -> Permissions:
@@ -69,7 +73,7 @@ def _transform_snowflake(entry: AuditLogEntry, data: Snowflake) -> int:
     return int(data)
 
 
-def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Object]:
+def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Union[abc.GuildChannel, Object]]:
     if data is None:
         return None
     return entry.guild.get_channel(int(data)) or Object(id=data)
@@ -434,7 +438,7 @@ class AuditLogEntry(Hashable):
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
-    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, None]:
+    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, Thread, None]:
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
@@ -501,3 +505,9 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_message(self, target_id: int) -> Union[Member, User, None]:
         return self._get_member(target_id)
+
+    def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
+        return self.guild.get_stage_instance(target_id) or Object(id=target_id)
+
+    def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
+        return self.guild.get_thread(target_id) or Object(id=target_id)

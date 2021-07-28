@@ -1745,6 +1745,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.bitrate`
         - :attr:`~AuditLogDiff.rtc_region`
         - :attr:`~AuditLogDiff.video_quality_mode`
+        - :attr:`~AuditLogDiff.default_auto_archive_duration`
 
     .. attribute:: channel_delete
 
@@ -2173,8 +2174,8 @@ of :class:`enum.Enum`.
         A stage instance was started.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        either :class:`Object` with the stage instance ID of the stage instance
-        which was created.
+        the :class:`StageInstance` or :class:`Object` with the ID of the stage
+        instance which was created.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2188,8 +2189,8 @@ of :class:`enum.Enum`.
         A stage instance was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        either :class:`Object` with the stage instance ID of the stage instance
-        which was updated.
+        the :class:`StageInstance` or :class:`Object` with the ID of the stage
+        instance which was updated.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2201,6 +2202,57 @@ of :class:`enum.Enum`.
     .. attribute:: stage_instance_delete
 
         A stage instance was ended.
+
+        .. versionadded:: 2.0
+
+    .. attribute:: thread_create
+
+        A thread was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Thread` or :class:`Object` with the ID of the thread which
+        was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.archived`
+        - :attr:`~AuditLogDiff.locked`
+        - :attr:`~AuditLogDiff.auto_archive_duration`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: thread_update
+
+        A thread was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Thread` or :class:`Object` with the ID of the thread which
+        was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.archived`
+        - :attr:`~AuditLogDiff.locked`
+        - :attr:`~AuditLogDiff.auto_archive_duration`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: thread_delete
+
+        A thread was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`Thread` or :class:`Object` with the ID of the thread which
+        was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.archived`
+        - :attr:`~AuditLogDiff.locked`
+        - :attr:`~AuditLogDiff.auto_archive_duration`
 
         .. versionadded:: 2.0
 
@@ -2987,6 +3039,32 @@ AuditLogDiff
         See also :attr:`VoiceChannel.video_quality_mode`.
 
         :type: :class:`VideoQualityMode`
+
+    .. attribute:: archived
+
+        The thread is now archived.
+
+        :type: :class:`bool`
+
+    .. attribute:: locked
+
+        The thread is being locked or unlocked.
+
+        :type: :class:`bool`
+
+    .. attribute:: auto_archive_duration
+
+        The thread's auto archive duration being changed.
+
+        See also :attr:`Thread.auto_archive_duration`
+
+        :type: :class:`int`
+
+    .. attribute:: default_auto_archive_duration
+
+        The default auto archive duration for newly created threads being changed.
+
+        :type: :class:`int`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these

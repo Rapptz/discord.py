@@ -115,7 +115,7 @@ class _ThreadChannelOptional(TypedDict, total=False):
 
 
 class ThreadChannel(_BaseChannel, _ThreadChannelOptional):
-    type: Literal[11, 12]
+    type: Literal[10, 11, 12]
     guild_id: Snowflake
     parent_id: Snowflake
     owner_id: Snowflake
