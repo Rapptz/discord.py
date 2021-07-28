@@ -53,7 +53,7 @@ class _ApplicationCommandOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
 
 
-ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
+ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 class ApplicationCommandOption(_ApplicationCommandOptionOptional):
@@ -122,12 +122,18 @@ class _ApplicationCommandInteractionDataOptionSnowflake(_ApplicationCommandInter
     value: Snowflake
 
 
+class _ApplicationCommandInteractionDataOptionNumber(_ApplicationCommandInteractionDataOption):
+    type: Literal[10]
+    value: float
+
+
 ApplicationCommandInteractionDataOption = Union[
     _ApplicationCommandInteractionDataOptionString,
     _ApplicationCommandInteractionDataOptionInteger,
     _ApplicationCommandInteractionDataOptionSubcommand,
     _ApplicationCommandInteractionDataOptionBoolean,
     _ApplicationCommandInteractionDataOptionSnowflake,
+    _ApplicationCommandInteractionDataOptionNumber,
 ]
 
 
