@@ -249,8 +249,8 @@ class Thread(Messageable, Hashable):
 
         Returns
         -------
-        Optional[:class:`int`]
-            The parent channel's category ID.
+        Optional[:class:`CategoryChannel`]
+            The parent channel's category.
         """
 
         parent = self.parent
