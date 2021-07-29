@@ -31,12 +31,11 @@ from typing import (
     Callable,
     Dict,
     List,
-    Mapping,
     Optional,
     TYPE_CHECKING,
     Protocol,
+    Sequence,
     Tuple,
-    Type,
     TypeVar,
     Union,
     overload,
@@ -53,7 +52,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
-from .sticker import GuildSticker
+from .sticker import GuildSticker, StickerItem
 from . import utils
 
 __all__ = (
@@ -1165,7 +1164,7 @@ class Messageable:
         tts: bool = ...,
         embed: Embed = ...,
         file: File = ...,
-        stickers: List[GuildSticker] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1183,7 +1182,7 @@ class Messageable:
         tts: bool = ...,
         embed: Embed = ...,
         files: List[File] = ...,
-        stickers: List[GuildSticker] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1201,7 +1200,7 @@ class Messageable:
         tts: bool = ...,
         embeds: List[Embed] = ...,
         file: File = ...,
-        stickers: List[GuildSticker] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1219,7 +1218,7 @@ class Messageable:
         tts: bool = ...,
         embeds: List[Embed] = ...,
         files: List[File] = ...,
-        stickers: List[GuildSticker] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1311,7 +1310,7 @@ class Messageable:
             A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
-        stickers: List[Union[:class:`GuildSticker`, :class:`StickerItem`]]
+        stickers: Sequence[Union[:class:`GuildSticker`, :class:`StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0
@@ -1470,7 +1469,7 @@ class Messageable:
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
-        
+
             async with channel.typing():
                 # simulate something heavy
                 await asyncio.sleep(10)
