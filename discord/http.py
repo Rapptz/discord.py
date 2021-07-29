@@ -867,20 +867,18 @@ class HTTPClient:
 
     # Thread management
 
-    def start_public_thread(
+    def start_thread_with_message(
         self,
         channel_id: Snowflake,
         message_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
-        type: threads.ThreadType,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
-            'type': type,
         }
 
         route = Route(
@@ -888,7 +886,7 @@ class HTTPClient:
         )
         return self.request(route, json=payload, reason=reason)
 
-    def start_private_thread(
+    def start_thread_without_message(
         self,
         channel_id: Snowflake,
         *,

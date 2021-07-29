@@ -637,6 +637,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: str,
         message: Optional[Snowflake] = None,
         auto_archive_duration: ThreadArchiveDuration = 1440,
+        type: Optional[ChannelType] = None,
         reason: Optional[str] = None
     ) -> Thread:
         """|coro|
@@ -645,7 +646,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         If no starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to start the thread.
+        :attr:`~discord.Permissions.use_private_threads` in order to start the thread
+        if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
+        Otherwise :attr:`~discord.Permissions.use_public_threads` is needed.
 
         If a starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
@@ -664,6 +667,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
+        type: Optional[:class:`ChannelType`]
+            The type of thread to create. If a ``message`` is passed then this parameter
+            is ignored, as a thread started with a message is always a public thread.
+            By default this creates a private thread if this is ``None``.
         reason: :class:`str`
             The reason for starting a new thread. Shows up on the audit log.
 
@@ -680,21 +687,23 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The started thread
         """
 
+        if type is None:
+            type = ChannelType.private_thread
+
         if message is None:
-            data = await self._state.http.start_private_thread(
+            data = await self._state.http.start_thread_without_message(
                 self.id,
                 name=name,
                 auto_archive_duration=auto_archive_duration,
-                type=ChannelType.private_thread.value,
+                type=type.value,
                 reason=reason,
             )
         else:
-            data = await self._state.http.start_public_thread(
+            data = await self._state.http.start_thread_with_message(
                 self.id,
                 message.id,
                 name=name,
                 auto_archive_duration=auto_archive_duration,
-                type=ChannelType.public_thread.value,
                 reason=reason,
             )
 

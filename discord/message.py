@@ -1511,12 +1511,11 @@ class Message(Hashable):
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
 
-        data = await self._state.http.start_public_thread(
+        data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration,
-            type=ChannelType.public_thread.value,
         )
         return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
