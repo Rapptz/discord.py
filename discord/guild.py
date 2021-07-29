@@ -276,7 +276,7 @@ class Guild(Hashable):
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, stickers=15, bitrate=96e3, filesize=8388608),
+        None: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
         0: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
         1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=8388608),
         2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
