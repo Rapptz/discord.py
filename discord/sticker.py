@@ -28,7 +28,8 @@ import unicodedata
 
 from .mixins import Hashable
 from .asset import Asset, AssetMixin
-from .utils import cached_slot_property, snowflake_time, get, MISSING
+from .utils import cached_slot_property, find, snowflake_time, get, MISSING
+from .errors import InvalidData
 from .enums import StickerType, StickerFormatType, try_enum
 
 __all__ = (
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
         Sticker as StickerPayload,
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
+        ListNitroStickerPacks as ListNitroStickerPacksPayload
     )
 
 
@@ -135,7 +137,7 @@ class _StickerTag(Hashable, AssetMixin):
     id: int
     format: StickerFormatType
 
-    async def read(self):
+    async def read(self) -> bytes:
         """|coro|
 
         Retrieves the content of this sticker as a :class:`bytes` object.
@@ -214,7 +216,7 @@ class StickerItem(_StickerTag):
 
         Raises
         --------
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the sticker failed.
 
         Returns
@@ -339,6 +341,31 @@ class StandardSticker(Sticker):
 
     def __repr__(self) -> str:
         return f'<StandardSticker id={self.id} name={self.name!r} pack_id={self.pack_id}>'
+
+    async def pack(self) -> StickerPack:
+        """|coro|
+
+        Retrieves the sticker pack that this sticker belongs to.
+
+        Raises
+        --------
+        InvalidData
+            The corresponding sticker pack was not found.
+        HTTPException
+            Retrieving the sticker pack failed.
+
+        Returns
+        --------
+        :class:`StickerPack`
+            The retrieved sticker pack.
+        """
+        data: ListNitroStickerPacksPayload = await self._state.http.list_nitro_sticker_packs()
+        packs = data['sticker_packs']
+        pack = find(lambda d: int(d['id']) == self.pack_id, packs)
+
+        if pack:
+            return StickerPack(state=self._state, data=pack)
+        raise InvalidData(f'Could not find corresponding sticker pack for {self!r}')
 
 
 class GuildSticker(Sticker):
