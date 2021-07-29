@@ -97,8 +97,8 @@ class StageInstance(Hashable):
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
-        self.privacy_level = try_enum(StagePrivacyLevel, data['privacy_level'])
-        self.discoverable_disabled = data['discoverable_disabled']
+        self.privacy_level: StagePrivacyLevel = try_enum(StagePrivacyLevel, data['privacy_level'])
+        self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
 
     def __repr__(self) -> str:
         return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
