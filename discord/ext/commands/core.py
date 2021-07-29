@@ -1603,7 +1603,7 @@ def has_role(item):
     """
 
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         if isinstance(item, int):
@@ -1648,7 +1648,7 @@ def has_any_role(*items):
             await ctx.send('You are cool indeed')
     """
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
