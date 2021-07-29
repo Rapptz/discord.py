@@ -41,7 +41,7 @@ class _UserTag:
     id: int
 
 
-class BaseUser(_BaseUser):
+class BaseUser(_UserTag):
     __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', '_accent_colour', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
