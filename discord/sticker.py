@@ -103,19 +103,19 @@ class StickerPack(Hashable):
     )
 
     def __init__(self, *, state: ConnectionState, data: StickerPackPayload) -> None:
-        self._state = state
+        self._state: ConnectionState = state
         self._from_data(data)
 
     def _from_data(self, data: StickerPackPayload) -> None:
-        self.id = int(data['id'])
+        self.id: int = int(data['id'])
         stickers = data['stickers']
-        self.stickers = [StandardSticker(state=self._state, data=sticker) for sticker in stickers]
-        self.name = data['name']
-        self.sku_id = int(data['sku_id'])
-        self.cover_sticker_id = int(data['cover_sticker_id'])
-        self.cover_sticker = get(self.stickers, id=self.cover_sticker_id)
-        self.description = data['description']
-        self._banner = int(data['banner_asset_id'])
+        self.stickers: List[StandardSticker] = [StandardSticker(state=self._state, data=sticker) for sticker in stickers]
+        self.name: str = data['name']
+        self.sku_id: int = int(data['sku_id'])
+        self.cover_sticker_id: int = int(data['cover_sticker_id'])
+        self.cover_sticker: StandardSticker = get(self.stickers, id=self.cover_sticker_id) # type: ignore
+        self.description: str = data['description']
+        self._banner: int = int(data['banner_asset_id'])
 
     @property
     def banner(self) -> Asset:
@@ -196,10 +196,10 @@ class StickerItem(_StickerTag):
 
     def __init__(self, *, state: ConnectionState, data: StickerItemPayload):
         self._state: ConnectionState = state
-        self.name = data['name']
-        self.id = int(data['id'])
+        self.name: str = data['name']
+        self.id: int = int(data['id'])
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
+        self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<StickerItem id={self.id} name={self.name!r} format={self.format}>'
@@ -273,7 +273,7 @@ class Sticker(_StickerTag):
         self.name: str = data['name']
         self.description: str = data['description']
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
+        self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<Sticker id={self.id} name={self.name!r}>'
@@ -328,9 +328,9 @@ class StandardSticker(Sticker):
 
     def _from_data(self, data: StandardStickerPayload) -> None:
         super()._from_data(data)
-        self.sort_value = data['sort_value']
-        self.pack_id = data['pack_id']
-        self.type = StickerType.standard
+        self.sort_value: int = data['sort_value']
+        self.pack_id: int = int(data['pack_id'])
+        self.type: StickerType = StickerType.standard
 
         try:
             self.tags: List[str] = [tag.strip() for tag in data['tags'].split(',')]
@@ -385,12 +385,12 @@ class GuildSticker(Sticker):
 
     def _from_data(self, data: GuildStickerPayload) -> None:
         super()._from_data(data)
-        self.available = data['available']
-        self.guild_id = data['guild_id']
+        self.available: bool = data['available']
+        self.guild_id: int = int(data['guild_id'])
         user = data.get('user')
         self.user: Optional[User] = self._state.store_user(user) if user else None
         self.emoji: str = data['tags']
-        self.type = StickerType.guild
+        self.type: StickerType = StickerType.guild
 
     def __repr__(self) -> str:
         return f'<GuildSticker name={self.name!r} id={self.id} guild_id={self.guild_id} user={self.user!r}>'
