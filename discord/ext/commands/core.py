@@ -1673,11 +1673,10 @@ def bot_has_role(item):
     """
 
     def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
-        me = ch.guild.me
+        me = ctx.me
         if isinstance(item, int):
             role = discord.utils.get(me.roles, id=item)
         else:
@@ -1701,11 +1700,10 @@ def bot_has_any_role(*items):
         instead of generic checkfailure
     """
     def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
-        me = ch.guild.me
+        me = ctx.me
         getter = functools.partial(discord.utils.get, me.roles)
         if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
@@ -1902,7 +1900,7 @@ def is_nsfw():
     """
     def pred(ctx):
         ch = ctx.channel
-        if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
+        if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
             return True
         raise NSFWChannelRequired(ch)
     return check(pred)
