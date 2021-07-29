@@ -393,7 +393,7 @@ class User(BaseUser, discord.abc.Messageable):
     @classmethod
     def _copy(cls, user):
         self = super()._copy(user)
-        self._stored = getattr(user, '_stored', False)
+        self._stored = False
         return self
 
     async def _get_channel(self):

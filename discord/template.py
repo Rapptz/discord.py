@@ -137,7 +137,7 @@ class Template:
         self.name = data['name']
         self.description = data['description']
         creator_data = data.get('creator')
-        self.creator = None if creator_data is None else self._state.store_user(creator_data)
+        self.creator = None if creator_data is None else self._state.create_user(creator_data)
 
         self.created_at = parse_time(data.get('created_at'))
         self.updated_at = parse_time(data.get('updated_at'))
