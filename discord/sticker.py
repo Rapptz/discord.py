@@ -88,8 +88,6 @@ class StickerPack(Hashable):
          The ID of the sticker used for the cover of the sticker pack.
     cover_sticker: :class:`StandardSticker`
         The sticker used for the cover of the sticker pack.
-    banner: :class:`Asset`
-        The banner asset of the sticker pack.
     """
 
     __slots__ = (
@@ -119,7 +117,11 @@ class StickerPack(Hashable):
         self.cover_sticker = get(self.stickers, id=self.cover_sticker_id)
         self.description = data['description']
         self._banner = int(data['banner_asset_id'])
-        self.banner = Asset._from_sticker_banner(self._state, self._banner)
+
+    @property
+    def banner(self) -> Asset:
+        """:class:`Asset`: The banner asset of the sticker pack."""
+        return Asset._from_sticker_banner(self._state, self._banner)
 
     def __repr__(self) -> str:
         return f'<StickerPack id={self.id} name={self.name!r} description={self.description!r}>'
