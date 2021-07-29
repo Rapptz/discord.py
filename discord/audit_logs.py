@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     from .types.snowflake import Snowflake
     from .user import User
     from .stage_instance import StageInstance
+    from .sticker import GuildSticker
     from .threads import Thread
 
 
@@ -145,6 +146,11 @@ def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
 
     return _transform
 
+def _transform_type(entry: AuditLogEntry, data: Union[int]) -> Union[enums.ChannelType, enums.StickerType]:
+    if entry.action.name.startswith('sticker_'):
+        return enums.try_enum(enums.StickerType, data)
+    else:
+        return enums.try_enum(enums.ChannelType, data)
 
 class AuditLogDiff:
     def __len__(self) -> int:
@@ -195,13 +201,14 @@ class AuditLogChanges:
         'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
         'guild_id':                      ('guild', _transform_guild_id),
+        'tags':                          ('emoji', None),
         'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
         'region':                        (None, _enum_transformer(enums.VoiceRegion)),
         'rtc_region':                    (None, _enum_transformer(enums.VoiceRegion)),
         'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
         'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
         'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
-        'type':                          (None, _enum_transformer(enums.ChannelType)),
+        'type':                          (None, _transform_type),
     }
     # fmt: on
 
@@ -439,7 +446,7 @@ class AuditLogEntry(Hashable):
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
-    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, Thread, None]:
+    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None]:
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
@@ -509,6 +516,9 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
         return self.guild.get_stage_instance(target_id) or Object(id=target_id)
+
+    def _convert_target_sticker(self, target_id: int) -> Union[GuildSticker, Object]:
+        return self._state.get_sticker(target_id) or Object(id=target_id)
 
     def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
         return self.guild.get_thread(target_id) or Object(id=target_id)

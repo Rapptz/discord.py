@@ -946,9 +946,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param guild: The guild who got their stickers updated.
     :type guild: :class:`Guild`
     :param before: A list of stickers before the update.
-    :type before: Sequence[:class:`Sticker`]
+    :type before: Sequence[:class:`GuildSticker`]
     :param after: A list of stickers after the update.
-    :type after: Sequence[:class:`Sticker`]
+    :type after: Sequence[:class:`GuildSticker`]
 
 .. function:: on_guild_available(guild)
               on_guild_unavailable(guild)
@@ -2220,6 +2220,63 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: sticker_create
+
+        A sticker was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`GuildSticker` or :class:`Object` with the ID of the sticker
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.format_type`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.available`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: sticker_update
+
+        A sticker was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`GuildSticker` or :class:`Object` with the ID of the sticker
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.format_type`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.available`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: sticker_delete
+
+        A sticker was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`GuildSticker` or :class:`Object` with the ID of the sticker
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.type`
+        - :attr:`~AuditLogDiff.format_type`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.available`
+
+        .. versionadded:: 2.0
+
     .. attribute:: thread_create
 
         A thread was created.
@@ -2854,15 +2911,9 @@ AuditLogDiff
 
     .. attribute:: type
 
-        The type of channel or channel permission overwrite.
+        The type of channel or sticker.
 
-        If the type is an :class:`int`, then it is a type of channel which can be either
-        ``0`` to indicate a text channel or ``1`` to indicate a voice channel.
-
-        If the type is a :class:`str`, then it is a type of permission overwrite which
-        can be either ``'role'`` or ``'member'``.
-
-        :type: Union[:class:`int`, :class:`str`]
+        :type: Union[:class:`ChannelType`, :class:`StickerType`]
 
     .. attribute:: topic
 
@@ -3068,6 +3119,38 @@ AuditLogDiff
         See also :attr:`VoiceChannel.video_quality_mode`.
 
         :type: :class:`VideoQualityMode`
+
+    .. attribute:: format_type
+
+        The format type of a sticker being changed.
+
+        See also :attr:`GuildSticker.format_type`
+
+        :type: :class:`StickerFormatType`
+
+    .. attribute:: emoji
+
+        The name of the emoji that represents a sticker being changed.
+
+        See also :attr:`GuildSticker.emoji`
+
+        :type: :class:`str`
+
+    .. attribute:: description
+
+        The description of a sticker being changed.
+
+        See also :attr:`GuildSticker.description`
+
+        :type: :class:`str`
+
+    .. attribute:: available
+
+        The availability of a sticker being changed.
+
+        See also :attr:`GuildSticker.available`
+
+        :type: :class:`bool`
 
     .. attribute:: archived
 
