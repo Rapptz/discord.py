@@ -100,7 +100,6 @@ class StickerPack(Hashable):
         'cover_sticker',
         'description',
         '_banner',
-        'banner',
     )
 
     def __init__(self, *, state: ConnectionState, data: StickerPackPayload) -> None:
@@ -420,22 +419,20 @@ class GuildSticker(Sticker):
         Parameters
         -----------
         name: :class:`str`
-            The sticker name. Must be at least 2 characters.
+            The sticker's new name. Must be at least 2 characters.
         description: Optional[:class:`str`]
-            The sticker's description. Can be ``None``.
+            The sticker's new description. Can be ``None``.
         emoji: :class:`str`
             The name of a unicode emoji that represents the sticker's expression.
-        file: :class:`File`
-            The file of the sticker to upload.
         reason: :class:`str`
-            The reason for creating this sticker. Shows up on the audit log.
+            The reason for editing this sticker. Shows up on the audit log.
 
         Raises
         -------
         Forbidden
             You are not allowed to edit stickers.
         HTTPException
-            An error occurred creating an sticker.
+            An error occurred editing the sticker.
         """
         payload = {}
 

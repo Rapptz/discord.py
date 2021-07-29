@@ -2139,7 +2139,7 @@ class Guild(Hashable):
         Forbidden
             You are not allowed to create stickers.
         HTTPException
-            An error occurred creating an sticker.
+            An error occurred creating a sticker.
 
         Returns
         --------
