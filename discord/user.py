@@ -157,9 +157,9 @@ class BaseUser(_UserTag):
 
             This information is only available via :meth:`Client.fetch_user`.
         """
-        if self._accent_color is None:
+        if self._accent_colour is None:
             return None
-        return Colour(self._accent_color)
+        return Colour(self._accent_colour)
 
     @property
     def accent_color(self) -> Optional[Colour]:
