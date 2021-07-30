@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import time
 import asyncio
-from typing import Any, Callable, Dict, Iterable, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
 import datetime
 
 import discord.abc
@@ -251,7 +251,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
         type: ChannelType = ...,
-        overwrites: Dict[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
     ) -> None:
         ...
 
@@ -298,8 +298,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             is only available to guilds that contain ``NEWS`` in :attr:`Guild.features`.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
@@ -372,7 +372,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     async def purge(
         self,
         *,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         check: Callable[[Message], bool] = MISSING,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
@@ -637,6 +637,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: str,
         message: Optional[Snowflake] = None,
         auto_archive_duration: ThreadArchiveDuration = 1440,
+        type: Optional[ChannelType] = None,
+        reason: Optional[str] = None
     ) -> Thread:
         """|coro|
 
@@ -644,11 +646,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         If no starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to start the thread.
+        :attr:`~discord.Permissions.use_private_threads` in order to start the thread
+        if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
+        Otherwise :attr:`~discord.Permissions.use_public_threads` is needed.
 
         If a starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
         :attr:`~discord.Permissions.use_threads` in order to start the thread.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -661,6 +667,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
+        type: Optional[:class:`ChannelType`]
+            The type of thread to create. If a ``message`` is passed then this parameter
+            is ignored, as a thread started with a message is always a public thread.
+            By default this creates a private thread if this is ``None``.
+        reason: :class:`str`
+            The reason for starting a new thread. Shows up on the audit log.
 
         Raises
         -------
@@ -675,20 +687,24 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The started thread
         """
 
+        if type is None:
+            type = ChannelType.private_thread
+
         if message is None:
-            data = await self._state.http.start_private_thread(
+            data = await self._state.http.start_thread_without_message(
                 self.id,
                 name=name,
                 auto_archive_duration=auto_archive_duration,
-                type=ChannelType.private_thread.value,
+                type=type.value,
+                reason=reason,
             )
         else:
-            data = await self._state.http.start_public_thread(
+            data = await self._state.http.start_thread_with_message(
                 self.id,
                 message.id,
                 name=name,
                 auto_archive_duration=auto_archive_duration,
-                type=ChannelType.public_thread.value,
+                reason=reason,
             )
 
         return Thread(guild=self.guild, state=self._state, data=data)
@@ -705,6 +721,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
         then :attr:`~Permissions.manage_threads` is also required.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -930,7 +948,7 @@ class VoiceChannel(VocalGuildChannel):
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         rtc_region: Optional[VoiceRegion] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
@@ -970,8 +988,8 @@ class VoiceChannel(VocalGuildChannel):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the voice channel's voice communication.
@@ -1119,7 +1137,7 @@ class StageChannel(VocalGuildChannel):
         """
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
-    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING) -> StageInstance:
+    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -1135,6 +1153,8 @@ class StageChannel(VocalGuildChannel):
             The stage instance's topic.
         privacy_level: :class:`StagePrivacyLevel`
             The stage instance's privacy level. Defaults to :attr:`StagePrivacyLevel.guild_only`.
+        reason: :class:`str`
+            The reason the stage instance was created. Shows up on the audit log.
 
         Raises
         ------
@@ -1159,7 +1179,7 @@ class StageChannel(VocalGuildChannel):
 
             payload['privacy_level'] = privacy_level.value
 
-        data = await self._state.http.create_stage_instance(**payload)
+        data = await self._state.http.create_stage_instance(**payload, reason=reason)
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     async def fetch_instance(self) -> StageInstance:
@@ -1193,7 +1213,7 @@ class StageChannel(VocalGuildChannel):
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         rtc_region: Optional[VoiceRegion] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
@@ -1229,8 +1249,8 @@ class StageChannel(VocalGuildChannel):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
         rtc_region: Optional[:class:`VoiceRegion`]
             The new region for the stage channel's voice communication.
@@ -1337,7 +1357,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         name: str = ...,
         position: int = ...,
         nsfw: bool = ...,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
     ) -> None:
         ...
@@ -1367,8 +1387,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             To mark the category as NSFW or not.
         reason: Optional[:class:`str`]
             The reason for editing this category. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
         Raises
@@ -1570,7 +1590,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel],
         reason: Optional[str],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite],
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite],
     ) -> None:
         ...
 
@@ -1602,8 +1622,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             category.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
-        overwrites: :class:`dict`
-            A :class:`dict` of target (either a role or a member) to
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
 
             .. versionadded:: 1.3

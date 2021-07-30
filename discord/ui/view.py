@@ -120,6 +120,8 @@ class View:
 
     This object must be inherited to create a UI within Discord.
 
+    .. versionadded:: 2.0
+
     Parameters
     -----------
     timeout: Optional[:class:`float`]
@@ -303,9 +305,8 @@ class View:
 
         .. note::
 
-            If an exception occurs within the body then the interaction
-            check then :meth:`on_error` is called and it is considered
-            a failure.
+            If an exception occurs within the body then the check
+            is considered a failure and :meth:`on_error` is called.
 
         Parameters
         -----------

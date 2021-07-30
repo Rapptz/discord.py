@@ -594,7 +594,7 @@ class DiscordWebSocket:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
 
-    async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
+    async def change_presence(self, *, activity=None, status=None, since=0.0):
         if activity is not None:
             if not isinstance(activity, BaseActivity):
                 raise InvalidArgument('activity must derive from BaseActivity.')
@@ -609,7 +609,7 @@ class DiscordWebSocket:
             'op': self.PRESENCE,
             'd': {
                 'activities': activity,
-                'afk': afk,
+                'afk': False,
                 'since': since,
                 'status': status
             }
@@ -719,7 +719,7 @@ class DiscordVoiceWebSocket:
 
     async def _hook(self, *args):
         pass
-    
+
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -832,7 +832,7 @@ class DiscordVoiceWebSocket:
                 self.ssrc_map[ssrc]['speaking'] = speaking
             else:
                 self.ssrc_map.update({ssrc: {'user_id': user, 'speaking': speaking}})
-            
+                
         await self._hook(self, msg)
 
     async def initial_connection(self, data):

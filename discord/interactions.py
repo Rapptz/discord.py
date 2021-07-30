@@ -626,6 +626,9 @@ class _InteractionMessageState:
     def store_user(self, data):
         return self._parent.store_user(data)
 
+    def create_user(self, data):
+        return self._parent.create_user(data)
+
     @property
     def http(self):
         return self._parent.http

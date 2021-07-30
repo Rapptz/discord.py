@@ -421,8 +421,8 @@ class HTTPClient:
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[str] =  None,
-        allowed_mentions: bool = None,
-        message_reference: bool = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
+        message_reference: Optional[message.MessageReference] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -436,7 +436,7 @@ class HTTPClient:
 
         if embed:
             payload['embeds'] = [embed]
-        
+
         if embeds:
             payload['embeds'] = embeds
 
@@ -713,11 +713,7 @@ class HTTPClient:
             'delete_message_days': delete_message_days,
         }
 
-        if reason:
-            # thanks aiohttp
-            r.url = f'{r.url}?reason={_uriquote(reason)}'
-
-        return self.request(r, params=params)
+        return self.request(r, params=params, reason=reason)
 
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
@@ -871,33 +867,33 @@ class HTTPClient:
 
     # Thread management
 
-    def start_public_thread(
+    def start_thread_with_message(
         self,
         channel_id: Snowflake,
         message_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
-        type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
-            'type': type,
         }
 
         route = Route(
             'POST', '/channels/{channel_id}/messages/{message_id}/threads', channel_id=channel_id, message_id=message_id
         )
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
-    def start_private_thread(
+    def start_thread_without_message(
         self,
         channel_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
@@ -906,7 +902,7 @@ class HTTPClient:
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
@@ -1237,12 +1233,12 @@ class HTTPClient:
 
         return self.request(r)
 
-    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake) -> Response[None]:
+    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
-        return self.request(r)
+        return self.request(r, reason=reason)
 
     def get_audit_logs(
         self,
@@ -1422,7 +1418,7 @@ class HTTPClient:
     def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
+    def create_stage_instance(self, *, reason: Optional[str], **payload: Any) -> Response[channel.StageInstance]:
         valid_keys = (
             'channel_id',
             'topic',
@@ -1430,19 +1426,19 @@ class HTTPClient:
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('POST', '/stage-instances'), json=payload)
+        return self.request(Route('POST', '/stage-instances'), json=payload, reason=reason)
 
-    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+    def edit_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None, **payload: Any) -> Response[None]:
         valid_keys = (
             'topic',
             'privacy_level',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload, reason=reason)
 
-    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
-        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
+    def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Application commands (global)
 
@@ -1571,9 +1567,9 @@ class HTTPClient:
         return self.request(r)
 
     def bulk_upsert_guild_commands(
-        self, 
+        self,
         application_id: Snowflake,
-        guild_id: Snowflake, 
+        guild_id: Snowflake,
         payload: List[interactions.EditApplicationCommand],
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(

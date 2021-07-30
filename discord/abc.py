@@ -28,6 +28,7 @@ import copy
 import asyncio
 from typing import (
     Any,
+    Callable,
     Dict,
     List,
     Mapping,
@@ -68,6 +69,7 @@ T = TypeVar('T', bound=VoiceProtocol)
 if TYPE_CHECKING:
     from datetime import datetime
 
+    from .client import Client
     from .user import ClientUser
     from .asset import Asset
     from .state import ConnectionState
@@ -75,7 +77,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .channel import CategoryChannel
     from .embeds import Embed
-    from .message import Message, MessageReference
+    from .message import Message, MessageReference, PartialMessage
     from .channel import TextChannel, DMChannel, GroupChannel
     from .threads import Thread
     from .enums import InviteTarget
@@ -473,7 +475,7 @@ class GuildChannel:
         return PermissionOverwrite()
 
     @property
-    def overwrites(self) -> Mapping[Union[Role, Member], PermissionOverwrite]:
+    def overwrites(self) -> Dict[Union[Role, Member], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
@@ -482,7 +484,7 @@ class GuildChannel:
 
         Returns
         --------
-        Mapping[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
+        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
@@ -544,6 +546,7 @@ class GuildChannel:
         someone with that role would have, which is essentially:
 
         - The default role permissions
+        - The permissions of the role used as a parameter
         - The default role permission overwrites
         - The permission overwrites of the role used as a parameter
 
@@ -585,24 +588,26 @@ class GuildChannel:
 
         # Handle the role case first
         if isinstance(obj, Role):
+            base.value |= obj._permissions
+
+            if base.administrator:
+                return Permissions.all()
+
+            # Apply @everyone allow/deny first since it's special
+            try:
+                maybe_everyone = self._overwrites[0]
+                if maybe_everyone.id == self.guild.id:
+                    base.handle_overwrite(allow=maybe_everyone.allow, deny=maybe_everyone.deny)
+            except IndexError:
+                pass
+
             if obj.is_default():
-                overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
-                if overwrite is not None:
-                    base.handle_overwrite(overwrite.allow, overwrite.deny)
                 return base
 
-            denies = 0
-            allows = 0
-            guild_id = self.guild.id
-            for overwrite in self._overwrites:
-                if not overwrite.is_role():
-                    continue
+            overwrite = utils.get(self._overwrites, type=_Overwrites.ROLE, id=obj.id)
+            if overwrite is not None:
+                base.handle_overwrite(overwrite.allow, overwrite.deny)
 
-                if overwrite.id in (obj.id, guild_id):
-                    denies |= overwrite.deny
-                    allows |= overwrite.allow
-
-            base.handle_overwrite(allows, denies)
             return base
 
         roles = obj._roles
@@ -1162,7 +1167,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1179,7 +1184,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1196,7 +1201,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1213,7 +1218,7 @@ class Messageable:
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference] = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
     ) -> Message:
@@ -1282,7 +1287,7 @@ class Messageable:
 
             .. versionadded:: 1.4
 
-        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`]
+        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`, :class:`~discord.PartialMessage`]
             A reference to the :class:`~discord.Message` to which you are replying, this can be created using
             :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
             whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
@@ -1311,8 +1316,8 @@ class Messageable:
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
-            or the ``reference`` object is not a :class:`~discord.Message`
-            or :class:`~discord.MessageReference`.
+            or the ``reference`` object is not a :class:`~discord.Message`,
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
 
         Returns
         ---------
@@ -1351,7 +1356,7 @@ class Messageable:
             try:
                 reference = reference.to_message_reference_dict()
             except AttributeError:
-                raise InvalidArgument('reference parameter must be Message or MessageReference') from None
+                raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
 
         if view:
             if not hasattr(view, '__discord_ui_view__'):
@@ -1449,6 +1454,7 @@ class Messageable:
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
+        
             async with channel.typing():
                 # simulate something heavy
                 await asyncio.sleep(10)
@@ -1607,7 +1613,13 @@ class Connectable(Protocol):
     def _get_voice_state_pair(self) -> Tuple[int, int]:
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float = 60.0, reconnect: bool = True, cls: Type[T] = VoiceClient) -> T:
+    async def connect(
+        self,
+        *,
+        timeout: float = 60.0,
+        reconnect: bool = True,
+        cls: Callable[[Client, Connectable], T] = VoiceClient,
+    ) -> T:
         """|coro|
 
         Connects to voice and creates a :class:`VoiceClient` to establish

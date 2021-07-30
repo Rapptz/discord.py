@@ -127,13 +127,20 @@ class Integration:
         self.user = User(state=self._state, data=user) if user else None
         self.enabled: bool = data['enabled']
 
-    async def delete(self) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the integration.
 
         You must have the :attr:`~Permissions.manage_guild` permission to
         do this.
+
+        Parameters
+        -----------
+        reason: :class:`str`
+            The reason the integration was deleted. Shows up on the audit log.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -142,7 +149,7 @@ class Integration:
         HTTPException
             Deleting the integration failed.
         """
-        await self._state.http.delete_integration(self.guild.id, self.id)
+        await self._state.http.delete_integration(self.guild.id, self.id, reason=reason)
 
 
 class StreamIntegration(Integration):

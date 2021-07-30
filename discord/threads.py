@@ -166,6 +166,8 @@ class Thread(Messageable, Hashable):
         self._type = try_enum(ChannelType, data['type'])
         self.last_message_id = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
+        self.message_count = data['message_count']
+        self.member_count = data['member_count']
         self._unroll_metadata(data['thread_metadata'])
 
         try:
@@ -187,6 +189,8 @@ class Thread(Messageable, Hashable):
             self.name = data['name']
         except KeyError:
             pass
+
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
 
         try:
             self._unroll_metadata(data['thread_metadata'])
@@ -366,7 +370,7 @@ class Thread(Messageable, Hashable):
     async def purge(
         self,
         *,
-        limit: int = 100,
+        limit: Optional[int] = 100,
         check: Callable[[Message], bool] = MISSING,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,

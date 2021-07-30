@@ -597,6 +597,9 @@ class _WebhookState:
             return self._parent.store_user(data)
         return BaseUser(state=self, data=data)
 
+    def create_user(self, data):
+        return BaseUser(state=self, data=data)
+
     @property
     def http(self):
         if self._parent is not None:

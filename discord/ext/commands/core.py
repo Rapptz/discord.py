@@ -385,7 +385,7 @@ class Command(_BaseCommand):
             pass
 
     def update(self, **kwargs):
-        """Updates :class:`Command` instance with updated attribute.
+        """Updates :class:`Command` instance with updated attributes.
 
         This works similarly to the :func:`.command` decorator in terms
         of parameters in that they are passed to the :class:`Command` or
@@ -1603,7 +1603,7 @@ def has_role(item):
     """
 
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         if isinstance(item, int):
@@ -1648,7 +1648,7 @@ def has_any_role(*items):
             await ctx.send('You are cool indeed')
     """
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)

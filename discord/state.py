@@ -178,7 +178,7 @@ class ConnectionState:
         self._intents = intents
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents
+            self.store_user = self.create_user
             self.deref_user = self.deref_user_no_intents
 
         self.parsers = parsers = {}
@@ -284,7 +284,7 @@ class ConnectionState:
     def deref_user(self, user_id):
         self._users.pop(user_id, None)
 
-    def store_user_no_intents(self, data):
+    def create_user(self, data):
         return User(state=self, data=data)
 
     def deref_user_no_intents(self, user_id):

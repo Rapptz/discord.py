@@ -224,6 +224,17 @@ class Asset(AssetMixin):
             animated=False,
         )
 
+    @classmethod
+    def _from_user_banner(cls, state, user_id: int, banner_hash: str) -> Asset:
+        animated = banner_hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
+            key=banner_hash,
+            animated=animated
+        )
+
     def __str__(self) -> str:
         return self._url
 

@@ -599,6 +599,24 @@ class Guild(Hashable):
 
         return self._channels.get(id) or self._threads.get(id)
 
+    def get_channel_or_thread(self, channel_id: int, /) -> Optional[Union[Thread, GuildChannel]]:
+        """Returns a channel or thread with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[Union[:class:`Thread`, :class:`.abc.GuildChannel`]]
+            The returned channel or thread or ``None`` if not found.
+        """
+        return self._channels.get(channel_id) or self._threads.get(channel_id)
+
+
     def get_channel(self, channel_id: int, /) -> Optional[GuildChannel]:
         """Returns a channel with the given ID.
 

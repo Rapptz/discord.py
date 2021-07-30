@@ -49,6 +49,8 @@ class Item(Generic[V]):
 
     - :class:`discord.ui.Button`
     - :class:`discord.ui.Select`
+
+    .. versionadded:: 2.0
     """
 
     __item_repr_attributes__: Tuple[str, ...] = ('row',)
