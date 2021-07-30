@@ -1902,7 +1902,7 @@ def is_nsfw():
     """
     def pred(ctx):
         ch = ctx.channel
-        if ctx.guild is None or ((isinstance(ch, discord.TextChannel) or isinstance(ch, discord.Thread)) and ch.is_nsfw()):
+        if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
             return True
         raise NSFWChannelRequired(ch)
     return check(pred)
