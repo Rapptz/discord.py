@@ -1148,6 +1148,7 @@ class Messageable:
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
+    - :class:`~discord.Thread`
     """
 
     __slots__ = ()
