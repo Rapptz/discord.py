@@ -73,6 +73,9 @@ AuditLogEvent = Literal[
     83,
     84,
     85,
+    90,
+    91,
+    92,
     110,
     111,
     112,
@@ -81,14 +84,14 @@ AuditLogEvent = Literal[
 
 class _AuditLogChange_Str(TypedDict):
     key: Literal[
-        'name', 'description', 'preferred_locale', 'vanity_url_code', 'topic', 'code', 'allow', 'deny', 'permissions'
+        'name', 'description', 'preferred_locale', 'vanity_url_code', 'topic', 'code', 'allow', 'deny', 'permissions', 'tags'
     ]
     new_value: str
     old_value: str
 
 
 class _AuditLogChange_AssetHash(TypedDict):
-    key: Literal['icon_hash', 'splash_hash', 'discovery_splash_hash', 'banner_hash', 'avatar_hash']
+    key: Literal['icon_hash', 'splash_hash', 'discovery_splash_hash', 'banner_hash', 'avatar_hash', 'asset']
     new_value: str
     old_value: str
 
@@ -105,6 +108,7 @@ class _AuditLogChange_Snowflake(TypedDict):
         'application_id',
         'channel_id',
         'inviter_id',
+        'guild_id',
     ]
     new_value: Snowflake
     old_value: Snowflake
@@ -123,6 +127,7 @@ class _AuditLogChange_Bool(TypedDict):
         'enabled_emoticons',
         'region',
         'rtc_region',
+        'available',
         'archived',
         'locked',
     ]

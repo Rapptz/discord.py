@@ -49,7 +49,7 @@ import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
 from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 from .utils import MISSING
@@ -84,6 +84,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -420,9 +421,10 @@ class HTTPClient:
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
-        nonce: Optional[str] =  None,
+        nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -452,6 +454,9 @@ class HTTPClient:
         if components:
             payload['components'] = components
 
+        if stickers:
+            payload['sticker_items'] = stickers
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
@@ -465,10 +470,11 @@ class HTTPClient:
         content: Optional[str] = None,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
-        embeds: Iterable[Optional[embed.Embed]] = None,
+        embeds: Optional[Iterable[Optional[embed.Embed]]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
@@ -488,6 +494,8 @@ class HTTPClient:
             payload['message_reference'] = message_reference
         if components:
             payload['components'] = components
+        if stickers:
+            payload['sticker_items'] = stickers
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
@@ -525,6 +533,7 @@ class HTTPClient:
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -538,6 +547,7 @@ class HTTPClient:
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
+            stickers=stickers,
             components=components,
         )
 
@@ -1159,6 +1169,54 @@ class HTTPClient:
             params['include_roles'] = ', '.join(roles)
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
+
+    def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
+        return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
+
+    def list_nitro_sticker_packs(self) -> Response[sticker.ListNitroStickerPacks]:
+        return self.request(Route('GET', '/sticker-packs'))
+
+    def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
+
+    def get_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake) -> Response[sticker.GuildSticker]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id))
+
+    def create_guild_sticker(self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str) -> Response[sticker.GuildSticker]:
+        initial_bytes = file.fp.read(16)
+
+        try:
+            mime_type = utils._get_mime_type_for_image(initial_bytes)
+        except InvalidArgument:
+            if initial_bytes.startswith(b'{'):
+                mime_type = 'application/json'
+            else:
+                mime_type = 'application/octet-stream'
+        finally:
+            file.reset()
+
+        form: List[Dict[str, Any]] = [
+            {
+                'name': 'file',
+                'value': file.fp,
+                'filename': file.filename,
+                'content_type': mime_type,
+            }
+        ]
+
+        for k, v in payload.items():
+            form.append({
+                'name': k,
+                'value': v,
+            })
+
+        return self.request(Route('POST', '/guilds/{guild_id}/stickers', guild_id=guild_id), form=form, files=[file], reason=reason)
+
+    def modify_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: str) -> Response[sticker.GuildSticker]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), json=payload, reason=reason)
+
+    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: str) -> Response[None]:
+        return self.request(Route('DELETE', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), reason=reason)
 
     def get_all_custom_emojis(self, guild_id: Snowflake) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))

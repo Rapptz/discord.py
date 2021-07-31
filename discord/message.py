@@ -45,7 +45,7 @@ from .file import File
 from .utils import escape_mentions, MISSING
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import Sticker
+from .sticker import StickerItem
 from .threads import Thread
 
 if TYPE_CHECKING:
@@ -588,8 +588,8 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
-    stickers: List[:class:`Sticker`]
-        A list of stickers given to the message.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
 
         .. versionadded:: 1.6
     components: List[:class:`Component`]
@@ -666,7 +666,7 @@ class Message(Hashable):
         self.tts: bool = data['tts']
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
-        self.stickers: List[Sticker] = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
