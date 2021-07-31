@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 import inspect
+import datetime
 from typing import (
     Any,
     Dict,
@@ -823,6 +824,27 @@ class PartialEmojiConverter(Converter[discord.PartialEmoji]):
 
         raise PartialEmojiConversionFailure(argument)
 
+class FormattedDatetimeConverter(Converter[Tuple[datetime.datetime, Optional[str]]]):
+
+    """Converts a discord style datetime to a :class:`datetime.datetime`.
+    Also returns the flag used to format the timestamp if present.
+
+    This is done by extracting the epoch from the string.
+
+    .. versionadd:: 2.0
+        Raise :exc:`.FormattedDatetimeConversionFailure` instead of generic :exc:`.BadArgument`
+     """
+
+    async def convert(self, ctx: Context, argument: str) -> Tuple[datetime.datetime, Optional[str]]:
+        match = re.match(r'<t:(-?\d+)(:[tTdDfFR])?>$', argument)
+
+        if match:
+            try:
+                return datetime.datetime.fromtimestamp(int(match.group(1))), match.group(2)
+            except:
+                raise FormattedDatetimeConversionFailure(argument)
+
+        raise FormattedDatetimeConversionFailure(argument) 
 
 class clean_content(Converter[str]):
     """Converts the argument to mention scrubbed version of

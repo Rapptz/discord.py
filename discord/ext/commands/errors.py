@@ -55,6 +55,7 @@ __all__ = (
     'BadInviteArgument',
     'EmojiNotFound',
     'PartialEmojiConversionFailure',
+    'FormattedDatetimeConversionFailure'
     'BadBoolArgument',
     'MissingRole',
     'BotMissingRole',
@@ -430,6 +431,21 @@ class PartialEmojiConversionFailure(BadArgument):
     def __init__(self, argument):
         self.argument = argument
         super().__init__(f'Couldn\'t convert "{argument}" to PartialEmoji.')
+
+class FormattedDatetimeConversionFailure(BadArgument):
+    """Exception raised when the timestamp provided does not match the correct
+    format.
+
+    This inherits from :exc:`badArgument`
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The emoji supplied by the caller that did not match the regex
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Timestamp "{argument}" wasn\'t formatted correctly.')
 
 class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
