@@ -304,6 +304,9 @@ Checks
 .. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.ext.commands.BucketType.default)
     :decorator:
 
+.. autofunction:: discord.ext.commands.dynamic_cooldown(cooldown, type=BucketType.default)
+    :decorator:
+
 .. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.ext.commands.BucketType.default, *, wait=False)
     :decorator:
 
@@ -403,6 +406,9 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.ThreadConverter
     :members:
 
 .. autoclass:: discord.ext.commands.clean_content
@@ -512,6 +518,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ChannelNotReadable
     :members:
 
+.. autoexception:: discord.ext.commands.ThreadNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadColourArgument
     :members:
 
@@ -611,6 +620,7 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`
                         - :exc:`~.commands.MissingFlagArgument`

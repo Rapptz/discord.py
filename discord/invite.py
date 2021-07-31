@@ -257,7 +257,7 @@ class Invite(Hashable):
     Attributes
     -----------
     max_age: :class:`int`
-        How long the before the invite expires in seconds.
+        How long before the invite expires in seconds.
         A value of ``0`` indicates that it doesn't expire.
     code: :class:`str`
         The URL fragment used for the invite.
@@ -352,12 +352,12 @@ class Invite(Hashable):
         self.expires_at: Optional[datetime.datetime] = parse_time(expires_at) if expires_at else None
 
         inviter_data = data.get('inviter')
-        self.inviter: Optional[User] = None if inviter_data is None else self._state.store_user(inviter_data)
+        self.inviter: Optional[User] = None if inviter_data is None else self._state.create_user(inviter_data)
 
         self.channel: Optional[InviteChannelType] = self._resolve_channel(data.get('channel'), channel)
 
         target_user_data = data.get('target_user')
-        self.target_user: Optional[User] = None if target_user_data is None else self._state.store_user(target_user_data)
+        self.target_user: Optional[User] = None if target_user_data is None else self._state.create_user(target_user_data)
 
         self.target_type: InviteTarget = try_enum(InviteTarget, data.get("target_type", 0))
 

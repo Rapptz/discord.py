@@ -47,6 +47,7 @@ __all__ = (
     'GuildNotFound',
     'UserNotFound',
     'ChannelNotFound',
+    'ThreadNotFound',
     'ChannelNotReadable',
     'BadColourArgument',
     'BadColorArgument',
@@ -336,6 +337,22 @@ class ChannelNotFound(BadArgument):
         self.argument = argument
         super().__init__(f'Channel "{argument}" not found.')
 
+class ThreadNotFound(BadArgument):
+    """Exception raised when the bot can not find the thread.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The thread supplied by the caller that was not found
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Thread "{argument}" not found.')
+
 class BadColourArgument(BadArgument):
     """Exception raised when the colour is not valid.
 
@@ -460,14 +477,17 @@ class CommandOnCooldown(CommandError):
     Attributes
     -----------
     cooldown: ``Cooldown``
-        A class with attributes ``rate``, ``per``, and ``type`` similar to
-        the :func:`.cooldown` decorator.
+        A class with attributes ``rate`` and ``per`` similar to the
+        :func:`.cooldown` decorator.
+    type: :class:`BucketType`
+        The type associated with the cooldown.
     retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
-    def __init__(self, cooldown, retry_after):
+    def __init__(self, cooldown, retry_after, type):
         self.cooldown = cooldown
         self.retry_after = retry_after
+        self.type = type
         super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 class MaxConcurrencyReached(CommandError):

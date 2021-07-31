@@ -385,7 +385,7 @@ class Command(_BaseCommand):
             pass
 
     def update(self, **kwargs):
-        """Updates :class:`Command` instance with updated attribute.
+        """Updates :class:`Command` instance with updated attributes.
 
         This works similarly to the :func:`.command` decorator in terms
         of parameters in that they are passed to the :class:`Command` or
@@ -731,7 +731,7 @@ class Command(_BaseCommand):
             if bucket is not None:
                 retry_after = bucket.update_rate_limit(current)
                 if retry_after:
-                    raise CommandOnCooldown(bucket, retry_after)
+                    raise CommandOnCooldown(bucket, retry_after, self._buckets.type)
 
     async def prepare(self, ctx):
         ctx.command = self
@@ -1603,7 +1603,7 @@ def has_role(item):
     """
 
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         if isinstance(item, int):
@@ -1648,7 +1648,7 @@ def has_any_role(*items):
             await ctx.send('You are cool indeed')
     """
     def predicate(ctx):
-        if not isinstance(ctx.channel, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
         getter = functools.partial(discord.utils.get, ctx.author.roles)
@@ -1673,11 +1673,10 @@ def bot_has_role(item):
     """
 
     def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
-        me = ch.guild.me
+        me = ctx.me
         if isinstance(item, int):
             role = discord.utils.get(me.roles, id=item)
         else:
@@ -1701,11 +1700,10 @@ def bot_has_any_role(*items):
         instead of generic checkfailure
     """
     def predicate(ctx):
-        ch = ctx.channel
-        if not isinstance(ch, discord.abc.GuildChannel):
+        if ctx.guild is None:
             raise NoPrivateMessage()
 
-        me = ch.guild.me
+        me = ctx.me
         getter = functools.partial(discord.utils.get, me.roles)
         if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
@@ -1902,7 +1900,7 @@ def is_nsfw():
     """
     def pred(ctx):
         ch = ctx.channel
-        if ctx.guild is None or (isinstance(ch, discord.TextChannel) and ch.is_nsfw()):
+        if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
             return True
         raise NSFWChannelRequired(ch)
     return check(pred)
@@ -1947,7 +1945,8 @@ def dynamic_cooldown(cooldown, type=BucketType.default):
 
     This differs from :func:`.cooldown` in that it takes a function that
     accepts a single parameter of type :class:`.discord.Message` and must
-    return a :class:`.Cooldown`
+    return a :class:`.Cooldown` or ``None``. If ``None`` is returned then
+    that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
@@ -1964,9 +1963,9 @@ def dynamic_cooldown(cooldown, type=BucketType.default):
 
     Parameters
     ------------
-    cooldown: Callable[[:class:`.discord.Message`], :class:`.Cooldown`]
+    cooldown: Callable[[:class:`.discord.Message`], Optional[:class:`.Cooldown`]]
         A function that takes a message and returns a cooldown that will
-        apply to this invocation
+        apply to this invocation or ``None`` if the cooldown should be bypassed.
     type: :class:`.BucketType`
         The type of cooldown to have.
     """

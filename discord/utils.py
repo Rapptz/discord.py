@@ -63,6 +63,14 @@ import warnings
 
 from .errors import InvalidArgument
 
+try:
+    import orjson
+except ModuleNotFoundError:
+    HAS_ORJSON = False
+else:
+    HAS_ORJSON = True
+
+
 __all__ = (
     'oauth_url',
     'snowflake_time',
@@ -75,6 +83,7 @@ __all__ = (
     'escape_markdown',
     'escape_mentions',
     'as_chunks',
+    'format_dt',
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -315,7 +324,7 @@ def snowflake_time(id: int) -> datetime.datetime:
         An aware datetime in UTC representing the creation time of the snowflake.
     """
     timestamp = ((id >> 22) + DISCORD_EPOCH) / 1000
-    return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+    return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
 def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
@@ -468,8 +477,19 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
-def to_json(obj: Any) -> str:
-    return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+if HAS_ORJSON:
+
+    def to_json(obj: Any) -> str:  # type: ignore
+        return orjson.dumps(obj).decode('utf-8')
+
+    from_json = orjson.loads  # type: ignore
+
+else:
+
+    def to_json(obj: Any) -> str:
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
+    from_json = json.loads
 
 
 def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
@@ -896,7 +916,7 @@ def evaluate_annotation(
         is_literal = False
         args = tp.__args__
         if not hasattr(tp, '__origin__'):
-            if PY_310 and tp.__class__ is types.Union:
+            if PY_310 and tp.__class__ is types.UnionType:  # type: ignore
                 converted = Union[args]  # type: ignore
                 return evaluate_annotation(converted, globals, locals, cache)
 

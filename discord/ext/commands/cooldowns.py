@@ -115,11 +115,6 @@ class Cooldown:
         # we're not so decrement our tokens
         self._tokens -= 1
 
-        # see if we got rate limited due to this token change, and if
-        # so update the window to point to our current time frame
-        if self._tokens == 0:
-            self._window = current
-
     def reset(self):
         self._tokens = self.rate
         self._last = 0.0
@@ -147,6 +142,10 @@ class CooldownMapping:
     @property
     def valid(self):
         return self._cooldown is not None
+
+    @property
+    def type(self):
+        return self._type
 
     @classmethod
     def from_cooldown(cls, rate, per, type):

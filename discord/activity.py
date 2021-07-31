@@ -131,7 +131,10 @@ class BaseActivity:
         .. versionadded:: 1.3
         """
         if self._created_at is not None:
-            return datetime.datetime.utcfromtimestamp(self._created_at / 1000).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(self._created_at / 1000, tz=datetime.timezone.utc)
+
+    def to_dict(self) -> ActivityPayload:
+        raise NotImplementedError
 
 
 class Activity(BaseActivity):
@@ -273,7 +276,7 @@ class Activity(BaseActivity):
         except KeyError:
             return None
         else:
-            return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
     @property
     def end(self) -> Optional[datetime.datetime]:
@@ -283,7 +286,7 @@ class Activity(BaseActivity):
         except KeyError:
             return None
         else:
-            return datetime.datetime.utcfromtimestamp(timestamp).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
     @property
     def large_image_url(self) -> Optional[str]:
@@ -383,14 +386,14 @@ class Game(BaseActivity):
     def start(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user started playing this game in UTC, if applicable."""
         if self._start:
-            return datetime.datetime.utcfromtimestamp(self._start / 1000).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(self._start / 1000, tz=datetime.timezone.utc)
         return None
 
     @property
     def end(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: When the user will stop playing this game in UTC, if applicable."""
         if self._end:
-            return datetime.datetime.utcfromtimestamp(self._end / 1000).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(self._end / 1000, tz=datetime.timezone.utc)
         return None
 
     def __str__(self) -> str:
@@ -583,7 +586,7 @@ class Spotify:
         .. versionadded:: 1.3
         """
         if self._created_at is not None:
-            return datetime.datetime.utcfromtimestamp(self._created_at / 1000).replace(tzinfo=datetime.timezone.utc)
+            return datetime.datetime.fromtimestamp(self._created_at / 1000, tz=datetime.timezone.utc)
 
     @property
     def colour(self) -> Colour:
@@ -686,12 +689,12 @@ class Spotify:
     @property
     def start(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the user started playing this song in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._timestamps['start'] / 1000).replace(tzinfo=datetime.timezone.utc)
+        return datetime.datetime.fromtimestamp(self._timestamps['start'] / 1000, tz=datetime.timezone.utc)
 
     @property
     def end(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the user will stop playing this song in UTC."""
-        return datetime.datetime.utcfromtimestamp(self._timestamps['end'] / 1000).replace(tzinfo=datetime.timezone.utc)
+        return datetime.datetime.fromtimestamp(self._timestamps['end'] / 1000, tz=datetime.timezone.utc)
 
     @property
     def duration(self) -> datetime.timedelta:

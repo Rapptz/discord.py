@@ -5,7 +5,7 @@
 Commands
 ==========
 
-One of the most appealing aspect of the command extension is how easy it is to define commands and
+One of the most appealing aspects of the command extension is how easy it is to define commands and
 how you can arbitrarily nest groups and commands to have a rich sub-command system.
 
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
@@ -392,6 +392,7 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Colour`
 - :class:`Emoji`
 - :class:`PartialEmoji`
+- :class:`Thread` (since v2.0)
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
 specify.
@@ -437,6 +438,8 @@ converter is given below:
 | :class:`Emoji`           | :class:`~ext.commands.EmojiConverter`           |
 +--------------------------+-------------------------------------------------+
 | :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`Thread`          | :class:`~ext.commands.ThreadConverter`          |
 +--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:

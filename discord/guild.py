@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
+import unicodedata
 from typing import (
     Any,
     ClassVar,
@@ -72,6 +73,9 @@ from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
 from .stage_instance import StageInstance
 from .threads import Thread
+from .sticker import GuildSticker
+from .file import File
+
 
 __all__ = (
     'Guild',
@@ -81,7 +85,7 @@ MISSING = utils.MISSING
 
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
-    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel
+    from .types.guild import Ban as BanPayload, Guild as GuildPayload, MFALevel, GuildFeature
     from .types.threads import (
         Thread as ThreadPayload,
     )
@@ -107,6 +111,7 @@ class BanEntry(NamedTuple):
 
 class _GuildLimit(NamedTuple):
     emoji: int
+    stickers: int
     bitrate: float
     filesize: int
 
@@ -140,6 +145,10 @@ class Guild(Hashable):
         The guild name.
     emojis: Tuple[:class:`Emoji`, ...]
         All emojis that the guild owns.
+    stickers: Tuple[:class:`GuildSticker`, ...]
+        All stickers that the guild owns.
+
+        .. versionadded:: 2.0
     region: :class:`VoiceRegion`
         The region the guild belongs on. There is a chance that the region
         will be a :class:`str` if the value is not recognised by the enumerator.
@@ -182,26 +191,33 @@ class Guild(Hashable):
     default_notifications: :class:`NotificationLevel`
         The guild's notification settings.
     features: List[:class:`str`]
-        A list of features that the guild has. They are currently as follows:
+        A list of features that the guild has. The features that a guild can have are
+        subject to arbitrary change by Discord.
 
-        - ``VIP_REGIONS``: Guild has VIP voice regions
-        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api)
-        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
-        - ``VERIFIED``: Guild is a verified server.
-        - ``PARTNERED``: Guild is a partnered server.
-        - ``MORE_EMOJI``: Guild is allowed to have more than 50 custom emoji.
+        They are currently as follows:
+
+        - ``ANIMATED_ICON``: Guild can upload an animated icon.
+        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
+        - ``COMMERCE``: Guild can sell things using store channels.
+        - ``COMMUNITY``: Guild is a community server.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
         - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
-        - ``COMMUNITY``: Guild is a community server.
-        - ``COMMERCE``: Guild can sell things using store channels.
-        - ``PUBLIC``: Guild is a public guild.
-        - ``NEWS``: Guild can create news channels.
-        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
-        - ``ANIMATED_ICON``: Guild can upload an animated icon.
-        - ``PUBLIC_DISABLED``: Guild cannot be public.
-        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen
+        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
         - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
+        - ``MONETIZATION_ENABLED``: Guild has enabled monetization.
+        - ``MORE_EMOJI``: Guild has increased custom emoji slots.
+        - ``MORE_STICKERS``: Guild has increased custom sticker slots.
+        - ``NEWS``: Guild can create news channels.
+        - ``PARTNERED``: Guild is a partnered server.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
+        - ``PRIVATE_THREADS``: Guild has access to create private threads.
+        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
+        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
+        - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
+        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
+        - ``VERIFIED``: Guild is a verified server.
+        - ``VIP_REGIONS``: Guild has VIP voice regions.
+        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
 
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
@@ -227,6 +243,7 @@ class Guild(Hashable):
         'owner_id',
         'mfa_level',
         'emojis',
+        'stickers',
         'features',
         'verification_level',
         'explicit_content_filter',
@@ -259,11 +276,11 @@ class Guild(Hashable):
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
-        0: _GuildLimit(emoji=50, bitrate=96e3, filesize=8388608),
-        1: _GuildLimit(emoji=100, bitrate=128e3, filesize=8388608),
-        2: _GuildLimit(emoji=150, bitrate=256e3, filesize=52428800),
-        3: _GuildLimit(emoji=250, bitrate=384e3, filesize=104857600),
+        None: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
+        0: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
+        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=8388608),
+        2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
+        3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
 
     def __init__(self, *, data: GuildPayload, state: ConnectionState):
@@ -287,7 +304,7 @@ class Guild(Hashable):
         self._members[member.id] = member
 
     def _store_thread(self, payload: ThreadPayload, /) -> Thread:
-        thread = Thread(guild=self, data=payload)
+        thread = Thread(guild=self, state=self._state, data=payload)
         self._threads[thread.id] = thread
         return thread
 
@@ -405,7 +422,8 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.features: List[str] = guild.get('features', [])
+        self.stickers: Tuple[GuildSticker, ...] = tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
+        self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description: Optional[str] = guild.get('description')
@@ -466,7 +484,7 @@ class Guild(Hashable):
         if 'threads' in data:
             threads = data['threads']
             for thread in threads:
-                self._add_thread(Thread(guild=self, data=thread))
+                self._add_thread(Thread(guild=self, state=self._state, data=thread))
 
     @property
     def channels(self) -> List[GuildChannel]:
@@ -586,6 +604,30 @@ class Guild(Hashable):
             channels.sort(key=lambda c: (c._sorting_bucket, c.position, c.id))
         return as_list
 
+    def _resolve_channel(self, id: Optional[int], /) -> Optional[Union[GuildChannel, Thread]]:
+        if id is None:
+            return
+
+        return self._channels.get(id) or self._threads.get(id)
+
+    def get_channel_or_thread(self, channel_id: int, /) -> Optional[Union[Thread, GuildChannel]]:
+        """Returns a channel or thread with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[Union[:class:`Thread`, :class:`.abc.GuildChannel`]]
+            The returned channel or thread or ``None`` if not found.
+        """
+        return self._channels.get(channel_id) or self._threads.get(channel_id)
+
+
     def get_channel(self, channel_id: int, /) -> Optional[GuildChannel]:
         """Returns a channel with the given ID.
 
@@ -666,6 +708,15 @@ class Guild(Hashable):
         """:class:`int`: The maximum number of emoji slots this guild has."""
         more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
         return max(more_emoji, self._PREMIUM_GUILD_LIMITS[self.premium_tier].emoji)
+
+    @property
+    def sticker_limit(self) -> int:
+        """:class:`int`: The maximum number of sticker slots this guild has.
+
+        .. versionadded:: 2.0
+        """
+        more_stickers = 60 if 'MORE_STICKERS' in self.features else 15
+        return max(more_stickers, self._PREMIUM_GUILD_LIMITS[self.premium_tier].stickers)
 
     @property
     def bitrate_limit(self) -> float:
@@ -1995,6 +2046,150 @@ class Guild(Hashable):
             return factory(guild=self, data=d)
 
         return [convert(d) for d in data]
+
+    async def fetch_stickers(self) -> List[GuildSticker]:
+        r"""|coro|
+
+        Retrieves a list of all :class:`Sticker`\s for the guild.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`stickers` instead.
+
+        Raises
+        ---------
+        HTTPException
+            An error occurred fetching the stickers.
+
+        Returns
+        --------
+        List[:class:`GuildSticker`]
+            The retrieved stickers.
+        """
+        data = await self._state.http.get_all_guild_stickers(self.id)
+        return [GuildSticker(state=self._state, data=d) for d in data]
+
+    async def fetch_sticker(self, sticker_id: int, /) -> GuildSticker:
+        """|coro|
+
+        Retrieves a custom :class:`Sticker` from the guild.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This method is an API call.
+            For general usage, consider iterating over :attr:`stickers` instead.
+
+        Parameters
+        -------------
+        sticker_id: :class:`int`
+            The sticker's ID.
+
+        Raises
+        ---------
+        NotFound
+            The sticker requested could not be found.
+        HTTPException
+            An error occurred fetching the sticker.
+
+        Returns
+        --------
+        :class:`GuildSticker`
+            The retrieved sticker.
+        """
+        data = await self._state.http.get_guild_sticker(self.id, sticker_id)
+        return GuildSticker(state=self._state, data=data)
+
+    async def create_sticker(
+        self,
+        *,
+        name: str,
+        description: Optional[str] = None,
+        emoji: str,
+        file: File,
+        reason: Optional[str] = None,
+    ) -> GuildSticker:
+        """|coro|
+
+        Creates a :class:`Sticker` for the guild.
+
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        do this.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The sticker name. Must be at least 2 characters.
+        description: Optional[:class:`str`]
+            The sticker's description. Can be ``None``.
+        emoji: :class:`str`
+            The name of a unicode emoji that represents the sticker's expression.
+        file: :class:`File`
+            The file of the sticker to upload.
+        reason: :class:`str`
+            The reason for creating this sticker. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to create stickers.
+        HTTPException
+            An error occurred creating a sticker.
+
+        Returns
+        --------
+        :class:`GuildSticker`
+            The created sticker.
+        """
+        payload = {
+            'name': name,
+        }
+
+        if description:
+            payload['description'] = description
+
+        try:
+            emoji = unicodedata.name(emoji)
+        except TypeError:
+            pass
+        else:
+            emoji = emoji.replace(' ', '_')
+
+        payload['tags'] = emoji
+
+        data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
+        return self._state.store_sticker(self, data)
+
+    async def delete_sticker(self, sticker: Snowflake, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Deletes the custom :class:`Sticker` from the guild.
+
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        do this.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        sticker: :class:`abc.Snowflake`
+            The sticker you are deleting.
+        reason: Optional[:class:`str`]
+            The reason for deleting this sticker. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete stickers.
+        HTTPException
+            An error occurred deleting the sticker.
+        """
+        await self._state.http.delete_guild_sticker(self.id, sticker.id, reason)
 
     async def fetch_emojis(self) -> List[Emoji]:
         r"""|coro|

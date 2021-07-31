@@ -59,6 +59,8 @@ class Select(Item[V]):
 
     This is usually represented as a drop down menu.
 
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
     .. versionadded:: 2.0
 
     Parameters
@@ -76,6 +78,8 @@ class Select(Item[V]):
         Defaults to 1 and must be between 1 and 25.
     options: List[:class:`discord.SelectOption`]
         A list of options that can be selected in this menu.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -89,6 +93,7 @@ class Select(Item[V]):
         'min_values',
         'max_values',
         'options',
+        'disabled',
     )
 
     def __init__(
@@ -99,8 +104,10 @@ class Select(Item[V]):
         min_values: int = 1,
         max_values: int = 1,
         options: List[SelectOption] = MISSING,
+        disabled: bool = False,
         row: Optional[int] = None,
     ) -> None:
+        super().__init__()
         self._selected_values: List[str] = []
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
@@ -112,6 +119,7 @@ class Select(Item[V]):
             min_values=min_values,
             max_values=max_values,
             options=options,
+            disabled=disabled,
         )
         self.row = row
 
@@ -196,9 +204,9 @@ class Select(Item[V]):
         description: Optional[:class:`str`]
             An additional description of the option, if any.
             Can only be up to 50 characters.
-        emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
+        emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
-            the custom or unicode emoji or an instance of :class:`PartialEmoji` or :class:`Emoji`.
+            the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
         default: :class:`bool`
             Whether this option is selected by default.
 
@@ -239,6 +247,15 @@ class Select(Item[V]):
         self._underlying.options.append(option)
 
     @property
+    def disabled(self) -> bool:
+        """:class:`bool`: Whether the select is disabled or not."""
+        return self._underlying.disabled
+
+    @disabled.setter
+    def disabled(self, value: bool):
+        self._underlying.disabled = bool(value)
+
+    @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
         return self._selected_values
@@ -265,6 +282,7 @@ class Select(Item[V]):
             min_values=component.min_values,
             max_values=component.max_values,
             options=component.options,
+            disabled=component.disabled,
             row=None,
         )
 
@@ -283,6 +301,7 @@ def select(
     min_values: int = 1,
     max_values: int = 1,
     options: List[SelectOption] = MISSING,
+    disabled: bool = False,
     row: Optional[int] = None,
 ) -> Callable[[ItemCallbackType], ItemCallbackType]:
     """A decorator that attaches a select menu to a component.
@@ -291,6 +310,8 @@ def select(
     the :class:`discord.ui.View`, the :class:`discord.ui.Select` being pressed and
     the :class:`discord.Interaction` you receive.
 
+    In order to get the selected items that the user has chosen within the callback
+    use :attr:`Select.values`.
 
     Parameters
     ------------
@@ -313,11 +334,13 @@ def select(
         Defaults to 1 and must be between 1 and 25.
     options: List[:class:`discord.SelectOption`]
         A list of options that can be selected in this menu.
+    disabled: :class:`bool`
+        Whether the select is disabled or not. Defaults to ``False``.
     """
 
     def decorator(func: ItemCallbackType) -> ItemCallbackType:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError('button function must be a coroutine function')
+            raise TypeError('select function must be a coroutine function')
 
         func.__discord_ui_model_type__ = Select
         func.__discord_ui_model_kwargs__ = {
@@ -327,6 +350,7 @@ def select(
             'min_values': min_values,
             'max_values': max_values,
             'options': options,
+            'disabled': disabled,
         }
         return func
 

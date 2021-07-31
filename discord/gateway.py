@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 import asyncio
 from collections import namedtuple, deque
 import concurrent.futures
-import json
 import logging
 import struct
 import sys
@@ -421,7 +420,7 @@ class DiscordWebSocket:
             msg = self._zlib.decompress(self._buffer)
             msg = msg.decode('utf-8')
             self._buffer = bytearray()
-        msg = json.loads(msg)
+        msg = utils.from_json(msg)
 
         log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
         self._dispatch('socket_response', msg)
@@ -595,7 +594,7 @@ class DiscordWebSocket:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
 
-    async def change_presence(self, *, activity=None, status=None, afk=False, since=0.0):
+    async def change_presence(self, *, activity=None, status=None, since=0.0):
         if activity is not None:
             if not isinstance(activity, BaseActivity):
                 raise InvalidArgument('activity must derive from BaseActivity.')
@@ -610,7 +609,7 @@ class DiscordWebSocket:
             'op': self.PRESENCE,
             'd': {
                 'activities': activity,
-                'afk': afk,
+                'afk': False,
                 'since': since,
                 'status': status
             }
@@ -719,7 +718,7 @@ class DiscordVoiceWebSocket:
 
     async def _hook(self, *args):
         pass
-    
+
     async def send_as_json(self, data):
         log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
@@ -824,7 +823,7 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
-            
+
         await self._hook(self, msg)
 
     async def initial_connection(self, data):
@@ -882,7 +881,7 @@ class DiscordVoiceWebSocket:
         # This exception is handled up the chain
         msg = await asyncio.wait_for(self.ws.receive(), timeout=30.0)
         if msg.type is aiohttp.WSMsgType.TEXT:
-            await self.received_message(json.loads(msg.data))
+            await self.received_message(utils.from_json(msg.data))
         elif msg.type is aiohttp.WSMsgType.ERROR:
             log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data

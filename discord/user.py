@@ -35,11 +35,14 @@ __all__ = (
     'ClientUser',
 )
 
-_BaseUser = discord.abc.User
+
+class _UserTag:
+    __slots__ = ()
+    id: int
 
 
-class BaseUser(_BaseUser):
-    __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
+class BaseUser(_UserTag):
+    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', '_accent_colour', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
         name: str
@@ -62,7 +65,7 @@ class BaseUser(_BaseUser):
         return f'{self.name}#{self.discriminator}'
 
     def __eq__(self, other):
-        return isinstance(other, _BaseUser) and other.id == self.id
+        return isinstance(other, _UserTag) and other.id == self.id
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -75,6 +78,8 @@ class BaseUser(_BaseUser):
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
+        self._banner = data.get('banner', None)
+        self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
@@ -87,6 +92,8 @@ class BaseUser(_BaseUser):
         self.id = user.id
         self.discriminator = user.discriminator
         self._avatar = user._avatar
+        self._banner = user._banner
+        self._accent_colour = user._accent_colour
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
@@ -118,10 +125,55 @@ class BaseUser(_BaseUser):
             return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
         else:
             return Asset._from_avatar(self._state, self.id, self._avatar)
+
     @property
     def default_avatar(self):
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+
+    @property
+    def banner(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
+
+        .. versionadded:: 2.0
+
+
+        .. note::
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        if self._banner is None:
+            return None
+        return Asset._from_user_banner(self._state, self.id, self._banner)
+
+    @property
+    def accent_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent colour, if applicable.
+
+        There is an alias for this named :attr:`accent_color`.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        if self._accent_colour is None:
+            return None
+        return Colour(self._accent_colour)
+
+    @property
+    def accent_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent color, if applicable.
+
+        There is an alias for this named :attr:`accent_colour`.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        return self.accent_colour
 
     @property
     def colour(self):
@@ -247,7 +299,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar:  bytes = MISSING) -> None:
+    async def edit(self, *, username: str = MISSING, avatar: bytes = MISSING) -> None:
         """|coro|
 
         Edits the current profile of the client.
@@ -322,10 +374,27 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a system user (i.e. represents Discord officially).
     """
 
-    __slots__ = ('__weakref__',)
+    __slots__ = ('_stored',)
+
+    def __init__(self, *, state, data):
+        super().__init__(state=state, data=data)
+        self._stored = False
 
     def __repr__(self):
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
+
+    def __del__(self) -> None:
+        try:
+            if self._stored:
+                self._state.deref_user(self.id)
+        except Exception:
+            pass
+
+    @classmethod
+    def _copy(cls, user):
+        self = super()._copy(user)
+        self._stored = False
+        return self
 
     async def _get_channel(self):
         ch = await self.create_dm()

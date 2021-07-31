@@ -42,15 +42,17 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 from urllib.parse import quote as _uriquote
 import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
 from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
+from .utils import MISSING
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +84,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -93,11 +96,11 @@ if TYPE_CHECKING:
     Response = Coroutine[Any, Any, T]
 
 
-async def json_or_text(response: aiohttp.ClientResponse) -> Any:
+async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
-            return json.loads(text)
+            return utils.from_json(text)
     except KeyError:
         # Thanks Cloudflare
         pass
@@ -170,7 +173,7 @@ class HTTPClient:
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self.connector = connector
-        self.__session: Optional[aiohttp.ClientSession] = None  # filled in static_login
+        self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
         self._global_over: asyncio.Event = asyncio.Event()
         self._global_over.set()
@@ -223,7 +226,7 @@ class HTTPClient:
                 self._locks[bucket] = lock
 
         # header creation
-        headers = {
+        headers: Dict[str, str] = {
             'User-Agent': self.user_agent,
         }
 
@@ -254,6 +257,8 @@ class HTTPClient:
             # wait until the global lock is complete
             await self._global_over.wait()
 
+        response: Optional[aiohttp.ClientResponse] = None
+        data: Optional[Union[Dict[str, Any], str]] = None
         await lock.acquire()
         with MaybeUnlock(lock) as maybe_lock:
             for tries in range(5):
@@ -268,36 +273,36 @@ class HTTPClient:
                     kwargs['data'] = form_data
 
                 try:
-                    async with self.__session.request(method, url, **kwargs) as r:
-                        log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), r.status)
+                    async with self.__session.request(method, url, **kwargs) as response:
+                        log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
 
                         # even errors have text involved in them so this is safe to call
-                        data = await json_or_text(r)
+                        data = await json_or_text(response)
 
                         # check if we have rate limit header information
-                        remaining = r.headers.get('X-Ratelimit-Remaining')
-                        if remaining == '0' and r.status != 429:
+                        remaining = response.headers.get('X-Ratelimit-Remaining')
+                        if remaining == '0' and response.status != 429:
                             # we've depleted our current bucket
-                            delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
+                            delta = utils._parse_ratelimit_header(response, use_clock=self.use_clock)
                             log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                             maybe_lock.defer()
                             self.loop.call_later(delta, lock.release)
 
                         # the request was successful so just return the text/json
-                        if 300 > r.status >= 200:
+                        if 300 > response.status >= 200:
                             log.debug('%s %s has received %s', method, url, data)
                             return data
 
                         # we are being rate limited
-                        if r.status == 429:
-                            if not r.headers.get('Via'):
+                        if response.status == 429:
+                            if not response.headers.get('Via') or isinstance(data, str):
                                 # Banned by Cloudflare more than likely.
-                                raise HTTPException(r, data)
+                                raise HTTPException(response, data)
 
                             fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
 
                             # sleep a bit
-                            retry_after: float = data['retry_after']  # type: ignore
+                            retry_after: float = data['retry_after']
                             log.warning(fmt, retry_after, bucket)
 
                             # check if it's a global rate limit
@@ -317,20 +322,20 @@ class HTTPClient:
 
                             continue
 
-                        # we've received a 500 or 502, unconditional retry
-                        if r.status in {500, 502}:
+                        # we've received a 500, 502, or 504, unconditional retry
+                        if response.status in {500, 502, 504}:
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
                         # the usual error cases
-                        if r.status == 403:
-                            raise Forbidden(r, data)
-                        elif r.status == 404:
-                            raise NotFound(r, data)
-                        elif r.status == 503:
-                            raise DiscordServerError(r, data)
+                        if response.status == 403:
+                            raise Forbidden(response, data)
+                        elif response.status == 404:
+                            raise NotFound(response, data)
+                        elif response.status >= 500:
+                            raise DiscordServerError(response, data)
                         else:
-                            raise HTTPException(r, data)
+                            raise HTTPException(response, data)
 
                 # This is handling exceptions from the request
                 except OSError as e:
@@ -340,11 +345,14 @@ class HTTPClient:
                         continue
                     raise
 
-            # We've run out of retries, raise.
-            if r.status >= 500:
-                raise DiscordServerError(r, data)
+            if response is not None:
+                # We've run out of retries, raise.
+                if response.status >= 500:
+                    raise DiscordServerError(response, data)
 
-            raise HTTPException(r, data)
+                raise HTTPException(response, data)
+
+            raise RuntimeError('Unreachable code in HTTP handling')
 
     async def get_from_cdn(self, url: str) -> bytes:
         async with self.__session.get(url) as resp:
@@ -375,7 +383,7 @@ class HTTPClient:
             data = await self.request(Route('GET', '/users/@me'))
         except HTTPException as exc:
             self.token = old_token
-            if exc.response.status == 401:
+            if exc.status == 401:
                 raise LoginFailure('Improper token has been passed.') from exc
             raise
 
@@ -413,9 +421,10 @@ class HTTPClient:
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
-        nonce: Optional[str] =  None,
-        allowed_mentions: bool = None,
-        message_reference: bool = None,
+        nonce: Optional[str] = None,
+        allowed_mentions: Optional[message.AllowedMentions] = None,
+        message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -429,7 +438,7 @@ class HTTPClient:
 
         if embed:
             payload['embeds'] = [embed]
-        
+
         if embeds:
             payload['embeds'] = embeds
 
@@ -445,6 +454,9 @@ class HTTPClient:
         if components:
             payload['components'] = components
 
+        if stickers:
+            payload['sticker_ids'] = stickers
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
@@ -458,10 +470,11 @@ class HTTPClient:
         content: Optional[str] = None,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
-        embeds: Iterable[Optional[embed.Embed]] = None,
+        embeds: Optional[Iterable[Optional[embed.Embed]]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
@@ -481,6 +494,8 @@ class HTTPClient:
             payload['message_reference'] = message_reference
         if components:
             payload['components'] = components
+        if stickers:
+            payload['sticker_ids'] = stickers
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
@@ -518,6 +533,7 @@ class HTTPClient:
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -531,6 +547,7 @@ class HTTPClient:
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
+            stickers=stickers,
             components=components,
         )
 
@@ -597,7 +614,7 @@ class HTTPClient:
             emoji=emoji,
         )
 
-        params = {
+        params: Dict[str, Any] = {
             'limit': limit,
         }
         if after:
@@ -706,11 +723,7 @@ class HTTPClient:
             'delete_message_days': delete_message_days,
         }
 
-        if reason:
-            # thanks aiohttp
-            r.url = f'{r.url}?reason={_uriquote(reason)}'
-
-        return self.request(r, params=params)
+        return self.request(r, params=params, reason=reason)
 
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
@@ -864,33 +877,33 @@ class HTTPClient:
 
     # Thread management
 
-    def start_public_thread(
+    def start_thread_with_message(
         self,
         channel_id: Snowflake,
         message_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
-        type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
-            'type': type,
         }
 
         route = Route(
             'POST', '/channels/{channel_id}/messages/{message_id}/threads', channel_id=channel_id, message_id=message_id
         )
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
-    def start_private_thread(
+    def start_thread_without_message(
         self,
         channel_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
@@ -899,7 +912,7 @@ class HTTPClient:
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
@@ -1025,12 +1038,13 @@ class HTTPClient:
     def delete_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
-    def create_guild(self, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
+    def create_guild(self, name: str, region: str, icon: Optional[str]) -> Response[guild.Guild]:
         payload = {
             'name': name,
-            'icon': icon,
             'region': region,
         }
+        if icon:
+            payload['icon'] = icon
 
         return self.request(Route('POST', '/guilds'), json=payload)
 
@@ -1086,12 +1100,13 @@ class HTTPClient:
     def delete_template(self, guild_id: Snowflake, code: str) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def create_from_template(self, code: str, name: str, region: str, icon: bytes) -> Response[guild.Guild]:
+    def create_from_template(self, code: str, name: str, region: str, icon: Optional[str]) -> Response[guild.Guild]:
         payload = {
             'name': name,
-            'icon': icon,
             'region': region,
         }
+        if icon:
+            payload['icon'] = icon
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
     def get_bans(self, guild_id: Snowflake) -> Response[List[guild.Ban]]:
@@ -1154,6 +1169,54 @@ class HTTPClient:
             params['include_roles'] = ', '.join(roles)
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
+
+    def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
+        return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
+
+    def list_premium_sticker_packs(self) -> Response[sticker.ListPremiumStickerPacks]:
+        return self.request(Route('GET', '/sticker-packs'))
+
+    def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
+
+    def get_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake) -> Response[sticker.GuildSticker]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id))
+
+    def create_guild_sticker(self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str) -> Response[sticker.GuildSticker]:
+        initial_bytes = file.fp.read(16)
+
+        try:
+            mime_type = utils._get_mime_type_for_image(initial_bytes)
+        except InvalidArgument:
+            if initial_bytes.startswith(b'{'):
+                mime_type = 'application/json'
+            else:
+                mime_type = 'application/octet-stream'
+        finally:
+            file.reset()
+
+        form: List[Dict[str, Any]] = [
+            {
+                'name': 'file',
+                'value': file.fp,
+                'filename': file.filename,
+                'content_type': mime_type,
+            }
+        ]
+
+        for k, v in payload.items():
+            form.append({
+                'name': k,
+                'value': v,
+            })
+
+        return self.request(Route('POST', '/guilds/{guild_id}/stickers', guild_id=guild_id), form=form, files=[file], reason=reason)
+
+    def modify_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: str) -> Response[sticker.GuildSticker]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), json=payload, reason=reason)
+
+    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: str) -> Response[None]:
+        return self.request(Route('DELETE', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), reason=reason)
 
     def get_all_custom_emojis(self, guild_id: Snowflake) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
@@ -1228,12 +1291,12 @@ class HTTPClient:
 
         return self.request(r)
 
-    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake) -> Response[None]:
+    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
-        return self.request(r)
+        return self.request(r, reason=reason)
 
     def get_audit_logs(
         self,
@@ -1413,7 +1476,7 @@ class HTTPClient:
     def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
+    def create_stage_instance(self, *, reason: Optional[str], **payload: Any) -> Response[channel.StageInstance]:
         valid_keys = (
             'channel_id',
             'topic',
@@ -1421,19 +1484,19 @@ class HTTPClient:
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('POST', '/stage-instances'), json=payload)
+        return self.request(Route('POST', '/stage-instances'), json=payload, reason=reason)
 
-    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+    def edit_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None, **payload: Any) -> Response[None]:
         valid_keys = (
             'topic',
             'privacy_level',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload, reason=reason)
 
-    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
-        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
+    def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Application commands (global)
 
@@ -1562,9 +1625,9 @@ class HTTPClient:
         return self.request(r)
 
     def bulk_upsert_guild_commands(
-        self, 
+        self,
         application_id: Snowflake,
-        guild_id: Snowflake, 
+        guild_id: Snowflake,
         payload: List[interactions.EditApplicationCommand],
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(

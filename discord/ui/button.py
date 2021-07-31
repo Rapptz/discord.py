@@ -87,7 +87,7 @@ class Button(Item[V]):
     def __init__(
         self,
         *,
-        style: ButtonStyle,
+        style: ButtonStyle = ButtonStyle.secondary,
         label: Optional[str] = None,
         disabled: bool = False,
         custom_id: Optional[str] = None,

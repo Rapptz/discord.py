@@ -35,7 +35,7 @@ import discord.abc
 
 from . import utils
 from .utils import MISSING
-from .user import BaseUser, User
+from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
@@ -194,13 +194,11 @@ def flatten_user(cls):
     return cls
 
 
-_BaseUser = discord.abc.User
-
 M = TypeVar('M', bound='Member')
 
 
 @flatten_user
-class Member(discord.abc.Messageable, _BaseUser):
+class Member(discord.abc.Messageable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -249,7 +247,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC when the member used their
-        Nitro boost on the guild, if available. This could be ``None``.
+        "Nitro boost" on the guild, if available. This could be ``None``.
     """
 
     __slots__ = (
@@ -301,7 +299,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         )
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, _BaseUser) and other.id == self.id
+        return isinstance(other, _UserTag) and other.id == self.id
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -328,7 +326,7 @@ class Member(discord.abc.Messageable, _BaseUser):
         try:
             member_data = data.pop('member')
         except KeyError:
-            return state.store_user(data)
+            return state.create_user(data)
         else:
             member_data['user'] = data  # type: ignore
             return cls(data=member_data, guild=guild, state=state)  # type: ignore

@@ -132,6 +132,11 @@ class Button(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type to create a button is :class:`discord.ui.Button`
+        not this one.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -200,6 +205,11 @@ class SelectMenu(Component):
     A select menu is functionally the same as a dropdown, however
     on mobile it renders a bit differently.
 
+    .. note::
+
+        The user constructible and usable type to create a select menu is
+        :class:`discord.ui.Select` not this one.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -216,6 +226,8 @@ class SelectMenu(Component):
         Defaults to 1 and must be between 1 and 25.
     options: List[:class:`SelectOption`]
         A list of options that can be selected in this menu.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -224,6 +236,7 @@ class SelectMenu(Component):
         'min_values',
         'max_values',
         'options',
+        'disabled',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -235,6 +248,7 @@ class SelectMenu(Component):
         self.min_values: int = data.get('min_values', 1)
         self.max_values: int = data.get('max_values', 1)
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
+        self.disabled: bool = data.get('disabled', False)
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -243,6 +257,7 @@ class SelectMenu(Component):
             'min_values': self.min_values,
             'max_values': self.max_values,
             'options': [op.to_dict() for op in self.options],
+            'disabled': self.disabled,
         }
 
         if self.placeholder:
@@ -313,6 +328,16 @@ class SelectOption:
             f'<SelectOption label={self.label!r} value={self.value!r} description={self.description!r} '
             f'emoji={self.emoji!r} default={self.default!r}>'
         )
+
+    def __str__(self) -> str:
+        if self.emoji:
+            base = f'{self.emoji} {self.label}'
+        else:
+            base = self.label
+
+        if self.description:
+            return f'{base}\n{self.description}'
+        return base
 
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:

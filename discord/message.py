@@ -45,7 +45,7 @@ from .file import File
 from .utils import escape_mentions, MISSING
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import Sticker
+from .sticker import StickerItem
 from .threads import Thread
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
-    from .abc import GuildChannel
+    from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
     from .channel import TextChannel, GroupChannel, DMChannel
@@ -588,8 +588,8 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
-    stickers: List[:class:`Sticker`]
-        A list of stickers given to the message.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
 
         .. versionadded:: 1.6
     components: List[:class:`Component`]
@@ -657,7 +657,7 @@ class Message(Hashable):
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.application: Optional[MessageApplicationPayload] = data.get('application')
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
-        self.channel: Union[TextChannel, Thread, DMChannel, GroupChannel] = channel
+        self.channel: MessageableChannel = channel
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.type: MessageType = try_enum(MessageType, data['type'])
         self.pinned: bool = data['pinned']
@@ -666,7 +666,7 @@ class Message(Hashable):
         self.tts: bool = data['tts']
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
-        self.stickers: List[Sticker] = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
@@ -703,8 +703,9 @@ class Message(Hashable):
                 continue
 
     def __repr__(self) -> str:
+        name = self.__class__.__name__
         return (
-            f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
+            f'<{name} id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
         )
 
     def _try_patch(self, data, key, transform=None) -> None:
@@ -993,20 +994,26 @@ class Message(Hashable):
         if self.type is MessageType.default:
             return self.content
 
-        if self.type is MessageType.pins_add:
-            return f'{self.author.name} pinned a message to this channel.'
-
         if self.type is MessageType.recipient_add:
-            return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            else:
+                return f'{self.author.name} added {self.mentions[0].name} to the thread.'
 
         if self.type is MessageType.recipient_remove:
-            return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            else:
+                return f'{self.author.name} removed {self.mentions[0].name} from the thread.'
 
         if self.type is MessageType.channel_name_change:
-            return f'{self.author.name} changed the channel name: {self.content}'
+            return f'{self.author.name} changed the channel name: **{self.content}**'
 
         if self.type is MessageType.channel_icon_change:
             return f'{self.author.name} changed the channel icon.'
+
+        if self.type is MessageType.pins_add:
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -1029,16 +1036,28 @@ class Message(Hashable):
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.premium_guild_subscription:
-            return f'{self.author.name} just boosted the server!'
+            if not self.content:
+                return f'{self.author.name} just boosted the server!'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times!'
 
         if self.type is MessageType.premium_guild_tier_1:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 1!**'
 
         if self.type is MessageType.premium_guild_tier_2:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 2!**'
 
         if self.type is MessageType.premium_guild_tier_3:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
             return f'{self.author.name} has added {self.content} to this channel'
@@ -1058,8 +1077,17 @@ class Message(Hashable):
         if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
+        if self.type is MessageType.thread_created:
+            return f'{self.author.name} started a thread: **{self.content}**. See all **threads**.'
+
         if self.type is MessageType.reply:
             return self.content
+
+        if self.type is MessageType.thread_starter_message:
+            if self.reference is None or self.reference.resolved is None:
+                return 'Sorry, we couldn\'t load the first message in this thread'
+
+            return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
@@ -1160,7 +1188,7 @@ class Message(Hashable):
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
-        embeds: List[:class:`Embeds`]
+        embeds: List[:class:`Embed`]
             The new embeds to replace the original with. Must be a maximum of 10.
             To remove all embeds ``[]`` should be passed.
 
@@ -1223,7 +1251,6 @@ class Message(Hashable):
             flags = MessageFlags._from_value(self.flags.value)
             flags.suppress_embeds = suppress
             payload['flags'] = flags.value
-
 
         if allowed_mentions is MISSING:
             if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
@@ -1475,18 +1502,22 @@ class Message(Hashable):
             Starting the thread failed.
         InvalidArgument
             This message does not have guild info attached.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The started thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
 
-        data = await self._state.http.start_public_thread(
+        data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration,
-            type=ChannelType.public_thread.value,
         )
-        return Thread(guild=self.guild, data=data)  # type: ignore
+        return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
     async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
@@ -1552,8 +1583,11 @@ class PartialMessage(Hashable):
     a message and channel ID are present.
 
     There are two ways to construct this class. The first one is through
-    the constructor itself, and the second is via
-    :meth:`TextChannel.get_partial_message` or :meth:`DMChannel.get_partial_message`.
+    the constructor itself, and the second is via the following:
+
+    - :meth:`TextChannel.get_partial_message`
+    - :meth:`Thread.get_partial_message`
+    - :meth:`DMChannel.get_partial_message`
 
     Note that this class is trimmed down and has no rich attributes.
 
@@ -1575,7 +1609,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`TextChannel`, :class:`DMChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1596,11 +1630,18 @@ class PartialMessage(Hashable):
     to_reference = Message.to_reference
     to_message_reference_dict = Message.to_message_reference_dict
 
-    def __init__(self, *, channel: Union[TextChannel, DMChannel], id: int):
-        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
+    def __init__(self, *, channel: PartialMessageableChannel, id: int):
+        if channel.type not in (
+            ChannelType.text,
+            ChannelType.news,
+            ChannelType.private,
+            ChannelType.news_thread,
+            ChannelType.public_thread,
+            ChannelType.private_thread
+        ):
+            raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 
-        self.channel: Union[TextChannel, DMChannel] = channel
+        self.channel: PartialMessageableChannel = channel
         self._state: ConnectionState = channel._state
         self.id: int = id
 
