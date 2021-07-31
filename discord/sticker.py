@@ -152,6 +152,8 @@ class _StickerTag(Hashable, AssetMixin):
             Downloading the asset failed.
         NotFound
             The asset was deleted.
+        TypeError
+            The sticker is a lottie type.
 
         Returns
         -------
