@@ -513,7 +513,7 @@ class Thread(Messageable, Hashable):
         locked: :class:`bool`
             Whether to lock the thread or not.
         auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
+            The new duration in minutes before a thread is automatically archived for inactivity.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this thread, in seconds.
