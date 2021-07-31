@@ -142,12 +142,14 @@ class WebhookAdapter:
                     for p in multipart:
                         name = p['name']
                         if name == 'payload_json':
-                            to_send = { 'payload_json': p['value'] }
+                            to_send = {'payload_json': p['value']}
                         else:
                             file_data[name] = (p['filename'], p['value'], p['content_type'])
 
                 try:
-                    with session.request(method, url, data=to_send, files=file_data, headers=headers, params=params) as response:
+                    with session.request(
+                        method, url, data=to_send, files=file_data, headers=headers, params=params
+                    ) as response:
                         log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
@@ -346,8 +348,17 @@ class WebhookAdapter:
         return self.request(route, session=session)
 
 
-_context = threading.local()
-_context.adapter = WebhookAdapter()
+class _WebhookContext(threading.local):
+    adapter: Optional[WebhookAdapter] = None
+
+
+_context = _WebhookContext()
+
+
+def _get_webhook_adapter() -> WebhookAdapter:
+    if _context.adapter is None:
+        _context.adapter = WebhookAdapter()
+    return _context.adapter
 
 
 class SyncWebhookMessage(Message):
@@ -621,7 +632,7 @@ class SyncWebhook(BaseWebhook):
         :class:`SyncWebhook`
             The fetched webhook.
         """
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         if prefer_auth and self.auth_token:
             data = adapter.fetch_webhook(self.id, self.auth_token, session=self.session)
@@ -659,7 +670,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None and self.auth_token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         if prefer_auth and self.auth_token:
             adapter.delete_webhook(self.id, token=self.auth_token, session=self.session, reason=reason)
@@ -713,7 +724,7 @@ class SyncWebhook(BaseWebhook):
         if avatar is not MISSING:
             payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
@@ -873,7 +884,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         thread_id: Optional[int] = None
         if thread is not MISSING:
             thread_id = thread.id
@@ -921,7 +932,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         data = adapter.get_webhook_message(
             self.id,
             self.token,
@@ -995,7 +1006,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         adapter.edit_webhook_message(
             self.id,
             self.token,
@@ -1029,7 +1040,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         adapter.delete_webhook_message(
             self.id,
             self.token,
