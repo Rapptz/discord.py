@@ -75,6 +75,7 @@ __all__ = (
     'ThreadConverter',
     'GuildChannelConverter',
     'clean_content',
+    'FormattedDatetimeConverter',
     'Greedy',
     'run_converters',
 )
