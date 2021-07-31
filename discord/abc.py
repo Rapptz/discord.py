@@ -1311,7 +1311,7 @@ class Messageable:
             A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
-        stickers: Sequence[Union[:class:`GuildSticker`, :class:`StickerItem`]]
+        stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0

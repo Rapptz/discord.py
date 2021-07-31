@@ -3124,7 +3124,7 @@ AuditLogDiff
 
         The format type of a sticker being changed.
 
-        See also :attr:`GuildSticker.format_type`
+        See also :attr:`GuildSticker.format`
 
         :type: :class:`StickerFormatType`
 
