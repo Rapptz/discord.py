@@ -455,7 +455,7 @@ class HTTPClient:
             payload['components'] = components
 
         if stickers:
-            payload['sticker_items'] = stickers
+            payload['sticker_ids'] = stickers
 
         return self.request(r, json=payload)
 
@@ -495,7 +495,7 @@ class HTTPClient:
         if components:
             payload['components'] = components
         if stickers:
-            payload['sticker_items'] = stickers
+            payload['sticker_ids'] = stickers
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
