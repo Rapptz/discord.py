@@ -794,7 +794,7 @@ class Client:
         .. note::
 
             To retrieve standard stickers, use :meth:`.fetch_sticker`.
-            or :meth:`.fetch_nitro_sticker_packs`.
+            or :meth:`.fetch_premium_sticker_packs`.
 
         Returns
         --------
@@ -1492,10 +1492,10 @@ class Client:
         cls, _ = _sticker_factory(data['type'])  # type: ignore
         return cls(state=self._connection, data=data) # type: ignore
 
-    async def fetch_nitro_sticker_packs(self) -> List[StickerPack]:
+    async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
 
-        Retrieves all available nitro sticker packs.
+        Retrieves all available premium sticker packs.
 
         .. versionadded:: 2.0
 
@@ -1507,9 +1507,9 @@ class Client:
         Returns
         ---------
         List[:class:`.StickerPack`]
-            All available nitro sticker packs.
+            All available premium sticker packs.
         """
-        data = await self.http.list_nitro_sticker_packs()
+        data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:

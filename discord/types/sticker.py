@@ -89,5 +89,5 @@ class EditGuildSticker(TypedDict, total=False):
     description: str
 
 
-class ListNitroStickerPacks(TypedDict):
+class ListPremiumStickerPacks(TypedDict):
     sticker_packs: List[StickerPack]

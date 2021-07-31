@@ -205,7 +205,7 @@ class SystemChannelFlags(BaseFlags):
 
     @flag_value
     def premium_subscriptions(self):
-        """:class:`bool`: Returns ``True`` if the system channel is used for Nitro boosting notifications."""
+        """:class:`bool`: Returns ``True`` if the system channel is used for "Nitro boosting" notifications."""
         return 2
 
     @flag_value
