@@ -25,52 +25,69 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, TypedDict, Union
-from .emoji import PartialEmoji
+from .snowflake import Snowflake
+from .user import User
 
-ComponentType = Literal[1, 2, 3]
-ButtonStyle = Literal[1, 2, 3, 4, 5]
-
-
-class ActionRow(TypedDict):
-    type: Literal[1]
-    components: List[Component]
+StickerFormatType = Literal[1, 2, 3]
 
 
-class _ButtonComponentOptional(TypedDict, total=False):
-    custom_id: str
-    url: str
-    disabled: bool
-    emoji: PartialEmoji
-    label: str
+class StickerItem(TypedDict):
+    id: Snowflake
+    name: str
+    format_type: StickerFormatType
 
 
-class ButtonComponent(_ButtonComponentOptional):
-    type: Literal[2]
-    style: ButtonStyle
-
-
-class _SelectMenuOptional(TypedDict, total=False):
-    placeholder: str
-    min_values: int
-    max_values: int
-    disabled: bool
-
-
-class _SelectOptionsOptional(TypedDict, total=False):
+class BaseSticker(TypedDict):
+    id: Snowflake
+    name: str
     description: str
-    emoji: PartialEmoji
+    tags: str
+    format_type: StickerFormatType
 
 
-class SelectOption(_SelectOptionsOptional):
-    label: str
-    value: str
-    default: bool
+class StandardSticker(BaseSticker):
+    type: Literal[1]
+    sort_value: int
+    pack_id: Snowflake
 
 
-class SelectMenu(_SelectMenuOptional):
-    type: Literal[3]
-    custom_id: str
-    options: List[SelectOption]
+class _GuildStickerOptional(TypedDict, total=False):
+    user: User
 
 
-Component = Union[ActionRow, ButtonComponent, SelectMenu]
+class GuildSticker(BaseSticker, _GuildStickerOptional):
+    type: Literal[2]
+    available: bool
+    guild_id: Snowflake
+
+
+Sticker = Union[BaseSticker, StandardSticker, GuildSticker]
+
+
+class StickerPack(TypedDict):
+    id: Snowflake
+    stickers: List[StandardSticker]
+    name: str
+    sku_id: Snowflake
+    cover_sticker_id: Snowflake
+    description: str
+    banner_asset_id: Snowflake
+
+
+class _CreateGuildStickerOptional(TypedDict, total=False):
+    description: str
+
+
+class CreateGuildSticker(_CreateGuildStickerOptional):
+    name: str
+    tags: str
+
+
+class EditGuildSticker(TypedDict, total=False):
+    name: str
+    tags: str
+    description: str
+
+
+class ListPremiumStickerPacks(TypedDict):
+    sticker_packs: List[StickerPack]

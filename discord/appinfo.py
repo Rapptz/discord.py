@@ -146,7 +146,7 @@ class AppInfo:
         self.rpc_origins: List[str] = data['rpc_origins']
         self.bot_public: bool = data['bot_public']
         self.bot_require_code_grant: bool = data['bot_require_code_grant']
-        self.owner: User = state.store_user(data['owner'])
+        self.owner: User = state.create_user(data['owner'])
 
         team: Optional[TeamPayload] = data.get('team')
         self.team: Optional[Team] = Team(state, team) if team else None

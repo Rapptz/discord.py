@@ -2551,7 +2551,7 @@ msgid "The function to remove from the checks."
 msgstr ""
 
 #: discord.ext.commands.Command.update:1 discord.ext.commands.Group.update:1 of
-msgid "Updates :class:`Command` instance with updated attribute."
+msgid "Updates :class:`Command` instance with updated attributes."
 msgstr ""
 
 #: discord.ext.commands.Command.update:3 discord.ext.commands.Group.update:3 of

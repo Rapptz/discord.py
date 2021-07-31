@@ -49,7 +49,7 @@ import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
 from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 from .utils import MISSING
@@ -84,6 +84,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -420,9 +421,10 @@ class HTTPClient:
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
         embeds: Optional[List[embed.Embed]] = None,
-        nonce: Optional[str] =  None,
+        nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -436,7 +438,7 @@ class HTTPClient:
 
         if embed:
             payload['embeds'] = [embed]
-        
+
         if embeds:
             payload['embeds'] = embeds
 
@@ -452,6 +454,9 @@ class HTTPClient:
         if components:
             payload['components'] = components
 
+        if stickers:
+            payload['sticker_ids'] = stickers
+
         return self.request(r, json=payload)
 
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
@@ -465,10 +470,11 @@ class HTTPClient:
         content: Optional[str] = None,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
-        embeds: Iterable[Optional[embed.Embed]] = None,
+        embeds: Optional[Iterable[Optional[embed.Embed]]] = None,
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         form = []
@@ -488,6 +494,8 @@ class HTTPClient:
             payload['message_reference'] = message_reference
         if components:
             payload['components'] = components
+        if stickers:
+            payload['sticker_ids'] = stickers
 
         form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
         if len(files) == 1:
@@ -525,6 +533,7 @@ class HTTPClient:
         nonce: Optional[str] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
+        stickers: Optional[List[sticker.StickerItem]] = None,
         components: Optional[List[components.Component]] = None,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
@@ -538,6 +547,7 @@ class HTTPClient:
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,
+            stickers=stickers,
             components=components,
         )
 
@@ -713,11 +723,7 @@ class HTTPClient:
             'delete_message_days': delete_message_days,
         }
 
-        if reason:
-            # thanks aiohttp
-            r.url = f'{r.url}?reason={_uriquote(reason)}'
-
-        return self.request(r, params=params)
+        return self.request(r, params=params, reason=reason)
 
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
@@ -871,33 +877,33 @@ class HTTPClient:
 
     # Thread management
 
-    def start_public_thread(
+    def start_thread_with_message(
         self,
         channel_id: Snowflake,
         message_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
-        type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
-            'type': type,
         }
 
         route = Route(
             'POST', '/channels/{channel_id}/messages/{message_id}/threads', channel_id=channel_id, message_id=message_id
         )
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
-    def start_private_thread(
+    def start_thread_without_message(
         self,
         channel_id: Snowflake,
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
+        reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
@@ -906,7 +912,7 @@ class HTTPClient:
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
-        return self.request(route, json=payload)
+        return self.request(route, json=payload, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
@@ -1164,6 +1170,54 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/prune', guild_id=guild_id), params=params)
 
+    def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
+        return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
+
+    def list_premium_sticker_packs(self) -> Response[sticker.ListPremiumStickerPacks]:
+        return self.request(Route('GET', '/sticker-packs'))
+
+    def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
+
+    def get_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake) -> Response[sticker.GuildSticker]:
+        return self.request(Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id))
+
+    def create_guild_sticker(self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str) -> Response[sticker.GuildSticker]:
+        initial_bytes = file.fp.read(16)
+
+        try:
+            mime_type = utils._get_mime_type_for_image(initial_bytes)
+        except InvalidArgument:
+            if initial_bytes.startswith(b'{'):
+                mime_type = 'application/json'
+            else:
+                mime_type = 'application/octet-stream'
+        finally:
+            file.reset()
+
+        form: List[Dict[str, Any]] = [
+            {
+                'name': 'file',
+                'value': file.fp,
+                'filename': file.filename,
+                'content_type': mime_type,
+            }
+        ]
+
+        for k, v in payload.items():
+            form.append({
+                'name': k,
+                'value': v,
+            })
+
+        return self.request(Route('POST', '/guilds/{guild_id}/stickers', guild_id=guild_id), form=form, files=[file], reason=reason)
+
+    def modify_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: str) -> Response[sticker.GuildSticker]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), json=payload, reason=reason)
+
+    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: str) -> Response[None]:
+        return self.request(Route('DELETE', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id), reason=reason)
+
     def get_all_custom_emojis(self, guild_id: Snowflake) -> Response[List[emoji.Emoji]]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis', guild_id=guild_id))
 
@@ -1237,12 +1291,12 @@ class HTTPClient:
 
         return self.request(r)
 
-    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake) -> Response[None]:
+    def delete_integration(self, guild_id: Snowflake, integration_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route(
             'DELETE', '/guilds/{guild_id}/integrations/{integration_id}', guild_id=guild_id, integration_id=integration_id
         )
 
-        return self.request(r)
+        return self.request(r, reason=reason)
 
     def get_audit_logs(
         self,
@@ -1422,7 +1476,7 @@ class HTTPClient:
     def get_stage_instance(self, channel_id: Snowflake) -> Response[channel.StageInstance]:
         return self.request(Route('GET', '/stage-instances/{channel_id}', channel_id=channel_id))
 
-    def create_stage_instance(self, **payload) -> Response[channel.StageInstance]:
+    def create_stage_instance(self, *, reason: Optional[str], **payload: Any) -> Response[channel.StageInstance]:
         valid_keys = (
             'channel_id',
             'topic',
@@ -1430,19 +1484,19 @@ class HTTPClient:
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('POST', '/stage-instances'), json=payload)
+        return self.request(Route('POST', '/stage-instances'), json=payload, reason=reason)
 
-    def edit_stage_instance(self, channel_id: Snowflake, **payload) -> Response[None]:
+    def edit_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None, **payload: Any) -> Response[None]:
         valid_keys = (
             'topic',
             'privacy_level',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload)
+        return self.request(Route('PATCH', '/stage-instances/{channel_id}', channel_id=channel_id), json=payload, reason=reason)
 
-    def delete_stage_instance(self, channel_id: Snowflake) -> Response[None]:
-        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id))
+    def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
+        return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Application commands (global)
 
@@ -1571,9 +1625,9 @@ class HTTPClient:
         return self.request(r)
 
     def bulk_upsert_guild_commands(
-        self, 
+        self,
         application_id: Snowflake,
-        guild_id: Snowflake, 
+        guild_id: Snowflake,
         payload: List[interactions.EditApplicationCommand],
     ) -> Response[List[interactions.ApplicationCommand]]:
         r = Route(

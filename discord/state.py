@@ -57,6 +57,7 @@ from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
+from .sticker import GuildSticker
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -178,7 +179,7 @@ class ConnectionState:
         self._intents = intents
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents
+            self.store_user = self.create_user
             self.deref_user = self.deref_user_no_intents
 
         self.parsers = parsers = {}
@@ -204,6 +205,7 @@ class ConnectionState:
         # though more testing will have to be done.
         self._users: Dict[int, User] = {}
         self._emojis = {}
+        self._stickers = {}
         self._guilds = {}
         self._view_store = ViewStore(self)
         self._voice_clients = {}
@@ -284,7 +286,7 @@ class ConnectionState:
     def deref_user(self, user_id):
         self._users.pop(user_id, None)
 
-    def store_user_no_intents(self, data):
+    def create_user(self, data):
         return User(state=self, data=data)
 
     def deref_user_no_intents(self, user_id):
@@ -297,6 +299,11 @@ class ConnectionState:
         emoji_id = int(data['id'])
         self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
         return emoji
+
+    def store_sticker(self, guild, data):
+        sticker_id = int(data['id'])
+        self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
+        return sticker
 
     def store_view(self, view, message_id=None):
         self._view_store.add_view(view, message_id)
@@ -324,14 +331,24 @@ class ConnectionState:
         for emoji in guild.emojis:
             self._emojis.pop(emoji.id, None)
 
+        for sticker in guild.stickers:
+            self._stickers.pop(sticker.id, None)
+
         del guild
 
     @property
     def emojis(self):
         return list(self._emojis.values())
 
+    @property
+    def stickers(self):
+        return list(self._stickers.values())
+
     def get_emoji(self, emoji_id):
         return self._emojis.get(emoji_id)
+
+    def get_sticker(self, sticker_id):
+        return self._stickers.get(sticker_id)
 
     @property
     def private_channels(self):
@@ -924,6 +941,18 @@ class ConnectionState:
             self._emojis.pop(emoji.id, None)
         guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
+
+    def parse_guild_stickers_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            log.debug('GUILD_STICKERS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        before_stickers = guild.stickers
+        for emoji in before_stickers:
+            self._stickers.pop(emoji.id, None)
+        guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
+        self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
     def _get_create_guild(self, data):
         if data.get('unavailable') is False:

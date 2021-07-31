@@ -49,12 +49,17 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .role import Role
-    from .types.audit_log import AuditLogChange as AuditLogChangePayload
-    from .types.audit_log import AuditLogEntry as AuditLogEntryPayload
+    from .types.audit_log import (
+        AuditLogChange as AuditLogChangePayload,
+        AuditLogEntry as AuditLogEntryPayload,
+    )
     from .types.channel import PermissionOverwrite as PermissionOverwritePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
     from .user import User
+    from .stage_instance import StageInstance
+    from .sticker import GuildSticker
+    from .threads import Thread
 
 
 def _transform_permissions(entry: AuditLogEntry, data: str) -> Permissions:
@@ -69,22 +74,21 @@ def _transform_snowflake(entry: AuditLogEntry, data: Snowflake) -> int:
     return int(data)
 
 
-def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Object]:
+def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Union[abc.GuildChannel, Object]]:
     if data is None:
         return None
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
 
-def _transform_owner_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
+def _transform_member_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
     return entry._get_member(int(data))
 
-
-def _transform_inviter_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
+def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Guild]:
     if data is None:
         return None
-    return entry._get_member(int(data))
+    return entry._state._get_guild(data)
 
 
 def _transform_overwrites(
@@ -142,6 +146,11 @@ def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
 
     return _transform
 
+def _transform_type(entry: AuditLogEntry, data: Union[int]) -> Union[enums.ChannelType, enums.StickerType]:
+    if entry.action.name.startswith('sticker_'):
+        return enums.try_enum(enums.StickerType, data)
+    else:
+        return enums.try_enum(enums.ChannelType, data)
 
 class AuditLogDiff:
     def __len__(self) -> int:
@@ -176,8 +185,8 @@ class AuditLogChanges:
         'permissions':                   (None, _transform_permissions),
         'id':                            (None, _transform_snowflake),
         'color':                         ('colour', _transform_color),
-        'owner_id':                      ('owner', _transform_owner_id),
-        'inviter_id':                    ('inviter', _transform_inviter_id),
+        'owner_id':                      ('owner', _transform_member_id),
+        'inviter_id':                    ('inviter', _transform_member_id),
         'channel_id':                    ('channel', _transform_channel),
         'afk_channel_id':                ('afk_channel', _transform_channel),
         'system_channel_id':             ('system_channel', _transform_channel),
@@ -191,12 +200,15 @@ class AuditLogChanges:
         'icon_hash':                     ('icon', _transform_icon),
         'avatar_hash':                   ('avatar', _transform_avatar),
         'rate_limit_per_user':           ('slowmode_delay', None),
+        'guild_id':                      ('guild', _transform_guild_id),
+        'tags':                          ('emoji', None),
         'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
         'region':                        (None, _enum_transformer(enums.VoiceRegion)),
         'rtc_region':                    (None, _enum_transformer(enums.VoiceRegion)),
         'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
         'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
-        'type':                          (None, _enum_transformer(enums.ChannelType)),
+        'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
+        'type':                          (None, _transform_type),
     }
     # fmt: on
 
@@ -434,7 +446,7 @@ class AuditLogEntry(Hashable):
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
-    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, Object, None]:
+    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None]:
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
@@ -501,3 +513,12 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_message(self, target_id: int) -> Union[Member, User, None]:
         return self._get_member(target_id)
+
+    def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
+        return self.guild.get_stage_instance(target_id) or Object(id=target_id)
+
+    def _convert_target_sticker(self, target_id: int) -> Union[GuildSticker, Object]:
+        return self._state.get_sticker(target_id) or Object(id=target_id)
+
+    def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
+        return self.guild.get_thread(target_id) or Object(id=target_id)

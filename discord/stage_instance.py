@@ -97,8 +97,8 @@ class StageInstance(Hashable):
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
-        self.privacy_level = try_enum(StagePrivacyLevel, data['privacy_level'])
-        self.discoverable_disabled = data['discoverable_disabled']
+        self.privacy_level: StagePrivacyLevel = try_enum(StagePrivacyLevel, data['privacy_level'])
+        self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
 
     def __repr__(self) -> str:
         return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
@@ -111,7 +111,7 @@ class StageInstance(Hashable):
     def is_public(self) -> bool:
         return self.privacy_level is StagePrivacyLevel.public
 
-    async def edit(self, *, topic: str = MISSING, privacy_level: StagePrivacyLevel = MISSING) -> None:
+    async def edit(self, *, topic: str = MISSING, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> None:
         """|coro|
 
         Edits the stage instance.
@@ -125,6 +125,8 @@ class StageInstance(Hashable):
             The stage instance's new topic.
         privacy_level: :class:`StagePrivacyLevel`
             The stage instance's new privacy level.
+        reason: :class:`str`
+            The reason the stage instance was edited. Shows up on the audit log.
 
         Raises
         ------
@@ -148,15 +150,20 @@ class StageInstance(Hashable):
             payload['privacy_level'] = privacy_level.value
 
         if payload:
-            await self._state.http.edit_stage_instance(self.channel_id, **payload)
+            await self._state.http.edit_stage_instance(self.channel_id, **payload, reason=reason)
 
-    async def delete(self) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the stage instance.
 
         You must have the :attr:`~Permissions.manage_channels` permission to
         use this.
+
+        Parameters
+        -----------
+        reason: :class:`str`
+            The reason the stage instance was deleted. Shows up on the audit log.
 
         Raises
         ------
@@ -165,4 +172,4 @@ class StageInstance(Hashable):
         HTTPException
             Deleting the stage instance failed.
         """
-        await self._state.http.delete_stage_instance(self.channel_id)
+        await self._state.http.delete_stage_instance(self.channel_id, reason=reason)
