@@ -297,6 +297,18 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param kwargs: The keyword arguments for the event that raised the
         exception.
 
+.. function:: on_socket_event_type(event_type)
+
+    Called whenever a websocket event is received from the WebSocket.
+
+    This is mainly useful for logging how many events you are receiving
+    from the Discord gateway.
+
+    .. versionadded:: 2.0
+
+    :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
+    :type event_type: :class:`str`
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is received from the WebSocket, before
@@ -305,6 +317,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
+
+    This requires setting the ``enable_debug_events`` setting in the :class:`Client`.
 
     .. note::
 
@@ -324,6 +338,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
+
+    This requires setting the ``enable_debug_events`` setting in the :class:`Client`.
 
     .. note::
 
@@ -3124,7 +3140,7 @@ AuditLogDiff
 
         The format type of a sticker being changed.
 
-        See also :attr:`GuildSticker.format_type`
+        See also :attr:`GuildSticker.format`
 
         :type: :class:`StickerFormatType`
 

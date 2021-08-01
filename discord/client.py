@@ -185,6 +185,14 @@ class Client:
         sync your system clock to Google's NTP server.
 
         .. versionadded:: 1.3
+    enable_debug_events: :class:`bool`
+        Whether to enable events that are useful only for debugging gateway related information.
+
+        Right now this involves :func:`on_socket_raw_receive` and :func`:`on_socket_raw_send`. If
+        this is ``False`` then those events will not be dispatched (due to performance considerations).
+        To enable these events, this must be set to ``True``. Defaults to ``False``.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -219,6 +227,7 @@ class Client:
             'before_identify': self._call_before_identify_hook
         }
 
+        self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
