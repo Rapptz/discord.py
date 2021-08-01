@@ -478,7 +478,7 @@ def handle_message_parameters(
 
     multipart = []
     if file is not MISSING:
-        files = [file]
+        files = [file] if file is not None else []
 
     if files:
         multipart.append({'name': 'payload_json', 'value': utils.to_json(payload)})
