@@ -1035,6 +1035,5 @@ def resolve_formatted_dt(formatted_dt: str) -> Optional[Tuple[datetime.datetime,
     if match:
         try:
             return datetime.datetime.fromtimestamp(int(match.group(1)), tz=datetime.timezone.utc), match.group(2)
-        except:
+        except (ValueError, OverflowError, OSError):
             return
-    return
