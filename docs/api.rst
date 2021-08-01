@@ -318,6 +318,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
 
+    This requires setting the ``enable_debug_events`` setting in the :class:`Client`.
+
     .. note::
 
         This is only for the messages received from the client
@@ -336,6 +338,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
+
+    This requires setting the ``enable_debug_events`` setting in the :class:`Client`.
 
     .. note::
 
