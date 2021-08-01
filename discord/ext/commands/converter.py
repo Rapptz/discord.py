@@ -839,11 +839,8 @@ class FormattedDatetimeConverter(Converter[Tuple[datetime.datetime, Optional[str
         
         match = discord.utils.resolve_formatted_dt(argument)
         if match:
-            try:
-                return match
-            except:
-                raise FormattedDatetimeConversionFailure(argument)
-
+            return match
+        
         raise FormattedDatetimeConversionFailure(argument) 
 
 class clean_content(Converter[str]):
