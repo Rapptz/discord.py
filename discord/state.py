@@ -851,7 +851,7 @@ class ConnectionState:
             return
 
         added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
-        removed_member_ids = data.get('removed_member_ids', [])
+        removed_member_ids = [int(x) for x in data.get('removed_member_ids', [])]
         self_id = self.self_id
         for member in added_members:
             if member.id != self_id:
