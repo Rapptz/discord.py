@@ -475,7 +475,6 @@ class ViewStore:
 
     def __verify_integrity(self):
         to_remove: List[Tuple[int, Optional[int], str]] = []
-        now = time.monotonic()
         for (k, (view, _)) in self._views.items():
             if view.is_finished():
                 to_remove.append(k)
