@@ -423,7 +423,9 @@ class DiscordWebSocket:
         msg = utils.from_json(msg)
 
         log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
-        self._dispatch('socket_response', msg)
+        event = msg.get('t')
+        if event:
+            self._dispatch('socket_event_type', event)
 
         op = msg.get('op')
         data = msg.get('d')
@@ -475,8 +477,6 @@ class DiscordWebSocket:
 
             log.warning('Unknown OP code %s.', op)
             return
-
-        event = msg.get('t')
 
         if event == 'READY':
             self._trace = trace = data.get('_trace', [])
