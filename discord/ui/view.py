@@ -456,8 +456,8 @@ class View:
 
 class ViewStore:
     def __init__(self, state: ConnectionState):
-        # (component_type, custom_id): (View, Item)
-        self._views: Dict[Tuple[int, str], Tuple[View, Item]] = {}
+        # (component_type, message_id, custom_id): (View, Item)
+        self._views: Dict[Tuple[int, Optional[int], str], Tuple[View, Item]] = {}
         # message_id: View
         self._synced_message_views: Dict[int, View] = {}
         self._state: ConnectionState = state
@@ -474,7 +474,7 @@ class ViewStore:
         return list(views.values())
 
     def __verify_integrity(self):
-        to_remove: List[Tuple[int, str]] = []
+        to_remove: List[Tuple[int, Optional[int], str]] = []
         now = time.monotonic()
         for (k, (view, _)) in self._views.items():
             if view.is_finished():
@@ -489,7 +489,7 @@ class ViewStore:
         view._start_listening_from_store(self)
         for item in view.children:
             if item.is_dispatchable():
-                self._views[(item.type.value, item.custom_id)] = (view, item)  # type: ignore
+                self._views[(item.type.value, message_id, item.custom_id)] = (view, item)  # type: ignore
 
         if message_id is not None:
             self._synced_message_views[message_id] = view
@@ -506,7 +506,8 @@ class ViewStore:
 
     def dispatch(self, component_type: int, custom_id: str, interaction: Interaction):
         self.__verify_integrity()
-        key = (component_type, custom_id)
+        message_id: Optional[int] = interaction.message and interaction.message.id
+        key = (component_type, message_id, custom_id)
         value = self._views.get(key)
         if value is None:
             return
