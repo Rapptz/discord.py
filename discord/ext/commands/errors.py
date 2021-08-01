@@ -436,7 +436,7 @@ class FormattedDatetimeConversionFailure(BadArgument):
     """Exception raised when the timestamp provided does not match the correct
     format.
 
-    This inherits from :exc:`badArgument`
+    This inherits from :exc:`BadArgument`
 
     Attributes
     -----------

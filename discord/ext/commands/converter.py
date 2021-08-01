@@ -836,11 +836,11 @@ class FormattedDatetimeConverter(Converter[Tuple[datetime.datetime, Optional[str
      """
 
     async def convert(self, ctx: Context, argument: str) -> Tuple[datetime.datetime, Optional[str]]:
-        match = re.match(r'<t:(-?\d+)(:[tTdDfFR])?>$', argument)
-
+        
+        match = discord.utils.resolve_formatted_dt(argument)
         if match:
             try:
-                return datetime.datetime.fromtimestamp(int(match.group(1))), match.group(2)
+                return match
             except:
                 raise FormattedDatetimeConversionFailure(argument)
 
