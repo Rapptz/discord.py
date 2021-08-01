@@ -293,10 +293,10 @@ class DiscordWebSocket:
     def is_ratelimited(self):
         return self._rate_limiter.is_ratelimited()
 
-    def log_receive(self, data, /):
+    def debug_log_receive(self, data, /):
         self._dispatch('socket_raw_receive', data)
 
-    def empty_log_receive(self, _, /):
+    def log_receive(self, _, /):
         pass
 
     @classmethod
@@ -326,7 +326,7 @@ class DiscordWebSocket:
 
         if client._enable_debug_events:
             ws.send = ws.debug_send
-            ws.log_receive = ws.empty_log_receive
+            ws.log_receive = ws.debug_log_receive
 
         client._connection._update_references(ws)
 
