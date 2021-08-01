@@ -648,7 +648,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         you must have :attr:`~discord.Permissions.send_messages` and
         :attr:`~discord.Permissions.use_private_threads` in order to start the thread
         if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
-        Otherwise :attr:`~discord.Permissions.use_public_threads` is needed.
+        Otherwise :attr:`~discord.Permissions.use_threads` is needed.
 
         If a starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
