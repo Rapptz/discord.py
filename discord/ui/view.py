@@ -507,7 +507,9 @@ class ViewStore:
         self.__verify_integrity()
         message_id: Optional[int] = interaction.message and interaction.message.id
         key = (component_type, message_id, custom_id)
-        value = self._views.get(key)
+        # Fallback to None message_id searches in case a persistent view
+        # was added without an associated message_id
+        value = self._views.get(key) or self._views.get((component_type, None, custom_id))
         if value is None:
             return
 
