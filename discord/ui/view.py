@@ -232,7 +232,7 @@ class View:
             The converted view. This always returns a :class:`View` and not
             one of its subclasses.
         """
-        view = View(timeout=timeout)
+        view = cls(timeout=timeout)
         for component in _walk_all_components(message.components):
             view.add_item(_component_to_item(component))
         return view
