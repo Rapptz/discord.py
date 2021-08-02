@@ -1041,7 +1041,7 @@ class Bot(BotBase, discord.Client):
             when passing an empty string, it should always be last as no prefix
             after it will be matched.
     case_insensitive: :class:`bool`
-        Whether the commands should be case insensitive. Defaults to ``False``. This
+        Whether the commands should be case insensitive. Defaults to ``True``. This
         attribute does not carry over to groups. You must set it to every group if
         you require group commands to be case insensitive as well.
     description: :class:`str`
