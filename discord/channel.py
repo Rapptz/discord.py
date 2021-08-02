@@ -127,6 +127,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. note::
 
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
+    default_auto_archive_duration: :class:`int`
+        The default auto archive duration in minutes for threads created in this channel.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -142,6 +146,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         '_overwrites',
         '_type',
         'last_message_id',
+        'default_auto_archive_duration',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
@@ -171,6 +176,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.nsfw: bool = data.get('nsfw', False)
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self._type: int = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -250,6 +256,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
+        default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
     ) -> None:
@@ -301,6 +308,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`Mapping`
             A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
+        default_auto_archive_duration: :class:`int`
+            The new default auto archive duration in minutes for threads created in this channel.
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
 
         Raises
         ------
