@@ -1066,10 +1066,10 @@ class GroupMixin:
         A mapping of command name to :class:`.Command`
         objects.
     case_insensitive: :class:`bool`
-        Whether the commands should be case insensitive. Defaults to ``False``.
+        Whether the commands should be case insensitive. Defaults to ``True``.
     """
     def __init__(self, *args, **kwargs):
-        case_insensitive = kwargs.get('case_insensitive', False)
+        case_insensitive = kwargs.get('case_insensitive', True)
         self.all_commands = _CaseInsensitiveDict() if case_insensitive else {}
         self.case_insensitive = case_insensitive
         super().__init__(*args, **kwargs)
@@ -1270,7 +1270,7 @@ class Group(GroupMixin, Command):
         will be executed. Defaults to ``False``.
     case_insensitive: :class:`bool`
         Indicates if the group's commands should be case insensitive.
-        Defaults to ``False``.
+        Defaults to ``True``.
     """
     def __init__(self, *args, **attrs):
         self.invoke_without_command = attrs.pop('invoke_without_command', False)
