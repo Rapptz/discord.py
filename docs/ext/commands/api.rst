@@ -411,6 +411,9 @@ Converters
 .. autoclass:: discord.ext.commands.ThreadConverter
     :members:
 
+.. autoclass:: discord.ext.commands.GuildStickerConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
@@ -536,6 +539,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.PartialEmojiConversionFailure
     :members:
 
+.. autoexception:: discord.ext.commands.GuildStickerNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
@@ -618,6 +624,7 @@ Exception Hierarchy
                     - :exc:`~.commands.RoleNotFound`
                     - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`
+                    - :exc:`~.commands.GuildStickerNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
                     - :exc:`~.commands.ThreadNotFound`
