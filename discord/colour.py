@@ -308,6 +308,30 @@ class Colour:
         .. versionadded:: 2.0
         """
         return cls(0xFEE75C)
+    
+    @classmethod
+    def embed(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0x2F3136)
+    
+    @classmethod
+    def dark_channel(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x36393E``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0x36393E)
+    
+    @classmethod
+    def light_channel(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xFFFFFF``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xFFFFFF)
 
 
 Color = Colour
