@@ -560,6 +560,38 @@ class Thread(Messageable, Hashable):
 
         await self._state.http.edit_channel(self.id, **payload)
 
+    async def lock(self):
+        """|coro|
+
+        Shorthand alias for thread.edit(locked=True)
+
+        Locking the thread requires :attr:`.Permissions.manage_threads`.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to archive the thread.
+        HTTPException
+            Archiving the thread failed.
+        """
+        await self._state.http.edit_channel(self.id, locked=True)
+
+    async def archive(self):
+        """|coro|
+
+        Shorthand alias for thread.edit(archived=True)
+
+        Archiving the thread requires :attr:`.Permissions.manage_threads`.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to archive the thread.
+        HTTPException
+            Archiving the thread failed.
+        """
+        await self._state.http.edit_channel(self.id, archived=True)
+
     async def join(self):
         """|coro|
 
