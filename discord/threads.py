@@ -563,7 +563,7 @@ class Thread(Messageable, Hashable):
     async def lock(self):
         """|coro|
 
-        Shorthand alias for thread.edit(locked=True)
+        Shorthand alias for :meth:`edit` with `locked=True`.
 
         Locking the thread requires :attr:`.Permissions.manage_threads`.
 
@@ -579,7 +579,7 @@ class Thread(Messageable, Hashable):
     async def archive(self):
         """|coro|
 
-        Shorthand alias for thread.edit(archived=True)
+        Shorthand alias for :meth:`edit` with `archived=True`.
 
         Archiving the thread requires :attr:`.Permissions.manage_threads`.
 
