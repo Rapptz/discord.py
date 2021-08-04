@@ -312,22 +312,16 @@ class Colour:
     @classmethod
     def embed(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
+        This color will match the embed, making it appear with round corners.
 
         .. versionadded:: 2.0
         """
         return cls(0x2F3136)
     
     @classmethod
-    def dark_channel(cls: Type[CT]) -> CT:
-        """A factory method that returns a :class:`Colour` with a value of ``0x36393E``.
-
-        .. versionadded:: 2.0
-        """
-        return cls(0x36393E)
-    
-    @classmethod
-    def light_channel(cls: Type[CT]) -> CT:
+    def light_theme(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0xFFFFFF``.
+        This will appear transparent on Discord's light theme.
 
         .. versionadded:: 2.0
         """
