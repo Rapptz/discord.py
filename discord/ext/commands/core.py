@@ -1945,7 +1945,7 @@ def dynamic_cooldown(cooldown, type=BucketType.default):
 
     This differs from :func:`.cooldown` in that it takes a function that
     accepts a single parameter of type :class:`.discord.Message` and must
-    return a ``Cooldown`` or ``None``. If ``None`` is returned then
+    return a :class:`.Cooldown` or ``None``. If ``None`` is returned then
     that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
@@ -1963,7 +1963,7 @@ def dynamic_cooldown(cooldown, type=BucketType.default):
 
     Parameters
     ------------
-    cooldown: Callable[[:class:`.discord.Message`], Optional[``Cooldown``]]
+    cooldown: Callable[[:class:`.discord.Message`], Optional[:class:`.Cooldown`]]
         A function that takes a message and returns a cooldown that will
         apply to this invocation or ``None`` if the cooldown should be bypassed.
     type: :class:`.BucketType`
