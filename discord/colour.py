@@ -319,13 +319,22 @@ class Colour:
         return cls(0xFFFFFF)
     
     @classmethod
-    def embed(cls: Type[CT]) -> CT:
+    def dark_embed(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
-        This color will match the embed, making it appear with round corners.
+        This color will match the embed in dark mode, making it appear with round corners.
 
         .. versionadded:: 2.0
         """
         return cls(0x2F3136)
+    
+    @classmethod
+    def light_embed(cls :Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
+        This color will match the embed in light mode, making it appear with round corners.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xf2f3f5)
 
 
 Color = Colour
