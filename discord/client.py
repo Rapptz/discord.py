@@ -159,7 +159,7 @@ class Client:
         is ``True``.
 
         .. versionadded:: 1.5
-    status: Optional[:class:`.Status`]
+    start_up_status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     start_up_activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.

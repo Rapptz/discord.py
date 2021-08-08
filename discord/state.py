@@ -141,12 +141,12 @@ class ConnectionState:
 
             start_up_activity = start_up_activity.to_dict()
 
-        status = options.get('status', None)
-        if status:
-            if status is Status.offline:
-                status = 'invisible'
+        start_up_status = options.get('start_up_status', None)
+        if start_up_status:
+            if start_up_status is Status.offline:
+                start_up_status = 'invisible'
             else:
-                status = str(status)
+                start_up_status = str(start_up_status)
 
         intents = options.get('intents', None)
         if intents is not None:
@@ -175,7 +175,7 @@ class ConnectionState:
 
         self.member_cache_flags = cache_flags
         self._start_up_activity = start_up_activity
-        self._status = status
+        self._start_up_status = start_up_status
         self._intents = intents
 
         if not intents.members or cache_flags._empty:

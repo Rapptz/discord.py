@@ -390,9 +390,9 @@ class DiscordWebSocket:
             payload['d']['shard'] = [self.shard_id, self.shard_count]
 
         state = self._connection
-        if state._start_up_activity is not None or state._status is not None:
+        if state._start_up_activity is not None or state._start_up_status is not None:
             payload['d']['presence'] = {
-                'status': state._status,
+                'status': state._start_up_status,
                 'game': state._start_up_activity,
                 'since': 0,
                 'afk': False
