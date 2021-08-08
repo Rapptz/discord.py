@@ -22,9 +22,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from discord.ui.view import View
 import discord.abc
 import discord.utils
 import re
+from .core import Command
+from .bot import Bot, AutoShardedBot
+from discord.message import Message
+from typing import Optional, Union, List
 
 __all__ = (
     'Context',
@@ -87,18 +92,18 @@ class Context(discord.abc.Messageable):
     """
 
     def __init__(self, **attrs):
-        self.message = attrs.pop('message', None)
-        self.bot = attrs.pop('bot', None)
-        self.args = attrs.pop('args', [])
-        self.kwargs = attrs.pop('kwargs', {})
-        self.prefix = attrs.pop('prefix')
-        self.command = attrs.pop('command', None)
-        self.view = attrs.pop('view', None)
-        self.invoked_with = attrs.pop('invoked_with', None)
-        self.invoked_parents = attrs.pop('invoked_parents', [])
-        self.invoked_subcommand = attrs.pop('invoked_subcommand', None)
-        self.subcommand_passed = attrs.pop('subcommand_passed', None)
-        self.command_failed = attrs.pop('command_failed', False)
+        self.message: Optional[Message] = attrs.pop('message', None)
+        self.bot: Optional[Union[Bot, AutoShardedBot]] = attrs.pop('bot', None)
+        self.args: list = attrs.pop('args', [])
+        self.kwargs: dict = attrs.pop('kwargs', {})
+        self.prefix: str = attrs.pop('prefix')
+        self.command: Optional[Command] = attrs.pop('command', None)
+        self.view: Optional[View] = attrs.pop('view', None)
+        self.invoked_with: Optional[str] = attrs.pop('invoked_with', None)
+        self.invoked_parents: List[str] = attrs.pop('invoked_parents', [])
+        self.invoked_subcommand: Optional[Command] = attrs.pop('invoked_subcommand', None)
+        self.subcommand_passed: Optional[str] = attrs.pop('subcommand_passed', None)
+        self.command_failed: Optional[bool] = attrs.pop('command_failed', False)
         self.current_parameter = attrs.pop('current_parameter', None)
         self._state = self.message._state
 
@@ -204,6 +209,10 @@ class Context(discord.abc.Messageable):
             self.invoked_subcommand = invoked_subcommand
             self.invoked_parents = invoked_parents
             self.subcommand_passed = subcommand_passed
+
+    def reset_cooldown(self):
+        """A shortcut to ``.command.reset_cooldown``."""
+        return self.command.reset_cooldown(self)
 
     @property
     def valid(self):
