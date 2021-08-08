@@ -161,7 +161,7 @@ class Client:
         .. versionadded:: 1.5
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
-    activity: Optional[:class:`.BaseActivity`]
+    start_up_activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
     allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
@@ -668,20 +668,20 @@ class Client:
         return self._closed
 
     @property
-    def activity(self) -> Optional[ActivityTypes]:
+    def start_up_activity(self) -> Optional[ActivityTypes]:
         """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
         """
-        return create_activity(self._connection._activity)
+        return create_activity(self._connection._start_up_activity)
 
-    @activity.setter
-    def activity(self, value: Optional[ActivityTypes]) -> None:
+    @start_up_activity.setter
+    def start_up_activity(self, value: Optional[ActivityTypes]) -> None:
         if value is None:
-            self._connection._activity = None
+            self._connection._start_up_activity = None
         elif isinstance(value, BaseActivity):
-            self._connection._activity = value.to_dict()
+            self._connection._start_up_activity = value.to_dict()
         else:
-            raise TypeError('activity must derive from BaseActivity.')
+            raise TypeError('start_up_activity must derive from BaseActivity.')
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:

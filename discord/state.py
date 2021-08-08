@@ -134,12 +134,12 @@ class ConnectionState:
         self.allowed_mentions = allowed_mentions
         self._chunk_requests = {} # Dict[Union[int, str], ChunkRequest]
 
-        activity = options.get('activity', None)
-        if activity:
-            if not isinstance(activity, BaseActivity):
-                raise TypeError('activity parameter must derive from BaseActivity.')
+        start_up_activity = options.get('start_up_activity', None)
+        if start_up_activity:
+            if not isinstance(start_up_activity, BaseActivity):
+                raise TypeError('start_up_activity parameter must derive from BaseActivity.')
 
-            activity = activity.to_dict()
+            start_up_activity = start_up_activity.to_dict()
 
         status = options.get('status', None)
         if status:
@@ -174,7 +174,7 @@ class ConnectionState:
             cache_flags._verify_intents(intents)
 
         self.member_cache_flags = cache_flags
-        self._activity = activity
+        self._start_up_activity = start_up_activity
         self._status = status
         self._intents = intents
 
