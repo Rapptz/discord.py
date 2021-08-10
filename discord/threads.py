@@ -111,7 +111,7 @@ class Thread(Messageable, Hashable):
     locked: :class:`bool`
         Whether the thread is locked.
     invitable: :class:`bool`
-        Wether non-moderators can add other non-moderators to this thread.
+        Whether non-moderators can add other non-moderators to this thread.
         This is always ``True`` for public threads.
     archiver_id: Optional[:class:`int`]
         The user's ID that archived this thread.
@@ -539,7 +539,7 @@ class Thread(Messageable, Hashable):
         locked: :class:`bool`
             Whether to lock the thread or not.
         invitable: :class:`bool`
-            Wether non-moderators can add other non-moderators to this thread.
+            Whether non-moderators can add other non-moderators to this thread.
             Only available for private threads.
         auto_archive_duration: :class:`int`
             The new duration in minutes before a thread is automatically archived for inactivity.
