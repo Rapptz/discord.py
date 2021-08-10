@@ -405,12 +405,12 @@ class ConnectionState:
         try:
             guild = self._get_guild(int(data['guild_id']))
         except KeyError:
-            channel = DMChannel._from_message(self, channel_id)
+            channel = PartialMessageable(state=self, id=channel_id, type=ChannelType.private)
             guild = None
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or Object(id=channel_id), guild
+        return channel or PartialMessageable(state=self, id=channel_id), guild
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream

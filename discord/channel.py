@@ -26,13 +26,28 @@ from __future__ import annotations
 
 import time
 import asyncio
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 import datetime
 
 import discord.abc
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, StagePrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
+from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
@@ -49,6 +64,7 @@ __all__ = (
     'CategoryChannel',
     'StoreChannel',
     'GroupChannel',
+    'PartialMessageable',
 )
 
 if TYPE_CHECKING:
@@ -648,7 +664,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         message: Optional[Snowflake] = None,
         auto_archive_duration: ThreadArchiveDuration = 1440,
         type: Optional[ChannelType] = None,
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
 
@@ -1147,7 +1163,9 @@ class StageChannel(VocalGuildChannel):
         """
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
-    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> StageInstance:
+    async def create_instance(
+        self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None
+    ) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -1651,9 +1669,6 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         await self._edit(options, reason=reason)
 
 
-DMC = TypeVar('DMC', bound='DMChannel')
-
-
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
@@ -1677,10 +1692,8 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipient: Optional[:class:`User`]
+    recipient: :class:`User`
         The user you are participating with in the direct message channel.
-        If this channel is received through the gateway, the recipient information
-        may not be always available.
     me: :class:`ClientUser`
         The user presenting yourself.
     id: :class:`int`
@@ -1691,7 +1704,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        self.recipient: User = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
@@ -1699,21 +1712,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     def __str__(self) -> str:
-        if self.recipient:
-            return f'Direct Message with {self.recipient}'
-        return 'Direct Message with Unknown User'
+        return f'Direct Message with {self.recipient}'
 
     def __repr__(self) -> str:
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
-
-    @classmethod
-    def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
-        self: DMC = cls.__new__(cls)
-        self._state = state
-        self.id = channel_id
-        self.recipient = None
-        self.me = state.user  # type: ignore
-        return self
 
     @property
     def type(self) -> ChannelType:
@@ -1922,6 +1924,69 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         await self._state.http.leave_group(self.id)
 
 
+class PartialMessageable(discord.abc.Messageable, Hashable):
+    """Represents a partial messageable to aid with working messageable channels when
+    only a channel ID are present.
+
+    The only way to construct this class is through :meth:`Client.get_partial_messageable`.
+
+    Note that this class is trimmed down and has no rich attributes.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial messageables are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial messageables are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the partial messageable's hash.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The channel ID associated with this partial messageable.
+    type: Optional[:class:`ChannelType`]
+        The channel type associated with this partial messageable, if given.
+    """
+
+    def __init__(self, state: ConnectionState, id: int, type: Optional[ChannelType] = None):
+        self._state: ConnectionState = state
+        self._channel: Object = Object(id=id)
+        self.id: int = id
+        self.type: Optional[ChannelType] = type
+
+    async def _get_channel(self) -> Object:
+        return self._channel
+
+    def get_partial_message(self, message_id: int, /) -> PartialMessage:
+        """Creates a :class:`PartialMessage` from the message ID.
+
+        This is useful if you want to work with a message and only have its ID without
+        doing an unnecessary API call.
+
+        Parameters
+        ------------
+        message_id: :class:`int`
+            The message ID to create a partial message for.
+
+        Returns
+        ---------
+        :class:`PartialMessage`
+            The partial message.
+        """
+
+        from .message import PartialMessage
+
+        return PartialMessage(channel=self, id=message_id)
+
+
 def _guild_channel_factory(channel_type: int):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -1948,6 +2013,7 @@ def _channel_factory(channel_type: int):
         return GroupChannel, value
     else:
         return cls, value
+
 
 def _threaded_channel_factory(channel_type: int):
     cls, value = _channel_factory(channel_type)

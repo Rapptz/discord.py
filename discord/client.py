@@ -39,7 +39,7 @@ from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
-from .channel import _threaded_channel_factory
+from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
@@ -728,6 +728,26 @@ class Client:
             The returned channel or ``None`` if not found.
         """
         return self._connection.get_channel(id)
+
+    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+        """Returns a partial messageable with the given channel ID.
+
+        This is useful if you have a channel_id but don't want to do an API call
+        to send messages to it.
+
+        Parameters
+        -----------
+        id: :class:`int`
+            The channel ID to create a partial messageable for.
+        type: Optional[:class:`ChannelType`]
+            The underlying channel type for the partial messageable.
+
+        Returns
+        --------
+        :class:`PartialMessageable`
+            The partial messageable
+        """
+        return PartialMessageable(state=self._connection, id=id, type=type)
 
     def get_stage_instance(self, id) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.

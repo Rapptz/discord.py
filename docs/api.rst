@@ -3574,6 +3574,15 @@ RoleTags
 .. autoclass:: RoleTags()
     :members:
 
+PartialMessageable
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialMessageable
+
+.. autoclass:: PartialMessageable()
+    :members:
+    :inherited-members:
+
 TextChannel
 ~~~~~~~~~~~~
 
