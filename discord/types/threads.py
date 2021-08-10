@@ -41,6 +41,7 @@ class ThreadMember(TypedDict):
 class _ThreadMetadataOptional(TypedDict, total=False):
     archiver_id: Snowflake
     locked: bool
+    invitable: bool
 
 
 class ThreadMetadata(_ThreadMetadataOptional):
