@@ -493,7 +493,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: ``Cooldown``
+    cooldown: :class:`.Cooldown`
         A class with attributes ``rate`` and ``per`` similar to the
         :func:`.cooldown` decorator.
     type: :class:`BucketType`

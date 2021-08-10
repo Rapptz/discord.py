@@ -289,7 +289,7 @@ class Client:
 
     @property
     def stickers(self) -> List[GuildSticker]:
-        """List[:class:`GuildSticker`]: The stickers that the connected client has.
+        """List[:class:`.GuildSticker`]: The stickers that the connected client has.
 
         .. versionadded:: 2.0
         """
