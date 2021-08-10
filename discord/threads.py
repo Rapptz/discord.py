@@ -110,6 +110,9 @@ class Thread(Messageable, Hashable):
         Whether the thread is archived.
     locked: :class:`bool`
         Whether the thread is locked.
+    invitable: :class:`bool`
+        Wether non-moderators can add other non-moderators to this thread.
+        This is always ``True`` for public threads.
     archiver_id: Optional[:class:`int`]
         The user's ID that archived this thread.
     auto_archive_duration: :class:`int`
