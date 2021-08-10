@@ -617,6 +617,7 @@ Exception Hierarchy
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`
                     - :exc:`~.commands.MemberNotFound`
+                    - :exc:`~.commands.GuildNotFound`
                     - :exc:`~.commands.UserNotFound`
                     - :exc:`~.commands.ChannelNotFound`
                     - :exc:`~.commands.ChannelNotReadable`
