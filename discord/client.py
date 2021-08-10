@@ -33,7 +33,7 @@ from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Op
 
 import aiohttp
 
-from .user import User
+from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
@@ -65,7 +65,6 @@ from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factor
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
     from .channel import DMChannel
-    from .user import ClientUser
     from .message import Message
     from .member import Member
     from .voice_client import VoiceProtocol
@@ -467,7 +466,9 @@ class Client:
         """
 
         log.info('logging in using static token')
-        await self.http.static_login(token.strip())
+
+        data = await self.http.static_login(token.strip())
+        self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
