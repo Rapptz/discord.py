@@ -54,6 +54,7 @@ __all__ = (
     'RoleNotFound',
     'BadInviteArgument',
     'EmojiNotFound',
+    'GuildStickerNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
     'MissingRole',
@@ -430,6 +431,22 @@ class PartialEmojiConversionFailure(BadArgument):
     def __init__(self, argument):
         self.argument = argument
         super().__init__(f'Couldn\'t convert "{argument}" to PartialEmoji.')
+
+class GuildStickerNotFound(BadArgument):
+    """Exception raised when the bot can not find the sticker.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The sticker supplied by the caller that was not found
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Sticker "{argument}" not found.')
 
 class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
