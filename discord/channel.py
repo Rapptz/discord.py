@@ -1669,6 +1669,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         await self._edit(options, reason=reason)
 
 
+DMC = TypeVar('DMC', bound='DMChannel')
+
+
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
@@ -1692,8 +1695,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
-    recipient: :class:`User`
+    recipient: Optional[:class:`User`]
         The user you are participating with in the direct message channel.
+        If this channel is received through the gateway, the recipient information
+        may not be always available.
     me: :class:`ClientUser`
         The user presenting yourself.
     id: :class:`int`
@@ -1704,7 +1709,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: User = state.store_user(data['recipients'][0])
+        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
@@ -1712,10 +1717,21 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     def __str__(self) -> str:
-        return f'Direct Message with {self.recipient}'
+        if self.recipient:
+            return f'Direct Message with {self.recipient}'
+        return 'Direct Message with Unknown User'
 
     def __repr__(self) -> str:
-        return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
+         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
+
+    @classmethod
+    def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
+        self: DMC = cls.__new__(cls)
+        self._state = state
+        self.id = channel_id
+        self.recipient = None
+        self.me = state.user  # type: ignore
+        return self
 
     @property
     def type(self) -> ChannelType:
