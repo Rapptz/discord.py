@@ -27,7 +27,6 @@ import discord.abc
 import discord.utils
 import re
 from .core import Command
-from .bot import Bot, AutoShardedBot
 from discord.message import Message
 from typing import Optional, Union, List
 
@@ -93,7 +92,7 @@ class Context(discord.abc.Messageable):
 
     def __init__(self, **attrs):
         self.message: Optional[Message] = attrs.pop('message', None)
-        self.bot: Optional[Union[Bot, AutoShardedBot]] = attrs.pop('bot', None)
+        self.bot = attrs.pop('bot', None)
         self.args: list = attrs.pop('args', [])
         self.kwargs: dict = attrs.pop('kwargs', {})
         self.prefix: str = attrs.pop('prefix')
