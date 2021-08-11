@@ -74,7 +74,7 @@ class StageInstance(Hashable):
     privacy_level: :class:`StagePrivacyLevel`
         The privacy level of the stage instance.
     discoverable_disabled: :class:`bool`
-        Whether the stage instance is discoverable.
+        Whether discoverability for the stage instance is disabled.
     """
 
     __slots__ = (
