@@ -1722,7 +1722,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return 'Direct Message with Unknown User'
 
     def __repr__(self) -> str:
-         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
+        return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @classmethod
     def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
