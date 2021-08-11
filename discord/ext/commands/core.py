@@ -33,7 +33,6 @@ import asyncio
 import functools
 import inspect
 import datetime
-import types
 
 import discord
 
@@ -43,6 +42,7 @@ from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 from .flags import FlagConverter
+from ...utils import MISSING
 
 __all__ = (
     'Command',
@@ -70,8 +70,6 @@ __all__ = (
     'has_guild_permissions',
     'bot_has_guild_permissions'
 )
-
-from ...utils import MISSING
 
 
 def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
