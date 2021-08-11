@@ -42,6 +42,7 @@ from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, Dy
 from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
+from .flags import FlagConverter
 
 __all__ = (
     'Command',
@@ -69,6 +70,9 @@ __all__ = (
     'has_guild_permissions',
     'bot_has_guild_permissions'
 )
+
+from ...utils import MISSING
+
 
 def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
     partial = functools.partial
@@ -960,47 +964,95 @@ class Command(_BaseCommand):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, Greedy)
-            optional = False  # postpone evaluation of if it's an optional argument
+            flag = isinstance(param.annotation, type) and issubclass(param.annotation, FlagConverter)
+            if flag:
+                # For flag converters, we want to add annotations based on the individual flags.
+                flag_type: FlagConverter = param.annotation
+                for flag_name, flag_instance in flag_type.get_flags().items():
 
-            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
-            # parameter signature is a literal list of it's values
-            annotation = param.annotation.converter if greedy else param.annotation
-            origin = getattr(annotation, '__origin__', None)
-            if not greedy and origin is Union:
-                none_cls = type(None)
-                union_args = annotation.__args__
-                optional = union_args[-1] is none_cls
-                if len(union_args) == 2 and optional:
-                    annotation = union_args[0]
-                    origin = getattr(annotation, '__origin__', None)
+                    # To show that an argument is a flag and not a normal argument, we can add in the flag type's
+                    # prefix and delimiter.
+                    prefix = flag_type.__commands_flag_prefix__
+                    delimiter = flag_type.__commands_flag_delimiter__
+                    original_flag_name = flag_name
+                    flag_name = f"{prefix}{flag_name}"
 
-            if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
-            if param.default is not param.empty:
-                # We don't want None or '' to trigger the [name=value] case and instead it should
-                # do [name] since [name=None] or [name=] are not exactly useful for the user.
-                should_print = param.default if isinstance(param.default, str) else param.default is not None
-                if should_print:
-                    result.append(f'[{name}={param.default}]' if not greedy else
-                                  f'[{name}={param.default}]...')
-                    continue
-                else:
-                    result.append(f'[{name}]')
+                    # The part method wants a parameter instance.
+                    flag_default = inspect.Parameter.empty if flag_instance.default is MISSING else flag_instance.default
+                    flag_annotation = inspect.Parameter.empty if flag_instance.annotation is MISSING else flag_instance.annotation
 
-            elif param.kind == param.VAR_POSITIONAL:
-                if self.require_var_positional:
-                    result.append(f'<{name}...>')
-                else:
-                    result.append(f'[{name}...]')
-            elif greedy:
-                result.append(f'[{name}]...')
-            elif optional:
-                result.append(f'[{name}]')
+                    # Note: I chose "POSITIONAL_OR_KEYWORD" because it's the normal kind of argument.
+                    flag_param = inspect.Parameter(original_flag_name, kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                                                   default=flag_default, annotation=flag_annotation)
+                    result.append(self._signature_part(flag_name, flag_param, flag=True, delimiter=delimiter))
             else:
-                result.append(f'<{name}>')
+                result.append(self._signature_part(name, param))
 
         return ' '.join(result)
+
+    def _signature_part(self, name, param, flag=False, delimiter="="):
+        greedy = isinstance(param.annotation, Greedy)
+        optional = False  # postpone evaluation of if it's an optional argument
+
+        # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+        # parameter signature is a literal list of it's values
+        annotation = param.annotation.converter if greedy else param.annotation
+        origin = getattr(annotation, '__origin__', None)
+        if not greedy and origin is Union:
+            none_cls = type(None)
+            union_args = annotation.__args__
+            optional = union_args[-1] is none_cls
+            if len(union_args) == 2 and optional:
+                annotation = union_args[0]
+                origin = getattr(annotation, '__origin__', None)
+
+        if origin is Literal:
+            true_name = name
+            name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
+            if flag:
+                # For flag literals, we want the name as well as the list of arguments.
+                # Furthermore, we can mimic what argparse does, and add in braces.
+                name = "%s {%s}" % (true_name, name)
+                # We have to use old-fashioned formatting because there are braces in the name.
+        if param.default is not param.empty:
+            # We don't want None or '' to trigger the [name=value] case and instead it should
+            # do [name] since [name=None] or [name=] are not exactly useful for the user.
+            should_print = param.default if isinstance(param.default, str) else param.default is not None
+            if should_print:
+                return f'[{name}{delimiter}{param.default}]' if not greedy else f'[{name}{delimiter}{param.default}]...'
+            else:
+                if flag:
+                    return f'[{name}{delimiter}]'
+                else:
+                    return f'[{name}]'
+
+        elif param.kind == param.VAR_POSITIONAL:
+            if self.require_var_positional:
+                if flag:
+                    return f'<{name}...>'
+                else:
+                    return f'<{name}{delimiter}...>'
+            else:
+                if flag:
+                    return f'[{name}{delimiter}...]'
+                else:
+                    return f'[{name}...]'
+        elif greedy:
+            if flag:
+                return f'[{name}{delimiter}...]'
+            else:
+                return f'[{name}...]'
+        elif optional:
+            if flag:
+                return f'[{name}{delimiter}]'
+            else:
+                return f'[{name}]'
+        else:
+            if flag:
+                return f'<{name}{delimiter}>'
+            else:
+                return f'<{name}>'
+
 
     async def can_run(self, ctx):
         """|coro|
