@@ -343,7 +343,7 @@ class View:
         interaction: :class:`~discord.Interaction`
             The interaction that occurred.
         """
-        if not interaction.response._responded:
+        if not interaction.response.is_done():
             await interaction.response.defer()
 
     async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
