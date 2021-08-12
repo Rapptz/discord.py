@@ -662,7 +662,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         *,
         name: str,
         message: Optional[Snowflake] = None,
-        auto_archive_duration: ThreadArchiveDuration = 1440,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
         type: Optional[ChannelType] = None,
         reason: Optional[str] = None,
     ) -> Thread:
@@ -692,7 +692,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Defaults to ``None``.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
-            Defaults to ``1440`` or 24 hours.
+            If not provided, the channel's default auto archive duration is used.
         type: Optional[:class:`ChannelType`]
             The type of thread to create. If a ``message`` is passed then this parameter
             is ignored, as a thread created with a message is always a public thread.
@@ -720,7 +720,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             data = await self._state.http.start_thread_without_message(
                 self.id,
                 name=name,
-                auto_archive_duration=auto_archive_duration,
+                auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
                 type=type.value,
                 reason=reason,
             )
@@ -729,7 +729,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 self.id,
                 message.id,
                 name=name,
-                auto_archive_duration=auto_archive_duration,
+                auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
                 reason=reason,
             )
 

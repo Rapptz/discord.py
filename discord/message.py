@@ -1484,7 +1484,7 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = MISSING) -> Thread:
         """|coro|
 
         Creates a public thread from this message.
@@ -1502,7 +1502,7 @@ class Message(Hashable):
             The name of the thread.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
-            Defaults to ``1440`` or 24 hours.
+            If not provided, the channel's default auto archive duration is used.
 
         Raises
         -------
@@ -1525,7 +1525,7 @@ class Message(Hashable):
             self.channel.id,
             self.id,
             name=name,
-            auto_archive_duration=auto_archive_duration,
+            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
         )
         return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
