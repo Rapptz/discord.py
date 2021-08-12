@@ -354,6 +354,7 @@ class View:
 
             allow = await self.interaction_check(interaction)
             if not allow:
+                await interaction.response.defer()
                 return
 
             await item.callback(interaction)
