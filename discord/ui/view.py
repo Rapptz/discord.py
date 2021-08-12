@@ -301,6 +301,8 @@ class View:
         This is useful to override if, for example, you want to ensure that the
         interaction author is a given user.
 
+        When this returns ``False`` :meth:`InteractionResponse.defer` is automatically called
+
         The default implementation of this returns ``True``.
 
         .. note::
