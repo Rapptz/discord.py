@@ -301,7 +301,7 @@ class View:
         This is useful to override if, for example, you want to ensure that the
         interaction author is a given user.
 
-        When this returns ``False`` :meth:`InteractionResponse.defer` is automatically called
+        When this returns ``False`` :meth:`InteractionResponse.defer` is automatically called if the interaction hasn't been responded to
 
         The default implementation of this returns ``True``.
 
@@ -356,7 +356,8 @@ class View:
 
             allow = await self.interaction_check(interaction)
             if not allow:
-                await interaction.response.defer()
+                if not interaction.response.is_done():
+                    await interaction.response.defer()
                 return
 
             await item.callback(interaction)
