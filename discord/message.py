@@ -1476,13 +1476,13 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def start_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
         """|coro|
 
-        Starts a public thread from this message.
+        Creates a public thread from this message.
 
         You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start a thread.
+        :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
 
@@ -1497,16 +1497,16 @@ class Message(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
-            Starting the thread failed.
+            Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
 
         Returns
         --------
         :class:`.Thread`
-            The started thread.
+            The created thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
