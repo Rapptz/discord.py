@@ -301,14 +301,14 @@ class View:
         This is useful to override if, for example, you want to ensure that the
         interaction author is a given user.
 
-        When this returns ``False`` :meth:`InteractionResponse.defer` is automatically called if the interaction hasn't been responded to
-
         The default implementation of this returns ``True``.
 
         .. note::
 
             If an exception occurs within the body then the check
             is considered a failure and :meth:`on_error` is called.
+
+            If this returns ``False`` :meth:`on_check_failure` is called
 
         Parameters
         -----------
@@ -328,6 +328,23 @@ class View:
         A callback that is called when a view's timeout elapses without being explicitly stopped.
         """
         pass
+
+    async def on_check_failure(self, interaction: Interaction) -> None:
+        """|coro|
+
+        A callback that is called when a :meth:`View.interaction_check` returns ``False``.
+
+        This is good to overwrite when you want a custom error message
+
+        Per default this calls :meth:`InteractionResponse.defer` if the interaction has not been responded to before
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that occurred.
+        """
+        if not interaction.response._responded:
+            await interaction.response.defer()
 
     async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
         """|coro|
@@ -356,9 +373,7 @@ class View:
 
             allow = await self.interaction_check(interaction)
             if not allow:
-                if not interaction.response.is_done():
-                    await interaction.response.defer()
-                return
+                return await self.on_check_failure(interaction)
 
             await item.callback(interaction)
             if not interaction.response._responded:
