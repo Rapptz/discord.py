@@ -60,7 +60,7 @@ from .context import Context
 if TYPE_CHECKING:
     from typing_extensions import Concatenate, ParamSpec, TypeGuard
 
-    from ...message import Message
+    from discord.message import Message
 
     from ._types import (
         Coro,
@@ -686,7 +686,7 @@ class Command(_BaseCommand, Generic[CT, P, T]):
         else:
             return self.name
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.qualified_name
 
     async def _parse_arguments(self, ctx: Context) -> None:

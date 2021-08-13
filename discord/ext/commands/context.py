@@ -31,16 +31,16 @@ from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, TypeVar, U
 import discord.abc
 import discord.utils
 
-from ...message import Message
+from discord.message import Message
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
-    from ...guild import Guild
-    from ...member import Member
-    from ...state import ConnectionState
-    from ...user import ClientUser, User
-    from ...voice_client import VoiceProtocol
+    from discord.guild import Guild
+    from discord.member import Member
+    from discord.state import ConnectionState
+    from discord.user import ClientUser, User
+    from discord.voice_client import VoiceProtocol
 
     from .bot import Bot, AutoShardedBot
     from .cog import Cog
@@ -312,7 +312,7 @@ class Context(discord.abc.Messageable, Generic[BT]):
         g = self.guild
         return g.voice_client if g else None
 
-    async def send_help(self, *args: Any) -> Optional[HelpCommand]:
+    async def send_help(self, *args: Any) -> Any:
         """send_help(entity=<bot>)
 
         |coro|

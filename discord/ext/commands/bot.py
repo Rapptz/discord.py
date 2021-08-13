@@ -28,7 +28,6 @@ from __future__ import annotations
 import asyncio
 import collections
 import collections.abc
-from discord.utils import MISSING
 import inspect
 import importlib.util
 import sys
@@ -47,8 +46,8 @@ from .cog import Cog
 
 if TYPE_CHECKING:
     import importlib.machinery
-    
-    from ...message import Message
+
+    from discord.message import Message
     from ._types import (
         Check,
         CoroFunc,
@@ -60,6 +59,8 @@ __all__ = (
     'Bot',
     'AutoShardedBot',
 )
+
+MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
@@ -147,13 +148,13 @@ class BotBase(GroupMixin):
 
     # internal helpers
 
-    def dispatch(self, event_name, *args, **kwargs):
+    def dispatch(self, event_name: str, *args: Any, **kwargs: Any) -> None:
         super().dispatch(event_name, *args, **kwargs)  # type: ignore
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
             self._schedule_event(event, ev, *args, **kwargs)  # type: ignore
 
-    async def close(self):
+    async def close(self) -> None:
         for extension in tuple(self.__extensions):
             try:
                 self.unload_extension(extension)
@@ -168,7 +169,7 @@ class BotBase(GroupMixin):
 
         await super().close()  # type: ignore
 
-    async def on_command_error(self, context: Context, exception: Exception) -> None:
+    async def on_command_error(self, context: Context, exception: errors.CommandError) -> None:
         """|coro|
 
         The default command error handler provided by the bot.
@@ -457,7 +458,7 @@ class BotBase(GroupMixin):
             ``func.__name__``.
         """
 
-        name = func.__name__ if name is None else name
+        name = func.__name__ if name is MISSING else name
 
         if name in self.extra_events:
             try:
