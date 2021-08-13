@@ -36,8 +36,7 @@ __all__ = (
 if TYPE_CHECKING:
     import datetime
     from .types.template import Template as TemplatePayload
-    from .types.emoji import Emoji
-    from .flags import MemberCacheFlags
+    from .state import ConnectionState
     from .user import User
 
 
@@ -131,7 +130,7 @@ class Template:
         '_state',
     )
 
-    def __init__(self, *, state, data: TemplatePayload) -> None:
+    def __init__(self, *, state: ConnectionState, data: TemplatePayload) -> None:
         self._state = state
         self._store(data)
 
