@@ -67,9 +67,14 @@ class BaseUser(_UserTag):
         discriminator: str
         bot: bool
         system: bool
+        _state: ConnectionState
+        _avatar: str
+        _banner: Optional[str]
+        _accent_colour: Optional[str]
+        _public_flags: int
 
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
-        self._state: ConnectionState = state
+        self._state = state
         self._update(data)
 
     def __repr__(self) -> str:
@@ -91,19 +96,19 @@ class BaseUser(_UserTag):
         return self.id >> 22
 
     def _update(self, data: UserPayload) -> None:
-        self.name: str = data['username']
-        self.id: int = int(data['id'])
-        self.discriminator: str = data['discriminator']
-        self._avatar: str = data['avatar']
-        self._banner: Optional[str] = data.get('banner', None)
-        self._accent_colour: Optional[str] = data.get('accent_color', None)
-        self._public_flags: int = data.get('public_flags', 0)
-        self.bot: bool = data.get('bot', False)
-        self.system: bool = data.get('system', False)
+        self.name = data['username']
+        self.id = int(data['id'])
+        self.discriminator = data['discriminator']
+        self._avatar = data['avatar']
+        self._banner = data.get('banner', None)
+        self._accent_colour = data.get('accent_color', None)
+        self._public_flags = data.get('public_flags', 0)
+        self.bot = data.get('bot', False)
+        self.system = data.get('system', False)
 
     @classmethod
     def _copy(cls: Type[BU], user: BU) -> BU:
-        self: BU = cls.__new__(cls)  # bypass __init__
+        self = cls.__new__(cls)  # bypass __init__
 
         self.name = user.name
         self.id = user.id
@@ -303,7 +308,8 @@ class ClientUser(BaseUser):
         verified: bool
         local: Optional[str]
         mfa_enabled: bool
-
+        _flags: int
+        
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         super().__init__(state=state, data=data)
 
@@ -398,6 +404,9 @@ class User(BaseUser, discord.abc.Messageable):
 
     __slots__ = ('_stored',)
 
+    if TYPE_CHECKING:
+        _stored: bool
+
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         super().__init__(state=state, data=data)
         self._stored = False
@@ -414,12 +423,12 @@ class User(BaseUser, discord.abc.Messageable):
 
     @classmethod
     def _copy(cls: Type[U], user: U) -> U:
-        self: U = super()._copy(user)
+        self = super()._copy(user)
         self._stored = False
         return self
 
     async def _get_channel(self) -> DMChannel:
-        ch: DMChannel = await self.create_dm()
+        ch = await self.create_dm()
         return ch
 
     @property
@@ -456,10 +465,10 @@ class User(BaseUser, discord.abc.Messageable):
         :class:`.DMChannel`
             The channel that was created.
         """
-        found: Optional[DMChannel] = self.dm_channel
+        found = self.dm_channel
         if found is not None:
             return found
 
-        state: ConnectionState = self._state
+        state = self._state
         data: DMChannelPayload = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
