@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING, cast, NoReturn, List
+from typing import Any, Optional, TYPE_CHECKING, overload
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
@@ -34,59 +34,53 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    import datetime
     from .types.template import Template as TemplatePayload
-    from .types.emoji import Emoji
-    from .state import ConnectionState
-    from .client import ClientUser
-    from .flags import MemberCacheFlags
-    from .user import User
 
 
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
-    def __getattr__(self, attr: str) -> NoReturn:
+    def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support http methods.')
 
 
 class _PartialTemplateState:
-    def __init__(self, *, state: ConnectionState) -> None:
-        self.__state: ConnectionState = state
+    def __init__(self, *, state):
+        self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
 
     @property
-    def shard_count(self) -> Optional[int]:
+    def shard_count(self):
         return self.__state.shard_count
 
     @property
-    def user(self) -> ClientUser:
-        return cast(ClientUser, self.__state.user) # we use cast here becauses the ClientUser gets set before the bot connects to the gateway
+    def user(self):
+        return self.__state.user
 
     @property
-    def self_id(self) -> int:
-        return self.user.id
+    def self_id(self):
+        return self.__state.user.id
 
     @property
-    def member_cache_flags(self) -> MemberCacheFlags:
+    def member_cache_flags(self):
         return self.__state.member_cache_flags
 
-    def store_emoji(self, guild: Guild, packet: Emoji) -> None:
+    def store_emoji(self, guild, packet):
         return None
 
-    def _get_voice_client(self, id: int) -> None:
+    def _get_voice_client(self, id):
         return None
 
-    def _get_message(self, id: int) -> None:
+    def _get_message(self, id):
         return None
 
-    def _get_guild(self, id: int) -> Optional[Guild]:
+    def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs: Any) -> List:
+    async def query_members(self, **kwargs):
         return []
 
-    def __getattr__(self, attr: str) -> NoReturn:
+    def __getattr__(self, attr):
         raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
 
 
@@ -133,20 +127,20 @@ class Template:
         '_state',
     )
 
-    def __init__(self, *, state: ConnectionState, data: TemplatePayload) -> None:
-        self._state: ConnectionState = state
+    def __init__(self, *, state, data: TemplatePayload):
+        self._state = state
         self._store(data)
 
-    def _store(self, data: TemplatePayload) -> None:
-        self.code: str = data['code']
-        self.uses: int = data['usage_count']
-        self.name: str = data['name']
-        self.description: Optional[str] = data['description']
+    def _store(self, data: TemplatePayload):
+        self.code = data['code']
+        self.uses = data['usage_count']
+        self.name = data['name']
+        self.description = data['description']
         creator_data = data.get('creator')
-        self.creator: Optional[User] = None if creator_data is None else self._state.create_user(creator_data)
+        self.creator = None if creator_data is None else self._state.create_user(creator_data)
 
-        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
-        self.updated_at: Optional[datetime.datetime] = parse_time(data.get('updated_at'))
+        self.created_at = parse_time(data.get('created_at'))
+        self.updated_at = parse_time(data.get('updated_at'))
 
         id = _get_as_snowflake(data, 'source_guild_id')
 
@@ -156,10 +150,10 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
-            guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
+            guild = Guild(data=source_serialised, state=state)  # type: ignore
 
-        self.source_guild: Guild = cast(Guild, guild) # we use cast here because id is a required field on the discord api docs
-        self.is_dirty: Optional[bool] = data.get('is_dirty', None)
+        self.source_guild = guild
+        self.is_dirty = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
         return (
@@ -167,7 +161,7 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
-    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None) -> Guild:
+    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None):
         """|coro|
 
         Creates a :class:`.Guild` using the template.
