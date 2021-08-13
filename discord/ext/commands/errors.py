@@ -29,7 +29,7 @@ from typing import Optional, Any, TYPE_CHECKING, List, Callable, Type, Tuple
 from discord.errors import ClientException, DiscordException
 
 if TYPE_CHECKING:
-    import inspect
+    from inspect import Parameter
 
     from .converter import Converter
     from .context import Context
@@ -163,8 +163,8 @@ class MissingRequiredArgument(UserInputError):
     param: :class:`inspect.Parameter`
         The argument that is missing.
     """
-    def __init__(self, param: inspect.Parameter) -> None:
-        self.param: inspect.Parameter = param
+    def __init__(self, param: Parameter) -> None:
+        self.param: Parameter = param
         super().__init__(f'{param.name} is a required argument that is missing.')
 
 class TooManyArguments(UserInputError):
@@ -712,8 +712,8 @@ class BadUnionArgument(UserInputError):
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
     """
-    def __init__(self, param: inspect.Parameter, converters: Tuple[Type, ...], errors: List[CommandError]) -> None:
-        self.param: inspect.Parameter = param
+    def __init__(self, param: Parameter, converters: Tuple[Type, ...], errors: List[CommandError]) -> None:
+        self.param: Parameter = param
         self.converters: Tuple[Type, ...] = converters
         self.errors: List[CommandError] = errors
 
@@ -750,8 +750,8 @@ class BadLiteralArgument(UserInputError):
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
     """
-    def __init__(self, param: inspect.Parameter, literals: Tuple[Any, ...], errors: List[CommandError]) -> None:
-        self.param: inspect.Parameter = param
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError]) -> None:
+        self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors
 
