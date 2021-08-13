@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING, cast, List
+from typing import Any, Optional, TYPE_CHECKING, cast
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
