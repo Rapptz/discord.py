@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Set
+from typing import TYPE_CHECKING, Optional, Set, List
 
 if TYPE_CHECKING:
     from .types.raw_models import (
@@ -102,7 +102,7 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
     def __init__(self, data: BulkMessageDeleteEvent) -> None:
         self.message_ids: Set[int] = {int(x) for x in data.get('ids', [])}
         self.channel_id: int = int(data['channel_id'])
-        self.cached_messages: list[Message] = []
+        self.cached_messages: List[Message] = []
 
         try:
             self.guild_id: Optional[int] = int(data['guild_id'])
