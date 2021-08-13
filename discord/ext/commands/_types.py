@@ -22,6 +22,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+
+from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union
+
+
+if TYPE_CHECKING:
+    from .context import Context
+    from .cog import Cog
+    from .errors import CommandError
+
+T = TypeVar('T')
+
+Coro = Coroutine[Any, Any, T]
+MaybeCoro = Union[T, Coro[T]]
+CoroFunc = Callable[..., Coro[Any]]
+
+Check = Union[Callable[["Cog", "Context"], MaybeCoro[bool]], Callable[["Context"], MaybeCoro[bool]]]
+Hook = Union[Callable[["Cog", "Context"], Coro[Any]], Callable[["Context"], Coro[Any]]]
+Error = Union[Callable[["Cog", "Context", "CommandError"], Coro[Any]], Callable[["Context", "CommandError"], Coro[Any]]]
+
+
 # This is merely a tag type to avoid circular import issues.
 # Yes, this is a terrible solution but ultimately it is the only solution.
 class _BaseCommand:
