@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING, cast, NoReturn, List
+from typing import Any, Optional, TYPE_CHECKING, cast, List
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
@@ -37,8 +37,6 @@ if TYPE_CHECKING:
     import datetime
     from .types.template import Template as TemplatePayload
     from .types.emoji import Emoji
-    from .state import ConnectionState
-    from .client import ClientUser
     from .flags import MemberCacheFlags
     from .user import User
 
@@ -46,47 +44,47 @@ if TYPE_CHECKING:
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
-    def __getattr__(self, attr: str) -> NoReturn:
+    def __getattr__(self, attr):
         raise AttributeError('PartialTemplateState does not support http methods.')
 
 
 class _PartialTemplateState:
-    def __init__(self, *, state: ConnectionState) -> None:
-        self.__state: ConnectionState = state
+    def __init__(self, *, state):
+        self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
 
     @property
-    def shard_count(self) -> Optional[int]:
+    def shard_count(self):
         return self.__state.shard_count
 
     @property
-    def user(self) -> ClientUser:
-        return cast(ClientUser, self.__state.user) # we use cast here becauses the ClientUser gets set before the bot connects to the gateway
+    def user(self):
+        return self.__state.user
 
     @property
-    def self_id(self) -> int:
-        return self.user.id
+    def self_id(self):
+        return self.__state.user.id
 
     @property
-    def member_cache_flags(self) -> MemberCacheFlags:
+    def member_cache_flags(self):
         return self.__state.member_cache_flags
 
-    def store_emoji(self, guild: Guild, packet: Emoji) -> None:
+    def store_emoji(self, guild, packet):
         return None
 
-    def _get_voice_client(self, id: int) -> None:
+    def _get_voice_client(self, id):
         return None
 
-    def _get_message(self, id: int) -> None:
+    def _get_message(self, id):
         return None
 
-    def _get_guild(self, id: int) -> Optional[Guild]:
+    def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs: Any) -> List:
+    async def query_members(self, **kwargs: Any):
         return []
 
-    def __getattr__(self, attr: str) -> NoReturn:
+    def __getattr__(self, attr):
         raise AttributeError(f'PartialTemplateState does not support {attr!r}.')
 
 
@@ -133,8 +131,8 @@ class Template:
         '_state',
     )
 
-    def __init__(self, *, state: ConnectionState, data: TemplatePayload) -> None:
-        self._state: ConnectionState = state
+    def __init__(self, *, state, data: TemplatePayload) -> None:
+        self._state = state
         self._store(data)
 
     def _store(self, data: TemplatePayload) -> None:
