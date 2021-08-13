@@ -484,7 +484,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
+    def add_cog(self, cog: Cog, *, override: bool = False, overwrite: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -501,6 +501,9 @@ class BotBase(GroupMixin):
         override: :class:`bool`
             If a previously loaded cog with the same name should be ejected
             instead of raising an error.
+        overwrite: :class:`bool`
+            If a previously loaded cog with the same name should be removed
+            but not the commands and listeners of that cog will be removed
 
             .. versionadded:: 2.0
 
@@ -508,6 +511,8 @@ class BotBase(GroupMixin):
         -------
         TypeError
             The cog does not inherit from :class:`.Cog`.
+        ValueError
+            The parameters override and overwrite, both are True
         CommandError
             An error happened during loading.
         .ClientException
@@ -519,11 +524,16 @@ class BotBase(GroupMixin):
 
         cog_name = cog.__cog_name__
         existing = self.__cogs.get(cog_name)
+        if override and overwrite:
+            raise ValueError("Overwrite and override, both should not be True")
 
         if existing is not None:
-            if not override:
+            if override:
+                self.remove_cog(cog_name)
+            elif not overwrite:
                 raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
-            self.remove_cog(cog_name)
+            else:
+                pass
 
         cog = cog._inject(self)
         self.__cogs[cog_name] = cog
