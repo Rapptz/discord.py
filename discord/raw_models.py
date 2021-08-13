@@ -51,10 +51,12 @@ __all__ = (
     'RawIntegrationDeleteEvent',
 )
 
+
 class _RawReprMixin:
     def __repr__(self) -> str:
         value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
         return f'<{self.__class__.__name__} {value}>'
+
 
 class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.
@@ -82,6 +84,7 @@ class RawMessageDeleteEvent(_RawReprMixin):
         except KeyError:
             self.guild_id: Optional[int] = None
 
+
 class RawBulkMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
 
@@ -108,6 +111,7 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
             self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
             self.guild_id: Optional[int] = None
+
 
 class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
@@ -144,6 +148,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
             self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
             self.guild_id: Optional[int] = None
+
 
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
@@ -190,6 +195,7 @@ class RawReactionActionEvent(_RawReprMixin):
         except KeyError:
             self.guild_id: Optional[int] = None
 
+
 class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
 
@@ -213,6 +219,7 @@ class RawReactionClearEvent(_RawReprMixin):
             self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
             self.guild_id: Optional[int] = None
+
 
 class RawReactionClearEmojiEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
@@ -242,6 +249,7 @@ class RawReactionClearEmojiEvent(_RawReprMixin):
             self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
             self.guild_id: Optional[int] = None
+
 
 class RawIntegrationDeleteEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_integration_delete` event.
