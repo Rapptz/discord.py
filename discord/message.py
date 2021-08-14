@@ -979,7 +979,7 @@ class Message(Hashable):
 
         .. versionadded:: 1.3
         """
-        return self.type is not MessageType.default
+        return self.type not in (MessageType.default, MessageType.reply, MessageType.application_command, MessageType.thread_starter_message)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
