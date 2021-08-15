@@ -26,13 +26,28 @@ from __future__ import annotations
 
 import time
 import asyncio
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 import datetime
 
 import discord.abc
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, StagePrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
+from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
@@ -49,6 +64,7 @@ __all__ = (
     'CategoryChannel',
     'StoreChannel',
     'GroupChannel',
+    'PartialMessageable',
 )
 
 if TYPE_CHECKING:
@@ -127,6 +143,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. note::
 
             To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
+    default_auto_archive_duration: :class:`int`
+        The default auto archive duration in minutes for threads created in this channel.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -142,6 +162,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         '_overwrites',
         '_type',
         'last_message_id',
+        'default_auto_archive_duration',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
@@ -171,6 +192,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.nsfw: bool = data.get('nsfw', False)
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self._type: int = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -250,6 +272,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         sync_permissions: bool = ...,
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
+        default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
     ) -> None:
@@ -301,6 +324,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         overwrites: :class:`Mapping`
             A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
+        default_auto_archive_duration: :class:`int`
+            The new default auto archive duration in minutes for threads created in this channel.
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
 
         Raises
         ------
@@ -631,28 +657,28 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         return self.guild.get_thread(thread_id)
 
-    async def start_thread(
+    async def create_thread(
         self,
         *,
         name: str,
         message: Optional[Snowflake] = None,
         auto_archive_duration: ThreadArchiveDuration = 1440,
         type: Optional[ChannelType] = None,
-        reason: Optional[str] = None
+        reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
 
-        Starts a thread in this text channel.
+        Creates a thread in this text channel.
 
         If no starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to start the thread
+        :attr:`~discord.Permissions.use_private_threads` in order to create the thread
         if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
-        Otherwise :attr:`~discord.Permissions.use_public_threads` is needed.
+        Otherwise :attr:`~discord.Permissions.use_threads` is needed.
 
         If a starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start the thread.
+        :attr:`~discord.Permissions.use_threads` in order to create the thread.
 
         .. versionadded:: 2.0
 
@@ -661,30 +687,30 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: :class:`str`
             The name of the thread.
         message: Optional[:class:`abc.Snowflake`]
-            A snowflake representing the message to start the thread with.
-            If ``None`` is passed then a private thread is started.
+            A snowflake representing the message to create the thread with.
+            If ``None`` is passed then a private thread is created.
             Defaults to ``None``.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
         type: Optional[:class:`ChannelType`]
             The type of thread to create. If a ``message`` is passed then this parameter
-            is ignored, as a thread started with a message is always a public thread.
+            is ignored, as a thread created with a message is always a public thread.
             By default this creates a private thread if this is ``None``.
         reason: :class:`str`
-            The reason for starting a new thread. Shows up on the audit log.
+            The reason for creating a new thread. Shows up on the audit log.
 
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
             Starting the thread failed.
 
         Returns
         --------
         :class:`Thread`
-            The started thread
+            The created thread
         """
 
         if type is None:
@@ -1137,7 +1163,9 @@ class StageChannel(VocalGuildChannel):
         """
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
-    async def create_instance(self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> StageInstance:
+    async def create_instance(
+        self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None
+    ) -> StageInstance:
         """|coro|
 
         Create a stage instance.
@@ -1912,6 +1940,69 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         await self._state.http.leave_group(self.id)
 
 
+class PartialMessageable(discord.abc.Messageable, Hashable):
+    """Represents a partial messageable to aid with working messageable channels when
+    only a channel ID are present.
+
+    The only way to construct this class is through :meth:`Client.get_partial_messageable`.
+
+    Note that this class is trimmed down and has no rich attributes.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial messageables are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial messageables are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the partial messageable's hash.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The channel ID associated with this partial messageable.
+    type: Optional[:class:`ChannelType`]
+        The channel type associated with this partial messageable, if given.
+    """
+
+    def __init__(self, state: ConnectionState, id: int, type: Optional[ChannelType] = None):
+        self._state: ConnectionState = state
+        self._channel: Object = Object(id=id)
+        self.id: int = id
+        self.type: Optional[ChannelType] = type
+
+    async def _get_channel(self) -> Object:
+        return self._channel
+
+    def get_partial_message(self, message_id: int, /) -> PartialMessage:
+        """Creates a :class:`PartialMessage` from the message ID.
+
+        This is useful if you want to work with a message and only have its ID without
+        doing an unnecessary API call.
+
+        Parameters
+        ------------
+        message_id: :class:`int`
+            The message ID to create a partial message for.
+
+        Returns
+        ---------
+        :class:`PartialMessage`
+            The partial message.
+        """
+
+        from .message import PartialMessage
+
+        return PartialMessage(channel=self, id=message_id)
+
+
 def _guild_channel_factory(channel_type: int):
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
@@ -1938,6 +2029,7 @@ def _channel_factory(channel_type: int):
         return GroupChannel, value
     else:
         return cls, value
+
 
 def _threaded_channel_factory(channel_type: int):
     cls, value = _channel_factory(channel_type)

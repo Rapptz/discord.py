@@ -247,7 +247,7 @@ class Member(discord.abc.Messageable, _UserTag):
         .. versionadded:: 1.6
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC when the member used their
-        Nitro boost on the guild, if available. This could be ``None``.
+        "Nitro boost" on the guild, if available. This could be ``None``.
     """
 
     __slots__ = (

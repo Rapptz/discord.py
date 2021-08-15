@@ -31,12 +31,11 @@ from typing import (
     Callable,
     Dict,
     List,
-    Mapping,
     Optional,
     TYPE_CHECKING,
     Protocol,
+    Sequence,
     Tuple,
-    Type,
     TypeVar,
     Union,
     overload,
@@ -53,6 +52,7 @@ from .role import Role
 from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
+from .sticker import GuildSticker, StickerItem
 from . import utils
 
 __all__ = (
@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
         OverwriteType,
     )
 
-    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel]
+    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -1148,6 +1148,7 @@ class Messageable:
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
+    - :class:`~discord.Thread`
     """
 
     __slots__ = ()
@@ -1164,6 +1165,7 @@ class Messageable:
         tts: bool = ...,
         embed: Embed = ...,
         file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1181,6 +1183,7 @@ class Messageable:
         tts: bool = ...,
         embed: Embed = ...,
         files: List[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1198,6 +1201,7 @@ class Messageable:
         tts: bool = ...,
         embeds: List[Embed] = ...,
         file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1215,6 +1219,7 @@ class Messageable:
         tts: bool = ...,
         embeds: List[Embed] = ...,
         files: List[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
         allowed_mentions: AllowedMentions = ...,
@@ -1233,6 +1238,7 @@ class Messageable:
         embeds=None,
         file=None,
         files=None,
+        stickers=None,
         delete_after=None,
         nonce=None,
         allowed_mentions=None,
@@ -1305,6 +1311,10 @@ class Messageable:
             A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
+        stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
+            A list of stickers to upload. Must be a maximum of 3.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1339,6 +1349,9 @@ class Messageable:
             if len(embeds) > 10:
                 raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
             embeds = [embed.to_dict() for embed in embeds]
+
+        if stickers is not None:
+            stickers = [sticker.id for sticker in stickers]
 
         if allowed_mentions is not None:
             if state.allowed_mentions is not None:
@@ -1384,6 +1397,7 @@ class Messageable:
                     embeds=embeds,
                     nonce=nonce,
                     message_reference=reference,
+                    stickers=stickers,
                     components=components,
                 )
             finally:
@@ -1406,6 +1420,7 @@ class Messageable:
                     nonce=nonce,
                     allowed_mentions=allowed_mentions,
                     message_reference=reference,
+                    stickers=stickers,
                     components=components,
                 )
             finally:
@@ -1421,6 +1436,7 @@ class Messageable:
                 nonce=nonce,
                 allowed_mentions=allowed_mentions,
                 message_reference=reference,
+                stickers=stickers,
                 components=components,
             )
 
@@ -1454,7 +1470,7 @@ class Messageable:
             This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
-        
+
             async with channel.typing():
                 # simulate something heavy
                 await asyncio.sleep(10)

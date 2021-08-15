@@ -57,6 +57,7 @@ from .interactions import Interaction
 from .ui.view import ViewStore
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
+from .sticker import GuildSticker
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -204,6 +205,7 @@ class ConnectionState:
         # though more testing will have to be done.
         self._users: Dict[int, User] = {}
         self._emojis = {}
+        self._stickers = {}
         self._guilds = {}
         self._view_store = ViewStore(self)
         self._voice_clients = {}
@@ -298,6 +300,11 @@ class ConnectionState:
         self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
         return emoji
 
+    def store_sticker(self, guild, data):
+        sticker_id = int(data['id'])
+        self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
+        return sticker
+
     def store_view(self, view, message_id=None):
         self._view_store.add_view(view, message_id)
 
@@ -324,14 +331,24 @@ class ConnectionState:
         for emoji in guild.emojis:
             self._emojis.pop(emoji.id, None)
 
+        for sticker in guild.stickers:
+            self._stickers.pop(sticker.id, None)
+
         del guild
 
     @property
     def emojis(self):
         return list(self._emojis.values())
 
+    @property
+    def stickers(self):
+        return list(self._stickers.values())
+
     def get_emoji(self, emoji_id):
         return self._emojis.get(emoji_id)
+
+    def get_sticker(self, sticker_id):
+        return self._stickers.get(sticker_id)
 
     @property
     def private_channels(self):
@@ -393,7 +410,7 @@ class ConnectionState:
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or Object(id=channel_id), guild
+        return channel or PartialMessageable(state=self, id=channel_id), guild
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream
@@ -834,7 +851,7 @@ class ConnectionState:
             return
 
         added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
-        removed_member_ids = data.get('removed_member_ids', [])
+        removed_member_ids = [int(x) for x in data.get('removed_member_ids', [])]
         self_id = self.self_id
         for member in added_members:
             if member.id != self_id:
@@ -847,7 +864,8 @@ class ConnectionState:
         for member_id in removed_member_ids:
             if member_id != self_id:
                 member = thread._pop_member(member_id)
-                self.dispatch('thread_member_leave', member)
+                if member is not None:
+                    self.dispatch('thread_member_remove', member)
             else:
                 self.dispatch('thread_remove', thread)
 
@@ -924,6 +942,18 @@ class ConnectionState:
             self._emojis.pop(emoji.id, None)
         guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
+
+    def parse_guild_stickers_update(self, data):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            log.debug('GUILD_STICKERS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        before_stickers = guild.stickers
+        for emoji in before_stickers:
+            self._stickers.pop(emoji.id, None)
+        guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
+        self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
     def _get_create_guild(self, data):
         if data.get('unavailable') is False:

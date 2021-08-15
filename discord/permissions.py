@@ -462,6 +462,14 @@ class Permissions(BaseFlags):
         """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis."""
         return 1 << 30
 
+    @make_permission_alias('manage_emojis')
+    def manage_emojis_and_stickers(self):
+        """:class:`bool`: An alias for :attr:`manage_emojis`.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 30
+
     @flag_value
     def use_slash_commands(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use slash commands.
@@ -509,6 +517,22 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 36
+
+    @flag_value
+    def external_stickers(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use stickers from other guilds.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 37
+
+    @make_permission_alias('external_stickers')
+    def use_external_stickers(self) -> int:
+        """:class:`bool`: An alias for :attr:`external_stickers`.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 37
 
 PO = TypeVar('PO', bound='PermissionOverwrite')
 

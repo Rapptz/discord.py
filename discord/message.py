@@ -45,7 +45,7 @@ from .file import File
 from .utils import escape_mentions, MISSING
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import Sticker
+from .sticker import StickerItem
 from .threads import Thread
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
@@ -520,7 +520,7 @@ class Message(Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -588,8 +588,8 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
-    stickers: List[:class:`Sticker`]
-        A list of stickers given to the message.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
 
         .. versionadded:: 1.6
     components: List[:class:`Component`]
@@ -646,7 +646,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, Thread, DMChannel, GroupChannel],
+        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
         data: MessagePayload,
     ):
         self._state: ConnectionState = state
@@ -666,7 +666,7 @@ class Message(Hashable):
         self.tts: bool = data['tts']
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
-        self.stickers: List[Sticker] = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
@@ -1476,13 +1476,13 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def start_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
         """|coro|
 
-        Starts a public thread from this message.
+        Creates a public thread from this message.
 
         You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start a thread.
+        :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
 
@@ -1497,16 +1497,16 @@ class Message(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
-            Starting the thread failed.
+            Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
 
         Returns
         --------
         :class:`.Thread`
-            The started thread.
+            The created thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')

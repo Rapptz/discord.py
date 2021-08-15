@@ -47,7 +47,7 @@ if TYPE_CHECKING:
         ThreadArchiveDuration,
     )
     from .guild import Guild
-    from .channel import TextChannel
+    from .channel import TextChannel, CategoryChannel
     from .member import Member
     from .message import Message, PartialMessage
     from .abc import Snowflake, SnowflakeTime
@@ -238,6 +238,26 @@ class Thread(Messageable, Hashable):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    @property
+    def category(self) -> Optional[CategoryChannel]:
+        """The category channel the parent channel belongs to, if applicable.
+
+        Raises
+        -------
+        ClientException
+            The parent channel was not cached and returned ``None``.
+
+        Returns
+        -------
+        Optional[:class:`CategoryChannel`]
+            The parent channel's category.
+        """
+
+        parent = self.parent
+        if parent is None:
+            raise ClientException('Parent channel not found')
+        return parent.category
+    
     @property
     def category_id(self) -> Optional[int]:
         """The category channel ID the parent channel belongs to, if applicable.
@@ -513,7 +533,7 @@ class Thread(Messageable, Hashable):
         locked: :class:`bool`
             Whether to lock the thread or not.
         auto_archive_duration: :class:`int`
-            The new duration to auto archive threads for inactivity.
+            The new duration in minutes before a thread is automatically archived for inactivity.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this thread, in seconds.
