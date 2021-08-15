@@ -739,6 +739,8 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     This requires :attr:`Intents.members` to be enabled.
 
+    .. versionadded:: 2.0
+
     :param member: The member who joined or left.
     :type member: :class:`ThreadMember`
 
