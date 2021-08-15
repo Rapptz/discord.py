@@ -40,8 +40,8 @@ __all__ = (
     'Cog',
 )
 
-CT = TypeVar('CT', bound='Cog')
-FT = TypeVar('FT', bound=Callable[..., Any])
+CogT = TypeVar('CogT', bound='Cog')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
 
@@ -169,7 +169,7 @@ class CogMeta(type):
     def qualified_name(cls) -> str:
         return cls.__cog_name__
 
-def _cog_special_method(func: FT) -> FT:
+def _cog_special_method(func: FuncT) -> FuncT:
     func.__cog_special_method__ = None
     return func
 
@@ -188,7 +188,7 @@ class Cog(metaclass=CogMeta):
     __cog_commands__: ClassVar[List[Command]]
     __cog_listeners__: ClassVar[List[Tuple[str, str]]]
 
-    def __new__(cls: Type[CT], *args: Any, **kwargs: Any) -> CT:
+    def __new__(cls: Type[CogT], *args: Any, **kwargs: Any) -> CogT:
         # For issue 426, we need to store a copy of the command objects
         # since we modify them to inject `self` to them.
         # To do this, we need to interfere with the Cog creation process.
@@ -271,12 +271,12 @@ class Cog(metaclass=CogMeta):
         return [(name, getattr(self, method_name)) for name, method_name in self.__cog_listeners__]
 
     @classmethod
-    def _get_overridden_method(cls, method: FT) -> Optional[FT]:
+    def _get_overridden_method(cls, method: FuncT) -> Optional[FuncT]:
         """Return None if the method is not overridden. Otherwise returns the overridden method."""
         return getattr(method.__func__, '__cog_special_method__', method)
 
     @classmethod
-    def listener(cls, name: str = MISSING) -> Callable[[FT], FT]:
+    def listener(cls, name: str = MISSING) -> Callable[[FuncT], FuncT]:
         """A decorator that marks a function as a listener.
 
         This is the cog equivalent of :meth:`.Bot.listen`.
@@ -297,7 +297,7 @@ class Cog(metaclass=CogMeta):
         if name is not MISSING and not isinstance(name, str):
             raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__!r} instead.')
 
-        def decorator(func: FT) -> FT:
+        def decorator(func: FuncT) -> FuncT:
             actual = func
             if isinstance(actual, staticmethod):
                 actual = actual.__func__
@@ -413,7 +413,7 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    def _inject(self: CT, bot: BotBase) -> CT:
+    def _inject(self: CogT, bot: BotBase) -> CogT:
         cls = self.__class__
 
         # realistically, the only thing that can cause loading errors

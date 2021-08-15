@@ -56,8 +56,8 @@ MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')
-BT = TypeVar('BT', bound="Union[Bot, AutoShardedBot]")
-CT = TypeVar('CT', bound="Cog")
+BotT = TypeVar('BotT', bound="Union[Bot, AutoShardedBot]")
+CogT = TypeVar('CogT', bound="Cog")
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -65,7 +65,7 @@ else:
     P = TypeVar('P')
 
 
-class Context(discord.abc.Messageable, Generic[BT]):
+class Context(discord.abc.Messageable, Generic[BotT]):
     r"""Represents the context in which a command is being invoked under.
 
     This class contains a lot of meta data to help you understand more about
@@ -124,7 +124,7 @@ class Context(discord.abc.Messageable, Generic[BT]):
     def __init__(self,
         *,
         message: Message,
-        bot: BT,
+        bot: BotT,
         view: StringView,
         args: List[Any] = MISSING,
         kwargs: Dict[str, Any] = MISSING,
@@ -138,7 +138,7 @@ class Context(discord.abc.Messageable, Generic[BT]):
         current_parameter: Optional[inspect.Parameter] = None,
     ):
         self.message: Message = message
-        self.bot: BT = bot
+        self.bot: BotT = bot
         self.args: List[Any] = args or []
         self.kwargs: Dict[str, Any] = kwargs or {}
         self.prefix: Optional[str] = prefix
@@ -152,7 +152,7 @@ class Context(discord.abc.Messageable, Generic[BT]):
         self.current_parameter: Optional[inspect.Parameter] = current_parameter
         self._state: ConnectionState = self.message._state
 
-    async def invoke(self, command: Command[CT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         r"""|coro|
 
         Calls a command with the arguments given.
@@ -183,7 +183,15 @@ class Context(discord.abc.Messageable, Generic[BT]):
         TypeError
             The command argument to invoke is missing.
         """
-        return await command(self, *args, **kwargs)
+        arguments = []
+        if command.cog is not None:
+            arguments.append(command.cog)
+
+        arguments.append(self)
+        arguments.extend(args)
+
+        ret = await command.callback(*arguments, **kwargs)  # type: ignore
+        return ret
 
     async def reinvoke(self, *, call_hooks: bool = False, restart: bool = True) -> None:
         """|coro|
@@ -257,7 +265,7 @@ class Context(discord.abc.Messageable, Generic[BT]):
 
     @property
     def clean_prefix(self) -> str:
-        """Optional[:class:`str`]: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
+        """:class:`str`: The cleaned up invoke prefix. i.e. mentions are ``@name`` instead of ``<@id>``.
 
         .. versionadded:: 2.0
         """
