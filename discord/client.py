@@ -748,7 +748,7 @@ class Client:
 
         Returns
         --------
-        :class:`PartialMessageable`
+        :class:`.PartialMessageable`
             The partial messageable
         """
         return PartialMessageable(state=self._connection, id=id, type=type)
