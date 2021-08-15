@@ -1097,9 +1097,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         if self.quotation:
             (quotation_start, quotation_end) = self.quotation._initial_quotations
-            result = ["%s%s%s" % (quotation_start, r, quotation_end) for r in result]
+            result = [f"{quotation_start}{r}{quotation_end}" for r in result]
 
-        return self.separator.key.join(result)
+        return (self.separator.key or ' ').join(result)
 
     async def can_run(self, ctx: Context) -> bool:
         """|coro|

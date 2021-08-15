@@ -95,7 +95,7 @@ class Separator:
         self.strip_ws: bool = strip_ws
 
     def __repr__(self) -> str:
-        return '<Separator key={0.key!r} strip_ws={0.strip_ws}>'.format(self)
+        return f'<Separator key={self.key!r} strip_ws={self.strip_ws}>'
 
 
 class Quotation:
@@ -185,7 +185,7 @@ class Quotation:
         return item in self._all_keys
 
     def __repr__(self) -> str:
-        return '<Quotation keys={0!r}>'.format(self._all_keys)
+        return f'<Quotation keys={self._all_keys!r}>'
 
 
 class StringView:
@@ -335,7 +335,7 @@ class StringView:
                 continue
 
             allowed_quotes = self.quotation or _all_quotes
-            if not is_quoted and current in _quotes:
+            if not is_quoted and current in allowed_quotes:
                 # we aren't quoted
                 raise UnexpectedQuoteError(current)
 
