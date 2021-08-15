@@ -21,23 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-from __future__ import annotations
-
-from typing import Any, Callable, List, Optional, Union, Tuple, Type, TYPE_CHECKING
-
-import discord
 
 from discord.errors import ClientException, DiscordException
 
-if TYPE_CHECKING:
-    import inspect
-    from .context import Context
-    from .converter import Converter
-    from .cooldowns import Cooldown, BucketType
-    from .flags import Flag
-    
-    import discord.abc
-    from discord.threads import Thread
 
 __all__ = (
     'CommandError',
@@ -99,8 +85,6 @@ __all__ = (
     'MissingRequiredFlag',
 )
 
-MISSING: Any = discord.utils.MISSING
-
 class CommandError(DiscordException):
     r"""The base exception type for all command related errors.
 
@@ -110,7 +94,7 @@ class CommandError(DiscordException):
     in a special way as they are caught and passed into a special event
     from :class:`.Bot`\, :func:`.on_command_error`.
     """
-    def __init__(self, message: Optional[str] = None, *args: Any) -> None:
+    def __init__(self, message=None, *args):
         if message is not None:
             # clean-up @everyone and @here mentions
             m = message.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
@@ -125,15 +109,15 @@ class ConversionError(CommandError):
 
     Attributes
     ----------
-    converter: Union[``Type``, :class:`discord.ext.commands.Converter`]
+    converter: :class:`discord.ext.commands.Converter`
         The converter that failed.
     original: :exc:`Exception`
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
-    def __init__(self, converter: Union[Converter, Type], original: Exception) -> None:
-        self.converter: Converter = converter
-        self.original: Exception = original
+    def __init__(self, converter, original):
+        self.converter = converter
+        self.original = original
 
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors
@@ -165,8 +149,8 @@ class MissingRequiredArgument(UserInputError):
     param: :class:`inspect.Parameter`
         The argument that is missing.
     """
-    def __init__(self, param: inspect.Parameter) -> None:
-        self.param: inspect.Parameter = param
+    def __init__(self, param):
+        self.param = param
         super().__init__(f'{param.name} is a required argument that is missing.')
 
 class TooManyArguments(UserInputError):
@@ -207,9 +191,9 @@ class CheckAnyFailure(CheckFailure):
         A list of check predicates that failed.
     """
 
-    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context], bool]]) -> None:
-        self.checks: List[CheckFailure] = checks
-        self.errors: List[Callable[[Context], bool]] = errors
+    def __init__(self, checks, errors):
+        self.checks = checks
+        self.errors = errors
         super().__init__('You do not have permission to run this command.')
 
 class PrivateMessageOnly(CheckFailure):
@@ -218,7 +202,7 @@ class PrivateMessageOnly(CheckFailure):
 
     This inherits from :exc:`CheckFailure`
     """
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message=None):
         super().__init__(message or 'This command can only be used in private messages.')
 
 class NoPrivateMessage(CheckFailure):
@@ -228,7 +212,7 @@ class NoPrivateMessage(CheckFailure):
     This inherits from :exc:`CheckFailure`
     """
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message=None):
         super().__init__(message or 'This command cannot be used in private messages.')
 
 class NotOwner(CheckFailure):
@@ -251,8 +235,8 @@ class ObjectNotFound(BadArgument):
     argument: :class:`str`
         The argument supplied by the caller that was not matched
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'{argument!r} does not follow a valid ID or mention format.')
 
 class MemberNotFound(BadArgument):
@@ -268,8 +252,8 @@ class MemberNotFound(BadArgument):
     argument: :class:`str`
         The member supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Member "{argument}" not found.')
 
 class GuildNotFound(BadArgument):
@@ -284,8 +268,8 @@ class GuildNotFound(BadArgument):
     argument: :class:`str`
         The guild supplied by the called that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Guild "{argument}" not found.')
 
 class UserNotFound(BadArgument):
@@ -301,8 +285,8 @@ class UserNotFound(BadArgument):
     argument: :class:`str`
         The user supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'User "{argument}" not found.')
 
 class MessageNotFound(BadArgument):
@@ -317,8 +301,8 @@ class MessageNotFound(BadArgument):
     argument: :class:`str`
         The message supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Message "{argument}" not found.')
 
 class ChannelNotReadable(BadArgument):
@@ -331,11 +315,11 @@ class ChannelNotReadable(BadArgument):
 
     Attributes
     -----------
-    argument: Union[:class:`.Thread`, :class:`.abc.GuildChannel`]
+    argument: :class:`.abc.GuildChannel`
         The channel supplied by the caller that was not readable
     """
-    def __init__(self, argument: Union[Thread, discord.abc.GuildChannel]) -> None:
-        self.argument: Union[Thread, discord.abc.GuildChannel] = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f"Can't read messages in {argument.mention}.")
 
 class ChannelNotFound(BadArgument):
@@ -350,8 +334,8 @@ class ChannelNotFound(BadArgument):
     argument: :class:`str`
         The channel supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Channel "{argument}" not found.')
 
 class ThreadNotFound(BadArgument):
@@ -366,8 +350,8 @@ class ThreadNotFound(BadArgument):
     argument: :class:`str`
         The thread supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Thread "{argument}" not found.')
 
 class BadColourArgument(BadArgument):
@@ -382,8 +366,8 @@ class BadColourArgument(BadArgument):
     argument: :class:`str`
         The colour supplied by the caller that was not valid
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Colour "{argument}" is invalid.')
 
 BadColorArgument = BadColourArgument
@@ -400,8 +384,8 @@ class RoleNotFound(BadArgument):
     argument: :class:`str`
         The role supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Role "{argument}" not found.')
 
 class BadInviteArgument(BadArgument):
@@ -411,8 +395,8 @@ class BadInviteArgument(BadArgument):
 
     .. versionadded:: 1.5
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Invite "{argument}" is invalid or expired.')
 
 class EmojiNotFound(BadArgument):
@@ -427,8 +411,8 @@ class EmojiNotFound(BadArgument):
     argument: :class:`str`
         The emoji supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Emoji "{argument}" not found.')
 
 class PartialEmojiConversionFailure(BadArgument):
@@ -444,8 +428,8 @@ class PartialEmojiConversionFailure(BadArgument):
     argument: :class:`str`
         The emoji supplied by the caller that did not match the regex
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Couldn\'t convert "{argument}" to PartialEmoji.')
 
 class GuildStickerNotFound(BadArgument):
@@ -460,8 +444,8 @@ class GuildStickerNotFound(BadArgument):
     argument: :class:`str`
         The sticker supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'Sticker "{argument}" not found.')
 
 class BadBoolArgument(BadArgument):
@@ -476,8 +460,8 @@ class BadBoolArgument(BadArgument):
     argument: :class:`str`
         The boolean argument supplied by the caller that is not in the predefined list
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument):
+        self.argument = argument
         super().__init__(f'{argument} is not a recognised boolean option')
 
 class DisabledCommand(CommandError):
@@ -498,8 +482,8 @@ class CommandInvokeError(CommandError):
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
-    def __init__(self, e: Exception) -> None:
-        self.original: Exception = e
+    def __init__(self, e):
+        self.original = e
         super().__init__(f'Command raised an exception: {e.__class__.__name__}: {e}')
 
 class CommandOnCooldown(CommandError):
@@ -517,10 +501,10 @@ class CommandOnCooldown(CommandError):
     retry_after: :class:`float`
         The amount of seconds to wait before you can retry again.
     """
-    def __init__(self, cooldown: Cooldown, retry_after: float, type: BucketType) -> None:
-        self.cooldown: Cooldown = cooldown
-        self.retry_after: float = retry_after
-        self.type: BucketType = type
+    def __init__(self, cooldown, retry_after, type):
+        self.cooldown = cooldown
+        self.retry_after = retry_after
+        self.type = type
         super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 class MaxConcurrencyReached(CommandError):
@@ -536,9 +520,9 @@ class MaxConcurrencyReached(CommandError):
         The bucket type passed to the :func:`.max_concurrency` decorator.
     """
 
-    def __init__(self, number: int, per: BucketType) -> None:
-        self.number: int = number
-        self.per: BucketType = per
+    def __init__(self, number, per):
+        self.number = number
+        self.per = per
         name = per.name
         suffix = 'per %s' % name if per.name != 'default' else 'globally'
         plural = '%s times %s' if number > 1 else '%s time %s'
@@ -558,8 +542,8 @@ class MissingRole(CheckFailure):
         The required role that is missing.
         This is the parameter passed to :func:`~.commands.has_role`.
     """
-    def __init__(self, missing_role: Union[int, str]) -> None:
-        self.missing_role: Union[int, str] = missing_role
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
         message = f'Role {missing_role!r} is required to run this command.'
         super().__init__(message)
 
@@ -576,8 +560,8 @@ class BotMissingRole(CheckFailure):
         The required role that is missing.
         This is the parameter passed to :func:`~.commands.has_role`.
     """
-    def __init__(self, missing_role: Union[int, str]) -> None:
-        self.missing_role: Union[int, str] = missing_role
+    def __init__(self, missing_role):
+        self.missing_role = missing_role
         message = f'Bot requires the role {missing_role!r} to run this command'
         super().__init__(message)
 
@@ -595,8 +579,8 @@ class MissingAnyRole(CheckFailure):
         The roles that the invoker is missing.
         These are the parameters passed to :func:`~.commands.has_any_role`.
     """
-    def __init__(self, missing_roles: List[Union[int, str]]) -> None:
-        self.missing_roles: List[Union[int, str]] = missing_roles
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
 
         missing = [f"'{role}'" for role in missing_roles]
 
@@ -624,8 +608,8 @@ class BotMissingAnyRole(CheckFailure):
         These are the parameters passed to :func:`~.commands.has_any_role`.
 
     """
-    def __init__(self, missing_roles: List[Union[int, str]]) -> None:
-        self.missing_roles: List[Union[int, str]] = missing_roles
+    def __init__(self, missing_roles):
+        self.missing_roles = missing_roles
 
         missing = [f"'{role}'" for role in missing_roles]
 
@@ -646,11 +630,11 @@ class NSFWChannelRequired(CheckFailure):
 
     Parameters
     -----------
-    channel: Union[:class:`.Thread`, :class:`.abc.GuildChannel`]
+    channel: :class:`discord.abc.GuildChannel`
         The channel that does not have NSFW enabled.
     """
-    def __init__(self, channel: Union[Thread, discord.abc.GuildChannel]) -> None:
-        self.channel: Union[Thread, discord.abc.GuildChannel] = channel
+    def __init__(self, channel):
+        self.channel = channel
         super().__init__(f"Channel '{channel}' needs to be NSFW for this command to work.")
 
 class MissingPermissions(CheckFailure):
@@ -661,11 +645,11 @@ class MissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_permissions: List[:class:`str`]
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
-        self.missing_permissions: List[str] = missing_permissions
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
@@ -684,11 +668,11 @@ class BotMissingPermissions(CheckFailure):
 
     Attributes
     -----------
-    missing_permissions: List[:class:`str`]
+    missing_permissions: :class:`list`
         The required permissions that are missing.
     """
-    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
-        self.missing_permissions: List[str] = missing_permissions
+    def __init__(self, missing_permissions, *args):
+        self.missing_permissions = missing_permissions
 
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
@@ -709,15 +693,15 @@ class BadUnionArgument(UserInputError):
     -----------
     param: :class:`inspect.Parameter`
         The parameter that failed being converted.
-    converters: Tuple[Union[``Type``, :class:`discord.ext.commands.Converter`], ``...``]
+    converters: Tuple[Type, ``...``]
         A tuple of converters attempted in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
     """
-    def __init__(self, param: inspect.Parameter, converters: Tuple[Union[Converter, Type], ...], errors: List[CommandError]) -> None:
-        self.param: inspect.Parameter = param
-        self.converters: Tuple[Union[Converter, Type], ...] = converters
-        self.errors: List[CommandError] = errors
+    def __init__(self, param, converters, errors):
+        self.param = param
+        self.converters = converters
+        self.errors = errors
 
         def _get_name(x):
             try:
@@ -752,10 +736,10 @@ class BadLiteralArgument(UserInputError):
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
     """
-    def __init__(self, param: inspect.Parameter, literals: Tuple[Any, ...], errors: List[CommandError]) -> None:
-        self.param: inspect.Parameter = param
-        self.literals: Tuple[Any, ...] = literals
-        self.errors: List[CommandError] = errors
+    def __init__(self, param, literals, errors):
+        self.param = param
+        self.literals = literals
+        self.errors = errors
 
         to_string = [repr(l) for l in literals]
         if len(to_string) > 2:
@@ -785,8 +769,8 @@ class UnexpectedQuoteError(ArgumentParsingError):
     quote: :class:`str`
         The quote mark that was found inside the non-quoted string.
     """
-    def __init__(self, quote: str) -> None:
-        self.quote: str = quote
+    def __init__(self, quote):
+        self.quote = quote
         super().__init__(f'Unexpected quote mark, {quote!r}, in non-quoted string')
 
 class InvalidEndOfQuotedStringError(ArgumentParsingError):
@@ -800,8 +784,8 @@ class InvalidEndOfQuotedStringError(ArgumentParsingError):
     char: :class:`str`
         The character found instead of the expected string.
     """
-    def __init__(self, char: str) -> None:
-        self.char: str = char
+    def __init__(self, char):
+        self.char = char
         super().__init__(f'Expected space after closing quotation but received {char!r}')
 
 class ExpectedClosingQuoteError(ArgumentParsingError):
@@ -815,8 +799,8 @@ class ExpectedClosingQuoteError(ArgumentParsingError):
         The quote character expected.
     """
 
-    def __init__(self, close_quote: str) -> None:
-        self.close_quote: str = close_quote
+    def __init__(self, close_quote):
+        self.close_quote = close_quote
         super().__init__(f'Expected closing {close_quote}.')
 
 class ExtensionError(DiscordException):
@@ -829,8 +813,8 @@ class ExtensionError(DiscordException):
     name: :class:`str`
         The extension that had an error.
     """
-    def __init__(self, message: Optional[str] = None, *args: Any, name: str) -> None:
-        self.name: str = name
+    def __init__(self, message=None, *args, name):
+        self.name = name
         message = message or f'Extension {name!r} had an error.'
         # clean-up @everyone and @here mentions
         m = message.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
@@ -841,7 +825,7 @@ class ExtensionAlreadyLoaded(ExtensionError):
 
     This inherits from :exc:`ExtensionError`
     """
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         super().__init__(f'Extension {name!r} is already loaded.', name=name)
 
 class ExtensionNotLoaded(ExtensionError):
@@ -849,7 +833,7 @@ class ExtensionNotLoaded(ExtensionError):
 
     This inherits from :exc:`ExtensionError`
     """
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         super().__init__(f'Extension {name!r} has not been loaded.', name=name)
 
 class NoEntryPointError(ExtensionError):
@@ -857,7 +841,7 @@ class NoEntryPointError(ExtensionError):
 
     This inherits from :exc:`ExtensionError`
     """
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         super().__init__(f"Extension {name!r} has no 'setup' function.", name=name)
 
 class ExtensionFailed(ExtensionError):
@@ -873,8 +857,8 @@ class ExtensionFailed(ExtensionError):
         The original exception that was raised. You can also get this via
         the ``__cause__`` attribute.
     """
-    def __init__(self, name: str, original: Exception) -> None:
-        self.original: Exception = original
+    def __init__(self, name, original):
+        self.original = original
         msg = f'Extension {name!r} raised an error: {original.__class__.__name__}: {original}'
         super().__init__(msg, name=name)
 
@@ -891,7 +875,7 @@ class ExtensionNotFound(ExtensionError):
     name: :class:`str`
         The extension that had the error.
     """
-    def __init__(self, name: str) -> None:
+    def __init__(self, name):
         msg = f'Extension {name!r} could not be loaded.'
         super().__init__(msg, name=name)
 
@@ -910,9 +894,9 @@ class CommandRegistrationError(ClientException):
     alias_conflict: :class:`bool`
         Whether the name that conflicts is an alias of the command we try to add.
     """
-    def __init__(self, name: str, *, alias_conflict: bool = False) -> None:
-        self.name: str = name
-        self.alias_conflict: bool = alias_conflict
+    def __init__(self, name, *, alias_conflict=False):
+        self.name = name
+        self.alias_conflict = alias_conflict
         type_ = 'alias' if alias_conflict else 'command'
         super().__init__(f'The {type_} {name} is already an existing command or alias.')
 
@@ -939,19 +923,17 @@ class TooManyFlags(FlagError):
     values: List[:class:`str`]
         The values that were passed.
     """
-    def __init__(self, flag: Flag, values: List[str]) -> None:
-        self.flag: Flag = flag
-        self.values: List[str] = values
+    def __init__(self, flag, values):
+        self.flag = flag
+        self.values = values
         super().__init__(f'Too many flag values, expected {flag.max_args} but received {len(values)}.')
 
 class BadFlagArgument(FlagError):
     """An exception raised when a flag failed to convert a value.
 
-    flag: :class:`~discord.ext.commands.Flag`
-        The flag that failed to convert.
     """
-    def __init__(self, flag: Flag) -> None:
-        self.flag: Flag = flag
+    def __init__(self, flag):
+        self.flag = flag
         try:
             name = flag.annotation.__name__
         except AttributeError:
@@ -971,8 +953,8 @@ class MissingRequiredFlag(FlagError):
     flag: :class:`~discord.ext.commands.Flag`
         The required flag that was not found.
     """
-    def __init__(self, flag: Flag) -> None:
-        self.flag: Flag = flag
+    def __init__(self, flag):
+        self.flag = flag
         super().__init__(f'Flag {flag.name!r} is required and missing')
 
 class MissingFlagArgument(FlagError):
@@ -987,6 +969,6 @@ class MissingFlagArgument(FlagError):
     flag: :class:`~discord.ext.commands.Flag`
         The flag that did not get a value.
     """
-    def __init__(self, flag: Flag) -> None:
-        self.flag: Flag = flag
+    def __init__(self, flag):
+        self.flag = flag
         super().__init__(f'Flag {flag.name!r} does not have an argument')
