@@ -1485,6 +1485,8 @@ class Message(Hashable):
         :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
+        
+        .. versionadded:: 2.0
 
         Parameters
         -----------
