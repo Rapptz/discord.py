@@ -1707,11 +1707,11 @@ class Guild(Hashable):
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, Thread]:
         """|coro|
 
-        Retrieves a :class:`.abc.GuildChannel` with the specified ID.
+        Retrieves a :class:`.abc.GuildChannel` or :class:`.Thread` with the specified ID.
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_channel` instead.
+            This method is an API call. For general usage, consider :meth:`get_channel_or_thread` instead.
 
         .. versionadded:: 2.0
 
@@ -1730,7 +1730,7 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`.abc.GuildChannel`
+        Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
             The channel from the ID.
         """
         data = await self._state.http.get_channel(channel_id)
