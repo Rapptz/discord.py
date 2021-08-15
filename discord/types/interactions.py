@@ -37,8 +37,11 @@ if TYPE_CHECKING:
     from .message import AllowedMentions, Message
 
 
+ApplicationCommandType = Literal[1, 2, 3]
+
 class _ApplicationCommandOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
+    type: ApplicationCommandType
 
 
 class ApplicationCommand(_ApplicationCommandOptional):
@@ -53,7 +56,7 @@ class _ApplicationCommandOptionOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
 
 
-ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9]
+ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 
 class ApplicationCommandOption(_ApplicationCommandOptionOptional):
@@ -122,12 +125,18 @@ class _ApplicationCommandInteractionDataOptionSnowflake(_ApplicationCommandInter
     value: Snowflake
 
 
+class _ApplicationCommandInteractionDataOptionNumber(_ApplicationCommandInteractionDataOption):
+    type: Literal[10]
+    value: float
+
+
 ApplicationCommandInteractionDataOption = Union[
     _ApplicationCommandInteractionDataOptionString,
     _ApplicationCommandInteractionDataOptionInteger,
     _ApplicationCommandInteractionDataOptionSubcommand,
     _ApplicationCommandInteractionDataOptionBoolean,
     _ApplicationCommandInteractionDataOptionSnowflake,
+    _ApplicationCommandInteractionDataOptionNumber,
 ]
 
 
@@ -148,6 +157,8 @@ class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
     resolved: ApplicationCommandInteractionDataResolved
+    target_id: Snowflake
+    type: ApplicationCommandType
 
 
 class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOptional):
@@ -211,8 +222,15 @@ class MessageInteraction(TypedDict):
     user: User
 
 
-class EditApplicationCommand(TypedDict):
-    name: str
+
+
+
+class _EditApplicationCommandOptional(TypedDict, total=False):
     description: str
     options: Optional[List[ApplicationCommandOption]]
+    type: ApplicationCommandType
+
+
+class EditApplicationCommand(_EditApplicationCommandOptional):
+    name: str
     default_permission: bool

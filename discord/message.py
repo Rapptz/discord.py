@@ -45,7 +45,7 @@ from .file import File
 from .utils import escape_mentions, MISSING
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import Sticker
+from .sticker import StickerItem
 from .threads import Thread
 
 if TYPE_CHECKING:
@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
@@ -520,7 +520,7 @@ class Message(Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -588,8 +588,8 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
-    stickers: List[:class:`Sticker`]
-        A list of stickers given to the message.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
 
         .. versionadded:: 1.6
     components: List[:class:`Component`]
@@ -646,7 +646,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, Thread, DMChannel, GroupChannel],
+        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
         data: MessagePayload,
     ):
         self._state: ConnectionState = state
@@ -666,7 +666,7 @@ class Message(Hashable):
         self.tts: bool = data['tts']
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
-        self.stickers: List[Sticker] = [Sticker(data=d, state=state) for d in data.get('stickers', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
@@ -994,20 +994,26 @@ class Message(Hashable):
         if self.type is MessageType.default:
             return self.content
 
-        if self.type is MessageType.pins_add:
-            return f'{self.author.name} pinned a message to this channel.'
-
         if self.type is MessageType.recipient_add:
-            return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            else:
+                return f'{self.author.name} added {self.mentions[0].name} to the thread.'
 
         if self.type is MessageType.recipient_remove:
-            return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            else:
+                return f'{self.author.name} removed {self.mentions[0].name} from the thread.'
 
         if self.type is MessageType.channel_name_change:
-            return f'{self.author.name} changed the channel name: {self.content}'
+            return f'{self.author.name} changed the channel name: **{self.content}**'
 
         if self.type is MessageType.channel_icon_change:
             return f'{self.author.name} changed the channel icon.'
+
+        if self.type is MessageType.pins_add:
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -1030,16 +1036,28 @@ class Message(Hashable):
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.premium_guild_subscription:
-            return f'{self.author.name} just boosted the server!'
+            if not self.content:
+                return f'{self.author.name} just boosted the server!'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times!'
 
         if self.type is MessageType.premium_guild_tier_1:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 1!**'
 
         if self.type is MessageType.premium_guild_tier_2:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 2!**'
 
         if self.type is MessageType.premium_guild_tier_3:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
             return f'{self.author.name} has added {self.content} to this channel'
@@ -1059,8 +1077,17 @@ class Message(Hashable):
         if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
+        if self.type is MessageType.thread_created:
+            return f'{self.author.name} started a thread: **{self.content}**. See all **threads**.'
+
         if self.type is MessageType.reply:
             return self.content
+
+        if self.type is MessageType.thread_starter_message:
+            if self.reference is None or self.reference.resolved is None:
+                return 'Sorry, we couldn\'t load the first message in this thread'
+
+            return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
@@ -1449,15 +1476,17 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def start_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
         """|coro|
 
-        Starts a public thread from this message.
+        Creates a public thread from this message.
 
         You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start a thread.
+        :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
+        
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -1470,26 +1499,25 @@ class Message(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
-            Starting the thread failed.
+            Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
 
         Returns
         --------
         :class:`.Thread`
-            The started thread.
+            The created thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
 
-        data = await self._state.http.start_public_thread(
+        data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration,
-            type=ChannelType.public_thread.value,
         )
         return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
@@ -1605,8 +1633,15 @@ class PartialMessage(Hashable):
     to_message_reference_dict = Message.to_message_reference_dict
 
     def __init__(self, *, channel: PartialMessageableChannel, id: int):
-        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
+        if channel.type not in (
+            ChannelType.text,
+            ChannelType.news,
+            ChannelType.private,
+            ChannelType.news_thread,
+            ChannelType.public_thread,
+            ChannelType.private_thread
+        ):
+            raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 
         self.channel: PartialMessageableChannel = channel
         self._state: ConnectionState = channel._state

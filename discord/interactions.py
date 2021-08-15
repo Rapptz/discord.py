@@ -31,6 +31,7 @@ import asyncio
 from . import utils
 from .enums import try_enum, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
+from .channel import PartialMessageable, ChannelType
 
 from .user import User
 from .member import Member
@@ -57,10 +58,12 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from .embeds import Embed
     from .ui.view import View
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
 
-    InteractionChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread]
+    InteractionChannel = Union[
+        VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread, PartialMessageable
+    ]
 
 MISSING: Any = utils.MISSING
 
@@ -111,6 +114,7 @@ class Interaction:
         '_original_message',
         '_cs_response',
         '_cs_followup',
+        '_cs_channel',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -129,10 +133,9 @@ class Interaction:
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
 
-        channel = self.channel or Object(id=self.channel_id)  # type: ignore
         self.message: Optional[Message]
         try:
-            self.message = Message(state=self._state, channel=channel, data=data['message'])  # type: ignore
+            self.message = Message(state=self._state, channel=self.channel, data=data['message'])  # type: ignore
         except KeyError:
             self.message = None
 
@@ -160,15 +163,21 @@ class Interaction:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
         return self._state and self._state._get_guild(self.guild_id)
 
-    @property
+    @utils.cached_slot_property('_cs_channel')
     def channel(self) -> Optional[InteractionChannel]:
-        """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel the interaction was sent from.
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]: The channel the interaction was sent from.
 
         Note that due to a Discord limitation, DM channels are not resolved since there is
-        no data to complete them.
+        no data to complete them. These are :class:`PartialMessageable` instead.
         """
         guild = self.guild
-        return guild and guild._resolve_channel(self.channel_id)
+        channel = guild and guild._resolve_channel(self.channel_id)
+        if channel is None:
+            if self.channel_id is not None:
+                type = ChannelType.text if self.guild_id is not None else ChannelType.private
+                return PartialMessageable(state=self._state, id=self.channel_id, type=type)
+            return None
+        return channel
 
     @property
     def permissions(self) -> Permissions:
@@ -625,6 +634,9 @@ class _InteractionMessageState:
 
     def store_user(self, data):
         return self._parent.store_user(data)
+
+    def create_user(self, data):
+        return self._parent.create_user(data)
 
     @property
     def http(self):

@@ -33,13 +33,13 @@ from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Op
 
 import aiohttp
 
-from .user import User
+from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
-from .channel import _threaded_channel_factory
+from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
@@ -60,11 +60,11 @@ from .appinfo import AppInfo
 from .ui.view import View
 from .stage_instance import StageInstance
 from .threads import Thread
+from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
     from .channel import DMChannel
-    from .user import ClientUser
     from .message import Message
     from .member import Member
     from .voice_client import VoiceProtocol
@@ -184,6 +184,14 @@ class Client:
         sync your system clock to Google's NTP server.
 
         .. versionadded:: 1.3
+    enable_debug_events: :class:`bool`
+        Whether to enable events that are useful only for debugging gateway related information.
+
+        Right now this involves :func:`on_socket_raw_receive` and :func`:`on_socket_raw_send`. If
+        this is ``False`` then those events will not be dispatched (due to performance considerations).
+        To enable these events, this must be set to ``True``. Defaults to ``False``.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -218,6 +226,7 @@ class Client:
             'before_identify': self._call_before_identify_hook
         }
 
+        self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
@@ -278,6 +287,14 @@ class Client:
         return self._connection.emojis
 
     @property
+    def stickers(self) -> List[GuildSticker]:
+        """List[:class:`.GuildSticker`]: The stickers that the connected client has.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.stickers
+
+    @property
     def cached_messages(self) -> Sequence[Message]:
         """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
@@ -311,6 +328,8 @@ class Client:
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
         after :func:`~discord.on_connect` is called.
+        
+        .. versionadded:: 2.0
         """
         return self._connection.application_id
 
@@ -318,7 +337,7 @@ class Client:
     def application_flags(self) -> ApplicationFlags:
         """:class:`~discord.ApplicationFlags`: The client's application flags.
 
-        .. versionadded: 2.0
+        .. versionadded:: 2.0
         """
         return self._connection.application_flags  # type: ignore
 
@@ -449,7 +468,9 @@ class Client:
         """
 
         log.info('logging in using static token')
-        await self.http.static_login(token.strip())
+
+        data = await self.http.static_login(token.strip())
+        self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -710,6 +731,28 @@ class Client:
         """
         return self._connection.get_channel(id)
 
+    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+        """Returns a partial messageable with the given channel ID.
+
+        This is useful if you have a channel_id but don't want to do an API call
+        to send messages to it.
+        
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        id: :class:`int`
+            The channel ID to create a partial messageable for.
+        type: Optional[:class:`ChannelType`]
+            The underlying channel type for the partial messageable.
+
+        Returns
+        --------
+        :class:`PartialMessageable`
+            The partial messageable
+        """
+        return PartialMessageable(state=self._connection, id=id, type=type)
+
     def get_stage_instance(self, id) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.
 
@@ -776,6 +819,23 @@ class Client:
             The custom emoji or ``None`` if not found.
         """
         return self._connection.get_emoji(id)
+
+    def get_sticker(self, id: int) -> Optional[GuildSticker]:
+        """Returns a guild sticker with the given ID.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            To retrieve standard stickers, use :meth:`.fetch_sticker`.
+            or :meth:`.fetch_premium_sticker_packs`.
+
+        Returns
+        --------
+        Optional[:class:`.GuildSticker`]
+            The sticker or ``None`` if not found.
+        """
+        return self._connection.get_sticker(id)
 
     def get_all_channels(self) -> Generator[GuildChannel, None, None]:
         """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
@@ -1443,6 +1503,49 @@ class Client:
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
 
+    async def fetch_sticker(self, sticker_id: int) -> Union[StandardSticker, GuildSticker]:
+        """|coro|
+
+        Retrieves a :class:`.Sticker` with the specified ID.
+
+        .. versionadded:: 2.0
+
+        Raises
+        --------
+        :exc:`.HTTPException`
+            Retrieving the sticker failed.
+        :exc:`.NotFound`
+            Invalid sticker ID.
+
+        Returns
+        --------
+        Union[:class:`.StandardSticker`, :class:`.GuildSticker`]
+            The sticker you requested.
+        """
+        data = await self.http.get_sticker(sticker_id)
+        cls, _ = _sticker_factory(data['type'])  # type: ignore
+        return cls(state=self._connection, data=data) # type: ignore
+
+    async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
+        """|coro|
+
+        Retrieves all available premium sticker packs.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the sticker packs failed.
+
+        Returns
+        ---------
+        List[:class:`.StickerPack`]
+            All available premium sticker packs.
+        """
+        data = await self.http.list_premium_sticker_packs()
+        return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
 
@@ -1476,6 +1579,8 @@ class Client:
 
         This method should be used for when a view is comprised of components
         that last longer than the lifecycle of the program.
+        
+        .. versionadded:: 2.0
 
         Parameters
         ------------
@@ -1505,5 +1610,8 @@ class Client:
 
     @property
     def persistent_views(self) -> Sequence[View]:
-        """Sequence[:class:`.View`]: A sequence of persistent views added to the client."""
+        """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
+        
+        .. versionadded:: 2.0
+        """
         return self._connection.persistent_views

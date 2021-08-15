@@ -42,7 +42,7 @@ class _UserTag:
 
 
 class BaseUser(_UserTag):
-    __slots__ = ('name', 'id', 'discriminator', '_avatar', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', '_accent_colour', 'bot', 'system', '_public_flags', '_state')
 
     if TYPE_CHECKING:
         name: str
@@ -78,6 +78,8 @@ class BaseUser(_UserTag):
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
+        self._banner = data.get('banner', None)
+        self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
@@ -90,6 +92,8 @@ class BaseUser(_UserTag):
         self.id = user.id
         self.discriminator = user.discriminator
         self._avatar = user._avatar
+        self._banner = user._banner
+        self._accent_colour = user._accent_colour
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
@@ -126,6 +130,50 @@ class BaseUser(_UserTag):
     def default_avatar(self):
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+
+    @property
+    def banner(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the user's banner asset, if available.
+
+        .. versionadded:: 2.0
+
+
+        .. note::
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        if self._banner is None:
+            return None
+        return Asset._from_user_banner(self._state, self.id, self._banner)
+
+    @property
+    def accent_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent colour, if applicable.
+
+        There is an alias for this named :attr:`accent_color`.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        if self._accent_colour is None:
+            return None
+        return Colour(self._accent_colour)
+
+    @property
+    def accent_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: Returns the user's accent color, if applicable.
+
+        There is an alias for this named :attr:`accent_colour`.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This information is only available via :meth:`Client.fetch_user`.
+        """
+        return self.accent_colour
 
     @property
     def colour(self):
@@ -345,7 +393,7 @@ class User(BaseUser, discord.abc.Messageable):
     @classmethod
     def _copy(cls, user):
         self = super()._copy(user)
-        self._stored = getattr(user, '_stored', False)
+        self._stored = False
         return self
 
     async def _get_channel(self):
