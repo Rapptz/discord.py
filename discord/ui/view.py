@@ -152,7 +152,7 @@ class View:
 
         cls.__view_children_items__ = children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: float = 180.0):
         self.timeout = timeout
         self.children: List[Item] = []
         for func in self.__view_children_items__:
@@ -211,7 +211,7 @@ class View:
         return components
 
     @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
+    def from_message(cls, message: Message, /, *, timeout: float = 180.0) -> View:
         """Converts a message's components into a :class:`View`.
 
         The :attr:`.Message.components` of a message are read-only
@@ -223,7 +223,7 @@ class View:
         -----------
         message: :class:`discord.Message`
             The message with components to convert into a view.
-        timeout: Optional[:class:`float`]
+        timeout: :class:`float`
             The timeout of the converted view.
 
         Returns
