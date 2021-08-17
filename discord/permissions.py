@@ -170,7 +170,7 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.0
            Added :attr:`use_threads`, :attr:`use_private_threads`, :attr:`manage_threads`,
-           :attr:`use_external_stickers`, and :attr:`request_to_speak` permissions.
+           :attr:`use_external_stickers` and :attr:`request_to_speak` permissions.
         """
         return cls(0b11110110110011111101111111111101010001)
 
