@@ -657,7 +657,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         return self.guild.get_thread(thread_id)
 
-    async def start_thread(
+    async def create_thread(
         self,
         *,
         name: str,
@@ -668,17 +668,17 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     ) -> Thread:
         """|coro|
 
-        Starts a thread in this text channel.
+        Creates a thread in this text channel.
 
         If no starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to start the thread
+        :attr:`~discord.Permissions.use_private_threads` in order to create the thread
         if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
         Otherwise :attr:`~discord.Permissions.use_threads` is needed.
 
         If a starter message is passed with the ``message`` parameter then
         you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start the thread.
+        :attr:`~discord.Permissions.use_threads` in order to create the thread.
 
         .. versionadded:: 2.0
 
@@ -687,30 +687,30 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         name: :class:`str`
             The name of the thread.
         message: Optional[:class:`abc.Snowflake`]
-            A snowflake representing the message to start the thread with.
-            If ``None`` is passed then a private thread is started.
+            A snowflake representing the message to create the thread with.
+            If ``None`` is passed then a private thread is created.
             Defaults to ``None``.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             Defaults to ``1440`` or 24 hours.
         type: Optional[:class:`ChannelType`]
             The type of thread to create. If a ``message`` is passed then this parameter
-            is ignored, as a thread started with a message is always a public thread.
+            is ignored, as a thread created with a message is always a public thread.
             By default this creates a private thread if this is ``None``.
         reason: :class:`str`
-            The reason for starting a new thread. Shows up on the audit log.
+            The reason for creating a new thread. Shows up on the audit log.
 
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
             Starting the thread failed.
 
         Returns
         --------
         :class:`Thread`
-            The started thread
+            The created thread
         """
 
         if type is None:
