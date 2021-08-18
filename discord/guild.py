@@ -717,7 +717,7 @@ class Guild(Hashable):
 
         .. versionadded:: 2.0
         """
-        more_stickers = 60 if 'MORE_STICKERS' in self.features else 15
+        more_stickers = 60 if 'MORE_STICKERS' in self.features else 0
         return max(more_stickers, self._PREMIUM_GUILD_LIMITS[self.premium_tier].stickers)
 
     @property
