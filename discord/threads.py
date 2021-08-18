@@ -218,6 +218,16 @@ class Thread(Messageable, Hashable):
         return f'<#{self.id}>'
 
     @property
+    def members(self) -> List[ThreadMember]:
+        """List[:class:`ThreadMember`]: A list of thread members in this thread.
+
+        This requires :attr:`Intents.members` to be properly filled. Most of the time however,
+        this data is not provided by the gateway and a call to :meth:`fetch_members` is
+        needed.
+        """
+        return list(self._members.values())
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Fetches the last message from this channel in cache.
 
@@ -635,6 +645,28 @@ class Thread(Messageable, Hashable):
             Removing the user from the thread failed.
         """
         await self._state.http.remove_user_from_thread(self.id, user.id)
+
+    async def fetch_members(self) -> List[ThreadMember]:
+        """|coro|
+
+        Retrieves all :class:`ThreadMember` that are in this thread.
+
+        This requires :attr:`Intents.members` to get information about members
+        other than yourself.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the members failed.
+
+        Returns
+        --------
+        List[:class:`ThreadMember`]
+            All thread members in the thread.
+        """
+
+        members = await self._state.http.get_thread_members(self.id)
+        return [ThreadMember(parent=self, data=data) for data in members]
 
     async def delete(self):
         """|coro|
