@@ -145,17 +145,18 @@ class Template:
         self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
         self.updated_at: Optional[datetime.datetime] = parse_time(data.get('updated_at'))
 
-        id = _get_as_snowflake(data, 'source_guild_id')
+        guild_id = int(data['source_guild_id'])
+        guild: Optional[Guild] = self._state._get_guild(guild_id)
 
-        guild = self._state._get_guild(id)
-
-        if guild is None and id:
+        self.source_guild: Guild
+        if guild is None:
             source_serialised = data['serialized_source_guild']
-            source_serialised['id'] = id
+            source_serialised['id'] = guild_id
             state = _PartialTemplateState(state=self._state)
-            guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
+            self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
+        else:
+            self.source_guild = guild
 
-        self.source_guild: Guild = guild # type: ignore - source_guild_id is a required field on the discord API docs
         self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
