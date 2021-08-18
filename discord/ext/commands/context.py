@@ -270,7 +270,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         .. versionadded:: 2.0
         """
         if self.prefix is None:
-            return ""
+            return ''
 
         user = self.me
         # this breaks if the prefix mention is not the bot itself but I
