@@ -155,7 +155,7 @@ class Template:
             state = _PartialTemplateState(state=self._state)
             guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
 
-        self.source_guild: Guild = guild # type: ignore - id is a required field on the discord API docs
+        self.source_guild: Guild = guild # type: ignore - source_guild_id is a required field on the discord API docs
         self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
