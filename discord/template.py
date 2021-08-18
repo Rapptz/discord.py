@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING, cast
+from typing import Any, Optional, TYPE_CHECKING
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
@@ -155,7 +155,7 @@ class Template:
             state = _PartialTemplateState(state=self._state)
             guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
 
-        self.source_guild: Guild = cast(Guild, guild) # we use cast here because id is a required field on the discord api docs
+        self.source_guild: Guild = guild # type: ignore - id is a required field on the discord API docs
         self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
