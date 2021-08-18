@@ -37,8 +37,11 @@ if TYPE_CHECKING:
     from .message import AllowedMentions, Message
 
 
+ApplicationCommandType = Literal[1, 2, 3]
+
 class _ApplicationCommandOptional(TypedDict, total=False):
     options: List[ApplicationCommandOption]
+    type: ApplicationCommandType
 
 
 class ApplicationCommand(_ApplicationCommandOptional):
@@ -154,6 +157,8 @@ class ApplicationCommandInteractionDataResolved(TypedDict, total=False):
 class _ApplicationCommandInteractionDataOptional(TypedDict, total=False):
     options: List[ApplicationCommandInteractionDataOption]
     resolved: ApplicationCommandInteractionDataResolved
+    target_id: Snowflake
+    type: ApplicationCommandType
 
 
 class ApplicationCommandInteractionData(_ApplicationCommandInteractionDataOptional):
@@ -217,8 +222,15 @@ class MessageInteraction(TypedDict):
     user: User
 
 
-class EditApplicationCommand(TypedDict):
-    name: str
+
+
+
+class _EditApplicationCommandOptional(TypedDict, total=False):
     description: str
     options: Optional[List[ApplicationCommandOption]]
+    type: ApplicationCommandType
+
+
+class EditApplicationCommand(_EditApplicationCommandOptional):
+    name: str
     default_permission: bool

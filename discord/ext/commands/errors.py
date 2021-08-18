@@ -54,6 +54,7 @@ __all__ = (
     'RoleNotFound',
     'BadInviteArgument',
     'EmojiNotFound',
+    'GuildStickerNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
     'MissingRole',
@@ -431,6 +432,22 @@ class PartialEmojiConversionFailure(BadArgument):
         self.argument = argument
         super().__init__(f'Couldn\'t convert "{argument}" to PartialEmoji.')
 
+class GuildStickerNotFound(BadArgument):
+    """Exception raised when the bot can not find the sticker.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The sticker supplied by the caller that was not found
+    """
+    def __init__(self, argument):
+        self.argument = argument
+        super().__init__(f'Sticker "{argument}" not found.')
+
 class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
 
@@ -476,7 +493,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: ``Cooldown``
+    cooldown: :class:`.Cooldown`
         A class with attributes ``rate`` and ``per`` similar to the
         :func:`.cooldown` decorator.
     type: :class:`BucketType`
@@ -914,6 +931,14 @@ class TooManyFlags(FlagError):
 class BadFlagArgument(FlagError):
     """An exception raised when a flag failed to convert a value.
 
+    This inherits from :exc:`FlagError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    flag: :class:`~discord.ext.commands.Flag`
+        The flag that failed to convert.
     """
     def __init__(self, flag):
         self.flag = flag

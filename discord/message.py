@@ -70,7 +70,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
@@ -520,7 +520,7 @@ class Message(Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -646,7 +646,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, Thread, DMChannel, GroupChannel],
+        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
         data: MessagePayload,
     ):
         self._state: ConnectionState = state
@@ -979,7 +979,7 @@ class Message(Hashable):
 
         .. versionadded:: 1.3
         """
-        return self.type is not MessageType.default
+        return self.type not in (MessageType.default, MessageType.reply, MessageType.application_command, MessageType.thread_starter_message)
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
@@ -1476,15 +1476,17 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def start_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
         """|coro|
 
-        Starts a public thread from this message.
+        Creates a public thread from this message.
 
         You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to start a thread.
+        :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
+        
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -1497,16 +1499,16 @@ class Message(Hashable):
         Raises
         -------
         Forbidden
-            You do not have permissions to start a thread.
+            You do not have permissions to create a thread.
         HTTPException
-            Starting the thread failed.
+            Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
 
         Returns
         --------
         :class:`.Thread`
-            The started thread.
+            The created thread.
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')

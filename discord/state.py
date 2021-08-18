@@ -410,7 +410,7 @@ class ConnectionState:
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or Object(id=channel_id), guild
+        return channel or PartialMessageable(state=self, id=channel_id), guild
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream
@@ -851,7 +851,7 @@ class ConnectionState:
             return
 
         added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
-        removed_member_ids = data.get('removed_member_ids', [])
+        removed_member_ids = [int(x) for x in data.get('removed_member_ids', [])]
         self_id = self.self_id
         for member in added_members:
             if member.id != self_id:
@@ -864,7 +864,8 @@ class ConnectionState:
         for member_id in removed_member_ids:
             if member_id != self_id:
                 member = thread._pop_member(member_id)
-                self.dispatch('thread_member_leave', member)
+                if member is not None:
+                    self.dispatch('thread_member_remove', member)
             else:
                 self.dispatch('thread_remove', thread)
 
