@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Any, TYPE_CHECKING, List, Callable, Type, Tuple
+from typing import Optional, Any, TYPE_CHECKING, List, Callable, Type, Tuple, Union
 
 from discord.errors import ClientException, DiscordException
 
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from .cooldowns import Cooldown, BucketType
     from .flags import Flag
     from ...abc import GuildChannel
+    from ...threads import Thread
     from ...types.snowflake import Snowflake, SnowflakeList
 
 
@@ -329,11 +330,11 @@ class ChannelNotReadable(BadArgument):
 
     Attributes
     -----------
-    argument: :class:`.abc.GuildChannel`
+    argument: Union[:class:`.abc.GuildChannel`, :class:`Thread`]
         The channel supplied by the caller that was not readable
     """
-    def __init__(self, argument: GuildChannel) -> None:
-        self.argument: GuildChannel = argument
+    def __init__(self, argument: Union[GuildChannel, Thread]) -> None:
+        self.argument: Union[GuildChannel, Thread] = argument
         super().__init__(f"Can't read messages in {argument.mention}.")
 
 class ChannelNotFound(BadArgument):
@@ -644,11 +645,11 @@ class NSFWChannelRequired(CheckFailure):
 
     Parameters
     -----------
-    channel: :class:`discord.abc.GuildChannel`
+    channel: Union[:class:`.abc.GuildChannel`, :class:`Thread`]
         The channel that does not have NSFW enabled.
     """
-    def __init__(self, channel: GuildChannel) -> None:
-        self.channel: GuildChannel = channel
+    def __init__(self, channel: Union[GuildChannel, Thread]) -> None:
+        self.channel: Union[GuildChannel, Thread] = channel
         super().__init__(f"Channel '{channel}' needs to be NSFW for this command to work.")
 
 class MissingPermissions(CheckFailure):
