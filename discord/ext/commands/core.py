@@ -962,7 +962,7 @@ class Command(_BaseCommand):
 
         result = []
         for name, param in params.items():
-            flag = isinstance(param.annotation, type) and issubclass(param.annotation, FlagConverter)
+            flag = hasattr(x, '__commands_is_flag__')
             if flag:
                 # For flag converters, we want to add annotations based on the individual flags.
                 flag_type: FlagConverter = param.annotation
