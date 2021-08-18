@@ -785,6 +785,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         This includes both private and public threads.
 
+        .. versionadded:: 2.0
+
         Raises
         ------
         HTTPException

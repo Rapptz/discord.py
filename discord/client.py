@@ -328,6 +328,8 @@ class Client:
         If this is not passed via ``__init__`` then this is retrieved
         through the gateway when an event contains the data. Usually
         after :func:`~discord.on_connect` is called.
+        
+        .. versionadded:: 2.0
         """
         return self._connection.application_id
 
@@ -335,7 +337,7 @@ class Client:
     def application_flags(self) -> ApplicationFlags:
         """:class:`~discord.ApplicationFlags`: The client's application flags.
 
-        .. versionadded: 2.0
+        .. versionadded:: 2.0
         """
         return self._connection.application_flags  # type: ignore
 
@@ -734,6 +736,8 @@ class Client:
 
         This is useful if you have a channel_id but don't want to do an API call
         to send messages to it.
+        
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -744,7 +748,7 @@ class Client:
 
         Returns
         --------
-        :class:`PartialMessageable`
+        :class:`.PartialMessageable`
             The partial messageable
         """
         return PartialMessageable(state=self._connection, id=id, type=type)
@@ -1575,6 +1579,8 @@ class Client:
 
         This method should be used for when a view is comprised of components
         that last longer than the lifecycle of the program.
+        
+        .. versionadded:: 2.0
 
         Parameters
         ------------
@@ -1604,5 +1610,8 @@ class Client:
 
     @property
     def persistent_views(self) -> Sequence[View]:
-        """Sequence[:class:`.View`]: A sequence of persistent views added to the client."""
+        """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
+        
+        .. versionadded:: 2.0
+        """
         return self._connection.persistent_views

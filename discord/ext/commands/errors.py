@@ -931,6 +931,14 @@ class TooManyFlags(FlagError):
 class BadFlagArgument(FlagError):
     """An exception raised when a flag failed to convert a value.
 
+    This inherits from :exc:`FlagError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    flag: :class:`~discord.ext.commands.Flag`
+        The flag that failed to convert.
     """
     def __init__(self, flag):
         self.flag = flag
