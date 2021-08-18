@@ -2038,3 +2038,10 @@ def _threaded_channel_factory(channel_type: int):
     if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
         return Thread, value
     return cls, value
+
+
+def _threaded_guild_channel_factory(channel_type: int):
+    cls, value = _guild_channel_factory(channel_type)
+    if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
+        return Thread, value
+    return cls, value
