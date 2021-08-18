@@ -306,7 +306,7 @@ class ClientUser(BaseUser):
 
     if TYPE_CHECKING:
         verified: bool
-        local: Optional[str]
+        locale: Optional[str]
         mfa_enabled: bool
         _flags: int
         
@@ -404,12 +404,9 @@ class User(BaseUser, discord.abc.Messageable):
 
     __slots__ = ('_stored',)
 
-    if TYPE_CHECKING:
-        _stored: bool
-
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         super().__init__(state=state, data=data)
-        self._stored = False
+        self._stored: bool = False
 
     def __repr__(self) -> str:
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
