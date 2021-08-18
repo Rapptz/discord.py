@@ -709,7 +709,7 @@ class Command(_BaseCommand):
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
             if instance:
-                    await self._after_invoke(instance, ctx)
+                await self._after_invoke(instance, ctx)
             else:
                 await self._after_invoke(ctx)
 
