@@ -147,7 +147,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b111111111111111111111111111111111111)
+        return cls(0b11111111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls: Type[P]) -> P:
@@ -167,8 +167,12 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
+
+        .. versionchanged:: 2.0
+           Added :attr:`use_threads`, :attr:`use_private_threads`, :attr:`manage_threads`,
+           :attr:`use_external_stickers` and :attr:`request_to_speak` permissions.
         """
-        return cls(0b10110011111101111111111101010001)
+        return cls(0b11110110110011111101111111111101010001)
 
     @classmethod
     def general(cls: Type[P]) -> P:
@@ -200,8 +204,12 @@ class Permissions(BaseFlags):
         .. versionchanged:: 1.7
            Permission :attr:`read_messages` is no longer part of the text permissions.
            Added :attr:`use_slash_commands` permission.
+
+        .. versionchanged:: 2.0
+           Added :attr:`use_threads`, :attr:`use_private_threads`, :attr:`manage_threads`
+           and :attr:`use_external_stickers` permissions.
         """
-        return cls(0b10000000000001111111100001000000)
+        return cls(0b11110010000000000001111111100001000000)
 
     @classmethod
     def voice(cls: Type[P]) -> P:

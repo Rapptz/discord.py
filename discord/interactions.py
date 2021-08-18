@@ -95,6 +95,8 @@ class Interaction:
     token: :class:`str`
         The token to continue the interaction. These are valid
         for 15 minutes.
+    data: :class:`dict`
+        The raw interaction data.
     """
 
     __slots__: Tuple[str, ...] = (

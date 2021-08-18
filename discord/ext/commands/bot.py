@@ -567,8 +567,8 @@ class BotBase(GroupMixin):
         """
         return self.__cogs.get(name)
 
-    def remove_cog(self, name: str) -> None:
-        """Removes a cog from the bot.
+    def remove_cog(self, name: str) -> Optional[Cog]:
+        """Removes a cog from the bot and returns it.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
@@ -579,6 +579,11 @@ class BotBase(GroupMixin):
         -----------
         name: :class:`str`
             The name of the cog to remove.
+
+        Returns
+        -------
+        Optional[:class:`.Cog`]
+             The cog that was removed. ``None`` if not found.
         """
 
         cog = self.__cogs.pop(name, None)
@@ -589,6 +594,8 @@ class BotBase(GroupMixin):
         if help_command and help_command.cog is cog:
             help_command.cog = None
         cog._eject(self)
+
+        return cog
 
     @property
     def cogs(self) -> Mapping[str, Cog]:

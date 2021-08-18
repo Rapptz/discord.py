@@ -785,6 +785,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         This includes both private and public threads.
 
+        .. versionadded:: 2.0
+
         Raises
         ------
         HTTPException
@@ -2033,6 +2035,13 @@ def _channel_factory(channel_type: int):
 
 def _threaded_channel_factory(channel_type: int):
     cls, value = _channel_factory(channel_type)
+    if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
+        return Thread, value
+    return cls, value
+
+
+def _threaded_guild_channel_factory(channel_type: int):
+    cls, value = _guild_channel_factory(channel_type)
     if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
         return Thread, value
     return cls, value
