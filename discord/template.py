@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING, overload
+from typing import Any, Optional, TYPE_CHECKING
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
@@ -34,7 +34,10 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    import datetime
     from .types.template import Template as TemplatePayload
+    from .state import ConnectionState
+    from .user import User
 
 
 class _FriendlyHttpAttributeErrorHelper:
@@ -77,7 +80,7 @@ class _PartialTemplateState:
     def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs):
+    async def query_members(self, **kwargs: Any):
         return []
 
     def __getattr__(self, attr):
@@ -127,20 +130,20 @@ class Template:
         '_state',
     )
 
-    def __init__(self, *, state, data: TemplatePayload):
+    def __init__(self, *, state: ConnectionState, data: TemplatePayload) -> None:
         self._state = state
         self._store(data)
 
-    def _store(self, data: TemplatePayload):
-        self.code = data['code']
-        self.uses = data['usage_count']
-        self.name = data['name']
-        self.description = data['description']
+    def _store(self, data: TemplatePayload) -> None:
+        self.code: str = data['code']
+        self.uses: int = data['usage_count']
+        self.name: str = data['name']
+        self.description: Optional[str] = data['description']
         creator_data = data.get('creator')
-        self.creator = None if creator_data is None else self._state.create_user(creator_data)
+        self.creator: Optional[User] = None if creator_data is None else self._state.create_user(creator_data)
 
-        self.created_at = parse_time(data.get('created_at'))
-        self.updated_at = parse_time(data.get('updated_at'))
+        self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
+        self.updated_at: Optional[datetime.datetime] = parse_time(data.get('updated_at'))
 
         id = _get_as_snowflake(data, 'source_guild_id')
 
@@ -150,10 +153,10 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = id
             state = _PartialTemplateState(state=self._state)
-            guild = Guild(data=source_serialised, state=state)  # type: ignore
+            guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
 
-        self.source_guild = guild
-        self.is_dirty = data.get('is_dirty', None)
+        self.source_guild: Guild = guild # type: ignore - source_guild_id is a required field on the discord API docs
+        self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
     def __repr__(self) -> str:
         return (
@@ -161,7 +164,7 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
-    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None):
+    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None) -> Guild:
         """|coro|
 
         Creates a :class:`.Guild` using the template.
