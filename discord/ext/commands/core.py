@@ -982,13 +982,13 @@ class Command(_BaseCommand):
                     # Note: I chose "POSITIONAL_OR_KEYWORD" because it's the normal kind of argument.
                     flag_param = inspect.Parameter(original_flag_name, kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
                                                    default=flag_default, annotation=flag_annotation)
-                    result.append(self._signature_part(flag_name, flag_param, flag=True, delimiter=delimiter))
+                    result.append(self.__signature_for_param(flag_name, flag_param, flag=True, delimiter=delimiter))
             else:
                 result.append(self._signature_part(name, param))
 
         return ' '.join(result)
 
-    def _signature_part(self, name, param, flag=False, delimiter="="):
+    def __signature_for_param(self, name, param, *, flag=False, delimiter="="):
         greedy = isinstance(param.annotation, Greedy)
         optional = False  # postpone evaluation of if it's an optional argument
 
