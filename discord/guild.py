@@ -52,6 +52,7 @@ from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
 from .channel import _guild_channel_factory
+from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
     VideoQualityMode,
@@ -72,7 +73,7 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
 from .stage_instance import StageInstance
-from .threads import Thread
+from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .file import File
 
@@ -422,7 +423,9 @@ class Guild(Hashable):
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.stickers: Tuple[GuildSticker, ...] = tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
+        self.stickers: Tuple[GuildSticker, ...] = tuple(
+            map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
+        )
         self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
@@ -626,7 +629,6 @@ class Guild(Hashable):
             The returned channel or thread or ``None`` if not found.
         """
         return self._channels.get(channel_id) or self._threads.get(channel_id)
-
 
     def get_channel(self, channel_id: int, /) -> Optional[GuildChannel]:
         """Returns a channel with the given ID.
@@ -1590,6 +1592,35 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
+    async def active_threads(self) -> List[Thread]:
+        """|coro|
+
+        Returns a list of active :class:`Thread` that the client can access.
+
+        This includes both private and public threads.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            The request to get the active threads failed.
+
+        Returns
+        --------
+        List[:class:`Thread`]
+            The active threads
+        """
+        data = await self._state.http.get_active_threads(self.id)
+        threads = [Thread(guild=self, state=self._state, data=d) for d in data.get('threads', [])]
+        thread_lookup: Dict[int, Thread] = {thread.id: thread for thread in threads}
+        for member in data.get('members', []):
+            thread = thread_lookup.get(int(member['id']))
+            if thread is not None:
+                thread._add_member(ThreadMember(parent=thread, data=member))
+
+        return threads
+
     # TODO: Remove Optional typing here when async iterators are refactored
     def fetch_members(self, *, limit: int = 1000, after: Optional[SnowflakeTime] = None) -> MemberIterator:
         """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
@@ -1703,14 +1734,14 @@ class Guild(Hashable):
         data: BanPayload = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(user=User(state=self._state, data=data['user']), reason=data['reason'])
 
-    async def fetch_channel(self, channel_id: int, /) -> GuildChannel:
+    async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, Thread]:
         """|coro|
 
-        Retrieves a :class:`.abc.GuildChannel` with the specified ID.
+        Retrieves a :class:`.abc.GuildChannel` or :class:`.Thread` with the specified ID.
 
         .. note::
 
-            This method is an API call. For general usage, consider :meth:`get_channel` instead.
+            This method is an API call. For general usage, consider :meth:`get_channel_or_thread` instead.
 
         .. versionadded:: 2.0
 
@@ -1729,12 +1760,12 @@ class Guild(Hashable):
 
         Returns
         --------
-        :class:`.abc.GuildChannel`
+        Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
             The channel from the ID.
         """
         data = await self._state.http.get_channel(channel_id)
 
-        factory, ch_type = _guild_channel_factory(data['type'])
+        factory, ch_type = _threaded_guild_channel_factory(data['type'])
         if factory is None:
             raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 

@@ -977,9 +977,17 @@ class Message(Hashable):
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
 
+        A system message is a message that is constructed entirely by the Discord API
+        in response to something.
+
         .. versionadded:: 1.3
         """
-        return self.type is not MessageType.default
+        return self.type not in (
+            MessageType.default,
+            MessageType.reply,
+            MessageType.application_command,
+            MessageType.thread_starter_message,
+        )
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
@@ -1486,6 +1494,8 @@ class Message(Hashable):
 
         The channel this message belongs in must be a :class:`TextChannel`.
 
+        .. versionadded:: 2.0
+
         Parameters
         -----------
         name: :class:`str`
@@ -1637,7 +1647,7 @@ class PartialMessage(Hashable):
             ChannelType.private,
             ChannelType.news_thread,
             ChannelType.public_thread,
-            ChannelType.private_thread
+            ChannelType.private_thread,
         ):
             raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 

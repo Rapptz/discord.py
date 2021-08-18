@@ -778,27 +778,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         return ArchivedThreadIterator(self.id, self.guild, limit=limit, joined=joined, private=private, before=before)
 
-    async def active_threads(self) -> List[Thread]:
-        """|coro|
-
-        Returns a list of active :class:`Thread` that the client can access.
-
-        This includes both private and public threads.
-
-        Raises
-        ------
-        HTTPException
-            The request to get the active threads failed.
-
-        Returns
-        --------
-        List[:class:`Thread`]
-            The archived threads
-        """
-        data = await self._state.http.get_active_threads(self.id)
-        # TODO: thread members?
-        return [Thread(guild=self.guild, state=self._state, data=d) for d in data.get('threads', [])]
-
 
 class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
     __slots__ = (
@@ -2033,6 +2012,13 @@ def _channel_factory(channel_type: int):
 
 def _threaded_channel_factory(channel_type: int):
     cls, value = _channel_factory(channel_type)
+    if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
+        return Thread, value
+    return cls, value
+
+
+def _threaded_guild_channel_factory(channel_type: int):
+    cls, value = _guild_channel_factory(channel_type)
     if value in (ChannelType.private_thread, ChannelType.public_thread, ChannelType.news_thread):
         return Thread, value
     return cls, value
