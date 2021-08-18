@@ -153,7 +153,8 @@ class Template:
             source_serialised = data['serialized_source_guild']
             source_serialised['id'] = guild_id
             state = _PartialTemplateState(state=self._state)
-            self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore - Guild expects a ConnectionState, we're passing a _PartialTemplateState
+            # Guild expects a ConnectionState, we're passing a _PartialTemplateState
+            self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore
         else:
             self.source_guild = guild
 
