@@ -41,7 +41,7 @@ FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
 
 
-class flag_value(Generic[BF]):
+class flag_value:
     def __init__(self, func: Callable[[Any], int]):
         self.flag = func(None)
         self.__doc__ = func.__doc__
