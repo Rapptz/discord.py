@@ -1214,8 +1214,8 @@ class GroupMixin:
             # in the case of a CommandRegistrationError, an alias might conflict
             # with an already existing command. If this is the case, we want to
             # make sure the pre-existing command is not removed.
-            if cmd not in (None, command):
-                self.all_commands[alias] = cmd  # type: ignore
+            if cmd is not None and cmd != command:
+                self.all_commands[alias] = cmd
         return command
 
     def walk_commands(self) -> Generator[Command, None, None]:

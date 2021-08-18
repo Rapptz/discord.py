@@ -372,19 +372,19 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 return None
 
         entity = args[0]
-        if entity is None:
-            return None
-
         if isinstance(entity, str):
             entity = bot.get_cog(entity) or bot.get_command(entity)
 
+        if entity is None:
+            return None
+
         try:
-            entity.qualified_name  # type: ignore
+            entity.qualified_name
         except AttributeError:
             # if we're here then it's not a cog, group, or command.
             return None
 
-        await cmd.prepare_help_command(self, entity.qualified_name)  # type: ignore
+        await cmd.prepare_help_command(self, entity.qualified_name)
 
         try:
             if hasattr(entity, '__cog_commands__'):
