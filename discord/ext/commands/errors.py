@@ -35,9 +35,9 @@ if TYPE_CHECKING:
     from .context import Context
     from .cooldowns import Cooldown, BucketType
     from .flags import Flag
-    from ...abc import GuildChannel
-    from ...threads import Thread
-    from ...types.snowflake import Snowflake, SnowflakeList
+    from discord.abc import GuildChannel
+    from discord.threads import Thread
+    from discord.types.snowflake import Snowflake, SnowflakeList
 
 
 __all__ = (
