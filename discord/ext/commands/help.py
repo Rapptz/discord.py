@@ -27,10 +27,16 @@ import copy
 import functools
 import inspect
 import re
+
+from typing import Optional, TYPE_CHECKING
+
 import discord.utils
 
 from .core import Group, Command
 from .errors import CommandError
+
+if TYPE_CHECKING:
+    from .context import Context
 
 __all__ = (
     'Paginator',
@@ -320,7 +326,7 @@ class HelpCommand:
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
-        self.context = None
+        self.context: Optional[Context] = None
         self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self):
