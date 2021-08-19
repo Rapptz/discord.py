@@ -61,6 +61,7 @@ from .sticker import GuildSticker
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
+    from .message import MessageableChannel
     from .guild import GuildChannel, VocalGuildChannel
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
@@ -77,6 +78,7 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
     CS = TypeVar('CS', bound='ConnectionState')
+    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, Thread, PartialMessageable]
 
 class ChunkRequest:
     def __init__(self, guild_id: int, loop: asyncio.AbstractEventLoop, resolver: Callable[[int], Any], *, cache: bool = True) -> None:
@@ -430,7 +432,7 @@ class ConnectionState:
         # If presences are enabled then we get back the old guild.large behaviour
         return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
-    def _get_guild_channel(self, data: MessagePayload) -> Tuple[Union[GuildChannel, VocalGuildChannel, DMChannel, Thread, PartialMessageable], Optional[Guild]]:
+    def _get_guild_channel(self, data: MessagePayload) -> Tuple[Channel, Optional[Guild]]:
         channel_id = int(data['channel_id'])
         try:
             guild = self._get_guild(int(data['guild_id']))
@@ -1312,12 +1314,12 @@ class ConnectionState:
                 timestamp = datetime.datetime.fromtimestamp(data.get('timestamp'), tz=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
 
-    def _get_reaction_user(self, channel, user_id):
+    def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, TextChannel):
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
-    def get_reaction_emoji(self, data):
+    def get_reaction_emoji(self, data) -> Union[Emoji, PartialEmoji]:
         emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
@@ -1328,7 +1330,7 @@ class ConnectionState:
         except KeyError:
             return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
 
-    def _upgrade_partial_emoji(self, emoji):
+    def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = emoji.id
         if not emoji_id:
             return emoji.name
@@ -1337,7 +1339,7 @@ class ConnectionState:
         except KeyError:
             return emoji
 
-    def get_channel(self, id):
+    def get_channel(self, id: Optional[int]) -> Optional[Channel]:
         if id is None:
             return None
 
@@ -1350,17 +1352,16 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(self, *, channel, data):
+    def create_message(self, *, channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable], data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
 
 class AutoShardedConnectionState(ConnectionState):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._ready_task = None
-        self.shard_ids = ()
-        self.shards_launched = asyncio.Event()
+        self.shard_ids: tuple[int, ...] = ()
+        self.shards_launched: asyncio.Event = asyncio.Event()
 
-    def _update_message_references(self):
+    def _update_message_references(self) -> None:
         for msg in self._messages or []:
             if not msg.guild:
                 continue
@@ -1371,11 +1372,11 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
                 msg._rebind_cached_references(new_guild, channel)
 
-    async def chunker(self, guild_id, query='', limit=0, presences=False, *, shard_id=None, nonce=None):
+    async def chunker(self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, shard_id: Optional[int] = None, nonce: Optional[str] = None) -> None:
         ws = self._get_websocket(guild_id, shard_id=shard_id)
         await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
-    async def _delay_ready(self):
+    async def _delay_ready(self) -> None:
         await self.shards_launched.wait()
         processed = []
         max_concurrency = len(self.shard_ids) * 2
