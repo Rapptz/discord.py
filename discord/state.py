@@ -31,8 +31,6 @@ import datetime
 import itertools
 import logging
 from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple
-import weakref
-import warnings
 import inspect
 
 import os
