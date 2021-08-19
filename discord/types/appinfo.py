@@ -61,6 +61,7 @@ class _PartialAppInfoOptional(TypedDict, total=False):
     terms_of_service_url: str
     privacy_policy_url: str
     max_participants: int
+    flags: int
 
 class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
     pass
