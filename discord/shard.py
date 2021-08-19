@@ -55,7 +55,7 @@ __all__ = (
     'ShardInfo',
 )
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 class EventType:
     close = 0
