@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Typ
 import discord.abc
 
 from . import utils
+from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
@@ -261,6 +262,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_client_status',
         '_user',
         '_state',
+        '_avatar',
     )
 
     if TYPE_CHECKING:
@@ -288,6 +290,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
+        self._avatar: Optional[str] = data.get("avatar", None)
 
     def __str__(self) -> str:
         return str(self._user)
@@ -492,6 +495,19 @@ class Member(discord.abc.Messageable, _UserTag):
         is returned instead.
         """
         return self.nick or self.name
+
+    @property
+    def guild_avatar(self) -> Asset:
+        """:class:`Asset`: Returns an :class:`Asset` for the guild avatar the member has.
+
+        If the member does not have a guild avatar, :meth:`Member.avatar`
+        will be called instead.
+
+        .. versionadded:: 2.0
+        """
+        if self._avatar is None:
+            return self.avatar
+        return Asset._from_guild_avatar(self._state, self.guild.id, self.id, self._avatar)
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
