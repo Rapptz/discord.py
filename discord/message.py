@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
+from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, Type, TypeVar, overload
 
 from . import utils
 from .reaction import Reaction
@@ -86,8 +86,10 @@ __all__ = (
     'DeletedReferencedMessage',
 )
 
+C = TypeVar('C', bound='Type[Any]')
 
-def convert_emoji_reaction(emoji):
+
+def convert_emoji_reaction(emoji: Union[EmojiInputType, Reaction]) -> str:
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
 
@@ -468,7 +470,7 @@ class MessageReference:
     to_message_reference_dict = to_dict
 
 
-def flatten_handlers(cls):
+def flatten_handlers(cls: C) -> C:
     prefix = len('_handle_')
     handlers = [
         (key[prefix:], value)
@@ -1367,7 +1369,7 @@ class Message(Hashable):
         await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
         self.pinned = False
 
-    async def add_reaction(self, emoji: EmojiInputType) -> None:
+    async def add_reaction(self, emoji: Union[EmojiInputType, Reaction]) -> None:
         """|coro|
 
         Add a reaction to the message.
