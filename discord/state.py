@@ -1371,7 +1371,8 @@ class AutoShardedConnectionState(ConnectionState):
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
                 channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
-                msg._rebind_cached_references(new_guild, channel)
+                # channel will either be a TextChannel, Thread or Object
+                msg._rebind_cached_references(new_guild, channel) # type: ignore
 
     async def chunker(self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, shard_id: Optional[int] = None, nonce: Optional[str] = None) -> None:
         ws = self._get_websocket(guild_id, shard_id=shard_id)
