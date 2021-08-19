@@ -977,9 +977,17 @@ class Message(Hashable):
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
 
+        A system message is a message that is constructed entirely by the Discord API
+        in response to something.
+
         .. versionadded:: 1.3
         """
-        return self.type not in (MessageType.default, MessageType.reply, MessageType.application_command, MessageType.thread_starter_message)
+        return self.type not in (
+            MessageType.default,
+            MessageType.reply,
+            MessageType.application_command,
+            MessageType.thread_starter_message,
+        )
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
@@ -1476,7 +1484,7 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = 1440) -> Thread:
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = MISSING) -> Thread:
         """|coro|
 
         Creates a public thread from this message.
@@ -1485,7 +1493,7 @@ class Message(Hashable):
         :attr:`~discord.Permissions.use_threads` in order to create a thread.
 
         The channel this message belongs in must be a :class:`TextChannel`.
-        
+
         .. versionadded:: 2.0
 
         Parameters
@@ -1494,7 +1502,7 @@ class Message(Hashable):
             The name of the thread.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
-            Defaults to ``1440`` or 24 hours.
+            If not provided, the channel's default auto archive duration is used.
 
         Raises
         -------
@@ -1517,7 +1525,7 @@ class Message(Hashable):
             self.channel.id,
             self.id,
             name=name,
-            auto_archive_duration=auto_archive_duration,
+            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
         )
         return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
 
@@ -1639,7 +1647,7 @@ class PartialMessage(Hashable):
             ChannelType.private,
             ChannelType.news_thread,
             ChannelType.public_thread,
-            ChannelType.private_thread
+            ChannelType.private_thread,
         ):
             raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 
