@@ -120,7 +120,7 @@ class ChunkRequest:
             if not future.done():
                 future.set_result(self.buffer)
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 async def logging_coroutine(coroutine: Coroutine[Any, Any, T], *, info: str) -> Optional[T]:
     try:
