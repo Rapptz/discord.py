@@ -241,7 +241,7 @@ class ConnectionState:
         else:
             self._messages: Optional[deque] = None
 
-    def process_chunk_requests(self, guild_id, nonce, members, complete):
+    def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member], complete: bool) -> None:
         removed = []
         for key, request in self._chunk_requests.items():
             if request.guild_id == guild_id and request.nonce == nonce:
@@ -253,7 +253,7 @@ class ConnectionState:
         for key in removed:
             del self._chunk_requests[key]
 
-    def call_handlers(self, key, *args, **kwargs):
+    def call_handlers(self, key: str, *args: Any, **kwargs: Any) -> Any:
         try:
             func = self.handlers[key]
         except KeyError:
@@ -261,7 +261,7 @@ class ConnectionState:
         else:
             func(*args, **kwargs)
 
-    async def call_hooks(self, key, *args, **kwargs):
+    async def call_hooks(self, key: str, *args: Any, **kwargs: Any) -> Any:
         try:
             coro = self.hooks[key]
         except KeyError:
@@ -270,12 +270,12 @@ class ConnectionState:
             await coro(*args, **kwargs)
 
     @property
-    def self_id(self):
+    def self_id(self) -> Optional[int]:
         u = self.user
         return u.id if u else None
 
     @property
-    def intents(self):
+    def intents(self) -> Intents:
         ret = Intents.none()
         ret.value = self._intents.value
         return ret
