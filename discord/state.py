@@ -1358,7 +1358,7 @@ class ConnectionState:
 class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.shard_ids: List[int] = []
+        self.shard_ids: Union[List[int], range] = []
         self.shards_launched: asyncio.Event = asyncio.Event()
 
     def _update_message_references(self) -> None:
