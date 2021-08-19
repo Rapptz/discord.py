@@ -257,7 +257,7 @@ class ConnectionState:
         for key in removed:
             del self._chunk_requests[key]
 
-    def call_handlers(self, key: str, *args: Any, **kwargs: Any) -> Any:
+    def call_handlers(self, key: str, *args: Any, **kwargs: Any) -> None:
         try:
             func = self.handlers[key]
         except KeyError:
@@ -265,7 +265,7 @@ class ConnectionState:
         else:
             func(*args, **kwargs)
 
-    async def call_hooks(self, key: str, *args: Any, **kwargs: Any) -> Any:
+    async def call_hooks(self, key: str, *args: Any, **kwargs: Any) -> None:
         try:
             coro = self.hooks[key]
         except KeyError:
