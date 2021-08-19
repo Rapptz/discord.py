@@ -41,7 +41,7 @@ __all__ = (
     'OpusNotLoaded',
 )
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 c_int_ptr   = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
