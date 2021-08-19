@@ -37,7 +37,7 @@ from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild, VocalGuildChannel
+from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType
@@ -717,7 +717,7 @@ class Client:
         """List[:class:`~discord.User`]: Returns a list of all the users the bot can see."""
         return list(self._connection._users.values())
 
-    def get_channel(self, id: int) -> Optional[Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable, Thread]]:
+    def get_channel(self, id: int) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
         """Returns a channel with the given ID.
 
         Parameters
