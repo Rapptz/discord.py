@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import Dict, List, Tuple, Optional, Union, Callable, Any
+
 import array
 import ctypes
 import ctypes.util
@@ -76,7 +78,7 @@ CTL_SET_SIGNAL       = 4024
 CTL_SET_GAIN             = 4034
 CTL_LAST_PACKET_DURATION = 4039
 
-band_ctl = {
+band_ctl: Dict[str, int] = {
     'narrow': 1101,
     'medium': 1102,
     'wide': 1103,
@@ -84,7 +86,7 @@ band_ctl = {
     'full': 1105,
 }
 
-signal_ctl = {
+signal_ctl: Dict[str, int] = {
     'auto': -1000,
     'voice': 3001,
     'music': 3002,
@@ -108,7 +110,7 @@ def _err_ne(result, func, args):
 # The second one are the types of arguments it takes.
 # The third is the result type.
 # The fourth is the error handler.
-exported_functions = [
+exported_functions: List[Tuple[Any, ...]] = [
     # Generic
     ('opus_get_version_string',
         None, ctypes.c_char_p, None),
