@@ -43,12 +43,14 @@ from .errors import (
 
 from .enums import Status
 
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Mapping, TypeVar
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .enums import Status
+
+    EI = TypeVar('EI', bound='EventItem')
 
 __all__ = (
     'AutoShardedClient',
@@ -73,12 +75,12 @@ class EventItem:
         self.shard: Optional['Shard'] = shard
         self.error: Optional[Exception] = error
 
-    def __lt__(self, other: 'EventItem') -> bool:
+    def __lt__(self: EI, other: EI) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type < other.type
 
-    def __eq__(self, other: 'EventItem') -> bool:
+    def __eq__(self: EI, other: EI) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type == other.type
@@ -87,7 +89,7 @@ class EventItem:
         return hash(self.type)
 
 class Shard:
-    def __init__(self, ws: DiscordWebSocket, client: AutoShardedClient, queue_put: Callable[[Any], None]):
+    def __init__(self, ws: DiscordWebSocket, client: AutoShardedClient, queue_put: Callable[[Any], None]) -> None:
         self.ws: DiscordWebSocket = ws
         self._client: Client = client
         self._dispatch: Callable[..., None] = client.dispatch
