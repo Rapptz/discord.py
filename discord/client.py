@@ -718,7 +718,7 @@ class Client:
         return list(self._connection._users.values())
 
     def get_channel(self, id: int) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
-        """Returns a channel with the given ID.
+        """Returns a channel or thread with the given ID.
 
         Parameters
         -----------

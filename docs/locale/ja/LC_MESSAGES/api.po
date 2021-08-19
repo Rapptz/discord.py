@@ -1313,8 +1313,8 @@ msgstr "戻り値の型"
 
 #: discord.Client.get_channel:7 of
 #, fuzzy
-msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]"
+msgstr "Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]"
 
 #: discord.Client.get_guild:1 of
 #, fuzzy
@@ -16949,11 +16949,11 @@ msgstr ":class:`~discord.User`"
 #~ ":class:`.Streaming`]] -- ログイン時のアクティビティ。"
 
 #~ msgid ""
-#~ "Optional[Union[:class:`.abc.GuildChannel`, "
+#~ "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 #~ ":class:`.abc.PrivateChannel`]]: Returns a channel"
 #~ " with the given ID."
 #~ msgstr ""
-#~ "Optional[Union[:class:`.abc.GuildChannel`, "
+#~ "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 #~ ":class:`.abc.PrivateChannel`]]: 与えられたIDを持つチャンネルを返します。"
 
 #~ msgid "If not found, returns ``None``."
