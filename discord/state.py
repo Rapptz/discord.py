@@ -30,7 +30,7 @@ import copy
 import datetime
 import itertools
 import logging
-from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple
+from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple, Deque
 import inspect
 
 import os
@@ -241,9 +241,9 @@ class ConnectionState:
         # extra dict to look up private channels by user id
         self._private_channels_by_user: Dict[int, PrivateChannel] = {}
         if self.max_messages is not None:
-            self._messages: Optional[deque] = deque(maxlen=self.max_messages)
+            self._messages: Optional[Deque[Message]] = deque(maxlen=self.max_messages)
         else:
-            self._messages: Optional[deque] = None
+            self._messages: Optional[Deque[Message]] = None
 
     def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member], complete: bool) -> None:
         removed = []
@@ -1089,7 +1089,7 @@ class ConnectionState:
 
         # do a cleanup of the messages cache
         if self._messages is not None:
-            self._messages: Optional[deque] = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
+            self._messages: Optional[Deque[Message]] = deque((msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages)
 
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)
