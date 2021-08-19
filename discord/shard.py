@@ -43,7 +43,7 @@ from .errors import (
 
 from .enums import Status
 
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Mapping, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Mapping, TypeVar, ClassVar
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
@@ -60,12 +60,12 @@ __all__ = (
 log: logging.Logger = logging.getLogger(__name__)
 
 class EventType:
-    close = 0
-    reconnect = 1
-    resume = 2
-    identify = 3
-    terminate = 4
-    clean_close = 5
+    close: ClassVar[int] = 0
+    reconnect: ClassVar[int] = 1
+    resume: ClassVar[int] = 2
+    identify: ClassVar[int] = 3
+    terminate: ClassVar[int] = 4
+    clean_close: ClassVar[int] = 5
 
 class EventItem:
     __slots__ = ('type', 'shard', 'error')
