@@ -78,7 +78,7 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
     CS = TypeVar('CS', bound='ConnectionState')
-    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, Thread, PartialMessageable]
+    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
 
 class ChunkRequest:
     def __init__(self, guild_id: int, loop: asyncio.AbstractEventLoop, resolver: Callable[[int], Any], *, cache: bool = True) -> None:
@@ -432,7 +432,7 @@ class ConnectionState:
         # If presences are enabled then we get back the old guild.large behaviour
         return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
-    def _get_guild_channel(self, data: MessagePayload) -> Tuple[Channel, Optional[Guild]]:
+    def _get_guild_channel(self, data: MessagePayload) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
         channel_id = int(data['channel_id'])
         try:
             guild = self._get_guild(int(data['guild_id']))
@@ -1339,7 +1339,7 @@ class ConnectionState:
         except KeyError:
             return emoji
 
-    def get_channel(self, id: Optional[int]) -> Optional[Channel]:
+    def get_channel(self, id: Optional[int]) -> Optional[Union[Channel, Thread]]:
         if id is None:
             return None
 
