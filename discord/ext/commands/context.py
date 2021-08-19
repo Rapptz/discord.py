@@ -36,6 +36,7 @@ from discord.message import Message
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
+    from discord.abc import MessageableChannel
     from discord.guild import Guild
     from discord.member import Member
     from discord.state import ConnectionState
@@ -286,7 +287,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         return self.message.guild
 
     @discord.utils.cached_property
-    def channel(self):
+    def channel(self) -> MessageableChannel:
         """Union[:class:`.abc.Messageable`]: Returns the channel associated with this context's command.
         Shorthand for :attr:`.Message.channel`.
         """
