@@ -62,7 +62,7 @@ from .sticker import GuildSticker
 if TYPE_CHECKING:
     from .guild import GuildChannel, VocalGuildChannel
     from .http import HTTPClient
-    from .voice_client import VoiceClient
+    from .voice_client import VoiceProtocol
     from .client import Client
     from .gateway import DiscordWebSocket
 
@@ -230,7 +230,7 @@ class ConnectionState:
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
         self._view_store: ViewStore = ViewStore(self)
-        self._voice_clients: Dict[int, VoiceClient] = {}
+        self._voice_clients: Dict[int, VoiceProtocol] = {}
 
         # LRU of max size 128
         self._private_channels: OrderedDict = OrderedDict()
@@ -281,13 +281,13 @@ class ConnectionState:
         return ret
 
     @property
-    def voice_clients(self) -> List[VoiceClient]:
+    def voice_clients(self) -> List[VoiceProtocol]:
         return list(self._voice_clients.values())
 
-    def _get_voice_client(self, guild_id: int) -> Optional[VoiceClient]:
+    def _get_voice_client(self, guild_id: int) -> Optional[VoiceProtocol]:
         return self._voice_clients.get(guild_id)
 
-    def _add_voice_client(self, guild_id: int, voice: VoiceClient) -> None:
+    def _add_voice_client(self, guild_id: int, voice: ) -> None:
         self._voice_clients[guild_id] = voice
 
     def _remove_voice_client(self, guild_id: int) -> None:
