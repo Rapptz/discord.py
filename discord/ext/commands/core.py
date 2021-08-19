@@ -477,6 +477,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
         if self._max_concurrency != other._max_concurrency:
+            # _max_concurrency won't be None at this point
             other._max_concurrency = self._max_concurrency.copy()  # type: ignore
 
         try:
@@ -566,6 +567,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             argument = view.get_quoted_word()
         view.previous = previous
 
+        # type-checker fails to narrow argument
         return await run_converters(ctx, converter, argument, param)  # type: ignore
 
     async def _transform_greedy_pos(self, ctx: Context, param: inspect.Parameter, required: bool, converter: Any) -> Any:
@@ -633,9 +635,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         entries = []
         command = self
-        while command.parent is not None:
-            command = command.parent
-            entries.append(command.name)
+        # command.parent is type-hinted as GroupMixin some attributes are resolved via MRO
+        while command.parent is not None: # type: ignore
+            command = command.parent # type: ignore
+            entries.append(command.name) # type: ignore
 
         return ' '.join(reversed(entries))
 
@@ -651,8 +654,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         entries = []
         command = self
-        while command.parent is not None:
-            command = command.parent
+        while command.parent is not None: # type: ignore
+            command = command.parent # type: ignore
             entries.append(command)
 
         return entries
@@ -789,7 +792,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if bucket is not None:
                 retry_after = bucket.update_rate_limit(current)
                 if retry_after:
-                    raise CommandOnCooldown(bucket, retry_after, self._buckets.type)
+                    raise CommandOnCooldown(bucket, retry_after, self._buckets.type)  # type: ignore
 
     async def prepare(self, ctx: Context) -> None:
         ctx.command = self
@@ -798,7 +801,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             raise CheckFailure(f'The check functions for command {self.qualified_name} failed.')
 
         if self._max_concurrency is not None:
-            await self._max_concurrency.acquire(ctx)
+            # For this application, context can be duck-typed as a Message
+            await self._max_concurrency.acquire(ctx)  # type: ignore
 
         try:
             if self.cooldown_after_parsing:
@@ -811,7 +815,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             await self.call_before_hooks(ctx)
         except:
             if self._max_concurrency is not None:
-                await self._max_concurrency.release(ctx)
+                await self._max_concurrency.release(ctx)  # type: ignore
             raise
 
     def is_on_cooldown(self, ctx: Context) -> bool:
@@ -981,7 +985,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The post-invoke hook must be a coroutine.')
 
-        self._after_invoke = coro  # type: ignore
+        self._after_invoke = coro
         return coro
 
     @property
@@ -1268,7 +1272,7 @@ class GroupMixin:
 
         for name in names[1:]:
             try:
-                obj = obj.all_commands[name]
+                obj = obj.all_commands[name]  # type: ignore
             except (AttributeError, KeyError):
                 return None
 
@@ -1544,7 +1548,7 @@ def command(
         If the function is not a coroutine or is already a command.
     """
     if cls is MISSING:
-        cls = Command[CogT, P, T]  # type: ignore
+        cls = Command  # type: ignore
 
     def decorator(func: Union[
             Callable[Concatenate[ContextT, P], Coro[Any]],
@@ -1607,7 +1611,7 @@ def group(
         The ``cls`` parameter can now be passed.
     """
     if cls is MISSING:
-        cls = Group[CogT, P, T]  # type: ignore
+        cls = Group  # type: ignore
     return command(name=name, cls=cls, **attrs)  # type: ignore
 
 def check(predicate: Check) -> Callable[[T], T]:
@@ -1801,6 +1805,7 @@ def has_role(item: Union[int, str]) -> Callable[[T], T]:
         if ctx.guild is None:
             raise NoPrivateMessage()
 
+        # ctx.guild is None doesn't narrow ctx.author to Member
         if isinstance(item, int):
             role = discord.utils.get(ctx.author.roles, id=item)  # type: ignore
         else:
@@ -1846,10 +1851,11 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
         if ctx.guild is None:
             raise NoPrivateMessage()
 
+        # ctx.guild is None doesn't narrow ctx.author to Member
         getter = functools.partial(discord.utils.get, ctx.author.roles)  # type: ignore
         if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
-        raise MissingAnyRole(items)
+        raise MissingAnyRole(list(items))
 
     return check(predicate)
 
@@ -1902,7 +1908,7 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
         getter = functools.partial(discord.utils.get, me.roles)
         if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
             return True
-        raise BotMissingAnyRole(items)
+        raise BotMissingAnyRole(list(items))
     return check(predicate)
 
 def has_permissions(**perms: bool) -> Callable[[T], T]:
@@ -1967,7 +1973,7 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
     def predicate(ctx: Context) -> bool:
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
-        permissions = ctx.channel.permissions_for(me)
+        permissions = ctx.channel.permissions_for(me)  # type: ignore
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
@@ -2097,7 +2103,7 @@ def is_nsfw() -> Callable[[T], T]:
         ch = ctx.channel
         if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
             return True
-        raise NSFWChannelRequired(ch)
+        raise NSFWChannelRequired(ch)  # type: ignore
     return check(pred)
 
 def cooldown(rate: int, per: float, type: Union[BucketType, Callable[[Message], Any]] = BucketType.default) -> Callable[[T], T]:

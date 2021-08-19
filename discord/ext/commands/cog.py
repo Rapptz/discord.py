@@ -196,7 +196,8 @@ class Cog(metaclass=CogMeta):
         cmd_attrs = cls.__cog_settings__
 
         # Either update the command with the cog provided defaults or copy it.
-        self.__cog_commands__ = tuple(c._update_copy(cmd_attrs) for c in cls.__cog_commands__)
+        # r.e type ignore, type-checker complains about overriding a ClassVar
+        self.__cog_commands__ = tuple(c._update_copy(cmd_attrs) for c in cls.__cog_commands__)  # type: ignore
 
         lookup = {
             cmd.qualified_name: cmd
@@ -209,7 +210,7 @@ class Cog(metaclass=CogMeta):
             parent = command.parent
             if parent is not None:
                 # Get the latest parent reference
-                parent = lookup[parent.qualified_name]
+                parent = lookup[parent.qualified_name]  # type: ignore
 
                 # Update our parent's reference to our self
                 parent.remove_command(command.name)  # type: ignore

@@ -71,6 +71,7 @@ def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
     """
+    # bot.user will never be None when this is called
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
 
 def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], Message], List[str]]:
@@ -149,6 +150,7 @@ class BotBase(GroupMixin):
     # internal helpers
 
     def dispatch(self, event_name: str, *args: Any, **kwargs: Any) -> None:
+        # super() will resolve to Client
         super().dispatch(event_name, *args, **kwargs)  # type: ignore
         ev = 'on_' + event_name
         for event in self.extra_events.get(ev, []):
@@ -220,6 +222,7 @@ class BotBase(GroupMixin):
                 return ctx.command.qualified_name in allowed_commands
 
         """
+        # T was used instead of Check to ensure the type matches on return
         self.add_check(func)  # type: ignore
         return func
 
@@ -308,6 +311,7 @@ class BotBase(GroupMixin):
         if len(data) == 0:
             return True
 
+        # type-checker doesn't distinguish between functions and methods
         return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
     async def is_owner(self, user: discord.User) -> bool:
@@ -339,6 +343,7 @@ class BotBase(GroupMixin):
         elif self.owner_ids:
             return user.id in self.owner_ids
         else:
+
             app = await self.application_info()  # type: ignore
             if app.team:
                 self.owner_ids = ids = {m.id for m in app.team.members}
@@ -965,6 +970,7 @@ class BotBase(GroupMixin):
 
         invoker = view.get_word()
         ctx.invoked_with = invoker
+        # type-checker fails to narrow invoked_prefix type.
         ctx.prefix = invoked_prefix  # type: ignore
         ctx.command = self.all_commands.get(invoker)
         return ctx

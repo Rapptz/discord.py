@@ -183,15 +183,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         TypeError
             The command argument to invoke is missing.
         """
-        arguments = []
-        if command.cog is not None:
-            arguments.append(command.cog)
-
-        arguments.append(self)
-        arguments.extend(args)
-
-        ret = await command.callback(*arguments, **kwargs)  # type: ignore
-        return ret
+        return await command(self, *args, **kwargs)
 
     async def reinvoke(self, *, call_hooks: bool = False, restart: bool = True) -> None:
         """|coro|
@@ -312,6 +304,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """Union[:class:`.Member`, :class:`.ClientUser`]:
         Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts.
         """
+        # bot.user will never be None at this point.
         return self.guild.me if self.guild is not None else self.bot.user  # type: ignore
 
     @property
