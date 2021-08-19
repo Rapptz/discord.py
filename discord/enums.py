@@ -62,6 +62,10 @@ def _create_value_cls(name):
     cls = namedtuple('_EnumValue_' + name, 'name value')
     cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'
     cls.__str__ = lambda self: f'{name}.{self.name}'
+    cls.__le__ = lambda self, other: isinstance(other, self.__class__) and self.value <= other.value
+    cls.__ge__ = lambda self, other: isinstance(other, self.__class__) and self.value >= other.value
+    cls.__lt__ = lambda self, other: isinstance(other, self.__class__) and self.value < other.value
+    cls.__gt__ = lambda self, other: isinstance(other, self.__class__) and self.value > other.value
     return cls
 
 
