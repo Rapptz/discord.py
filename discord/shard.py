@@ -303,6 +303,9 @@ class AutoShardedClient(Client):
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
+    if TYPE_CHECKING:
+        _connection: AutoShardedConnectionState
+
     def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any) -> None:
         kwargs.pop('shard_id', None)
         self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
@@ -499,7 +502,8 @@ class AutoShardedClient(Client):
             if me is None:
                 continue
 
-            me.activities = activities
+            # Member.activities is typehinted as Tuple[ActivityType, ...], we may be setting it as Tuple[BaseActivity, ...]
+            me.activities = activities # type: ignore
             me.status = status_enum
 
     def is_ws_ratelimited(self) -> bool:
