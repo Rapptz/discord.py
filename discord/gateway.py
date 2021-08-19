@@ -24,10 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypedDict, Any, Optional, List, TypeVar, Type, Dict, Callable, Coroutine
+from typing import TYPE_CHECKING, TypedDict, Any, Optional, List, TypeVar, Type, Dict, Callable, Coroutine, NamedTuple
 
 import asyncio
-from collections import namedtuple, deque
+from collections import deque
 import concurrent.futures
 import logging
 import struct
@@ -81,7 +81,11 @@ class WebSocketClosure(Exception):
     pass
 
 
-EventListener = namedtuple('EventListener', 'predicate event result future')
+class EventListener(NamedTuple):
+    predicate: Callable[[Dict[str, Any]], bool]
+    event: str
+    result: Optional[Callable[[Dict[str, Any]], Any]]
+    future: asyncio.Future
 
 
 class GatewayRatelimiter:
