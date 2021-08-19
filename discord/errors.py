@@ -23,7 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union
+
+from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union, Type
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse
@@ -31,9 +32,9 @@ if TYPE_CHECKING:
     try:
         from requests import Response
 
-        ResponseType = Union[ClientResponse, Response]
+        ResponseType: Type[Union[ClientResponse, Response]] = Union[ClientResponse, Response]
     except ModuleNotFoundError:
-        ResponseType = ClientResponse
+        ResponseType: Type[Union[ClientResponse, Response]] = ClientResponse
 
     from .interactions import Interaction
 
@@ -123,7 +124,7 @@ class HTTPException(DiscordException):
         The Discord specific error code for the failure.
     """
 
-    def __init__(self, response: ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
+    def __init__(self, response: ResponseType, message: Optional[Union[str, Dict[str, Any]]]) -> None:
         self.response: ResponseType = response
         self.status: int = response.status  # type: ignore
         self.code: int
@@ -221,7 +222,7 @@ class ConnectionClosed(ClientException):
         The shard ID that got closed if applicable.
     """
 
-    def __init__(self, socket: ClientWebSocketResponse, *, shard_id: Optional[int], code: Optional[int] = None):
+    def __init__(self, socket: ClientWebSocketResponse, *, shard_id: Optional[int], code: Optional[int] = None) -> None:
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
         self.code: int = code or socket.close_code or -1
@@ -247,7 +248,7 @@ class PrivilegedIntentsRequired(ClientException):
         The shard ID that got closed if applicable.
     """
 
-    def __init__(self, shard_id: Optional[int]):
+    def __init__(self, shard_id: Optional[int]) -> None:
         self.shard_id: Optional[int] = shard_id
         msg = (
             'Shard ID %s is requesting privileged intents that have not been explicitly enabled in the '
@@ -272,6 +273,6 @@ class InteractionResponded(ClientException):
         The interaction that's already been responded to.
     """
 
-    def __init__(self, interaction: Interaction):
+    def __init__(self, interaction: Interaction) -> None:
         self.interaction: Interaction = interaction
         super().__init__('This interaction has already been responded to before')
