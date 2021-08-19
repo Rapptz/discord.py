@@ -134,6 +134,7 @@ class BotBase(GroupMixin):
         for event in self.extra_events.get(ev, []):
             self._schedule_event(event, ev, *args, **kwargs)
 
+    @discord.utils.copy_doc(discord.Client.close)
     async def close(self):
         for extension in tuple(self.__extensions):
             try:
