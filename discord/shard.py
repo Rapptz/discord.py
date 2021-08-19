@@ -431,7 +431,7 @@ class AutoShardedClient(Client):
 
         for vc in self.voice_clients:
             try:
-                await vc.disconnect()
+                await vc.disconnect(force=True)
             except Exception:
                 pass
 
