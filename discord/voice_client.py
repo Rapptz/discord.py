@@ -255,6 +255,9 @@ class VoiceClient(VoiceProtocol):
         self.encoder: Encoder = MISSING
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
+        self.ip: str = MISSING
+        self.port: Tuple[Any, ...] = MISSING
+        
 
     warn_nacl = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
