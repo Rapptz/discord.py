@@ -110,6 +110,7 @@ class Shard:
 
     @property
     def id(self) -> int:
+        # DiscordWebSocket.shard_id is set in the from_client classmethod
         return self.ws.shard_id # type: ignore
 
     def launch(self) -> None:
