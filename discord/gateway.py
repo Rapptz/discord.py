@@ -73,7 +73,7 @@ class ReconnectWebSocket(Exception):
     def __init__(self, shard_id: Optional[int], *, resume: bool = True) -> None:
         self.shard_id: Optional[int] = shard_id
         self.resume: bool = resume
-        self.op: str = 'RESUME' if resume else 'IDENTIFY'
+        self.op = 'RESUME' if resume else 'IDENTIFY'
 
 
 class WebSocketClosure(Exception):
@@ -217,9 +217,9 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.recent_ack_latencies: Deque[float] = deque(maxlen=20)
-        self.msg: str = 'Keeping shard ID %s voice websocket alive with timestamp %s.'
-        self.block_msg: str = 'Shard ID %s voice heartbeat blocked for more than %s seconds'
-        self.behind_msg: str = 'High socket latency, shard ID %s heartbeat is %.1fs behind'
+        self.msg = 'Keeping shard ID %s voice websocket alive with timestamp %s.'
+        self.block_msg = 'Shard ID %s voice heartbeat blocked for more than %s seconds'
+        self.behind_msg = 'High socket latency, shard ID %s heartbeat is %.1fs behind'
 
     def get_payload(self) -> Heartbeat:
         return {
