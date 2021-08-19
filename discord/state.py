@@ -235,7 +235,7 @@ class ConnectionState:
         # LRU of max size 128
         self._private_channels: OrderedDict = OrderedDict()
         # extra dict to look up private channels by user id
-        self._private_channels_by_user: dict[int, DMChannel] = {}
+        self._private_channels_by_user: Dict[int, DMChannel] = {}
         if self.max_messages is not None:
             self._messages: Optional[deque] = deque(maxlen=self.max_messages)
         else:
