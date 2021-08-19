@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypedDict, Any, Optional, List, TypeVar, Type, Dict, Callable, Coroutine, NamedTuple
+from typing import TYPE_CHECKING, TypedDict, Any, Optional, List, TypeVar, Type, Dict, Callable, Coroutine, NamedTuple, Deque
 
 import asyncio
 from collections import deque
@@ -216,7 +216,7 @@ class KeepAliveHandler(threading.Thread):
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.recent_ack_latencies: deque = deque(maxlen=20)
+        self.recent_ack_latencies: Deque[float] = deque(maxlen=20)
         self.msg: str = 'Keeping shard ID %s voice websocket alive with timestamp %s.'
         self.block_msg: str = 'Shard ID %s voice heartbeat blocked for more than %s seconds'
         self.behind_msg: str = 'High socket latency, shard ID %s heartbeat is %.1fs behind'
