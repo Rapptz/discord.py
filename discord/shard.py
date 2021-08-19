@@ -89,11 +89,11 @@ class EventItem:
         return hash(self.type)
 
 class Shard:
-    def __init__(self, ws: DiscordWebSocket, client: AutoShardedClient, queue_put: Callable[[Any], None]) -> None:
+    def __init__(self, ws: DiscordWebSocket, client: AutoShardedClient, queue_put: Callable[[EventItem], None]) -> None:
         self.ws: DiscordWebSocket = ws
         self._client: Client = client
         self._dispatch: Callable[..., None] = client.dispatch
-        self._queue_put: Callable[[Any], None] = queue_put
+        self._queue_put: Callable[[EventItem], None] = queue_put
         self.loop: asyncio.AbstractEventLoop = self._client.loop
         self._disconnect: bool = False
         self._reconnect = client._reconnect
