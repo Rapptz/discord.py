@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Dict, List, Tuple, Optional, Union, Callable, Any
+from typing import Dict, List, Tuple, TypedDict, Any
 
 import array
 import ctypes
@@ -34,6 +34,18 @@ import struct
 import sys
 
 from .errors import DiscordException
+
+class BandCtl(TypedDict):
+    narrow: int
+    medium: int
+    wide: int
+    superwide: int
+    full: int
+
+class SignalCtl(TypedDict):
+    auto: int
+    voice: int
+    music: int
 
 __all__ = (
     'Encoder',
@@ -78,7 +90,7 @@ CTL_SET_SIGNAL       = 4024
 CTL_SET_GAIN             = 4034
 CTL_LAST_PACKET_DURATION = 4039
 
-band_ctl: Dict[str, int] = {
+band_ctl: BandCtl = {
     'narrow': 1101,
     'medium': 1102,
     'wide': 1103,
@@ -86,7 +98,7 @@ band_ctl: Dict[str, int] = {
     'full': 1105,
 }
 
-signal_ctl: Dict[str, int] = {
+signal_ctl: SignalCtl = {
     'auto': -1000,
     'voice': 3001,
     'music': 3002,
