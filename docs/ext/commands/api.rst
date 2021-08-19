@@ -330,6 +330,14 @@ Checks
 
 .. _ext_commands_api_context:
 
+Cooldown
+---------
+
+.. attributetable:: discord.ext.commands.Cooldown
+
+.. autoclass:: discord.ext.commands.Cooldown
+    :members:
+
 Context
 --------
 
@@ -409,6 +417,9 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.ThreadConverter
+    :members:
+
+.. autoclass:: discord.ext.commands.GuildStickerConverter
     :members:
 
 .. autoclass:: discord.ext.commands.clean_content
@@ -536,6 +547,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.PartialEmojiConversionFailure
     :members:
 
+.. autoexception:: discord.ext.commands.GuildStickerNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
@@ -611,6 +625,7 @@ Exception Hierarchy
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`
                     - :exc:`~.commands.MemberNotFound`
+                    - :exc:`~.commands.GuildNotFound`
                     - :exc:`~.commands.UserNotFound`
                     - :exc:`~.commands.ChannelNotFound`
                     - :exc:`~.commands.ChannelNotReadable`
@@ -618,6 +633,7 @@ Exception Hierarchy
                     - :exc:`~.commands.RoleNotFound`
                     - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`
+                    - :exc:`~.commands.GuildStickerNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
                     - :exc:`~.commands.ThreadNotFound`

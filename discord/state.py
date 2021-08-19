@@ -22,13 +22,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import asyncio
 from collections import deque, OrderedDict
 import copy
 import datetime
 import itertools
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING, Union
 import weakref
 import warnings
 import inspect
@@ -58,6 +60,10 @@ from .ui.view import ViewStore
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
+
+if TYPE_CHECKING:
+    from .http import HTTPClient
+    from .types.activity import Activity as ActivityPayload
 
 class ChunkRequest:
     def __init__(self, guild_id, loop, resolver, *, cache=True):
@@ -108,21 +114,21 @@ async def logging_coroutine(coroutine, *, info):
         log.exception('Exception occurred during %s', info)
 
 class ConnectionState:
-    def __init__(self, *, dispatch, handlers, hooks, http, loop, **options):
-        self.loop = loop
-        self.http = http
-        self.max_messages = options.get('max_messages', 1000)
+    def __init__(self, *, dispatch, handlers, hooks, http: HTTPClient, loop: asyncio.AbstractEventLoop, **options):
+        self.loop: asyncio.AbstractEventLoop = loop
+        self.http: HTTPClient = http
+        self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
             self.max_messages = 1000
 
         self.dispatch = dispatch
         self.handlers = handlers
         self.hooks = hooks
-        self.shard_count = None
-        self._ready_task = None
-        self.application_id = utils._get_as_snowflake(options, 'application_id')
-        self.heartbeat_timeout = options.get('heartbeat_timeout', 60.0)
-        self.guild_ready_timeout = options.get('guild_ready_timeout', 2.0)
+        self.shard_count: Optional[int] = None
+        self._ready_task: Optional[asyncio.Task] = None
+        self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
+        self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
+        self.guild_ready_timeout: float = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:
             raise ValueError('guild_ready_timeout cannot be negative')
 
@@ -131,8 +137,8 @@ class ConnectionState:
         if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
             raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
-        self.allowed_mentions = allowed_mentions
-        self._chunk_requests = {} # Dict[Union[int, str], ChunkRequest]
+        self.allowed_mentions: Optional[AllowedMentions] = allowed_mentions
+        self._chunk_requests: Dict[Union[int, str], ChunkRequest] = {}
 
         activity = options.get('activity', None)
         if activity:
@@ -158,7 +164,7 @@ class ConnectionState:
         if not intents.guilds:
             log.warning('Guilds intent seems to be disabled. This may cause state related issues.')
 
-        self._chunk_guilds = options.get('chunk_guilds_at_startup', intents.members)
+        self._chunk_guilds: bool = options.get('chunk_guilds_at_startup', intents.members)
 
         # Ensure these two are set properly
         if not intents.members and self._chunk_guilds:
@@ -173,14 +179,14 @@ class ConnectionState:
 
             cache_flags._verify_intents(intents)
 
-        self.member_cache_flags = cache_flags
-        self._activity = activity
-        self._status = status
-        self._intents = intents
+        self.member_cache_flags: MemberCacheFlags = cache_flags
+        self._activity: Optional[ActivityPayload] = activity
+        self._status: Optional[str] = status
+        self._intents: Intents = intents
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.create_user
-            self.deref_user = self.deref_user_no_intents
+            self.store_user = self.create_user  # type: ignore
+            self.deref_user = self.deref_user_no_intents  # type: ignore
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
@@ -410,7 +416,7 @@ class ConnectionState:
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or Object(id=channel_id), guild
+        return channel or PartialMessageable(state=self, id=channel_id), guild
 
     async def chunker(self, guild_id, query='', limit=0, presences=False, *, nonce=None):
         ws = self._get_websocket(guild_id) # This is ignored upstream
@@ -851,7 +857,7 @@ class ConnectionState:
             return
 
         added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
-        removed_member_ids = data.get('removed_member_ids', [])
+        removed_member_ids = [int(x) for x in data.get('removed_member_ids', [])]
         self_id = self.self_id
         for member in added_members:
             if member.id != self_id:
@@ -864,7 +870,8 @@ class ConnectionState:
         for member_id in removed_member_ids:
             if member_id != self_id:
                 member = thread._pop_member(member_id)
-                self.dispatch('thread_member_leave', member)
+                if member is not None:
+                    self.dispatch('thread_member_remove', member)
             else:
                 self.dispatch('thread_remove', thread)
 

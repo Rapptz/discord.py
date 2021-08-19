@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
@@ -88,7 +88,7 @@ if TYPE_CHECKING:
         OverwriteType,
     )
 
-    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel]
+    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -1311,7 +1311,7 @@ class Messageable:
             A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
-        stickers: Sequence[Union[:class:`GuildSticker`, :class:`StickerItem`]]
+        stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0

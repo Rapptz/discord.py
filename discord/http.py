@@ -33,7 +33,6 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
-    Final,
     Iterable,
     List,
     Optional,
@@ -158,9 +157,6 @@ aiohttp.hdrs.WEBSOCKET = 'websocket'  #type: ignore
 
 class HTTPClient:
     """Represents an HTTP client sending HTTP requests to the Discord API."""
-
-    SUCCESS_LOG: Final[ClassVar[str]] = '{method} {url} has received {text}'
-    REQUEST_LOG: Final[ClassVar[str]] = '{method} {url} with {json} has returned {status}'
 
     def __init__(
         self,
@@ -823,6 +819,7 @@ class HTTPClient:
             'archived',
             'auto_archive_duration',
             'locked',
+            'default_auto_archive_duration',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
@@ -961,8 +958,8 @@ class HTTPClient:
         params['limit'] = limit
         return self.request(route, params=params)
 
-    def get_active_threads(self, channel_id: Snowflake) -> Response[threads.ThreadPaginationPayload]:
-        route = Route('GET', '/channels/{channel_id}/threads/active', channel_id=channel_id)
+    def get_active_threads(self, guild_id: Snowflake) -> Response[threads.ThreadPaginationPayload]:
+        route = Route('GET', '/guilds/{guild_id}/threads/active', guild_id=guild_id)
         return self.request(route)
 
     def get_thread_members(self, channel_id: Snowflake) -> Response[List[threads.ThreadMember]]:

@@ -293,6 +293,12 @@ class DiscordWebSocket:
     def is_ratelimited(self):
         return self._rate_limiter.is_ratelimited()
 
+    def debug_log_receive(self, data, /):
+        self._dispatch('socket_raw_receive', data)
+
+    def log_receive(self, _, /):
+        pass
+
     @classmethod
     async def from_client(cls, client, *, initial=False, gateway=None, shard_id=None, session=None, sequence=None, resume=False):
         """Creates a main websocket for Discord from a :class:`Client`.
@@ -317,6 +323,10 @@ class DiscordWebSocket:
         ws.session_id = session
         ws.sequence = sequence
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
+
+        if client._enable_debug_events:
+            ws.send = ws.debug_send
+            ws.log_receive = ws.debug_log_receive
 
         client._connection._update_references(ws)
 
@@ -409,8 +419,8 @@ class DiscordWebSocket:
         await self.send_as_json(payload)
         log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
 
-    async def received_message(self, msg):
-        self._dispatch('socket_raw_receive', msg)
+    async def received_message(self, msg, /):
+        self.log_receive(msg)
 
         if type(msg) is bytes:
             self._buffer.extend(msg)
@@ -423,7 +433,9 @@ class DiscordWebSocket:
         msg = utils.from_json(msg)
 
         log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
-        self._dispatch('socket_response', msg)
+        event = msg.get('t')
+        if event:
+            self._dispatch('socket_event_type', event)
 
         op = msg.get('op')
         data = msg.get('d')
@@ -475,8 +487,6 @@ class DiscordWebSocket:
 
             log.warning('Unknown OP code %s.', op)
             return
-
-        event = msg.get('t')
 
         if event == 'READY':
             self._trace = trace = data.get('_trace', [])
@@ -574,9 +584,13 @@ class DiscordWebSocket:
                 log.info('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
 
-    async def send(self, data):
+    async def debug_send(self, data, /):
         await self._rate_limiter.block()
         self._dispatch('socket_raw_send', data)
+        await self.socket.send_str(data)
+
+    async def send(self, data, /):
+        await self._rate_limiter.block()
         await self.socket.send_str(data)
 
     async def send_as_json(self, data):
