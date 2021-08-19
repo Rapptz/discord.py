@@ -233,7 +233,7 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
 
         # LRU of max size 128
-        self._private_channels: OrderedDict = OrderedDict()
+        self._private_channels: OrderedDict[int, DMChannel] = OrderedDict()
         # extra dict to look up private channels by user id
         self._private_channels_by_user: Dict[int, DMChannel] = {}
         if self.max_messages is not None:
@@ -287,7 +287,7 @@ class ConnectionState:
     def _get_voice_client(self, guild_id: int) -> Optional[VoiceProtocol]:
         return self._voice_clients.get(guild_id)
 
-    def _add_voice_client(self, guild_id: int, voice: ) -> None:
+    def _add_voice_client(self, guild_id: int, voice: VoiceProtocol) -> None:
         self._voice_clients[guild_id] = voice
 
     def _remove_voice_client(self, guild_id: int) -> None:
