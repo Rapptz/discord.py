@@ -60,6 +60,7 @@ from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 
 if TYPE_CHECKING:
+    from .abc import PrivateChannel
     from .guild import GuildChannel, VocalGuildChannel
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
@@ -233,9 +234,9 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
 
         # LRU of max size 128
-        self._private_channels: OrderedDict[int, DMChannel] = OrderedDict()
+        self._private_channels: OrderedDict[int, PrivateChannel] = OrderedDict()
         # extra dict to look up private channels by user id
-        self._private_channels_by_user: Dict[int, DMChannel] = {}
+        self._private_channels_by_user: Dict[int, PrivateChannel] = {}
         if self.max_messages is not None:
             self._messages: Optional[deque] = deque(maxlen=self.max_messages)
         else:
@@ -377,10 +378,10 @@ class ConnectionState:
         return self._stickers.get(sticker_id)
 
     @property
-    def private_channels(self) -> List[DMChannel]:
+    def private_channels(self) -> List[PrivateChannel]:
         return list(self._private_channels.values())
 
-    def _get_private_channel(self, channel_id: int) -> Optional[DMChannel]:
+    def _get_private_channel(self, channel_id: int) -> Optional[PrivateChannel]:
         try:
             value = self._private_channels[channel_id]
         except KeyError:
@@ -389,10 +390,10 @@ class ConnectionState:
             self._private_channels.move_to_end(channel_id)
             return value
 
-    def _get_private_channel_by_user(self, user_id: int) -> Optional[DMChannel]:
+    def _get_private_channel_by_user(self, user_id: int) -> Optional[PrivateChannel]:
         return self._private_channels_by_user.get(user_id)
 
-    def _add_private_channel(self, channel: DMChannel) -> None:
+    def _add_private_channel(self, channel: PrivateChannel) -> None:
         channel_id = channel.id
         self._private_channels[channel_id] = channel
 
@@ -410,7 +411,7 @@ class ConnectionState:
         self._add_private_channel(channel)
         return channel
 
-    def _remove_private_channel(self, channel: DMChannel) -> None:
+    def _remove_private_channel(self, channel: PrivateChannel) -> None:
         self._private_channels.pop(channel.id, None)
         if isinstance(channel, DMChannel):
             recipient = channel.recipient
