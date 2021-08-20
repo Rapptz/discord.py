@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from asyncio import AbstractEventLoop, Future
     from types import TracebackType
 
-    T = TypeVar('T', bound='Typing')
+    TypingT = TypeVar('TypingT', bound='Typing')
 
 __all__ = (
     'Typing',
