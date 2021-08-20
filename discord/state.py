@@ -102,7 +102,7 @@ class ChunkRequest:
                 if existing is None or existing.joined_at is None:
                     guild._add_member(member)
 
-    async def wait(self) -> None:
+    async def wait(self) -> List[Member]:
         future = self.loop.create_future()
         self.waiters.append(future)
         try:
