@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     TypingT = TypeVar('TypingT', bound='Typing')
+    BE = TypeVar('BE', bound=BaseException)
 
 __all__ = (
     'Typing',
@@ -75,7 +76,7 @@ class Typing:
     ) -> None:
         self.task.cancel()
 
-    async def __aenter__(self: T) -> T:
+    async def __aenter__(self: TypingT) -> TypingT:
         self._channel = channel = await self.messageable._get_channel()
         await channel._state.http.send_typing(channel.id)
         return self.__enter__()
