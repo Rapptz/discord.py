@@ -43,7 +43,7 @@ from .errors import (
 
 from .enums import Status
 
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Mapping, TypeVar, ClassVar
+from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict, TypeVar
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
