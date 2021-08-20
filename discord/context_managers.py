@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     TypingT = TypeVar('TypingT', bound='Typing')
-    BE = TypeVar('BE', bound=BaseException)
 
 __all__ = (
     'Typing',
@@ -70,7 +69,7 @@ class Typing:
 
     def __exit__(self,
         exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BE],
+        exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
@@ -82,7 +81,7 @@ class Typing:
 
     async def __aexit__(self,
         exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BE],
+        exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
