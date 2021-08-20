@@ -272,28 +272,12 @@ class Member(discord.abc.Messageable, _UserTag):
         bot: bool
         system: bool
         created_at: datetime.datetime
-
-        @property
-        def default_avatar(self) -> Asset:
-            ...
-
-        @property
-        def avatar(self) -> Asset:
-            ...
-
-        @property
-        def dm_channel(self) -> Optional[DMChannel]:
-            ...
-
+        default_avatar: Asset
+        avatar: Asset
+        dm_channel: Optional[DMChannel]
         create_dm = User.create_dm
-
-        @property
-        def mutual_guilds(self) -> List[Guild]:
-            ...
-
-        @property
-        def public_flags(self) -> PublicUserFlags:
-            ...
+        mutual_guilds: List[Guild]
+        public_flags: PublicUserFlags
 
     def __init__(self, *, data: GatewayMemberPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
