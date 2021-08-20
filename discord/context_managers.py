@@ -72,7 +72,7 @@ class Typing:
     def __exit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BE],
-        traceback: Optional[TracebackType]
+        traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
 
@@ -84,6 +84,6 @@ class Typing:
     async def __aexit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BE],
-        traceback: Optional[TracebackType]
+        traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
