@@ -147,7 +147,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b11111111111111111111111111111111111111)
+        return cls(0b111111111111111111111111111111111111111)
 
     @classmethod
     def all_channel(cls: Type[P]) -> P:
@@ -169,10 +169,11 @@ class Permissions(BaseFlags):
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
 
         .. versionchanged:: 2.0
-           Added :attr:`use_threads`, :attr:`use_private_threads`, :attr:`manage_threads`,
-           :attr:`use_external_stickers` and :attr:`request_to_speak` permissions.
+           Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
+           :attr:`use_external_stickers`, :attr:`send_messages_in_threads` and
+           :attr:`request_to_speak` permissions.
         """
-        return cls(0b11110110110011111101111111111101010001)
+        return cls(0b111101101100111111011111111111010100011)
 
     @classmethod
     def general(cls: Type[P]) -> P:
@@ -206,10 +207,10 @@ class Permissions(BaseFlags):
            Added :attr:`use_slash_commands` permission.
 
         .. versionchanged:: 2.0
-           Added :attr:`use_threads`, :attr:`use_private_threads`, :attr:`manage_threads`
-           and :attr:`use_external_stickers` permissions.
+           Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
+           :attr:`send_messages_in_threads` and :attr:`use_external_stickers` permissions.
         """
-        return cls(0b11110010000000000001111111100001000000)
+        return cls(0b111110010000000000001111111100001000000)
 
     @classmethod
     def voice(cls: Type[P]) -> P:
@@ -511,16 +512,16 @@ class Permissions(BaseFlags):
         return 1 << 34
 
     @flag_value
-    def use_threads(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can create and participate in public threads.
+    def create_public_threads(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create public threads.
 
         .. versionadded:: 2.0
         """
         return 1 << 35
 
     @flag_value
-    def use_private_threads(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can create and participate in private threads.
+    def create_private_threads(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create private threads.
 
         .. versionadded:: 2.0
         """
@@ -541,6 +542,14 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 37
+
+    @flag_value
+    def send_messages_in_threads(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can send messages in threads.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 38
 
 PO = TypeVar('PO', bound='PermissionOverwrite')
 
@@ -650,8 +659,9 @@ class PermissionOverwrite:
         request_to_speak: Optional[bool]
         manage_events: Optional[bool]
         manage_threads: Optional[bool]
-        use_threads: Optional[bool]
-        use_private_threads: Optional[bool]
+        create_public_threads: Optional[bool]
+        create_private_threads: Optional[bool]
+        send_messages_in_threads: Optional[bool]
         external_stickers: Optional[bool]
         use_external_stickers: Optional[bool]
 

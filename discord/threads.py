@@ -583,10 +583,8 @@ class Thread(Messageable, Hashable):
 
         Joins this thread.
 
-        You must have :attr:`~Permissions.send_messages` and :attr:`~Permissions.use_threads`
-        to join a public thread. If the thread is private then :attr:`~Permissions.send_messages`
-        and either :attr:`~Permissions.use_private_threads` or :attr:`~Permissions.manage_messages`
-        is required to join the thread.
+        You must have :attr:`~Permissions.send_messages_in_threads` to join a thread.
+        If the thread is private, :attr:`~Permissions.manage_threads` is also needed.
 
         Raises
         -------
