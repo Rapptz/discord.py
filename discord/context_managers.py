@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING, TypeVar, Optional, Type
 if TYPE_CHECKING:
     from .abc import Messageable
 
-    from asyncio import AbstractEventLoop, Future
     from types import TracebackType
 
     TypingT = TypeVar('TypingT', bound='Typing')
@@ -40,7 +39,7 @@ __all__ = (
     'Typing',
 )
 
-def _typing_done_callback(fut: Future) -> None:
+def _typing_done_callback(fut: asyncio.Future) -> None:
     # just retrieve any exception and call it a day
     try:
         fut.exception()
@@ -49,7 +48,7 @@ def _typing_done_callback(fut: Future) -> None:
 
 class Typing:
     def __init__(self, messageable: Messageable) -> None:
-        self.loop: AbstractEventLoop = messageable._state.loop
+        self.loop: asyncio.AbstractEventLoop = messageable._state.loop
         self.messageable: Messageable = messageable
 
     async def do_typing(self) -> None:
