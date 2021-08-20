@@ -70,9 +70,9 @@ class Typing:
         return self
 
     def __exit__(self,
-        exc_type: Optional[Type[BE]],
-        exc: Optional[BE],
-        tb: Optional[TracebackType]
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BE],
+        traceback: Optional[TracebackType]
     ) -> None:
         self.task.cancel()
 
@@ -82,8 +82,8 @@ class Typing:
         return self.__enter__()
 
     async def __aexit__(self,
-        exc_type: Optional[Type[BE]],
-        exc: Optional[BE],
-        tb: Optional[TracebackType]
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BE],
+        traceback: Optional[TracebackType]
     ) -> None:
         self.task.cancel()
