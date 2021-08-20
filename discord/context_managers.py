@@ -34,7 +34,6 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     T = TypeVar('T', bound='Typing')
-    BE = TypeVar('BE', bound=BaseException)
 
 __all__ = (
     'Typing',
