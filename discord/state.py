@@ -110,7 +110,7 @@ class ChunkRequest:
         finally:
             self.waiters.remove(future)
 
-    def get_future(self) -> asyncio.Future:
+    def get_future(self) -> asyncio.Future[List[Member]]:
         future = self.loop.create_future()
         self.waiters.append(future)
         return future
