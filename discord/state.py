@@ -88,7 +88,7 @@ class ChunkRequest:
         self.cache: bool = cache
         self.nonce: str = os.urandom(16).hex()
         self.buffer: List[Member] = []
-        self.waiters: List[asyncio.Future] = []
+        self.waiters: List[asyncio.Future[List[Member]]] = []
 
     def add_members(self, members: List[Member]) -> None:
         self.buffer.extend(members)
