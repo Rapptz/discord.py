@@ -328,8 +328,9 @@ class AutoShardedClient(Client):
         self.__queue = asyncio.PriorityQueue()
 
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
-        if shard_id is None and guild_id is not None and self.shard_count is not None:
-            shard_id = (guild_id >> 22) % self.shard_count
+        if shard_id is None:
+            # guild_id won't be None if shard_id is None and shard_count won't be None here
+            shard_id = (guild_id >> 22) % self.shard_count # type: ignore
         return self.__shards[shard_id].ws
 
     def _get_state(self, **options: Any) -> AutoShardedConnectionState:
