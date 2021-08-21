@@ -215,7 +215,7 @@ class ConnectionState:
 
         self.clear()
 
-    def clear(self) -> None:
+    def clear(self, *, views: bool = True) -> None:
         self.user: Optional[ClientUser] = None
         # Originally, this code used WeakValueDictionary to maintain references to the
         # global user mapping.
@@ -233,7 +233,9 @@ class ConnectionState:
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
-        self._view_store: ViewStore = ViewStore(self)
+        if views:
+            self._view_store: ViewStore = ViewStore(self)
+
         self._voice_clients: Dict[int, VoiceProtocol] = {}
 
         # LRU of max size 128
@@ -524,7 +526,7 @@ class ConnectionState:
             self._ready_task.cancel()
 
         self._ready_state = asyncio.Queue()
-        self.clear()
+        self.clear(views=False)
         self.user = ClientUser(state=self, data=data['user'])
         self.store_user(data['user'])
 
