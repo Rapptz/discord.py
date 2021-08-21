@@ -500,12 +500,9 @@ class GuildChannel:
             if ow.is_role():
                 target = self.guild.get_role(ow.id)
             elif ow.is_member():
-                target = self.guild.get_member(ow.id)
+                target = self.guild.get_member(ow.id) or Object(ow.id)
 
-            if target is not None:
-                ret[target] = overwrite
-            else:
-                ret[Object(ow.id)] = overwrite
+            ret[target] = overwrite
         return ret
 
     @property
