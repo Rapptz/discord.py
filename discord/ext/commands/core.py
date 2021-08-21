@@ -777,7 +777,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
             if instance:
-                    await self._after_invoke(instance, ctx)  # type: ignore
+                await self._after_invoke(instance, ctx)  # type: ignore
             else:
                 await self._after_invoke(ctx)  # type: ignore
 
