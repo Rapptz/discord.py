@@ -288,8 +288,9 @@ class ConnectionState:
     def voice_clients(self) -> List[VoiceProtocol]:
         return list(self._voice_clients.values())
 
-    def _get_voice_client(self, guild_id: int) -> Optional[VoiceProtocol]:
-        return self._voice_clients.get(guild_id)
+    def _get_voice_client(self, guild_id: Optional[int]) -> Optional[VoiceProtocol]:
+        # the keys of self._voice_clients are ints
+        return self._voice_clients.get(guild_id) # type: ignore
 
     def _add_voice_client(self, guild_id: int, voice: VoiceProtocol) -> None:
         self._voice_clients[guild_id] = voice
@@ -321,8 +322,9 @@ class ConnectionState:
     def deref_user_no_intents(self, user_id: int) -> None:
         return
 
-    def get_user(self, id: int) -> Optional[User]:
-        return self._users.get(id)
+    def get_user(self, id: Optional[int]) -> Optional[User]:
+        # the keys of self._users are ints
+        return self._users.get(id) # type: ignore
 
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
         # the id will be present here
@@ -349,8 +351,9 @@ class ConnectionState:
     def guilds(self) -> List[Guild]:
         return list(self._guilds.values())
 
-    def _get_guild(self, guild_id: int) -> Optional[Guild]:
-        return self._guilds.get(guild_id)
+    def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
+        # the keys of self._guilds are ints
+        return self._guilds.get(guild_id) # type: ignore
 
     def _add_guild(self, guild: Guild) -> None:
         self._guilds[guild.id] = guild
@@ -374,27 +377,31 @@ class ConnectionState:
     def stickers(self) -> List[GuildSticker]:
         return list(self._stickers.values())
 
-    def get_emoji(self, emoji_id: int) -> Optional[Emoji]:
-        return self._emojis.get(emoji_id)
+    def get_emoji(self, emoji_id: Optional[int]) -> Optional[Emoji]:
+        # the keys of self._emojis are ints
+        return self._emojis.get(emoji_id) # type: ignore
 
-    def get_sticker(self, sticker_id: int) -> Optional[GuildSticker]:
-        return self._stickers.get(sticker_id)
+    def get_sticker(self, sticker_id: Optional[int]) -> Optional[GuildSticker]:
+        # the keys of self._stickers are ints
+        return self._stickers.get(sticker_id) # type: ignore
 
     @property
     def private_channels(self) -> List[PrivateChannel]:
         return list(self._private_channels.values())
 
-    def _get_private_channel(self, channel_id: int) -> Optional[PrivateChannel]:
+    def _get_private_channel(self, channel_id: Optional[int]) -> Optional[PrivateChannel]:
         try:
-            value = self._private_channels[channel_id]
+            # the keys of self._private_channels are ints
+            value = self._private_channels[channel_id] # type: ignore
         except KeyError:
             return None
         else:
-            self._private_channels.move_to_end(channel_id)
+            self._private_channels.move_to_end(channel_id) # type: ignore
             return value
 
-    def _get_private_channel_by_user(self, user_id: int) -> Optional[PrivateChannel]:
-        return self._private_channels_by_user.get(user_id)
+    def _get_private_channel_by_user(self, user_id: Optional[int]) -> Optional[PrivateChannel]:
+        # the keys of self._private_channels are ints
+        return self._private_channels_by_user.get(user_id) # type: ignore
 
     def _add_private_channel(self, channel: PrivateChannel) -> None:
         channel_id = channel.id
@@ -421,7 +428,7 @@ class ConnectionState:
             if recipient is not None:
                 self._private_channels_by_user.pop(recipient.id, None)
 
-    def _get_message(self, msg_id: int) -> Optional[Message]:
+    def _get_message(self, msg_id: Optional[int]) -> Optional[Message]:
         return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else None
 
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
@@ -677,7 +684,7 @@ class ConnectionState:
     def parse_presence_update(self, data) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         # guild_id won't be None here
-        guild = self._get_guild(guild_id) # type: ignore
+        guild = self._get_guild(guild_id)
         if guild is None:
             log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
@@ -713,7 +720,7 @@ class ConnectionState:
         self.dispatch('invite_delete', invite)
 
     def parse_channel_delete(self, data) -> None:
-        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id')) # type: ignore
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = int(data['id'])
         if guild is not None:
             channel = guild.get_channel(channel_id)
@@ -733,7 +740,7 @@ class ConnectionState:
             return
 
         guild_id = utils._get_as_snowflake(data, 'guild_id')
-        guild = self._get_guild(guild_id) # type: ignore
+        guild = self._get_guild(guild_id)
         if guild is not None:
             channel = guild.get_channel(channel_id)
             if channel is not None:
@@ -752,7 +759,7 @@ class ConnectionState:
             return
 
         guild_id = utils._get_as_snowflake(data, 'guild_id')
-        guild = self._get_guild(guild_id) # type: ignore
+        guild = self._get_guild(guild_id)
         if guild is not None:
             # the factory can't be a DMChannel or GroupChannel here
             channel = factory(guild=guild, state=self, data=data) # type: ignore
@@ -1260,7 +1267,7 @@ class ConnectionState:
             log.debug('STAGE_INSTANCE_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_voice_state_update(self, data) -> None:
-        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id')) # type: ignore
+        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
         channel_id = utils._get_as_snowflake(data, 'channel_id')
         flags = self.member_cache_flags
         # self.user is *always* cached when this is called
