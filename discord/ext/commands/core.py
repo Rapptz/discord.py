@@ -1734,21 +1734,11 @@ def check(predicate: Check) -> Callable[[T], T]:
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
         if isinstance(func, Command):
             func.checks.append(predicate)
-
-            if isinstance(func, Group):
-                for command in func.commands:
-                    command.checks.append(predicate)
-
         else:
             if not hasattr(func, '__commands_checks__'):
                 func.__commands_checks__ = []
 
             func.__commands_checks__.append(predicate)
-
-            if not hasattr(func, '__groups_checks__'):
-                func.__group_checks__ = []
-
-            func.__group_checks__.append(predicate)
 
         return func
 
