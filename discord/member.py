@@ -279,7 +279,7 @@ class Member(discord.abc.Messageable, _UserTag):
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
-        accent_color: Optional[Color]
+        accent_color: Optional[Colour]
         accent_colour: Optional[Colour]
 
     def __init__(self, *, data: GatewayMemberPayload, guild: Guild, state: ConnectionState):
