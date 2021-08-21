@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import List, Tuple, TypedDict, Any
+
 import array
 import ctypes
 import ctypes.util
@@ -33,13 +35,25 @@ import sys
 
 from .errors import DiscordException
 
+class BandCtl(TypedDict):
+    narrow: int
+    medium: int
+    wide: int
+    superwide: int
+    full: int
+
+class SignalCtl(TypedDict):
+    auto: int
+    voice: int
+    music: int
+
 __all__ = (
     'Encoder',
     'OpusError',
     'OpusNotLoaded',
 )
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger(__name__)
 
 c_int_ptr   = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
@@ -76,7 +90,7 @@ CTL_SET_SIGNAL       = 4024
 CTL_SET_GAIN             = 4034
 CTL_LAST_PACKET_DURATION = 4039
 
-band_ctl = {
+band_ctl: BandCtl = {
     'narrow': 1101,
     'medium': 1102,
     'wide': 1103,
@@ -84,7 +98,7 @@ band_ctl = {
     'full': 1105,
 }
 
-signal_ctl = {
+signal_ctl: SignalCtl = {
     'auto': -1000,
     'voice': 3001,
     'music': 3002,
@@ -108,7 +122,7 @@ def _err_ne(result, func, args):
 # The second one are the types of arguments it takes.
 # The third is the result type.
 # The fourth is the error handler.
-exported_functions = [
+exported_functions: List[Tuple[Any, ...]] = [
     # Generic
     ('opus_get_version_string',
         None, ctypes.c_char_p, None),

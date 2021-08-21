@@ -48,7 +48,9 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .channel import VoiceChannel, StageChannel
+    from .asset import Asset
+    from .channel import DMChannel, VoiceChannel, StageChannel
+    from .flags import PublicUserFlags
     from .guild import Guild
     from .types.activity import PartialPresenceUpdate
     from .types.member import (
@@ -270,12 +272,12 @@ class Member(discord.abc.Messageable, _UserTag):
         bot: bool
         system: bool
         created_at: datetime.datetime
-        default_avatar = User.default_avatar
-        avatar = User.avatar
-        dm_channel = User.dm_channel
+        default_avatar: Asset
+        avatar: Asset
+        dm_channel: Optional[DMChannel]
         create_dm = User.create_dm
-        mutual_guilds = User.mutual_guilds
-        public_flags = User.public_flags
+        mutual_guilds: List[Guild]
+        public_flags: PublicUserFlags
 
     def __init__(self, *, data: GatewayMemberPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
