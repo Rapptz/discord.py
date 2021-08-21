@@ -278,6 +278,9 @@ class Member(discord.abc.Messageable, _UserTag):
         create_dm = User.create_dm
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
+        banner: Optional[Asset]
+        accent_color: Optional[Color]
+        accent_colour: Optional[Colour]
 
     def __init__(self, *, data: GatewayMemberPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
