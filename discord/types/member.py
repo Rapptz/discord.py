@@ -27,6 +27,10 @@ from .snowflake import SnowflakeList
 from .user import User
 
 
+class Nickname(TypedDict):
+    nick: str
+
+
 class PartialMember(TypedDict):
     roles: SnowflakeList
     joined_at: str
@@ -40,3 +44,18 @@ class Member(PartialMember, total=False):
     premium_since: str
     pending: bool
     permissions: str
+
+
+class _OptionalGatewayMember(PartialMember, total=False):
+    nick: str
+    premium_since: str
+    pending: bool
+    permissions: str
+
+
+class GatewayMember(_OptionalGatewayMember):
+    user: User
+
+
+class UserWithMember(User, total=False):
+    member: _OptionalGatewayMember

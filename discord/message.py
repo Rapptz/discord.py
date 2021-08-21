@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar
+from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
 
 from . import utils
 from .reaction import Reaction
@@ -37,14 +37,16 @@ from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, HTTPException
+from .components import _component_factory
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
 from .file import File
-from .utils import escape_mentions
+from .utils import escape_mentions, MISSING
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import Sticker
+from .sticker import StickerItem
+from .threads import Thread
 
 if TYPE_CHECKING:
     from .types.message import (
@@ -56,13 +58,23 @@ if TYPE_CHECKING:
         Reaction as ReactionPayload,
     )
 
-    from .types.member import Member as MemberPayload
+    from .types.components import Component as ComponentPayload
+    from .types.threads import ThreadArchiveDuration
+    from .types.member import (
+        Member as MemberPayload,
+        UserWithMember as UserWithMemberPayload,
+    )
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .abc import Snowflake
-    from .abc import GuildChannel
+    from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
+    from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
+    from .mentions import AllowedMentions
+    from .user import User
+    from .role import Role
+    from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -143,15 +155,15 @@ class Attachment(Hashable):
     __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
-        self.id = int(data['id'])
-        self.size = data['size']
-        self.height = data.get('height')
-        self.width = data.get('width')
-        self.filename = data['filename']
-        self.url = data.get('url')
-        self.proxy_url = data.get('proxy_url')
+        self.id: int = int(data['id'])
+        self.size: int = data['size']
+        self.height: Optional[int] = data.get('height')
+        self.width: Optional[int] = data.get('width')
+        self.filename: str = data['filename']
+        self.url: str = data.get('url')
+        self.proxy_url: str = data.get('proxy_url')
         self._http = state.http
-        self.content_type = data.get('content_type')
+        self.content_type: Optional[str] = data.get('content_type')
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
@@ -321,7 +333,7 @@ class DeletedReferencedMessage:
     __slots__ = ('_parent',)
 
     def __init__(self, parent: MessageReference):
-        self._parent = parent
+        self._parent: MessageReference = parent
 
     def __repr__(self) -> str:
         return f"<DeletedReferencedMessage id={self.id} channel_id={self.channel_id} guild_id={self.guild_id!r}>"
@@ -381,10 +393,10 @@ class MessageReference:
     def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
         self._state: Optional[ConnectionState] = None
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
-        self.message_id = message_id
-        self.channel_id = channel_id
-        self.guild_id = guild_id
-        self.fail_if_not_exists = fail_if_not_exists
+        self.message_id: int = message_id
+        self.channel_id: int = channel_id
+        self.guild_id: Optional[int] = guild_id
+        self.fail_if_not_exists: bool = fail_if_not_exists
 
     @classmethod
     def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> MessageReference:
@@ -398,7 +410,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True):
+    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -503,13 +515,13 @@ class Message(Hashable):
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
         The actual contents of the message.
-    nonce: Union[:class:`str`, :class:`int`]
+    nonce: Optional[Union[:class:`str`, :class:`int`]]
         The value used by the discord guild and the client to verify that the message is successfully sent.
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`DMChannel`, :class:`GroupChannel`]
-        The :class:`TextChannel` that the message was sent from.
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
+        The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
@@ -576,10 +588,16 @@ class Message(Hashable):
         - ``description``: A string representing the application's description.
         - ``icon``: A string representing the icon ID of the application.
         - ``cover_image``: A string representing the embed's image asset ID.
-    stickers: List[:class:`Sticker`]
-        A list of stickers given to the message.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
 
         .. versionadded:: 1.6
+    components: List[:class:`Component`]
+        A list of components in the message.
+
+        .. versionadded:: 2.0
+    guild: Optional[:class:`Guild`]
+        The guild that the message belongs to, if applicable.
     """
 
     __slots__ = (
@@ -591,7 +609,6 @@ class Message(Hashable):
         '_cs_raw_channel_mentions',
         '_cs_raw_role_mentions',
         '_cs_system_content',
-        '_cs_guild',
         'tts',
         'content',
         'channel',
@@ -612,37 +629,50 @@ class Message(Hashable):
         'application',
         'activity',
         'stickers',
+        'components',
+        'guild',
     )
 
     if TYPE_CHECKING:
         _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
         _CACHED_SLOTS: ClassVar[List[str]]
+        guild: Optional[Guild]
+        ref: Optional[MessageReference]
+        mentions: List[Union[User, Member]]
+        author: Union[User, Member]
+        role_mentions: List[Role]
 
     def __init__(
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, DMChannel, GroupChannel],
+        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
         data: MessagePayload,
     ):
-        self._state = state
-        self.id = int(data['id'])
-        self.webhook_id = utils._get_as_snowflake(data, 'webhook_id')
-        self.reactions = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
-        self.attachments = [Attachment(data=a, state=self._state) for a in data['attachments']]
-        self.embeds = [Embed.from_dict(a) for a in data['embeds']]
-        self.application = data.get('application')
-        self.activity = data.get('activity')
-        self.channel = channel
-        self._edited_timestamp = utils.parse_time(data['edited_timestamp'])
-        self.type = try_enum(MessageType, data['type'])
-        self.pinned = data['pinned']
-        self.flags = MessageFlags._from_value(data.get('flags', 0))
-        self.mention_everyone = data['mention_everyone']
-        self.tts = data['tts']
-        self.content = data['content']
-        self.nonce = data.get('nonce')
-        self.stickers = [Sticker(data=data, state=state) for data in data.get('stickers', [])]
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
+        self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
+        self.attachments: List[Attachment] = [Attachment(data=a, state=self._state) for a in data['attachments']]
+        self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
+        self.application: Optional[MessageApplicationPayload] = data.get('application')
+        self.activity: Optional[MessageActivityPayload] = data.get('activity')
+        self.channel: MessageableChannel = channel
+        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
+        self.type: MessageType = try_enum(MessageType, data['type'])
+        self.pinned: bool = data['pinned']
+        self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
+        self.mention_everyone: bool = data['mention_everyone']
+        self.tts: bool = data['tts']
+        self.content: str = data['content']
+        self.nonce: Optional[Union[int, str]] = data.get('nonce')
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+
+        try:
+            self.guild = channel.guild  # type: ignore
+        except AttributeError:
+            self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
         try:
             ref = data['message_reference']
@@ -666,15 +696,16 @@ class Message(Hashable):
 
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'flags'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
                 continue
 
     def __repr__(self) -> str:
+        name = self.__class__.__name__
         return (
-            f'<Message id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
+            f'<{name} id={self.id} channel={self.channel!r} type={self.type!r} author={self.author!r} flags={self.flags!r}>'
         )
 
     def _try_patch(self, data, key, transform=None) -> None:
@@ -756,7 +787,7 @@ class Message(Hashable):
     def _handle_edited_timestamp(self, value: str) -> None:
         self._edited_timestamp = utils.parse_time(value)
 
-    def _handle_pinned(self, value: int) -> None:
+    def _handle_pinned(self, value: bool) -> None:
         self.pinned = value
 
     def _handle_flags(self, value: int) -> None:
@@ -812,7 +843,7 @@ class Message(Hashable):
             # TODO: consider adding to cache here
             self.author = Member._from_message(message=self, data=member)
 
-    def _handle_mentions(self, mentions: List[UserPayload]) -> None:
+    def _handle_mentions(self, mentions: List[UserWithMemberPayload]) -> None:
         self.mentions = r = []
         guild = self.guild
         state = self._state
@@ -836,18 +867,12 @@ class Message(Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
-    def _rebind_channel_reference(self, new_channel: Union[TextChannel, DMChannel, GroupChannel]) -> None:
+    def _handle_components(self, components: List[ComponentPayload]):
+        self.components = [_component_factory(d) for d in components]
+
+    def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
+        self.guild = new_guild
         self.channel = new_channel
-
-        try:
-            del self._cs_guild  # type: ignore
-        except AttributeError:
-            pass
-
-    @utils.cached_slot_property('_cs_guild')
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild that the message belongs to, if applicable."""
-        return getattr(self.channel, 'guild', None)
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
@@ -952,37 +977,51 @@ class Message(Hashable):
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
 
+        A system message is a message that is constructed entirely by the Discord API
+        in response to something.
+
         .. versionadded:: 1.3
         """
-        return self.type is not MessageType.default
+        return self.type not in (
+            MessageType.default,
+            MessageType.reply,
+            MessageType.application_command,
+            MessageType.thread_starter_message,
+        )
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
-        In the case of :attr:`MessageType.default`\, this just returns the
-        regular :attr:`Message.content`. Otherwise this returns an English
-        message denoting the contents of the system message.
+        In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\,
+        this just returns the regular :attr:`Message.content`. Otherwise this
+        returns an English message denoting the contents of the system message.
         """
 
         if self.type is MessageType.default:
             return self.content
 
-        if self.type is MessageType.pins_add:
-            return f'{self.author.name} pinned a message to this channel.'
-
         if self.type is MessageType.recipient_add:
-            return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} added {self.mentions[0].name} to the group.'
+            else:
+                return f'{self.author.name} added {self.mentions[0].name} to the thread.'
 
         if self.type is MessageType.recipient_remove:
-            return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            if self.channel.type is ChannelType.group:
+                return f'{self.author.name} removed {self.mentions[0].name} from the group.'
+            else:
+                return f'{self.author.name} removed {self.mentions[0].name} from the thread.'
 
         if self.type is MessageType.channel_name_change:
-            return f'{self.author.name} changed the channel name: {self.content}'
+            return f'{self.author.name} changed the channel name: **{self.content}**'
 
         if self.type is MessageType.channel_icon_change:
             return f'{self.author.name} changed the channel icon.'
+
+        if self.type is MessageType.pins_add:
+            return f'{self.author.name} pinned a message to this channel.'
 
         if self.type is MessageType.new_member:
             formats = [
@@ -1005,16 +1044,28 @@ class Message(Hashable):
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.premium_guild_subscription:
-            return f'{self.author.name} just boosted the server!'
+            if not self.content:
+                return f'{self.author.name} just boosted the server!'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times!'
 
         if self.type is MessageType.premium_guild_tier_1:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 1!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 1!**'
 
         if self.type is MessageType.premium_guild_tier_2:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 2!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 2!**'
 
         if self.type is MessageType.premium_guild_tier_3:
-            return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            if not self.content:
+                return f'{self.author.name} just boosted the server! {self.guild} has achieved **Level 3!**'
+            else:
+                return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
             return f'{self.author.name} has added {self.content} to this channel'
@@ -1033,6 +1084,18 @@ class Message(Hashable):
 
         if self.type is MessageType.guild_discovery_grace_period_final_warning:
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
+
+        if self.type is MessageType.thread_created:
+            return f'{self.author.name} started a thread: **{self.content}**. See all **threads**.'
+
+        if self.type is MessageType.reply:
+            return self.content
+
+        if self.type is MessageType.thread_starter_message:
+            if self.reference is None or self.reference.resolved is None:
+                return 'Sorry, we couldn\'t load the first message in this thread'
+
+            return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
@@ -1077,7 +1140,45 @@ class Message(Hashable):
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
-    async def edit(self, **fields: Any) -> None:
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: List[Attachment] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embeds: List[Embed] = ...,
+        attachments: List[Attachment] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
+    ) -> None:
+        ...
+
+    async def edit(
+        self,
+        content: Optional[str] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        embeds: List[Embed] = MISSING,
+        attachments: List[Attachment] = MISSING,
+        suppress: bool = MISSING,
+        delete_after: Optional[float] = None,
+        allowed_mentions: Optional[AllowedMentions] = MISSING,
+        view: Optional[View] = MISSING,
+    ) -> None:
         """|coro|
 
         Edits the message.
@@ -1095,6 +1196,11 @@ class Message(Hashable):
         embed: Optional[:class:`Embed`]
             The new embed to replace the original with.
             Could be ``None`` to remove the embed.
+        embeds: List[:class:`Embed`]
+            The new embeds to replace the original with. Must be a maximum of 10.
+            To remove all embeds ``[]`` should be passed.
+
+            .. versionadded:: 2.0
         attachments: List[:class:`Attachment`]
             A list of attachments to keep in the message. If ``[]`` is passed
             then all attachments are removed.
@@ -1116,6 +1222,9 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
 
         Raises
         -------
@@ -1124,58 +1233,59 @@ class Message(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        ~discord.InvalidArgument
+            You specified both ``embed`` and ``embeds``
         """
 
-        try:
-            content = fields['content']
-        except KeyError:
-            pass
-        else:
+        payload: Dict[str, Any] = {}
+        if content is not MISSING:
             if content is not None:
-                fields['content'] = str(content)
+                payload['content'] = str(content)
+            else:
+                payload['content'] = None
 
-        try:
-            embed = fields['embed']
-        except KeyError:
-            pass
-        else:
-            if embed is not None:
-                fields['embed'] = embed.to_dict()
+        if embed is not MISSING and embeds is not MISSING:
+            raise InvalidArgument('cannot pass both embed and embeds parameter to edit()')
 
-        try:
-            suppress = fields.pop('suppress')
-        except KeyError:
-            pass
-        else:
+        if embed is not MISSING:
+            if embed is None:
+                payload['embeds'] = []
+            else:
+                payload['embeds'] = [embed.to_dict()]
+        elif embeds is not MISSING:
+            payload['embeds'] = [e.to_dict() for e in embeds]
+
+        if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
             flags.suppress_embeds = suppress
-            fields['flags'] = flags.value
+            payload['flags'] = flags.value
 
-        delete_after = fields.pop('delete_after', None)
-
-        try:
-            allowed_mentions = fields.pop('allowed_mentions')
-        except KeyError:
+        if allowed_mentions is MISSING:
             if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
-                fields['allowed_mentions'] = self._state.allowed_mentions.to_dict()
+                payload['allowed_mentions'] = self._state.allowed_mentions.to_dict()
         else:
             if allowed_mentions is not None:
                 if self._state.allowed_mentions is not None:
-                    allowed_mentions = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
+                    payload['allowed_mentions'] = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
                 else:
-                    allowed_mentions = allowed_mentions.to_dict()
-                fields['allowed_mentions'] = allowed_mentions
+                    payload['allowed_mentions'] = allowed_mentions.to_dict()
 
-        try:
-            attachments = fields.pop('attachments')
-        except KeyError:
-            pass
-        else:
-            fields['attachments'] = [a.to_dict() for a in attachments]
+        if attachments is not MISSING:
+            payload['attachments'] = [a.to_dict() for a in attachments]
 
-        if fields:
-            data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
+        if view is not MISSING:
+            self._state.prevent_view_updates_for(self.id)
+            if view:
+                payload['components'] = view.to_components()
+            else:
+                payload['components'] = []
+
+        if payload:
+            data = await self._state.http.edit_message(self.channel.id, self.id, **payload)
             self._update(data)
+
+        if view and not view.is_finished():
+            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1185,8 +1295,10 @@ class Message(Hashable):
 
         Publishes this message to your announcement channel.
 
+        You must have the :attr:`~Permissions.send_messages` permission to do this.
+
         If the message is not your own then the :attr:`~Permissions.manage_messages`
-        permission is needed.
+        permission is also needed.
 
         Raises
         -------
@@ -1372,6 +1484,51 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
+    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = MISSING) -> Thread:
+        """|coro|
+
+        Creates a public thread from this message.
+
+        You must have :attr:`~discord.Permissions.send_messages` and
+        :attr:`~discord.Permissions.use_threads` in order to create a thread.
+
+        The channel this message belongs in must be a :class:`TextChannel`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the thread.
+        auto_archive_duration: :class:`int`
+            The duration in minutes before a thread is automatically archived for inactivity.
+            If not provided, the channel's default auto archive duration is used.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to create a thread.
+        HTTPException
+            Creating the thread failed.
+        InvalidArgument
+            This message does not have guild info attached.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The created thread.
+        """
+        if self.guild is None:
+            raise InvalidArgument('This message does not have guild info attached.')
+
+        data = await self._state.http.start_thread_with_message(
+            self.channel.id,
+            self.id,
+            name=name,
+            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
+        )
+        return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
+
     async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
 
@@ -1436,8 +1593,11 @@ class PartialMessage(Hashable):
     a message and channel ID are present.
 
     There are two ways to construct this class. The first one is through
-    the constructor itself, and the second is via
-    :meth:`TextChannel.get_partial_message` or :meth:`DMChannel.get_partial_message`.
+    the constructor itself, and the second is via the following:
+
+    - :meth:`TextChannel.get_partial_message`
+    - :meth:`Thread.get_partial_message`
+    - :meth:`DMChannel.get_partial_message`
 
     Note that this class is trimmed down and has no rich attributes.
 
@@ -1459,7 +1619,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`TextChannel`, :class:`DMChannel`]
+    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1480,13 +1640,20 @@ class PartialMessage(Hashable):
     to_reference = Message.to_reference
     to_message_reference_dict = Message.to_message_reference_dict
 
-    def __init__(self, *, channel: Union[TextChannel, DMChannel], id: int):
-        if channel.type not in (ChannelType.text, ChannelType.news, ChannelType.private):
-            raise TypeError(f'Expected TextChannel or DMChannel not {type(channel)!r}')
+    def __init__(self, *, channel: PartialMessageableChannel, id: int):
+        if channel.type not in (
+            ChannelType.text,
+            ChannelType.news,
+            ChannelType.private,
+            ChannelType.news_thread,
+            ChannelType.public_thread,
+            ChannelType.private_thread,
+        ):
+            raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
 
-        self.channel = channel
-        self._state = channel._state
-        self.id = id
+        self.channel: PartialMessageableChannel = channel
+        self._state: ConnectionState = channel._state
+        self.id: int = id
 
     def _update(self, data) -> None:
         # This is used for duck typing purposes.
@@ -1567,6 +1734,11 @@ class PartialMessage(Hashable):
             to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
             If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
             are used instead.
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1623,6 +1795,18 @@ class PartialMessage(Hashable):
                     allowed_mentions = allowed_mentions.to_dict()
                 fields['allowed_mentions'] = allowed_mentions
 
+        try:
+            view = fields.pop('view')
+        except KeyError:
+            # To check for the view afterwards
+            view = None
+        else:
+            self._state.prevent_view_updates_for(self.id)
+            if view:
+                fields['components'] = view.to_components()
+            else:
+                fields['components'] = []
+
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
 
@@ -1630,4 +1814,7 @@ class PartialMessage(Hashable):
             await self.delete(delay=delete_after)  # type: ignore
 
         if fields:
-            return self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
+            if view and not view.is_finished():
+                self._state.store_view(view, self.id)
+            return msg

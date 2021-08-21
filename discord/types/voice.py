@@ -22,9 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, List, Literal
 from .snowflake import Snowflake
 from .member import Member
+
+
+SupportedModes = Literal['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305']
 
 
 class _PartialVoiceStateOptional(TypedDict, total=False):
@@ -32,8 +35,7 @@ class _PartialVoiceStateOptional(TypedDict, total=False):
     self_stream: bool
 
 
-class PartialVoiceState(_PartialVoiceStateOptional):
-    channel_id: Optional[Snowflake]
+class _VoiceState(_PartialVoiceStateOptional):
     user_id: Snowflake
     session_id: str
     deaf: bool
@@ -44,7 +46,12 @@ class PartialVoiceState(_PartialVoiceStateOptional):
     suppress: bool
 
 
-class VoiceState(PartialVoiceState, total=False):
+class GuildVoiceState(_VoiceState):
+    channel_id: Snowflake
+
+
+class VoiceState(_VoiceState, total=False):
+    channel_id: Optional[Snowflake]
     guild_id: Snowflake
 
 
@@ -55,3 +62,24 @@ class VoiceRegion(TypedDict):
     optimal: bool
     deprecated: bool
     custom: bool
+
+
+class VoiceServerUpdate(TypedDict):
+    token: str
+    guild_id: Snowflake
+    endpoint: Optional[str]
+
+
+class VoiceIdentify(TypedDict):
+    server_id: Snowflake
+    user_id: Snowflake
+    session_id: str
+    token: str
+
+
+class VoiceReady(TypedDict):
+    ssrc: int
+    ip: str
+    port: int
+    modes: List[SupportedModes]
+    heartbeat_interval: int

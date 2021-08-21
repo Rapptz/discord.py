@@ -18,13 +18,12 @@ Key Features
 
 - Modern Pythonic API using ``async`` and ``await``.
 - Proper rate limit handling.
-- 100% coverage of the supported Discord API.
 - Optimised in both speed and memory.
 
 Installing
 ----------
 
-**Python 3.5.3 or higher is required**
+**Python 3.8 or higher is required**
 
 To install the library without full voice support, you can just run the following command:
 
@@ -59,7 +58,7 @@ To install the development version, do the following:
 Optional Packages
 ~~~~~~~~~~~~~~~~~~
 
-* PyNaCl (for voice support)
+* `PyNaCl <https://pypi.org/project/PyNaCl/>`__ (for voice support)
 
 Please note that on Linux installing voice you must install the following packages via your favourite package manager (e.g. ``apt``, ``dnf``, etc) before running the above commands:
 

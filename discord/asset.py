@@ -216,12 +216,23 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_sticker(cls, state, sticker_id: int, sticker_hash: str) -> Asset:
+    def _from_sticker_banner(cls, state, banner: int) -> Asset:
         return cls(
             state,
-            url=f'{cls.BASE}/stickers/{sticker_id}/{sticker_hash}.png?size=1024',
-            key=sticker_hash,
+            url=f'{cls.BASE}/app-assets/710982414301790216/store/{banner}.png',
+            key=str(banner),
             animated=False,
+        )
+
+    @classmethod
+    def _from_user_banner(cls, state, user_id: int, banner_hash: str) -> Asset:
+        animated = banner_hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
+            key=banner_hash,
+            animated=animated
         )
 
     def __str__(self) -> str:
@@ -256,6 +267,7 @@ class Asset(AssetMixin):
 
     def replace(
         self,
+        *,
         size: int = MISSING,
         format: ValidAssetFormatTypes = MISSING,
         static_format: ValidStaticFormatTypes = MISSING,
@@ -310,7 +322,7 @@ class Asset(AssetMixin):
         url = str(url)
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_size(self, size: int) -> Asset:
+    def with_size(self, size: int, /) -> Asset:
         """Returns a new asset with the specified size.
 
         Parameters
@@ -334,7 +346,7 @@ class Asset(AssetMixin):
         url = str(yarl.URL(self._url).with_query(size=size))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_format(self, format: ValidAssetFormatTypes) -> Asset:
+    def with_format(self, format: ValidAssetFormatTypes, /) -> Asset:
         """Returns a new asset with the specified format.
 
         Parameters
@@ -365,7 +377,7 @@ class Asset(AssetMixin):
         url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_static_format(self, format: ValidStaticFormatTypes) -> Asset:
+    def with_static_format(self, format: ValidStaticFormatTypes, /) -> Asset:
         """Returns a new asset with the specified static format.
 
         This only changes the format if the underlying asset is

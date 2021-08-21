@@ -142,12 +142,14 @@ class WebhookAdapter:
                     for p in multipart:
                         name = p['name']
                         if name == 'payload_json':
-                            to_send = { 'payload_json': p['value'] }
+                            to_send = {'payload_json': p['value']}
                         else:
                             file_data[name] = (p['filename'], p['value'], p['content_type'])
 
                 try:
-                    with session.request(method, url, data=to_send, files=file_data, headers=headers, params=params) as response:
+                    with session.request(
+                        method, url, data=to_send, files=file_data, headers=headers, params=params
+                    ) as response:
                         log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
@@ -262,9 +264,12 @@ class WebhookAdapter:
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[List[File]] = None,
+        thread_id: Optional[int] = None,
         wait: bool = False,
     ):
         params = {'wait': int(wait)}
+        if thread_id:
+            params['thread_id'] = thread_id
         route = Route('POST', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
@@ -343,8 +348,17 @@ class WebhookAdapter:
         return self.request(route, session=session)
 
 
-_context = threading.local()
-_context.adapter = WebhookAdapter()
+class _WebhookContext(threading.local):
+    adapter: Optional[WebhookAdapter] = None
+
+
+_context = _WebhookContext()
+
+
+def _get_webhook_adapter() -> WebhookAdapter:
+    if _context.adapter is None:
+        _context.adapter = WebhookAdapter()
+    return _context.adapter
 
 
 class SyncWebhookMessage(Message):
@@ -491,7 +505,7 @@ class SyncWebhook(BaseWebhook):
         .. versionadded:: 2.0
     """
 
-    __slots__: Tuple[str, ...] = BaseWebhook.__slots__ + ('session',)
+    __slots__: Tuple[str, ...] = ('session',)
 
     def __init__(self, data: WebhookPayload, session: Session, token: Optional[str] = None, state=None):
         super().__init__(data, token, state)
@@ -618,7 +632,7 @@ class SyncWebhook(BaseWebhook):
         :class:`SyncWebhook`
             The fetched webhook.
         """
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         if prefer_auth and self.auth_token:
             data = adapter.fetch_webhook(self.id, self.auth_token, session=self.session)
@@ -656,7 +670,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None and self.auth_token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         if prefer_auth and self.auth_token:
             adapter.delete_webhook(self.id, token=self.auth_token, session=self.session, reason=reason)
@@ -710,7 +724,7 @@ class SyncWebhook(BaseWebhook):
         if avatar is not MISSING:
             payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
 
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
@@ -780,6 +794,7 @@ class SyncWebhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
+        thread: Snowflake = MISSING,
         wait: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
@@ -824,6 +839,10 @@ class SyncWebhook(BaseWebhook):
             Controls the mentions being processed in this message.
 
             .. versionadded:: 1.4
+        thread: :class:`~discord.abc.Snowflake`
+            The thread to send this message to.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -865,7 +884,11 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
+        thread_id: Optional[int] = None
+        if thread is not MISSING:
+            thread_id = thread.id
+
         data = adapter.execute_webhook(
             self.id,
             self.token,
@@ -873,6 +896,7 @@ class SyncWebhook(BaseWebhook):
             payload=params.payload,
             multipart=params.multipart,
             files=params.files,
+            thread_id=thread_id,
             wait=wait,
         )
         if wait:
@@ -908,7 +932,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         data = adapter.get_webhook_message(
             self.id,
             self.token,
@@ -982,7 +1006,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         adapter.edit_webhook_message(
             self.id,
             self.token,
@@ -1016,7 +1040,7 @@ class SyncWebhook(BaseWebhook):
         if self.token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
 
-        adapter: WebhookAdapter = _context.adapter
+        adapter: WebhookAdapter = _get_webhook_adapter()
         adapter.delete_webhook_message(
             self.id,
             self.token,
