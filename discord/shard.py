@@ -59,6 +59,7 @@ __all__ = (
 
 log: logging.Logger = logging.getLogger(__name__)
 
+
 class EventType:
     close = 0
     reconnect = 1
@@ -66,6 +67,7 @@ class EventType:
     identify = 3
     terminate = 4
     clean_close = 5
+
 
 class EventItem:
     __slots__ = ('type', 'shard', 'error')
@@ -87,6 +89,7 @@ class EventItem:
 
     def __hash__(self) -> int:
         return hash(self.type)
+
 
 class Shard:
     def __init__(self, ws: DiscordWebSocket, client: AutoShardedClient, queue_put: Callable[[EventItem], None]) -> None:
@@ -111,7 +114,7 @@ class Shard:
     @property
     def id(self) -> int:
         # DiscordWebSocket.shard_id is set in the from_client classmethod
-        return self.ws.shard_id # type: ignore
+        return self.ws.shard_id  # type: ignore
 
     def launch(self) -> None:
         self._task = self.loop.create_task(self.worker())
@@ -180,8 +183,13 @@ class Shard:
         self._dispatch('shard_disconnect', self.id)
         log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
         try:
-            coro = DiscordWebSocket.from_client(self._client, resume=exc.resume, shard_id=self.id,
-                                                session=self.ws.session_id, sequence=self.ws.sequence)
+            coro = DiscordWebSocket.from_client(
+                self._client,
+                resume=exc.resume,
+                shard_id=self.id,
+                session=self.ws.session_id,
+                sequence=self.ws.sequence,
+            )
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
@@ -205,6 +213,7 @@ class Shard:
             self._queue_put(EventItem(EventType.terminate, self, e))
         else:
             self.launch()
+
 
 class ShardInfo:
     """A class that gives information and control over a specific shard.
@@ -280,6 +289,7 @@ class ShardInfo:
         """
         return self._parent.ws.is_ratelimited()
 
+
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
@@ -306,6 +316,7 @@ class AutoShardedClient(Client):
     shard_ids: Optional[List[:class:`int`]]
         An optional list of shard_ids to launch the shards with.
     """
+
     if TYPE_CHECKING:
         _connection: AutoShardedConnectionState
 
@@ -330,13 +341,18 @@ class AutoShardedClient(Client):
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
         if shard_id is None:
             # guild_id won't be None if shard_id is None and shard_count won't be None here
-            shard_id = (guild_id >> 22) % self.shard_count # type: ignore
+            shard_id = (guild_id >> 22) % self.shard_count  # type: ignore
         return self.__shards[shard_id].ws
 
     def _get_state(self, **options: Any) -> AutoShardedConnectionState:
-        return AutoShardedConnectionState(dispatch=self.dispatch,
-                                          handlers=self._handlers,
-                                          hooks=self._hooks, http=self.http, loop=self.loop, **options)
+        return AutoShardedConnectionState(
+            dispatch=self.dispatch,
+            handlers=self._handlers,
+            hooks=self._hooks,
+            http=self.http,
+            loop=self.loop,
+            **options,
+        )
 
     @property
     def latency(self) -> float:
@@ -370,7 +386,7 @@ class AutoShardedClient(Client):
     @property
     def shards(self) -> Dict[int, ShardInfo]:
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
-        return { shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items() }
+        return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
     async def launch_shard(self, gateway: str, shard_id: int, *, initial: bool = False) -> None:
         try:
@@ -449,7 +465,13 @@ class AutoShardedClient(Client):
         await self.http.close()
         self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
-    async def change_presence(self, *, activity: Optional[BaseActivity] = None, status: Optional[Status] = None, shard_id: int = None) -> None:
+    async def change_presence(
+        self,
+        *,
+        activity: Optional[BaseActivity] = None,
+        status: Optional[Status] = None,
+        shard_id: int = None,
+    ) -> None:
         """|coro|
 
         Changes the client's presence.
@@ -507,7 +529,7 @@ class AutoShardedClient(Client):
                 continue
 
             # Member.activities is typehinted as Tuple[ActivityType, ...], we may be setting it as Tuple[BaseActivity, ...]
-            me.activities = activities # type: ignore
+            me.activities = activities  # type: ignore
             me.status = status_enum
 
     def is_ws_ratelimited(self) -> bool:
