@@ -761,7 +761,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if self.inherit:
             parent_before_invoke = getattr(self.parent, '_before_invoke', None)
         else:
-            parent_before_invoke = None        
+            parent_before_invoke = None 
 
         if self._before_invoke is not None:
             # should be cog if @commands.before_invoke is used
