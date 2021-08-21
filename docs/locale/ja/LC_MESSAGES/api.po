@@ -7504,11 +7504,9 @@ msgstr ""
 #: discord.CategoryChannel.overwrites:3 discord.TextChannel.overwrites:3
 #: discord.VoiceChannel.overwrites:3 discord.abc.GuildChannel.overwrites:3 of
 msgid ""
-"This is returned as a dictionary where the key contains the target which"
-"can be either a :class:`~discord.Role`, :class:`~discord.Member` or a"
-":class:`~discord.Object` and the value is the overwrite as a"
-":class:`~discord.PermissionOverwrite`. If the target is a :class:`~discord.Object`,"
-"the guild isn't chunked or member intents are not enabled."
+"This is returned as a dictionary where the key contains the target which "
+"can be either a :class:`~discord.Role` or a :class:`~discord.Member` and "
+"the value is the overwrite as a :class:`~discord.PermissionOverwrite`."
 msgstr ""
 
 #: discord.CategoryChannel.overwrites:7 discord.TextChannel.overwrites:7
@@ -17367,12 +17365,11 @@ msgstr ":class:`~discord.User`"
 
 #~ msgid ""
 #~ "This is returned as a dictionary "
-#~ "where the key contains the target which"
-#~ "can be either a :class:`~discord.Role`, :class:`~discord.Member` or a"
-#~ ":class:`~discord.Object` and the value is the overwrite as a"
-#~ ":class:`~discord.PermissionOverwrite`.
-#~ "If the target is a :class:`~discord.Object`, "
-#~ "the guild isn't chunked or member intents are not enabled."
+#~ "where the key contains the target "
+#~ "which can be either a "
+#~ ":class:`~discord.Role` or a :class:`~discord.Member`"
+#~ " and the key is the overwrite "
+#~ "as a :class:`~discord.PermissionOverwrite`."
 #~ msgstr ""
 
 #~ msgid ""
