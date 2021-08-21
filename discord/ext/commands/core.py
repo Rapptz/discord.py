@@ -756,13 +756,21 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     async def call_before_hooks(self, ctx: Context) -> None:
         # now that we're done preparing we can call the pre-command hooks
-        # first, call the command local hook:
         cog = self.cog
+        parent = self.parent
+
         if self.inherit:
             parent_before_invoke = getattr(self.parent, '_before_invoke', None)
         else:
             parent_before_invoke = None 
 
+        if parent is not None:
+            # parent is a Group
+            propagate = parent.propagate # type: ignore
+        else:
+            propagate = False
+
+        # first, call the command local hook:
         if self._before_invoke is not None:
             # should be cog if @commands.before_invoke is used
             instance = getattr(self._before_invoke, '__self__', cog)
@@ -773,7 +781,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             else:
                 await self._before_invoke(ctx)  # type: ignore
 
-        if parent_before_invoke is not None:
+        if parent_before_invoke is not None and propagate:
             instance = getattr(parent_before_invoke, '__self__', cog)
             if instance:
                 await parent_before_invoke(instance, ctx)
@@ -793,10 +801,18 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     async def call_after_hooks(self, ctx: Context) -> None:
         cog = self.cog
+        parent = self.parent
+
         if self.inherit:
             parent_after_invoke = getattr(self.parent, '_after_invoke', None)
         else:
             parent_after_invoke = None
+
+        if parent is not None:
+            # parent is a Group
+            propagate = parent.propagate # type: ignore
+        else:
+            propagate = False
 
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
@@ -805,7 +821,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             else:
                 await self._after_invoke(ctx)  # type: ignore
 
-        if parent_after_invoke is not None:
+        if parent_after_invoke is not None and propagate:
             instance = getattr(parent_after_invoke, '__self__', cog)
             if instance:
                 await parent_after_invoke(instance, ctx)  # type: ignore
@@ -1148,7 +1164,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                         return False
 
             parent = self.parent
-            predicates = self.checks + getattr(parent, 'checks', [])
+            if parent is not None:
+                # self.parent is a Group here
+                propagate = parent.propagate # type: ignore
+            else:
+                propagate = False
+            predicates = self.checks
             if not predicates:
                 # since we have no checks, then we just return True.
                 return True
