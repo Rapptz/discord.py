@@ -684,6 +684,26 @@ class Thread(Messageable, Hashable):
             Deleting the thread failed.
         """
         await self._state.http.delete_channel(self.id)
+        
+    async def fetch_creation_message(self) -> Message:
+        """|coro|
+        Retrieves the message that was used to create this thread from the parent channel.
+        
+        Raises
+        --------
+        ~discord.NotFound
+            The message was not found.
+        ~discord.Forbidden
+            You do not have the permissions required to get the message.
+        ~discord.HTTPException
+            Retrieving the message failed.
+           
+        Returns
+        --------
+        :class:`~discord.Message`
+            The message that was used to create this thread from the parent channel.
+        """
+        return await self.parent.fetch_message(self.id)
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
