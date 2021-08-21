@@ -53,6 +53,7 @@ from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
+from .object import Object
 from . import utils
 
 __all__ = (
@@ -475,16 +476,18 @@ class GuildChannel:
         return PermissionOverwrite()
 
     @property
-    def overwrites(self) -> Dict[Union[Role, Member], PermissionOverwrite]:
+    def overwrites(self) -> Dict[Union[Role, Member, Object], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
-        can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the value is the
-        overwrite as a :class:`~discord.PermissionOverwrite`.
+        can be either a :class:`~discord.Role`, :class:`~discord.Member` or a
+        :class:`~discord.Object` and the value is the overwrite as a
+        :class:`~discord.PermissionOverwrite`. If the target is a :class:`~discord.Object`,
+        the guild isn't chunked or member intents are not enabled.
 
         Returns
         --------
-        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
+        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`, :class:`~discord.Object`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
@@ -499,13 +502,10 @@ class GuildChannel:
             elif ow.is_member():
                 target = self.guild.get_member(ow.id)
 
-            # TODO: There is potential data loss here in the non-chunked
-            # case, i.e. target is None because get_member returned nothing.
-            # This can be fixed with a slight breaking change to the return type,
-            # i.e. adding discord.Object to the list of it
-            # However, for now this is an acceptable compromise.
             if target is not None:
                 ret[target] = overwrite
+            else:
+                ret[Object(ow.id)] = overwrite
         return ret
 
     @property
