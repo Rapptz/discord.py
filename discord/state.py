@@ -674,6 +674,7 @@ class ConnectionState:
 
     def parse_presence_update(self, data) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
+        # guild_id won't be None here
         guild = self._get_guild(guild_id) # type: ignore
         if guild is None:
             log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
@@ -1274,7 +1275,7 @@ class ConnectionState:
                 if flags.voice:
                     if channel_id is None and flags._voice_only and member.id != self_id:
                         # Only remove from cache if we only have the voice flag enabled
-                        # Member doesn't have
+                        # Member doesn't meet the Snowflake protocol currently
                         guild._remove_member(member) # type: ignore
                     elif channel_id is not None:
                         guild._add_member(member)
@@ -1303,7 +1304,8 @@ class ConnectionState:
                 member = channel.recipient
 
             elif isinstance(channel, (Thread, TextChannel)) and guild is not None:
-                member = guild.get_member(user_id)
+                # user_id won't be None
+                member = guild.get_member(user_id) # type: ignore
 
                 if member is None:
                     member_data = data.get('member')
@@ -1365,7 +1367,8 @@ class AutoShardedConnectionState(ConnectionState):
         self.shards_launched: asyncio.Event = asyncio.Event()
 
     def _update_message_references(self) -> None:
-        for msg in self._messages or []:
+        # self._messages won't be None when this is called
+        for msg in self._messages: # type: ignore
             if not msg.guild:
                 continue
 
