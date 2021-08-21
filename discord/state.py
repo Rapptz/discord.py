@@ -600,9 +600,11 @@ class ConnectionState:
 
         member_data = data.get('member')
         if member_data:
-            # the guild won't be None here
-            guild = self._get_guild(raw.guild_id) # type: ignore
-            raw.member = Member(data=member_data, guild=guild, state=self) # type: ignore
+            guild = self._get_guild(raw.guild_id)
+            if guild is not None:
+                raw.member = Member(data=member_data, guild=guild, state=self)
+            else:
+                raw.member = None
         else:
             raw.member = None
         self.dispatch('raw_reaction_add', raw)
