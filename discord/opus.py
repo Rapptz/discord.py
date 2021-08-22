@@ -179,7 +179,7 @@ exported_functions: List[Tuple[Any, ...]] = [
         [ctypes.c_char_p, ctypes.c_int], ctypes.c_int, _err_lt),
 ]
 
-def libopus_loader(name: str) -> ctypes.CDLL:
+def libopus_loader(name: str) -> Any:
     # create the library...
     lib = ctypes.cdll.LoadLibrary(name)
 
@@ -280,7 +280,7 @@ class OpusError(DiscordException):
         The error code returned.
     """
 
-    def __init__(self, code: int) -> None:
+    def __init__(self, code: int):
         self.code: int = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
         _log.info('"%s" has happened', msg)
@@ -307,7 +307,7 @@ class _OpusStruct:
         return _lib.opus_get_version_string().decode('utf-8')
 
 class Encoder(_OpusStruct):
-    def __init__(self, application: int=APPLICATION_AUDIO) -> None:
+    def __init__(self, application: int = APPLICATION_AUDIO):
         _OpusStruct.get_opus_version()
 
         self.application: int = application
@@ -366,7 +366,7 @@ class Encoder(_OpusStruct):
         return array.array('b', data[:ret]).tobytes() # type: ignore
 
 class Decoder(_OpusStruct):
-    def __init__(self) -> None:
+    def __init__(self):
         _OpusStruct.get_opus_version()
 
         self._state: DecoderStruct = self._create_state()
