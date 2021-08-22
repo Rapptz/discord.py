@@ -43,7 +43,7 @@ from .. import utils
 from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
 from ..http import Route
-from ..object import Object
+from ..channel import PartialMessageable
 
 from .async_ import BaseWebhook, handle_message_parameters, _WebhookState
 
@@ -372,6 +372,8 @@ class SyncWebhookMessage(Message):
 
     .. versionadded:: 2.0
     """
+
+    _state: _WebhookState
 
     def edit(
         self,
@@ -745,8 +747,10 @@ class SyncWebhook(BaseWebhook):
 
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
-        channel = self.channel or Object(id=int(data['channel_id']))
-        return SyncWebhookMessage(data=data, state=state, channel=channel)
+        # state may be artificial (unlikely at this point...)
+        channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        # state is artificial
+        return SyncWebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 
     @overload
     def send(
