@@ -372,7 +372,9 @@ class MessageReference:
         The guild id of the message referenced.
     fail_if_not_exists: :class:`bool`
         Whether replying to the referenced message should raise :class:`HTTPException`
-        if the message no longer exists or Discord could not fetch the message.
+        if the message no longer exists or Discord could not fetch the message instead
+        of sending it as a normal message that won't reply to this message reference.
+        Defaults to `True`.
 
         .. versionadded:: 1.7
 
@@ -421,7 +423,9 @@ class MessageReference:
             The message to be converted into a reference.
         fail_if_not_exists: :class:`bool`
             Whether replying to the referenced message should raise :class:`HTTPException`
-            if the message no longer exists or Discord could not fetch the message.
+            if the message no longer exists or Discord could not fetch the message instead
+            of sending it as a normal message that won't reply to this message reference.
+            Defaults to `True`.
 
             .. versionadded:: 1.7
 
@@ -1563,8 +1567,10 @@ class Message(Hashable):
         Parameters
         ----------
         fail_if_not_exists: :class:`bool`
-            Whether replying using the message reference should raise :class:`HTTPException`
-            if the message no longer exists or Discord could not fetch the message.
+            Whether replying to the referenced message should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message instead
+            of sending it as a normal message that won't reply to this message reference.
+            Defaults to `True`.
 
             .. versionadded:: 1.7
 
