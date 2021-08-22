@@ -517,8 +517,8 @@ class Member(discord.abc.Messageable, _UserTag):
 
     @property
     def guild_avatar(self) -> Optional[Asset]:
-        """Optional[:class:`Asset`:] Returns an :class:`Asset` for the guild avatar
-        the member has if available.
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the guild avatar
+        the member has. If unavailable, ``None`` is returned.
 
         .. versionadded:: 2.0
         """
