@@ -35,7 +35,7 @@ from .utils import snowflake_time, _bytes_to_base64_data, MISSING
 
 if TYPE_CHECKING:
     from datetime import datetime
-    
+
     from .channel import DMChannel
     from .guild import Guild
     from .message import Message
@@ -49,7 +49,6 @@ __all__ = (
     'ClientUser',
 )
 
-U = TypeVar('U', bound='User')
 BU = TypeVar('BU', bound='BaseUser')
 
 
@@ -59,7 +58,18 @@ class _UserTag:
 
 
 class BaseUser(_UserTag):
-    __slots__ = ('name', 'id', 'discriminator', '_avatar', '_banner', '_accent_colour', 'bot', 'system', '_public_flags', '_state')
+    __slots__ = (
+        'name',
+        'id',
+        'discriminator',
+        '_avatar',
+        '_banner',
+        '_accent_colour',
+        'bot',
+        'system',
+        '_public_flags',
+        '_state',
+    )
 
     if TYPE_CHECKING:
         name: str
@@ -68,7 +78,7 @@ class BaseUser(_UserTag):
         bot: bool
         system: bool
         _state: ConnectionState
-        _avatar: str
+        _avatar: Optional[str]
         _banner: Optional[str]
         _accent_colour: Optional[str]
         _public_flags: int
@@ -321,7 +331,7 @@ class ClientUser(BaseUser):
         locale: Optional[str]
         mfa_enabled: bool
         _flags: int
-        
+
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         super().__init__(state=state, data=data)
 
@@ -431,7 +441,7 @@ class User(BaseUser, discord.abc.Messageable):
             pass
 
     @classmethod
-    def _copy(cls: Type[U], user: U) -> U:
+    def _copy(cls, user: User):
         self = super()._copy(user)
         self._stored = False
         return self
