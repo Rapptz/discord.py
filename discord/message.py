@@ -639,7 +639,7 @@ class Message(Hashable):
         _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
         _CACHED_SLOTS: ClassVar[List[str]]
         guild: Optional[Guild]
-        ref: Optional[MessageReference]
+        reference: Optional[MessageReference]
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
         role_mentions: List[Role]
