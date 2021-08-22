@@ -57,7 +57,7 @@ __all__ = (
     'ShardInfo',
 )
 
-log: logging.Logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 
 class EventType:
@@ -153,7 +153,7 @@ class Shard:
                 return
             if e.code != 1000:
                 self._queue_put(EventItem(EventType.close, self, e))
-                return
+        _log     return
 
         retry = self._backoff.delay()
         log.error('Attempting a reconnect for shard ID %s in %.2fs', self.id, retry, exc_info=e)
@@ -178,7 +178,7 @@ class Shard:
                 break
 
     async def reidentify(self, exc: ReconnectWebSocket) -> None:
-        self._cancel_task()
+        _logf._cancel_task()
         self._dispatch('disconnect')
         self._dispatch('shard_disconnect', self.id)
         log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
@@ -377,7 +377,7 @@ class AutoShardedClient(Client):
     def get_shard(self, shard_id: int) -> Optional[ShardInfo]:
         """Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found."""
         try:
-            parent = self.__shards[shard_id]
+            _logent = self.__shards[shard_id]
         except KeyError:
             return None
         else:

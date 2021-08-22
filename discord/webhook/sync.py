@@ -52,7 +52,7 @@ __all__ = (
     'SyncWebhookMessage',
 )
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..file import File
@@ -150,7 +150,7 @@ class WebhookAdapter:
                     with session.request(
                         method, url, data=to_send, files=file_data, headers=headers, params=params
                     ) as response:
-                        log.debug(
+                        _log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
                             method,
@@ -168,7 +168,7 @@ class WebhookAdapter:
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status_code != 429:
                             delta = utils._parse_ratelimit_header(response)
-                            log.debug(
+                            _log.debug(
                                 'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', webhook_id, delta
                             )
                             lock.delay_by(delta)
@@ -181,7 +181,7 @@ class WebhookAdapter:
                                 raise HTTPException(response, data)
 
                             retry_after: float = data['retry_after']  # type: ignore
-                            log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
+                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
                             time.sleep(retry_after)
                             continue
 

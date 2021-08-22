@@ -50,7 +50,7 @@ if TYPE_CHECKING:
 AT = TypeVar('AT', bound='AudioSource')
 FT = TypeVar('FT', bound='FFmpegOpusAudio')
 
-log: logging.Logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 __all__ = (
     'AudioSource',
@@ -165,19 +165,19 @@ class FFmpegAudio(AudioSource):
         if proc is MISSING:
             return
 
-        log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
+        _log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
 
         try:
             proc.kill()
         except Exception:
-            log.exception("Ignoring error attempting to kill ffmpeg process %s", proc.pid)
+            _log.exception("Ignoring error attempting to kill ffmpeg process %s", proc.pid)
 
         if proc.poll() is None:
-            log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
+            _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
             proc.communicate()
-            log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
+            _log.info('ffmpeg process %s should have terminated with a return code of %s.', proc.pid, proc.returncode)
         else:
-            log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
+            _log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
 
         self._process = self._stdout = MISSING
 
@@ -480,18 +480,18 @@ class FFmpegOpusAudio(FFmpegAudio):
             codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))  # type: ignore
         except Exception:
             if not fallback:
-                log.exception("Probe '%s' using '%s' failed", method, executable)
+                _log.exception("Probe '%s' using '%s' failed", method, executable)
                 return  # type: ignore
 
-            log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
+            _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
                 codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))  # type: ignore
             except Exception:
-                log.exception("Fallback probe using '%s' failed", executable)
+                _log.exception("Fallback probe using '%s' failed", executable)
             else:
-                log.info("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
+                _log.info("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
         else:
-            log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
+            _log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
         finally:
             return codec, bitrate
 
@@ -656,12 +656,12 @@ class AudioPlayer(threading.Thread):
             try:
                 self.after(error)
             except Exception as exc:
-                log.exception('Calling the after function failed.')
+                _log.exception('Calling the after function failed.')
                 exc.__context__ = error
                 traceback.print_exception(type(exc), exc, exc.__traceback__)
         elif error:
             msg = f'Exception in voice thread {self.name}'
-            log.exception(msg, exc_info=error)
+            _log.exception(msg, exc_info=error)
             print(msg, file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__)
 
@@ -698,4 +698,4 @@ class AudioPlayer(threading.Thread):
         try:
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
         except Exception as e:
-            log.info("Speaking call in player failed: %s", e)
+            _log.info("Speaking call in player failed: %s", e)

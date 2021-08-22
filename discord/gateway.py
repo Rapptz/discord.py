@@ -40,7 +40,7 @@ from .activity import BaseActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed, InvalidArgument
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 __all__ = (
     'DiscordWebSocket',
@@ -101,7 +101,7 @@ class GatewayRatelimiter:
         async with self.lock:
             delta = self.get_delay()
             if delta:
-                log.warning('WebSocket in shard ID %s is ratelimited, waiting %.2f seconds', self.shard_id, delta)
+                _log.warning('WebSocket in shard ID %s is ratelimited, waiting %.2f seconds', self.shard_id, delta)
                 await asyncio.sleep(delta)
 
 
@@ -129,20 +129,20 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
+                _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
                 try:
                     f.result()
                 except Exception:
-                    log.exception('An error occurred while stopping the gateway. Ignoring.')
+                    _log.exception('An error occurred while stopping the gateway. Ignoring.')
                 finally:
                     self.stop()
                     return
 
             data = self.get_payload()
-            log.debug(self.msg, self.shard_id, data['d'])
+            _log.debug(self.msg, self.shard_id, data['d'])
             coro = self.ws.send_heartbeat(data)
             f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
@@ -161,7 +161,7 @@ class KeepAliveHandler(threading.Thread):
                         else:
                             stack = ''.join(traceback.format_stack(frame))
                             msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        log.warning(msg, self.shard_id, total)
+                        _log.warning(msg, self.shard_id, total)
 
             except Exception:
                 self.stop()
@@ -185,7 +185,7 @@ class KeepAliveHandler(threading.Thread):
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
         if self.latency > 10:
-            log.warning(self.behind_msg, self.shard_id, self.latency)
+            _log.warning(self.behind_msg, self.shard_id, self.latency)
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
@@ -330,7 +330,7 @@ class DiscordWebSocket:
 
         client._connection._update_references(ws)
 
-        log.debug('Created websocket connected to %s', gateway)
+        _log.debug('Created websocket connected to %s', gateway)
 
         # poll event for OP Hello
         await ws.poll_event()
@@ -403,7 +403,7 @@ class DiscordWebSocket:
 
         await self.call_hooks('before_identify', self.shard_id, initial=self._initial_identify)
         await self.send_as_json(payload)
-        log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
+        _log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
 
     async def resume(self):
         """Sends the RESUME packet."""
@@ -417,7 +417,7 @@ class DiscordWebSocket:
         }
 
         await self.send_as_json(payload)
-        log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
+        _log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
 
     async def received_message(self, msg, /):
         self.log_receive(msg)
@@ -432,7 +432,7 @@ class DiscordWebSocket:
             self._buffer = bytearray()
         msg = utils.from_json(msg)
 
-        log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
+        _log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
         event = msg.get('t')
         if event:
             self._dispatch('socket_event_type', event)
@@ -451,7 +451,7 @@ class DiscordWebSocket:
                 # "reconnect" can only be handled by the Client
                 # so we terminate our connection and raise an
                 # internal exception signalling to reconnect.
-                log.debug('Received RECONNECT opcode.')
+                _log.debug('Received RECONNECT opcode.')
                 await self.close()
                 raise ReconnectWebSocket(self.shard_id)
 
@@ -481,11 +481,11 @@ class DiscordWebSocket:
 
                 self.sequence = None
                 self.session_id = None
-                log.info('Shard ID %s session has been invalidated.', self.shard_id)
+                _log.info('Shard ID %s session has been invalidated.', self.shard_id)
                 await self.close(code=1000)
                 raise ReconnectWebSocket(self.shard_id, resume=False)
 
-            log.warning('Unknown OP code %s.', op)
+            _log.warning('Unknown OP code %s.', op)
             return
 
         if event == 'READY':
@@ -494,20 +494,20 @@ class DiscordWebSocket:
             self.session_id = data['session_id']
             # pass back shard ID to ready handler
             data['__shard_id__'] = self.shard_id
-            log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
+            _log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
                      self.shard_id, ', '.join(trace), self.session_id)
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
             # pass back the shard ID to the resumed handler
             data['__shard_id__'] = self.shard_id
-            log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
+            _log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
                      self.shard_id, self.session_id, ', '.join(trace))
 
         try:
             func = self._discord_parsers[event]
         except KeyError:
-            log.debug('Unknown event %s.', event)
+            _log.debug('Unknown event %s.', event)
         else:
             func(data)
 
@@ -561,10 +561,10 @@ class DiscordWebSocket:
             elif msg.type is aiohttp.WSMsgType.BINARY:
                 await self.received_message(msg.data)
             elif msg.type is aiohttp.WSMsgType.ERROR:
-                log.debug('Received %s', msg)
+                _log.debug('Received %s', msg)
                 raise msg.data
             elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSE):
-                log.debug('Received %s', msg)
+                _log.debug('Received %s', msg)
                 raise WebSocketClosure
         except (asyncio.TimeoutError, WebSocketClosure) as e:
             # Ensure the keep alive handler is closed
@@ -573,15 +573,15 @@ class DiscordWebSocket:
                 self._keep_alive = None
 
             if isinstance(e, asyncio.TimeoutError):
-                log.info('Timed out receiving packet. Attempting a reconnect.')
+                _log.info('Timed out receiving packet. Attempting a reconnect.')
                 raise ReconnectWebSocket(self.shard_id) from None
 
             code = self._close_code or self.socket.close_code
             if self._can_handle_close():
-                log.info('Websocket closed with %s, attempting a reconnect.', code)
+                _log.info('Websocket closed with %s, attempting a reconnect.', code)
                 raise ReconnectWebSocket(self.shard_id) from None
             else:
-                log.info('Websocket closed with %s, cannot reconnect.', code)
+                _log.info('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
 
     async def debug_send(self, data, /):
@@ -630,7 +630,7 @@ class DiscordWebSocket:
         }
 
         sent = utils.to_json(payload)
-        log.debug('Sending "%s" to change status', sent)
+        _log.debug('Sending "%s" to change status', sent)
         await self.send(sent)
 
     async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, presences=False, nonce=None):
@@ -666,7 +666,7 @@ class DiscordWebSocket:
             }
         }
 
-        log.debug('Updating our voice state to %s.', payload)
+        _log.debug('Updating our voice state to %s.', payload)
         await self.send_as_json(payload)
 
     async def close(self, code=4000):
@@ -734,7 +734,7 @@ class DiscordVoiceWebSocket:
         pass
 
     async def send_as_json(self, data):
-        log.debug('Sending voice websocket frame: %s.', data)
+        _log.debug('Sending voice websocket frame: %s.', data)
         await self.ws.send_str(utils.to_json(data))
 
     send_heartbeat = send_as_json
@@ -820,7 +820,7 @@ class DiscordVoiceWebSocket:
         await self.send_as_json(payload)
 
     async def received_message(self, msg):
-        log.debug('Voice websocket frame received: %s', msg)
+        _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
         data = msg.get('d')
 
@@ -829,7 +829,7 @@ class DiscordVoiceWebSocket:
         elif op == self.HEARTBEAT_ACK:
             self._keep_alive.ack()
         elif op == self.RESUMED:
-            log.info('Voice RESUME succeeded.')
+            _log.info('Voice RESUME succeeded.')
         elif op == self.SESSION_DESCRIPTION:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
@@ -852,7 +852,7 @@ class DiscordVoiceWebSocket:
         struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
         recv = await self.loop.sock_recv(state.socket, 70)
-        log.debug('received packet in initial_connection: %s', recv)
+        _log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
@@ -860,15 +860,15 @@ class DiscordVoiceWebSocket:
         state.ip = recv[ip_start:ip_end].decode('ascii')
 
         state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        log.debug('detected ip: %s port: %s', state.ip, state.port)
+        _log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
-        log.debug('received supported encryption modes: %s', ", ".join(modes))
+        _log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
         await self.select_protocol(state.ip, state.port, mode)
-        log.info('selected the voice protocol for use (%s)', mode)
+        _log.info('selected the voice protocol for use (%s)', mode)
 
     @property
     def latency(self):
@@ -886,7 +886,7 @@ class DiscordVoiceWebSocket:
         return sum(heartbeat.recent_ack_latencies) / len(heartbeat.recent_ack_latencies)
 
     async def load_secret_key(self, data):
-        log.info('received secret key for voice connection')
+        _log.info('received secret key for voice connection')
         self.secret_key = self._connection.secret_key = data.get('secret_key')
         await self.speak()
         await self.speak(False)
@@ -897,10 +897,10 @@ class DiscordVoiceWebSocket:
         if msg.type is aiohttp.WSMsgType.TEXT:
             await self.received_message(utils.from_json(msg.data))
         elif msg.type is aiohttp.WSMsgType.ERROR:
-            log.debug('Received %s', msg)
+            _log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data
         elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
-            log.debug('Received %s', msg)
+            _log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
 
     async def close(self, code=1000):

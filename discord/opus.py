@@ -53,7 +53,7 @@ __all__ = (
     'OpusNotLoaded',
 )
 
-log: logging.Logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 c_int_ptr   = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
@@ -106,14 +106,14 @@ signal_ctl: SignalCtl = {
 
 def _err_lt(result, func, args):
     if result < OK:
-        log.info('error has happened in %s', func.__name__)
+        _log.info('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != OK:
-        log.info('error has happened in %s', func.__name__)
+        _log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
@@ -192,7 +192,7 @@ def libopus_loader(name):
             if item[3]:
                 func.errcheck = item[3]
         except KeyError:
-            log.exception("Error assigning check function to %s", func)
+            _log.exception("Error assigning check function to %s", func)
 
     return lib
 
@@ -276,7 +276,7 @@ class OpusError(DiscordException):
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
-        log.info('"%s" has happened', msg)
+        _log.info('"%s" has happened', msg)
         super().__init__(msg)
 
 class OpusNotLoaded(DiscordException):

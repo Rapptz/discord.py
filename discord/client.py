@@ -76,7 +76,7 @@ __all__ = (
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 
-log: logging.Logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
@@ -84,12 +84,12 @@ def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     if not tasks:
         return
 
-    log.info('Cleaning up after %d tasks.', len(tasks))
+    _log.info('Cleaning up after %d tasks.', len(tasks))
     for task in tasks:
         task.cancel()
 
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    log.info('All tasks finished cancelling.')
+    _log.info('All tasks finished cancelling.')
 
     for task in tasks:
         if task.cancelled():
@@ -106,7 +106,7 @@ def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
         _cancel_tasks(loop)
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
-        log.info('Closing the event loop.')
+        _log.info('Closing the event loop.')
         loop.close()
 
 class Client:
@@ -237,7 +237,7 @@ class Client:
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
-            log.warning("PyNaCl is not installed, voice will NOT be supported")
+            _log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     # internals
 
@@ -363,7 +363,7 @@ class Client:
         return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
-        log.debug('Dispatching event %s', event)
+        _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 
         listeners = self._listeners.get(event)
@@ -468,7 +468,7 @@ class Client:
             passing status code.
         """
 
-        log.info('logging in using static token')
+        _log.info('logging in using static token')
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -511,7 +511,7 @@ class Client:
                 while True:
                     await self.ws.poll_event()
             except ReconnectWebSocket as e:
-                log.info('Got a request to %s the websocket.', e.op)
+                _log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
                 ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
                 continue
@@ -550,7 +550,7 @@ class Client:
                         raise
 
                 retry = backoff.delay()
-                log.exception("Attempting a reconnect in %.2fs", retry)
+                _log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session.
@@ -652,10 +652,10 @@ class Client:
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            log.info('Received signal to terminate bot and event loop.')
+            _log.info('Received signal to terminate bot and event loop.')
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            log.info('Cleaning up tasks.')
+            _log.info('Cleaning up tasks.')
             _cleanup_loop(loop)
 
         if not future.cancelled():
@@ -1021,7 +1021,7 @@ class Client:
             raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
-        log.debug('%s has successfully been registered as an event', coro.__name__)
+        _log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
 
     async def change_presence(
