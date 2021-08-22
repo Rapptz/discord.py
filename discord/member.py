@@ -295,7 +295,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
-        self._avatar: Optional[str] = data.get("avatar", None)
+        self._avatar: Optional[str] = data.get('avatar')
 
     def __str__(self) -> str:
         return str(self._user)
@@ -352,6 +352,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.pending = member.pending
         self.activities = member.activities
         self._state = member._state
+        self._avatar = member._avatar
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -377,6 +378,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
+        self._avatar = data.get('avatar')
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = tuple(map(create_activity, data['activities']))
