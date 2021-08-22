@@ -120,6 +120,9 @@ class _cached_property:
 
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
+
+    from typing_extensions import ParamSpec
+
     from .permissions import Permissions
     from .abc import Snowflake
     from .invite import Invite
@@ -135,6 +138,7 @@ else:
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
+P = ParamSpec('P')
 _Iter = Union[Iterator[T], AsyncIterator[T]]
 
 
@@ -231,8 +235,8 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: Callable[..., Any]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    def decorator(overriden: Callable[..., Any]) -> Callable[..., Any]:
+def copy_doc(original: Callable[P, T]) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def decorator(overriden: Callable[P, T]) -> Callable[P, T]:
         overriden.__doc__ = original.__doc__
         overriden.__signature__ = _signature(original)  # type: ignore
         return overriden
@@ -240,10 +244,10 @@ def copy_doc(original: Callable[..., Any]) -> Callable[[Callable[..., Any]], Cal
     return decorator
 
 
-def deprecated(instead: Optional[str] = None) -> Callable[[Callable[..., T]], Callable[..., T]]:
-    def actual_decorator(func: Callable[..., T]) -> Callable[..., T]:
+def deprecated(instead: Optional[str] = None) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def actual_decorator(func: Callable[P, T]) -> Callable[P, T]:
         @functools.wraps(func)
-        def decorated(*args, **kwargs) -> T:
+        def decorated(*args: P.args, **kwargs: P.kwargs) -> T:
             warnings.simplefilter('always', DeprecationWarning)  # turn off filter
             if instead:
                 fmt = "{0.__name__} is deprecated, use {1} instead."
