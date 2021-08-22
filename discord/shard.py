@@ -153,10 +153,10 @@ class Shard:
                 return
             if e.code != 1000:
                 self._queue_put(EventItem(EventType.close, self, e))
-        _log     return
+                return
 
         retry = self._backoff.delay()
-        log.error('Attempting a reconnect for shard ID %s in %.2fs', self.id, retry, exc_info=e)
+        _log.error('Attempting a reconnect for shard ID %s in %.2fs', self.id, retry, exc_info=e)
         await asyncio.sleep(retry)
         self._queue_put(EventItem(EventType.reconnect, self, e))
 
@@ -178,10 +178,10 @@ class Shard:
                 break
 
     async def reidentify(self, exc: ReconnectWebSocket) -> None:
-        _logf._cancel_task()
+        self._cancel_task()
         self._dispatch('disconnect')
         self._dispatch('shard_disconnect', self.id)
-        log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
+        _log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
         try:
             coro = DiscordWebSocket.from_client(
                 self._client,
@@ -377,7 +377,7 @@ class AutoShardedClient(Client):
     def get_shard(self, shard_id: int) -> Optional[ShardInfo]:
         """Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found."""
         try:
-            _logent = self.__shards[shard_id]
+            parent = self.__shards[shard_id]
         except KeyError:
             return None
         else:
@@ -393,7 +393,7 @@ class AutoShardedClient(Client):
             coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
-            log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
+            _log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0)
             return await self.launch_shard(gateway, shard_id)
 
