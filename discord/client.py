@@ -745,7 +745,7 @@ class Client:
         -----------
         id: :class:`int`
             The channel ID to create a partial messageable for.
-        type: Optional[:class:`ChannelType`]
+        type: Optional[:class:`.ChannelType`]
             The underlying channel type for the partial messageable.
 
         Returns
