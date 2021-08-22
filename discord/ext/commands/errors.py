@@ -330,7 +330,7 @@ class ChannelNotReadable(BadArgument):
 
     Attributes
     -----------
-    argument: Union[:class:`.abc.GuildChannel`, :class:`Thread`]
+    argument: Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
         The channel supplied by the caller that was not readable
     """
     def __init__(self, argument: Union[GuildChannel, Thread]) -> None:
@@ -645,7 +645,7 @@ class NSFWChannelRequired(CheckFailure):
 
     Parameters
     -----------
-    channel: Union[:class:`.abc.GuildChannel`, :class:`Thread`]
+    channel: Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
         The channel that does not have NSFW enabled.
     """
     def __init__(self, channel: Union[GuildChannel, Thread]) -> None:
