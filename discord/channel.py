@@ -86,6 +86,7 @@ if TYPE_CHECKING:
         StoreChannel as StoreChannelPayload,
         GroupDMChannel as GroupChannelPayload,
     )
+    from .types.snowflake import SnowflakeList
 
 
 async def _single_delete_strategy(messages: Iterable[Message]):
@@ -392,7 +393,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
-        message_ids: List[int] = [m.id for m in messages]
+        message_ids: SnowflakeList = [m.id for m in messages]
         await self._state.http.delete_messages(self.id, message_ids)
 
     async def purge(
@@ -1688,7 +1689,8 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        # we're passing the PartialUser TypedDict, it expects the User TypedDict
+        self.recipient: Optional[User] = state.store_user(data['recipients'][0]) # type: ignore
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
