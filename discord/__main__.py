@@ -51,7 +51,7 @@ def core(parser, args):
     if args.version:
         show_version()
 
-bot_template = """#!/usr/bin/env python3
+_bot_template = """#!/usr/bin/env python3
 
 from discord.ext import commands
 import discord
@@ -77,7 +77,7 @@ bot = Bot()
 bot.run(config.token)
 """
 
-gitignore_template = """# Byte-compiled / optimized / DLL files
+_gitignore_template = """# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -107,7 +107,7 @@ var/
 config.py
 """
 
-cog_template = '''from discord.ext import commands
+_cog_template = '''from discord.ext import commands
 import discord
 
 class {name}(commands.Cog{attrs}):
@@ -120,7 +120,7 @@ def setup(bot):
     bot.add_cog({name}(bot))
 '''
 
-cog_extras = '''
+_cog_extras = '''
     def cog_unload(self):
         # clean up logic goes here
         pass
@@ -170,7 +170,7 @@ _base_table = {
 # NUL (0) and 1-31 are disallowed
 _base_table.update((chr(i), None) for i in range(32))
 
-translation_table = str.maketrans(_base_table)
+_translation_table = str.maketrans(_base_table)
 
 def to_path(parser, name, *, replace_spaces=False):
     if isinstance(name, Path):
@@ -182,7 +182,7 @@ def to_path(parser, name, *, replace_spaces=False):
         if len(name) <= 4 and name.upper() in forbidden:
             parser.error('invalid directory name given, use a different one')
 
-    name = name.translate(translation_table)
+    name = name.translate(_translation_table)
     if replace_spaces:
         name = name.replace(' ', '-')
     return Path(name)
@@ -215,14 +215,14 @@ def newbot(parser, args):
     try:
         with open(str(new_directory / 'bot.py'), 'w', encoding='utf-8') as fp:
             base = 'Bot' if not args.sharded else 'AutoShardedBot'
-            fp.write(bot_template.format(base=base, prefix=args.prefix))
+            fp.write(_bot_template.format(base=base, prefix=args.prefix))
     except OSError as exc:
         parser.error(f'could not create bot file ({exc})')
 
     if not args.no_git:
         try:
             with open(str(new_directory / '.gitignore'), 'w', encoding='utf-8') as fp:
-                fp.write(gitignore_template)
+                fp.write(_gitignore_template)
         except OSError as exc:
             print(f'warning: could not create .gitignore file ({exc})')
 
@@ -240,7 +240,7 @@ def newcog(parser, args):
     try:
         with open(str(directory), 'w', encoding='utf-8') as fp:
             attrs = ''
-            extra = cog_extras if args.full else ''
+            extra = _cog_extras if args.full else ''
             if args.class_name:
                 name = args.class_name
             else:
@@ -255,7 +255,7 @@ def newcog(parser, args):
                 attrs += f', name="{args.display_name}"'
             if args.hide_commands:
                 attrs += ', command_attrs=dict(hidden=True)'
-            fp.write(cog_template.format(name=name, extra=extra, attrs=attrs))
+            fp.write(_cog_template.format(name=name, extra=extra, attrs=attrs))
     except OSError as exc:
         parser.error(f'could not create cog file ({exc})')
     else:
