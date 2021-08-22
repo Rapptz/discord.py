@@ -320,18 +320,18 @@ class Encoder(_OpusStruct):
 
     def __del__(self) -> None:
         if hasattr(self, '_state'):
-            _lib.opus_encoder_destroy(self._state) # type: ignore
+            _lib.opus_encoder_destroy(self._state)
             # This is a destructor, so it's okay to assign None
             self._state = None # type: ignore
 
     def _create_state(self) -> EncoderStruct:
         ret = ctypes.c_int()
-        return _lib.opus_encoder_create(self.SAMPLING_RATE, self.CHANNELS, self.application, ctypes.byref(ret)) # type: ignore
+        return _lib.opus_encoder_create(self.SAMPLING_RATE, self.CHANNELS, self.application, ctypes.byref(ret))
 
     def set_bitrate(self, kbps: int) -> int:
         kbps = min(512, max(16, int(kbps)))
 
-        _lib.opus_encoder_ctl(self._state, CTL_SET_BITRATE, kbps * 1024) # type: ignore
+        _lib.opus_encoder_ctl(self._state, CTL_SET_BITRATE, kbps * 1024)
         return kbps
 
     def set_bandwidth(self, req: BAND_CTL) -> None:
@@ -339,17 +339,17 @@ class Encoder(_OpusStruct):
             raise KeyError(f'{req!r} is not a valid bandwidth setting. Try one of: {",".join(band_ctl)}')
 
         k = band_ctl[req]
-        _lib.opus_encoder_ctl(self._state, CTL_SET_BANDWIDTH, k) # type: ignore
+        _lib.opus_encoder_ctl(self._state, CTL_SET_BANDWIDTH, k)
 
     def set_signal_type(self, req: SIGNAL_CTL) -> None:
         if req not in signal_ctl:
             raise KeyError(f'{req!r} is not a valid bandwidth setting. Try one of: {",".join(signal_ctl)}')
 
         k = signal_ctl[req]
-        _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k) # type: ignore
+        _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k)
 
     def set_fec(self, enabled: bool = True) -> None:
-        _lib.opus_encoder_ctl(self._state, CTL_SET_FEC, 1 if enabled else 0) # type: ignore
+        _lib.opus_encoder_ctl(self._state, CTL_SET_FEC, 1 if enabled else 0)
 
     def set_expected_packet_loss_percent(self, percentage: float) -> None:
         _lib.opus_encoder_ctl(self._state, CTL_SET_PLP, min(100, max(0, int(percentage * 100)))) # type: ignore
@@ -360,7 +360,7 @@ class Encoder(_OpusStruct):
         pcm_ptr = ctypes.cast(pcm, c_int16_ptr) # type: ignore
         data = (ctypes.c_char * max_data_bytes)()
 
-        ret = _lib.opus_encode(self._state, pcm_ptr, frame_size, data, max_data_bytes) # type: ignore
+        ret = _lib.opus_encode(self._state, pcm_ptr, frame_size, data, max_data_bytes)
 
         # array can be initialized with bytes but mypy doesn't know
         return array.array('b', data[:ret]).tobytes() # type: ignore
@@ -373,28 +373,28 @@ class Decoder(_OpusStruct):
 
     def __del__(self) -> None:
         if hasattr(self, '_state'):
-            _lib.opus_decoder_destroy(self._state) # type: ignore
+            _lib.opus_decoder_destroy(self._state)
             # This is a destructor, so it's okay to assign None
             self._state = None # type: ignore
 
     def _create_state(self) -> DecoderStruct:
         ret = ctypes.c_int()
-        return _lib.opus_decoder_create(self.SAMPLING_RATE, self.CHANNELS, ctypes.byref(ret)) # type: ignore
+        return _lib.opus_decoder_create(self.SAMPLING_RATE, self.CHANNELS, ctypes.byref(ret))
 
     @staticmethod
     def packet_get_nb_frames(data: bytes) -> int:
         """Gets the number of frames in an Opus packet"""
-        return _lib.opus_packet_get_nb_frames(data, len(data)) # type: ignore
+        return _lib.opus_packet_get_nb_frames(data, len(data))
 
     @staticmethod
     def packet_get_nb_channels(data: bytes) -> int:
         """Gets the number of channels in an Opus packet"""
-        return _lib.opus_packet_get_nb_channels(data) # type: ignore
+        return _lib.opus_packet_get_nb_channels(data)
 
     @classmethod
     def packet_get_samples_per_frame(cls, data: bytes) -> int:
         """Gets the number of samples per frame from an Opus packet"""
-        return _lib.opus_packet_get_samples_per_frame(data, cls.SAMPLING_RATE) # type: ignore
+        return _lib.opus_packet_get_samples_per_frame(data, cls.SAMPLING_RATE)
 
     def _set_gain(self, adjustment: int) -> int:
         """Configures decoder gain adjustment.
@@ -406,7 +406,7 @@ class Decoder(_OpusStruct):
         gain = 10**x/(20.0*256)
         (from opus_defines.h)
         """
-        return _lib.opus_decoder_ctl(self._state, CTL_SET_GAIN, adjustment) # type: ignore
+        return _lib.opus_decoder_ctl(self._state, CTL_SET_GAIN, adjustment)
 
     def set_gain(self, dB: float) -> int:
         """Sets the decoder gain in dB, from -128 to 128."""
@@ -422,7 +422,7 @@ class Decoder(_OpusStruct):
         """Gets the duration (in samples) of the last packet successfully decoded or concealed."""
 
         ret = ctypes.c_int32()
-        _lib.opus_decoder_ctl(self._state, CTL_LAST_PACKET_DURATION, ctypes.byref(ret)) # type: ignore
+        _lib.opus_decoder_ctl(self._state, CTL_LAST_PACKET_DURATION, ctypes.byref(ret))
         return ret.value
 
     @overload
@@ -449,6 +449,6 @@ class Decoder(_OpusStruct):
         pcm = (ctypes.c_int16 * (frame_size * channel_count))()
         pcm_ptr = ctypes.cast(pcm, c_int16_ptr)
 
-        ret = _lib.opus_decode(self._state, data, len(data) if data else 0, pcm_ptr, frame_size, fec) # type: ignore
+        ret = _lib.opus_decode(self._state, data, len(data) if data else 0, pcm_ptr, frame_size, fec)
 
         return array.array('h', pcm[:ret * channel_count]).tobytes()
