@@ -502,16 +502,26 @@ class Member(discord.abc.Messageable, _UserTag):
         return self.nick or self.name
 
     @property
-    def guild_avatar(self) -> Asset:
-        """:class:`Asset`: Returns an :class:`Asset` for the guild avatar the member has.
+    def display_avatar(self) -> Asset:
+        """:class:`Asset`: Returns the member's display avatar.
 
-        If the member does not have a guild avatar, :meth:`Member.avatar`
-        will be called instead.
+        For regular members this is just their avatar, but
+        if they have a guild specific avatar then that
+        is returned instead.
+
+        .. versionadded:: 2.0
+        """
+        return self.guild_avatar or self.avatar
+
+    @property
+    def guild_avatar(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`:] Returns an :class:`Asset` for the guild avatar
+        the member has if available.
 
         .. versionadded:: 2.0
         """
         if self._avatar is None:
-            return self.avatar
+            return None
         return Asset._from_guild_avatar(self._state, self.guild.id, self.id, self._avatar)
 
     @property
