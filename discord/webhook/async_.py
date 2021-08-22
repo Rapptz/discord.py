@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import contextvars
 import logging
 import asyncio
 import json
@@ -32,6 +31,7 @@ import re
 
 from urllib.parse import quote as urlquote
 from typing import Any, Dict, List, Literal, NamedTuple, Optional, TYPE_CHECKING, Tuple, Union, overload
+from contextvars import ContextVar
 
 import aiohttp
 
@@ -507,7 +507,7 @@ def handle_message_parameters(
     return ExecuteWebhookParameters(payload=payload, multipart=multipart, files=files)
 
 
-async_context = contextvars.ContextVar('async_webhook_context', default=AsyncWebhookAdapter())
+async_context: ContextVar[AsyncWebhookAdapter] = ContextVar('async_webhook_context', default=AsyncWebhookAdapter())
 
 
 class PartialWebhookChannel(Hashable):
