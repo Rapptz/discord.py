@@ -132,13 +132,14 @@ if TYPE_CHECKING:
         headers: Mapping[str, Any]
 
 
+    P = ParamSpec('P')
+
 else:
     cached_property = _cached_property
 
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
-P = ParamSpec('P')
 _Iter = Union[Iterator[T], AsyncIterator[T]]
 
 
