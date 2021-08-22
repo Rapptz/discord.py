@@ -39,14 +39,15 @@ class PartialMember(TypedDict):
 
 
 class Member(PartialMember, total=False):
+    avatar: str
     user: User
     nick: str
     premium_since: str
     pending: bool
     permissions: str
 
-
 class _OptionalGatewayMember(PartialMember, total=False):
+    avatar: str
     nick: str
     premium_since: str
     pending: bool
