@@ -106,7 +106,8 @@ class StageInstance(Hashable):
     @cached_slot_property('_cs_channel')
     def channel(self) -> Optional[StageChannel]:
         """Optional[:class:`StageChannel`]: The channel that stage instance is running in."""
-        return self._state.get_channel(self.channel_id)
+        # the returned channel will always be a StageChannel or None
+        return self._state.get_channel(self.channel_id) # type: ignore
 
     def is_public(self) -> bool:
         return self.privacy_level is StagePrivacyLevel.public

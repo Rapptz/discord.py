@@ -50,7 +50,7 @@ from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 __all__ = (
     'loop',

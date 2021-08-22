@@ -24,14 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import Optional, TypedDict, List, Literal
 from .snowflake import Snowflake
-from .member import Member
+from .member import GatewayMember
 
 
 SupportedModes = Literal['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305']
 
 
 class _PartialVoiceStateOptional(TypedDict, total=False):
-    member: Member
+    member: GatewayMember
     self_stream: bool
 
 

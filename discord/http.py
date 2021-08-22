@@ -53,7 +53,7 @@ from .gateway import DiscordClientWebSocketResponse
 from . import __version__, utils
 from .utils import MISSING
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .file import File
@@ -99,7 +99,7 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
-            return utils.from_json(text)
+            return utils._from_json(text)
     except KeyError:
         # Thanks Cloudflare
         pass
@@ -231,7 +231,7 @@ class HTTPClient:
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
-            kwargs['data'] = utils.to_json(kwargs.pop('json'))
+            kwargs['data'] = utils._to_json(kwargs.pop('json'))
 
         try:
             reason = kwargs.pop('reason')
@@ -270,7 +270,7 @@ class HTTPClient:
 
                 try:
                     async with self.__session.request(method, url, **kwargs) as response:
-                        log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
+                        _log.debug('%s %s with %s has returned %s', method, url, kwargs.get('data'), response.status)
 
                         # even errors have text involved in them so this is safe to call
                         data = await json_or_text(response)
@@ -280,13 +280,13 @@ class HTTPClient:
                         if remaining == '0' and response.status != 429:
                             # we've depleted our current bucket
                             delta = utils._parse_ratelimit_header(response, use_clock=self.use_clock)
-                            log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
+                            _log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                             maybe_lock.defer()
                             self.loop.call_later(delta, lock.release)
 
                         # the request was successful so just return the text/json
                         if 300 > response.status >= 200:
-                            log.debug('%s %s has received %s', method, url, data)
+                            _log.debug('%s %s has received %s', method, url, data)
                             return data
 
                         # we are being rate limited
@@ -299,22 +299,22 @@ class HTTPClient:
 
                             # sleep a bit
                             retry_after: float = data['retry_after']
-                            log.warning(fmt, retry_after, bucket)
+                            _log.warning(fmt, retry_after, bucket)
 
                             # check if it's a global rate limit
                             is_global = data.get('global', False)
                             if is_global:
-                                log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
+                                _log.warning('Global rate limit has been hit. Retrying in %.2f seconds.', retry_after)
                                 self._global_over.clear()
 
                             await asyncio.sleep(retry_after)
-                            log.debug('Done sleeping for the rate limit. Retrying...')
+                            _log.debug('Done sleeping for the rate limit. Retrying...')
 
                             # release the global lock now that the
                             # global rate limit has passed
                             if is_global:
                                 self._global_over.set()
-                                log.debug('Global rate limit is now over.')
+                                _log.debug('Global rate limit is now over.')
 
                             continue
 
@@ -493,7 +493,7 @@ class HTTPClient:
         if stickers:
             payload['sticker_ids'] = stickers
 
-        form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
+        form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         if len(files) == 1:
             file = files[0]
             form.append(
@@ -1657,7 +1657,7 @@ class HTTPClient:
         form: List[Dict[str, Any]] = [
             {
                 'name': 'payload_json',
-                'value': utils.to_json(payload),
+                'value': utils._to_json(payload),
             }
         ]
 

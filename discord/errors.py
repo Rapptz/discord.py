@@ -31,9 +31,9 @@ if TYPE_CHECKING:
     try:
         from requests import Response
 
-        ResponseType = Union[ClientResponse, Response]
+        _ResponseType = Union[ClientResponse, Response]
     except ModuleNotFoundError:
-        ResponseType = ClientResponse
+        _ResponseType = ClientResponse
 
     from .interactions import Interaction
 
@@ -123,8 +123,8 @@ class HTTPException(DiscordException):
         The Discord specific error code for the failure.
     """
 
-    def __init__(self, response: ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
-        self.response: ResponseType = response
+    def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
+        self.response: _ResponseType = response
         self.status: int = response.status  # type: ignore
         self.code: int
         self.text: str

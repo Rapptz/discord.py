@@ -46,6 +46,7 @@ if TYPE_CHECKING:
         ThreadMetadata,
         ThreadArchiveDuration,
     )
+    from .types.snowflake import SnowflakeList
     from .guild import Guild
     from .channel import TextChannel, CategoryChannel
     from .member import Member
@@ -394,7 +395,7 @@ class Thread(Messageable, Hashable):
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
-        message_ids = [m.id for m in messages]
+        message_ids: SnowflakeList = [m.id for m in messages]
         await self._state.http.delete_messages(self.id, message_ids)
 
     async def purge(

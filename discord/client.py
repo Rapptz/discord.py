@@ -29,7 +29,7 @@ import logging
 import signal
 import sys
 import traceback
-from typing import Any, Callable, Coroutine, Dict, Generator, Iterable, List, Optional, Sequence, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Sequence, TYPE_CHECKING, Tuple, TypeVar, Union
 
 import aiohttp
 
@@ -76,7 +76,7 @@ __all__ = (
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 
-log: logging.Logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
@@ -84,12 +84,12 @@ def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
     if not tasks:
         return
 
-    log.info('Cleaning up after %d tasks.', len(tasks))
+    _log.info('Cleaning up after %d tasks.', len(tasks))
     for task in tasks:
         task.cancel()
 
     loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    log.info('All tasks finished cancelling.')
+    _log.info('All tasks finished cancelling.')
 
     for task in tasks:
         if task.cancelled():
@@ -106,7 +106,7 @@ def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
         _cancel_tasks(loop)
         loop.run_until_complete(loop.shutdown_asyncgens())
     finally:
-        log.info('Closing the event loop.')
+        _log.info('Closing the event loop.')
         loop.close()
 
 class Client:
@@ -206,6 +206,7 @@ class Client:
         loop: Optional[asyncio.AbstractEventLoop] = None,
         **options: Any,
     ):
+        # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
@@ -236,7 +237,7 @@ class Client:
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
-            log.warning("PyNaCl is not installed, voice will NOT be supported")
+            _log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     # internals
 
@@ -362,7 +363,7 @@ class Client:
         return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
-        log.debug('Dispatching event %s', event)
+        _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 
         listeners = self._listeners.get(event)
@@ -467,7 +468,7 @@ class Client:
             passing status code.
         """
 
-        log.info('logging in using static token')
+        _log.info('logging in using static token')
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -510,7 +511,7 @@ class Client:
                 while True:
                     await self.ws.poll_event()
             except ReconnectWebSocket as e:
-                log.info('Got a request to %s the websocket.', e.op)
+                _log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
                 ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
                 continue
@@ -549,7 +550,7 @@ class Client:
                         raise
 
                 retry = backoff.delay()
-                log.exception("Attempting a reconnect in %.2fs", retry)
+                _log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session.
@@ -651,10 +652,10 @@ class Client:
         try:
             loop.run_forever()
         except KeyboardInterrupt:
-            log.info('Received signal to terminate bot and event loop.')
+            _log.info('Received signal to terminate bot and event loop.')
         finally:
             future.remove_done_callback(stop_loop_on_completion)
-            log.info('Cleaning up tasks.')
+            _log.info('Cleaning up tasks.')
             _cleanup_loop(loop)
 
         if not future.cancelled():
@@ -682,7 +683,8 @@ class Client:
         if value is None:
             self._connection._activity = None
         elif isinstance(value, BaseActivity):
-            self._connection._activity = value.to_dict()
+            # ConnectionState._activity is typehinted as ActivityPayload, we're passing Dict[str, Any]
+            self._connection._activity = value.to_dict() # type: ignore
         else:
             raise TypeError('activity must derive from BaseActivity.')
 
@@ -716,8 +718,8 @@ class Client:
         """List[:class:`~discord.User`]: Returns a list of all the users the bot can see."""
         return list(self._connection._users.values())
 
-    def get_channel(self, id: int) -> Optional[Union[GuildChannel, PrivateChannel]]:
-        """Returns a channel with the given ID.
+    def get_channel(self, id: int) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
+        """Returns a channel or thread with the given ID.
 
         Parameters
         -----------
@@ -726,7 +728,7 @@ class Client:
 
         Returns
         --------
-        Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]
+        Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
         return self._connection.get_channel(id)
@@ -1019,7 +1021,7 @@ class Client:
             raise TypeError('event registered must be a coroutine function')
 
         setattr(self, coro.__name__, coro)
-        log.debug('%s has successfully been registered as an event', coro.__name__)
+        _log.debug('%s has successfully been registered as an event', coro.__name__)
         return coro
 
     async def change_presence(
@@ -1473,11 +1475,14 @@ class Client:
             raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 
         if ch_type in (ChannelType.group, ChannelType.private):
-            channel = factory(me=self.user, data=data, state=self._connection)
+            # the factory will be a DMChannel or GroupChannel here
+            channel = factory(me=self.user, data=data, state=self._connection) # type: ignore
         else:
-            guild_id = int(data['guild_id'])
+            # the factory can't be a DMChannel or GroupChannel here
+            guild_id = int(data['guild_id']) # type: ignore
             guild = self.get_guild(guild_id) or Object(id=guild_id)
-            channel = factory(guild=guild, state=self._connection, data=data)
+            # GuildChannels expect a Guild, we may be passing an Object
+            channel = factory(guild=guild, state=self._connection, data=data) # type: ignore
 
         return channel
 

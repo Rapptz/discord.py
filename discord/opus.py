@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import List, Tuple, TypedDict, Any
+
 import array
 import ctypes
 import ctypes.util
@@ -33,13 +35,25 @@ import sys
 
 from .errors import DiscordException
 
+class BandCtl(TypedDict):
+    narrow: int
+    medium: int
+    wide: int
+    superwide: int
+    full: int
+
+class SignalCtl(TypedDict):
+    auto: int
+    voice: int
+    music: int
+
 __all__ = (
     'Encoder',
     'OpusError',
     'OpusNotLoaded',
 )
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 c_int_ptr   = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
@@ -76,7 +90,7 @@ CTL_SET_SIGNAL       = 4024
 CTL_SET_GAIN             = 4034
 CTL_LAST_PACKET_DURATION = 4039
 
-band_ctl = {
+band_ctl: BandCtl = {
     'narrow': 1101,
     'medium': 1102,
     'wide': 1103,
@@ -84,7 +98,7 @@ band_ctl = {
     'full': 1105,
 }
 
-signal_ctl = {
+signal_ctl: SignalCtl = {
     'auto': -1000,
     'voice': 3001,
     'music': 3002,
@@ -92,14 +106,14 @@ signal_ctl = {
 
 def _err_lt(result, func, args):
     if result < OK:
-        log.info('error has happened in %s', func.__name__)
+        _log.info('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
 def _err_ne(result, func, args):
     ret = args[-1]._obj
     if ret.value != OK:
-        log.info('error has happened in %s', func.__name__)
+        _log.info('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
@@ -108,7 +122,7 @@ def _err_ne(result, func, args):
 # The second one are the types of arguments it takes.
 # The third is the result type.
 # The fourth is the error handler.
-exported_functions = [
+exported_functions: List[Tuple[Any, ...]] = [
     # Generic
     ('opus_get_version_string',
         None, ctypes.c_char_p, None),
@@ -178,7 +192,7 @@ def libopus_loader(name):
             if item[3]:
                 func.errcheck = item[3]
         except KeyError:
-            log.exception("Error assigning check function to %s", func)
+            _log.exception("Error assigning check function to %s", func)
 
     return lib
 
@@ -262,7 +276,7 @@ class OpusError(DiscordException):
     def __init__(self, code):
         self.code = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
-        log.info('"%s" has happened', msg)
+        _log.info('"%s" has happened', msg)
         super().__init__(msg)
 
 class OpusNotLoaded(DiscordException):

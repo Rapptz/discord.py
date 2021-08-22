@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import contextvars
 import logging
 import asyncio
 import json
@@ -32,6 +31,7 @@ import re
 
 from urllib.parse import quote as urlquote
 from typing import Any, Dict, List, Literal, NamedTuple, Optional, TYPE_CHECKING, Tuple, Union, overload
+from contextvars import ContextVar
 
 import aiohttp
 
@@ -52,7 +52,7 @@ __all__ = (
     'PartialWebhookGuild',
 )
 
-log = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ..file import File
@@ -116,7 +116,7 @@ class AsyncWebhookAdapter:
 
         if payload is not None:
             headers['Content-Type'] = 'application/json'
-            to_send = utils.to_json(payload)
+            to_send = utils._to_json(payload)
 
         if auth_token is not None:
             headers['Authorization'] = f'Bot {auth_token}'
@@ -143,7 +143,7 @@ class AsyncWebhookAdapter:
 
                 try:
                     async with session.request(method, url, data=to_send, headers=headers, params=params) as response:
-                        log.debug(
+                        _log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
                             method,
@@ -157,7 +157,7 @@ class AsyncWebhookAdapter:
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status != 429:
                             delta = utils._parse_ratelimit_header(response)
-                            log.debug(
+                            _log.debug(
                                 'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', webhook_id, delta
                             )
                             lock.delay_by(delta)
@@ -170,7 +170,7 @@ class AsyncWebhookAdapter:
                                 raise HTTPException(response, data)
 
                             retry_after: float = data['retry_after']  # type: ignore
-                            log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
+                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
                             await asyncio.sleep(retry_after)
                             continue
 
@@ -481,7 +481,7 @@ def handle_message_parameters(
         files = [file]
 
     if files:
-        multipart.append({'name': 'payload_json', 'value': utils.to_json(payload)})
+        multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         payload = None
         if len(files) == 1:
             file = files[0]
@@ -507,7 +507,7 @@ def handle_message_parameters(
     return ExecuteWebhookParameters(payload=payload, multipart=multipart, files=files)
 
 
-async_context = contextvars.ContextVar('async_webhook_context', default=AsyncWebhookAdapter())
+async_context: ContextVar[AsyncWebhookAdapter] = ContextVar('async_webhook_context', default=AsyncWebhookAdapter())
 
 
 class PartialWebhookChannel(Hashable):

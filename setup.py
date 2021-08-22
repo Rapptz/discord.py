@@ -83,5 +83,6 @@ setup(name='discord.py',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
+        'Typing :: Typed',
       ]
 )
