@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
+from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload, TypeVar, Type
 
 from . import utils
 from .reaction import Reaction
@@ -76,6 +76,7 @@ if TYPE_CHECKING:
     from .role import Role
     from .ui.view import View
 
+    MR = TypeVar('MR', bound='MessageReference')
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
 __all__ = (
@@ -341,7 +342,8 @@ class DeletedReferencedMessage:
     @property
     def id(self) -> int:
         """:class:`int`: The message ID of the deleted referenced message."""
-        return self._parent.message_id
+        # the parent's message id won't be None here
+        return self._parent.message_id # type: ignore
 
     @property
     def channel_id(self) -> int:
@@ -393,13 +395,13 @@ class MessageReference:
     def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
         self._state: Optional[ConnectionState] = None
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
-        self.message_id: int = message_id
+        self.message_id: Optional[int] = message_id
         self.channel_id: int = channel_id
         self.guild_id: Optional[int] = guild_id
         self.fail_if_not_exists: bool = fail_if_not_exists
 
     @classmethod
-    def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> MessageReference:
+    def with_state(cls: Type[MR], state: ConnectionState, data: MessageReferencePayload) -> MR:
         self = cls.__new__(cls)
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data.pop('channel_id'))
@@ -410,7 +412,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
+    def from_message(cls: Type[MR], message: Message, *, fail_if_not_exists: bool = True) -> MR:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -646,7 +648,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
+        channel: MessageableChannel,
         data: MessagePayload,
     ):
         self._state: ConnectionState = state
@@ -694,7 +696,7 @@ class Message(Hashable):
                     else:
                         chan, _ = state._get_guild_channel(resolved)
 
-                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
+                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state) # type: ignore
 
         for handler in ('author', 'member', 'mentions', 'mention_roles'):
             try:
@@ -1512,6 +1514,8 @@ class Message(Hashable):
             Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
+        TypeError
+            This message's channel is not a TextChannel.
 
         Returns
         --------
@@ -1520,6 +1524,9 @@ class Message(Hashable):
         """
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
+
+        if not isinstance(self.channel, TextChannel):
+            raise TypeError('This message\'s channel must be a TextChannel.')
 
         data = await self._state.http.start_thread_with_message(
             self.channel.id,
@@ -1778,7 +1785,8 @@ class PartialMessage(Hashable):
             pass
         else:
             flags = MessageFlags._from_value(0)
-            flags.suppress_embeds = suppress
+            # pyright bug
+            flags.suppress_embeds = suppress # type: ignore
             fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
