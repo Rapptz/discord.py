@@ -238,6 +238,18 @@ class BaseUser(_UserTag):
         """
         return self.name
 
+    @property
+    def display_avatar(self) -> Asset:
+        """:class:`Asset`: Returns the user's display avatar.
+
+        For regular users this is just their avatar, but
+        if they have a guild specific avatar then that
+        is returned instead.
+
+        .. versionadded:: 2.0
+        """
+        return self.avatar
+
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.
 
