@@ -122,11 +122,6 @@ class Snowflake(Protocol):
     __slots__ = ()
     id: int
 
-    @property
-    def created_at(self) -> datetime:
-        """:class:`datetime.datetime`: Returns the model's creation time as an aware datetime in UTC."""
-        raise NotImplementedError
-
 
 @runtime_checkable
 class User(Snowflake, Protocol):
