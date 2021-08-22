@@ -99,7 +99,7 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
     text = await response.text(encoding='utf-8')
     try:
         if response.headers['content-type'] == 'application/json':
-            return utils.from_json(text)
+            return utils._from_json(text)
     except KeyError:
         # Thanks Cloudflare
         pass
@@ -231,7 +231,7 @@ class HTTPClient:
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
-            kwargs['data'] = utils.to_json(kwargs.pop('json'))
+            kwargs['data'] = utils._to_json(kwargs.pop('json'))
 
         try:
             reason = kwargs.pop('reason')
@@ -493,7 +493,7 @@ class HTTPClient:
         if stickers:
             payload['sticker_ids'] = stickers
 
-        form.append({'name': 'payload_json', 'value': utils.to_json(payload)})
+        form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         if len(files) == 1:
             file = files[0]
             form.append(
@@ -1657,7 +1657,7 @@ class HTTPClient:
         form: List[Dict[str, Any]] = [
             {
                 'name': 'payload_json',
-                'value': utils.to_json(payload),
+                'value': utils._to_json(payload),
             }
         ]
 

@@ -479,17 +479,17 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 if HAS_ORJSON:
 
-    def to_json(obj: Any) -> str:  # type: ignore
+    def _to_json(obj: Any) -> str:  # type: ignore
         return orjson.dumps(obj).decode('utf-8')
 
-    from_json = orjson.loads  # type: ignore
+    _from_json = orjson.loads  # type: ignore
 
 else:
 
-    def to_json(obj: Any) -> str:
+    def _to_json(obj: Any) -> str:
         return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
-    from_json = json.loads
+    _from_json = json.loads
 
 
 def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:

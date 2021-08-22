@@ -117,7 +117,7 @@ class WebhookAdapter:
 
         if payload is not None:
             headers['Content-Type'] = 'application/json'
-            to_send = utils.to_json(payload)
+            to_send = utils._to_json(payload)
 
         if auth_token is not None:
             headers['Authorization'] = f'Bot {auth_token}'

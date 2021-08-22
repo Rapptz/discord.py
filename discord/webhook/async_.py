@@ -116,7 +116,7 @@ class AsyncWebhookAdapter:
 
         if payload is not None:
             headers['Content-Type'] = 'application/json'
-            to_send = utils.to_json(payload)
+            to_send = utils._to_json(payload)
 
         if auth_token is not None:
             headers['Authorization'] = f'Bot {auth_token}'
@@ -481,7 +481,7 @@ def handle_message_parameters(
         files = [file]
 
     if files:
-        multipart.append({'name': 'payload_json', 'value': utils.to_json(payload)})
+        multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         payload = None
         if len(files) == 1:
             file = files[0]
