@@ -755,7 +755,7 @@ class Client:
         """
         return PartialMessageable(state=self._connection, id=id, type=type)
 
-    def get_stage_instance(self, id) -> Optional[StageInstance]:
+    def get_stage_instance(self, id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.
 
         .. versionadded:: 2.0
@@ -777,7 +777,7 @@ class Client:
         if isinstance(channel, StageChannel):
             return channel.instance
 
-    def get_guild(self, id) -> Optional[Guild]:
+    def get_guild(self, id: int, /) -> Optional[Guild]:
         """Returns a guild with the given ID.
 
         Parameters
@@ -792,7 +792,7 @@ class Client:
         """
         return self._connection._get_guild(id)
 
-    def get_user(self, id) -> Optional[User]:
+    def get_user(self, id: int, /) -> Optional[User]:
         """Returns a user with the given ID.
 
         Parameters
@@ -807,7 +807,7 @@ class Client:
         """
         return self._connection.get_user(id)
 
-    def get_emoji(self, id) -> Optional[Emoji]:
+    def get_emoji(self, id: int, /) -> Optional[Emoji]:
         """Returns an emoji with the given ID.
 
         Parameters

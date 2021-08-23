@@ -471,7 +471,7 @@ class Permissions(BaseFlags):
         return 1 << 30
 
     @make_permission_alias('manage_emojis')
-    def manage_emojis_and_stickers(self):
+    def manage_emojis_and_stickers(self) -> int:
         """:class:`bool`: An alias for :attr:`manage_emojis`.
 
         .. versionadded:: 2.0
@@ -645,12 +645,15 @@ class PermissionOverwrite:
         manage_permissions: Optional[bool]
         manage_webhooks: Optional[bool]
         manage_emojis: Optional[bool]
+        manage_emojis_and_stickers: Optional[bool]
         use_slash_commands: Optional[bool]
         request_to_speak: Optional[bool]
         manage_events: Optional[bool]
         manage_threads: Optional[bool]
         use_threads: Optional[bool]
         use_private_threads: Optional[bool]
+        external_stickers: Optional[bool]
+        use_external_stickers: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}

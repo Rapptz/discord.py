@@ -830,10 +830,12 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
         except KeyError:
             return Activity(**data)
         else:
-            return CustomActivity(name=name, **data)
+            # we removed the name key from data already
+            return CustomActivity(name=name, **data) # type: ignore
     elif game_type is ActivityType.streaming:
         if 'url' in data:
-            return Streaming(**data)
+            # the url won't be None here
+            return Streaming(**data) # type: ignore
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
