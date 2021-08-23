@@ -12,8 +12,8 @@ from sphinx.util.docutils import SphinxDirective
 from sphinx.util.typing import OptionSpec
 
 
-def returns_async_iterable(object: Any) -> bool:
-    return_type = object.__annotations__.get("return")
+def returns_async_iterable(obj: Any) -> bool:
+    return_type = obj.__annotations__.get('return')
     if isinstance(return_type, str):
         module = importlib.import_module(object.__module__)
         try:
