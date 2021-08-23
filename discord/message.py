@@ -988,6 +988,21 @@ class Message(Hashable):
             MessageType.application_command,
             MessageType.thread_starter_message,
         )
+    
+    @property
+    def thread(self) -> Optional[Thread]:
+        """Retrieves the thread the message has created ``None`` if no thread was created
+        with this message or if the channel is not a :class:`TextChannel`.
+        
+        Returns
+        --------
+        Optional[:class:`Thread`]
+            The thread this message has created.
+        """
+        try:
+            return self.channel.get_thread(self.id)
+        except AttributeError:
+            return None
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self):
