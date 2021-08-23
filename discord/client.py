@@ -792,7 +792,7 @@ class Client:
         """
         return self._connection._get_guild(id)
 
-    def get_user(self, id: int) -> Optional[User]:
+    def get_user(self, id: int, /) -> Optional[User]:
         """Returns a user with the given ID.
 
         Parameters
