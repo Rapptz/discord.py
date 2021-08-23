@@ -755,7 +755,7 @@ class Client:
         """
         return PartialMessageable(state=self._connection, id=id, type=type)
 
-    def get_stage_instance(self, id: int) -> Optional[StageInstance]:
+    def get_stage_instance(self, id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.
 
         .. versionadded:: 2.0
