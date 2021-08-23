@@ -777,7 +777,7 @@ class Client:
         if isinstance(channel, StageChannel):
             return channel.instance
 
-    def get_guild(self, id: int) -> Optional[Guild]:
+    def get_guild(self, id: int, /) -> Optional[Guild]:
         """Returns a guild with the given ID.
 
         Parameters
