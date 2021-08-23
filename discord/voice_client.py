@@ -44,7 +44,7 @@ import socket
 import logging
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Callable, Generic, List, Optional, TYPE_CHECKING, Tuple, TypeVar
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -83,10 +83,12 @@ __all__ = (
 
 
 
+ClientT = TypeVar('ClientT', bound='Client')
+
 
 _log = logging.getLogger(__name__)
 
-class VoiceProtocol:
+class VoiceProtocol(Generic[ClientT]):
     """A class that represents the Discord voice protocol.
 
     This is an abstract class. The library provides a concrete implementation
@@ -107,8 +109,8 @@ class VoiceProtocol:
         The voice channel that is being connected to.
     """
 
-    def __init__(self, client: Client, channel: abc.Connectable) -> None:
-        self.client: Client = client
+    def __init__(self, client: ClientT, channel: abc.Connectable) -> None:
+        self.client: ClientT = client
         self.channel: abc.Connectable = channel
 
     async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
@@ -195,7 +197,7 @@ class VoiceProtocol:
         key_id, _ = self.channel._get_voice_client_key()
         self.client._connection._remove_voice_client(key_id)
 
-class VoiceClient(VoiceProtocol):
+class VoiceClient(VoiceProtocol[ClientT]):
     """Represents a Discord voice connection.
 
     You do not create these, you typically get them from
@@ -227,7 +229,7 @@ class VoiceClient(VoiceProtocol):
     ssrc: int
 
 
-    def __init__(self, client: Client, channel: abc.Connectable):
+    def __init__(self, client: ClientT, channel: abc.Connectable):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -271,7 +273,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user
+        return self._state.user  # type: ignore
 
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)
