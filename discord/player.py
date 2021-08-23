@@ -174,6 +174,7 @@ class FFmpegAudio(AudioSource):
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
         while self._process:
+            # arbitrarily large read size 
             data = source.read(8192)
             if not data:
                 self._stdin.close() # EOF
