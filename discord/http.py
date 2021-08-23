@@ -412,7 +412,7 @@ class HTTPClient:
     def send_message(
         self,
         channel_id: Snowflake,
-        content: str,
+        content: Optional[str],
         *,
         tts: bool = False,
         embed: Optional[embed.Embed] = None,
