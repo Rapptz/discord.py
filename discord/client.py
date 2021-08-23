@@ -807,7 +807,7 @@ class Client:
         """
         return self._connection.get_user(id)
 
-    def get_emoji(self, id: int) -> Optional[Emoji]:
+    def get_emoji(self, id: int, /) -> Optional[Emoji]:
         """Returns an emoji with the given ID.
 
         Parameters
