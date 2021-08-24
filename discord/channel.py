@@ -1710,6 +1710,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self._state = state
         self.id = channel_id
         self.recipient = None
+        # state.user won't be None here
         self.me = state.user  # type: ignore
         return self
 
