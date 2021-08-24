@@ -1785,8 +1785,7 @@ class PartialMessage(Hashable):
             pass
         else:
             flags = MessageFlags._from_value(0)
-            # pyright bug
-            flags.suppress_embeds = suppress # type: ignore
+            flags.suppress_embeds = suppress
             fields['flags'] = flags.value
 
         delete_after = fields.pop('delete_after', None)
