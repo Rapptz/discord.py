@@ -1531,8 +1531,7 @@ class Message(Hashable):
             self.channel.id,
             self.id,
             name=name,
-            # if the channel isn't a TextChannel, this will raise AttributeError 
-            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,  # type: ignore
+            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
