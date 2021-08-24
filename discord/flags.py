@@ -650,6 +650,10 @@ class Intents(BaseFlags):
         - :attr:`VoiceChannel.members`
         - :attr:`VoiceChannel.voice_states`
         - :attr:`Member.voice`
+
+        .. note::
+
+            This intent is required to connect to voice.
         """
         return 1 << 7
 
