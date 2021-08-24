@@ -1689,8 +1689,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        # we're passing the PartialUser TypedDict, it expects the User TypedDict
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0]) # type: ignore
+        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
