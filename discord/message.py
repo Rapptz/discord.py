@@ -1527,11 +1527,12 @@ class Message(Hashable):
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
 
+        default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration', 1440)
         data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
             name=name,
-            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
+            auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
