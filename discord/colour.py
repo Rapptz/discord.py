@@ -172,9 +172,14 @@ class Colour:
         return cls(0x11806a)
 
     @classmethod
-    def green(cls: Type[CT]) -> CT:
+    def brand_green(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x57F287``."""
         return cls(0x57F287)
+
+    @classmethod
+    def green(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2ecc71``."""
+        return cls(0x2ecc71)
 
     @classmethod
     def dark_green(cls: Type[CT]) -> CT:
@@ -232,9 +237,14 @@ class Colour:
         return cls(0xa84300)
 
     @classmethod
-    def red(cls: Type[CT]) -> CT:
+    def brand_red(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0xED4245``."""
         return cls(0xED4245)
+
+    @classmethod
+    def red(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xe74c3c``."""
+        return cls(0xe74c3c)
 
     @classmethod
     def dark_red(cls: Type[CT]) -> CT:
