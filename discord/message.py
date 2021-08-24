@@ -459,13 +459,13 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result  # type: ignore
+        return result
 
     to_message_reference_dict = to_dict
 
@@ -672,6 +672,7 @@ class Message(Hashable):
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
+            # if the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild  # type: ignore
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -696,7 +697,8 @@ class Message(Hashable):
                     else:
                         chan, _ = state._get_guild_channel(resolved)
 
-                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state) # type: ignore
+                    # the channel will be the correct type here
+                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
         for handler in ('author', 'member', 'mentions', 'mention_roles'):
             try:
@@ -1073,6 +1075,7 @@ class Message(Hashable):
             return f'{self.author.name} has added {self.content} to this channel'
 
         if self.type is MessageType.guild_stream:
+            # the author will be a Member
             return f'{self.author.name} is live! Now streaming {self.author.activity.name}'  # type: ignore
 
         if self.type is MessageType.guild_discovery_disqualified:
@@ -1097,6 +1100,7 @@ class Message(Hashable):
             if self.reference is None or self.reference.resolved is None:
                 return 'Sorry, we couldn\'t load the first message in this thread'
 
+            # the resolved message for the reference will be a Message
             return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
@@ -1818,9 +1822,10 @@ class PartialMessage(Hashable):
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
 
         if delete_after is not None:
-            await self.delete(delay=delete_after)  # type: ignore
+            await self.delete(delay=delete_after)
 
         if fields:
+            # data isn't unbound
             msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
             if view and not view.is_finished():
                 self._state.store_view(view, self.id)
