@@ -1518,8 +1518,6 @@ class Message(Hashable):
             Creating the thread failed.
         InvalidArgument
             This message does not have guild info attached.
-        TypeError
-            This message's channel is not a TextChannel.
 
         Returns
         --------
