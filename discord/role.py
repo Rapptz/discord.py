@@ -42,6 +42,7 @@ if TYPE_CHECKING:
         Role as RolePayload,
         RoleTags as RoleTagPayload,
     )
+    from .types.guild import RolePositionUpdate
     from .guild import Guild
     from .member import Member
     from .state import ConnectionState
@@ -336,7 +337,7 @@ class Role(Hashable):
         else:
             roles.append(self.id)
 
-        payload = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
+        payload: List[RolePositionUpdate] = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
         await http.move_role_position(self.guild.id, payload, reason=reason)
 
     async def edit(
