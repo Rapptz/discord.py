@@ -59,8 +59,12 @@ if TYPE_CHECKING:
     from ..embeds import Embed
     from ..mentions import AllowedMentions
     from ..state import ConnectionState
+    from ..http import Response
     from ..types.webhook import (
         Webhook as WebhookPayload,
+    )
+    from ..types.message import (
+        Message as MessagePayload,
     )
     from ..guild import Guild
     from ..channel import TextChannel
@@ -206,7 +210,7 @@ class AsyncWebhookAdapter:
         token: Optional[str] = None,
         session: aiohttp.ClientSession,
         reason: Optional[str] = None,
-    ):
+    ) -> Response[None]:
         route = Route('DELETE', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, auth_token=token)
 
@@ -217,7 +221,7 @@ class AsyncWebhookAdapter:
         *,
         session: aiohttp.ClientSession,
         reason: Optional[str] = None,
-    ):
+    ) -> Response[None]:
         route = Route('DELETE', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason)
 
@@ -229,7 +233,7 @@ class AsyncWebhookAdapter:
         *,
         session: aiohttp.ClientSession,
         reason: Optional[str] = None,
-    ):
+    ) -> Response[WebhookPayload]:
         route = Route('PATCH', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, payload=payload, auth_token=token)
 
@@ -241,7 +245,7 @@ class AsyncWebhookAdapter:
         *,
         session: aiohttp.ClientSession,
         reason: Optional[str] = None,
-    ):
+    ) -> Response[WebhookPayload]:
         route = Route('PATCH', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason, payload=payload)
 
@@ -256,7 +260,7 @@ class AsyncWebhookAdapter:
         files: Optional[List[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
-    ):
+    ) -> Response[Optional[MessagePayload]]:
         params = {'wait': int(wait)}
         if thread_id:
             params['thread_id'] = thread_id
@@ -270,7 +274,7 @@ class AsyncWebhookAdapter:
         message_id: int,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[MessagePayload]:
         route = Route(
             'GET',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -290,7 +294,7 @@ class AsyncWebhookAdapter:
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[List[File]] = None,
-    ):
+    ) -> Response[Message]:
         route = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -307,7 +311,7 @@ class AsyncWebhookAdapter:
         message_id: int,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[None]:
         route = Route(
             'DELETE',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -323,7 +327,7 @@ class AsyncWebhookAdapter:
         token: str,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[WebhookPayload]:
         route = Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session=session, auth_token=token)
 
@@ -333,7 +337,7 @@ class AsyncWebhookAdapter:
         token: str,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[WebhookPayload]:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
@@ -345,7 +349,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         type: int,
         data: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> Response[None]:
         payload: Dict[str, Any] = {
             'type': type,
         }
@@ -368,7 +372,7 @@ class AsyncWebhookAdapter:
         token: str,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[MessagePayload]:
         r = Route(
             'GET',
             '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
@@ -386,7 +390,7 @@ class AsyncWebhookAdapter:
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[List[File]] = None,
-    ):
+    ) -> Response[MessagePayload]:
         r = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
@@ -401,7 +405,7 @@ class AsyncWebhookAdapter:
         token: str,
         *,
         session: aiohttp.ClientSession,
-    ):
+    ) -> Response[None]:
         r = Route(
             'DELETE',
             '/webhooks/{webhook_id}/{wehook_token}/messages/@original',
