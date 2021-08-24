@@ -1781,7 +1781,7 @@ class PartialMessage(Hashable):
                 fields['embed'] = embed.to_dict()
 
         try:
-            suppress = fields.pop('suppress')
+            suppress: bool = fields.pop('suppress')
         except KeyError:
             pass
         else:
