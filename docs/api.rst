@@ -1591,6 +1591,8 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
+        .. versionadded:: 2.0
+
         .. describe:: x == y
 
             Checks if two verification levels are equal.
@@ -1670,6 +1672,8 @@ of :class:`enum.Enum`.
     pornography or otherwise explicit content.
 
     .. container:: operations
+
+        .. versionadded:: 2.0
 
         .. describe:: x == y
 
