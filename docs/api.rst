@@ -1591,6 +1591,8 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
+        .. versionadded:: 2.0
+
         .. describe:: x == y
 
             Checks if two verification levels are equal.
@@ -1633,6 +1635,29 @@ of :class:`enum.Enum`.
 
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.
 
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two notification levels are equal.
+        .. describe:: x != y
+
+            Checks if two notification levels are not equal.
+        .. describe:: x > y
+
+            Checks if a notification level is higher than another.
+        .. describe:: x < y
+
+            Checks if a notification level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a notification level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a notification level is lower or equal to another.
+
     .. attribute:: all_messages
 
         Members receive notifications for every message regardless of them being mentioned.
@@ -1647,6 +1672,8 @@ of :class:`enum.Enum`.
     pornography or otherwise explicit content.
 
     .. container:: operations
+
+        .. versionadded:: 2.0
 
         .. describe:: x == y
 
@@ -2531,6 +2558,27 @@ of :class:`enum.Enum`.
     Represents the NSFW level of a guild.
 
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two NSFW levels are equal.
+        .. describe:: x != y
+
+            Checks if two NSFW levels are not equal.
+        .. describe:: x > y
+
+            Checks if a NSFW level is higher than another.
+        .. describe:: x < y
+
+            Checks if a NSFW level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a NSFW level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a NSFW level is lower or equal to another.
 
     .. attribute:: default
 
