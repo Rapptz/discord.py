@@ -173,7 +173,10 @@ class Colour:
 
     @classmethod
     def brand_green(cls: Type[CT]) -> CT:
-        """A factory method that returns a :class:`Colour` with a value of ``0x57F287``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x57F287``.
+
+        .. versionadded:: 2.0
+        """
         return cls(0x57F287)
 
     @classmethod
