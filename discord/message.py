@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload
+from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload, TypeVar, Type
 
 from . import utils
 from .reaction import Reaction
@@ -76,6 +76,7 @@ if TYPE_CHECKING:
     from .role import Role
     from .ui.view import View
 
+    MR = TypeVar('MR', bound='MessageReference')
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
 __all__ = (
@@ -341,7 +342,8 @@ class DeletedReferencedMessage:
     @property
     def id(self) -> int:
         """:class:`int`: The message ID of the deleted referenced message."""
-        return self._parent.message_id
+        # the parent's message id won't be None here
+        return self._parent.message_id # type: ignore
 
     @property
     def channel_id(self) -> int:
@@ -393,13 +395,13 @@ class MessageReference:
     def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
         self._state: Optional[ConnectionState] = None
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
-        self.message_id: int = message_id
+        self.message_id: Optional[int] = message_id
         self.channel_id: int = channel_id
         self.guild_id: Optional[int] = guild_id
         self.fail_if_not_exists: bool = fail_if_not_exists
 
     @classmethod
-    def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> MessageReference:
+    def with_state(cls: Type[MR], state: ConnectionState, data: MessageReferencePayload) -> MR:
         self = cls.__new__(cls)
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data.pop('channel_id'))
@@ -410,7 +412,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> MessageReference:
+    def from_message(cls: Type[MR], message: Message, *, fail_if_not_exists: bool = True) -> MR:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -457,13 +459,13 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result  # type: ignore
+        return result
 
     to_message_reference_dict = to_dict
 
@@ -637,7 +639,7 @@ class Message(Hashable):
         _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
         _CACHED_SLOTS: ClassVar[List[str]]
         guild: Optional[Guild]
-        ref: Optional[MessageReference]
+        reference: Optional[MessageReference]
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
         role_mentions: List[Role]
@@ -646,7 +648,7 @@ class Message(Hashable):
         self,
         *,
         state: ConnectionState,
-        channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable],
+        channel: MessageableChannel,
         data: MessagePayload,
     ):
         self._state: ConnectionState = state
@@ -670,6 +672,7 @@ class Message(Hashable):
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
+            # if the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild  # type: ignore
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -694,7 +697,8 @@ class Message(Hashable):
                     else:
                         chan, _ = state._get_guild_channel(resolved)
 
-                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)
+                    # the channel will be the correct type here
+                    ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
         for handler in ('author', 'member', 'mentions', 'mention_roles'):
             try:
@@ -1071,6 +1075,7 @@ class Message(Hashable):
             return f'{self.author.name} has added {self.content} to this channel'
 
         if self.type is MessageType.guild_stream:
+            # the author will be a Member
             return f'{self.author.name} is live! Now streaming {self.author.activity.name}'  # type: ignore
 
         if self.type is MessageType.guild_discovery_disqualified:
@@ -1095,6 +1100,7 @@ class Message(Hashable):
             if self.reference is None or self.reference.resolved is None:
                 return 'Sorry, we couldn\'t load the first message in this thread'
 
+            # the resolved message for the reference will be a Message
             return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
@@ -1527,7 +1533,7 @@ class Message(Hashable):
             name=name,
             auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
         )
-        return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
+        return Thread(guild=self.guild, state=self._state, data=data)
 
     async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
@@ -1811,9 +1817,10 @@ class PartialMessage(Hashable):
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
 
         if delete_after is not None:
-            await self.delete(delay=delete_after)  # type: ignore
+            await self.delete(delay=delete_after)
 
         if fields:
+            # data isn't unbound
             msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
             if view and not view.is_finished():
                 self._state.store_view(view, self.id)
