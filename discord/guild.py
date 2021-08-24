@@ -1356,7 +1356,7 @@ class Guild(Hashable):
         preferred_locale: str = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
-    ) -> None:
+    ) -> Guild:
         r"""|coro|
 
         Edits the guild.
@@ -1369,6 +1369,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             The `discovery_splash` and `community` keyword-only parameters were added.
+
+        .. versionchanged:: 2.0
+            The newly updated guild is returned.
 
         Parameters
         ----------
@@ -1443,6 +1446,12 @@ class Guild(Hashable):
             The image format passed in to ``icon`` is invalid. It must be
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
+
+        Returns
+        --------
+        :class:`Guild`
+            The newly updated guild. Note that this has the same limitations as
+            mentioned in :meth:`Client.fetch_guild` and may not have full data.
         """
 
         http = self._state.http
@@ -1555,7 +1564,8 @@ class Guild(Hashable):
 
             fields['features'] = features
 
-        await http.edit_guild(self.id, reason=reason, **fields)
+        data = await http.edit_guild(self.id, reason=reason, **fields)
+        return Guild(data=data, state=self._state)
 
     async def fetch_channels(self) -> Sequence[GuildChannel]:
         """|coro|

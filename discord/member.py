@@ -644,7 +644,7 @@ class Member(discord.abc.Messageable, _UserTag):
         roles: List[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         reason: Optional[str] = None,
-    ) -> None:
+    ) -> Optional[Member]:
         """|coro|
 
         Edits the member's data.
@@ -669,6 +669,9 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionchanged:: 1.1
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
+
+        .. versionchanged:: 2.0
+            The newly member is now optionally returned, if applicable.
 
         Parameters
         -----------
@@ -697,6 +700,12 @@ class Member(discord.abc.Messageable, _UserTag):
             You do not have the proper permissions to the action requested.
         HTTPException
             The operation failed.
+
+        Returns
+        --------
+        Optional[:class:`.Member`]
+            The newly updated member, if applicable. This is only returned
+            when certain fields are updated.
         """
         http = self._state.http
         guild_id = self.guild.id
@@ -739,7 +748,8 @@ class Member(discord.abc.Messageable, _UserTag):
             payload['roles'] = tuple(r.id for r in roles)
 
         if payload:
-            await http.edit_member(guild_id, self.id, reason=reason, **payload)
+            data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
+            return Member(data=data, guild=self.guild, state=self._state)
 
     async def request_to_speak(self) -> None:
         """|coro|

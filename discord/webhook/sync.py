@@ -383,7 +383,7 @@ class SyncWebhookMessage(Message):
         file: File = MISSING,
         files: List[File] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> SyncWebhookMessage:
         """Edits the message.
 
         Parameters
@@ -416,8 +416,13 @@ class SyncWebhookMessage(Message):
             The length of ``embeds`` was invalid
         InvalidArgument
             There was no token associated with this webhook.
+
+        Returns
+        --------
+        :class:`SyncWebhookMessage`
+            The newly edited message.
         """
-        self._state._webhook.edit_message(
+        return self._state._webhook.edit_message(
             self.id,
             content=content,
             embeds=embeds,
@@ -687,7 +692,7 @@ class SyncWebhook(BaseWebhook):
         avatar: Optional[bytes] = MISSING,
         channel: Optional[Snowflake] = None,
         prefer_auth: bool = True,
-    ):
+    ) -> SyncWebhook:
         """Edits this Webhook.
 
         Parameters
@@ -715,6 +720,11 @@ class SyncWebhook(BaseWebhook):
         InvalidArgument
             This webhook does not have a token associated with it
             or it tried editing a channel without authentication.
+
+        Returns
+        --------
+        :class:`SyncWebhook`
+            The newly edited webhook.
         """
         if self.token is None and self.auth_token is None:
             raise InvalidArgument('This webhook does not have a token associated with it')
@@ -728,6 +738,7 @@ class SyncWebhook(BaseWebhook):
 
         adapter: WebhookAdapter = _get_webhook_adapter()
 
+        data: Optional[WebhookPayload] = None
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
             if self.auth_token is None:
@@ -735,15 +746,16 @@ class SyncWebhook(BaseWebhook):
 
             payload['channel_id'] = channel.id
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
-            return
 
         if prefer_auth and self.auth_token:
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
         elif self.token:
             data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
+
+        if data is None:
+            raise RuntimeError('Unreachable code hit: data was not assigned')
+
+        return SyncWebhook(data=data, session=self.session, token=self.auth_token, state=self._state)
 
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
@@ -955,7 +967,7 @@ class SyncWebhook(BaseWebhook):
         file: File = MISSING,
         files: List[File] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> SyncWebhookMessage:
         """Edits a message owned by this webhook.
 
         This is a lower level interface to :meth:`WebhookMessage.edit` in case
@@ -1011,7 +1023,7 @@ class SyncWebhook(BaseWebhook):
             previous_allowed_mentions=previous_mentions,
         )
         adapter: WebhookAdapter = _get_webhook_adapter()
-        adapter.edit_webhook_message(
+        data = adapter.edit_webhook_message(
             self.id,
             self.token,
             message_id,
@@ -1020,6 +1032,7 @@ class SyncWebhook(BaseWebhook):
             multipart=params.multipart,
             files=params.files,
         )
+        return self._create_message(data)
 
     def delete_message(self, message_id: int):
         """Deletes a message owned by this webhook.

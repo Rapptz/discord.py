@@ -349,7 +349,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar: bytes = MISSING) -> None:
+    async def edit(self, *, username: str = MISSING, avatar: bytes = MISSING) -> ClientUser:
         """|coro|
 
         Edits the current profile of the client.
@@ -362,6 +362,9 @@ class ClientUser(BaseUser):
             the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
             The only image formats supported for uploading is JPEG and PNG.
+
+        .. versionchanged:: 2.0
+            The edit is no longer in-place, instead the newly edited client user is returned.
 
         Parameters
         -----------
@@ -377,6 +380,11 @@ class ClientUser(BaseUser):
             Editing your profile failed.
         InvalidArgument
             Wrong image format passed for ``avatar``.
+
+        Returns
+        ---------
+        :class:`ClientUser`
+            The newly edited client user.
         """
         payload: Dict[str, Any] = {}
         if username is not MISSING:
@@ -386,7 +394,7 @@ class ClientUser(BaseUser):
             payload['avatar'] = _bytes_to_base64_data(avatar)
 
         data: UserPayload = await self._state.http.edit_profile(payload)
-        self._update(data)
+        return ClientUser(state=self._state, data=data)
 
 
 class User(BaseUser, discord.abc.Messageable):

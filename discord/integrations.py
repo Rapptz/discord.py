@@ -262,16 +262,9 @@ class StreamIntegration(Integration):
         if enable_emoticons is not MISSING:
             payload['enable_emoticons'] = enable_emoticons
 
+        # This endpoint is undocumented.
+        # Unsure if it returns the data or not as a result
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
-
-        if expire_behaviour is not MISSING:
-            self.expire_behaviour = expire_behaviour
-
-        if enable_emoticons is not MISSING:
-            self.enable_emoticons = enable_emoticons
-
-        if expire_grace_period is not MISSING:
-            self.expire_grace_period = expire_grace_period
 
     async def sync(self) -> None:
         """|coro|

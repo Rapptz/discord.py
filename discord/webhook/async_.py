@@ -647,12 +647,15 @@ class WebhookMessage(Message):
         files: List[File] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> WebhookMessage:
         """|coro|
 
         Edits the message.
 
         .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+            The edit is no longer in-place, instead the newly edited message is returned.
 
         Parameters
         ------------
@@ -693,8 +696,13 @@ class WebhookMessage(Message):
             The length of ``embeds`` was invalid
         InvalidArgument
             There was no token associated with this webhook.
+
+        Returns
+        --------
+        :class:`WebhookMessage`
+            The newly edited message.
         """
-        await self._state._webhook.edit_message(
+        return await self._state._webhook.edit_message(
             self.id,
             content=content,
             embeds=embeds,
@@ -1117,7 +1125,7 @@ class Webhook(BaseWebhook):
         avatar: Optional[bytes] = MISSING,
         channel: Optional[Snowflake] = None,
         prefer_auth: bool = True,
-    ):
+    ) -> Webhook:
         """|coro|
 
         Edits this Webhook.
@@ -1164,6 +1172,7 @@ class Webhook(BaseWebhook):
 
         adapter = async_context.get()
 
+        data: Optional[WebhookPayload] = None
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
             if self.auth_token is None:
@@ -1171,17 +1180,18 @@ class Webhook(BaseWebhook):
 
             payload['channel_id'] = channel.id
             data = await adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
-            return
 
         if prefer_auth and self.auth_token:
             data = await adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
         elif self.token:
             data = await adapter.edit_webhook_with_token(
                 self.id, self.token, payload=payload, session=self.session, reason=reason
             )
-            self._update(data)
+
+        if data is None:
+            raise RuntimeError('Unreachable code hit: data was not assigned')
+
+        return Webhook(data=data, session=self.session, token=self.auth_token, state=self._state)
 
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
@@ -1446,7 +1456,7 @@ class Webhook(BaseWebhook):
         files: List[File] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> WebhookMessage:
         """|coro|
 
         Edits a message owned by this webhook.
@@ -1455,6 +1465,9 @@ class Webhook(BaseWebhook):
         you only have an ID.
 
         .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+            The edit is no longer in-place, instead the newly edited message is returned.
 
         Parameters
         ------------
@@ -1499,6 +1512,11 @@ class Webhook(BaseWebhook):
         InvalidArgument
             There was no token associated with this webhook or the webhook had
             no state.
+
+        Returns
+        --------
+        :class:`WebhookMessage`
+            The newly edited webhook message.
         """
 
         if self.token is None:
@@ -1522,7 +1540,7 @@ class Webhook(BaseWebhook):
             previous_allowed_mentions=previous_mentions,
         )
         adapter = async_context.get()
-        await adapter.edit_webhook_message(
+        data = await adapter.edit_webhook_message(
             self.id,
             self.token,
             message_id,
@@ -1532,8 +1550,10 @@ class Webhook(BaseWebhook):
             files=params.files,
         )
 
+        message = self._create_message(data)
         if view and not view.is_finished():
             self._state.store_view(view, message_id)
+        return message
 
     async def delete_message(self, message_id: int):
         """|coro|

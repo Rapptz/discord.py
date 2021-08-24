@@ -523,7 +523,7 @@ class Thread(Messageable, Hashable):
         locked: bool = MISSING,
         slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
-    ):
+    ) -> Thread:
         """|coro|
 
         Edits the thread.
@@ -556,6 +556,11 @@ class Thread(Messageable, Hashable):
             You do not have permissions to edit the thread.
         HTTPException
             Editing the thread failed.
+
+        Returns
+        --------
+        :class:`Thread`
+            The newly edited thread.
         """
         payload = {}
         if name is not MISSING:
@@ -569,7 +574,9 @@ class Thread(Messageable, Hashable):
         if slowmode_delay is not MISSING:
             payload['rate_limit_per_user'] = slowmode_delay
 
-        await self._state.http.edit_channel(self.id, **payload)
+        data = await self._state.http.edit_channel(self.id, **payload)
+        # The data payload will always be a Thread payload
+        return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
 
     async def join(self):
         """|coro|

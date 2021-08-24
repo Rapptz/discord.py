@@ -212,13 +212,16 @@ class Emoji(_EmojiTag, AssetMixin):
 
         await self._state.http.delete_custom_emoji(self.guild.id, self.id, reason=reason)
 
-    async def edit(self, *, name: str = MISSING, roles: List[Snowflake] = MISSING, reason: Optional[str] = None) -> None:
+    async def edit(self, *, name: str = MISSING, roles: List[Snowflake] = MISSING, reason: Optional[str] = None) -> Emoji:
         r"""|coro|
 
         Edits the custom emoji.
 
         You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
+
+        .. versionchanged:: 2.0
+            The newly updated emoji is returned.
 
         Parameters
         -----------
@@ -235,6 +238,11 @@ class Emoji(_EmojiTag, AssetMixin):
             You are not allowed to edit emojis.
         HTTPException
             An error occurred editing the emoji.
+
+        Returns
+        --------
+        :class:`Emoji`
+            The newly updated emoji.
         """
 
         payload = {}
@@ -243,4 +251,5 @@ class Emoji(_EmojiTag, AssetMixin):
         if roles is not MISSING:
             payload['roles'] = [role.id for role in roles]
 
-        await self._state.http.edit_custom_emoji(self.guild.id, self.id, payload=payload, reason=reason)
+        data = await self._state.http.edit_custom_emoji(self.guild.id, self.id, payload=payload, reason=reason)
+        return Emoji(guild=self.guild, data=data, state=self._state)
