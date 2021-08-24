@@ -174,7 +174,7 @@ class Colour:
     @classmethod
     def green(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x2ecc71``."""
-        return cls(0x2ecc71)
+        return cls(0x57F287)
 
     @classmethod
     def dark_green(cls: Type[CT]) -> CT:
@@ -234,7 +234,7 @@ class Colour:
     @classmethod
     def red(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0xe74c3c``."""
-        return cls(0xe74c3c)
+        return cls(0xED4245)
 
     @classmethod
     def dark_red(cls: Type[CT]) -> CT:
