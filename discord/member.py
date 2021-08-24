@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .types.activity import PartialPresenceUpdate
     from .types.member import (
-        GatewayMember as GatewayMemberPayload,
+        MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
     )
@@ -284,7 +284,7 @@ class Member(discord.abc.Messageable, _UserTag):
         accent_color: Optional[Colour]
         accent_colour: Optional[Colour]
 
-    def __init__(self, *, data: GatewayMemberPayload, guild: Guild, state: ConnectionState):
+    def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
         self._user: User = state.store_user(data['user'])
         self.guild: Guild = guild

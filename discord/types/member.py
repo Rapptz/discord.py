@@ -46,7 +46,8 @@ class Member(PartialMember, total=False):
     pending: bool
     permissions: str
 
-class _OptionalGatewayMember(PartialMember, total=False):
+
+class _OptionalMemberWithUser(PartialMember, total=False):
     avatar: str
     nick: str
     premium_since: str
@@ -54,9 +55,9 @@ class _OptionalGatewayMember(PartialMember, total=False):
     permissions: str
 
 
-class GatewayMember(_OptionalGatewayMember):
+class MemberWithUser(_OptionalMemberWithUser):
     user: User
 
 
 class UserWithMember(User, total=False):
-    member: _OptionalGatewayMember
+    member: _OptionalMemberWithUser
