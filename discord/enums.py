@@ -58,12 +58,16 @@ __all__ = (
 )
 
 
-def _create_value_cls(name):
+def _create_value_cls(name, comparable):
     cls = namedtuple('_EnumValue_' + name, 'name value')
     cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'
     cls.__str__ = lambda self: f'{name}.{self.name}'
+    if comparable:
+        cls.__le__ = lambda self, other: isinstance(other, self.__class__) and self.value <= other.value
+        cls.__ge__ = lambda self, other: isinstance(other, self.__class__) and self.value >= other.value
+        cls.__lt__ = lambda self, other: isinstance(other, self.__class__) and self.value < other.value
+        cls.__gt__ = lambda self, other: isinstance(other, self.__class__) and self.value > other.value
     return cls
-
 
 def _is_descriptor(obj):
     return hasattr(obj, '__get__') or hasattr(obj, '__set__') or hasattr(obj, '__delete__')
@@ -76,19 +80,12 @@ class EnumMeta(type):
         _enum_member_map_: ClassVar[Dict[str, Any]]
         _enum_value_map_: ClassVar[Dict[Any, Any]]
 
-    def __new__(cls, name, bases, attrs, **kwargs):
+    def __new__(cls, name, bases, attrs, *, comparable: bool = False):
         value_mapping = {}
         member_mapping = {}
         member_names = []
 
-        value_cls = _create_value_cls(name)
-
-        if kwargs.get('comparable'):
-            value_cls.__le__ = lambda self, other: isinstance(other, self.__class__) and self.value <= other.value
-            value_cls.__ge__ = lambda self, other: isinstance(other, self.__class__) and self.value >= other.value
-            value_cls.__lt__ = lambda self, other: isinstance(other, self.__class__) and self.value < other.value
-            value_cls.__gt__ = lambda self, other: isinstance(other, self.__class__) and self.value > other.value
-
+        value_cls = _create_value_cls(name, comparable)
         for key, value in list(attrs.items()):
             is_descriptor = _is_descriptor(value)
             if key[0] == '_' and not is_descriptor:
