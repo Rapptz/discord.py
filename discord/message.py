@@ -1529,16 +1529,14 @@ class Message(Hashable):
         if self.guild is None:
             raise InvalidArgument('This message does not have guild info attached.')
 
-        if not isinstance(self.channel, TextChannel):
-            raise TypeError('This message\'s channel must be a TextChannel.')
-
         data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
             name=name,
-            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,
+            # if the channel isn't a TextChannel, this will raise AttributeError 
+            auto_archive_duration=auto_archive_duration or self.channel.default_auto_archive_duration,  # type: ignore
         )
-        return Thread(guild=self.guild, state=self._state, data=data)  # type: ignore
+        return Thread(guild=self.guild, state=self._state, data=data)
 
     async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
         """|coro|
