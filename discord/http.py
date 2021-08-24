@@ -781,11 +781,11 @@ class HTTPClient:
         }
         return self.request(r, json=payload, reason=reason)
 
-    def edit_my_voice_state(self, guild_id: Snowflake, payload: voice.VoiceState) -> Response[None]:
+    def edit_my_voice_state(self, guild_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: voice.VoiceState) -> Response[None]:
+    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=payload)
 
@@ -1227,7 +1227,7 @@ class HTTPClient:
         )
 
     def modify_guild_sticker(
-        self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: str
+        self, guild_id: Snowflake, sticker_id: Snowflake, payload: sticker.EditGuildSticker, reason: Optional[str],
     ) -> Response[sticker.GuildSticker]:
         return self.request(
             Route('PATCH', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id),
@@ -1235,7 +1235,7 @@ class HTTPClient:
             reason=reason,
         )
 
-    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: str) -> Response[None]:
+    def delete_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake, reason: Optional[str]) -> Response[None]:
         return self.request(
             Route('DELETE', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id),
             reason=reason,
