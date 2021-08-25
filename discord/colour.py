@@ -78,7 +78,7 @@ class Colour:
 
     __slots__ = ('value',)
 
-    def __init__(self, value):
+    def __init__(self, value: int):
         if not isinstance(value, int):
             raise TypeError(f'Expected int parameter, received {value.__class__.__name__} instead.')
 
@@ -172,6 +172,14 @@ class Colour:
         return cls(0x11806a)
 
     @classmethod
+    def brand_green(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x57F287``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0x57F287)
+
+    @classmethod
     def green(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0x2ecc71``."""
         return cls(0x2ecc71)
@@ -230,6 +238,14 @@ class Colour:
     def dark_orange(cls: Type[CT]) -> CT:
         """A factory method that returns a :class:`Colour` with a value of ``0xa84300``."""
         return cls(0xa84300)
+
+    @classmethod
+    def brand_red(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0xED4245``.
+
+        .. versionadded:: 2.0
+        """
+        return cls(0xED4245)
 
     @classmethod
     def red(cls: Type[CT]) -> CT:

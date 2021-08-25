@@ -236,8 +236,8 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: Callable[P, T]) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    def decorator(overriden: Callable[P, T]) -> Callable[P, T]:
+def copy_doc(original: Callable) -> Callable[[T], T]:
+    def decorator(overriden: T) -> T:
         overriden.__doc__ = original.__doc__
         overriden.__signature__ = _signature(original)  # type: ignore
         return overriden
