@@ -101,6 +101,7 @@ VoiceClient
 
 .. autoclass:: VoiceClient()
     :members:
+    :exclude-members: connect, on_voice_state_update, on_voice_server_update
 
 VoiceProtocol
 ~~~~~~~~~~~~~~~
