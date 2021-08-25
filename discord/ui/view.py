@@ -261,7 +261,7 @@ class View:
         """
 
         if len(self.children) > 25:
-            raise ValueError('maximum number of children exceeded')
+            raise TypeError('maximum number of children exceeded')
 
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__!r}')
