@@ -121,8 +121,6 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
-    from typing_extensions import ParamSpec
-
     from .permissions import Permissions
     from .abc import Snowflake
     from .invite import Invite
@@ -131,8 +129,6 @@ if TYPE_CHECKING:
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
 
-
-    P = ParamSpec('P')
 
 else:
     cached_property = _cached_property
@@ -236,8 +232,8 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: Callable[P, T]) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    def decorator(overriden: Callable[P, T]) -> Callable[P, T]:
+def copy_doc(original: Callable) -> Callable[[T], T]:
+    def decorator(overriden: T) -> T:
         overriden.__doc__ = original.__doc__
         overriden.__signature__ = _signature(original)  # type: ignore
         return overriden
