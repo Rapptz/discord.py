@@ -275,7 +275,7 @@ class Member(discord.abc.Messageable, _UserTag):
         system: bool
         created_at: datetime.datetime
         default_avatar: Asset
-        avatar: Asset
+        avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
         create_dm = User.create_dm
         mutual_guilds: List[Guild]
@@ -513,7 +513,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 2.0
         """
-        return self.guild_avatar or self.avatar
+        return self.guild_avatar or self._user.avatar or self._user.default_avatar
 
     @property
     def guild_avatar(self) -> Optional[Asset]:
