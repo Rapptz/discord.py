@@ -186,11 +186,12 @@ class Embed:
         timestamp: datetime.datetime = None,
     ):
 
-        self.colour = colour if colour is not EmptyEmbed else color
-        self.title = title
+        color = color if color is not None else EmptyEmbed
+        self.colour = colour if colour is not EmptyEmbed and colour is not None else color
+        self.title = title if title is not None else EmptyEmbed
         self.type = type
-        self.url = url
-        self.description = description
+        self.url = url if url is not None else EmptyEmbed
+        self.description = description if description is not None else EmptyEmbed
 
         if self.title is not EmptyEmbed:
             self.title = str(self.title)
@@ -357,6 +358,9 @@ class Embed:
         icon_url: :class:`str`
             The URL of the footer icon. Only HTTP(S) is supported.
         """
+        
+        text = text if text is not None else EmptyEmbed
+        icon_url = icon_url if icon_url is not None else EmptyEmbed
 
         self._footer = {}
         if text is not EmptyEmbed:
@@ -411,6 +415,8 @@ class Embed:
         url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
         """
+        
+        url = url if url is not None else EmptyEmbed
 
         if url is EmptyEmbed:
             try:
@@ -453,6 +459,8 @@ class Embed:
         url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
+        
+        url = url if url is not None else EmptyEmbed
 
         if url is EmptyEmbed:
             try:
@@ -515,6 +523,9 @@ class Embed:
         icon_url: :class:`str`
             The URL of the author icon. Only HTTP(S) is supported.
         """
+        
+        url = url if url is not None else EmptyEmbed
+        icon_url = icon_url if icon_url is not None else EmptyEmbed
 
         self._author = {
             'name': str(name),
