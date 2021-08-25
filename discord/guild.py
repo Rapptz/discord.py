@@ -1069,7 +1069,7 @@ class Guild(Hashable):
             You do not have the proper permissions to create this channel.
         HTTPException
             Creating the channel failed.
-        InvalidArgument
+        TypeError
             The permission overwrite information is not in proper form.
 
         Returns
@@ -1154,7 +1154,7 @@ class Guild(Hashable):
             You do not have the proper permissions to create this channel.
         HTTPException
             Creating the channel failed.
-        InvalidArgument
+        TypeError
             The permission overwrite information is not in proper form.
 
         Returns
@@ -1229,7 +1229,7 @@ class Guild(Hashable):
             You do not have the proper permissions to create this channel.
         HTTPException
             Creating the channel failed.
-        InvalidArgument
+        TypeError
             The permission overwrite information is not in proper form.
 
         Returns
@@ -1276,7 +1276,7 @@ class Guild(Hashable):
             You do not have the proper permissions to create this channel.
         HTTPException
             Creating the channel failed.
-        InvalidArgument
+        TypeError
             The permission overwrite information is not in proper form.
 
         Returns
@@ -1442,10 +1442,13 @@ class Guild(Hashable):
             You do not have permissions to edit the guild.
         HTTPException
             Editing the guild failed.
-        InvalidArgument
+        TypeError
             The image format passed in to ``icon`` is invalid. It must be
-            PNG or JPG. This is also raised if you are not the owner of the
-            guild and request an ownership transfer.
+            PNG or JPG. Also raised if default_notifications field is not a type of :class:`NotificationLevel`.
+        ValueError
+            You are not the owner of the guild and request an ownership transfer.
+            Community field required both rules_channel and public_updates_channel fields to be provided.
+            
 
         Returns
         --------
@@ -1860,7 +1863,7 @@ class Guild(Hashable):
             You do not have permissions to prune members.
         HTTPException
             An error occurred while pruning members.
-        InvalidArgument
+        TypeError
             An integer was not passed for ``days``.
 
         Returns
@@ -1953,7 +1956,7 @@ class Guild(Hashable):
             You do not have permissions to prune members.
         HTTPException
             An error occurred while fetching the prune members estimate.
-        InvalidArgument
+        TypeError
             An integer was not passed for ``days``.
 
         Returns
@@ -1963,7 +1966,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise ValueError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise TypeError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
@@ -2458,8 +2461,6 @@ class Guild(Hashable):
             You do not have permissions to create the role.
         HTTPException
             Creating the role failed.
-        InvalidArgument
-            An invalid keyword argument was given.
 
         Returns
         --------
@@ -2529,7 +2530,7 @@ class Guild(Hashable):
             You do not have permissions to move the roles.
         HTTPException
             Moving the roles failed.
-        InvalidArgument
+        TypeError
             An invalid keyword argument was given.
 
         Returns
