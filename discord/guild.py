@@ -1558,7 +1558,7 @@ class Guild(Hashable):
                 if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
                     features.append('COMMUNITY')
                 else:
-                    raise TypeError(
+                    raise ValueError(
                         'community field requires both rules_channel and public_updates_channel fields to be provided'
                     )
 
@@ -1871,7 +1871,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise ValueError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise TypeError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
