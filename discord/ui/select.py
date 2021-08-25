@@ -197,13 +197,13 @@ class Select(Item[V]):
         -----------
         label: :class:`str`
             The label of the option. This is displayed to users.
-            Can only be up to 25 characters.
+            Can only be up to 100 characters.
         value: :class:`str`
             The value of the option. This is not displayed to users.
             If not given, defaults to the label. Can only be up to 100 characters.
         description: Optional[:class:`str`]
             An additional description of the option, if any.
-            Can only be up to 50 characters.
+            Can only be up to 100 characters.
         emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
             the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
