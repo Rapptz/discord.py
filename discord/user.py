@@ -152,6 +152,9 @@ class BaseUser(_UserTag):
 
         If the user does not have a traditional avatar, ``None`` is returned.
         If you want the avatar that a user has displayed, consider :attr:`display_avatar`.
+        
+        .. versionchanged:: 2.0
+            returns ``None`` if the user has no avatar set instead of :attr:`default_avatar`
         """
         if self._avatar is not None:
             return Asset._from_avatar(self._state, self.id, self._avatar)
