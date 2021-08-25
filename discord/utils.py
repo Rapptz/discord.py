@@ -121,6 +121,8 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
+    from typing_extensions import ParamSpec
+
     from .permissions import Permissions
     from .abc import Snowflake
     from .invite import Invite
@@ -129,6 +131,8 @@ if TYPE_CHECKING:
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
 
+
+    P = ParamSpec('P')
 
 else:
     cached_property = _cached_property
