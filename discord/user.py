@@ -147,21 +147,30 @@ class BaseUser(_UserTag):
         return PublicUserFlags._from_value(self._public_flags)
 
     @property
-    def avatar(self) -> Asset:
-        """:class:`Asset`: Returns an :class:`Asset` for the avatar the user has.
+    def avatar(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the avatar the user has.
 
-        If the user does not have a traditional avatar, an asset for
-        the default avatar is returned instead.
+        If the user does not have a traditional avatar, ``None`` is returned.
+        If you want the avatar that a user has displayed, consider :attr:`display_avatar`.
         """
-        if self._avatar is None:
-            return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
-        else:
+        if self._avatar is not None:
             return Asset._from_avatar(self._state, self.id, self._avatar)
+        return None
 
     @property
     def default_avatar(self) -> Asset:
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
         return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+
+    @property
+    def display_avatar(self) -> Asset:
+        """:class:`Asset`: Returns the user's display avatar.
+
+        For regular users this is just their default avatar or uploaded avatar.
+
+        .. versionadded:: 2.0
+        """
+        return self.avatar or self.default_avatar
 
     @property
     def banner(self) -> Optional[Asset]:
@@ -247,18 +256,6 @@ class BaseUser(_UserTag):
         is returned instead.
         """
         return self.name
-
-    @property
-    def display_avatar(self) -> Asset:
-        """:class:`Asset`: Returns the user's display avatar.
-
-        For regular users this is just their avatar, but
-        if they have a guild specific avatar then that
-        is returned instead.
-
-        .. versionadded:: 2.0
-        """
-        return self.avatar
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.

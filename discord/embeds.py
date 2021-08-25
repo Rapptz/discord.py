@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Final, List, Protocol, TYPE_CHECKING, Type, TypeVar, Union
+from typing import Any, Dict, Final, List, Mapping, Protocol, TYPE_CHECKING, Type, TypeVar, Union
 
 from . import utils
 from .colour import Colour
@@ -205,7 +205,7 @@ class Embed:
             self.timestamp = timestamp
 
     @classmethod
-    def from_dict(cls: Type[E], data: EmbedData) -> E:
+    def from_dict(cls: Type[E], data: Mapping[str, Any]) -> E:
         """Converts a :class:`dict` to a :class:`Embed` provided it is in the
         format that Discord expects it to be in.
 

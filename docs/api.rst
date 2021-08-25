@@ -101,6 +101,7 @@ VoiceClient
 
 .. autoclass:: VoiceClient()
     :members:
+    :exclude-members: connect, on_voice_state_update, on_voice_server_update
 
 VoiceProtocol
 ~~~~~~~~~~~~~~~
@@ -311,9 +312,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 .. function:: on_socket_raw_receive(msg)
 
-    Called whenever a message is received from the WebSocket, before
-    it's processed. This event is always dispatched when a message is
-    received and the passed data is not processed in any way.
+    Called whenever a message is completely received from the WebSocket, before
+    it's processed and parsed. This event is always dispatched when a
+    complete message is received and the passed data is not parsed in any way.
 
     This is only really useful for grabbing the WebSocket stream and
     debugging purposes.
@@ -326,9 +327,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param msg: The message passed in from the WebSocket library.
-                Could be :class:`bytes` for a binary message or :class:`str`
-                for a regular message.
-    :type msg: Union[:class:`bytes`, :class:`str`]
+    :type msg: :class:`str`
 
 .. function:: on_socket_raw_send(payload)
 
@@ -1591,6 +1590,8 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
+        .. versionadded:: 2.0
+
         .. describe:: x == y
 
             Checks if two verification levels are equal.
@@ -1633,6 +1634,29 @@ of :class:`enum.Enum`.
 
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.
 
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two notification levels are equal.
+        .. describe:: x != y
+
+            Checks if two notification levels are not equal.
+        .. describe:: x > y
+
+            Checks if a notification level is higher than another.
+        .. describe:: x < y
+
+            Checks if a notification level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a notification level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a notification level is lower or equal to another.
+
     .. attribute:: all_messages
 
         Members receive notifications for every message regardless of them being mentioned.
@@ -1647,6 +1671,8 @@ of :class:`enum.Enum`.
     pornography or otherwise explicit content.
 
     .. container:: operations
+
+        .. versionadded:: 2.0
 
         .. describe:: x == y
 
@@ -2531,6 +2557,27 @@ of :class:`enum.Enum`.
     Represents the NSFW level of a guild.
 
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two NSFW levels are equal.
+        .. describe:: x != y
+
+            Checks if two NSFW levels are not equal.
+        .. describe:: x > y
+
+            Checks if a NSFW level is higher than another.
+        .. describe:: x < y
+
+            Checks if a NSFW level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a NSFW level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a NSFW level is lower or equal to another.
 
     .. attribute:: default
 
