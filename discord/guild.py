@@ -49,7 +49,7 @@ from .emoji import Emoji
 from .errors import InvalidData
 from .permissions import PermissionOverwrite
 from .colour import Colour
-from .errors import InvalidArgument, ClientException
+from .errors import ClientException
 from .channel import *
 from .channel import _guild_channel_factory
 from .channel import _threaded_guild_channel_factory
@@ -966,12 +966,12 @@ class Guild(Hashable):
         if overwrites is MISSING:
             overwrites = {}
         elif not isinstance(overwrites, dict):
-            raise InvalidArgument('overwrites parameter expects a dict.')
+            raise TypeError('overwrites parameter expects a dict.')
 
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
+                raise TypeError(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
             allow, deny = perm.pair()
             payload = {'allow': allow.value, 'deny': deny.value, 'id': target.id}
@@ -1498,7 +1498,7 @@ class Guild(Hashable):
 
         if default_notifications is not MISSING:
             if not isinstance(default_notifications, NotificationLevel):
-                raise InvalidArgument('default_notifications field must be of type NotificationLevel')
+                raise TypeError('default_notifications field must be of type NotificationLevel')
             fields['default_message_notifications'] = default_notifications.value
 
         if afk_channel is not MISSING:
@@ -1527,7 +1527,7 @@ class Guild(Hashable):
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
-                raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
+                raise ValueError('To transfer ownership you must be the owner of the guild.')
 
             fields['owner_id'] = owner.id
 
@@ -1536,19 +1536,19 @@ class Guild(Hashable):
 
         if verification_level is not MISSING:
             if not isinstance(verification_level, VerificationLevel):
-                raise InvalidArgument('verification_level field must be of type VerificationLevel')
+                raise TypeError('verification_level field must be of type VerificationLevel')
 
             fields['verification_level'] = verification_level.value
 
         if explicit_content_filter is not MISSING:
             if not isinstance(explicit_content_filter, ContentFilter):
-                raise InvalidArgument('explicit_content_filter field must be of type ContentFilter')
+                raise TypeError('explicit_content_filter field must be of type ContentFilter')
 
             fields['explicit_content_filter'] = explicit_content_filter.value
 
         if system_channel_flags is not MISSING:
             if not isinstance(system_channel_flags, SystemChannelFlags):
-                raise InvalidArgument('system_channel_flags field must be of type SystemChannelFlags')
+                raise TypeError('system_channel_flags field must be of type SystemChannelFlags')
 
             fields['system_channel_flags'] = system_channel_flags.value
 
@@ -1558,7 +1558,7 @@ class Guild(Hashable):
                 if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
                     features.append('COMMUNITY')
                 else:
-                    raise InvalidArgument(
+                    raise TypeError(
                         'community field requires both rules_channel and public_updates_channel fields to be provided'
                     )
 
@@ -1871,7 +1871,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise ValueError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
@@ -1963,7 +1963,7 @@ class Guild(Hashable):
         """
 
         if not isinstance(days, int):
-            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise ValueError(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
@@ -2538,7 +2538,7 @@ class Guild(Hashable):
             A list of all the roles in the guild.
         """
         if not isinstance(positions, dict):
-            raise InvalidArgument('positions parameter expects a dict.')
+            raise TypeError('positions parameter expects a dict.')
 
         role_positions: List[Dict[str, Any]] = []
         for role, position in positions.items():
