@@ -933,12 +933,12 @@ class Webhook(BaseWebhook):
         return f'<Webhook id={self.id!r}>'
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str` : Returns the webhook's url."""
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None):
+    def partial(cls, id: int, token: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Webhook:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -974,7 +974,7 @@ class Webhook(BaseWebhook):
         return cls(data, session, token=bot_token)
 
     @classmethod
-    def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None):
+    def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Webhook:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -1013,7 +1013,7 @@ class Webhook(BaseWebhook):
         return cls(data, session, token=bot_token)  # type: ignore
 
     @classmethod
-    def _as_follower(cls, data, *, channel, user):
+    def _as_follower(cls, data, *, channel, user) -> Webhook:
         name = f"{channel.guild} #{channel}"
         feed: WebhookPayload = {
             'id': data['webhook_id'],
@@ -1029,7 +1029,7 @@ class Webhook(BaseWebhook):
         return cls(feed, session=session, state=state, token=state.http.token)
 
     @classmethod
-    def from_state(cls, data, state):
+    def from_state(cls, data, state) -> Webhook:
         session = state.http._HTTPClient__session
         return cls(data, session=session, state=state, token=state.http.token)
 
@@ -1555,7 +1555,7 @@ class Webhook(BaseWebhook):
             self._state.store_view(view, message_id)
         return message
 
-    async def delete_message(self, message_id: int):
+    async def delete_message(self, message_id: int, /) -> None:
         """|coro|
 
         Deletes a message owned by this webhook.
