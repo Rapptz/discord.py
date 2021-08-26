@@ -908,7 +908,7 @@ class HTTPClient:
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
-        invitable: bool,
+        invitable: bool = True,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
