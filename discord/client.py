@@ -718,7 +718,7 @@ class Client:
         """List[:class:`~discord.User`]: Returns a list of all the users the bot can see."""
         return list(self._connection._users.values())
 
-    def get_channel(self, id: int) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
+    def get_channel(self, id: int, /) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
         """Returns a channel or thread with the given ID.
 
         Parameters
@@ -822,7 +822,7 @@ class Client:
         """
         return self._connection.get_emoji(id)
 
-    def get_sticker(self, id: int) -> Optional[GuildSticker]:
+    def get_sticker(self, id: int, /) -> Optional[GuildSticker]:
         """Returns a guild sticker with the given ID.
 
         .. versionadded:: 2.0
@@ -1171,7 +1171,7 @@ class Client:
         data = await self.http.get_template(code)
         return Template(data=data, state=self._connection) # type: ignore
 
-    async def fetch_guild(self, guild_id: int) -> Guild:
+    async def fetch_guild(self, guild_id: int, /) -> Guild:
         """|coro|
 
         Retrieves a :class:`.Guild` from an ID.
@@ -1260,7 +1260,7 @@ class Client:
             data = await self.http.create_guild(name, region_value, icon_base64)
         return Guild(data=data, state=self._connection)
 
-    async def fetch_stage_instance(self, channel_id: int) -> StageInstance:
+    async def fetch_stage_instance(self, channel_id: int, /) -> StageInstance:
         """|coro|
 
         Gets a :class:`.StageInstance` for a stage channel id.
@@ -1360,7 +1360,7 @@ class Client:
 
     # Miscellaneous stuff
 
-    async def fetch_widget(self, guild_id: int) -> Widget:
+    async def fetch_widget(self, guild_id: int, /) -> Widget:
         """|coro|
 
         Gets a :class:`.Widget` from a guild ID.
@@ -1410,7 +1410,7 @@ class Client:
             data['rpc_origins'] = None
         return AppInfo(self._connection, data)
 
-    async def fetch_user(self, user_id: int) -> User:
+    async def fetch_user(self, user_id: int, /) -> User:
         """|coro|
 
         Retrieves a :class:`~discord.User` based on their ID.
@@ -1441,7 +1441,7 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
-    async def fetch_channel(self, channel_id: int) -> Union[GuildChannel, PrivateChannel, Thread]:
+    async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
 
         Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or :class:`.Thread` with the specified ID.
@@ -1486,7 +1486,7 @@ class Client:
 
         return channel
 
-    async def fetch_webhook(self, webhook_id: int) -> Webhook:
+    async def fetch_webhook(self, webhook_id: int, /) -> Webhook:
         """|coro|
 
         Retrieves a :class:`.Webhook` with the specified ID.
@@ -1508,7 +1508,7 @@ class Client:
         data = await self.http.get_webhook(webhook_id)
         return Webhook.from_state(data, state=self._connection)
 
-    async def fetch_sticker(self, sticker_id: int) -> Union[StandardSticker, GuildSticker]:
+    async def fetch_sticker(self, sticker_id: int, /) -> Union[StandardSticker, GuildSticker]:
         """|coro|
 
         Retrieves a :class:`.Sticker` with the specified ID.
