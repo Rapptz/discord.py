@@ -678,7 +678,6 @@ class Client:
         """
         return create_activity(self._connection._activity)
 
-
     @activity.setter
     def activity(self, value: Optional[ActivityTypes]) -> None:
         if value is None:
