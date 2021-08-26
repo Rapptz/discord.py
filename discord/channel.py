@@ -230,7 +230,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         .. versionadded:: 2.0
         """
-        return [thread for thread in self.guild.threads if thread.parent_id == self.id]
+        return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
 
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the channel is NSFW."""
