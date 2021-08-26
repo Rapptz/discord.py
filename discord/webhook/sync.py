@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         Webhook as WebhookPayload,
     )
     from ..abc import Snowflake
+    from ..asset import Asset
 
     try:
         from requests import Session, Response
@@ -770,7 +771,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Union[str, Asset] = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -787,7 +788,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Union[str, Asset] = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -803,7 +804,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Union[str, Asset] = MISSING,
         tts: bool = False,
         file: File = MISSING,
         files: List[File] = MISSING,
