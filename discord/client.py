@@ -687,6 +687,26 @@ class Client:
             self._connection._activity = value.to_dict() # type: ignore
         else:
             raise TypeError('activity must derive from BaseActivity.')
+    
+    @property
+    def status(self):
+        """:class:`.Status`:
+        The status being used upon logging on to Discord.
+
+        .. versionadded: 2.0
+        """
+        if self._connection._status in set(state.value for state in Status):
+            return Status(self._connection._status)
+        return Status.online
+
+    @status.setter
+    def status(self, value):
+        if value is Status.offline:
+            self._connection._status = 'invisible'
+        elif isinstance(value, Status):
+            self._connection._status = str(value)
+        else:
+            raise TypeError('status must derive from Status.')
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
