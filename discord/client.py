@@ -672,18 +672,15 @@ class Client:
         return self._closed
 
     @property
-    def start_up_activity(self) -> Optional[ActivityTypes]:
+    def activity(self) -> Optional[ActivityTypes]:
         """Optional[:class:`.BaseActivity`]: The activity being used upon
         logging in.
-
-        .. versionchanged: 2.0
-            Renamed from `activity` to `start_up_activity`
         """
         return create_activity(self._connection._activity)
 
 
-    @start_up_activity.setter
-    def start_up_activity(self, value: Optional[ActivityTypes]) -> None:
+    @activity.setter
+    def activity(self, value: Optional[ActivityTypes]) -> None:
         if value is None:
             self._connection._activity = None
         elif isinstance(value, BaseActivity):
@@ -693,7 +690,7 @@ class Client:
             raise TypeError('activity must derive from BaseActivity.')
     
     @property
-    def start_up_status(self):
+    def status(self):
         """:class:`.Status`:
         The status being used upon logging on to Discord.
 
@@ -703,8 +700,8 @@ class Client:
             return Status(self._connection._status)
         return Status.online
 
-    @start_up_status.setter
-    def start_up_status(self, value):
+    @status.setter
+    def status(self, value):
         if value is Status.offline:
             self._connection._status = 'invisible'
         elif isinstance(value, Status):
