@@ -826,6 +826,7 @@ class HTTPClient:
             'archived',
             'auto_archive_duration',
             'locked',
+            'invitable',
             'default_auto_archive_duration',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
@@ -907,12 +908,14 @@ class HTTPClient:
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
+        invitable: bool,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
             'type': type,
+            'invitable': invitable,
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
