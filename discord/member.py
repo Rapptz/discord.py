@@ -890,7 +890,7 @@ class Member(discord.abc.Messageable, _UserTag):
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
 
-    def get_role(self, role_id: int) -> Optional[Role]:
+    def get_role(self, role_id: int, /) -> Optional[Role]:
         """Returns a role with the given ID from roles which the member has.
 
         .. versionadded:: 2.0

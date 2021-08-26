@@ -736,7 +736,7 @@ class Guild(Hashable):
         """List[:class:`Member`]: A list of members that belong to this guild."""
         return list(self._members.values())
 
-    def get_member(self, user_id: int) -> Optional[Member]:
+    def get_member(self, user_id: int, /) -> Optional[Member]:
         """Returns a member with the given ID.
 
         Parameters
