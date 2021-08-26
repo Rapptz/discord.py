@@ -1496,8 +1496,8 @@ class Message(Hashable):
 
         Creates a public thread from this message.
 
-        You must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to create a thread.
+        You must have :attr:`~discord.Permissions.create_public_threads` in order to
+        create a public thread from a message.
 
         The channel this message belongs in must be a :class:`TextChannel`.
 

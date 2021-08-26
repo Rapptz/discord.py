@@ -684,15 +684,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Creates a thread in this text channel.
 
-        If no starter message is passed with the ``message`` parameter then
-        you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_private_threads` in order to create the thread
-        if the ``type`` parameter is :attr:`~discord.ChannelType.private_thread`.
-        Otherwise :attr:`~discord.Permissions.use_threads` is needed.
-
-        If a starter message is passed with the ``message`` parameter then
-        you must have :attr:`~discord.Permissions.send_messages` and
-        :attr:`~discord.Permissions.use_threads` in order to create the thread.
+        To create a public thread, you must have :attr:`~discord.Permissions.create_public_threads`.
+        For a private thread, :attr:`~discord.Permissions.create_private_threads` is needed instead.
 
         .. versionadded:: 2.0
 
