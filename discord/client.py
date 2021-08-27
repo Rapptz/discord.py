@@ -187,7 +187,7 @@ class Client:
     enable_debug_events: :class:`bool`
         Whether to enable events that are useful only for debugging gateway related information.
 
-        Right now this involves :func:`on_socket_raw_receive` and :func`:`on_socket_raw_send`. If
+        Right now this involves :func:`on_socket_raw_receive` and :func:`on_socket_raw_send`. If
         this is ``False`` then those events will not be dispatched (due to performance considerations).
         To enable these events, this must be set to ``True``. Defaults to ``False``.
 
