@@ -27,7 +27,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 from typing import (
-    TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
@@ -49,7 +48,9 @@ from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
-__all__ = ('loop',)
+__all__ = (
+    'loop',
+)
 
 T = TypeVar('T')
 _func = Callable[..., Awaitable[Any]]
@@ -98,15 +99,15 @@ class Loop(Generic[LF]):
         time: Union[datetime.time, Sequence[datetime.time]],
         count: Optional[int],
         reconnect: bool,
-        loop: Optional[asyncio.AbstractEventLoop],
+        loop: asyncio.AbstractEventLoop,
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
-        self.loop: Optional[asyncio.AbstractEventLoop] = loop
+        self.loop: asyncio.AbstractEventLoop = loop
         self.count: Optional[int] = count
         self._current_loop = 0
-        self._handle: Optional[SleepHandle] = None
-        self._task: Optional[asyncio.Task[None]] = None
+        self._handle: SleepHandle = MISSING
+        self._task: asyncio.Task[None] = MISSING
         self._injected = None
         self._valid_exception = (
             OSError,
@@ -127,8 +128,8 @@ class Loop(Generic[LF]):
 
         self.change_interval(seconds=seconds, minutes=minutes, hours=hours, time=time)
         self._last_iteration_failed = False
-        self._last_iteration: Optional[datetime.datetime] = None
-        self._next_iteration: Optional[datetime.datetime] = None
+        self._last_iteration: datetime.datetime = MISSING
+        self._next_iteration = None
 
         if not inspect.iscoroutinefunction(self.coro):
             raise TypeError(f'Expected coroutine function, not {type(self.coro).__name__!r}.')
@@ -144,7 +145,7 @@ class Loop(Generic[LF]):
             await coro(*args, **kwargs)
 
     def _try_sleep_until(self, dt: datetime.datetime):
-        self._handle = SleepHandle(dt=dt, loop=self.loop)  # type: ignore
+        self._handle = SleepHandle(dt=dt, loop=self.loop)
         return self._handle.wait()
 
     async def _loop(self, *args: Any, **kwargs: Any) -> None:
@@ -196,7 +197,7 @@ class Loop(Generic[LF]):
             raise exc
         finally:
             await self._call_loop_function('after_loop')
-            self._handle.cancel()  # type: ignore
+            self._handle.cancel()
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
@@ -274,7 +275,7 @@ class Loop(Generic[LF]):
 
         .. versionadded:: 1.3
         """
-        if self._task is None:
+        if self._task is MISSING:
             return None
         elif self._task and self._task.done() or self._stop_next_iteration:
             return None
@@ -321,13 +322,13 @@ class Loop(Generic[LF]):
             The task that has been created.
         """
 
-        if self._task is not None and not self._task.done():
+        if self._task is not MISSING and not self._task.done():
             raise RuntimeError('Task is already launched and is not completed.')
 
         if self._injected is not None:
             args = (self._injected, *args)
 
-        if self.loop is None:
+        if self.loop is MISSING:
             self.loop = asyncio.get_event_loop()
 
         self._task = self.loop.create_task(self._loop(*args, **kwargs))
@@ -351,7 +352,7 @@ class Loop(Generic[LF]):
 
         .. versionadded:: 1.2
         """
-        if self._task is not None and not self._task.done():
+        if self._task is not MISSING and not self._task.done():
             self._stop_next_iteration = True
 
     def _can_be_cancelled(self) -> bool:
@@ -359,9 +360,6 @@ class Loop(Generic[LF]):
 
     def cancel(self) -> None:
         """Cancels the internal task, if it is running."""
-        if TYPE_CHECKING:
-            assert self._task is not None
-
         if self._can_be_cancelled():
             self._task.cancel()
 
@@ -381,13 +379,7 @@ class Loop(Generic[LF]):
             The keyword arguments to use.
         """
 
-        if TYPE_CHECKING:
-            assert self._task is not None
-
         def restart_when_over(fut: Any, *, args: Any = args, kwargs: Any = kwargs) -> None:
-            if TYPE_CHECKING:
-                assert self._task is not None
-
             self._task.remove_done_callback(restart_when_over)
             self.start(*args, **kwargs)
 
@@ -452,7 +444,7 @@ class Loop(Generic[LF]):
 
     def get_task(self) -> Optional[asyncio.Task[None]]:
         """Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."""
-        return self._task if self._task is not None else None
+        return self._task if self._task is not MISSING else None
 
     def is_being_cancelled(self) -> bool:
         """Whether the task is being cancelled."""
@@ -470,7 +462,7 @@ class Loop(Generic[LF]):
 
         .. versionadded:: 1.4
         """
-        return not bool(self._task.done()) if self._task is not None else False
+        return not bool(self._task.done()) if self._task is not MISSING else False
 
     async def _error(self, *args: Any) -> None:
         exception: Exception = args[-1]
@@ -557,9 +549,6 @@ class Loop(Generic[LF]):
         return coro
 
     def _get_next_sleep_time(self) -> datetime.datetime:
-        if TYPE_CHECKING:
-            assert self._last_iteration is not None
-
         if self._sleep is not MISSING:
             return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
@@ -585,13 +574,13 @@ class Loop(Generic[LF]):
         self._time_index += 1
         return datetime.datetime.combine(next_date, next_time)
 
-    def _prepare_time_index(self, now: Optional[datetime.datetime] = None) -> None:
+    def _prepare_time_index(self, now: datetime.datetime = MISSING) -> None:
         # now kwarg should be a datetime.datetime representing the time "now"
         # to calculate the next time index from
 
         # pre-condition: self._time is set
         time_now = (
-            now if now is not None else datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+            now if now is not MISSING else datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
         ).timetz()
         for idx, time in enumerate(self._time):
             if time >= time_now:
@@ -693,9 +682,6 @@ class Loop(Generic[LF]):
                 self._prepare_time_index(now=self._last_iteration)
 
             self._next_iteration = self._get_next_sleep_time()
-            if TYPE_CHECKING:
-                assert self._handle is not None
-
             if not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
                 self._handle.recalculate(self._next_iteration)
@@ -709,7 +695,7 @@ def loop(
     time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     count: Optional[int] = None,
     reconnect: bool = True,
-    loop: Optional[asyncio.AbstractEventLoop] = None,
+    loop: asyncio.AbstractEventLoop = MISSING,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -742,7 +728,7 @@ def loop(
         Whether to handle errors and restart the task
         using an exponential back-off algorithm similar to the
         one used in :meth:`discord.Client.connect`.
-    loop: Optional[:class:`asyncio.AbstractEventLoop`]
+    loop: :class:`asyncio.AbstractEventLoop`
         The loop to use to register the task, if not given
         defaults to :func:`asyncio.get_event_loop`.
 
