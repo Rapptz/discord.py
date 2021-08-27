@@ -1934,7 +1934,7 @@ of :class:`enum.Enum`.
     .. attribute:: member_role_update
 
         A member's role has been updated. This triggers when a member
-        either gains a role or losses a role.
+        either gains a role or loses a role.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member` or :class:`User` who got the role.
