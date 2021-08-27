@@ -324,6 +324,15 @@ class Colour:
         .. versionadded:: 2.0
         """
         return cls(0xFEE75C)
+    
+    @classmethod
+    def baby_blue(cls: Type[CT]) -> CT:
+        """A factory method that returns a :class:`Colour` with a value of ``0x89CFF0``.
+
+        .. versionadded:: 2.0
+        """
+
+        return cls(0x89CFF0)
 
 
 Color = Colour
