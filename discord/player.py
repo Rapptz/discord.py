@@ -155,7 +155,7 @@ class FFmpegAudio(AudioSource):
         self._pipe_thread: Optional[threading.Thread] = None
 
         if piping:
-            n = f'PopenStdinWriter:{id(self):#x}'
+            n = f'popen-stdin-writer:{id(self):#x}'
             self._stdin = self._process.stdin
             self._pipe_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
             self._pipe_thread.start()
@@ -172,22 +172,7 @@ class FFmpegAudio(AudioSource):
         else:
             return process
 
-    def _pipe_writer(self, source: io.BufferedIOBase) -> None:
-        while self._process:
-            # arbitrarily large read size 
-            data = source.read(8192)
-            if not data:
-                self._stdin.close() # EOF
-                break
-            try:
-                self._stdin.write(data)
-            except Exception:
-                _log.debug('Write error for %s, this is probably not a problem', self, exc_info=True)
-                # at this point the source data is either exhausted or the process is fubar
-                self._stdin.close()
-                break
-
-    def cleanup(self) -> None:
+    def _kill_process(self) -> None:
         proc = self._process
         if proc is MISSING:
             return
@@ -206,7 +191,25 @@ class FFmpegAudio(AudioSource):
         else:
             _log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
 
-        self._process = self._stdout = MISSING
+
+    def _pipe_writer(self, source: io.BufferedIOBase) -> None:
+        while self._process:
+            # arbitrarily large read size
+            data = source.read(8192)
+            if not data:
+                self._process.terminate()
+                return
+            try:
+                self._stdin.write(data)
+            except Exception:
+                _log.debug('Write error for %s, this is probably not a problem', self, exc_info=True)
+                # at this point the source data is either exhausted or the process is fubar
+                self._process.terminate()
+                return
+
+    def cleanup(self) -> None:
+        self._kill_process()
+        self._process = self._stdout = self._stdin = MISSING
 
 class FFmpegPCMAudio(FFmpegAudio):
     """An audio source from FFmpeg (or AVConv).
