@@ -522,12 +522,12 @@ class SyncWebhook(BaseWebhook):
         return f'<Webhook id={self.id!r}>'
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str` : Returns the webhook's url."""
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None):
+    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -566,7 +566,7 @@ class SyncWebhook(BaseWebhook):
         return cls(data, session, token=bot_token)
 
     @classmethod
-    def from_url(cls, url: str, *, session: Session = MISSING, bot_token: Optional[str] = None):
+    def from_url(cls, url: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -650,7 +650,7 @@ class SyncWebhook(BaseWebhook):
 
         return SyncWebhook(data, self.session, token=self.auth_token, state=self._state)
 
-    def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True):
+    def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True) -> None:
         """Deletes this Webhook.
 
         Parameters
@@ -918,7 +918,7 @@ class SyncWebhook(BaseWebhook):
         if wait:
             return self._create_message(data)
 
-    def fetch_message(self, id: int) -> SyncWebhookMessage:
+    def fetch_message(self, id: int, /) -> SyncWebhookMessage:
         """Retrieves a single :class:`~discord.SyncWebhookMessage` owned by this webhook.
 
         .. versionadded:: 2.0
@@ -1034,7 +1034,7 @@ class SyncWebhook(BaseWebhook):
         )
         return self._create_message(data)
 
-    def delete_message(self, message_id: int):
+    def delete_message(self, message_id: int, /) -> None:
         """Deletes a message owned by this webhook.
 
         This is a lower level interface to :meth:`WebhookMessage.delete` in case
