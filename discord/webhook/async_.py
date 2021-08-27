@@ -425,7 +425,7 @@ def handle_message_parameters(
     content: Optional[str] = MISSING,
     *,
     username: str = MISSING,
-    avatar_url: str = MISSING,
+    avatar_url: Any = MISSING,
     tts: bool = False,
     ephemeral: bool = False,
     file: File = MISSING,
@@ -1206,7 +1206,7 @@ class Webhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         ephemeral: bool = MISSING,
         file: File = MISSING,
@@ -1226,7 +1226,7 @@ class Webhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         ephemeral: bool = MISSING,
         file: File = MISSING,
@@ -1245,7 +1245,7 @@ class Webhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
         file: File = MISSING,
@@ -1282,9 +1282,10 @@ class Webhook(BaseWebhook):
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: Union[:class:`str`, :class:`Asset`]
+        avatar_url: :class:`str`
             The avatar URL to send with this message. If no avatar URL is provided
-            then the default avatar for the webhook is used.
+            then the default avatar for the webhook is used. If this is not a
+            string then it is explicitly cast using ``str``.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         ephemeral: :class:`bool`

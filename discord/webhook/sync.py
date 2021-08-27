@@ -770,7 +770,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -787,7 +787,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -803,7 +803,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = False,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -835,9 +835,10 @@ class SyncWebhook(BaseWebhook):
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: Union[:class:`str`, :class:`Asset`]
+        avatar_url: :class:`str`
             The avatar URL to send with this message. If no avatar URL is provided
-            then the default avatar for the webhook is used.
+            then the default avatar for the webhook is used. If this is not a
+            string then it is explicitly cast using ``str``.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         file: :class:`File`
