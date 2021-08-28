@@ -16,7 +16,7 @@ A modern, easy to use, feature-rich, and async ready API wrapper for Discord wri
 The Future of discord.py
 --------------------------
 
-Please read the [gist](https://gist.github.com/Rapptz/4a2f62751b9600a31a0d3c78100287f1) for the future of this project. It's been a good one.
+Please read the `gist <https://gist.github.com/Rapptz/4a2f62751b9600a31a0d3c78100287f1>`_ for the future of this project. It's been a good one.
 
 Key Features
 -------------
