@@ -222,7 +222,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             raise ValueError('This context is not valid.')
 
         # some state to revert to when we're done
-        index, previous = view.index, view.previous
+        index, previous, separator = view.index, view.previous, view.separator
         invoked_with = self.invoked_with
         invoked_subcommand = self.invoked_subcommand
         invoked_parents = self.invoked_parents
@@ -243,6 +243,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             self.command = cmd
             view.index = index
             view.previous = previous
+            view.separator = separator
             self.invoked_with = invoked_with
             self.invoked_subcommand = invoked_subcommand
             self.invoked_parents = invoked_parents

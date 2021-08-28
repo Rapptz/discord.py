@@ -354,6 +354,15 @@ Context
     .. automethod:: discord.ext.commands.Context.typing
         :async-with:
 
+.. _ext_commands_api_qualifiers:
+
+Qualifiers
+-----------
+
+.. autoclass:: discord.ext.commands.Separator
+
+.. autoclass:: discord.ext.commands.Quotation
+
 .. _ext_commands_api_converters:
 
 Converters

@@ -53,6 +53,7 @@ from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
+from .view import Separator, Quotation
 
 
 if TYPE_CHECKING:
@@ -269,11 +270,20 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         which calls converters. If ``False`` then cooldown processing is done
         first and then the converters are called second. Defaults to ``False``.
     extras: :class:`dict`
-        A dict of user provided extras to attach to the Command. 
-        
+        A dict of user provided extras to attach to the Command.
+
         .. note::
             This object may be copied by the library.
 
+
+        .. versionadded:: 2.0
+    separator: :class:`Separator`
+        The separator which separates each argument. By default, it is a whitespace
+        :class:`Separator`.
+
+        .. versionadded:: 2.0
+    quotation: :class:`Quotation`
+        The quotations for each argument. By default, it is ``None``.
 
         .. versionadded:: 2.0
     """
@@ -344,7 +354,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             cooldown = func.__commands_cooldown__
         except AttributeError:
             cooldown = kwargs.get('cooldown')
-        
+
         if cooldown is None:
             buckets = CooldownMapping(cooldown, BucketType.default)
         elif isinstance(cooldown, CooldownMapping):
@@ -384,6 +394,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
+        self.separator: Separator = kwargs.pop('separator', None) or Separator()
+        self.quotation: Quotation = kwargs.pop('quotation', None)
 
     @property
     def callback(self) -> Union[
@@ -705,6 +717,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         view = ctx.view
         iterator = iter(self.params.items())
+        view.separator = self._get_separator(ctx)
+        view.quotation = self._get_quotation(ctx)
 
         if self.cog is not None:
             # we have 'self' as the first parameter so just advance
@@ -1017,6 +1031,18 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     def _is_typing_optional(self, annotation: Union[T, Optional[T]]) -> TypeGuard[Optional[T]]:
         return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__  # type: ignore
 
+    def _get_separator(self, ctx):
+        if ctx.command.separator:
+            if ctx.bot.command_separator and not ctx.command.separator.key:
+                return ctx.bot.command_separator
+            return ctx.command.separator
+
+    def _get_quotation(self, ctx):
+        if ctx.command.quotation:
+            return ctx.command.quotation
+        elif ctx.bot.command_quotation:
+            return ctx.bot.command_quotation
+
     @property
     def signature(self) -> str:
         """:class:`str`: Returns a POSIX-like signature useful for help command output."""
@@ -1069,7 +1095,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             else:
                 result.append(f'<{name}>')
 
-        return ' '.join(result)
+        if self.quotation:
+            (quotation_start, quotation_end) = self.quotation._initial_quotations
+            result = [f"{quotation_start}{r}{quotation_end}" for r in result]
+
+        return (self.separator.key or ' ').join(result)
 
     async def can_run(self, ctx: Context) -> bool:
         """|coro|
@@ -1431,7 +1461,10 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger
@@ -1465,7 +1498,10 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         view = ctx.view
         previous = view.index
         view.skip_ws()
+        sep = view.separator
+        view.separator = None
         trigger = view.get_word()
+        view.separator = sep
 
         if trigger:
             ctx.subcommand_passed = trigger
