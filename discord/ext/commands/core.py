@@ -276,6 +276,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
 
         .. versionadded:: 2.0
+    inherit: :class:`bool`
+        Indicates if pre and post invoke hooks from the command's group
+        (if it has one) should be called when the command is called.
+        Defaults to ``True``
+
+        .. versionadded:: 2.0
     """
     __original_kwargs__: Dict[str, Any]
 
@@ -364,6 +370,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.ignore_extra: bool = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)
         self.cog: Optional[CogT] = None
+        self.inherit: bool = kwargs.get('inherit', True)
 
         # bandaid for the fact that sometimes parent can be the bot instance
         parent = kwargs.get('parent')
@@ -749,8 +756,21 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     async def call_before_hooks(self, ctx: Context) -> None:
         # now that we're done preparing we can call the pre-command hooks
-        # first, call the command local hook:
         cog = self.cog
+        parent = self.parent
+
+        if self.inherit:
+            parent_before_invoke = getattr(self.parent, '_before_invoke', None)
+        else:
+            parent_before_invoke = None 
+
+        if parent is not None:
+            # parent is a Group
+            propagate = parent.propagate # type: ignore
+        else:
+            propagate = False
+
+        # first, call the command local hook:
         if self._before_invoke is not None:
             # should be cog if @commands.before_invoke is used
             instance = getattr(self._before_invoke, '__self__', cog)
@@ -760,6 +780,13 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 await self._before_invoke(instance, ctx)  # type: ignore
             else:
                 await self._before_invoke(ctx)  # type: ignore
+
+        if parent_before_invoke is not None and propagate:
+            instance = getattr(parent_before_invoke, '__self__', cog)
+            if instance:
+                await parent_before_invoke(instance, ctx)
+            else:
+                await parent_before_invoke(ctx)
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -774,12 +801,32 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     async def call_after_hooks(self, ctx: Context) -> None:
         cog = self.cog
+        parent = self.parent
+
+        if self.inherit:
+            parent_after_invoke = getattr(self.parent, '_after_invoke', None)
+        else:
+            parent_after_invoke = None
+
+        if parent is not None:
+            # parent is a Group
+            propagate = parent.propagate # type: ignore
+        else:
+            propagate = False
+
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
             if instance:
                 await self._after_invoke(instance, ctx)  # type: ignore
             else:
                 await self._after_invoke(ctx)  # type: ignore
+
+        if parent_after_invoke is not None and propagate:
+            instance = getattr(parent_after_invoke, '__self__', cog)
+            if instance:
+                await parent_after_invoke(instance, ctx)  # type: ignore
+            else:
+                await parent_after_invoke(ctx)  # type: ignore
 
         # call the cog local hook if applicable:
         if cog is not None:
@@ -1116,6 +1163,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     if not ret:
                         return False
 
+            parent = self.parent
+            if parent is not None:
+                # self.parent is a Group here
+                propagate = parent.propagate # type: ignore
+            else:
+                propagate = False
             predicates = self.checks
             if not predicates:
                 # since we have no checks, then we just return True.
@@ -1403,9 +1456,16 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
     case_insensitive: :class:`bool`
         Indicates if the group's commands should be case insensitive.
         Defaults to ``False``.
+    propagate: :class:`bool`
+        Indicates if pre and post invoke hooks should be called for
+        the group's commands.
+        Defaults to ``True``
+
+        .. versionadded:: 2.0
     """
     def __init__(self, *args: Any, **attrs: Any) -> None:
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
+        self.propagate: bool = attrs.pop('propagate', True)
         super().__init__(*args, **attrs)
 
     def copy(self: GroupT) -> GroupT:
