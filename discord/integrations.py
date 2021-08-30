@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,11 +22,35 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import datetime
-from .utils import _get_as_snowflake, get, parse_time
+from typing import Any, Dict, Optional, TYPE_CHECKING, overload, Type, Tuple
+from .utils import _get_as_snowflake, parse_time, MISSING
 from .user import User
 from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
+
+__all__ = (
+    'IntegrationAccount',
+    'IntegrationApplication',
+    'Integration',
+    'StreamIntegration',
+    'BotIntegration',
+)
+
+if TYPE_CHECKING:
+    from .types.integration import (
+        IntegrationAccount as IntegrationAccountPayload,
+        Integration as IntegrationPayload,
+        StreamIntegration as StreamIntegrationPayload,
+        BotIntegration as BotIntegrationPayload,
+        IntegrationType,
+        IntegrationApplication as IntegrationApplicationPayload,
+    )
+    from .guild import Guild
+    from .role import Role
+
 
 class IntegrationAccount:
     """Represents an integration account.
@@ -37,7 +59,7 @@ class IntegrationAccount:
 
     Attributes
     -----------
-    id: :class:`int`
+    id: :class:`str`
         The account ID.
     name: :class:`str`
         The account name.
@@ -45,12 +67,13 @@ class IntegrationAccount:
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, **kwargs):
-        self.id = kwargs.pop('id')
-        self.name = kwargs.pop('name')
+    def __init__(self, data: IntegrationAccountPayload) -> None:
+        self.id: str = data['id']
+        self.name: str = data['name']
 
-    def __repr__(self):
-        return '<IntegrationAccount id={0.id} name={0.name!r}>'.format(self)
+    def __repr__(self) -> str:
+        return f'<IntegrationAccount id={self.id} name={self.name!r}>'
+
 
 class Integration:
     """Represents a guild integration.
@@ -69,10 +92,85 @@ class Integration:
         The integration type (i.e. Twitch).
     enabled: :class:`bool`
         Whether the integration is currently enabled.
+    account: :class:`IntegrationAccount`
+        The account linked to this integration.
+    user: :class:`User`
+        The user that added this integration.
+    """
+
+    __slots__ = (
+        'guild',
+        'id',
+        '_state',
+        'type',
+        'name',
+        'account',
+        'user',
+        'enabled',
+    )
+
+    def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
+        self.guild = guild
+        self._state = guild._state
+        self._from_data(data)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
+
+    def _from_data(self, data: IntegrationPayload) -> None:
+        self.id: int = int(data['id'])
+        self.type: IntegrationType = data['type']
+        self.name: str = data['name']
+        self.account: IntegrationAccount = IntegrationAccount(data['account'])
+
+        user = data.get('user')
+        self.user = User(state=self._state, data=user) if user else None
+        self.enabled: bool = data['enabled']
+
+    async def delete(self, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Deletes the integration.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        do this.
+
+        Parameters
+        -----------
+        reason: :class:`str`
+            The reason the integration was deleted. Shows up on the audit log.
+
+            .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to delete the integration.
+        HTTPException
+            Deleting the integration failed.
+        """
+        await self._state.http.delete_integration(self.guild.id, self.id, reason=reason)
+
+
+class StreamIntegration(Integration):
+    """Represents a stream integration for Twitch or YouTube.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The integration ID.
+    name: :class:`str`
+        The integration name.
+    guild: :class:`Guild`
+        The guild of the integration.
+    type: :class:`str`
+        The integration type (i.e. Twitch).
+    enabled: :class:`bool`
+        Whether the integration is currently enabled.
     syncing: :class:`bool`
         Where the integration is currently syncing.
-    role: :class:`Role`
-        The role which the integration uses for subscribers.
     enable_emoticons: Optional[:class:`bool`]
         Whether emoticons should be synced for this integration (currently twitch only).
     expire_behaviour: :class:`ExpireBehaviour`
@@ -84,40 +182,48 @@ class Integration:
     account: :class:`IntegrationAccount`
         The integration account information.
     synced_at: :class:`datetime.datetime`
-        When the integration was last synced.
+        An aware UTC datetime representing when the integration was last synced.
     """
 
-    __slots__ = ('id', '_state', 'guild', 'name', 'enabled', 'type',
-                 'syncing', 'role', 'expire_behaviour', 'expire_behavior',
-                 'expire_grace_period', 'synced_at', 'user', 'account',
-                 'enable_emoticons', '_role_id')
+    __slots__ = (
+        'revoked',
+        'expire_behaviour',
+        'expire_grace_period',
+        'synced_at',
+        '_role_id',
+        'syncing',
+        'enable_emoticons',
+        'subscriber_count',
+    )
 
-    def __init__(self, *, data, guild):
-        self.guild = guild
-        self._state = guild._state
-        self._from_data(data)
+    def _from_data(self, data: StreamIntegrationPayload) -> None:
+        super()._from_data(data)
+        self.revoked: bool = data['revoked']
+        self.expire_behaviour: ExpireBehaviour = try_enum(ExpireBehaviour, data['expire_behavior'])
+        self.expire_grace_period: int = data['expire_grace_period']
+        self.synced_at: datetime.datetime = parse_time(data['synced_at'])
+        self._role_id: Optional[int] = _get_as_snowflake(data, 'role_id')
+        self.syncing: bool = data['syncing']
+        self.enable_emoticons: bool = data['enable_emoticons']
+        self.subscriber_count: int = data['subscriber_count']
 
-    def __repr__(self):
-        return '<Integration id={0.id} name={0.name!r} type={0.type!r}>'.format(self)
+    @property
+    def expire_behavior(self) -> ExpireBehaviour:
+        """:class:`ExpireBehaviour`: An alias for :attr:`expire_behaviour`."""
+        return self.expire_behaviour
 
-    def _from_data(self, integ):
-        self.id = _get_as_snowflake(integ, 'id')
-        self.name = integ['name']
-        self.type = integ['type']
-        self.enabled = integ['enabled']
-        self.syncing = integ['syncing']
-        self._role_id = _get_as_snowflake(integ, 'role_id')
-        self.role = get(self.guild.roles, id=self._role_id)
-        self.enable_emoticons = integ.get('enable_emoticons')
-        self.expire_behaviour = try_enum(ExpireBehaviour, integ['expire_behavior'])
-        self.expire_behavior = self.expire_behaviour
-        self.expire_grace_period = integ['expire_grace_period']
-        self.synced_at = parse_time(integ['synced_at'])
+    @property
+    def role(self) -> Optional[Role]:
+        """Optional[:class:`Role`] The role which the integration uses for subscribers."""
+        return self.guild.get_role(self._role_id)  # type: ignore
 
-        self.user = User(state=self._state, data=integ['user'])
-        self.account = IntegrationAccount(**integ['account'])
-
-    async def edit(self, **fields):
+    async def edit(
+        self,
+        *,
+        expire_behaviour: ExpireBehaviour = MISSING,
+        expire_grace_period: int = MISSING,
+        enable_emoticons: bool = MISSING,
+    ) -> None:
         """|coro|
 
         Edits the integration.
@@ -143,34 +249,24 @@ class Integration:
         InvalidArgument
             ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
-        try:
-            expire_behaviour = fields['expire_behaviour']
-        except KeyError:
-            expire_behaviour = fields.get('expire_behavior', self.expire_behaviour)
+        payload: Dict[str, Any] = {}
+        if expire_behaviour is not MISSING:
+            if not isinstance(expire_behaviour, ExpireBehaviour):
+                raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
 
-        if not isinstance(expire_behaviour, ExpireBehaviour):
-            raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
+            payload['expire_behavior'] = expire_behaviour.value
 
-        expire_grace_period = fields.get('expire_grace_period', self.expire_grace_period)
+        if expire_grace_period is not MISSING:
+            payload['expire_grace_period'] = expire_grace_period
 
-        payload = {
-            'expire_behavior': expire_behaviour.value,
-            'expire_grace_period': expire_grace_period,
-        }
-
-        enable_emoticons = fields.get('enable_emoticons')
-
-        if enable_emoticons is not None:
+        if enable_emoticons is not MISSING:
             payload['enable_emoticons'] = enable_emoticons
 
+        # This endpoint is undocumented.
+        # Unsure if it returns the data or not as a result
         await self._state.http.edit_integration(self.guild.id, self.id, **payload)
 
-        self.expire_behaviour = expire_behaviour
-        self.expire_behavior = self.expire_behaviour
-        self.expire_grace_period = expire_grace_period
-        self.enable_emoticons = enable_emoticons
-
-    async def sync(self):
+    async def sync(self) -> None:
         """|coro|
 
         Syncs the integration.
@@ -186,21 +282,85 @@ class Integration:
             Syncing the integration failed.
         """
         await self._state.http.sync_integration(self.guild.id, self.id)
-        self.synced_at = datetime.datetime.utcnow()
+        self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
-    async def delete(self):
-        """|coro|
 
-        Deletes the integration.
+class IntegrationApplication:
+    """Represents an application for a bot integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+    .. versionadded:: 2.0
 
-        Raises
-        -------
-        Forbidden
-            You do not have permission to delete the integration.
-        HTTPException
-            Deleting the integration failed.
-        """
-        await self._state.http.delete_integration(self.guild.id, self.id)
+    Attributes
+    ----------
+    id: :class:`int`
+        The ID for this application.
+    name: :class:`str`
+        The application's name.
+    icon: Optional[:class:`str`]
+        The application's icon hash.
+    description: :class:`str`
+        The application's description. Can be an empty string.
+    summary: :class:`str`
+        The summary of the application. Can be an empty string.
+    user: Optional[:class:`User`]
+        The bot user on this application.
+    """
+
+    __slots__ = (
+        'id',
+        'name',
+        'icon',
+        'description',
+        'summary',
+        'user',
+    )
+
+    def __init__(self, *, data: IntegrationApplicationPayload, state):
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.icon: Optional[str] = data['icon']
+        self.description: str = data['description']
+        self.summary: str = data['summary']
+        user = data.get('bot')
+        self.user: Optional[User] = User(state=state, data=user) if user else None
+
+
+class BotIntegration(Integration):
+    """Represents a bot integration on discord.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The integration ID.
+    name: :class:`str`
+        The integration name.
+    guild: :class:`Guild`
+        The guild of the integration.
+    type: :class:`str`
+        The integration type (i.e. Twitch).
+    enabled: :class:`bool`
+        Whether the integration is currently enabled.
+    user: :class:`User`
+        The user that added this integration.
+    account: :class:`IntegrationAccount`
+        The integration account information.
+    application: :class:`IntegrationApplication`
+        The application tied to this integration.
+    """
+
+    __slots__ = ('application',)
+
+    def _from_data(self, data: BotIntegrationPayload) -> None:
+        super()._from_data(data)
+        self.application = IntegrationApplication(data=data['application'], state=self._state)
+
+
+def _integration_factory(value: str) -> Tuple[Type[Integration], str]:
+    if value == 'discord':
+        return BotIntegration, value
+    elif value in ('twitch', 'youtube'):
+        return StreamIntegration, value
+    else:
+        return Integration, value

@@ -5,7 +5,7 @@
 Commands
 ==========
 
-One of the most appealing aspect of the command extension is how easy it is to define commands and
+One of the most appealing aspects of the command extension is how easy it is to define commands and
 how you can arbitrarily nest groups and commands to have a rich sub-command system.
 
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
@@ -99,7 +99,7 @@ Since positional arguments are just regular Python arguments, you can have as ma
 
     @bot.command()
     async def test(ctx, arg1, arg2):
-        await ctx.send('You passed {} and {}'.format(arg1, arg2))
+        await ctx.send(f'You passed {arg1} and {arg2}')
 
 Variable
 ++++++++++
@@ -111,7 +111,8 @@ similar to how variable list parameters are done in Python:
 
     @bot.command()
     async def test(ctx, *args):
-        await ctx.send('{} arguments: {}'.format(len(args), ', '.join(args)))
+        arguments = ', '.join(args)
+        await ctx.send(f'{len(args)} arguments: {arguments}')
 
 This allows our user to accept either one or many arguments as they please. This works similar to positional arguments,
 so multi-word parameters should be quoted.
@@ -193,6 +194,8 @@ Converters come in a few flavours:
 
 - A custom class that inherits from :class:`~ext.commands.Converter`.
 
+.. _ext_commands_basic_converters:
+
 Basic Converters
 ++++++++++++++++++
 
@@ -254,7 +257,7 @@ An example converter:
     class Slapper(commands.Converter):
         async def convert(self, ctx, argument):
             to_slap = random.choice(ctx.guild.members)
-            return '{0.author} slapped {1} because *{2}*'.format(ctx, to_slap, argument)
+            return f'{ctx.author} slapped {to_slap} because *{argument}*'
 
     @bot.command()
     async def slap(ctx, *, reason: Slapper):
@@ -325,7 +328,7 @@ For example, a common idiom would be to have a class and a converter for that cl
         else:
             await ctx.send("Hm you're not so new.")
 
-This can get tedious, so an inline advanced converter is possible through a ``classmethod`` inside the type:
+This can get tedious, so an inline advanced converter is possible through a :func:`classmethod` inside the type:
 
 .. code-block:: python3
 
@@ -363,7 +366,7 @@ For example, to receive a :class:`Member` you can just pass it as a converter:
 
     @bot.command()
     async def joined(ctx, *, member: discord.Member):
-        await ctx.send('{0} joined on {0.joined_at}'.format(member))
+        await ctx.send(f'{member} joined on {member.joined_at}')
 
 When this command is executed, it attempts to convert the string given into a :class:`Member` and then passes it as a
 parameter for the function. This works by checking if the string is a mention, an ID, a nickname, a username + discriminator,
@@ -371,19 +374,25 @@ or just a regular username. The default set of converters have been written to b
 
 A lot of discord models work out of the gate as a parameter:
 
+- :class:`Object` (since v2.0)
 - :class:`Member`
 - :class:`User`
-- :class:`TextChannel`
-- :class:`VoiceChannel`
-- :class:`CategoryChannel`
-- :class:`Role`
 - :class:`Message` (since v1.1)
 - :class:`PartialMessage` (since v1.7)
+- :class:`abc.GuildChannel` (since 2.0)
+- :class:`TextChannel`
+- :class:`VoiceChannel`
+- :class:`StageChannel` (since v1.7)
+- :class:`StoreChannel` (since v1.7)
+- :class:`CategoryChannel`
 - :class:`Invite`
+- :class:`Guild` (since v1.7)
+- :class:`Role`
 - :class:`Game`
+- :class:`Colour`
 - :class:`Emoji`
 - :class:`PartialEmoji`
-- :class:`Colour`
+- :class:`Thread` (since v2.0)
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
 specify.
@@ -394,31 +403,43 @@ converter is given below:
 +--------------------------+-------------------------------------------------+
 |     Discord Class        |                    Converter                    |
 +--------------------------+-------------------------------------------------+
+| :class:`Object`          | :class:`~ext.commands.ObjectConverter`          |
++--------------------------+-------------------------------------------------+
 | :class:`Member`          | :class:`~ext.commands.MemberConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`User`            | :class:`~ext.commands.UserConverter`            |
 +--------------------------+-------------------------------------------------+
 | :class:`Message`         | :class:`~ext.commands.MessageConverter`         |
 +--------------------------+-------------------------------------------------+
 | :class:`PartialMessage`  | :class:`~ext.commands.PartialMessageConverter`  |
 +--------------------------+-------------------------------------------------+
-| :class:`User`            | :class:`~ext.commands.UserConverter`            |
+| :class:`.GuildChannel`   | :class:`~ext.commands.GuildChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`TextChannel`     | :class:`~ext.commands.TextChannelConverter`     |
 +--------------------------+-------------------------------------------------+
 | :class:`VoiceChannel`    | :class:`~ext.commands.VoiceChannelConverter`    |
 +--------------------------+-------------------------------------------------+
-| :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
+| :class:`StageChannel`    | :class:`~ext.commands.StageChannelConverter`    |
 +--------------------------+-------------------------------------------------+
-| :class:`Role`            | :class:`~ext.commands.RoleConverter`            |
+| :class:`StoreChannel`    | :class:`~ext.commands.StoreChannelConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
 +--------------------------+-------------------------------------------------+
 | :class:`Invite`          | :class:`~ext.commands.InviteConverter`          |
 +--------------------------+-------------------------------------------------+
+| :class:`Guild`           | :class:`~ext.commands.GuildConverter`           |
++--------------------------+-------------------------------------------------+
+| :class:`Role`            | :class:`~ext.commands.RoleConverter`            |
++--------------------------+-------------------------------------------------+
 | :class:`Game`            | :class:`~ext.commands.GameConverter`            |
++--------------------------+-------------------------------------------------+
+| :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
 +--------------------------+-------------------------------------------------+
 | :class:`Emoji`           | :class:`~ext.commands.EmojiConverter`           |
 +--------------------------+-------------------------------------------------+
 | :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
 +--------------------------+-------------------------------------------------+
-| :class:`Colour`          | :class:`~ext.commands.ColourConverter`          |
+| :class:`Thread`          | :class:`~ext.commands.ThreadConverter`          |
 +--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
@@ -481,7 +502,7 @@ Consider the following example:
 
     @bot.command()
     async def bottles(ctx, amount: typing.Optional[int] = 99, *, liquid="beer"):
-        await ctx.send('{} bottles of {} on the wall!'.format(amount, liquid))
+        await ctx.send(f'{amount} bottles of {liquid} on the wall!')
 
 
 .. image:: /images/commands/optional1.png
@@ -493,10 +514,31 @@ resumes handling, which in this case would be to pass it into the ``liquid`` par
 
     This converter only works in regular positional parameters, not variable parameters or keyword-only parameters.
 
+typing.Literal
+^^^^^^^^^^^^^^^^
+
+A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
+after being converted to the same type. For example, given the following:
+
+.. code-block:: python3
+
+    from typing import Literal
+
+    @bot.command()
+    async def shop(ctx, buy_sell: Literal['buy', 'sell'], amount: Literal[1, 2], *, item: str):
+        await ctx.send(f'{buy_sell.capitalize()}ing {amount} {item}(s)!')
+
+
+The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sell"`` and ``amount`` must convert to the
+``int`` ``1`` or ``2``. If ``buy_sell`` or ``amount`` don't match any value, then a special error is raised,
+:exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
+
+Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
+
 Greedy
 ^^^^^^^^
 
-The :data:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
+The :class:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied
 to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert
 any further.
 
@@ -507,7 +549,7 @@ Consider the following example:
     @bot.command()
     async def slap(ctx, members: commands.Greedy[discord.Member], *, reason='no reason'):
         slapped = ", ".join(x.name for x in members)
-        await ctx.send('{} just got slapped for {}'.format(slapped, reason))
+        await ctx.send(f'{slapped} just got slapped for {reason}')
 
 When invoked, it allows for any number of members to be passed in:
 
@@ -517,9 +559,9 @@ The type passed when using this converter depends on the parameter type that it 
 
 - Positional parameter types will receive either the default parameter or a :class:`list` of the converted values.
 - Variable parameter types will be a :class:`tuple` as usual.
-- Keyword-only parameter types will be the same as if :data:`~ext.commands.Greedy` was not passed at all.
+- Keyword-only parameter types will be the same as if :class:`~ext.commands.Greedy` was not passed at all.
 
-:data:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
+:class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value.
 
 When mixed with the :data:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:
 
@@ -546,7 +588,7 @@ This command can be invoked any of the following ways:
 
 .. warning::
 
-    The usage of :data:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
+    The usage of :class:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a
     price, they open you up to some parsing ambiguities that might surprise some people.
 
     For example, a signature expecting a :data:`typing.Optional` of a :class:`discord.Member` followed by a
@@ -556,7 +598,165 @@ This command can be invoked any of the following ways:
     allowed through custom converters or reordering the parameters to minimise clashes.
 
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
-    :data:`~ext.commands.Greedy` are forbidden as parameters for the :data:`~ext.commands.Greedy` converter.
+    :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
+
+.. _ext_commands_flag_converter:
+
+FlagConverter
+++++++++++++++
+
+.. versionadded:: 2.0
+
+A :class:`~ext.commands.FlagConverter` allows the user to specify user-friendly "flags" using :pep:`526` type annotations
+or a syntax more reminiscent of the :mod:`py:dataclasses` module.
+
+For example, the following code:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+    @commands.command()
+    async def ban(ctx, *, flags: BanFlags):
+        plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
+        await ctx.send(f'Banned {flags.member} for {flags.reason!r} (deleted {plural} worth of messages)')
+
+Allows the user to invoke the command using a simple flag-like syntax:
+
+.. image:: /images/commands/flags1.png
+
+Flags use a syntax that allows the user to not require quotes when passing in values to the flag. The goal of the
+flag syntax is to be as user-friendly as possible. This makes flags a good choice for complicated commands that can have
+multiple knobs to turn or simulating keyword-only parameters in your external command interface. **It is recommended to use
+keyword-only parameters with the flag converter**. This ensures proper parsing and behaviour with quoting.
+
+Internally, the :class:`~ext.commands.FlagConverter` class examines the class to find flags. A flag can either be a
+class variable with a type annotation or a class variable that's been assigned the result of the :func:`~ext.commands.flag`
+function. These flags are then used to define the interface that your users will use. The annotations correspond to
+the converters that the flag arguments must adhere to.
+
+For most use cases, no extra work is required to define flags. However, if customisation is needed to control the flag name
+or the default value then the :func:`~ext.commands.flag` function can come in handy:
+
+.. code-block:: python3
+
+    from typing import List
+
+    class BanFlags(commands.FlagConverter):
+        members: List[discord.Member] = commands.flag(name='member', default=lambda ctx: [])
+
+This tells the parser that the ``members`` attribute is mapped to a flag named ``member`` and that
+the default value is an empty list. For greater customisability, the default can either be a value or a callable
+that takes the :class:`~ext.commands.Context` as a sole parameter. This callable can either be a function or a coroutine.
+
+In order to customise the flag syntax we also have a few options that can be passed to the class parameter list:
+
+.. code-block:: python3
+
+    # --hello world syntax
+    class PosixLikeFlags(commands.FlagConverter, delimiter=' ', prefix='--'):
+        hello: str
+
+
+    # /make food
+    class WindowsLikeFlags(commands.FlagConverter, prefix='/', delimiter=''):
+        make: str
+
+    # TOPIC: not allowed nsfw: yes Slowmode: 100
+    class Settings(commands.FlagConverter, case_insensitive=True):
+        topic: Optional[str]
+        nsfw: Optional[bool]
+        slowmode: Optional[int]
+
+.. note::
+
+    Despite the similarities in these examples to command like arguments, the syntax and parser is not
+    a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
+    all flags need a corresponding value.
+
+The flag converter is similar to regular commands and allows you to use most types of converters
+(with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
+annotations as described below.
+
+typing.List
+^^^^^^^^^^^^^
+
+If a list is given as a flag annotation it tells the parser that the argument can be passed multiple times.
+
+For example, augmenting the example above:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    from typing import List
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        members: List[discord.Member] = commands.flag(name='member')
+        reason: str
+        days: int = 1
+
+    @commands.command()
+    async def ban(ctx, *, flags: BanFlags):
+        for member in flags.members:
+            await member.ban(reason=flags.reason, delete_message_days=flags.days)
+
+        members = ', '.join(str(member) for member in flags.members)
+        plural = f'{flags.days} days' if flags.days != 1 else f'{flags.days} day'
+        await ctx.send(f'Banned {members} for {flags.reason!r} (deleted {plural} worth of messages)')
+
+This is called by repeatedly specifying the flag:
+
+.. image:: /images/commands/flags2.png
+
+typing.Tuple
+^^^^^^^^^^^^^
+
+Since the above syntax can be a bit repetitive when specifying a flag many times, the :class:`py:tuple` type annotation
+allows for "greedy-like" semantics using a variadic tuple:
+
+.. code-block:: python3
+
+    from discord.ext import commands
+    from typing import Tuple
+    import discord
+
+    class BanFlags(commands.FlagConverter):
+        members: Tuple[discord.Member, ...]
+        reason: str
+        days: int = 1
+
+This allows the previous ``ban`` command to be called like this:
+
+.. image:: /images/commands/flags3.png
+
+The :class:`py:tuple` annotation also allows for parsing of pairs. For example, given the following code:
+
+.. code-block:: python3
+
+    # point: 10 11 point: 12 13
+    class Coordinates(commands.FlagConverter):
+        point: Tuple[int, int]
+
+
+.. warning::
+
+    Due to potential parsing ambiguities, the parser expects tuple arguments to be quoted
+    if they require spaces. So if one of the inner types is :class:`str` and the argument requires spaces
+    then quotes should be used to disambiguate it from the other element of the tuple.
+
+typing.Dict
+^^^^^^^^^^^^^
+
+A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` except with the return type
+given as a :class:`dict` rather than a :class:`list`.
+
 
 .. _ext_commands_error_handler:
 
@@ -567,7 +767,7 @@ When our commands fail to parse we will, by default, receive a noisy error in ``
 that an error has happened and has been silently ignored.
 
 In order to handle our errors, we must use something called an error handler. There is a global error handler, called
-:func:`on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
+:func:`.on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is
 called for every error reached.
 
 Most of the time however, we want to handle an error local to the command itself. Luckily, commands come with local error
@@ -578,8 +778,8 @@ handlers that allow us to do just that. First we decorate an error handler funct
     @bot.command()
     async def info(ctx, *, member: discord.Member):
         """Tells you some info about the member."""
-        fmt = '{0} joined on {0.joined_at} and has {1} roles.'
-        await ctx.send(fmt.format(member, len(member.roles)))
+        msg = f'{member} joined on {member.joined_at} and has {len(member.roles)} roles.'
+        await ctx.send(msg)
 
     @info.error
     async def info_error(ctx, error):

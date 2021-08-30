@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # discord.py documentation build configuration file, created by
 # sphinx-quickstart on Fri Aug 21 05:43:30 2015.
@@ -41,9 +40,13 @@ extensions = [
     'exception_hierarchy',
     'attributetable',
     'resourcelinks',
+    'nitpick_file_ignorer',
 ]
 
 autodoc_member_order = 'bysource'
+autodoc_typehints = 'none'
+# maybe consider this?
+# napoleon_attr_annotations = False
 
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
@@ -53,7 +56,7 @@ extlinks = {
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
-  'req': ('http://docs.python-requests.org/en/latest/', 'requests.inv')
+  'req': ('https://docs.python-requests.org/en/latest/', None)
 }
 
 rst_prolog = """
@@ -76,8 +79,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'discord.py'
-copyright = u'2015-present, Rapptz'
+project = 'discord.py'
+copyright = '2015-present, Rapptz'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -140,6 +143,13 @@ pygments_style = 'friendly'
 #keep_warnings = False
 
 
+# Nitpicky mode options
+nitpick_ignore_files = [
+  "migrating_to_async",
+  "migrating",
+  "whats_new",
+]
+
 # -- Options for HTML output ----------------------------------------------
 
 html_experimental_html5_writer = True
@@ -160,7 +170,7 @@ resource_links = {
   'discord': 'https://discord.gg/r3sSKJJ',
   'issues': 'https://github.com/Rapptz/discord.py/issues',
   'discussions': 'https://github.com/Rapptz/discord.py/discussions',
-  'examples': 'https://github.com/Rapptz/discord.py/tree/%s/examples' % branch,
+  'examples': f'https://github.com/Rapptz/discord.py/tree/{branch}/examples',
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -283,8 +293,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'discord.py.tex', u'discord.py Documentation',
-   u'Rapptz', 'manual'),
+  ('index', 'discord.py.tex', 'discord.py Documentation',
+   'Rapptz', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -313,8 +323,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'discord.py', u'discord.py Documentation',
-     [u'Rapptz'], 1)
+    ('index', 'discord.py', 'discord.py Documentation',
+     ['Rapptz'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -327,8 +337,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'discord.py', u'discord.py Documentation',
-   u'Rapptz', 'discord.py', 'One line description of project.',
+  ('index', 'discord.py', 'discord.py Documentation',
+   'Rapptz', 'discord.py', 'One line description of project.',
    'Miscellaneous'),
 ]
 

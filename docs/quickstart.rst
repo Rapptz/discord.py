@@ -1,3 +1,5 @@
+:orphan:
+
 .. _quickstart:
 
 .. currentmodule:: discord
@@ -23,7 +25,7 @@ It looks something like this:
 
     @client.event
     async def on_ready():
-        print('We have logged in as {0.user}'.format(client))
+        print(f'We have logged in as {client.user}')
 
     @client.event
     async def on_message(message):
@@ -52,8 +54,9 @@ There's a lot going on here, so let's walk you through it step by step.
 4. Since the :func:`on_message` event triggers for *every* message received, we have to make
    sure that we ignore messages from ourselves. We do this by checking if the :attr:`Message.author`
    is the same as the :attr:`Client.user`.
-5. Afterwards, we check if the :class:`Message.content` starts with ``'$hello'``. If it is,
-   then we send a message in the channel it was used in with ``'Hello!'``.
+5. Afterwards, we check if the :class:`Message.content` starts with ``'$hello'``. If it does,
+   then we send a message in the channel it was used in with ``'Hello!'``. This is a basic way of 
+   handling commands, which can be later automated with the :doc:`./ext/commands/index` framework.
 6. Finally, we run the bot with our login token. If you need help getting your token or creating a bot,
    look in the :ref:`discord-intro` section.
 

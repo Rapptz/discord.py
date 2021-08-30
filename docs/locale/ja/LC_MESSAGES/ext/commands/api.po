@@ -1466,7 +1466,7 @@ msgid ":class:`.Member` -- A member the client can see."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_channel:1 of
-msgid "Returns a channel with the given ID."
+msgid "Returns a channel or thread with the given ID."
 msgstr ""
 
 #: discord.ext.commands.Bot.get_channel:3 discord.ext.commands.Bot.get_emoji:3
@@ -1481,8 +1481,8 @@ msgstr ""
 
 #: discord.ext.commands.Bot.get_channel:7 of
 #, fuzzy
-msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]"
-msgstr "Union[ :class:`.abc.GuildChannel` , :class:`.abc.PrivateChannel` ]"
+msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]"
+msgstr "Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]"
 
 #: discord.ext.commands.Bot.get_cog:1 of
 msgid "Gets the cog instance requested."
@@ -2551,7 +2551,7 @@ msgid "The function to remove from the checks."
 msgstr ""
 
 #: discord.ext.commands.Command.update:1 discord.ext.commands.Group.update:1 of
-msgid "Updates :class:`Command` instance with updated attribute."
+msgid "Updates :class:`Command` instance with updated attributes."
 msgstr ""
 
 #: discord.ext.commands.Command.update:3 discord.ext.commands.Group.update:3 of
@@ -6008,7 +6008,7 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid ""
-#~ "Optional[Union[:class:`.abc.GuildChannel`, "
+#~ "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 #~ ":class:`.abc.PrivateChannel`]]: Returns a channel"
 #~ " with the given ID."
 #~ msgstr ""

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -42,9 +40,9 @@ def show_version():
     if version_info.releaselevel != 'final':
         pkg = pkg_resources.get_distribution('discord.py')
         if pkg:
-            entries.append('    - discord.py pkg_resources: v{0}'.format(pkg.version))
+            entries.append(f'    - discord.py pkg_resources: v{pkg.version}')
 
-    entries.append('- aiohttp v{0.__version__}'.format(aiohttp))
+    entries.append(f'- aiohttp v{aiohttp.__version__}')
     uname = platform.uname()
     entries.append('- system info: {0.system} {0.release} {0.version}'.format(uname))
     print('\n'.join(entries))
@@ -53,8 +51,7 @@ def core(parser, args):
     if args.version:
         show_version()
 
-bot_template = """#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+_bot_template = """#!/usr/bin/env python3
 
 from discord.ext import commands
 import discord
@@ -67,10 +64,10 @@ class Bot(commands.{base}):
             try:
                 self.load_extension(cog)
             except Exception as exc:
-                print('Could not load extension {{0}} due to {{1.__class__.__name__}}: {{1}}'.format(cog, exc))
+                print(f'Could not load extension {{cog}} due to {{exc.__class__.__name__}}: {{exc}}')
 
     async def on_ready(self):
-        print('Logged on as {{0}} (ID: {{0.id}})'.format(self.user))
+        print(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
 
 
 bot = Bot()
@@ -80,7 +77,7 @@ bot = Bot()
 bot.run(config.token)
 """
 
-gitignore_template = """# Byte-compiled / optimized / DLL files
+_gitignore_template = """# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -110,9 +107,7 @@ var/
 config.py
 """
 
-cog_template = '''# -*- coding: utf-8 -*-
-
-from discord.ext import commands
+_cog_template = '''from discord.ext import commands
 import discord
 
 class {name}(commands.Cog{attrs}):
@@ -125,7 +120,7 @@ def setup(bot):
     bot.add_cog({name}(bot))
 '''
 
-cog_extras = '''
+_cog_extras = '''
     def cog_unload(self):
         # clean up logic goes here
         pass
@@ -175,7 +170,7 @@ _base_table = {
 # NUL (0) and 1-31 are disallowed
 _base_table.update((chr(i), None) for i in range(32))
 
-translation_table = str.maketrans(_base_table)
+_translation_table = str.maketrans(_base_table)
 
 def to_path(parser, name, *, replace_spaces=False):
     if isinstance(name, Path):
@@ -187,7 +182,7 @@ def to_path(parser, name, *, replace_spaces=False):
         if len(name) <= 4 and name.upper() in forbidden:
             parser.error('invalid directory name given, use a different one')
 
-    name = name.translate(translation_table)
+    name = name.translate(_translation_table)
     if replace_spaces:
         name = name.replace(' ', '-')
     return Path(name)
@@ -200,7 +195,7 @@ def newbot(parser, args):
     try:
         new_directory.mkdir(exist_ok=True, parents=True)
     except OSError as exc:
-        parser.error('could not create our bot directory ({})'.format(exc))
+        parser.error(f'could not create our bot directory ({exc})')
 
     cogs = new_directory / 'cogs'
 
@@ -209,27 +204,27 @@ def newbot(parser, args):
         init = cogs / '__init__.py'
         init.touch()
     except OSError as exc:
-        print('warning: could not create cogs directory ({})'.format(exc))
+        print(f'warning: could not create cogs directory ({exc})')
 
     try:
         with open(str(new_directory / 'config.py'), 'w', encoding='utf-8') as fp:
             fp.write('token = "place your token here"\ncogs = []\n')
     except OSError as exc:
-        parser.error('could not create config file ({})'.format(exc))
+        parser.error(f'could not create config file ({exc})')
 
     try:
         with open(str(new_directory / 'bot.py'), 'w', encoding='utf-8') as fp:
             base = 'Bot' if not args.sharded else 'AutoShardedBot'
-            fp.write(bot_template.format(base=base, prefix=args.prefix))
+            fp.write(_bot_template.format(base=base, prefix=args.prefix))
     except OSError as exc:
-        parser.error('could not create bot file ({})'.format(exc))
+        parser.error(f'could not create bot file ({exc})')
 
     if not args.no_git:
         try:
             with open(str(new_directory / '.gitignore'), 'w', encoding='utf-8') as fp:
-                fp.write(gitignore_template)
+                fp.write(_gitignore_template)
         except OSError as exc:
-            print('warning: could not create .gitignore file ({})'.format(exc))
+            print(f'warning: could not create .gitignore file ({exc})')
 
     print('successfully made bot at', new_directory)
 
@@ -238,14 +233,14 @@ def newcog(parser, args):
     try:
         cog_dir.mkdir(exist_ok=True)
     except OSError as exc:
-        print('warning: could not create cogs directory ({})'.format(exc))
+        print(f'warning: could not create cogs directory ({exc})')
 
     directory = cog_dir / to_path(parser, args.name)
     directory = directory.with_suffix('.py')
     try:
         with open(str(directory), 'w', encoding='utf-8') as fp:
             attrs = ''
-            extra = cog_extras if args.full else ''
+            extra = _cog_extras if args.full else ''
             if args.class_name:
                 name = args.class_name
             else:
@@ -257,12 +252,12 @@ def newcog(parser, args):
                     name = name.title()
 
             if args.display_name:
-                attrs += ', name="{}"'.format(args.display_name)
+                attrs += f', name="{args.display_name}"'
             if args.hide_commands:
                 attrs += ', command_attrs=dict(hidden=True)'
-            fp.write(cog_template.format(name=name, extra=extra, attrs=attrs))
+            fp.write(_cog_template.format(name=name, extra=extra, attrs=attrs))
     except OSError as exc:
-        parser.error('could not create cog file ({})'.format(exc))
+        parser.error(f'could not create cog file ({exc})')
     else:
         print('successfully made cog at', directory)
 

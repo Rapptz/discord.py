@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,10 +22,41 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Optional, Set, List
+
+if TYPE_CHECKING:
+    from .types.raw_models import (
+        MessageDeleteEvent,
+        BulkMessageDeleteEvent,
+        ReactionActionEvent,
+        MessageUpdateEvent,
+        ReactionClearEvent,
+        ReactionClearEmojiEvent,
+        IntegrationDeleteEvent
+    )
+    from .message import Message
+    from .partial_emoji import PartialEmoji
+    from .member import Member
+
+
+__all__ = (
+    'RawMessageDeleteEvent',
+    'RawBulkMessageDeleteEvent',
+    'RawMessageUpdateEvent',
+    'RawReactionActionEvent',
+    'RawReactionClearEvent',
+    'RawReactionClearEmojiEvent',
+    'RawIntegrationDeleteEvent',
+)
+
+
 class _RawReprMixin:
-    def __repr__(self):
-        value = ' '.join('%s=%r' % (attr, getattr(self, attr)) for attr in self.__slots__)
-        return '<%s %s>' % (self.__class__.__name__, value)
+    def __repr__(self) -> str:
+        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
+        return f'<{self.__class__.__name__} {value}>'
+
 
 class RawMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_message_delete` event.
@@ -46,14 +75,15 @@ class RawMessageDeleteEvent(_RawReprMixin):
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'cached_message')
 
-    def __init__(self, data):
-        self.message_id = int(data['id'])
-        self.channel_id = int(data['channel_id'])
-        self.cached_message = None
+    def __init__(self, data: MessageDeleteEvent) -> None:
+        self.message_id: int = int(data['id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.cached_message: Optional[Message] = None
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
 
 class RawBulkMessageDeleteEvent(_RawReprMixin):
     """Represents the event payload for a :func:`on_raw_bulk_message_delete` event.
@@ -72,15 +102,16 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
 
     __slots__ = ('message_ids', 'channel_id', 'guild_id', 'cached_messages')
 
-    def __init__(self, data):
-        self.message_ids = {int(x) for x in data.get('ids', [])}
-        self.channel_id = int(data['channel_id'])
-        self.cached_messages = []
+    def __init__(self, data: BulkMessageDeleteEvent) -> None:
+        self.message_ids: Set[int] = {int(x) for x in data.get('ids', [])}
+        self.channel_id: int = int(data['channel_id'])
+        self.cached_messages: List[Message] = []
 
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
 
 class RawMessageUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_message_edit` event.
@@ -107,16 +138,17 @@ class RawMessageUpdateEvent(_RawReprMixin):
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
 
-    def __init__(self, data):
-        self.message_id = int(data['id'])
-        self.channel_id = int(data['channel_id'])
-        self.data = data
-        self.cached_message = None
+    def __init__(self, data: MessageUpdateEvent) -> None:
+        self.message_id: int = int(data['id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.data: MessageUpdateEvent = data
+        self.cached_message: Optional[Message] = None
 
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
 
 class RawReactionActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_add` or
@@ -150,18 +182,19 @@ class RawReactionActionEvent(_RawReprMixin):
     __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
                  'event_type', 'member')
 
-    def __init__(self, data, emoji, event_type):
-        self.message_id = int(data['message_id'])
-        self.channel_id = int(data['channel_id'])
-        self.user_id = int(data['user_id'])
-        self.emoji = emoji
-        self.event_type = event_type
-        self.member = None
+    def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: str) -> None:
+        self.message_id: int = int(data['message_id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.user_id: int = int(data['user_id'])
+        self.emoji: PartialEmoji = emoji
+        self.event_type: str = event_type
+        self.member: Optional[Member] = None
 
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
 
 class RawReactionClearEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear` event.
@@ -178,14 +211,15 @@ class RawReactionClearEvent(_RawReprMixin):
 
     __slots__ = ('message_id', 'channel_id', 'guild_id')
 
-    def __init__(self, data):
-        self.message_id = int(data['message_id'])
-        self.channel_id = int(data['channel_id'])
+    def __init__(self, data: ReactionClearEvent) -> None:
+        self.message_id: int = int(data['message_id'])
+        self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
 
 class RawReactionClearEmojiEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_reaction_clear_emoji` event.
@@ -206,12 +240,39 @@ class RawReactionClearEmojiEvent(_RawReprMixin):
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'emoji')
 
-    def __init__(self, data, emoji):
-        self.emoji = emoji
-        self.message_id = int(data['message_id'])
-        self.channel_id = int(data['channel_id'])
+    def __init__(self, data: ReactionClearEmojiEvent, emoji: PartialEmoji) -> None:
+        self.emoji: PartialEmoji = emoji
+        self.message_id: int = int(data['message_id'])
+        self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
-            self.guild_id = None
+            self.guild_id: Optional[int] = None
+
+
+class RawIntegrationDeleteEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_integration_delete` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    integration_id: :class:`int`
+        The ID of the integration that got deleted.
+    application_id: Optional[:class:`int`]
+        The ID of the bot/OAuth2 application for this deleted integration.
+    guild_id: :class:`int`
+        The guild ID where the integration got deleted.
+    """
+
+    __slots__ = ('integration_id', 'application_id', 'guild_id')
+
+    def __init__(self, data: IntegrationDeleteEvent) -> None:
+        self.integration_id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+
+        try:
+            self.application_id: Optional[int] = int(data['application_id'])
+        except KeyError:
+            self.application_id: Optional[int] = None

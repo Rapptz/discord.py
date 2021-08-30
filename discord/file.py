@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,8 +22,16 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import os.path
+from __future__ import annotations
+from typing import Optional, TYPE_CHECKING, Union
+
+import os
 import io
+
+__all__ = (
+    'File',
+)
+
 
 class File:
     r"""A parameter object used for :meth:`abc.Messageable.send`
@@ -38,7 +44,7 @@ class File:
 
     Attributes
     -----------
-    fp: Union[:class:`str`, :class:`io.BufferedIOBase`]
+    fp: Union[:class:`os.PathLike`, :class:`io.BufferedIOBase`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open.
@@ -60,12 +66,21 @@ class File:
 
     __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
 
-    def __init__(self, fp, filename=None, *, spoiler=False):
-        self.fp = fp
+    if TYPE_CHECKING:
+        fp: io.BufferedIOBase
+        filename: Optional[str]
+        spoiler: bool
 
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike, io.BufferedIOBase],
+        filename: Optional[str] = None,
+        *,
+        spoiler: bool = False,
+    ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
-                raise ValueError('File buffer {!r} must be seekable and readable'.format(fp))
+                raise ValueError(f'File buffer {fp!r} must be seekable and readable')
             self.fp = fp
             self._original_pos = fp.tell()
             self._owner = False
@@ -94,7 +109,7 @@ class File:
 
         self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
 
-    def reset(self, *, seek=True):
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
         # starting from 0, as an implementation quirk
@@ -106,7 +121,7 @@ class File:
         if seek:
             self.fp.seek(self._original_pos)
 
-    def close(self):
+    def close(self) -> None:
         self.fp.close = self._closer
         if self._owner:
             self._closer()

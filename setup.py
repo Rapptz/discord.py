@@ -36,11 +36,23 @@ with open('README.rst') as f:
 extras_require = {
     'voice': ['PyNaCl>=1.3.0,<1.5'],
     'docs': [
-        'sphinx==3.0.3',
+        'sphinx==4.0.2',
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
+    ],
+    'speed': [
+        'orjson>=3.5.4',
     ]
 }
+
+packages = [
+    'discord',
+    'discord.types',
+    'discord.ui',
+    'discord.webhook',
+    'discord.ext.commands',
+    'discord.ext.tasks',
+]
 
 setup(name='discord.py',
       author='Rapptz',
@@ -50,7 +62,7 @@ setup(name='discord.py',
         "Issue tracker": "https://github.com/Rapptz/discord.py/issues",
       },
       version=version,
-      packages=['discord', 'discord.ext.commands', 'discord.ext.tasks'],
+      packages=packages,
       license='MIT',
       description='A Python wrapper for the Discord API',
       long_description=readme,
@@ -58,20 +70,19 @@ setup(name='discord.py',
       include_package_data=True,
       install_requires=requirements,
       extras_require=extras_require,
-      python_requires='>=3.5.3',
+      python_requires='>=3.8.0',
       classifiers=[
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Internet',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
+        'Typing :: Typed',
       ]
 )

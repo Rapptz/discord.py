@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,14 +22,37 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .asset import Asset
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar, Union
+import re
+
+from .asset import Asset, AssetMixin
+from .errors import InvalidArgument
 from . import utils
 
+__all__ = (
+    'PartialEmoji',
+)
+
+if TYPE_CHECKING:
+    from .state import ConnectionState
+    from datetime import datetime
+    from .types.message import PartialEmoji as PartialEmojiPayload
 
 class _EmojiTag:
     __slots__ = ()
 
-class PartialEmoji(_EmojiTag):
+    id: int
+
+    def _to_partial(self) -> PartialEmoji:
+        raise NotImplementedError
+
+
+PE = TypeVar('PE', bound='PartialEmoji')
+
+
+class PartialEmoji(_EmojiTag, AssetMixin):
     """Represents a "partial" emoji.
 
     This model will be given in two scenarios:
@@ -71,45 +92,90 @@ class PartialEmoji(_EmojiTag):
 
     __slots__ = ('animated', 'name', 'id', '_state')
 
-    def __init__(self, *, name, animated=False, id=None):
+    _CUSTOM_EMOJI_RE = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
+
+    if TYPE_CHECKING:
+        id: Optional[int]
+
+    def __init__(self, *, name: str, animated: bool = False, id: Optional[int] = None):
         self.animated = animated
         self.name = name
         self.id = id
-        self._state = None
+        self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls: Type[PE], data: Union[PartialEmojiPayload, Dict[str, Any]]) -> PE:
         return cls(
             animated=data.get('animated', False),
             id=utils._get_as_snowflake(data, 'id'),
-            name=data.get('name'),
+            name=data.get('name') or '',
         )
 
-    def to_dict(self):
-        o = { 'name': self.name }
+    @classmethod
+    def from_str(cls: Type[PE], value: str) -> PE:
+        """Converts a Discord string representation of an emoji to a :class:`PartialEmoji`.
+
+        The formats accepted are:
+
+        - ``a:name:id``
+        - ``<a:name:id>``
+        - ``name:id``
+        - ``<:name:id>``
+
+        If the format does not match then it is assumed to be a unicode emoji.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        value: :class:`str`
+            The string representation of an emoji.
+
+        Returns
+        --------
+        :class:`PartialEmoji`
+            The partial emoji from this string.
+        """
+        match = cls._CUSTOM_EMOJI_RE.match(value)
+        if match is not None:
+            groups = match.groupdict()
+            animated = bool(groups['animated'])
+            emoji_id = int(groups['id'])
+            name = groups['name']
+            return cls(name=name, animated=animated, id=emoji_id)
+
+        return cls(name=value, id=None, animated=False)
+
+    def to_dict(self) -> Dict[str, Any]:
+        o: Dict[str, Any] = {'name': self.name}
         if self.id:
             o['id'] = self.id
         if self.animated:
             o['animated'] = self.animated
         return o
 
+    def _to_partial(self) -> PartialEmoji:
+        return self
+
     @classmethod
-    def with_state(cls, state, *, name, animated=False, id=None):
+    def with_state(
+        cls: Type[PE], state: ConnectionState, *, name: str, animated: bool = False, id: Optional[int] = None
+    ) -> PE:
         self = cls(name=name, animated=animated, id=id)
         self._state = state
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.id is None:
             return self.name
         if self.animated:
-            return '<a:%s:%s>' % (self.name, self.id)
-        return '<:%s:%s>' % (self.name, self.id)
+            return f'<a:{self.name}:{self.id}>'
+        return f'<:{self.name}:{self.id}>'
 
     def __repr__(self):
-        return '<{0.__class__.__name__} animated={0.animated} name={0.name!r} id={0.id}>'.format(self)
+        return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if self.is_unicode_emoji():
             return isinstance(other, PartialEmoji) and self.name == other.name
 
@@ -117,75 +183,50 @@ class PartialEmoji(_EmojiTag):
             return self.id == other.id
         return False
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.id, self.name))
 
-    def is_custom_emoji(self):
+    def is_custom_emoji(self) -> bool:
         """:class:`bool`: Checks if this is a custom non-Unicode emoji."""
         return self.id is not None
 
-    def is_unicode_emoji(self):
+    def is_unicode_emoji(self) -> bool:
         """:class:`bool`: Checks if this is a Unicode emoji."""
         return self.id is None
 
-    def _as_reaction(self):
+    def _as_reaction(self) -> str:
         if self.id is None:
             return self.name
-        return '%s:%s' % (self.name, self.id)
+        return f'{self.name}:{self.id}'
 
     @property
-    def created_at(self):
+    def created_at(self) -> Optional[datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the emoji's creation time in UTC, or None if Unicode emoji.
 
         .. versionadded:: 1.6
         """
-        if self.is_unicode_emoji():
+        if self.id is None:
             return None
 
         return utils.snowflake_time(self.id)
 
     @property
-    def url(self):
-        """:class:`Asset`: Returns the asset of the emoji, if it is custom.
+    def url(self) -> str:
+        """:class:`str`: Returns the URL of the emoji, if it is custom.
 
-        This is equivalent to calling :meth:`url_as` with
-        the default parameters (i.e. png/gif detection).
-        """
-        return self.url_as(format=None)
-
-    def url_as(self, *, format=None, static_format="png"):
-        """Returns an :class:`Asset` for the emoji's url, if it is custom.
-
-        The format must be one of 'webp', 'jpeg', 'jpg', 'png' or 'gif'.
-        'gif' is only valid for animated emojis.
-
-        .. versionadded:: 1.7
-
-        Parameters
-        -----------
-        format: Optional[:class:`str`]
-            The format to attempt to convert the emojis to.
-            If the format is ``None``, then it is automatically
-            detected as either 'gif' or static_format, depending on whether the
-            emoji is animated or not.
-        static_format: Optional[:class:`str`]
-            Format to attempt to convert only non-animated emoji's to.
-            Defaults to 'png'
-
-        Raises
-        -------
-        InvalidArgument
-            Bad image format passed to ``format`` or ``static_format``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
+        If this isn't a custom emoji then an empty string is returned
         """
         if self.is_unicode_emoji():
-            return Asset(self._state)
+            return ''
 
-        return Asset._from_emoji(self._state, self, format=format, static_format=static_format)
+        fmt = 'gif' if self.animated else 'png'
+        return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
+
+    async def read(self) -> bytes:
+        if self.is_unicode_emoji():
+            raise InvalidArgument('PartialEmoji is not a custom emoji')
+
+        return await super().read()

@@ -1,7 +1,6 @@
 name: Bug Report
 description: Report broken or incorrect behaviour
 labels: unconfirmed bug
-issue_body: true
 body:
   - type: markdown
     attributes:
@@ -73,3 +72,7 @@ body:
           required: true
         - label: I have removed my token from display, if visible.
           required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.

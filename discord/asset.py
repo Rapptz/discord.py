@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,15 +22,101 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 import io
+import os
+from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union
 from .errors import DiscordException
 from .errors import InvalidArgument
 from . import utils
 
-VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
-VALID_AVATAR_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+import yarl
 
-class Asset:
+__all__ = (
+    'Asset',
+)
+
+if TYPE_CHECKING:
+    ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
+    ValidAssetFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png', 'gif']
+
+VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
+VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+
+
+MISSING = utils.MISSING
+
+class AssetMixin:
+    url: str
+    _state: Optional[Any]
+
+    async def read(self) -> bytes:
+        """|coro|
+
+        Retrieves the content of this asset as a :class:`bytes` object.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the asset.
+        """
+        if self._state is None:
+            raise DiscordException('Invalid state (no ConnectionState provided)')
+
+        return await self._state.http.get_from_cdn(self.url)
+
+    async def save(self, fp: Union[str, bytes, os.PathLike, io.BufferedIOBase], *, seek_begin: bool = True) -> int:
+        """|coro|
+
+        Saves this asset into a file-like object.
+
+        Parameters
+        ----------
+        fp: Union[:class:`io.BufferedIOBase`, :class:`os.PathLike`]
+            The file-like object to save this attachment to or the filename
+            to use. If a filename is passed then a file is created with that
+            filename and used instead.
+        seek_begin: :class:`bool`
+            Whether to seek to the beginning of the file after saving is
+            successfully done.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+
+        Returns
+        --------
+        :class:`int`
+            The number of bytes written.
+        """
+
+        data = await self.read()
+        if isinstance(fp, io.BufferedIOBase):
+            written = fp.write(data)
+            if seek_begin:
+                fp.seek(0)
+            return written
+        else:
+            with open(fp, 'wb') as f:
+                return f.write(data)
+
+
+class Asset(AssetMixin):
     """Represents a CDN asset on Discord.
 
     .. container:: operations
@@ -44,10 +128,6 @@ class Asset:
         .. describe:: len(x)
 
             Returns the length of the CDN asset's URL.
-
-        .. describe:: bool(x)
-
-            Checks if the Asset has a URL.
 
         .. describe:: x == y
 
@@ -61,202 +141,275 @@ class Asset:
 
             Returns the hash of the asset.
     """
-    __slots__ = ('_state', '_url')
+
+    __slots__: Tuple[str, ...] = (
+        '_state',
+        '_url',
+        '_animated',
+        '_key',
+    )
 
     BASE = 'https://cdn.discordapp.com'
 
-    def __init__(self, state, url=None):
+    def __init__(self, state, *, url: str, key: str, animated: bool = False):
         self._state = state
         self._url = url
+        self._animated = animated
+        self._key = key
 
     @classmethod
-    def _from_avatar(cls, state, user, *, format=None, static_format='webp', size=1024):
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not user.is_avatar_animated():
-            raise InvalidArgument("non animated avatars do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
-
-        if user.avatar is None:
-            return user.default_avatar_url
-
-        if format is None:
-            format = 'gif' if user.is_avatar_animated() else static_format
-
-        return cls(state, '/avatars/{0.id}/{0.avatar}.{1}?size={2}'.format(user, format, size))
+    def _from_default_avatar(cls, state, index: int) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/embed/avatars/{index}.png',
+            key=str(index),
+            animated=False,
+        )
 
     @classmethod
-    def _from_icon(cls, state, object, path, *, format='webp', size=1024):
-        if object.icon is None:
-            return cls(state)
-
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
-
-        url = '/{0}-icons/{1.id}/{1.icon}.{2}?size={3}'.format(path, object, format, size)
-        return cls(state, url)
+    def _from_avatar(cls, state, user_id: int, avatar: str) -> Asset:
+        animated = avatar.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/avatars/{user_id}/{avatar}.{format}?size=1024',
+            key=avatar,
+            animated=animated,
+        )
 
     @classmethod
-    def _from_cover_image(cls, state, obj, *, format='webp', size=1024):
-        if obj.cover_image is None:
-            return cls(state)
-
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_STATIC_FORMATS))
-
-        url = '/app-assets/{0.id}/store/{0.cover_image}.{1}?size={2}'.format(obj, format, size)
-        return cls(state, url)
+    def _from_guild_avatar(cls, state, guild_id: int, member_id: int, avatar: str) -> Asset:
+        animated = avatar.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f"{cls.BASE}/guilds/{guild_id}/users/{member_id}/avatars/{avatar}.{format}?size=1024",
+            key=avatar,
+            animated=animated,
+        )
 
     @classmethod
-    def _from_guild_image(cls, state, id, hash, key, *, format='webp', size=1024):
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_STATIC_FORMATS))
-
-        if hash is None:
-            return cls(state)
-
-        url = '/{key}/{0}/{1}.{2}?size={3}'
-        return cls(state, url.format(id, hash, format, size, key=key))
+    def _from_icon(cls, state, object_id: int, icon_hash: str, path: str) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/{path}-icons/{object_id}/{icon_hash}.png?size=1024',
+            key=icon_hash,
+            animated=False,
+        )
 
     @classmethod
-    def _from_guild_icon(cls, state, guild, *, format=None, static_format='webp', size=1024):
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not guild.is_icon_animated():
-            raise InvalidArgument("non animated guild icons do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
-
-        if guild.icon is None:
-            return cls(state)
-
-        if format is None:
-            format = 'gif' if guild.is_icon_animated() else static_format
-
-        return cls(state, '/icons/{0.id}/{0.icon}.{1}?size={2}'.format(guild, format, size))
+    def _from_cover_image(cls, state, object_id: int, cover_image_hash: str) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-assets/{object_id}/store/{cover_image_hash}.png?size=1024',
+            key=cover_image_hash,
+            animated=False,
+        )
 
     @classmethod
-    def _from_sticker_url(cls, state, sticker, *, size=1024):
-        if not utils.valid_icon_size(size):
-            raise InvalidArgument("size must be a power of 2 between 16 and 4096")
-
-        return cls(state, '/stickers/{0.id}/{0.image}.png?size={2}'.format(sticker, format, size))
+    def _from_guild_image(cls, state, guild_id: int, image: str, path: str) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/{path}/{guild_id}/{image}.png?size=1024',
+            key=image,
+            animated=False,
+        )
 
     @classmethod
-    def _from_emoji(cls, state, emoji, *, format=None, static_format='png'):
-        if format is not None and format not in VALID_AVATAR_FORMATS:
-            raise InvalidArgument("format must be None or one of {}".format(VALID_AVATAR_FORMATS))
-        if format == "gif" and not emoji.animated:
-            raise InvalidArgument("non animated emoji's do not support gif format")
-        if static_format not in VALID_STATIC_FORMATS:
-            raise InvalidArgument("static_format must be one of {}".format(VALID_STATIC_FORMATS))
-        if format is None:
-            format = 'gif' if emoji.animated else static_format
+    def _from_guild_icon(cls, state, guild_id: int, icon_hash: str) -> Asset:
+        animated = icon_hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/icons/{guild_id}/{icon_hash}.{format}?size=1024',
+            key=icon_hash,
+            animated=animated,
+        )
 
-        return cls(state, '/emojis/{0.id}.{1}'.format(emoji, format))
+    @classmethod
+    def _from_sticker_banner(cls, state, banner: int) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-assets/710982414301790216/store/{banner}.png',
+            key=str(banner),
+            animated=False,
+        )
 
-    def __str__(self):
-        return self.BASE + self._url if self._url is not None else ''
+    @classmethod
+    def _from_user_banner(cls, state, user_id: int, banner_hash: str) -> Asset:
+        animated = banner_hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
+            key=banner_hash,
+            animated=animated
+        )
 
-    def __len__(self):
-        if self._url:
-            return len(self.BASE + self._url)
-        return 0
+    def __str__(self) -> str:
+        return self._url
 
-    def __bool__(self):
-        return self._url is not None
+    def __len__(self) -> int:
+        return len(self._url)
 
     def __repr__(self):
-        return '<Asset url={0._url!r}>'.format(self)
+        shorten = self._url.replace(self.BASE, '')
+        return f'<Asset url={shorten!r}>'
 
     def __eq__(self, other):
         return isinstance(other, Asset) and self._url == other._url
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
     def __hash__(self):
         return hash(self._url)
 
-    async def read(self):
-        """|coro|
+    @property
+    def url(self) -> str:
+        """:class:`str`: Returns the underlying URL of the asset."""
+        return self._url
 
-        Retrieves the content of this asset as a :class:`bytes` object.
+    @property
+    def key(self) -> str:
+        """:class:`str`: Returns the identifying key of the asset."""
+        return self._key
 
-        .. warning::
+    def is_animated(self) -> bool:
+        """:class:`bool`: Returns whether the asset is animated."""
+        return self._animated
 
-            :class:`PartialEmoji` won't have a connection state if user created,
-            and a URL won't be present if a custom image isn't associated with
-            the asset, e.g. a guild with no custom icon.
-
-        .. versionadded:: 1.1
-
-        Raises
-        ------
-        DiscordException
-            There was no valid URL or internal connection state.
-        HTTPException
-            Downloading the asset failed.
-        NotFound
-            The asset was deleted.
-
-        Returns
-        -------
-        :class:`bytes`
-            The content of the asset.
-        """
-        if not self._url:
-            raise DiscordException('Invalid asset (no URL provided)')
-
-        if self._state is None:
-            raise DiscordException('Invalid state (no ConnectionState provided)')
-
-        return await self._state.http.get_from_cdn(self.BASE + self._url)
-
-    async def save(self, fp, *, seek_begin=True):
-        """|coro|
-
-        Saves this asset into a file-like object.
+    def replace(
+        self,
+        *,
+        size: int = MISSING,
+        format: ValidAssetFormatTypes = MISSING,
+        static_format: ValidStaticFormatTypes = MISSING,
+    ) -> Asset:
+        """Returns a new asset with the passed components replaced.
 
         Parameters
-        ----------
-        fp: Union[BinaryIO, :class:`os.PathLike`]
-            Same as in :meth:`Attachment.save`.
-        seek_begin: :class:`bool`
-            Same as in :meth:`Attachment.save`.
+        -----------
+        size: :class:`int`
+            The new size of the asset.
+        format: :class:`str`
+            The new format to change it to. Must be either
+            'webp', 'jpeg', 'jpg', 'png', or 'gif' if it's animated.
+        static_format: :class:`str`
+            The new format to change it to if the asset isn't animated.
+            Must be either 'webp', 'jpeg', 'jpg', or 'png'.
 
         Raises
-        ------
-        DiscordException
-            There was no valid URL or internal connection state.
-        HTTPException
-            Downloading the asset failed.
-        NotFound
-            The asset was deleted.
+        -------
+        InvalidArgument
+            An invalid size or format was passed.
 
         Returns
         --------
-        :class:`int`
-            The number of bytes written.
+        :class:`Asset`
+            The newly updated asset.
+        """
+        url = yarl.URL(self._url)
+        path, _ = os.path.splitext(url.path)
+
+        if format is not MISSING:
+            if self._animated:
+                if format not in VALID_ASSET_FORMATS:
+                    raise InvalidArgument(f'format must be one of {VALID_ASSET_FORMATS}')
+            else:
+                if format not in VALID_STATIC_FORMATS:
+                    raise InvalidArgument(f'format must be one of {VALID_STATIC_FORMATS}')
+            url = url.with_path(f'{path}.{format}')
+
+        if static_format is not MISSING and not self._animated:
+            if static_format not in VALID_STATIC_FORMATS:
+                raise InvalidArgument(f'static_format must be one of {VALID_STATIC_FORMATS}')
+            url = url.with_path(f'{path}.{static_format}')
+
+        if size is not MISSING:
+            if not utils.valid_icon_size(size):
+                raise InvalidArgument('size must be a power of 2 between 16 and 4096')
+            url = url.with_query(size=size)
+        else:
+            url = url.with_query(url.raw_query_string)
+
+        url = str(url)
+        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+
+    def with_size(self, size: int, /) -> Asset:
+        """Returns a new asset with the specified size.
+
+        Parameters
+        ------------
+        size: :class:`int`
+            The new size of the asset.
+
+        Raises
+        -------
+        InvalidArgument
+            The asset had an invalid size.
+
+        Returns
+        --------
+        :class:`Asset`
+            The new updated asset.
+        """
+        if not utils.valid_icon_size(size):
+            raise InvalidArgument('size must be a power of 2 between 16 and 4096')
+
+        url = str(yarl.URL(self._url).with_query(size=size))
+        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+
+    def with_format(self, format: ValidAssetFormatTypes, /) -> Asset:
+        """Returns a new asset with the specified format.
+
+        Parameters
+        ------------
+        format: :class:`str`
+            The new format of the asset.
+
+        Raises
+        -------
+        InvalidArgument
+            The asset had an invalid format.
+
+        Returns
+        --------
+        :class:`Asset`
+            The new updated asset.
         """
 
-        data = await self.read()
-        if isinstance(fp, io.IOBase) and fp.writable():
-            written = fp.write(data)
-            if seek_begin:
-                fp.seek(0)
-            return written
+        if self._animated:
+            if format not in VALID_ASSET_FORMATS:
+                raise InvalidArgument(f'format must be one of {VALID_ASSET_FORMATS}')
         else:
-            with open(fp, 'wb') as f:
-                return f.write(data)
+            if format not in VALID_STATIC_FORMATS:
+                raise InvalidArgument(f'format must be one of {VALID_STATIC_FORMATS}')
+
+        url = yarl.URL(self._url)
+        path, _ = os.path.splitext(url.path)
+        url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
+        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+
+    def with_static_format(self, format: ValidStaticFormatTypes, /) -> Asset:
+        """Returns a new asset with the specified static format.
+
+        This only changes the format if the underlying asset is
+        not animated. Otherwise, the asset is not changed.
+
+        Parameters
+        ------------
+        format: :class:`str`
+            The new static format of the asset.
+
+        Raises
+        -------
+        InvalidArgument
+            The asset had an invalid format.
+
+        Returns
+        --------
+        :class:`Asset`
+            The new updated asset.
+        """
+
+        if self._animated:
+            return self
+        return self.with_format(format)

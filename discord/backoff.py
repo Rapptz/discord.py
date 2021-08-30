@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,10 +22,20 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+
 import time
 import random
+from typing import Callable, Generic, Literal, TypeVar, overload, Union
 
-class ExponentialBackoff:
+T = TypeVar('T', bool, Literal[True], Literal[False])
+
+__all__ = (
+    'ExponentialBackoff',
+)
+
+class ExponentialBackoff(Generic[T]):
     """An implementation of the exponential backoff algorithm
 
     Provides a convenient interface to implement an exponential backoff
@@ -49,21 +57,33 @@ class ExponentialBackoff:
         number in between may be returned.
     """
 
-    def __init__(self, base=1, *, integral=False):
-        self._base = base
+    def __init__(self, base: int = 1, *, integral: T = False):
+        self._base: int = base
 
-        self._exp = 0
-        self._max = 10
-        self._reset_time = base * 2 ** 11
-        self._last_invocation = time.monotonic()
+        self._exp: int = 0
+        self._max: int = 10
+        self._reset_time: int = base * 2 ** 11
+        self._last_invocation: float = time.monotonic()
 
         # Use our own random instance to avoid messing with global one
         rand = random.Random()
         rand.seed()
 
-        self._randfunc = rand.randrange if integral else rand.uniform
+        self._randfunc: Callable[..., Union[int, float]] = rand.randrange if integral else rand.uniform   # type: ignore
 
-    def delay(self):
+    @overload
+    def delay(self: ExponentialBackoff[Literal[False]]) -> float:
+        ...
+
+    @overload
+    def delay(self: ExponentialBackoff[Literal[True]]) -> int:
+        ...
+
+    @overload
+    def delay(self: ExponentialBackoff[bool]) -> Union[int, float]:
+        ...
+
+    def delay(self) -> Union[int, float]:
         """Compute the next delay
 
         Returns the next delay to wait according to the exponential

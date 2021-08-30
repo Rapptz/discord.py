@@ -1,3 +1,5 @@
+:orphan:
+
 .. _discord-intro:
 
 Creating a Bot Account
@@ -40,7 +42,7 @@ Creating a Bot account is a pretty straightforward process.
     .. warning::
 
         It should be worth noting that this token is essentially your bot's
-        password. You should **never** share this to someone else. In doing so,
+        password. You should **never** share this with someone else. In doing so,
         someone can log in to your bot and do malicious things, such as leaving
         servers, ban all members inside a server, or pinging everyone maliciously.
 

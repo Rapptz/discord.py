@@ -1313,8 +1313,8 @@ msgstr "戻り値の型"
 
 #: discord.Client.get_channel:7 of
 #, fuzzy
-msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgid "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]"
+msgstr "Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]"
 
 #: discord.Client.get_guild:1 of
 #, fuzzy
@@ -5108,7 +5108,7 @@ msgstr "メンバーがオフライン。"
 
 #: ../../api.rst:1287
 msgid "The member is idle."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: ../../api.rst:1290
 msgid "The member is \"Do Not Disturb\"."
@@ -11064,7 +11064,7 @@ msgstr ""
 #: discord.Guild.fetch_members:20 of
 #, fuzzy
 msgid "Getting the members failed."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: discord.Guild.fetch_members:22 of
 #, fuzzy
@@ -11088,7 +11088,7 @@ msgstr ""
 #: discord.Guild.fetch_member:13 of
 #, fuzzy
 msgid "Fetching the member failed."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: discord.Guild.fetch_member:15 of
 msgid "The member from the member ID."
@@ -13995,7 +13995,7 @@ msgstr ""
 #: discord.WidgetMember:23 of
 #, fuzzy
 msgid "The member's ID."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: discord.WidgetMember:29 of
 #, fuzzy
@@ -14015,7 +14015,7 @@ msgstr "メンバーがオンライン。"
 #: discord.WidgetMember:47 of
 #, fuzzy
 msgid "The member's status."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: discord.WidgetMember:53 of
 #, fuzzy
@@ -14029,7 +14029,7 @@ msgstr ""
 #: discord.WidgetMember:65 of
 #, fuzzy
 msgid "The member's activity."
-msgstr "メンバーメンバーが退席中。"
+msgstr "メンバーが退席中。"
 
 #: discord.WidgetMember:67 of
 msgid "Optional[Union[:class:`BaseActivity`, :class:`Spotify`]]"
@@ -16949,11 +16949,11 @@ msgstr ":class:`~discord.User`"
 #~ ":class:`.Streaming`]] -- ログイン時のアクティビティ。"
 
 #~ msgid ""
-#~ "Optional[Union[:class:`.abc.GuildChannel`, "
+#~ "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 #~ ":class:`.abc.PrivateChannel`]]: Returns a channel"
 #~ " with the given ID."
 #~ msgstr ""
-#~ "Optional[Union[:class:`.abc.GuildChannel`, "
+#~ "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 #~ ":class:`.abc.PrivateChannel`]]: 与えられたIDを持つチャンネルを返します。"
 
 #~ msgid "If not found, returns ``None``."

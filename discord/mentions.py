@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+from typing import Type, TypeVar, Union, List, TYPE_CHECKING, Any, Union
+
+__all__ = (
+    'AllowedMentions',
+)
+
+if TYPE_CHECKING:
+    from .types.message import AllowedMentions as AllowedMentionsPayload
+    from .abc import Snowflake
+
+
 class _FakeBool:
     def __repr__(self):
         return 'True'
@@ -34,7 +44,11 @@ class _FakeBool:
     def __bool__(self):
         return True
 
-default = _FakeBool()
+
+default: Any = _FakeBool()
+
+A = TypeVar('A', bound='AllowedMentions')
+
 
 class AllowedMentions:
     """A class that represents what mentions are allowed in a message.
@@ -68,14 +82,21 @@ class AllowedMentions:
 
     __slots__ = ('everyone', 'users', 'roles', 'replied_user')
 
-    def __init__(self, *, everyone=default, users=default, roles=default, replied_user=default):
+    def __init__(
+        self,
+        *,
+        everyone: bool = default,
+        users: Union[bool, List[Snowflake]] = default,
+        roles: Union[bool, List[Snowflake]] = default,
+        replied_user: bool = default,
+    ):
         self.everyone = everyone
         self.users = users
         self.roles = roles
         self.replied_user = replied_user
 
     @classmethod
-    def all(cls):
+    def all(cls: Type[A]) -> A:
         """A factory method that returns a :class:`AllowedMentions` with all fields explicitly set to ``True``
 
         .. versionadded:: 1.5
@@ -83,14 +104,14 @@ class AllowedMentions:
         return cls(everyone=True, users=True, roles=True, replied_user=True)
 
     @classmethod
-    def none(cls):
+    def none(cls: Type[A]) -> A:
         """A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``
 
         .. versionadded:: 1.5
         """
         return cls(everyone=False, users=False, roles=False, replied_user=False)
 
-    def to_dict(self):
+    def to_dict(self) -> AllowedMentionsPayload:
         parse = []
         data = {}
 
@@ -111,9 +132,9 @@ class AllowedMentions:
             data['replied_user'] = True
 
         data['parse'] = parse
-        return data
+        return data  # type: ignore
 
-    def merge(self, other):
+    def merge(self, other: AllowedMentions) -> AllowedMentions:
         # Creates a new AllowedMentions by merging from another one.
         # Merge is done by using the 'self' values unless explicitly
         # overridden by the 'other' values.
@@ -123,5 +144,8 @@ class AllowedMentions:
         replied_user = self.replied_user if other.replied_user is default else other.replied_user
         return AllowedMentions(everyone=everyone, roles=roles, users=users, replied_user=replied_user)
 
-    def __repr__(self):
-        return '{0.__class__.__qualname__}(everyone={0.everyone}, users={0.users}, roles={0.roles}, replied_user={0.replied_user})'.format(self)
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}(everyone={self.everyone}, '
+            f'users={self.users}, roles={self.roles}, replied_user={self.replied_user})'
+        )
