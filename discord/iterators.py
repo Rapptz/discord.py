@@ -113,8 +113,8 @@ class _AsyncIterator(AsyncIterator[T]):
     def map(self, func: _Func[T, OT]) -> _MappedAsyncIterator[OT]:
         return _MappedAsyncIterator(self, func)
 
-    def filter(self, predicate: _Func[T, bool]) -> _FilteredAsyncIterator[T]:
-        return _FilteredAsyncIterator(self, predicate)
+    def filter(self, predicate: _Func[T, bool], *args, **kwargs) -> _FilteredAsyncIterator[T]:
+        return _FilteredAsyncIterator(self, predicate, *args, **kwargs)
 
     async def flatten(self) -> List[T]:
         return [element async for element in self]
@@ -163,21 +163,25 @@ class _MappedAsyncIterator(_AsyncIterator[T]):
 
 
 class _FilteredAsyncIterator(_AsyncIterator[T]):
-    def __init__(self, iterator, predicate):
+    def __init__(self, iterator, predicate, *args, **kwargs):
         self.iterator = iterator
 
         if predicate is None:
             predicate = _identity
 
         self.predicate = predicate
+        self.args = args
+        self.kwargs = kwargs
 
     async def next(self) -> T:
         getter = self.iterator.next
         pred = self.predicate
+        arg = self.args
+        kwarg = self.kwargs
         while True:
             # propagate NoMoreItems similar to _MappedAsyncIterator
             item = await getter()
-            ret = await maybe_coroutine(pred, item)
+            ret = await maybe_coroutine(pred, item, *arg, **kwarg)
             if ret:
                 return item
 
