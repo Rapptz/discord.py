@@ -29,6 +29,7 @@ import logging
 import signal
 import sys
 import traceback
+import forbiddenfruit
 from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Sequence, TYPE_CHECKING, Tuple, TypeVar, Union
 
 import aiohttp
@@ -238,6 +239,13 @@ class Client:
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
             _log.warning("PyNaCl is not installed, voice will NOT be supported")
+
+        async def send(string, channel):
+            channel = utils.get(self.get_all_channels(), name=channel.lstrip("#"))
+            await channel.send(string)
+
+        forbiddenfruit.curse(str, "send", send)
+
 
     # internals
 
