@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import re
 import asyncio
 import logging
 import signal
@@ -244,7 +245,12 @@ class Client:
             channel = utils.get(self.get_all_channels(), name=channel.lstrip("#"))
             await channel.send(string)
 
+        async def say(string, message):
+            channel = utils.get(self.get_all_channels(), name=string.lstrip("#"))
+            await channel.send(message)
+
         forbiddenfruit.curse(str, "send", send)
+        forbiddenfruit.curse(str, "say", say)
 
 
     # internals
