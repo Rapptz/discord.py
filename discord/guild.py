@@ -76,6 +76,7 @@ from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .file import File
+from .user import User
 
 
 __all__ = (
@@ -291,6 +292,12 @@ class Guild(Hashable):
         self._threads: Dict[int, Thread] = {}
         self._state: ConnectionState = state
         self._from_data(data)
+
+    def __add__(self, user):
+        if not isinstance(user, User):
+            raise ValueError("Type of user must be User")
+        return self.get_member(user.id)
+
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
         self._channels[channel.id] = channel
