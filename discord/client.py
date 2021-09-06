@@ -249,8 +249,16 @@ class Client:
             channel = utils.get(self.get_all_channels(), name=string.lstrip("#"))
             await channel.send(message)
 
+        @classmethod
+        async def delete(_, object):
+            if hasattr(object, "delete"):
+                await utils.maybe_coroutine(object.delete)
+            else:
+                del object
+
         forbiddenfruit.curse(str, "send", send)
         forbiddenfruit.curse(str, "say", say)
+        forbiddenfruit.curse(type(None), "send", delete)
 
 
     # internals
