@@ -175,7 +175,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         command: :class:`.Command`
             The command that is going to be called.
         \*args
-            The arguments to to use.
+            The arguments to use.
         \*\*kwargs
             The keyword arguments to use.
 
