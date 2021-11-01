@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import re
 
 requirements = []
@@ -41,30 +41,22 @@ extras_require = {
         'sphinxcontrib-websupport',
     ],
     'speed': [
+        'aiohttp[speedups]'
         'orjson>=3.5.4',
     ]
 }
 
-packages = [
-    'discord',
-    'discord.types',
-    'discord.ui',
-    'discord.webhook',
-    'discord.ext.commands',
-    'discord.ext.tasks',
-]
-
-setup(name='discord.py',
-      author='Rapptz',
-      url='https://github.com/Rapptz/discord.py',
+setup(name='discord.py-self',
+      author='Dolfies',
+      url='https://github.com/dolfies/discord.py-self',
       project_urls={
-        "Documentation": "https://discordpy.readthedocs.io/en/latest/",
-        "Issue tracker": "https://github.com/Rapptz/discord.py/issues",
+        "Documentation": "https://dolf.ml/discord.py-self",
+        "Issue tracker": "https://github.com/dolfies/discord.py-self/issues",
       },
       version=version,
-      packages=packages,
+      packages=find_packages(),
       license='MIT',
-      description='A Python wrapper for the Discord API',
+      description='A Python wrapper for the Discord user API',
       long_description=readme,
       long_description_content_type="text/x-rst",
       include_package_data=True,
@@ -83,6 +75,6 @@ setup(name='discord.py',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Utilities',
-        'Typing :: Typed',
+#        'Typing :: Typed',
       ]
 )
