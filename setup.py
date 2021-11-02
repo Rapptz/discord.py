@@ -41,7 +41,7 @@ extras_require = {
         'sphinxcontrib-websupport',
     ],
     'speed': [
-        'aiohttp[speedups]'
+        'aiohttp[speedups]',
         'orjson>=3.5.4',
     ]
 }
