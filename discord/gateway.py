@@ -52,8 +52,7 @@ __all__ = (
 
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
-    def __init__(self, shard_id, *, resume=True):
-        self.shard_id = shard_id
+    def __init__(self, *, resume=True):
         self.resume = resume
         self.op = 'RESUME' if resume else 'IDENTIFY'
 
@@ -71,7 +70,6 @@ class GatewayRatelimiter:
         self.window = 0.0
         self.per = per
         self.lock = asyncio.Lock()
-        self.shard_id = None
 
     def is_ratelimited(self):
         current = time.time()
@@ -101,7 +99,7 @@ class GatewayRatelimiter:
         async with self.lock:
             delta = self.get_delay()
             if delta:
-                _log.warning('WebSocket in shard ID %s is ratelimited, waiting %.2f seconds', self.shard_id, delta)
+                _log.warning('WebSocket is ratelimited, waiting %.2f seconds.', delta)
                 await asyncio.sleep(delta)
 
 
@@ -109,16 +107,14 @@ class KeepAliveHandler(threading.Thread):
     def __init__(self, *args, **kwargs):
         ws = kwargs.pop('ws', None)
         interval = kwargs.pop('interval', None)
-        shard_id = kwargs.pop('shard_id', None)
         threading.Thread.__init__(self, *args, **kwargs)
         self.ws = ws
         self._main_thread_id = ws.thread_id
         self.interval = interval
         self.daemon = True
-        self.shard_id = shard_id
-        self.msg = 'Keeping shard ID %s websocket alive with sequence %s.'
-        self.block_msg = 'Shard ID %s heartbeat blocked for more than %s seconds.'
-        self.behind_msg = 'Can\'t keep up, shard ID %s websocket is %.1fs behind.'
+        self.msg = 'Keeping websocket alive with sequence %s.'
+        self.block_msg = 'Heartbeat blocked for more than %s seconds.'
+        self.behind_msg = 'Can\'t keep up, websocket is %.1fs behind.'
         self._stop_ev = threading.Event()
         self._last_ack = time.perf_counter()
         self._last_send = time.perf_counter()
@@ -129,7 +125,7 @@ class KeepAliveHandler(threading.Thread):
     def run(self):
         while not self._stop_ev.wait(self.interval):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
+                _log.warning('Gateway has stopped responding. Closing and restarting.')
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -142,7 +138,7 @@ class KeepAliveHandler(threading.Thread):
                     return
 
             data = self.get_payload()
-            _log.debug(self.msg, self.shard_id, data['d'])
+            _log.debug(self.msg, data['d'])
             coro = self.ws.send_heartbeat(data)
             f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
@@ -161,7 +157,7 @@ class KeepAliveHandler(threading.Thread):
                         else:
                             stack = ''.join(traceback.format_stack(frame))
                             msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        _log.warning(msg, self.shard_id, total)
+                        _log.warning(msg, total)
 
             except Exception:
                 self.stop()
@@ -185,15 +181,15 @@ class KeepAliveHandler(threading.Thread):
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
         if self.latency > 10:
-            _log.warning(self.behind_msg, self.shard_id, self.latency)
+            _log.warning(self.behind_msg, self.latency)
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.recent_ack_latencies = deque(maxlen=20)
-        self.msg = 'Keeping shard ID %s voice websocket alive with timestamp %s.'
-        self.block_msg = 'Shard ID %s voice heartbeat blocked for more than %s seconds'
-        self.behind_msg = 'High socket latency, shard ID %s heartbeat is %.1fs behind'
+        self.msg = 'Keeping voice websocket alive with timestamp %s.'
+        self.block_msg = 'Voice heartbeat blocked for more than %s seconds.'
+        self.behind_msg = 'High socket latency, voice websocket is %.1fs behind.'
 
     def get_payload(self):
         return {
@@ -300,7 +296,7 @@ class DiscordWebSocket:
         pass
 
     @classmethod
-    async def from_client(cls, client, *, initial=False, gateway=None, shard_id=None, session=None, sequence=None, resume=False):
+    async def from_client(cls, client, *, initial=False, gateway=None, session=None, sequence=None, resume=False):
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
@@ -317,9 +313,6 @@ class DiscordWebSocket:
         ws.gateway = gateway
         ws.call_hooks = client._connection.call_hooks
         ws._initial_identify = initial
-        ws.shard_id = shard_id
-        ws._rate_limiter.shard_id = shard_id
-        ws.shard_count = client._connection.shard_count
         ws.session_id = session
         ws.sequence = sequence
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
@@ -386,9 +379,6 @@ class DiscordWebSocket:
             }
         }
 
-        if self.shard_id is not None and self.shard_count is not None:
-            payload['d']['shard'] = [self.shard_id, self.shard_count]
-
         state = self._connection
         if state._activity is not None or state._status is not None:
             payload['d']['presence'] = {
@@ -398,12 +388,9 @@ class DiscordWebSocket:
                 'afk': False
             }
 
-        if state._intents is not None:
-            payload['d']['intents'] = state._intents.value
-
-        await self.call_hooks('before_identify', self.shard_id, initial=self._initial_identify)
+        await self.call_hooks('before_identify', initial=self._initial_identify)
         await self.send_as_json(payload)
-        _log.info('Shard ID %s has sent the IDENTIFY payload.', self.shard_id)
+        _log.info('Gateway has sent the IDENTIFY payload.')
 
     async def resume(self):
         """Sends the RESUME packet."""
@@ -417,7 +404,7 @@ class DiscordWebSocket:
         }
 
         await self.send_as_json(payload)
-        _log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
+        _log.info('Gateway has sent the RESUME payload.')
 
     async def received_message(self, msg, /):
         if type(msg) is bytes:
@@ -432,7 +419,7 @@ class DiscordWebSocket:
         self.log_receive(msg)
         msg = utils._from_json(msg)
 
-        _log.debug('For Shard ID %s: WebSocket Event: %s', self.shard_id, msg)
+        _log.debug('WebSocket Event: %s.', msg)
         event = msg.get('t')
         if event:
             self._dispatch('socket_event_type', event)
@@ -448,12 +435,12 @@ class DiscordWebSocket:
 
         if op != self.DISPATCH:
             if op == self.RECONNECT:
-                # "reconnect" can only be handled by the Client
+                # RECONNECT can only be handled by the Client
                 # so we terminate our connection and raise an
-                # internal exception signalling to reconnect.
+                # internal exception signalling to reconnect
                 _log.debug('Received RECONNECT opcode.')
                 await self.close()
-                raise ReconnectWebSocket(self.shard_id)
+                raise ReconnectWebSocket
 
             if op == self.HEARTBEAT_ACK:
                 if self._keep_alive:
@@ -468,7 +455,7 @@ class DiscordWebSocket:
 
             if op == self.HELLO:
                 interval = data['heartbeat_interval'] / 1000.0
-                self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
+                self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
                 # send a heartbeat immediately
                 await self.send_as_json(self._keep_alive.get_payload())
                 self._keep_alive.start()
@@ -477,13 +464,13 @@ class DiscordWebSocket:
             if op == self.INVALIDATE_SESSION:
                 if data is True:
                     await self.close()
-                    raise ReconnectWebSocket(self.shard_id)
+                    raise ReconnectWebSocket
 
                 self.sequence = None
                 self.session_id = None
-                _log.info('Shard ID %s session has been invalidated.', self.shard_id)
+                _log.info('Gateway session has been invalidated.')
                 await self.close(code=1000)
-                raise ReconnectWebSocket(self.shard_id, resume=False)
+                raise ReconnectWebSocket(resume=False)
 
             _log.warning('Unknown OP code %s.', op)
             return
@@ -492,17 +479,13 @@ class DiscordWebSocket:
             self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
-            # pass back shard ID to ready handler
-            data['__shard_id__'] = self.shard_id
-            _log.info('Shard ID %s has connected to Gateway: %s (Session ID: %s).',
-                     self.shard_id, ', '.join(trace), self.session_id)
+            _log.info('Connected to Gateway: %s (Session ID: %s).',
+                     ', '.join(trace), self.session_id)
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
-            # pass back the shard ID to the resumed handler
-            data['__shard_id__'] = self.shard_id
-            _log.info('Shard ID %s has successfully RESUMED session %s under trace %s.',
-                     self.shard_id, self.session_id, ', '.join(trace))
+            _log.info('Gateway has successfully RESUMED session %s under trace %s.',
+                     self.session_id, ', '.join(trace))
 
         try:
             func = self._discord_parsers[event]
@@ -574,15 +557,15 @@ class DiscordWebSocket:
 
             if isinstance(e, asyncio.TimeoutError):
                 _log.info('Timed out receiving packet. Attempting a reconnect.')
-                raise ReconnectWebSocket(self.shard_id) from None
+                raise ReconnectWebSocket from None
 
             code = self._close_code or self.socket.close_code
             if self._can_handle_close():
                 _log.info('Websocket closed with %s, attempting a reconnect.', code)
-                raise ReconnectWebSocket(self.shard_id) from None
+                raise ReconnectWebSocket from None
             else:
                 _log.info('Websocket closed with %s, cannot reconnect.', code)
-                raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
+                raise ConnectionClosed(self.socket, code=code) from None
 
     async def debug_send(self, data, /):
         await self._rate_limiter.block()
@@ -598,7 +581,7 @@ class DiscordWebSocket:
             await self.send(utils._to_json(data))
         except RuntimeError as exc:
             if not self._can_handle_close():
-                raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
+                raise ConnectionClosed(self.socket) from exc
 
     async def send_heartbeat(self, data):
         # This bypasses the rate limit handling code since it has a higher priority
@@ -606,7 +589,7 @@ class DiscordWebSocket:
             await self.socket.send_str(utils._to_json(data))
         except RuntimeError as exc:
             if not self._can_handle_close():
-                raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
+                raise ConnectionClosed(self.socket) from exc
 
     async def change_presence(self, *, activity=None, status=None, since=0.0):
         if activity is not None:
@@ -898,10 +881,10 @@ class DiscordVoiceWebSocket:
             await self.received_message(utils._from_json(msg.data))
         elif msg.type is aiohttp.WSMsgType.ERROR:
             _log.debug('Received %s', msg)
-            raise ConnectionClosed(self.ws, shard_id=None) from msg.data
+            raise ConnectionClosed(self.ws) from msg.data
         elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
             _log.debug('Received %s', msg)
-            raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
+            raise ConnectionClosed(self.ws, code=self._close_code)
 
     async def close(self, code=1000):
         if self._keep_alive is not None:

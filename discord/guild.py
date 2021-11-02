@@ -339,7 +339,6 @@ class Guild(Hashable):
         attrs = (
             ('id', self.id),
             ('name', self.name),
-            ('shard_id', self.shard_id),
             ('chunked', self.chunked),
             ('member_count', getattr(self, '_member_count', None)),
         )
@@ -875,8 +874,7 @@ class Guild(Hashable):
 
         .. warning::
 
-            Due to a Discord limitation, in order for this attribute to remain up-to-date and
-            accurate, it requires :attr:`Intents.members` to be specified.
+            Due to a Discord limitation, this may not always be up-to-date and accurate.
 
         """
         return self._member_count
@@ -895,14 +893,6 @@ class Guild(Hashable):
         if count is None:
             return False
         return count == len(self._members)
-
-    @property
-    def shard_id(self) -> int:
-        """:class:`int`: Returns the shard ID for this guild if applicable."""
-        count = self._state.shard_count
-        if count is None:
-            return 0
-        return (self.id >> 22) % count
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -1631,60 +1621,6 @@ class Guild(Hashable):
 
         return threads
 
-    # TODO: Remove Optional typing here when async iterators are refactored
-    def fetch_members(self, *, limit: int = 1000, after: Optional[SnowflakeTime] = None) -> MemberIterator:
-        """Retrieves an :class:`.AsyncIterator` that enables receiving the guild's members. In order to use this,
-        :meth:`Intents.members` must be enabled.
-
-        .. note::
-
-            This method is an API call. For general usage, consider :attr:`members` instead.
-
-        .. versionadded:: 1.3
-
-        All parameters are optional.
-
-        Parameters
-        ----------
-        limit: Optional[:class:`int`]
-            The number of members to retrieve. Defaults to 1000.
-            Pass ``None`` to fetch all members. Note that this is potentially slow.
-        after: Optional[Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]]
-            Retrieve members after this date or object.
-            If a datetime is provided, it is recommended to use a UTC aware datetime.
-            If the datetime is naive, it is assumed to be local time.
-
-        Raises
-        ------
-        ClientException
-            The members intent is not enabled.
-        HTTPException
-            Getting the members failed.
-
-        Yields
-        ------
-        :class:`.Member`
-            The member with the member data parsed.
-
-        Examples
-        --------
-
-        Usage ::
-
-            async for member in guild.fetch_members(limit=150):
-                print(member.name)
-
-        Flattening into a list ::
-
-            members = await guild.fetch_members(limit=150).flatten()
-            # members is now a list of Member...
-        """
-
-        if not self._state._intents.members:
-            raise ClientException('Intents.members must be enabled to use this.')
-
-        return MemberIterator(self, limit=limit, after=after)
-
     async def fetch_member(self, member_id: int, /) -> Member:
         """|coro|
 
@@ -1692,7 +1628,7 @@ class Guild(Hashable):
 
         .. note::
 
-            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_member` instead.
+            This method is an API call. If you have member cache, consider :meth:`get_member` instead.
 
         Parameters
         -----------
@@ -2822,7 +2758,7 @@ class Guild(Hashable):
         """|coro|
 
         Requests all members that belong to this guild. In order to use this,
-        :meth:`Intents.members` must be enabled.
+        you must have certain permissions.
 
         This is a websocket operation and can be slow.
 
@@ -2836,11 +2772,8 @@ class Guild(Hashable):
         Raises
         -------
         ClientException
-            The members intent is not enabled.
+            Insufficient permissions.
         """
-
-        if not self._state._intents.members:
-            raise ClientException('Intents.members must be enabled to use this.')
 
         if not self._state.is_guild_evicted(self):
             return await self._state.chunk_guild(self, cache=cache)
@@ -2891,17 +2824,12 @@ class Guild(Hashable):
             The query timed out waiting for the members.
         ValueError
             Invalid parameters were passed to the function
-        ClientException
-            The presences intent is not enabled.
 
         Returns
         --------
         List[:class:`Member`]
             The list of members that have matched the query.
         """
-
-        if presences and not self._state._intents.presences:
-            raise ClientException('Intents.presences must be enabled to use this.')
 
         if query is None:
             if query == '':

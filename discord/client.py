@@ -44,7 +44,6 @@ from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, VoiceRegion
-from .flags import ApplicationFlags, Intents
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -133,29 +132,15 @@ class Client:
         Proxy URL.
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
         An object that represents proxy HTTP Basic Authorization.
-    shard_id: Optional[:class:`int`]
-        Integer starting at ``0`` and less than :attr:`.shard_count`.
-    shard_count: Optional[:class:`int`]
-        The total number of shards.
-    application_id: :class:`int`
-        The client's application ID.
-    intents: :class:`Intents`
-        The intents that you want to enable for the session. This is a way of
-        disabling and enabling certain gateway events from triggering and being sent.
-        If not given, defaults to a regularly constructed :class:`Intents` class.
-
-        .. versionadded:: 1.5
     member_cache_flags: :class:`MemberCacheFlags`
         Allows for finer control over how the library caches members.
-        If not given, defaults to cache as much as possible with the
-        currently selected intents.
+        If not given, defaults to cache as much as possible.
 
         .. versionadded:: 1.5
     chunk_guilds_at_startup: :class:`bool`
         Indicates if :func:`.on_ready` should be delayed to chunk all guilds
         at start-up if necessary. This operation is incredibly slow for large
-        amounts of guilds. The default is ``True`` if :attr:`Intents.members`
-        is ``True``.
+        amounts of guilds. The default is ``True``.
 
         .. versionadded:: 1.5
     status: Optional[:class:`.Status`]
@@ -171,11 +156,6 @@ class Client:
         WebSocket in the case of not receiving a HEARTBEAT_ACK. Useful if
         processing the initial packets take too long to the point of disconnecting
         you. The default timeout is 60 seconds.
-    guild_ready_timeout: :class:`float`
-        The maximum number of seconds to wait for the GUILD_CREATE stream to end before
-        preparing the member cache and firing READY. The default timeout is 2 seconds.
-
-        .. versionadded:: 1.4
     assume_unsync_clock: :class:`bool`
         Whether to assume the system clock is unsynced. This applies to the ratelimit handling
         code. If this is set to ``True``, the default, then the library uses the time to reset
@@ -206,12 +186,10 @@ class Client:
         loop: Optional[asyncio.AbstractEventLoop] = None,
         **options: Any,
     ):
-        # self.ws is set in the connect method
+        # Set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
-        self.shard_id: Optional[int] = options.get('shard_id')
-        self.shard_count: Optional[int] = options.get('shard_count')
 
         connector: Optional[aiohttp.BaseConnector] = options.pop('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
@@ -229,7 +207,6 @@ class Client:
 
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState = self._get_state(**options)
-        self._connection.shard_count = self.shard_count
         self._closed: bool = False
         self._ready: asyncio.Event = asyncio.Event()
         self._connection._get_websocket = self._get_websocket
@@ -237,11 +214,11 @@ class Client:
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
-            _log.warning("PyNaCl is not installed, voice will NOT be supported")
+            _log.warning('PyNaCl is not installed, voice will NOT be supported.')
 
-    # internals
+    # Internals
 
-    def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
+    def _get_websocket(self, guild_id: Optional[int] = None) -> DiscordWebSocket:
         return self.ws
 
     def _get_state(self, **options: Any) -> ConnectionState:
@@ -305,13 +282,7 @@ class Client:
 
     @property
     def private_channels(self) -> List[PrivateChannel]:
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
-
-        .. note::
-
-            This returns only up to 128 most recent private channels due to an internal working
-            on how Discord deals with private channels.
-        """
+        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on."""
         return self._connection.private_channels
 
     @property
@@ -321,26 +292,6 @@ class Client:
         These are usually :class:`.VoiceClient` instances.
         """
         return self._connection.voice_clients
-
-    @property
-    def application_id(self) -> Optional[int]:
-        """Optional[:class:`int`]: The client's application ID.
-
-        If this is not passed via ``__init__`` then this is retrieved
-        through the gateway when an event contains the data. Usually
-        after :func:`~discord.on_connect` is called.
-        
-        .. versionadded:: 2.0
-        """
-        return self._connection.application_id
-
-    @property
-    def application_flags(self) -> ApplicationFlags:
-        """:class:`~discord.ApplicationFlags`: The client's application flags.
-
-        .. versionadded:: 2.0
-        """
-        return self._connection.application_flags  # type: ignore
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -363,7 +314,7 @@ class Client:
         return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
-        _log.debug('Dispatching event %s', event)
+        _log.debug('Dispatching event %s.', event)
         method = 'on_' + event
 
         listeners = self._listeners.get(event)
@@ -414,49 +365,51 @@ class Client:
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
 
-    # hooks
+    # Hooks
 
-    async def _call_before_identify_hook(self, shard_id: Optional[int], *, initial: bool = False) -> None:
-        # This hook is an internal hook that actually calls the public one.
+    async def _call_before_identify_hook(self, *, initial: bool = False) -> None:
+        # This hook is an internal hook that actually calls the public one
         # It allows the library to have its own hook without stepping on the
-        # toes of those who need to override their own hook.
-        await self.before_identify_hook(shard_id, initial=initial)
+        # toes of those who need to override their own hook
+        await self.before_identify_hook(initial=initial)
 
-    async def before_identify_hook(self, shard_id: Optional[int], *, initial: bool = False) -> None:
+    async def before_identify_hook(self, *, initial: bool = False) -> None:
         """|coro|
 
         A hook that is called before IDENTIFYing a session. This is useful
         if you wish to have more control over the synchronization of multiple
         IDENTIFYing clients.
 
-        The default implementation sleeps for 5 seconds.
+        The default implementation does nothing.
 
         .. versionadded:: 1.4
 
         Parameters
         ------------
-        shard_id: :class:`int`
-            The shard ID that requested being IDENTIFY'd
         initial: :class:`bool`
             Whether this IDENTIFY is the first initial IDENTIFY.
         """
 
-        if not initial:
-            await asyncio.sleep(5.0)
+        pass
 
-    # login state management
+    # Login state management
 
     async def login(self, token: str) -> None:
         """|coro|
 
         Logs in the client with the specified credentials.
 
+        .. warning::
+
+            Logging on with a user token is unfortunately against the Discord
+            `Terms of Service <https://support.discord.com/hc/en-us/articles/115002192352>`_
+            and doing so might potentially get your account banned.
+            Use this at your own risk.
 
         Parameters
         -----------
         token: :class:`str`
-            The authentication token. Do not prefix this token with
-            anything as the library will do it for you.
+            The authentication token.
 
         Raises
         ------
@@ -468,7 +421,7 @@ class Client:
             passing status code.
         """
 
-        _log.info('logging in using static token')
+        _log.info('Logging in using static token.')
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -486,8 +439,8 @@ class Client:
         reconnect: :class:`bool`
             If we should attempt reconnecting, either due to internet
             failure or a specific failure on Discord's part. Certain
-            disconnects that lead to bad state will not be handled (such as
-            invalid sharding payloads or bad tokens).
+            disconnects that lead to bad state will not be handled
+            (such as bad tokens).
 
         Raises
         -------
@@ -501,7 +454,6 @@ class Client:
         backoff = ExponentialBackoff()
         ws_params = {
             'initial': True,
-            'shard_id': self.shard_id,
         }
         while not self.is_closed():
             try:
@@ -526,7 +478,7 @@ class Client:
                 if not reconnect:
                     await self.close()
                     if isinstance(exc, ConnectionClosed) and exc.code == 1000:
-                        # clean close, don't re-raise this
+                        # Clean close, don't re-raise this
                         return
                     raise
 
@@ -539,12 +491,10 @@ class Client:
                     continue
 
                 # We should only get this when an unhandled close code happens,
-                # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
-                # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
+                # such as a clean disconnect (1000) or a bad state (bad token, etc)
+                # Sometimes, discord sends us 1000 for unknown reasons so we should reconnect
                 # regardless and rely on is_closed instead
                 if isinstance(exc, ConnectionClosed):
-                    if exc.code == 4014:
-                        raise PrivilegedIntentsRequired(exc.shard_id) from None
                     if exc.code != 1000:
                         await self.close()
                         raise
@@ -553,8 +503,8 @@ class Client:
                 _log.exception("Attempting a reconnect in %.2fs", retry)
                 await asyncio.sleep(retry)
                 # Always try to RESUME the connection
-                # If the connection is not RESUME-able then the gateway will invalidate the session.
-                # This is apparently what the official Discord client does.
+                # If the connection is not RESUME-able then the gateway will invalidate the session
+                # This is apparently what the official Discord client does
                 ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
 
     async def close(self) -> None:
@@ -571,7 +521,7 @@ class Client:
             try:
                 await voice.disconnect(force=True)
             except Exception:
-                # if an error happens during disconnects, disregard it.
+                # If an error happens during disconnects, disregard it
                 pass
 
         if self.ws is not None and self.ws.open:
@@ -665,7 +615,7 @@ class Client:
                 # I am unsure why this gets raised here but suppress it anyway
                 return None
 
-    # properties
+    # Properties
 
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the websocket connection is closed."""
@@ -686,7 +636,7 @@ class Client:
             # ConnectionState._activity is typehinted as ActivityPayload, we're passing Dict[str, Any]
             self._connection._activity = value.to_dict() # type: ignore
         else:
-            raise TypeError('activity must derive from BaseActivity.')
+            raise TypeError('activity must derive from BaseActivity')
     
     @property
     def status(self):
@@ -706,7 +656,7 @@ class Client:
         elif isinstance(value, Status):
             self._connection._status = str(value)
         else:
-            raise TypeError('status must derive from Status.')
+            raise TypeError('status must derive from Status')
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
@@ -723,15 +673,7 @@ class Client:
         else:
             raise TypeError(f'allowed_mentions must be AllowedMentions not {value.__class__!r}')
 
-    @property
-    def intents(self) -> Intents:
-        """:class:`~discord.Intents`: The intents configured for this connection.
-
-        .. versionadded:: 1.5
-        """
-        return self._connection.intents
-
-    # helpers/getters
+    # Helpers/Getters
 
     @property
     def users(self) -> List[User]:
@@ -900,7 +842,7 @@ class Client:
         for guild in self.guilds:
             yield from guild.members
 
-    # listeners/waiters
+    # Listeners/Waiters
 
     async def wait_until_ready(self) -> None:
         """|coro|
@@ -1013,7 +955,7 @@ class Client:
         listeners.append((future, check))
         return asyncio.wait_for(future, timeout)
 
-    # event registration
+    # Event registration
 
     def event(self, coro: Coro) -> Coro:
         """A decorator that registers an event to listen to.
@@ -1198,8 +1140,7 @@ class Client:
 
         .. note::
 
-            Using this, you will **not** receive :attr:`.Guild.channels`, :attr:`.Guild.members`,
-            :attr:`.Member.activity` and :attr:`.Member.voice` per :class:`.Member`.
+            Using this, you will **not** receive :attr:`.Guild.channels` and :attr:`.Guild.members`.
 
         .. note::
 
@@ -1236,8 +1177,6 @@ class Client:
         """|coro|
 
         Creates a :class:`.Guild`.
-
-        Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         Parameters
         ----------
@@ -1410,26 +1349,6 @@ class Client:
 
         return Widget(state=self._connection, data=data)
 
-    async def application_info(self) -> AppInfo:
-        """|coro|
-
-        Retrieves the bot's application information.
-
-        Raises
-        -------
-        :exc:`.HTTPException`
-            Retrieving the information failed somehow.
-
-        Returns
-        --------
-        :class:`.AppInfo`
-            The bot's application information.
-        """
-        data = await self.http.application_info()
-        if 'rpc_origins' not in data:
-            data['rpc_origins'] = None
-        return AppInfo(self._connection, data)
-
     async def fetch_user(self, user_id: int, /) -> User:
         """|coro|
 
@@ -1439,7 +1358,7 @@ class Client:
 
         .. note::
 
-            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
+            This method is an API call. If you have member cache enabled, consider :meth:`get_user` instead.
 
         Parameters
         -----------
@@ -1598,45 +1517,3 @@ class Client:
 
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
-
-    def add_view(self, view: View, *, message_id: Optional[int] = None) -> None:
-        """Registers a :class:`~discord.ui.View` for persistent listening.
-
-        This method should be used for when a view is comprised of components
-        that last longer than the lifecycle of the program.
-        
-        .. versionadded:: 2.0
-
-        Parameters
-        ------------
-        view: :class:`discord.ui.View`
-            The view to register for dispatching.
-        message_id: Optional[:class:`int`]
-            The message ID that the view is attached to. This is currently used to
-            refresh the view's state during message update events. If not given
-            then message update events are not propagated for the view.
-
-        Raises
-        -------
-        TypeError
-            A view was not passed.
-        ValueError
-            The view is not persistent. A persistent view has no timeout
-            and all their components have an explicitly provided custom_id.
-        """
-
-        if not isinstance(view, View):
-            raise TypeError(f'expected an instance of View not {view.__class__!r}')
-
-        if not view.is_persistent():
-            raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')
-
-        self._connection.store_view(view, message_id)
-
-    @property
-    def persistent_views(self) -> Sequence[View]:
-        """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
-        
-        .. versionadded:: 2.0
-        """
-        return self._connection.persistent_views

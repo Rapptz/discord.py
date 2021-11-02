@@ -2,15 +2,15 @@
 Discord API Wrapper
 ~~~~~~~~~~~~~~~~~~~
 
-A basic wrapper for the Discord API.
+A basic wrapper for the Discord user API.
 
 :copyright: (c) 2015-present Rapptz
 :license: MIT, see LICENSE for more details.
 
 """
 
-__title__ = 'discord'
-__author__ = 'Rapptz'
+__title__ = 'discord.py-self'
+__author__ = 'Dolfies'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2015-present Rapptz'
 __version__ = '2.0.0a'
@@ -47,7 +47,6 @@ from . import utils, opus, abc, ui
 from .enums import *
 from .embeds import *
 from .mentions import *
-from .shard import *
 from .player import *
 from .webhook import *
 from .voice_client import *
@@ -61,14 +60,13 @@ from .components import *
 from .threads import *
 
 
-class VersionInfo(NamedTuple):
+class _VersionInfo(NamedTuple):
     major: int
     minor: int
     micro: int
-    releaselevel: Literal["alpha", "beta", "candidate", "final"]
+    releaselevel: Literal['alpha', 'beta', 'candidate', 'final']
     serial: int
 
-
-version_info: VersionInfo = VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
+version_info: _VersionInfo = _VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

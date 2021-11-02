@@ -57,7 +57,6 @@ __all__ = (
     'when_mentioned',
     'when_mentioned_or',
     'Bot',
-    'AutoShardedBot',
 )
 
 MISSING: Any = discord.utils.MISSING
@@ -137,7 +136,7 @@ class BotBase(GroupMixin):
         self.strip_after_prefix = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
-            raise TypeError('Both owner_id and owner_ids are set.')
+            raise TypeError('Both owner_id and owner_ids are set')
 
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
             raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
@@ -315,23 +314,21 @@ class BotBase(GroupMixin):
         # type-checker doesn't distinguish between functions and methods
         return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
-    async def is_owner(self, user: discord.User) -> bool:
+    def is_owner(self, user: discord.User) -> bool:
         """|coro|
 
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
-        If an :attr:`owner_id` is not set, it is fetched automatically
-        through the use of :meth:`~.Bot.application_info`.
-
-        .. versionchanged:: 1.3
-            The function also checks if the application is team-owned if
-            :attr:`owner_ids` is not set.
-
         Parameters
         -----------
         user: :class:`.abc.User`
             The user to check for.
+
+        Raises
+        -------
+        AttributeError
+            Owners aren't set.
 
         Returns
         --------
@@ -344,14 +341,7 @@ class BotBase(GroupMixin):
         elif self.owner_ids:
             return user.id in self.owner_ids
         else:
-
-            app = await self.application_info()  # type: ignore
-            if app.team:
-                self.owner_ids = ids = {m.id for m in app.team.members}
-                return user.id in ids
-            else:
-                self.owner_id = owner_id = app.owner.id
-                return user.id == owner_id
+            raise AttributeError('Owners aren\'t set.')
 
     def before_invoke(self, coro: CFT) -> CFT:
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -1086,8 +1076,7 @@ class Bot(BotBase, discord.Client):
         information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
         The user ID that owns the bot. If this is not set and is then queried via
-        :meth:`.is_owner` then it is fetched automatically using
-        :meth:`~.Bot.application_info`.
+        :meth:`.is_owner` then it will error.
     owner_ids: Optional[Collection[:class:`int`]]
         The user IDs that owns the bot. This is similar to :attr:`owner_id`.
         If this is not set and the application is team based, then it is
@@ -1102,11 +1091,5 @@ class Bot(BotBase, discord.Client):
         the ``command_prefix`` is set to ``!``. Defaults to ``False``.
 
         .. versionadded:: 1.7
-    """
-    pass
-
-class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is inherited from
-    :class:`discord.AutoShardedClient` instead.
     """
     pass
