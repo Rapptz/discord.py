@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import time
 import asyncio
 from typing import (
     Any,
@@ -44,6 +43,7 @@ from typing import (
 import datetime
 
 import discord.abc
+from .calls import PrivateCall, GroupCall
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, StagePrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from .types.threads import ThreadArchiveDuration
     from .role import Role
     from .member import Member, VoiceState
-    from .abc import Snowflake, SnowflakeTime
+    from .abc import Snowflake, SnowflakeTime, T as ConnectReturn
     from .message import Message, PartialMessage
     from .webhook import Webhook
     from .state import ConnectionState
@@ -89,9 +89,13 @@ if TYPE_CHECKING:
     from .types.snowflake import SnowflakeList
 
 
-async def _single_delete_strategy(messages: Iterable[Message]):
-    for m in messages:
-        await m.delete()
+async def _delete_messages(state, channel_id, messages):
+    delete_message = state.http.delete_message
+    for msg in messages:
+        try:
+            await delete_message(channel_id, msg.id)
+        except NotFound:
+            pass
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -366,15 +370,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
-        As a special case, if the number of messages is 0, then nothing
-        is done. If the number of messages is 1 then single message
-        delete is done. If it's more than two, then bulk delete is used.
-
-        You cannot bulk delete more than 100 messages or messages that
-        are older than 14 days old.
-
         You must have the :attr:`~Permissions.manage_messages` permission to
-        use this.
+        use this (unless they're your own).
+
+        .. note::
+            Users do not have access to the message bulk-delete endpoint.
+            Since messages are just iterated over and deleted one-by-one,
+            it's easy to get ratelimited using this method.
 
         Parameters
         -----------
@@ -383,12 +385,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        ClientException
-            The number of messages to delete was more than 100.
         Forbidden
             You do not have proper permissions to delete the messages.
-        NotFound
-            If single delete, then the message was already deleted.
         HTTPException
             Deleting the messages failed.
         """
@@ -398,16 +396,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if len(messages) == 0:
             return  # do nothing
 
-        if len(messages) == 1:
-            message_id: int = messages[0].id
-            await self._state.http.delete_message(self.id, message_id)
-            return
-
-        if len(messages) > 100:
-            raise ClientException('Can only bulk delete messages up to 100 messages')
-
-        message_ids: SnowflakeList = [m.id for m in messages]
-        await self._state.http.delete_messages(self.id, message_ids)
+        await _delete_messages(self._state, self.id, messages)
 
     async def purge(
         self,
@@ -418,7 +407,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = False,
-        bulk: bool = True,
     ) -> List[Message]:
         """|coro|
 
@@ -426,10 +414,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own.
-        The :attr:`~Permissions.read_message_history` permission is
-        also needed to retrieve message history.
+        The :attr:`~Permissions.read_message_history` permission is needed to
+        retrieve message history.
 
         Examples
         ---------
@@ -458,10 +444,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         oldest_first: Optional[:class:`bool`]
             Same as ``oldest_first`` in :meth:`history`.
-        bulk: :class:`bool`
-            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
-            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if messages are older than two weeks.
 
         Raises
         -------
@@ -479,45 +461,27 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         if check is MISSING:
             check = lambda m: True
 
+        state = self._state
+        channel_id = self.id
         iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
         ret: List[Message] = []
         count = 0
 
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if bulk else _single_delete_strategy
-
         async for message in iterator:
-            if count == 100:
-                to_delete = ret[-100:]
-                await strategy(to_delete)
+            if count == 50:
+                to_delete = ret[-50:]
+                await _delete_messages(state, channel_id, to_delete)
                 count = 0
-                await asyncio.sleep(1)
 
             if not check(message):
                 continue
 
-            if message.id < minimum_time:
-                # older than 14 days old
-                if count == 1:
-                    await ret[-1].delete()
-                elif count >= 2:
-                    to_delete = ret[-count:]
-                    await strategy(to_delete)
-
-                count = 0
-                strategy = _single_delete_strategy
-
             count += 1
             ret.append(message)
 
-        # SOme messages remaining to poll
-        if count >= 2:
-            # more than 2 messages -> bulk delete
-            to_delete = ret[-count:]
-            await strategy(to_delete)
-        elif count == 1:
-            # delete a single message
-            await ret[-1].delete()
+        # Some messages remaining to poll
+        to_delete = ret[-count:]
+        await _delete_messages(state, channel_id, to_delete)
 
         return ret
 
@@ -1707,7 +1671,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 DMC = TypeVar('DMC', bound='DMChannel')
 
 
-class DMChannel(discord.abc.Messageable, Hashable):
+class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     """Represents a Discord direct message channel.
 
     .. container:: operations
@@ -1748,8 +1712,21 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
+    def _get_voice_client_key(self) -> Tuple[int, str]:
+        return self.me.id, 'self_id'
+
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
+        return self.me.id, self.id
+
+    def _add_call(self, **kwargs) -> PrivateCall:
+        return PrivateCall(**kwargs)
+
     async def _get_channel(self):
+        await self._state.access_private_channel(self.id)
         return self
+
+    def _initial_ring(self) -> None:
+        return self._state.http.ring(self.id)
 
     def __str__(self) -> str:
         if self.recipient:
@@ -1768,6 +1745,11 @@ class DMChannel(discord.abc.Messageable, Hashable):
         # state.user won't be None here
         self.me = state.user  # type: ignore
         return self
+
+    @property
+    def call(self) -> Optional[PrivateCall]:
+        """Optional[:class:`PrivateCall`]: The channel's currently active call."""
+        return self._state._calls.get(self.id)
 
     @property
     def type(self) -> ChannelType:
@@ -1832,8 +1814,15 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
         return PartialMessage(channel=self, id=message_id)
 
+    async def connect(self, *, ring=True, **kwargs):
+        await self._get_channel()
+        call = self.call
+        if call is None and ring:
+            await self._initial_ring()
+        await super().connect(**kwargs)
 
-class GroupChannel(discord.abc.Messageable, Hashable):
+
+class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     """Represents a Discord group channel.
 
     .. container:: operations
@@ -1892,8 +1881,21 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == self.owner_id, self.recipients)
 
+    def _get_voice_client_key(self) -> Tuple[int, str]:
+        return self.me.id, 'self_id'
+
+    def _get_voice_state_pair(self) Tuple[int, int]:
+        return self.me.id, self.id
+
     async def _get_channel(self):
+        await self._state.access_private_channel(self.id)
         return self
+
+    def _initial_ring(self) -> None:
+        return self._state.http.ring(self.id)
+
+    def _add_call(self, **kwargs) -> GroupCall:
+        return GroupCall(**kwargs)
 
     def __str__(self) -> str:
         if self.name:
@@ -1906,6 +1908,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     def __repr__(self) -> str:
         return f'<GroupChannel id={self.id} name={self.name!r}>'
+
+    @property
+    def call(self) -> Optional[PrivateCall]:
+        """Optional[:class:`PrivateCall`]: The channel's currently active call."""
+        return self._state._calls.get(self.id)
 
     @property
     def type(self) -> ChannelType:
@@ -1959,6 +1966,110 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             base.kick_members = True
 
         return base
+
+    async def connect(self, *, ring=True, **kwargs) -> ConnectReturn:
+        await self._get_channel()
+        call = self.call
+        if call is None and ring:
+            await self._initial_ring()
+        await super().connect(**kwargs)
+
+    async def add_recipients(self, *recipients) -> None:
+        r"""|coro|
+
+        Adds recipients to this group.
+
+        A group can only have a maximum of 10 members.
+        Attempting to add more ends up in an exception. To
+        add a recipient to the group, you must have a relationship
+        with the user of type :attr:`RelationshipType.friend`.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to add to this group.
+
+        Raises
+        -------
+        HTTPException
+            Adding a recipient to this group failed.
+        """
+
+        # TODO: wait for the corresponding WS event
+        await self._get_channel()
+        req = self._state.http.add_group_recipient
+        for recipient in recipients:
+            await req(self.id, recipient.id)
+
+    async def remove_recipients(self, *recipients) -> None:
+        r"""|coro|
+
+        Removes recipients from this group.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to remove from this group.
+
+        Raises
+        -------
+        HTTPException
+            Removing a recipient from this group failed.
+        """
+
+        # TODO: wait for the corresponding WS event
+        await self._get_channel()
+        req = self._state.http.remove_group_recipient
+        for recipient in recipients:
+            await req(self.id, recipient.id)
+
+    @overload
+    async def edit(
+        self, *, name: Optional[str] = ..., icon: Optional[bytes] = ...,
+    ) -> Optional[GroupChannel]:
+        ...
+
+    @overload
+    async def edit(self) -> Optional[GroupChannel]:
+        ...
+
+    async def edit(self, **fields):
+        """|coro|
+
+        Edits the group.
+
+        .. versionchanged:: 2.0
+            Edits are no longer in-place, the newly edited channel is returned instead.
+
+        Parameters
+        -----------
+        name: Optional[:class:`str`]
+            The new name to change the group to.
+            Could be ``None`` to remove the name.
+        icon: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the new icon.
+            Could be ``None`` to remove the icon.
+
+        Raises
+        -------
+        HTTPException
+            Editing the group failed.
+        """
+
+        await self._get_channel()
+
+        try:
+            icon_bytes = fields['icon']
+        except KeyError:
+            pass
+        else:
+            if icon_bytes is not None:
+                fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
+
+        data = await self._state.http.edit_group(self.id, **fields)
+        if data is not None:
+            # the payload will always be the proper channel payload
+            return self.__class__(me=self.me, state=self._state, data=payload)  # type: ignore
 
     async def leave(self) -> None:
         """|coro|

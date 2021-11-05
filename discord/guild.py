@@ -2850,8 +2850,14 @@ class Guild(Hashable):
         )
 
     async def change_voice_state(
-        self, *, channel: Optional[VocalGuildChannel], self_mute: bool = False, self_deaf: bool = False
-    ):
+        self,
+        *,
+        channel: Optional[VocalGuildChannel],
+        self_mute: bool = False,
+        self_deaf: bool = False,
+        self_video: bool = False,
+        preferred_region: Optional[VoiceRegion] = MISSING
+    ) -> None:
         """|coro|
 
         Changes client's voice state in the guild.
@@ -2866,7 +2872,18 @@ class Guild(Hashable):
             Indicates if the client should be self-muted.
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
+        self_video: :class:`bool`
+            Indicates if the client is using video. Untested & unconfirmed
+            (do not use).
+        preferred_region: Optional[:class:`VoiceRegion`]
+            The preferred region to connect to.
         """
         ws = self._state._get_websocket(self.id)
         channel_id = channel.id if channel else None
-        await ws.voice_state(self.id, channel_id, self_mute, self_deaf)
+
+        if preferred_region is None or channel_id is None:
+            region = None
+        else:
+            region = str(preferred_region) if preferred_region else str(state.preferred_region)
+
+        await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, region)

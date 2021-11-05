@@ -46,8 +46,7 @@ __all__ = (
 
 
 class AppInfo:
-    """Represents the application info for the bot provided by Discord.
-
+    """Represents application info for an application/bot.
 
     Attributes
     -------------

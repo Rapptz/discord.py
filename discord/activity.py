@@ -738,14 +738,14 @@ class CustomActivity(BaseActivity):
         The emoji to pass to the activity, if any.
     """
 
-    __slots__ = ('name', 'emoji', 'state')
+    __slots__ = ('name', 'emoji')
 
     def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any):
         super().__init__(**extra)
         self.name: Optional[str] = name
-        self.state: Optional[str] = extra.pop('state', None)
-        if self.name == 'Custom Status':
-            self.name = self.state
+        state = extra.pop('state', None)
+        if self.name == 'Custom Activity':
+            self.name = state
 
         self.emoji: Optional[PartialEmoji]
         if emoji is None:
@@ -768,18 +768,11 @@ class CustomActivity(BaseActivity):
         return ActivityType.custom
 
     def to_dict(self) -> Dict[str, Any]:
-        if self.name == self.state:
-            o = {
-                'type': ActivityType.custom.value,
-                'state': self.name,
-                'name': 'Custom Status',
-            }
-        else:
-            o = {
-                'type': ActivityType.custom.value,
-                'name': self.name,
-            }
-
+        o = {
+            'type': ActivityType.custom.value,
+            'state': self.name,
+            'name': 'Custom Status',
+        }
         if self.emoji:
             o['emoji'] = self.emoji.to_dict()
         return o
@@ -830,12 +823,12 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
         except KeyError:
             return Activity(**data)
         else:
-            # we removed the name key from data already
-            return CustomActivity(name=name, **data) # type: ignore
+            # We removed the name key from data already
+            return CustomActivity(name=name, **data)  # type: ignore
     elif game_type is ActivityType.streaming:
         if 'url' in data:
-            # the url won't be None here
-            return Streaming(**data) # type: ignore
+            # The url won't be None here
+            return Streaming(**data)  # type: ignore
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)

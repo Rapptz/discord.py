@@ -80,7 +80,7 @@ class GatewayNotFound(DiscordException):
     """An exception that is raised when the gateway for Discord could not be found"""
 
     def __init__(self):
-        message = 'The gateway to connect to discord was not found.'
+        message = 'The gateway to connect to Discord was not found.'
         super().__init__(message)
 
 
@@ -111,13 +111,14 @@ class HTTPException(DiscordException):
         The response of the failed HTTP request. This is an
         instance of :class:`aiohttp.ClientResponse`. In some cases
         this could also be a :class:`requests.Response`.
-
     text: :class:`str`
         The text of the error. Could be an empty string.
     status: :class:`int`
         The status code of the HTTP request.
     code: :class:`int`
         The Discord specific error code for the failure.
+    json: Dict[any, any]
+        The raw error JSON.
     """
 
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
@@ -126,6 +127,7 @@ class HTTPException(DiscordException):
         self.code: int
         self.text: str
         if isinstance(message, dict):
+            self.json = message
             self.code = message.get('code', 0)
             base = message.get('message', '')
             errors = message.get('errors')
@@ -195,13 +197,15 @@ class InvalidArgument(ClientException):
     pass
 
 
-class LoginFailure(ClientException):
+class AuthFailure(ClientException):
     """Exception that's raised when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
 
     pass
+
+LoginFailure = AuthFailure
 
 
 class ConnectionClosed(ClientException):

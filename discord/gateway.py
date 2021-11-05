@@ -103,61 +103,59 @@ class GatewayRatelimiter:
                 await asyncio.sleep(delta)
 
 
-class KeepAliveHandler(threading.Thread):
-    def __init__(self, *args, **kwargs):
-        ws = kwargs.pop('ws', None)
-        interval = kwargs.pop('interval', None)
-        threading.Thread.__init__(self, *args, **kwargs)
+class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
+    def __init__(self, *, ws, interval=None):
         self.ws = ws
-        self._main_thread_id = ws.thread_id
         self.interval = interval
-        self.daemon = True
-        self.msg = 'Keeping websocket alive with sequence %s.'
+        self.heartbeat_timeout = self.ws._max_heartbeat_timeout
+
+        self.msg = 'Keeping websocket alive.'
         self.block_msg = 'Heartbeat blocked for more than %s seconds.'
         self.behind_msg = 'Can\'t keep up, websocket is %.1fs behind.'
-        self._stop_ev = threading.Event()
-        self._last_ack = time.perf_counter()
+        self.not_responding_msg = 'Gateway has stopped responding. Closing and restarting.'
+        self.no_stop_msg = 'An error occurred while stopping the gateway. Ignoring.'
+
+        self._stop_ev = asyncio.Event()
         self._last_send = time.perf_counter()
         self._last_recv = time.perf_counter()
+        self._last_ack = time.perf_counter()
         self.latency = float('inf')
-        self.heartbeat_timeout = ws._max_heartbeat_timeout
 
-    def run(self):
-        while not self._stop_ev.wait(self.interval):
+    async def run(self):
+        while True:
+            try:
+                await asyncio.wait_for(self._stop_ev.wait(), timeout=self.interval)
+            except asyncio.TimeoutError:
+                pass
+            else:
+                return
+
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                _log.warning('Gateway has stopped responding. Closing and restarting.')
-                coro = self.ws.close(4000)
-                f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+                log.warning(self.not_responding_msg)
 
                 try:
-                    f.result()
+                    await self.ws.close(4000)
                 except Exception:
-                    _log.exception('An error occurred while stopping the gateway. Ignoring.')
+                    log.exception(self.no_stop_msg)
                 finally:
                     self.stop()
                     return
 
             data = self.get_payload()
-            _log.debug(self.msg, data['d'])
-            coro = self.ws.send_heartbeat(data)
-            f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
+            log.debug(self.msg)
             try:
-                # block until sending is complete
+                # Block until sending is complete
                 total = 0
                 while True:
                     try:
-                        f.result(10)
+                        await asyncio.wait_for(self.ws.send_heartbeat(data), timeout=10)
                         break
-                    except concurrent.futures.TimeoutError:
+                    except asyncio.TimeoutError:
                         total += 10
-                        try:
-                            frame = sys._current_frames()[self._main_thread_id]
-                        except KeyError:
-                            msg = self.block_msg
-                        else:
-                            stack = ''.join(traceback.format_stack(frame))
-                            msg = f'{self.block_msg}\nLoop thread traceback (most recent call last):\n{stack}'
-                        _log.warning(msg, total)
+
+                        stack = ''.join(traceback.format_stack())
+                        msg = f'{self.block_msg}\nLoop traceback (most recent call last):\n{stack}'
+                        log.warning(msg, total)
 
             except Exception:
                 self.stop()
@@ -167,8 +165,11 @@ class KeepAliveHandler(threading.Thread):
     def get_payload(self):
         return {
             'op': self.ws.HEARTBEAT,
-            'd': self.ws.sequence
+            'd': self.ws.sequence,
         }
+
+    def start(self):
+        self.ws.loop.create_task(self.run())
 
     def stop(self):
         self._stop_ev.set()
@@ -181,15 +182,18 @@ class KeepAliveHandler(threading.Thread):
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
         if self.latency > 10:
-            _log.warning(self.behind_msg, self.latency)
+            log.warning(self.behind_msg, self.latency)
+
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.recent_ack_latencies = deque(maxlen=20)
-        self.msg = 'Keeping voice websocket alive with timestamp %s.'
-        self.block_msg = 'Voice heartbeat blocked for more than %s seconds.'
-        self.behind_msg = 'High socket latency, voice websocket is %.1fs behind.'
+        self.msg = 'Keeping voice websocket alive.'
+        self.block_msg = 'Voice heartbeat blocked for more than %s seconds'
+        self.behind_msg = 'High socket latency, heartbeat is %.1fs behind'
+        self.not_responding_msg = 'Voice gateway has stopped responding. Closing and restarting.'
+        self.no_stop_msg = 'An error occurred while stopping the voice gateway. Ignoring.'
 
     def get_payload(self):
         return {
@@ -203,10 +207,9 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         self._last_recv = ack_time
         self.latency = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
+        if self.latency > 10:
+            log.warning(self.behind_msg, self.latency)
 
-class DiscordClientWebSocketResponse(aiohttp.ClientWebSocketResponse):
-    async def close(self, *, code: int = 4000, message: bytes = b'') -> bool:
-        return await super().close(code=code, message=message)
 
 class DiscordWebSocket:
     """Implements a WebSocket for Discord's gateway v6.
@@ -241,7 +244,11 @@ class DiscordWebSocket:
         Receive only. Confirms receiving of a heartbeat. Not having it implies
         a connection issue.
     GUILD_SYNC
-        Send only. Requests a guild sync.
+        Send only. Requests a guild sync. This is unfortunately no longer functional.
+    ACCESS_DM
+        Send only. Tracking.
+    GUILD_SUBSCRIBE
+        Send only. Subscribes you to guilds/guild members. Might respond with GUILD_MEMBER_LIST_UPDATE.
     gateway
         The gateway we are currently connected to.
     token
@@ -261,6 +268,8 @@ class DiscordWebSocket:
     HELLO              = 10
     HEARTBEAT_ACK      = 11
     GUILD_SYNC         = 12
+    ACCESS_DM          = 13
+    GUILD_SUBSCRIBE    = 14
 
     def __init__(self, socket, *, loop):
         self.socket = socket
@@ -316,6 +325,10 @@ class DiscordWebSocket:
         ws.session_id = session
         ws.sequence = sequence
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
+        ws._user_agent = client.http.user_agent
+        ws._super_properties = client.http.super_properties
+        ws._zlib_enabled = client.http.zlib
+
 
         if client._enable_debug_events:
             ws.send = ws.debug_send
@@ -323,9 +336,9 @@ class DiscordWebSocket:
 
         client._connection._update_references(ws)
 
-        _log.debug('Created websocket connected to %s', gateway)
+        _log.debug('Connected to %s.', gateway)
 
-        # poll event for OP Hello
+        # Poll for Hello
         await ws.poll_event()
 
         if not resume:
@@ -366,31 +379,30 @@ class DiscordWebSocket:
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
-                'properties': {
-                    '$os': sys.platform,
-                    '$browser': 'discord.py',
-                    '$device': 'discord.py',
-                    '$referrer': '',
-                    '$referring_domain': ''
+                'capabilities': 125,
+                'properties': self._super_properties,
+                'presence': {
+                    'status': 'online',
+                    'since': 0,
+                    'activities': [],
+                    'afk': False
                 },
-                'compress': True,
-                'large_threshold': 250,
-                'v': 3
+                'compress': False,
+                'client_state': {
+                    'guild_hashes': {},
+                    'highest_last_message_id': '0',
+                    'read_state_version': 0,
+                    'user_guild_settings_version': -1
+                }
             }
         }
 
-        state = self._connection
-        if state._activity is not None or state._status is not None:
-            payload['d']['presence'] = {
-                'status': state._status,
-                'game': state._activity,
-                'since': 0,
-                'afk': False
-            }
+        if not self._zlib_enabled:
+            payload['d']['compress'] = True
 
         await self.call_hooks('before_identify', initial=self._initial_identify)
         await self.send_as_json(payload)
-        _log.info('Gateway has sent the IDENTIFY payload.')
+        log.info('Gateway has sent the IDENTIFY payload.')
 
     async def resume(self):
         """Sends the RESUME packet."""
@@ -419,7 +431,7 @@ class DiscordWebSocket:
         self.log_receive(msg)
         msg = utils._from_json(msg)
 
-        _log.debug('WebSocket Event: %s.', msg)
+        _log.debug('Gateway event: %s.', msg)
         event = msg.get('t')
         if event:
             self._dispatch('socket_event_type', event)
@@ -456,7 +468,7 @@ class DiscordWebSocket:
             if op == self.HELLO:
                 interval = data['heartbeat_interval'] / 1000.0
                 self._keep_alive = KeepAliveHandler(ws=self, interval=interval)
-                # send a heartbeat immediately
+                # Send a heartbeat immediately
                 await self.send_as_json(self._keep_alive.get_payload())
                 self._keep_alive.start()
                 return
@@ -480,21 +492,22 @@ class DiscordWebSocket:
             self.sequence = msg['s']
             self.session_id = data['session_id']
             _log.info('Connected to Gateway: %s (Session ID: %s).',
-                     ', '.join(trace), self.session_id)
+                      ', '.join(trace), self.session_id)
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
             _log.info('Gateway has successfully RESUMED session %s under trace %s.',
-                     self.session_id, ', '.join(trace))
+                      self.session_id, ', '.join(trace))
 
         try:
             func = self._discord_parsers[event]
         except KeyError:
             _log.debug('Unknown event %s.', event)
         else:
+            _log.debug('Parsing event %s.', event)
             func(data)
 
-        # remove the dispatched listeners
+        # Remove the dispatched listeners
         removed = []
         for index, entry in enumerate(self._dispatch_listeners):
             if entry.event != event:
@@ -616,40 +629,63 @@ class DiscordWebSocket:
         _log.debug('Sending "%s" to change status', sent)
         await self.send(sent)
 
-    async def request_chunks(self, guild_id, query=None, *, limit, user_ids=None, presences=False, nonce=None):
+    async def request_lazy_guild(self, guild_id, *, typing=None, threads=None, activities=None, members=None, channels=None, thread_member_lists=None):
+        payload = {
+            'op': self.GUILD_SUBSCRIBE,
+            'd': {
+                'guild_id': guild_id,
+            }
+        }
+
+        data = payload['d']
+        if typing is not None:
+            data['typing'] = typing
+        if threads is not None:
+            data['threads'] = threads
+        if activities is not None:
+            data['activities'] = activities
+        if members is not None:
+            data['members'] = members
+        if channels is not None:
+            data['channels'] = channels
+        if thread_member_lists is not None:
+            data['thread_member_lists'] = thread_member_lists
+
+        await self.send_as_json(payload)
+
+    async def request_chunks(self, guild_ids, query=None, *, limit=None, user_ids=None, presences=True, nonce=None):
         payload = {
             'op': self.REQUEST_MEMBERS,
             'd': {
-                'guild_id': guild_id,
+                'guild_id': guild_ids,
+                'query': query,
+                'limit': limit,
                 'presences': presences,
-                'limit': limit
+                'user_ids': user_ids,
             }
         }
 
         if nonce:
             payload['d']['nonce'] = nonce
 
-        if user_ids:
-            payload['d']['user_ids'] = user_ids
-
-        if query is not None:
-            payload['d']['query'] = query
-
-
         await self.send_as_json(payload)
 
-    async def voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
+    async def voice_state(self, guild_id=None, channel_id=None, self_mute=False, self_deaf=False, self_video=False, *, preferred_region=None):
         payload = {
             'op': self.VOICE_STATE,
             'd': {
                 'guild_id': guild_id,
                 'channel_id': channel_id,
                 'self_mute': self_mute,
-                'self_deaf': self_deaf
+                'self_deaf': self_deaf,
+                'self_video': self_video,
             }
         }
 
-        _log.debug('Updating our voice state to %s.', payload)
+        if preferred_region is not None:
+            payload['d']['preferred_region'] = preferred_region
+
+        _log.debug('Updating %s voice state to %s.', guild_id or 'client', payload)
         await self.send_as_json(payload)
 
     async def close(self, code=4000):

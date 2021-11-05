@@ -132,11 +132,6 @@ class Button(Component):
 
     This inherits from :class:`Component`.
 
-    .. note::
-
-        The user constructible and usable type to create a button is :class:`discord.ui.Button`
-        not this one.
-
     .. versionadded:: 2.0
 
     Attributes
@@ -205,11 +200,6 @@ class SelectMenu(Component):
     A select menu is functionally the same as a dropdown, however
     on mobile it renders a bit differently.
 
-    .. note::
-
-        The user constructible and usable type to create a select menu is
-        :class:`discord.ui.Select` not this one.
-
     .. versionadded:: 2.0
 
     Attributes
@@ -268,8 +258,6 @@ class SelectMenu(Component):
 
 class SelectOption:
     """Represents a select menu's option.
-
-    These can be created by users.
 
     .. versionadded:: 2.0
 

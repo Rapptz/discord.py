@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import copy
 import asyncio
+from datetime import datetime
 from typing import (
     Any,
     Callable,
@@ -70,7 +71,7 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from .client import Client
-    from .user import ClientUser
+    from .user import ClientUser, User
     from .asset import Asset
     from .state import ConnectionState
     from .guild import Guild
@@ -78,7 +79,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VocalGuildChannel
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
@@ -92,6 +93,7 @@ if TYPE_CHECKING:
     PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
+    ConnectableChannel = Union[VocalGuildChannel, PrivateChannel, User]
 
 MISSING = utils.MISSING
 
@@ -146,6 +148,8 @@ class User(Snowflake, Protocol):
         The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
+    system: :class:`bool`
+        If the user is a system user (i.e. represents Discord officially).
     """
 
     __slots__ = ()
@@ -1025,7 +1029,7 @@ class GuildChannel:
 
         await self._state.http.bulk_channel_update(self.guild.id, payload, reason=reason)
 
-    async def create_invite(
+    async def create_invite(  # TODO: add validate
         self,
         *,
         reason: Optional[str] = None,
@@ -1232,11 +1236,10 @@ class Messageable:
         files=None,
         stickers=None,
         delete_after=None,
-        nonce=None,
+        nonce=MISSING,
         allowed_mentions=None,
         reference=None,
         mention_author=None,
-        view=None,
     ):
         """|coro|
 
@@ -1270,7 +1273,7 @@ class Messageable:
             A list of files to upload. Must be a maximum of 10.
         nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,
-            then the message will have a nonce with this value.
+            then the message will have a nonce with this value. Generates one by default.
         delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -1297,8 +1300,6 @@ class Messageable:
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
-        view: :class:`discord.ui.View`
-            A Discord UI View to add to the message.
         embeds: List[:class:`~discord.Embed`]
             A list of embeds to upload. Must be a maximum of 10.
 
@@ -1332,7 +1333,7 @@ class Messageable:
         content = str(content) if content is not None else None
 
         if embed is not None and embeds is not None:
-            raise InvalidArgument('cannot pass both embed and embeds parameter to send()')
+            raise InvalidArgument('Cannot pass both embed and embeds parameter to send()')
 
         if embed is not None:
             embed = embed.to_dict()
@@ -1363,16 +1364,11 @@ class Messageable:
             except AttributeError:
                 raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
 
-        if view:
-            if not hasattr(view, '__discord_ui_view__'):
-                raise InvalidArgument(f'view parameter must be View not {view.__class__!r}')
-
-            components = view.to_components()
-        else:
-            components = None
+        if nonce is MISSING:
+            nonce = utils.time_snowflake(datetime.utcnow())
 
         if file is not None and files is not None:
-            raise InvalidArgument('cannot pass both file and files parameter to send()')
+            raise InvalidArgument('Cannot pass both file and files parameter to send()')
 
         if file is not None:
             if not isinstance(file, File):
@@ -1390,7 +1386,6 @@ class Messageable:
                     nonce=nonce,
                     message_reference=reference,
                     stickers=stickers,
-                    components=components,
                 )
             finally:
                 file.close()
@@ -1615,6 +1610,9 @@ class Connectable(Protocol):
     __slots__ = ()
     _state: ConnectionState
 
+    async def _get_channel(self) -> ConnectableChannel:
+        return self
+
     def _get_voice_client_key(self) -> Tuple[int, str]:
         raise NotImplementedError
 
@@ -1627,6 +1625,7 @@ class Connectable(Protocol):
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = VoiceClient,
+        _channel: Optional[Connectable] = None
     ) -> T:
         """|coro|
 
@@ -1662,15 +1661,15 @@ class Connectable(Protocol):
 
         key_id, _ = self._get_voice_client_key()
         state = self._state
+        channel = await self._get_channel()
 
         if state._get_voice_client(key_id):
-            raise ClientException('Already connected to a voice channel.')
+            raise ClientException('Already connected to a voice channel')
 
-        client = state._get_client()
-        voice = cls(client, self)
+        voice = cls(state.client, channel)
 
         if not isinstance(voice, VoiceProtocol):
-            raise TypeError('Type must meet VoiceProtocol abstract base class.')
+            raise TypeError('Type must meet VoiceProtocol abstract base class')
 
         state._add_voice_client(key_id, voice)
 
@@ -1680,8 +1679,7 @@ class Connectable(Protocol):
             try:
                 await voice.disconnect(force=True)
             except Exception:
-                # we don't care if disconnect failed because connection failed
-                pass
-            raise  # re-raise
+                pass  # We don't care if disconnect failed because connection failed
+            raise  # Re-raise
 
         return voice

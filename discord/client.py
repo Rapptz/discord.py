@@ -33,17 +33,16 @@ from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Se
 
 import aiohttp
 
-from .user import User, ClientUser
+from .user import User, ClientUser, Profile, Note
 from .invite import Invite
 from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType
+from .enums import ChannelType, Status, VoiceRegion, try_enum
 from .mentions import AllowedMentions
 from .errors import *
-from .enums import Status, VoiceRegion
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
@@ -143,6 +142,16 @@ class Client:
         amounts of guilds. The default is ``True``.
 
         .. versionadded:: 1.5
+    guild_subscription_options: :class:`GuildSubscriptionOptions`
+        Allows for control over the library's auto-subscribing.
+        If not given, defaults to off.
+
+        .. versionadded:: 1.9
+    request_guilds :class:`bool`
+        Whether to request guilds at startup (behaves similarly to the old
+        guild_subscriptions option). Defaults to True.
+
+        .. versionadded:: 1.10
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
@@ -198,7 +207,8 @@ class Client:
         self.http: HTTPClient = HTTPClient(connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
 
         self._handlers: Dict[str, Callable] = {
-            'ready': self._handle_ready
+            'ready': self._handle_ready,
+            'connect': self._handle_connect
         }
 
         self._hooks: Dict[str, Callable] = {
@@ -209,8 +219,6 @@ class Client:
         self._connection: ConnectionState = self._get_state(**options)
         self._closed: bool = False
         self._ready: asyncio.Event = asyncio.Event()
-        self._connection._get_websocket = self._get_websocket
-        self._connection._get_client = lambda: self
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -218,15 +226,20 @@ class Client:
 
     # Internals
 
-    def _get_websocket(self, guild_id: Optional[int] = None) -> DiscordWebSocket:
-        return self.ws
-
     def _get_state(self, **options: Any) -> ConnectionState:
         return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                               hooks=self._hooks, http=self.http, loop=self.loop, **options)
+                               hooks=self._hooks, http=self.http, loop=self.loop,
+                               client=self, **options)
 
     def _handle_ready(self) -> None:
         self._ready.set()
+
+    def _handle_connect(self) -> None:
+        state = self._connection
+        activity = create_activity(state._activity)
+        status = try_enum(Status, state._status)
+        if status is not None or activity is not None:
+            self.loop.create_task(self.change_presence(activity=activity, status=status))
 
     @property
     def latency(self) -> float:
@@ -424,6 +437,7 @@ class Client:
         _log.info('Logging in using static token.')
 
         data = await self.http.static_login(token.strip())
+        self._state.analytics_token = data.get('')
         self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -546,11 +560,6 @@ class Client:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
-
-        Raises
-        -------
-        TypeError
-            An unexpected keyword argument was received.
         """
         await self.login(token)
         await self.connect(reconnect=reconnect)
@@ -620,6 +629,11 @@ class Client:
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the websocket connection is closed."""
         return self._closed
+
+    @property
+    def voice_client(self) -> Optional[VoiceProtocol]:
+        """Optional[:class:`VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with private calls, if any."""
+        return self._connection._get_voice_client(self.user.id)
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -991,6 +1005,7 @@ class Client:
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
+        afk: bool = False
     ):
         """|coro|
 
@@ -1004,9 +1019,6 @@ class Client:
             game = discord.Game("with the API")
             await client.change_presence(status=discord.Status.idle, activity=game)
 
-        .. versionchanged:: 2.0
-            Removed the ``afk`` keyword-only parameter.
-
         Parameters
         ----------
         activity: Optional[:class:`.BaseActivity`]
@@ -1014,6 +1026,10 @@ class Client:
         status: Optional[:class:`.Status`]
             Indicates what status to change to. If ``None``, then
             :attr:`.Status.online` is used.
+        afk: Optional[:class:`bool`]
+            Indicates if you are going AFK. This allows the Discord
+            client to know how to handle push notifications better
+            for you in case you are actually idle and not lying.
 
         Raises
         ------
@@ -1030,7 +1046,14 @@ class Client:
         else:
             status_str = str(status)
 
-        await self.ws.change_presence(activity=activity, status=status_str)
+        await self.ws.change_presence(activity=activity, status=status_str, afk=afk)
+
+        # TODO: do the same for custom status and check which comes first
+        if status:
+            try:
+                await self._connection.user.edit_settings(status=status_enum)
+            except Exception:  # Not essential to actually changing status...
+                pass
 
         for guild in self._connection.guilds:
             me = guild.me
@@ -1044,12 +1067,51 @@ class Client:
 
             me.status = status
 
+    async def change_voice_state(
+        self,
+        *,
+        channel: Optional[PrivateChannel],
+        self_mute: bool = False,
+        self_deaf: bool = False,
+        self_video: bool = False,
+        preferred_region: Optional[VoiceRegion] = MISSING
+    ) -> None:
+        """|coro|
+
+        Changes client's voice state in the guild.
+
+        .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        channel: Optional[:class:`VoiceChannel`]
+            Channel the client wants to join. Use ``None`` to disconnect.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
+        self_video: :class:`bool`
+            Indicates if the client is using video. Untested & unconfirmed
+            (do not use).
+        preferred_region: Optional[:class:`VoiceRegion`]
+            The preferred region to connect to.
+        """
+        ws = self._state._get_websocket(self.id)
+        channel_id = channel.id if channel else None
+
+        if preferred_region is None or channel_id is None:
+            region = None
+        else:
+            region = str(preferred_region) if preferred_region else str(state.preferred_region)
+
+        await ws.voice_state(None, channel_id, self_mute, self_deaf, self_video, region)
+
     # Guild stuff
 
     def fetch_guilds(
         self,
         *,
-        limit: Optional[int] = 100,
+        limit: Optional[int] = None,
         before: SnowflakeTime = None,
         after: SnowflakeTime = None
     ) -> GuildIterator:
@@ -1069,12 +1131,12 @@ class Client:
 
         Usage ::
 
-            async for guild in client.fetch_guilds(limit=150):
+            async for guild in client.fetch_guilds():
                 print(guild.name)
 
         Flattening into a list ::
 
-            guilds = await client.fetch_guilds(limit=150).flatten()
+            guilds = await client.fetch_guilds().flatten()
             # guilds is now a list of Guild...
 
         All parameters are optional.
@@ -1083,9 +1145,8 @@ class Client:
         -----------
         limit: Optional[:class:`int`]
             The number of guilds to retrieve.
-            If ``None``, it retrieves every guild you have access to. Note, however,
-            that this would make it a slow operation.
-            Defaults to ``100``.
+            If ``None``, it retrieves every guild you have access to.
+            Defaults to ``None``.
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
@@ -1131,7 +1192,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection) # type: ignore
+        return Template(data=data, state=self._connection)  # type: ignore
 
     async def fetch_guild(self, guild_id: int, /) -> Guild:
         """|coro|
@@ -1182,9 +1243,6 @@ class Client:
         ----------
         name: :class:`str`
             The name of the guild.
-        region: :class:`.VoiceRegion`
-            The region for the voice communication server.
-            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: Optional[:class:`bytes`]
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
@@ -1211,12 +1269,10 @@ class Client:
         else:
             icon_base64 = None
 
-        region_value = str(region)
-
         if code:
-            data = await self.http.create_from_template(code, name, region_value, icon_base64)
+            data = await self.http.create_from_template(code, name, icon_base64)
         else:
-            data = await self.http.create_guild(name, region_value, icon_base64)
+            data = await self.http.create_guild(name, icon_base64)
         return Guild(data=data, state=self._connection)
 
     async def fetch_stage_instance(self, channel_id: int, /) -> StageInstance:
@@ -1317,6 +1373,38 @@ class Client:
         invite_id = utils.resolve_invite(invite)
         await self.http.delete_invite(invite_id)
 
+    async def accept_invite(self, invite: Union[Invite, str]) -> Guild:
+        """|coro|
+
+        Accepts an invite and joins a guild.
+
+        .. versionadded:: 1.9
+
+        Parameters
+        ----------
+        invite: Union[:class:`.Invite`, :class:`str`]
+            The Discord invite ID, URL (must be a discord.gg URL), or :class:`.Invite`.
+
+        Raises
+        ------
+        :exc:`.HTTPException`
+            Joining the guild failed.
+
+        Returns
+        -------
+        :class:`.Guild`
+            The guild joined. This is not the same guild that is
+            added to cache.
+        """
+
+        if not isinstance(invite, Invite):
+            invite = await self.fetch_invite(invite, with_counts=False, with_expiration=False)
+
+        data = await self.http.join_guild(invite.code, guild_id=invite.guild.id, channel_id=invite.channel.id, channel_type=invite.channel.type.value)
+        return Guild(data=data['guild'], state=self._connection)
+
+    use_invite = accept_invite
+
     # Miscellaneous stuff
 
     async def fetch_widget(self, guild_id: int, /) -> Widget:
@@ -1346,15 +1434,14 @@ class Client:
             The guild's widget.
         """
         data = await self.http.get_widget(guild_id)
-
         return Widget(state=self._connection, data=data)
 
     async def fetch_user(self, user_id: int, /) -> User:
         """|coro|
 
         Retrieves a :class:`~discord.User` based on their ID.
-        You do not have to share any guilds with the user to get this information,
-        however many operations do require that you do.
+        You do not have to share any guilds with the user to get
+        this information, however many operations do require that you do.
 
         .. note::
 
@@ -1379,6 +1466,57 @@ class Client:
         """
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
+
+
+    async def fetch_user_profile(
+        self, user_id: int, *, with_mutuals: bool = True, fetch_note: bool = True
+    ) -> Profile:
+        """|coro|
+
+        Gets an arbitrary user's profile.
+
+        You must share a guild or be friends with this user to
+        get this information.
+
+        Parameters
+        ------------
+        user_id: :class:`int`
+            The ID of the user to fetch their profile for.
+        with_mutuals: :class:`bool`
+            Whether to fetch mutual guilds and friends.
+            This fills in :attr:`mutual_guilds` & :attr:`mutual_friends`.
+        fetch_note: :class:`bool`
+            Whether to pre-fetch the user's note.
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            A user with this ID does not exist.
+        :exc:`.Forbidden`
+            Not allowed to fetch this profile.
+        :exc:`.HTTPException`
+            Fetching the profile failed.
+
+        Returns
+        --------
+        :class:`.Profile`
+            The profile of the user.
+        """
+
+        state = self._connection
+        data = await self.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
+
+        if with_mutuals:
+            data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+
+        profile = Profile(state, data)
+
+        if fetch_note:
+            await profile.note.fetch()
+
+        return profile
+
+    fetch_profile = fetch_user_profile
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
@@ -1489,6 +1627,51 @@ class Client:
         """
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+
+    async def fetch_notes(self) -> List[Note]:
+        """|coro|
+
+        Retrieves a list of :class:`Note` objects representing all your notes.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retreiving the notes failed.
+
+        Returns
+        --------
+        List[:class:`Note`]
+            All your notes.
+        """
+        state = self._connection
+        data = await self.http.get_notes()
+        return [Note(state, int(id), note=note) for id, note in data.items()]
+
+    async def fetch_note(self, user_id: int) -> Note:
+        """|coro|
+
+        Retrieves a :class:`Note` for the specified user ID.
+
+        Parameters
+        -----------
+        user_id: :class:`int`
+            The ID of the user to fetch the note for.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retreiving the note failed.
+
+        Returns
+        --------
+        :class:`Note`
+            The note you requested.
+        """
+        try:
+            data = await self.http.get_note(user_id)
+        except NotFound:
+            data = {'note': 0}
+        return Note(self._connection, int(user_id), note=data['note'])
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|

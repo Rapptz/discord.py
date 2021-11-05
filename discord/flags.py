@@ -34,6 +34,7 @@ __all__ = (
     'PublicUserFlags',
     'MemberCacheFlags',
     'ApplicationFlags',
+    'GuildSubscriptionOptions',
 )
 
 FV = TypeVar('FV', bound='flag_value')
@@ -573,3 +574,55 @@ class ApplicationFlags(BaseFlags):
     def embedded(self):
         """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
         return 1 << 17
+
+
+class GuildSubscriptionOptions:
+    """Controls the library's auto-subscribing feature.
+
+    Subscribing refers to abusing the member sidebar to scrape all* guild
+    members. However, you can only request 200 members per OPCode 14.
+
+    Once you send a proper OPCode 14, Discord responds with a
+    GUILD_MEMBER_LIST_UPDATE. You then also get subsequent GUILD_MEMBER_LIST_UPDATEs
+    that act (kind of) like GUILD_MEMBER_UPDATE/ADD/REMOVEs.
+
+    *Discord doesn't provide offline members for "large" guilds.
+    *As this is dependent on the member sidebar, guilds that don't have
+    a channel (of any type, surprisingly) that @everyone or some other
+    role everyone has can't access don't get the full online member list.
+
+    To construct an object you can pass keyword arguments denoting the options
+    and their values. If you don't pass a value, the default is used.
+    """
+
+    def __init__(
+        self, *, auto_subscribe: bool = True, concurrent_guilds: int = 2, max_online: int = 6000
+    ) -> None:
+        if concurrent_guilds < 1:
+            raise TypeError('concurrent_guilds must be positive')
+        if max_online < 1:
+            raise TypeError('max_online must be positive')
+
+        self.auto_subscribe = auto_subscribe
+        self.concurrent_guilds = concurrent_guilds
+        self.max_online = max_online
+
+    def __repr__(self) -> str:
+        return '<GuildSubscriptionOptions auto_subscribe={0.auto_subscribe} concurrent_guilds={0.concurrent_guilds} max_online_count={0.max_online_count}' .format(self)
+
+    @classmethod
+    def all(cls) -> GuildSubscriptionOptions:
+        """A factory method that creates a :class:`GuildSubscriptionOptions` that subscribes every guild. Not recommended in the slightest."""
+        return cls(max_online=10000000)
+
+    @classmethod
+    def default(cls) -> GuildSubscriptionOptions:
+        """A factory method that creates a :class:`GuildSubscriptionOptions` with default values."""
+        return cls()
+
+    @classmethod
+    def disabled(cls) -> GuildSubscriptionOptions:
+        """A factory method that creates a :class:`GuildSubscriptionOptions` with subscribing disabled."""
+        return cls(auto_subscribe=False)
+
+    off = disabled
