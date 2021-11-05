@@ -40,7 +40,7 @@ class User(PartialUser, total=False):
     bot: bool
     system: bool
     mfa_enabled: bool
-    local: str
+    locale: str
     verified: bool
     email: Optional[str]
     flags: int
