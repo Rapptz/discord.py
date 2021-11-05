@@ -150,17 +150,12 @@ class Guild(Hashable):
         All stickers that the guild owns.
 
         .. versionadded:: 2.0
-    region: :class:`VoiceRegion`
-        The region the guild belongs on. There is a chance that the region
-        will be a :class:`str` if the value is not recognised by the enumerator.
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
-    afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     id: :class:`int`
         The guild's ID.
     owner_id: :class:`int`
-        The guild owner's ID. Use :attr:`Guild.owner` instead.
+        The guild owner's ID.
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :attr:`Guild.id` is slim and they might
@@ -274,6 +269,8 @@ class Guild(Hashable):
         '_public_updates_channel_id',
         '_stage_instances',
         '_threads',
+        '_online_count',
+        '_subscribing'
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -285,10 +282,12 @@ class Guild(Hashable):
     }
 
     def __init__(self, *, data: GuildPayload, state: ConnectionState):
+        self._roles: Dict[int, Role] = {}
         self._channels: Dict[int, GuildChannel] = {}
         self._members: Dict[int, Member] = {}
         self._voice_states: Dict[int, VoiceState] = {}
         self._threads: Dict[int, Thread] = {}
+        self._stage_instances: Dict[int, StageInstance] = {}
         self._state: ConnectionState = state
         self._from_data(data)
 
@@ -349,7 +348,7 @@ class Guild(Hashable):
         user_id = int(data['user_id'])
         channel = self.get_channel(channel_id)
         try:
-            # check if we should remove the voice state from cache
+            # Check if we should remove the voice state from cache
             if channel is None:
                 after = self._voice_states.pop(user_id)
             else:
@@ -358,7 +357,7 @@ class Guild(Hashable):
             before = copy.copy(after)
             after._update(data, channel)
         except KeyError:
-            # if we're here then we're getting added into the cache
+            # If we're here then add it into the cache
             after = VoiceState(data=data, channel=channel)
             before = VoiceState(data=data, channel=None)
             self._voice_states[user_id] = after
@@ -373,52 +372,54 @@ class Guild(Hashable):
         return member, before, after
 
     def _add_role(self, role: Role, /) -> None:
-        # roles get added to the bottom (position 1, pos 0 is @everyone)
-        # so since self.roles has the @everyone role, we can't increment
-        # its position because it's stuck at position 0. Luckily x += False
-        # is equivalent to adding 0. So we cast the position to a bool and
-        # increment it.
         for r in self._roles.values():
             r.position += not r.is_default()
 
         self._roles[role.id] = role
 
     def _remove_role(self, role_id: int, /) -> Role:
-        # this raises KeyError if it fails..
         role = self._roles.pop(role_id)
 
-        # since it didn't, we can change the positions now
-        # basically the same as above except we only decrement
-        # the position if we're above the role we deleted.
         for r in self._roles.values():
             r.position -= r.position > role.position
 
         return role
 
     def _from_data(self, guild: GuildPayload) -> None:
-        # according to Stan, this is always available even if the guild is unavailable
-        # I don't have this guarantee when someone updates the guild.
-        member_count = guild.get('member_count', None)
+        member_count = guild.get('member_count')
         if member_count is not None:
             self._member_count: int = member_count
 
+        self.id: int = int(guild['id'])
         self.name: str = guild.get('name')
-        self.region: VoiceRegion = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
         self.default_notifications: NotificationLevel = try_enum(
             NotificationLevel, guild.get('default_message_notifications')
         )
         self.explicit_content_filter: ContentFilter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout: int = guild.get('afk_timeout')
-        self._icon: Optional[str] = guild.get('icon')
-        self._banner: Optional[str] = guild.get('banner')
         self.unavailable: bool = guild.get('unavailable', False)
-        self.id: int = int(guild['id'])
-        self._roles: Dict[int, Role] = {}
-        state = self._state  # speed up attribute access
+
+        state = self._state  # Speed up attribute access
+
         for r in guild.get('roles', []):
             role = Role(guild=self, data=r, state=state)
             self._roles[role.id] = role
+
+        for c in guild.get('channels', []):
+            factory, _ = _guild_channel_factory(c['type'])
+            if factory:
+                self._add_channel(factory(guild=self, data=c, state=state))
+
+        for t in guild.get('threads', []):
+            self._add_thread(Thread(guild=self, state=self._state, data=t))
+
+        for s in guild.get('stage_instances', []):
+            stage_instance = StageInstance(guild=self, data=s, state=state)
+            self._stage_instances[stage_instance.id] = stage_instance
+
+        for vs in guild.get('voice_states', []):
+            self._update_voice_state(vs, int(vs['channel_id']))
 
         self.mfa_level: MFALevel = guild.get('mfa_level')
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
@@ -426,6 +427,8 @@ class Guild(Hashable):
             map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
         )
         self.features: List[GuildFeature] = guild.get('features', [])
+        self._icon: Optional[str] = guild.get('icon')
+        self._banner: Optional[str] = guild.get('banner')
         self._splash: Optional[str] = guild.get('splash')
         self._system_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'system_channel_id')
         self.description: Optional[str] = guild.get('description')
@@ -439,54 +442,29 @@ class Guild(Hashable):
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
+        self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
+        self._online_count = None
 
-        self._stage_instances: Dict[int, StageInstance] = {}
-        for s in guild.get('stage_instances', []):
-            stage_instance = StageInstance(guild=self, data=s, state=state)
-            self._stage_instances[stage_instance.id] = stage_instance
-
-        cache_joined = self._state.member_cache_flags.joined
-        self_id = self._state.self_id
-        for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)
-            if cache_joined or member.id == self_id:
-                self._add_member(member)
-
-        self._sync(guild)
-        self._large: Optional[bool] = None if member_count is None else self._member_count >= 250
-
-        self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
-        self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
-
-        for obj in guild.get('voice_states', []):
-            self._update_voice_state(obj, int(obj['channel_id']))
-
-    # TODO: refactor/remove?
-    def _sync(self, data: GuildPayload) -> None:
-        try:
-            self._large = data['large']
-        except KeyError:
-            pass
+        for mdata in guild.get('merged_members', []):
+            try:
+                member = Member(data=mdata, guild=self, state=state)
+            except KeyError:
+                continue
+            self._add_member(member)
 
         empty_tuple = tuple()
-        for presence in data.get('presences', []):
-            user_id = int(presence['user']['id'])
+        for presence in guild.get('merged_presences', []):
+            user_id = int(presence['user_id'])
             member = self.get_member(user_id)
             if member is not None:
-                member._presence_update(presence, empty_tuple)  # type: ignore
+                member._presence_update(presence, empty_tuple)
 
-        if 'channels' in data:
-            channels = data['channels']
-            for c in channels:
-                factory, ch_type = _guild_channel_factory(c['type'])
-                if factory:
-                    self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
+        large = None if member_count is None else member_count >= 250
+        self._large: Optional[bool] = guild.get('large', large)
 
-        if 'threads' in data:
-            threads = data['threads']
-            for thread in threads:
-                self._add_thread(Thread(guild=self, state=self._state, data=thread))
+        self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
 
     @property
     def channels(self) -> List[GuildChannel]:
@@ -543,7 +521,7 @@ class Guild(Hashable):
         This is essentially used to get the member version of yourself.
         """
         self_id = self._state.user.id
-        # The self member is *always* cached
+        # We are *always* cached
         return self.get_member(self_id)  # type: ignore
 
     @property
@@ -625,7 +603,7 @@ class Guild(Hashable):
         Returns
         --------
         Optional[Union[:class:`Thread`, :class:`.abc.GuildChannel`]]
-            The returned channel or thread or ``None`` if not found.
+            The returned channel, thread, or ``None`` if not found.
         """
         return self._channels.get(channel_id) or self._threads.get(channel_id)
 
@@ -702,6 +680,25 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def afk_channel(self) -> Optional[VocalGuildChannel]:
+        """Optional[:class:`VoiceChannel`]: Returns the guild channel AFK users are moved to.
+
+        If no channel is set, then this returns ``None``.
+        """
+        channel_id = self._afk_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def widget_channel(self) -> Optional[GuildChannel]:
+        """Optional[:class:`TextChannel`]: Returns the channel the
+        widget will generate an invite to by default.
+
+        If no channel is set, then this returns ``None``.
+        """
+        channel_id = self._widget_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -797,19 +794,6 @@ class Guild(Hashable):
         return None
 
     @property
-    def self_role(self) -> Optional[Role]:
-        """Optional[:class:`Role`]: Gets the role associated with this client's user, if any.
-
-        .. versionadded:: 1.6
-        """
-        self_id = self._state.self_id
-        for role in self._roles.values():
-            tags = role.tags
-            if tags and tags.bot_id == self_id:
-                return role
-        return None
-
-    @property
     def stage_instances(self) -> List[StageInstance]:
         """List[:class:`StageInstance`]: Returns a :class:`list` of the guild's stage instances that
         are currently running.
@@ -880,6 +864,13 @@ class Guild(Hashable):
         return self._member_count
 
     @property
+    def online_count(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the online member count. 
+        This only exists after the first GUILD_MEMBER_LIST_UPDATE.
+        """
+        return self._online_count
+
+    @property
     def chunked(self) -> bool:
         """:class:`bool`: Returns a boolean indicating if the guild is "chunked".
 
@@ -926,16 +917,10 @@ class Guild(Hashable):
             then ``None`` is returned.
         """
 
-        result = None
         members = self.members
-        if len(name) > 5 and name[-5] == '#':
-            # The 5 length is checking to see if #0000 is in the string,
-            # as a#0000 has a length of 6, the minimum for a potential
-            # discriminator lookup.
-            potential_discriminator = name[-4:]
 
-            # do the actual lookup and return if found
-            # if it isn't found then we'll do a full name lookup below.
+        if len(name) > 5 and name[-5] == '#':
+            potential_discriminator = name[-4:]
             result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
             if result is not None:
                 return result
@@ -1296,7 +1281,7 @@ class Guild(Hashable):
 
         .. note::
 
-            You cannot leave the guild that you own, you must delete it instead
+            You cannot leave a guild that you own, you must delete it instead
             via :meth:`delete`.
 
         Raises
@@ -1346,6 +1331,7 @@ class Guild(Hashable):
         preferred_locale: str = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
+        features: List[str] = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1369,7 +1355,7 @@ class Guild(Hashable):
             The new name of the guild.
         description: Optional[:class:`str`]
             The new description of the guild. Could be ``None`` for no description.
-            This is only available to guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
+            This is only available to guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
             GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
@@ -1444,6 +1430,7 @@ class Guild(Hashable):
             mentioned in :meth:`Client.fetch_guild` and may not have full data.
         """
 
+        # TODO: see what fields are sent no matter if they're changed or not
         http = self._state.http
 
         if vanity_code is not MISSING:
@@ -1992,7 +1979,7 @@ class Guild(Hashable):
         """
         await self._state.http.create_integration(self.id, type, id)
 
-    async def integrations(self) -> List[Integration]:
+    async def integrations(self, *, with_applications=True) -> List[Integration]:
         """|coro|
 
         Returns a list of all integrations attached to the guild.
@@ -2001,6 +1988,11 @@ class Guild(Hashable):
         do this.
 
         .. versionadded:: 1.4
+
+        Parameters
+        -----------
+        with_applications: :class:`bool`
+            Whether to include applications.
 
         Raises
         -------
@@ -2014,7 +2006,7 @@ class Guild(Hashable):
         List[:class:`Integration`]
             The list of integrations that are attached to the guild.
         """
-        data = await self._state.http.get_all_integrations(self.id)
+        data = await self._state.http.get_all_integrations(self.id, with_applications)
 
         def convert(d):
             factory, _ = _integration_factory(d['type'])
@@ -2784,7 +2776,7 @@ class Guild(Hashable):
         *,
         limit: int = 5,
         user_ids: Optional[List[int]] = None,
-        presences: bool = False,
+        presences: bool = True,
         cache: bool = True,
     ) -> List[Member]:
         """|coro|
@@ -2805,7 +2797,7 @@ class Guild(Hashable):
             a number between 5 and 100.
         presences: :class:`bool`
             Whether to request for presences to be provided. This defaults
-            to ``False``.
+            to ``True``.
 
             .. versionadded:: 1.6
 
@@ -2878,7 +2870,8 @@ class Guild(Hashable):
         preferred_region: Optional[:class:`VoiceRegion`]
             The preferred region to connect to.
         """
-        ws = self._state._get_websocket(self.id)
+        state = self._state
+        ws = state._get_websocket(self.id)
         channel_id = channel.id if channel else None
 
         if preferred_region is None or channel_id is None:
