@@ -156,6 +156,8 @@ class Guild(Hashable):
         The guild's ID.
     owner_id: :class:`int`
         The guild owner's ID.
+    owner_application_id: Optional[:class:`int`]
+        The application ID of the guild owner (if applicable).
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :attr:`Guild.id` is slim and they might
@@ -445,7 +447,12 @@ class Guild(Hashable):
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
         self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
-        self._online_count = None
+        self._online_count: Optional[int] = None
+        self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
+        self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
+
+        large = None if member_count is None else member_count >= 250
+        self._large: Optional[bool] = guild.get('large', large)
 
         for mdata in guild.get('merged_members', []):
             try:
@@ -460,11 +467,6 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member._presence_update(presence, empty_tuple)
-
-        large = None if member_count is None else member_count >= 250
-        self._large: Optional[bool] = guild.get('large', large)
-
-        self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
 
     @property
     def channels(self) -> List[GuildChannel]:
