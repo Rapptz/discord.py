@@ -437,7 +437,7 @@ class Client:
         _log.info('Logging in using static token.')
 
         data = await self.http.static_login(token.strip())
-        self._state.analytics_token = data.get('')
+        self._state.analytics_token = data.get('analytics_token')
         self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -1051,7 +1051,7 @@ class Client:
         # TODO: do the same for custom status and check which comes first
         if status:
             try:
-                await self._connection.user.edit_settings(status=status_enum)
+                await self._connection.user.edit_settings(status=status)
             except Exception:  # Not essential to actually changing status...
                 pass
 
@@ -1096,7 +1096,8 @@ class Client:
         preferred_region: Optional[:class:`VoiceRegion`]
             The preferred region to connect to.
         """
-        ws = self._state._get_websocket(self.id)
+        state = self._connection
+        ws = state._get_websocket(self.id)
         channel_id = channel.id if channel else None
 
         if preferred_region is None or channel_id is None:
