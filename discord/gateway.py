@@ -131,18 +131,18 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
                 return
 
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                log.warning(self.not_responding_msg)
+                _log.warning(self.not_responding_msg)
 
                 try:
                     await self.ws.close(4000)
                 except Exception:
-                    log.exception(self.no_stop_msg)
+                    _log.exception(self.no_stop_msg)
                 finally:
                     self.stop()
                     return
 
             data = self.get_payload()
-            log.debug(self.msg)
+            _log.debug(self.msg)
             try:
                 # Block until sending is complete
                 total = 0
@@ -155,7 +155,7 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
 
                         stack = ''.join(traceback.format_stack())
                         msg = f'{self.block_msg}\nLoop traceback (most recent call last):\n{stack}'
-                        log.warning(msg, total)
+                        _log.warning(msg, total)
 
             except Exception:
                 self.stop()
@@ -182,7 +182,7 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
         self._last_ack = ack_time
         self.latency = ack_time - self._last_send
         if self.latency > 10:
-            log.warning(self.behind_msg, self.latency)
+            _log.warning(self.behind_msg, self.latency)
 
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
@@ -208,7 +208,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         self.latency = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
         if self.latency > 10:
-            log.warning(self.behind_msg, self.latency)
+            _log.warning(self.behind_msg, self.latency)
 
 
 class DiscordWebSocket:
@@ -402,7 +402,7 @@ class DiscordWebSocket:
 
         await self.call_hooks('before_identify', initial=self._initial_identify)
         await self.send_as_json(payload)
-        log.info('Gateway has sent the IDENTIFY payload.')
+        _log.info('Gateway has sent the IDENTIFY payload.')
 
     async def resume(self):
         """Sends the RESUME packet."""
@@ -604,10 +604,10 @@ class DiscordWebSocket:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket) from exc
 
-    async def change_presence(self, *, activity=None, status=None, since=0.0):
+    async def change_presence(self, *, activity=None, status=None, since=0.0, afk=False):
         if activity is not None:
             if not isinstance(activity, BaseActivity):
-                raise InvalidArgument('activity must derive from BaseActivity.')
+                raise InvalidArgument('activity must derive from BaseActivity')
             activity = [activity.to_dict()]
         else:
             activity = []
@@ -619,7 +619,7 @@ class DiscordWebSocket:
             'op': self.PRESENCE,
             'd': {
                 'activities': activity,
-                'afk': False,
+                'afk': afk,
                 'since': since,
                 'status': status
             }
