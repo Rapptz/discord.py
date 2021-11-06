@@ -743,7 +743,7 @@ class CustomActivity(BaseActivity):
     def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any):
         super().__init__(**extra)
         self.name: Optional[str] = name
-        state = extra.pop('state', None)
+        self.state = state = extra.pop('state', None)
         if self.name == 'Custom Activity':
             self.name = state
 
