@@ -2691,6 +2691,18 @@ class Guild(Hashable):
             self, before=before, after=after, limit=limit, oldest_first=oldest_first, user_id=user_id, action_type=action
         )
 
+    async def ack(self):
+        """|coro|
+
+        Marks every message in this guild as read.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        """
+        return await self._state.http.ack_guild(self.id)
+
     async def widget(self) -> Widget:
         """|coro|
 
@@ -2882,3 +2894,50 @@ class Guild(Hashable):
             region = str(preferred_region) if preferred_region else str(state.preferred_region)
 
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, region)
+
+    async def mute(self, *, duration: Optional[int] = None) -> None:
+        """|coro|
+
+        Mutes the guild.
+
+        .. versionadded:: 1.9
+
+        Parameters
+        -----------
+        duration: Optional[:class:`int`]
+            The duration (in hours) of the mute. Defaults to
+            ``None`` for an indefinite mute.
+
+        Raises
+        -------
+        HTTPException
+            Muting failed.
+        """
+
+        fields = {
+            'muted': True
+        }
+
+        if duration is not None:
+            mute_config = {
+                'selected_time_window': duration * 3600,
+                'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat()
+            }
+            fields['mute_config'] = mute_config
+
+        await self._state.http.edit_guild_settings(self.id, **fields)
+
+    async def unmute(self) -> None:
+        """|coro|
+
+        Unmutes the guild.
+
+        .. versionadded:: 1.9
+
+        Raises
+        -------
+        HTTPException
+            Unmuting failed.
+        """
+
+        await self._state.http.edit_guild_settings(self.id, muted=False)
