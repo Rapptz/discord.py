@@ -38,7 +38,6 @@ __all__ = (
     'HistoryIterator',
     'AuditLogIterator',
     'GuildIterator',
-    'MemberIterator',
 )
 
 if TYPE_CHECKING:
@@ -504,9 +503,7 @@ class GuildIterator(_AsyncIterator['Guild']):
     100 guilds, update the ``before`` parameter to the oldest guild received.
     Guilds will be returned in order by time.
     If `after` is specified, it returns the ``limit`` oldest guilds after ``after``,
-    sorted with newest first. For filling over 100 guilds, update the ``after``
-    parameter to the newest guild received, If guilds are not reversed, they
-    will be out of order (99-0, 199-100, so on)
+    sorted with newest first.
 
     Not that if both ``before`` and ``after`` are specified, ``before`` is ignored by the
     guilds endpoint.
@@ -524,7 +521,6 @@ class GuildIterator(_AsyncIterator['Guild']):
     """
 
     def __init__(self, bot, limit, before=None, after=None):
-
         if isinstance(before, datetime.datetime):
             before = Object(id=time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
@@ -560,8 +556,8 @@ class GuildIterator(_AsyncIterator['Guild']):
 
     def _get_retrieve(self):
         l = self.limit
-        if l is None or l > 100:
-            r = 100
+        if l is None or l > 200:
+            r = 200
         else:
             r = l
         self.retrieve = r
@@ -575,7 +571,7 @@ class GuildIterator(_AsyncIterator['Guild']):
     async def fill_guilds(self):
         if self._get_retrieve():
             data = await self._retrieve_guilds(self.retrieve)
-            if self.limit is None or len(data) < 100:
+            if self.limit is None or len(data) < 200:
                 self.limit = 0
 
             if self._filter:
@@ -607,60 +603,6 @@ class GuildIterator(_AsyncIterator['Guild']):
                 self.limit -= retrieve
             self.after = Object(id=int(data[0]['id']))
         return data
-
-
-class MemberIterator(_AsyncIterator['Member']):
-    def __init__(self, guild, limit=1000, after=None):
-
-        if isinstance(after, datetime.datetime):
-            after = Object(id=time_snowflake(after, high=True))
-
-        self.guild = guild
-        self.limit = limit
-        self.after = after or OLDEST_OBJECT
-
-        self.state = self.guild._state
-        self.get_members = self.state.http.get_members
-        self.members = asyncio.Queue()
-
-    async def next(self) -> Member:
-        if self.members.empty():
-            await self.fill_members()
-
-        try:
-            return self.members.get_nowait()
-        except asyncio.QueueEmpty:
-            raise NoMoreItems()
-
-    def _get_retrieve(self):
-        l = self.limit
-        if l is None or l > 1000:
-            r = 1000
-        else:
-            r = l
-        self.retrieve = r
-        return r > 0
-
-    async def fill_members(self):
-        if self._get_retrieve():
-            after = self.after.id if self.after else None
-            data = await self.get_members(self.guild.id, self.retrieve, after)
-            if not data:
-                # no data, terminate
-                return
-
-            if len(data) < 1000:
-                self.limit = 0  # terminate loop
-
-            self.after = Object(id=int(data[-1]['user']['id']))
-
-            for element in reversed(data):
-                await self.members.put(self.create_member(element))
-
-    def create_member(self, data):
-        from .member import Member
-
-        return Member(data=data, guild=self.guild, state=self.state)
 
 
 class ArchivedThreadIterator(_AsyncIterator['Thread']):
