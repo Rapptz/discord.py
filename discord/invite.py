@@ -347,6 +347,7 @@ class Invite(Hashable):
         self.max_uses: Optional[int] = data.get('max_uses')
         self.approximate_presence_count: Optional[int] = data.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = data.get('approximate_member_count')
+        self._message_id: Optional[int] = data.get('message_id')
 
         expires_at = data.get('expires_at', None)
         self.expires_at: Optional[datetime.datetime] = parse_time(expires_at) if expires_at else None
@@ -367,7 +368,9 @@ class Invite(Hashable):
         )
 
     @classmethod
-    def from_incomplete(cls: Type[I], *, state: ConnectionState, data: InvitePayload) -> I:
+    def from_incomplete(
+        cls: Type[I], *, state: ConnectionState, data: InvitePayload, message_id: Optional[int] = None
+    ) -> I:
         guild: Optional[Union[Guild, PartialInviteGuild]]
         try:
             guild_data = data['guild']
@@ -378,15 +381,16 @@ class Invite(Hashable):
             guild_id = int(guild_data['id'])
             guild = state._get_guild(guild_id)
             if guild is None:
-                # If it's not cached, then it has to be a partial guild
                 guild = PartialInviteGuild(state, guild_data, guild_id)
 
         # As far as I know, invites always need a channel
-        # So this should never raise.
         channel: Union[PartialInviteChannel, GuildChannel] = PartialInviteChannel(data['channel'])
         if guild is not None and not isinstance(guild, PartialInviteGuild):
             # Upgrade the partial data if applicable
             channel = guild.get_channel(channel.id) or channel
+
+        if message_id is not None:
+            data['message_id'] = message_id
 
         return cls(state=state, data=data, guild=guild, channel=channel)
 
@@ -452,6 +456,33 @@ class Invite(Hashable):
     def url(self) -> str:
         """:class:`str`: A property that retrieves the invite URL."""
         return self.BASE + '/' + self.code
+
+    async def use(self) -> Guild:
+        """|coro|
+
+        Uses the invite (joins the guild)
+
+        .. versionadded:: 1.9
+
+        Raises
+        ------
+        :exc:`.HTTPException`
+            Joining the guild failed.
+
+        Returns
+        -------
+        :class:`.Guild`
+            The guild joined. This is not the same guild that is
+            added to cache.
+        """
+
+        state = self._state
+        data = await state.http.join_guild(self.code, self.guild.id, self.channel.id, self.channel.type.value, self._message_id)
+
+        Guild = state.Guild  # Circular import
+        return Guild(data=data['guild'], state=state)
+
+    accept = use
 
     async def delete(self, *, reason: Optional[str] = None):
         """|coro|
