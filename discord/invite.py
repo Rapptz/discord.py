@@ -478,9 +478,7 @@ class Invite(Hashable):
 
         state = self._state
         data = await state.http.join_guild(self.code, self.guild.id, self.channel.id, self.channel.type.value, self._message_id)
-
-        Guild = state.Guild  # Circular import
-        return Guild(data=data['guild'], state=state)
+        return state.Guild(data=data['guild'], state=state)  # Circular import
 
     accept = use
 
