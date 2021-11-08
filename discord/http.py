@@ -854,17 +854,25 @@ class HTTPClient:
     def edit_profile(self, payload: Dict[str, Any]) -> Response[user.User]:
         return self.request(Route('PATCH', '/users/@me'), json=payload)
 
+    def edit_my_voice_state(self, guild_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:  # TODO: remove payload
+        r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
+        return self.request(r, json=payload)
+
+    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:  # TODO: remove payload
+        r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
+        return self.request(r, json=payload)
+
     def edit_me(
         self,
         guild_id: Snowflake,
-        nickname: Optional[str] = MISSING,
-        avatar: Optional[bytes] = MISSING,
         *,
+        nick: Optional[str] = MISSING,
+        avatar: Optional[bytes] = MISSING,
         reason: Optional[str] = None,
     ) -> Response[member.MemberWithUser]:
         payload = {}
-        if nickname is not MISSING:
-            payload['nick'] = nickname
+        if nick is not MISSING:
+            payload['nick'] = nick
         if avatar is not MISSING:
             r = Route('PATCH', '/guilds/{guild_id}/members/@me', guild_id=guild_id)
             payload['avatar'] = avatar
@@ -875,29 +883,6 @@ class HTTPClient:
             ))
 
         return self.request(r, json=payload, reason=reason)
-
-    def change_nickname(
-        self,
-        guild_id: Snowflake,
-        user_id: Snowflake,
-        nickname: str,
-        *,
-        reason: Optional[str] = None,
-    ) -> Response[member.MemberWithUser]:
-        r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
-        payload = {
-            'nick': nickname,
-        }
-
-        return self.request(r, json=payload, reason=reason)
-
-    def edit_my_voice_state(self, guild_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:  # TODO: remove payload
-        r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
-        return self.request(r, json=payload)
-
-    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:  # TODO: remove payload
-        r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
-        return self.request(r, json=payload)
 
     def edit_member(
         self,
@@ -995,6 +980,7 @@ class HTTPClient:
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
+        location: str = MISSING,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         route = Route(
@@ -1002,10 +988,13 @@ class HTTPClient:
         )
         payload = {
             'auto_archive_duration': auto_archive_duration,
-            'location': choice(('Message', 'Reply Chain Nudge')),
             'name': name,
             'type': 11,
         }
+        if location is MISSING:
+            payload['location'] = choice(('Message', 'Reply Chain Nudge'))
+        else:
+            payload['location'] = location
 
         return self.request(route, json=payload, reason=reason)
 
@@ -1056,7 +1045,7 @@ class HTTPClient:
         params = {
             'location': 'Context Menu'
         }
-        
+
         return self.request(r, params=params)
 
     def get_public_archived_threads(
@@ -1301,16 +1290,24 @@ class HTTPClient:
     def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
         return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
 
-    def list_premium_sticker_packs(self) -> Response[sticker.ListPremiumStickerPacks]:
-        return self.request(Route('GET', '/sticker-packs'))
+    def list_premium_sticker_packs(
+        self, country: str = 'US', locale: str = 'en-US', payment_source_id: int = MISSING
+    ) -> Response[sticker.ListPremiumStickerPacks]:
+        params = {
+            'country_code': country,
+            'locale': locale,
+        }
+        if payment_source_id is not MISSING:
+            params['payment_source_id'] = payment_source_id
+
+        return self.request(Route('GET', '/sticker-packs'), params=params)
 
     def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
         return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
 
     def get_guild_sticker(self, guild_id: Snowflake, sticker_id: Snowflake) -> Response[sticker.GuildSticker]:
-        return self.request(
-            Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id)
-        )
+        r = Route('GET', '/guilds/{guild_id}/stickers/{sticker_id}', guild_id=guild_id, sticker_id=sticker_id)
+        return self.request(r)
 
     def create_guild_sticker(
         self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str

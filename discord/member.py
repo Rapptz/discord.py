@@ -39,7 +39,7 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import RelationshipAction, Status, try_enum
 from .colour import Colour
 from .object import Object
 
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
         UserWithMember as UserWithMemberPayload,
     )
     from .types.user import User as UserPayload
-    from .abc import Snowflake
+    from .abc import Connectable, Snowflake
     from .state import ConnectionState
     from .message import Message
     from .role import Role
@@ -76,8 +76,12 @@ class VoiceState:
     ------------
     deaf: :class:`bool`
         Indicates if the user is currently deafened by the guild.
+
+        Doesn't apply to private channels.
     mute: :class:`bool`
         Indicates if the user is currently muted by the guild.
+
+        Doesn't apply to private channels.
     self_mute: :class:`bool`
         Indicates if the user is currently muted by their own accord.
     self_deaf: :class:`bool`
@@ -107,7 +111,7 @@ class VoiceState:
 
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
+    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`, :class:`DMChannel`, :class:`GroupChannel`]]
         The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
@@ -140,7 +144,7 @@ class VoiceState:
         self.deaf: bool = data.get('deaf', False)
         self.suppress: bool = data.get('suppress', False)
         self.requested_to_speak_at: Optional[datetime.datetime] = utils.parse_time(data.get('request_to_speak_timestamp'))
-        self.channel: Optional[VocalGuildChannel] = channel
+        self.channel: Optional[Connectable] = channel
 
     def __repr__(self) -> str:
         attrs = [
@@ -157,26 +161,26 @@ class VoiceState:
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
-        # ignore private/special methods
-        if attr.startswith('_'):
-            continue
+        # Ignore private/special methods (or not)
+        # if attr.startswith('_'):
+        #     continue
 
-        # don't override what we already have
+        # Don't override what we already have
         if attr in cls.__dict__:
             continue
 
-        # if it's a slotted attribute or a property, redirect it
-        # slotted members are implemented as member_descriptors in Type.__dict__
+        # If it's a slotted attribute or a property, redirect it
+        # Slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
             getter = attrgetter('_user.' + attr)
             setattr(cls, attr, property(getter, doc=f'Equivalent to :attr:`User.{attr}`'))
         else:
-            # Technically, this can also use attrgetter
-            # However I'm not sure how I feel about "functions" returning properties
-            # It probably breaks something in Sphinx.
-            # probably a member function by now
+            # Technically, this can also use attrgetter,
+            # however I'm not sure how I feel about "functions" returning properties
+            # It probably breaks something in Sphinx
+            # Probably a member function by now
             def generate_function(x):
-                # We want sphinx to properly show coroutine functions as coroutines
+                # We want Sphinx to properly show coroutine functions as coroutines
                 if inspect.iscoroutinefunction(value):
 
                     async def general(self, *args, **kwargs):  # type: ignore
@@ -201,7 +205,7 @@ M = TypeVar('M', bound='Member')
 
 
 @flatten_user
-class Member(discord.abc.Messageable, _UserTag):
+class Member(discord.abc.Messageable, discord.abc.connectable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -359,10 +363,6 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user = member._user
         return self
 
-    async def _get_channel(self):
-        ch = await self.create_dm()
-        return ch
-
     def _update(self, data: MemberPayload) -> None:
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
@@ -389,7 +389,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if len(user) > 1:
             return self._update_inner_user(user)
-        return None
+        return
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
@@ -448,11 +448,9 @@ class Member(discord.abc.Messageable, _UserTag):
         There is an alias for this named :attr:`color`.
         """
 
-        roles = self.roles[1:]  # remove @everyone
+        roles = self.roles[1:]  # Remove @everyone
 
-        # highest order of the colour is the one that gets rendered.
-        # if the highest is the default colour then the next one with a colour
-        # is chosen instead
+        # Highest role with a colour is the one that's rendered
         for role in reversed(roles):
             if role.colour.value:
                 return role.colour
@@ -644,6 +642,7 @@ class Member(discord.abc.Messageable, _UserTag):
         roles: List[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         reason: Optional[str] = None,
+        avatar: Optional[bytes] = MISSING,
     ) -> Optional[Member]:
         """|coro|
 
@@ -666,6 +665,13 @@ class Member(discord.abc.Messageable, _UserTag):
         +---------------+--------------------------------------+
 
         All parameters are optional.
+
+        .. note::
+
+            To upload an avatar, a :term:`py:bytes-like object` must be passed in that
+            represents the image being uploaded. If this is done through a file
+            then the file must be opened via ``open('some_filename', 'rb')`` and
+            the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
         .. versionchanged:: 1.1
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
@@ -691,6 +697,9 @@ class Member(discord.abc.Messageable, _UserTag):
         voice_channel: Optional[:class:`VoiceChannel`]
             The voice channel to move the member to.
             Pass ``None`` to kick them from voice.
+        avatar: Optional[:class:`bytes`]
+            The member's new guild avatar. Pass ``None`` to remove the avatar.
+            You can only change your own guild avatar.
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -713,11 +722,14 @@ class Member(discord.abc.Messageable, _UserTag):
         payload: Dict[str, Any] = {}
 
         if nick is not MISSING:
-            nick = nick or ''
-            if me:
-                await http.change_my_nickname(guild_id, nick, reason=reason)
-            else:
-                payload['nick'] = nick
+            payload['nick'] = nick
+
+        if avatar is not MISSING:
+            payload['avatar'] = utils._bytes_to_base64_data(avatar)
+
+        if me and payload:
+            data = await http.edit_me(**payload)
+            payload = {}
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
@@ -749,6 +761,8 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
+
+        if data:
             return Member(data=data, guild=self.guild, state=self._state)
 
     async def request_to_speak(self) -> None:
@@ -906,3 +920,17 @@ class Member(discord.abc.Messageable, _UserTag):
             The role or ``None`` if not found in the member's roles.
         """
         return self.guild.get_role(role_id) if self._roles.has(role_id) else None
+
+    async def send_friend_request(self) -> None:  # TODO: check if the req returns a relationship obj
+        """|coro|
+
+        Sends the member a friend request.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to send a friend request to the member.
+        HTTPException
+            Sending the friend request failed.
+        """
+        await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
