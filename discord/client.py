@@ -39,7 +39,7 @@ from .template import Template
 from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
-from .channel import _threaded_channel_factory, PartialMessageable
+from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
 from .enums import ChannelType, Status, VoiceRegion, try_enum
 from .mentions import AllowedMentions
 from .errors import *
@@ -55,7 +55,6 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .iterators import GuildIterator
 from .appinfo import AppInfo
-from .ui.view import View
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -323,7 +322,6 @@ class Client:
 
     def _schedule_event(self, coro: Callable[..., Coroutine[Any, Any, Any]], event_name: str, *args: Any, **kwargs: Any) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
-        # Schedules the task
         return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
@@ -402,7 +400,6 @@ class Client:
         initial: :class:`bool`
             Whether this IDENTIFY is the first initial IDENTIFY.
         """
-
         pass
 
     # Login state management
@@ -1607,14 +1604,27 @@ class Client:
         """
         data = await self.http.get_sticker(sticker_id)
         cls, _ = _sticker_factory(data['type'])  # type: ignore
-        return cls(state=self._connection, data=data) # type: ignore
+        return cls(state=self._connection, data=data)  # type: ignore
 
-    async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
+    async def fetch_sticker_packs(
+        self, *, country='US', locale='en-US', *, payment_source_id: int = MISSING
+    ) -> List[StickerPack]:
         """|coro|
 
-        Retrieves all available premium sticker packs.
+        Retrieves all available default sticker packs.
 
         .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        country: :class:`str`
+            ISO 3166 country code to fetch the sticker packs for.
+            Defaults to ``US``.
+        locale: :class:`str`
+            ISO 639 language code the name and description should be in.
+            Defaults to ``en-US``.
+        payment_source_id: :class:`int`
+            Unknown.
 
         Raises
         -------
@@ -1626,7 +1636,7 @@ class Client:
         List[:class:`.StickerPack`]
             All available premium sticker packs.
         """
-        data = await self.http.list_premium_sticker_packs()
+        data = await self.http.list_premium_sticker_packs(country, locale, payment_source_id)
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
     async def fetch_notes(self) -> List[Note]:
@@ -1645,7 +1655,7 @@ class Client:
             All your notes.
         """
         state = self._connection
-        data = await self.http.get_notes()
+        data = await state.http.get_notes()
         return [Note(state, int(id), note=note) for id, note in data.items()]
 
     async def fetch_note(self, user_id: int) -> Note:
@@ -1668,11 +1678,28 @@ class Client:
         :class:`Note`
             The note you requested.
         """
-        try:
-            data = await self.http.get_note(user_id)
-        except NotFound:
-            data = {'note': 0}
-        return Note(self._connection, int(user_id), note=data['note'])
+        note = Note(self._connection, int(user_id))
+        await note.fetch()
+        return note
+
+    async def fetch_private_channels(self) -> List[PrivateChannel]:
+        """|coro
+
+        Retrieves all your private channels.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retreiving your private channels failed.
+
+        Returns
+        --------
+        List[:class:`PrivateChannel`]
+            All your private channels.
+        """
+        channels = await self._state.http.get_private_channels()
+        state = self._connection
+        return [_private_channel_factory(data['type'])(me=self.user, data=data, state=state) for data in channels]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
@@ -1701,3 +1728,31 @@ class Client:
 
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
+
+    async def create_group(self, *recipients) -> GroupChannel:
+        r"""|coro|
+
+        Creates a group direct message with the recipients
+        provided. These recipients must be have a relationship
+        of type :attr:`RelationshipType.friend`.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument :class:`list` of :class:`User` to have in
+            your group.
+
+        Raises
+        -------
+        HTTPException
+            Failed to create the group direct message.
+
+        Returns
+        -------
+        :class:`GroupChannel`
+            The new group channel.
+        """
+        users = [str(u.id) for u in recipients]
+        state = self._connection
+        data = await state.http.start_group(users)
+        return GroupChannel(me=self.user, data=data, state=state)
