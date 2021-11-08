@@ -79,7 +79,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VocalGuildChannel
+    from .channel import DMChannel, GroupChannel, PartialMessageable, PrivateChannel, TextChannel, VocalGuildChannel
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
