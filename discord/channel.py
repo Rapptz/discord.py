@@ -1884,7 +1884,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
 
-    def _get_voice_state_pair(self) Tuple[int, int]:
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
         return self.me.id, self.id
 
     async def _get_channel(self):
@@ -2168,14 +2168,21 @@ def _guild_channel_factory(channel_type: int):
         return None, value
 
 
-def _channel_factory(channel_type: int):
-    cls, value = _guild_channel_factory(channel_type)
+def _private_channel_factory(channel_type: int):
+    value = try_enum(ChannelType, channel_type)
     if value is ChannelType.private:
         return DMChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
     else:
-        return cls, value
+        return None, value
+
+
+def _channel_factory(channel_type: int):
+    cls, value = _guild_channel_factory(channel_type)
+    if cls is None:
+        cls, value = _private_channel_factory(channel_type)
+    return cls, value
 
 
 def _threaded_channel_factory(channel_type: int):
