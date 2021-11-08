@@ -937,7 +937,7 @@ class Message(Hashable):
             for member in self.mentions
         }
 
-        # add the <@!user_id> cases as well..
+        # Add the <@!user_id> cases as well..
         second_mention_transforms = {
             re.escape(f'<@!{member.id}>'): '@' + member.display_name
             for member in self.mentions
@@ -1003,7 +1003,7 @@ class Message(Hashable):
         returns an English message denoting the contents of the system message.
         """
 
-        if self.type is MessageType.default:
+        if self.type in (MessageType.default, MessageType.reply):
             return self.content
 
         if self.type is MessageType.recipient_add:
@@ -1072,10 +1072,10 @@ class Message(Hashable):
                 return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return f'{self.author.name} has added {self.content} to this channel'
+            return f'{self.author.name} has added **{self.content}** to this channel. Its most important updates will show up here.'
 
         if self.type is MessageType.guild_stream:
-            # the author will be a Member
+            # The author will be a Member
             return f'{self.author.name} is live! Now streaming {self.author.activity.name}'  # type: ignore
 
         if self.type is MessageType.guild_discovery_disqualified:
@@ -1093,14 +1093,11 @@ class Message(Hashable):
         if self.type is MessageType.thread_created:
             return f'{self.author.name} started a thread: **{self.content}**. See all **threads**.'
 
-        if self.type is MessageType.reply:
-            return self.content
-
         if self.type is MessageType.thread_starter_message:
             if self.reference is None or self.reference.resolved is None:
                 return 'Sorry, we couldn\'t load the first message in this thread'
 
-            # the resolved message for the reference will be a Message
+            # The resolved message for the reference will be a Message
             return self.reference.resolved.content  # type: ignore
 
         if self.type is MessageType.guild_invite_reminder:
@@ -1156,7 +1153,6 @@ class Message(Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
     ) -> Message:
         ...
 
@@ -1170,7 +1166,6 @@ class Message(Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
     ) -> Message:
         ...
 
@@ -1183,7 +1178,6 @@ class Message(Hashable):
         suppress: bool = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[View] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -1228,9 +1222,6 @@ class Message(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
-        view: Optional[:class:`~discord.ui.View`]
-            The updated view to update this message with. If ``None`` is passed then
-            the view is removed.
 
         Raises
         -------
@@ -1279,18 +1270,8 @@ class Message(Hashable):
         if attachments is not MISSING:
             payload['attachments'] = [a.to_dict() for a in attachments]
 
-        if view is not MISSING:
-            self._state.prevent_view_updates_for(self.id)
-            if view:
-                payload['components'] = view.to_components()
-            else:
-                payload['components'] = []
-
         data = await self._state.http.edit_message(self.channel.id, self.id, **payload)
         message = Message(state=self._state, channel=self.channel, data=data)
-
-        if view and not view.is_finished():
-            self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1534,10 +1515,11 @@ class Message(Hashable):
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
+            location='Message',
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
-    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
+    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:  # TODO: implement thread create "nudge"
         """|coro|
 
         A shortcut method to :meth:`.abc.Messageable.send` to reply to the
