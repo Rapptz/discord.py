@@ -1744,12 +1744,12 @@ class Client:
 
         Raises
         -------
-        HTTPException
+        :exc:`.HTTPException`
             Failed to create the group direct message.
 
         Returns
         -------
-        :class:`GroupChannel`
+        :class:`.GroupChannel`
             The new group channel.
         """
         users = [str(u.id) for u in recipients]
