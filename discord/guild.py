@@ -68,7 +68,7 @@ from .enums import (
 from .mixins import Hashable
 from .user import User
 from .invite import Invite
-from .iterators import AuditLogIterator, MemberIterator
+from .iterators import AuditLogIterator
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
@@ -234,7 +234,6 @@ class Guild(Hashable):
 
     __slots__ = (
         'afk_timeout',
-        'afk_channel',
         'name',
         'id',
         'unavailable',
@@ -255,6 +254,7 @@ class Guild(Hashable):
         'premium_subscription_count',
         'preferred_locale',
         'nsfw_level',
+        'owner_application_id',
         '_members',
         '_channels',
         '_icon',
@@ -265,6 +265,8 @@ class Guild(Hashable):
         '_large',
         '_splash',
         '_voice_states',
+        '_afk_channel_id',
+        '_widget_channel_id',
         '_system_channel_id',
         '_system_channel_flags',
         '_discovery_splash',
@@ -293,6 +295,13 @@ class Guild(Hashable):
         self._stage_instances: Dict[int, StageInstance] = {}
         self._state: ConnectionState = state
         self._from_data(data)
+
+    # Get it running
+    @property
+    def subscribed(self):
+        return False
+    async def subscribe(self, *args, **kwargs):
+        pass
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
         self._channels[channel.id] = channel
@@ -1334,7 +1343,6 @@ class Guild(Hashable):
         preferred_locale: str = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
-        features: List[str] = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1432,7 +1440,6 @@ class Guild(Hashable):
             The newly updated guild. Note that this has the same limitations as
             mentioned in :meth:`Client.fetch_guild` and may not have full data.
         """
-
         # TODO: see what fields are sent no matter if they're changed or not
         http = self._state.http
 
@@ -1735,7 +1742,6 @@ class Guild(Hashable):
         List[:class:`BanEntry`]
             A list of :class:`BanEntry` objects.
         """
-
         data: List[BanPayload] = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason']) for e in data]
 
@@ -1795,7 +1801,6 @@ class Guild(Hashable):
             The number of members pruned. If ``compute_prune_count`` is ``False``
             then this returns ``None``.
         """
-
         if not isinstance(days, int):
             raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
@@ -1850,7 +1855,6 @@ class Guild(Hashable):
         List[:class:`Webhook`]
             The webhooks for this guild.
         """
-
         from .webhook import Webhook
 
         data = await self._state.http.guild_webhooks(self.id)
@@ -1887,7 +1891,6 @@ class Guild(Hashable):
         :class:`int`
             The number of members estimated to be pruned.
         """
-
         if not isinstance(days, int):
             raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
 
@@ -1919,7 +1922,6 @@ class Guild(Hashable):
         List[:class:`Invite`]
             The list of invites that are currently active.
         """
-
         data = await self._state.http.invites_from(self.id)
         result = []
         for invite in data:
@@ -2257,7 +2259,6 @@ class Guild(Hashable):
         :class:`Emoji`
             The created emoji.
         """
-
         img = utils._bytes_to_base64_data(image)
         if roles:
             role_ids = [role.id for role in roles]
@@ -2289,7 +2290,6 @@ class Guild(Hashable):
         HTTPException
             An error occurred deleting the emoji.
         """
-
         await self._state.http.delete_custom_emoji(self.id, emoji.id, reason=reason)
 
     async def fetch_roles(self) -> List[Role]:
@@ -2597,14 +2597,12 @@ class Guild(Hashable):
             The special vanity invite. If ``None`` then the guild does not
             have a vanity invite set.
         """
-
-        # we start with { code: abc }
+        # We start with { code: abc }
         payload = await self._state.http.get_vanity_code(self.id)
         if not payload['code']:
-            return None
+            return
 
-        # get the vanity URL channel since default channels aren't
-        # reliable or a thing anymore
+        # Get the vanity channel & uses
         data = await self._state.http.get_invite(payload['code'])
 
         channel = self.get_channel(int(data['channel']['id']))
@@ -2692,7 +2690,7 @@ class Guild(Hashable):
             self, before=before, after=after, limit=limit, oldest_first=oldest_first, user_id=user_id, action_type=action
         )
 
-    async def ack(self):
+    async def ack(self) -> None:
         """|coro|
 
         Marks every message in this guild as read.
@@ -2781,6 +2779,12 @@ class Guild(Hashable):
         ClientException
             Insufficient permissions.
         """
+        if not self.me or not any({
+            self.me.guild_permissions.kick_members,
+            self.me.guild_permissions.manage_roles,
+            self.me.guild_permissions.ban_members
+        }):
+            raise ClientException('You don\'t have permission to chunk this guild')
 
         if not self._state.is_guild_evicted(self):
             return await self._state.chunk_guild(self, cache=cache)
@@ -2837,7 +2841,6 @@ class Guild(Hashable):
         List[:class:`Member`]
             The list of members that have matched the query.
         """
-
         if query is None:
             if query == '':
                 raise ValueError('Cannot pass empty query string.')
@@ -2914,7 +2917,6 @@ class Guild(Hashable):
         HTTPException
             Muting failed.
         """
-
         fields = {
             'muted': True
         }
@@ -2940,5 +2942,4 @@ class Guild(Hashable):
         HTTPException
             Unmuting failed.
         """
-
         await self._state.http.edit_guild_settings(self.id, muted=False)

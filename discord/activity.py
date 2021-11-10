@@ -738,7 +738,7 @@ class CustomActivity(BaseActivity):
         The emoji to pass to the activity, if any.
     """
 
-    __slots__ = ('name', 'emoji')
+    __slots__ = ('name', 'emoji', 'state')
 
     def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any):
         super().__init__(**extra)

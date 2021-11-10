@@ -49,7 +49,6 @@ from urllib.parse import quote as _uriquote
 import weakref
 
 import aiohttp
-from types import snowflake
 
 from .enums import RelationshipAction
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
@@ -84,6 +83,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        snowflake,
         sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
@@ -295,7 +295,7 @@ class HTTPClient:
 
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
-            kwargs['data'] = utils.to_json(kwargs.pop('json'))
+            kwargs['data'] = utils._to_json(kwargs.pop('json'))
 
         if 'context_properties' in kwargs:
             context_properties = kwargs.pop('context_properties')
@@ -444,9 +444,9 @@ class HTTPClient:
         return self.request(Route('GET', '/users/@me'), params=params)
 
     async def static_login(self, token: str) -> user.User:
-        # Necessary to get aiohttp to stop complaining about session creation
-        self.__session = aiohttp.ClientSession(connector=self.connector)
         old_token, self.token = self.token, token
+
+        await self.startup()
 
         try:
             data = await self.get_me()

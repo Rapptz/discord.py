@@ -28,7 +28,6 @@ from copy import copy
 from typing import Any, Dict, List, Optional, Type, TypeVar, TYPE_CHECKING, Union
 
 import discord.abc
-from types.snowflake import Snowflake
 from .asset import Asset
 from .colour import Colour
 from .enums import DefaultAvatar, HypeSquadHouse, PremiumType, RelationshipAction, RelationshipType, try_enum, UserFlags
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .state import ConnectionState
     from .types.channel import DMChannel as DMChannelPayload
+    from .types.snowflake import Snowflake
     from .types.user import User as UserPayload
 
 
@@ -597,7 +597,18 @@ class ClientUser(BaseUser):
         The user's note. Not pre-fetched.
     """
 
-    __slots__ = ('locale', '_flags', 'verified', 'mfa_enabled', '__weakref__')
+    __slots__ = (
+        'locale',
+        '_flags',
+        'verified',
+        'mfa_enabled',
+        'email',
+        'phone',
+        'premium_type',
+        'note',
+        'premium',
+        'bio',
+    )
 
     if TYPE_CHECKING:
         verified: bool

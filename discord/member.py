@@ -205,7 +205,7 @@ M = TypeVar('M', bound='Member')
 
 
 @flatten_user
-class Member(discord.abc.Messageable, discord.abc.connectable, _UserTag):
+class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -269,6 +269,7 @@ class Member(discord.abc.Messageable, discord.abc.connectable, _UserTag):
         '_user',
         '_state',
         '_avatar',
+        '_index',  # Member list index
     )
 
     if TYPE_CHECKING:

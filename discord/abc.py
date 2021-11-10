@@ -1167,7 +1167,6 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
     ) -> Message:
         ...
 
@@ -1185,7 +1184,6 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
     ) -> Message:
         ...
 
@@ -1203,7 +1201,6 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
     ) -> Message:
         ...
 
@@ -1221,7 +1218,6 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
     ) -> Message:
         ...
 
@@ -1408,7 +1404,6 @@ class Messageable:
                     allowed_mentions=allowed_mentions,
                     message_reference=reference,
                     stickers=stickers,
-                    components=components,
                 )
             finally:
                 for f in files:
@@ -1424,12 +1419,9 @@ class Messageable:
                 allowed_mentions=allowed_mentions,
                 message_reference=reference,
                 stickers=stickers,
-                components=components,
             )
 
         ret = state.create_message(channel=channel, data=data)
-        if view:
-            state.store_view(view, ret.id)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)

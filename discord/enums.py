@@ -367,6 +367,13 @@ class DefaultAvatar(Enum):
         return self.name
 
 
+class RelationshipType(Enum):
+    friend           = 1
+    blocked          = 2
+    incoming_request = 3
+    outgoing_request = 4
+
+
 class NotificationLevel(Enum, comparable=True):
     all_messages = 0
     only_mentions = 1

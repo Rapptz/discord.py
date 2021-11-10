@@ -44,6 +44,7 @@ from .enums import ChannelType, Status, VoiceRegion, try_enum
 from .mentions import AllowedMentions
 from .errors import *
 from .gateway import *
+from .gateway import ConnectionClosed
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
@@ -236,7 +237,7 @@ class Client:
     def _handle_connect(self) -> None:
         state = self._connection
         activity = create_activity(state._activity)
-        status = try_enum(Status, state._status)
+        status = state._status and try_enum(Status, state._status)
         if status is not None or activity is not None:
             self.loop.create_task(self.change_presence(activity=activity, status=status))
 
@@ -433,9 +434,10 @@ class Client:
 
         _log.info('Logging in using static token.')
 
-        data = await self.http.static_login(token.strip())
-        self._state.analytics_token = data.get('analytics_token')
-        self._connection.user = ClientUser(state=self._connection, data=data)
+        state = self._connection
+        data = await state.http.static_login(token.strip())
+        state.analytics_token = data.get('analytics_token', '')
+        self._connection.user = ClientUser(state=state, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -803,7 +805,7 @@ class Client:
         .. note::
 
             To retrieve standard stickers, use :meth:`.fetch_sticker`.
-            or :meth:`.fetch_premium_sticker_packs`.
+            or :meth:`.fetch_sticker_packs`.
 
         Returns
         --------
@@ -1041,6 +1043,7 @@ class Client:
             status_str = 'invisible'
             status = Status.offline
         else:
+            breakpoint()
             status_str = str(status)
 
         await self.ws.change_presence(activity=activity, status=status_str, afk=afk)
@@ -1607,7 +1610,7 @@ class Client:
         return cls(state=self._connection, data=data)  # type: ignore
 
     async def fetch_sticker_packs(
-        self, *, country='US', locale='en-US', *, payment_source_id: int = MISSING
+        self, *, country='US', locale='en-US', payment_source_id: int = MISSING
     ) -> List[StickerPack]:
         """|coro|
 
@@ -1697,8 +1700,8 @@ class Client:
         List[:class:`PrivateChannel`]
             All your private channels.
         """
-        channels = await self._state.http.get_private_channels()
         state = self._connection
+        channels = await state.http.get_private_channels()
         return [_private_channel_factory(data['type'])(me=self.user, data=data, state=state) for data in channels]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:

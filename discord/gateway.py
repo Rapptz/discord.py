@@ -689,6 +689,17 @@ class DiscordWebSocket:
         _log.debug('Updating %s voice state to %s.', guild_id or 'client', payload)
         await self.send_as_json(payload)
 
+    async def access_dm(self, channel_id):
+        payload = {
+            'op': self.ACCESS_DM,
+            'd': {
+                'channel_id': channel_id
+            }
+        }
+
+        _log.debug('Sending ACCESS_DM for channel %s.', channel_id)
+        await self.send_as_json(payload)
+
     async def close(self, code=4000):
         if self._keep_alive:
             self._keep_alive.stop()

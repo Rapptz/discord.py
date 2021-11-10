@@ -257,6 +257,7 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
         self._voice_states: Dict[int, VoiceState] = {}
 
+        self._relationships: Dict[int, Relationship] = {}
         self._private_channels: Dict[int, PrivateChannel] = {}
         self._private_channels_by_user: Dict[int, DMChannel] = {}
         self._last_private_channel: tuple = (None, None)
@@ -500,11 +501,13 @@ class ConnectionState:
             asyncio.ensure_future(self.request_guild(guild_id), loop=self.loop)
 
     def _guild_needs_chunking(self, guild: Guild) -> bool:
-        return self._chunk_guilds and not guild.chunked and any(
+        if not guild.me:  # Dear god this will break everything
+            return False
+        return self._chunk_guilds and not guild.chunked and any({
             guild.me.guild_permissions.kick_members,
             guild.me.guild_permissions.manage_roles,
             guild.me.guild_permissions.ban_members
-        )
+        })
 
     def _guild_needs_subscribing(self, guild):  # TODO: rework
         return not guild.subscribed and self._subscribe_guilds
@@ -633,7 +636,7 @@ class ConnectionState:
             else:
                 if 'user' not in relationship:
                     relationship['user'] = temp_users[int(relationship.pop('user_id'))]
-                user._relationships[r_id] = Relationship(state=self, data=relationship)
+                self._relationships[r_id] = Relationship(state=self, data=relationship)
 
         # Private channel parsing
         for pm in data.get('private_channels', []):
@@ -1251,7 +1254,7 @@ class ConnectionState:
             try:
                 await asyncio.wait_for(self.chunk_guild(guild), timeout=60.0)
             except asyncio.TimeoutError:
-                log.info('Somehow timed out waiting for chunks.')
+                _log.info('Somehow timed out waiting for chunks for guild %s.', guild.id)
 
         if subscribe:
             await guild.subscribe(max_online=self._subscription_options.max_online)
@@ -1503,7 +1506,7 @@ class ConnectionState:
                 coro = voice.on_voice_state_update(data)
                 asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
-        if guild is not None
+        if guild is not None:
             member, before, after = guild._update_voice_state(data, channel_id)  # type: ignore
             if member is not None:
                 if flags.voice:
@@ -1566,7 +1569,7 @@ class ConnectionState:
         key = int(data['id'])
         old = self.user.get_relationship(key)
         new = Relationship(state=self, data=data)
-        self.user._relationships[key] = new
+        self._relationships[key] = new
         if old is not None:
             self.dispatch('relationship_update', old, new)
         else:
@@ -1575,7 +1578,7 @@ class ConnectionState:
     def parse_relationship_remove(self, data) -> None:
         key = int(data['id'])
         try:
-            old = self.user._relationships.pop(key)
+            old = self._relationships.pop(key)
         except KeyError:
             pass
         else:

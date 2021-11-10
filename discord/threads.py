@@ -681,7 +681,6 @@ class Thread(Messageable, Hashable):
         List[:class:`ThreadMember`]
             All thread members in the thread.
         """
-
         members = await self._state.http.get_thread_members(self.id)
         return [ThreadMember(parent=self, data=data) for data in members]
 
@@ -800,3 +799,10 @@ class ThreadMember(Hashable):
     def thread(self) -> Thread:
         """:class:`Thread`: The thread this member belongs to."""
         return self.parent
+
+    @property
+    def member(self) -> Optional[Member]:
+        """Optional[:class:`Member`]: The member this member represents. If the member
+        is not cached then this will be ``None``.
+        """
+        return self.parent.guild.get_member(self.id)

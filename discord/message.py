@@ -35,6 +35,7 @@ from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
+from .calls import CallMessage
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, HTTPException
 from .components import _component_factory
@@ -525,6 +526,9 @@ class Message(Hashable):
     channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
+    call: Optional[:class:`CallMessage`]
+        The call that the message refers to. This is only applicable to messages of type
+        :attr:`MessageType.call`.
     reference: Optional[:class:`~discord.MessageReference`]
         The message that this message references. This is only applicable to messages of
         type :attr:`MessageType.pins_add`, crossposted messages created by a
@@ -633,6 +637,7 @@ class Message(Hashable):
         'stickers',
         'components',
         'guild',
+        'call',
     )
 
     if TYPE_CHECKING:
@@ -670,6 +675,7 @@ class Message(Hashable):
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+        self.call: Optional[CallMessage] = None
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
@@ -700,7 +706,7 @@ class Message(Hashable):
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -870,6 +876,23 @@ class Message(Hashable):
                 role = self.guild.get_role(role_id)
                 if role is not None:
                     self.role_mentions.append(role)
+
+    def _handle_call(self, call) -> None:
+        if call is None or self.type is not MessageType.call:
+            self.call = None
+            return
+
+        participants = []
+        for uid in map(int, call.get('participants', [])):
+            if uid == self.author.id:
+                participants.append(self.author)
+            else:
+                user = utils.find(lambda u: u.id == uid, self.mentions)
+                if user is not None:
+                    participants.append(user)
+
+        call['participants'] = participants
+        self.call = CallMessage(message=self, **call)
 
     def _handle_components(self, components: List[ComponentPayload]):
         self.components = [_component_factory(d) for d in components]
@@ -1046,6 +1069,16 @@ class Message(Hashable):
 
             created_at_ms = int(self.created_at.timestamp() * 1000)
             return formats[created_at_ms % len(formats)].format(self.author.name)
+
+        if self.type is MessageType.call:
+            call_ended = self.call.ended_timestamp is not None
+
+            if self.channel.me in self.call.participants:
+                return f'{self.author.name} started a call.'
+            elif call_ended:
+                return f'You missed a call from {self.author.name}'
+            else:
+                return f'{self.author.name} started a call \N{EM DASH} Join the call.'
 
         if self.type is MessageType.premium_guild_subscription:
             if not self.content:

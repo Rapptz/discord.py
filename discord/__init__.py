@@ -43,7 +43,7 @@ from .template import *
 from .widget import *
 from .object import *
 from .reaction import *
-from . import utils, opus, abc, ui
+from . import utils, opus, abc
 from .enums import *
 from .embeds import *
 from .mentions import *
@@ -55,7 +55,6 @@ from .raw_models import *
 from .team import *
 from .sticker import *
 from .stage_instance import *
-from .interactions import *
 from .components import *
 from .threads import *
 
