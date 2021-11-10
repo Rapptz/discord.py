@@ -34,7 +34,7 @@ Bot
 
     .. automethod:: Bot.command(*args, **kwargs)
         :decorator:
-    
+
     .. automethod:: Bot.event()
         :decorator:
 
@@ -43,14 +43,6 @@ Bot
 
     .. automethod:: Bot.listen(name=None)
         :decorator:
-
-AutoShardedBot
-~~~~~~~~~~~~~~~~
-
-.. attributetable:: discord.ext.commands.AutoShardedBot
-
-.. autoclass:: discord.ext.commands.AutoShardedBot
-    :members:
 
 Prefix Helpers
 ----------------

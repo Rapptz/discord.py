@@ -79,7 +79,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'discord.py'
+project = 'discord.py-self'
 copyright = '2015-present, Rapptz'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -159,7 +159,7 @@ html_experimental_html5_writer = True
 html_theme = 'basic'
 
 html_context = {
-  'discord_invite': 'https://discord.gg/r3sSKJJ',
+  'discord_invite': 'https://discord.gg/NONE',
   'discord_extensions': [
     ('discord.ext.commands', 'ext/commands'),
     ('discord.ext.tasks', 'ext/tasks'),
@@ -167,10 +167,10 @@ html_context = {
 }
 
 resource_links = {
-  'discord': 'https://discord.gg/r3sSKJJ',
-  'issues': 'https://github.com/Rapptz/discord.py/issues',
-  'discussions': 'https://github.com/Rapptz/discord.py/discussions',
-  'examples': f'https://github.com/Rapptz/discord.py/tree/{branch}/examples',
+  'discord': 'https://discord.gg/NONE',
+  'issues': 'https://github.com/dolfies/discord.py-self/issues',
+  'discussions': 'https://github.com/dolfies/discord.py-self/discussions',
+  'examples': f'https://github.com/dolfies/discord.py-self/tree/{branch}/examples',
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -293,8 +293,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'discord.py.tex', 'discord.py Documentation',
-   'Rapptz', 'manual'),
+  ('index', 'discord.py.tex', 'discord.py-self Documentation',
+   'Dolfies', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -323,8 +323,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'discord.py', 'discord.py Documentation',
-     ['Rapptz'], 1)
+    ('index', 'discord.py-self', 'discord.py-self Documentation',
+     ['Dolfies'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -337,8 +337,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'discord.py', 'discord.py Documentation',
-   'Rapptz', 'discord.py', 'One line description of project.',
+  ('index', 'discord.py=self', 'discord.py-self Documentation',
+   'Dolfies', 'discord.py-self', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -357,5 +357,5 @@ texinfo_documents = [
 def setup(app):
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
-    app.config.html_context['discord_invite'] = 'https://discord.gg/nXzj3dg'
-    app.config.resource_links['discord'] = 'https://discord.gg/nXzj3dg'
+    app.config.html_context['discord_invite'] = 'https://discord.gg/NONE'
+    app.config.resource_links['discord'] = 'https://discord.gg/NONE'

@@ -48,14 +48,6 @@ Client
     .. automethod:: Client.fetch_guilds
         :async-for:
 
-AutoShardedClient
-~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: AutoShardedClient
-
-.. autoclass:: AutoShardedClient
-    :members:
-
 Application Info
 ------------------
 
@@ -3491,10 +3483,7 @@ Guild
 
 .. autoclass:: Guild()
     :members:
-    :exclude-members: fetch_members, audit_logs
-
-    .. automethod:: fetch_members
-        :async-for:
+    :exclude-members: audit_logs
 
     .. automethod:: audit_logs
         :async-for:
