@@ -51,20 +51,17 @@ import weakref
 import aiohttp
 from types import snowflake
 
-from .context_properties import ContextProperties
 from .enums import RelationshipAction
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
 from . import utils
+from .tracking import ContextProperties
 from .utils import MISSING
 
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .file import File
-    from .enums import (
-        AuditLogAction,
-        InteractionResponseType,
-    )
+    from .enums import AuditLogAction
 
     from .types import (
         appinfo,

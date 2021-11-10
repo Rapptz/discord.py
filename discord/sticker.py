@@ -99,7 +99,7 @@ class StickerPack(Hashable):
         'stickers',
         'name',
         'sku_id',
-        'cover_sticker_id',
+        '_cover_sticker_id',
         'cover_sticker',
         'description',
         '_banner',
@@ -115,8 +115,8 @@ class StickerPack(Hashable):
         self.stickers: List[StandardSticker] = [StandardSticker(state=self._state, data=sticker) for sticker in stickers]
         self.name: str = data['name']
         self.sku_id: int = int(data['sku_id'])
-        self.cover_sticker_id: int = int(data['cover_sticker_id'])
-        self.cover_sticker: StandardSticker = get(self.stickers, id=self.cover_sticker_id) # type: ignore
+        self._cover_sticker_id: int = int(data['cover_sticker_id'])
+        self.cover_sticker: StandardSticker = get(self.stickers, id=self._cover_sticker_id)  # type: ignore
         self.description: str = data['description']
         self._banner: int = int(data['banner_asset_id'])
 
@@ -162,7 +162,7 @@ class _StickerTag(Hashable, AssetMixin):
             The content of the asset.
         """
         if self.format is StickerFormatType.lottie:
-            raise TypeError('Cannot read stickers of format "lottie".')
+            raise TypeError('Cannot read stickers of format "lottie"')
         return await super().read()
 
 
