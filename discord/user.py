@@ -36,7 +36,7 @@ from .flags import PublicUserFlags
 from .object import Object
 from .relationship import Relationship
 from .settings import UserSettings
-from .utils import _bytes_to_base64_data, cached_slot_property, parse_time, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, parse_time, snowflake_time, MISSING
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -636,7 +636,7 @@ class ClientUser(BaseUser):
         # There's actually an Optional[str] phone field as well but I won't use it
         self.verified = data.get('verified', False)
         self.email = data.get('email')
-        self.phone = data.get('phone')
+        self.phone = _get_as_snowflake(data, 'phone')
         self.locale = data.get('locale')
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
