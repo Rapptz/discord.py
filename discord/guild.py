@@ -230,6 +230,14 @@ class Guild(Hashable):
         The guild's NSFW level.
 
         .. versionadded:: 2.0
+    vanity_code: Optional[:class:`str`]
+        The guild's vanity invite.
+
+        .. versionadded:: 2.0
+    premium_progress_bar_enabled: :class:`bool`
+        Whether the guild has the premium progress bar enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -255,6 +263,8 @@ class Guild(Hashable):
         'preferred_locale',
         'nsfw_level',
         'owner_application_id',
+        'vanity_code',
+        'premium_progress_bar_enabled',
         '_members',
         '_channels',
         '_icon',
@@ -460,6 +470,8 @@ class Guild(Hashable):
         self._online_count: Optional[int] = None
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
+        self.vanity_code: Optional[str] = guild.get('vanity_url_code')
+        self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
 
         large = None if member_count is None else member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
@@ -477,6 +489,9 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member._presence_update(presence, empty_tuple)
+
+    def _update_settings(self, data) -> None:
+        pass  # TODO
 
     @property
     def channels(self) -> List[GuildChannel]:
