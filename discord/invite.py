@@ -324,6 +324,7 @@ class Invite(Hashable):
         'approximate_presence_count',
         'target_application',
         'expires_at',
+        '_message_id',
     )
 
     BASE = 'https://discord.gg'
