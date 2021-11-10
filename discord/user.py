@@ -36,13 +36,13 @@ from .errors import ClientException, NotFound
 from .flags import PublicUserFlags
 from .object import Object
 from .relationship import Relationship
-from .settings import Settings
+from .settings import UserSettings
 from .utils import _bytes_to_base64_data, cached_slot_property, parse_time, snowflake_time, MISSING
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from .call import Call
+    from .calls import PrivateCall
     from .channel import DMChannel
     from .guild import Guild
     from .member import VoiceState
@@ -664,8 +664,8 @@ class ClientUser(BaseUser):
         return [r.user for r in self._state._relationships.values() if r.type is RelationshipType.blocked]
 
     @property
-    def settings(self) -> Optional[Settings]:
-        """Optional[:class:`Settings`]: Returns the user's settings."""
+    def settings(self) -> Optional[UserSettings]:
+        """Optional[:class:`UserSettings`]: Returns the user's settings."""
         return self._state.settings
 
     async def edit(
@@ -810,7 +810,7 @@ class ClientUser(BaseUser):
 
         return ClientUser(state=self._state, data=data)
 
-    async def fetch_settings(self) -> Settings:
+    async def fetch_settings(self) -> UserSettings:
         """|coro|
 
         Retrieves your settings.
@@ -826,13 +826,13 @@ class ClientUser(BaseUser):
 
         Returns
         --------
-        :class:`Settings`
+        :class:`UserSettings`
             The current settings for your account.
         """
         data = await self._state.http.get_settings()
-        return Settings(data=data, state=self._state)
+        return UserSettings(data=data, state=self._state)
 
-    async def edit_settings(self, **kwargs) -> Settings:  # TODO: I really wish I didn't have to do this...
+    async def edit_settings(self, **kwargs) -> UserSettings:  # TODO: I really wish I didn't have to do this...
         """|coro|
 
         Edits the client user's settings.
@@ -910,7 +910,7 @@ class ClientUser(BaseUser):
 
         Returns
         -------
-        :class:`.Settings`
+        :class:`.UserSettings`
             The client user's updated settings.
         """
         payload = {}
@@ -949,7 +949,7 @@ class ClientUser(BaseUser):
 
         state = self._state
         data = await state.http.edit_settings(**payload)
-        state.settings = settings = Settings(data=data, state=self._state)
+        state.settings = settings = UserSettings(data=data, state=self._state)
         return settings
 
 
@@ -1030,7 +1030,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         return self._state._get_private_channel_by_user(self.id)
 
     @property
-    def call(self) -> Optional[Call]:
+    def call(self) -> Optional[PrivateCall]:
         return getattr(self.dm_channel, 'call', None)
 
     @property

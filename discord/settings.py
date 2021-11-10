@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from .enums import FriendFlags, StickerAnimationOptions, Theme, UserContentFilter, try_enum
@@ -33,8 +33,10 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .state import ConnectionState
 
+__all__ = ('UserSettings',)
 
-class Settings:
+
+class UserSettings:
     """Represents the Discord client settings.
 
     Attributes

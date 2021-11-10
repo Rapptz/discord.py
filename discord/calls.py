@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 import datetime
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Union
 
 from . import utils
 from .enums import VoiceRegion, try_enum
@@ -313,3 +313,6 @@ class GroupCall(PrivateCall):
     @_running_only
     async def stop_ringing(self, *recipients) -> None:
         await self._state.http.stop_ringing(self._channel_id, *{r.id for r in recipients})
+
+
+Call = Union[PrivateCall, GroupCall]

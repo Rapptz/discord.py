@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from typing import List, Optional, TYPE_CHECKING
 
 from .colour import Colour
@@ -32,6 +32,8 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .state import ConnectionState
     from .types.snowflake import Snowflake
+
+__all__ = ('GuildFolder',)
 
 
 class GuildFolder:

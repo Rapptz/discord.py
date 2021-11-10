@@ -31,9 +31,7 @@ from typing import Any, Dict, Optional
 
 from .types.snowflake import Snowflake
 
-__all__ = (
-    'ContextProperties',
-)
+__all__ = ('ContextProperties',)
 
 
 class ContextProperties:  # Thank you Discord-S.C.U.M
