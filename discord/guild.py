@@ -77,6 +77,7 @@ from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .file import File
+from .settings import GuildSettings
 
 
 __all__ = (
@@ -238,6 +239,10 @@ class Guild(Hashable):
         Whether the guild has the premium progress bar enabled.
 
         .. versionadded:: 2.0
+    notification_settings: :class:`GuildSettings`
+        The notification settings for the guild.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -265,6 +270,7 @@ class Guild(Hashable):
         'owner_application_id',
         'vanity_code',
         'premium_progress_bar_enabled',
+        'notification_settings',
         '_members',
         '_channels',
         '_icon',
@@ -304,6 +310,7 @@ class Guild(Hashable):
         self._threads: Dict[int, Thread] = {}
         self._stage_instances: Dict[int, StageInstance] = {}
         self._state: ConnectionState = state
+        self.notification_settings: Optional[GuildSettings] = None
         self._from_data(data)
 
     # Get it running
@@ -476,6 +483,9 @@ class Guild(Hashable):
         large = None if member_count is None else member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
 
+        if (settings := guild.get('settings')) is not None:
+            self.notification_settings = GuildSettings(state=state, data=settings)
+
         for mdata in guild.get('merged_members', []):
             try:
                 member = Member(data=mdata, guild=self, state=state)
@@ -489,9 +499,6 @@ class Guild(Hashable):
             member = self.get_member(user_id)
             if member is not None:
                 member._presence_update(presence, empty_tuple)
-
-    def _update_settings(self, data) -> None:
-        pass  # TODO
 
     @property
     def channels(self) -> List[GuildChannel]:

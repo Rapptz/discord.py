@@ -367,7 +367,7 @@ class DefaultAvatar(Enum):
         return self.name
 
 
-class RelationshipType(Enum):
+class RelationshipType(Enum, comparable=True):
     friend           = 1
     blocked          = 2
     incoming_request = 3
@@ -376,8 +376,15 @@ class RelationshipType(Enum):
 
 class NotificationLevel(Enum, comparable=True):
     all_messages = 0
+    all = 0
     only_mentions = 1
+    nothing = 2
+    none = 2
+    server_default = 3
+    default = 3
 
+    def __int__(self):
+        return self.value
 
 class AuditLogActionCategory(Enum):
     create = 1
@@ -557,7 +564,7 @@ class HypeSquadHouse(Enum):
     balance    = 3
 
 
-class PremiumType(Enum):
+class PremiumType(Enum, comparable=True):
     nitro_classic = 1
     nitro         = 2
 
@@ -614,7 +621,7 @@ class ReportType(Enum):
         return self.value
 
 
-class RelationshipAction(Enum):
+class RelationshipAction(Enum, comparable=True):
     send_friend_request    = 'request'
     unfriend               = 'unfriend'
     accept_request         = 'accept'
@@ -624,12 +631,12 @@ class RelationshipAction(Enum):
     remove_pending_request = 'remove'
 
 
-class UnavailableGuildType(Enum):
+class UnavailableGuildType(Enum, comparable=True):
     existing = 'ready'
     joined   = 'joined'
 
 
-class RequiredActionType(Enum):
+class RequiredActionType(Enum, comparable=True):
     verify_phone = 'REQUIRE_VERIFIED_PHONE'
     verify_email = 'REQUIRE_VERIFIED_EMAIL'
     captcha      = 'REQUIRE_CAPTCHA'

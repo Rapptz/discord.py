@@ -58,6 +58,7 @@ from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .settings import UserSettings
+from .tracking import Tracking
 
 
 if TYPE_CHECKING:
@@ -232,7 +233,11 @@ class ConnectionState:
     def clear(self) -> None:
         self.user: Optional[ClientUser] = None
         self.settings: Optional[UserSettings] = None
+        self.consents: Optional[Tracking] = None
         self.analytics_token: Optional[str] = None
+        self.session_id: Optional[str] = None
+        self.connected_accounts: Optional[List[dict]] = None
+        self.preferred_region: Optional[VoiceRegion] = None
         # Originally, this code used WeakValueDictionary to maintain references to the
         # global user mapping
 
@@ -591,9 +596,8 @@ class ConnectionState:
 
         self.clear()
 
-        # Merge with READY data
-        extra_data = data
-        data = self._ready_data
+        extra_data, data = data, self._ready_data
+        guild_settings = data.get('user_guild_settings', {}).get('entries', [])
 
         # Discord bad
         for guild_data, guild_extra, merged_members, merged_me, merged_presences in zip(
@@ -603,6 +607,11 @@ class ConnectionState:
             data.get('merged_members', []),
             extra_data['merged_presences'].get('guilds', [])
         ):
+            guild_data['settings'] = utils.find(
+                lambda i: i['guild_id'] == guild_data['id'],
+                guild_settings,
+            ) or {'guild_id': guild_data['id']}
+
             guild_data['voice_states'] = guild_extra.get('voice_states', [])
             guild_data['merged_members'] = merged_me
             guild_data['merged_members'].extend(merged_members)
@@ -646,9 +655,12 @@ class ConnectionState:
             self._add_private_channel(factory(me=user, data=pm, state=self))
 
         # Extras
+        self.session_id = data.get('session_id')
+        self.analytics_token = data.get('analytics_token')
         region = data.get('geo_ordered_rtc_regions', ['us-west'])[0]
         self.preferred_region = try_enum(VoiceRegion, region)
-        self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
+        self.settings = settings = UserSettings(data=data.get('user_settings', {}), state=self)
+        self.consents = Tracking(data.get('consents', {}))
 
         # We're done
         del self._ready_data
@@ -656,7 +668,7 @@ class ConnectionState:
         self.dispatch('connect')
         self._ready_task = asyncio.create_task(self._delay_ready())
 
-    def parse_resumed(self, data) -> None:
+    def parse_resumed(self, _) -> None:
         self.dispatch('resumed')
 
     def parse_message_create(self, data) -> None:
@@ -818,6 +830,19 @@ class ConnectionState:
         if ref:
             ref._update(data)
 
+    def parse_user_settings_update(self, data) -> None:
+        new_settings = self.settings
+        old_settings = copy.copy(new_settings)
+        new_settings._update(data)
+        self.dispatch('settings_update', old_settings, new_settings)
+
+    def parse_user_guild_settings_update(self, data) -> None:
+        guild = self.get_guild(int(data['guild_id']))
+        new_settings = guild.notification_settings
+        old_settings = copy.copy(new_settings)
+        new_settings._update(data)
+        self.dispatch('guild_settings_update', old_settings, new_settings)
+
     def parse_invite_create(self, data) -> None:
         invite = Invite.from_gateway(state=self, data=data)
         self.dispatch('invite_create', invite)
@@ -841,7 +866,7 @@ class ConnectionState:
         if channel_type is ChannelType.group:
             channel = self._get_private_channel(channel_id)
             old_channel = copy.copy(channel)
-            # the channel is a GroupChannel
+            # The channel is a GroupChannel
             channel._update_group(data)  # type: ignore
             self.dispatch('private_channel_update', old_channel, channel)
             return

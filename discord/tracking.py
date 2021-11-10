@@ -31,7 +31,10 @@ from typing import Any, Dict, Optional
 
 from .types.snowflake import Snowflake
 
-__all__ = ('ContextProperties',)
+__all__ = (
+    'ContextProperties',
+    'Tracking',
+)
 
 
 class ContextProperties:  # Thank you Discord-S.C.U.M
@@ -250,3 +253,16 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     def __ne__(self, other) -> bool:
         return not self.__eq__(other)
+
+
+class Tracking:
+    """Represents your Discord tracking settings.
+
+    Attributes
+    ----------
+    personalization: :class:`bool`
+        Whether you have consented to your data being used for personalization.
+    """
+
+    def __init__(self, data: Dict[str, Any]):  # TODO: rest of the values
+        self.personalization = data.get('personalization', {}).get('consented', False)

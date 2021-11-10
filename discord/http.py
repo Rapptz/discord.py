@@ -1194,7 +1194,7 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
-    def edit_guild_settings(self, guild_id: Snowflake, **fields):  # TODO: type and add more than just muting
+    def edit_guild_settings(self, guild_id: Snowflake, fields):  # TODO: type
         return self.request(Route('PATCH', '/users/@me/guilds/{guild_id}/settings', guild_id=guild_id), json=fields)
 
     def get_template(self, code: str) -> Response[template.Template]:

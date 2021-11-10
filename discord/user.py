@@ -644,6 +644,11 @@ class ClientUser(BaseUser):
         self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
         self.bio = data.get('bio') or None
 
+    @property
+    def connected_accounts(self) -> Optional[List[dict]]:
+        """Optional[List[:class:`dict`]]: Returns a list of all linked accounts for this user if available."""
+        return self._state._connected_accounts
+
     def get_relationship(self, user_id: int) -> Relationship:
         """Retrieves the :class:`Relationship` if applicable.
 
@@ -848,6 +853,9 @@ class ClientUser(BaseUser):
 
         Edits the client user's settings.
 
+        .. versionchanged:: 2.0
+            The edit is no longer in-place, instead the newly edited settings are returned.
+
         Parameters
         ----------
         afk_timeout: :class:`int`
@@ -960,8 +968,7 @@ class ClientUser(BaseUser):
 
         state = self._state
         data = await state.http.edit_settings(**payload)
-        state.settings = settings = UserSettings(data=data, state=self._state)
-        return settings
+        return UserSettings(data=data, state=self._state)
 
 
 class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):

@@ -24,16 +24,24 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
-from .enums import FriendFlags, StickerAnimationOptions, Theme, UserContentFilter, try_enum
+from .enums import FriendFlags, NotificationLevel, StickerAnimationOptions, Theme, UserContentFilter, try_enum
 from .guild_folder import GuildFolder
+from .utils import MISSING, parse_time, utcnow
 
 if TYPE_CHECKING:
+    from .abc import GuildChannel
     from .guild import Guild
     from .state import ConnectionState
+    from .tracking import Tracking
 
-__all__ = ('UserSettings',)
+__all__ = (
+    'ChannelSettings',
+    'GuildSettings',
+    'UserSettings',
+)
 
 
 class UserSettings:
@@ -162,6 +170,11 @@ class UserSettings:
                 setattr(self, '_' + key, value)
 
     @property
+    def tracking(self) -> Optional[Tracking]:
+        """Returns your tracking settings if available."""
+        return self._state.consents
+
+    @property
     def animate_stickers(self) -> StickerAnimationOptions:
         """Whether or not to animate stickers in the chat."""
         return try_enum(StickerAnimationOptions, self._animate_stickers)
@@ -201,3 +214,253 @@ class UserSettings:
 
     def _get_guild(self, id: int) -> Optional[Guild]:
         return self._state._get_guild(int(id))
+
+
+class MuteConfig:
+    def __init__(self, muted: bool, config: Dict[str, Union[str, int]]) -> None:
+        until = parse_time(config.get('end_time'))
+        if until is not None:
+            if until <= utcnow():
+                muted = False
+                until = None
+
+        self.muted: bool = muted
+        self.until: Optional[datetime] = until
+
+        for item in {'__bool__', '__eq__', '__float__', '__int__', '__str__'}:
+            setattr(self, item, getattr(muted, item))
+
+    def __repr__(self) -> str:
+        return f'<MuteConfig muted={self.muted} until={self.until}>'
+
+    def __bool__(self) -> bool:
+        return bool(self.muted)
+
+    def __eq__(self, other) -> bool:
+        return self.muted == other
+
+    def __ne__(self, other) -> bool:
+        return not self.muted == other
+
+
+class ChannelSettings:
+    """Represents a channel's notification settings"""
+
+    if TYPE_CHECKING:
+        _channel_id: int
+        level: NotificationLevel
+        muted: MuteConfig
+        collapsed: bool
+
+    def __init__(self, guild_id, *, data: Dict[str, any] = {}, state: ConnectionState) -> None:
+        self._guild_id: int = guild_id
+        self._state = state
+        self._update(data)
+
+    def _update(self, data: Dict[str, Any]) -> None:
+        breakpoint()
+        self._channel_id = int(data['channel_id'])
+        self.collapsed = data.get('collapsed', False)
+
+        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))  # type: ignore
+        self.muted = MuteConfig(data.get('muted', False), data.get('mute_config') or {})
+
+    @property
+    def channel(self) -> Optional[GuildChannel]:
+        """Optional[:class:`GuildChannel]: Returns the channel these settings are for."""
+        guild = self._state._get_guild(self._guild_id)
+        return guild and guild.get_channel(self._channel_id)
+
+    async def edit(self,
+        *,
+        muted: bool = MISSING,
+        duration: Optional[int] = MISSING,
+        collapsed: bool = MISSING,
+        level: NotificationLevel = MISSING,
+    ) -> Optional[ChannelSettings]:
+        """|coro|
+
+        Edits the channel's notification settings.
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        muted: :class:`bool`
+            Indicates if the channel should be muted or not.
+        duration: Optional[Union[:class:`int`, :class:`float`]]
+            The amount of time in hours that the channel should be muted for.
+            Defaults to indefinite.
+        collapsed: :class:`bool`
+            Unknown.
+        level: :class:`NotificationLevel`
+            Determines what level of notifications you receive for the channel.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+
+        Returns
+        --------
+        Optional[:class:`ChannelSettings`]
+            The new notification settings. This is only returned if something is updated.
+        """
+        payload = {}
+
+        if muted is not MISSING:
+            payload['muted'] = muted
+
+        if duration is not MISSING:
+            if muted is MISSING:
+                payload['muted'] = True
+
+            if duration is not None:
+                mute_config = {
+                    'selected_time_window': duration * 3600,
+                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat()
+                }
+                payload['mute_config'] = mute_config
+
+        if collapsed is not MISSING:
+            payload['collapsed'] = collapsed
+
+        if level is not MISSING:
+            payload['message_notifications'] = level.value
+
+        if payload:
+            fields = {'channel_overrides': {str(self._channel_id): payload}}
+            data = self._state.http.edit_guild_settings(self._guild_id, fields)
+
+        if data:
+            return ChannelSettings(
+                self._guild_id,
+                data=data['channel_overrides'][str(self._channel_id)],
+                state=self._state
+            )
+
+
+class GuildSettings:
+    """Represents a guild's notification settings."""
+
+    if TYPE_CHECKING:
+        _channel_overrides: Dict[int, ChannelSettings]
+        _guild_id: int
+        version: int
+        muted: MuteConfig
+        suppress_everyone: bool
+        suppress_roles: bool
+        hide_muted_channels: bool
+        mobile_push_notifications: bool
+        level: NotificationLevel
+
+    def __init__(self, *, data: Dict[str, Any], state: ConnectionState) -> None:
+        self._state = state
+        self._update(data)
+
+    def _update(self, data: Dict[str, Any]) -> None:
+        self._guild_id = guild_id = int(data['guild_id'])
+        self.version = data.get('version', -1)  # Overriden by real data
+        self.suppress_everyone = data.get('suppress_everyone', False)
+        self.suppress_roles = data.get('suppress_roles', False)
+        self.hide_muted_channels = data.get('hide_muted_channels', False)
+        self.mobile_push_notifications = data.get('mobile_push', True)
+
+        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))
+        self.muted = MuteConfig(data.get('muted', False), data.get('mute_config') or {})
+        self._channel_overrides = overrides = {}
+        state = self._state
+        for override in data.get('channel_overrides', []):
+            channel_id = int(override['channel_id'])
+            overrides[channel_id] = ChannelSettings(guild_id, data=override, state=state)
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: Returns the guild that these settings are for."""
+        return self._state._get_guild(self._guild_id)
+
+    @property
+    def channel_overrides(self) -> List[ChannelSettings]:
+        """List[:class:`ChannelSettings`: Returns a list of all the overrided channel notification settings."""
+        return list(self._channel_overrides.values())
+
+    async def edit(
+        self,
+        muted: bool = MISSING,
+        duration: Optional[int] = MISSING,
+        level: NotificationLevel = MISSING,
+        suppress_everyone: bool = MISSING,
+        suppress_roles: bool = MISSING,
+        mobile_push_notifications: bool = MISSING,
+        hide_muted_channels: bool = MISSING,
+    ) -> Optional[GuildSettings]:
+        """|coro|
+
+        Edits the guild's notification settings.
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        muted: :class:`bool`
+            Indicates if the guild should be muted or not.
+        duration: Optional[Union[:class:`int`, :class:`float`]]
+            The amount of time in hours that the guild should be muted for.
+            Defaults to indefinite.
+        level: :class:`NotificationLevel`
+            Determines what level of notifications you receive for the guild.
+        suppress_everyone: :class:`bool`
+            Indicates if @everyone mentions should be suppressed for the guild.
+        suppress_roles: :class:`bool`
+            Indicates if role mentions should be suppressed for the guild.
+        mobile_push_notifications: :class:`bool`
+            Indicates if push notifications should be sent to mobile devices for this guild.
+        hide_muted_channels: :class:`bool`
+            Indicates if channels that are muted should be hidden from the sidebar.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+
+        Returns
+        --------
+        Optional[:class:`GuildSettings`]
+            The new notification settings. This is only returned if something is updated.
+        """
+        payload = {}
+
+        if muted is not MISSING:
+            payload['muted'] = muted
+
+        if duration is not MISSING:
+            if muted is MISSING:
+                payload['muted'] = True
+
+            if duration is not None:
+                mute_config = {
+                    'selected_time_window': duration * 3600,
+                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat()
+                }
+                payload['mute_config'] = mute_config
+
+        if level is not MISSING:
+            payload['message_notifications'] = level.value
+
+        if suppress_everyone is not MISSING:
+            payload['suppress_everyone'] = suppress_everyone
+
+        if suppress_roles is not MISSING:
+            payload['suppress_roles'] = suppress_roles
+
+        if mobile_push_notifications is not MISSING:
+            payload['mobile_push'] = mobile_push_notifications
+
+        if hide_muted_channels is not MISSING:
+            payload['hide_muted_channels'] = hide_muted_channels
+
+        if payload:
+            data = self._state.http.edit_guild_settings(self._guild_id, payload)
+
+        if data:
+            return GuildSettings(data=data, state=self._state)

@@ -54,6 +54,7 @@ from .invite import Invite
 from .file import File
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
+from .settings import ChannelSettings
 from . import utils
 
 __all__ = (
@@ -82,7 +83,6 @@ if TYPE_CHECKING:
     from .channel import DMChannel, GroupChannel, PartialMessageable, PrivateChannel, TextChannel, VocalGuildChannel
     from .threads import Thread
     from .enums import InviteTarget
-    from .ui.view import View
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
         Channel as ChannelPayload,
@@ -413,6 +413,13 @@ class GuildChannel:
         tmp = self._overwrites
         if tmp:
             tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
+
+    @property
+    def notification_settings(self) -> ChannelSettings:
+        """:class:`ChannelSettings`: Returns the notification settings for this channel"""
+        guild = self.guild
+        # guild.notification_settings will always be present at this point
+        return guild.notification_settings._channel_overrides.get(self.id) or ChannelSettings(guild.id, state=self._state)  # type: ignore
 
     @property
     def changed_roles(self) -> List[Role]:
