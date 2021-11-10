@@ -55,6 +55,18 @@ __all__ = (
     'InteractionType',
     'InteractionResponseType',
     'NSFWLevel',
+    'RelationshipType',
+    'HypeSquadHouse',
+    'PremiumType',
+    'UserContentFilter',
+    'FriendFlags',
+    'Theme',
+    'StickerAnimationOptions',
+    'RelationshipAction',
+    'UnavailableGuildType',
+    'RequiredActionType',
+    'ReportType',
+    'BrowserEnum',
 )
 
 
@@ -276,6 +288,60 @@ class ContentFilter(Enum, comparable=True):
         return self.name
 
 
+class UserContentFilter(Enum):
+    always         = 0
+    on_interaction = 1
+    never          = 2
+
+
+class StickerAnimationOptions(Enum):
+    disabled     = 2
+    friends      = 1
+    all_messages = 0
+
+
+class FriendFlags(Enum):
+    noone             = 0
+    mutual_guilds     = 1
+    mutual_friends    = 2
+    guild_and_friends = 3
+    everyone          = 4
+
+    def to_dict(self):
+        if self.value == 0:
+            return {'all': False, 'mutual_friends': False, 'mutual_guilds': False}
+        if self.value == 1:
+            return {'all': False, 'mutual_friends': False, 'mutual_guilds': True}
+        if self.value == 2:
+            return {'all': False, 'mutual_friends': True, 'mutual_guilds': False}
+        if self.value == 3:
+            return {'all': False, 'mutual_friends': True, 'mutual_guilds': True}
+        if self.value == 4:
+            return {'all': True, 'mutual_friends': True, 'mutual_guilds': True}
+
+    @classmethod
+    def _from_dict(cls, data):
+        all = data.get('all')
+        mutual_guilds = data.get('mutual_guilds')
+        mutual_friends = data.get('mutual_friends')
+
+        if all:
+            return cls.everyone
+        elif mutual_guilds and mutual_friends:
+            return cls.guild_and_friends
+        elif mutual_guilds:
+            return cls.mutual_guilds
+        elif mutual_friends:
+            return cls.mutual_friends
+        else:
+            return cls.noone
+
+
+class Theme(Enum):
+    light = 'light'
+    dark = 'dark'
+
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'
@@ -295,6 +361,7 @@ class DefaultAvatar(Enum):
     green = 2
     orange = 3
     red = 4
+    pink = 5
 
     def __str__(self):
         return self.name
@@ -477,6 +544,17 @@ class ActivityType(Enum):
         return self.value
 
 
+class HypeSquadHouse(Enum):
+    bravery    = 1
+    brilliance = 2
+    balance    = 3
+
+
+class PremiumType(Enum):
+    nitro_classic = 1
+    nitro         = 2
+
+
 class TeamMembershipState(Enum):
     invited = 1
     accepted = 2
@@ -516,6 +594,48 @@ class StickerFormatType(Enum):
         }
         # fmt: on
         return lookup[self]
+
+
+class ReportType(Enum):
+    illegal_content = 1
+    harassment      = 2
+    phishing        = 3
+    self_harm       = 4
+    nsfw_content    = 5
+
+    def __int__(self):
+        return self.value
+
+
+class RelationshipAction(Enum):
+    send_friend_request    = 'request'
+    unfriend               = 'unfriend'
+    accept_request         = 'accept'
+    deny_request           = 'deny'
+    block                  = 'block'
+    unblock                = 'unblock'
+    remove_pending_request = 'remove'
+
+
+class UnavailableGuildType(Enum):
+    existing = 'ready'
+    joined   = 'joined'
+
+
+class RequiredActionType(Enum):
+    verify_phone = 'REQUIRE_VERIFIED_PHONE'
+    verify_email = 'REQUIRE_VERIFIED_EMAIL'
+    captcha      = 'REQUIRE_CAPTCHA'
+    accept_terms = 'AGREEMENTS'
+    
+
+class BrowserEnum(Enum):
+    google_chrome = 'chrome'
+    chrome = 'chrome'
+    chromium = 'chromium'
+    microsoft_edge = 'microsoft-edge'
+    edge = 'microsoft-edge'
+    opera = 'opera'
 
 
 class InviteTarget(Enum):
