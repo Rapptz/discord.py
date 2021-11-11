@@ -196,16 +196,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     The warnings on :func:`on_ready` also apply.
 
-.. function:: on_shard_connect(shard_id)
-
-    Similar to :func:`on_connect` except used by :class:`AutoShardedClient`
-    to denote when a particular shard ID has connected to Discord.
-
-    .. versionadded:: 1.4
-
-    :param shard_id: The shard ID that has connected.
-    :type shard_id: :class:`int`
-
 .. function:: on_disconnect()
 
     Called when the client has disconnected from Discord, or a connection attempt to Discord has failed.
@@ -213,16 +203,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     or Discord terminating the connection one way or the other.
 
     This function can be called many times without a corresponding :func:`on_connect` call.
-
-.. function:: on_shard_disconnect(shard_id)
-
-    Similar to :func:`on_disconnect` except used by :class:`AutoShardedClient`
-    to denote when a particular shard ID has disconnected from Discord.
-
-    .. versionadded:: 1.4
-
-    :param shard_id: The shard ID that has disconnected.
-    :type shard_id: :class:`int`
 
 .. function:: on_ready()
 
@@ -236,27 +216,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         once. This library implements reconnection logic and thus will
         end up calling this event whenever a RESUME request fails.
 
-.. function:: on_shard_ready(shard_id)
-
-    Similar to :func:`on_ready` except used by :class:`AutoShardedClient`
-    to denote when a particular shard ID has become ready.
-
-    :param shard_id: The shard ID that is ready.
-    :type shard_id: :class:`int`
-
 .. function:: on_resumed()
 
     Called when the client has resumed a session.
-
-.. function:: on_shard_resumed(shard_id)
-
-    Similar to :func:`on_resumed` except used by :class:`AutoShardedClient`
-    to denote when a particular shard ID has resumed a session.
-
-    .. versionadded:: 1.4
-
-    :param shard_id: The shard ID that has resumed.
-    :type shard_id: :class:`int`
 
 .. function:: on_error(event, *args, **kwargs)
 
@@ -352,7 +314,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
-    This requires :attr:`Intents.typing` to be enabled.
+
 
     :param channel: The location where the typing originated from.
     :type channel: :class:`abc.Messageable`
@@ -365,7 +327,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Message` is created and sent.
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     .. warning::
 
@@ -388,7 +350,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_delete` event instead.
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param message: The deleted message.
     :type message: :class:`Message`
@@ -405,7 +367,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_bulk_message_delete` event instead.
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param messages: The messages that have been deleted.
     :type messages: List[:class:`Message`]
@@ -418,7 +380,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If the message is found in the message cache,
     it can be accessed via :attr:`RawMessageDeleteEvent.cached_message`
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageDeleteEvent`
@@ -431,7 +393,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     If the messages are found in the message cache,
     they can be accessed via :attr:`RawBulkMessageDeleteEvent.cached_messages`
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
@@ -457,7 +419,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - The message's embeds were suppressed or unsuppressed.
     - A call message has received an update to its participants or ending time.
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param before: The previous version of the message.
     :type before: :class:`Message`
@@ -483,7 +445,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     denotes an "embed" only edit, which is an edit in which only the embeds are updated by the Discord
     embed server.
 
-    This requires :attr:`Intents.messages` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageUpdateEvent`
@@ -498,7 +460,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
         To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     .. note::
 
@@ -518,7 +480,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a reaction added. Unlike :func:`on_reaction_add`, this is
     called regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
@@ -550,7 +512,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a reaction removed. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
@@ -561,7 +523,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear` instead.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     :param message: The message that had its reactions cleared.
     :type message: :class:`Message`
@@ -573,7 +535,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has all its reactions removed. Unlike :func:`on_reaction_clear`,
     this is called regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEvent`
@@ -584,7 +546,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
 
-    This requires :attr:`Intents.reactions` to be enabled.
+
 
     .. versionadded:: 1.3
 
@@ -596,35 +558,14 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
-
     .. versionadded:: 1.3
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
 
-.. function:: on_interaction(interaction)
-
-    Called when an interaction happened.
-
-    This currently happens due to slash command invocations or components being used.
-
-    .. warning::
-
-        This is a low level function that is not generally meant to be used.
-        If you are working with components, consider using the callbacks associated
-        with the :class:`~discord.ui.View` instead as it provides a nicer user experience.
-
-    .. versionadded:: 2.0
-
-    :param interaction: The interaction data.
-    :type interaction: :class:`Interaction`
-
 .. function:: on_private_channel_update(before, after)
 
     Called whenever a private group DM is updated. e.g. changed name or topic.
-
-    This requires :attr:`Intents.messages` to be enabled.
 
     :param before: The updated group channel's old info.
     :type before: :class:`GroupChannel`
@@ -647,16 +588,12 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Note that you can get the guild from :attr:`~abc.GuildChannel.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     :param channel: The guild channel that got created or deleted.
     :type channel: :class:`abc.GuildChannel`
 
 .. function:: on_guild_channel_update(before, after)
 
     Called whenever a guild channel is updated. e.g. changed name, topic, permissions.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     :param before: The updated guild channel's old info.
     :type before: :class:`abc.GuildChannel`
@@ -666,8 +603,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_guild_channel_pins_update(channel, last_pin)
 
     Called whenever a message is pinned or unpinned from a guild channel.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     :param channel: The guild channel that had its pins updated.
     :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
@@ -681,8 +616,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     .. versionadded:: 2.0
 
     :param thread: The thread that got joined.
@@ -693,8 +626,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called whenever a thread is removed. This is different from a thread being deleted.
 
     Note that you can get the guild from :attr:`Thread.guild`.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     .. warning::
 
@@ -714,8 +645,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     .. versionadded:: 2.0
 
     :param thread: The thread that got deleted.
@@ -728,8 +657,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
 
-    This requires :attr:`Intents.members` to be enabled.
-
     .. versionadded:: 2.0
 
     :param member: The member who joined or left.
@@ -738,8 +665,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_thread_update(before, after)
 
     Called whenever a thread is updated.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -752,8 +677,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called whenever an integration is created, modified, or removed from a guild.
 
-    This requires :attr:`Intents.integrations` to be enabled.
-
     .. versionadded:: 1.4
 
     :param guild: The guild that had its integrations updated.
@@ -762,8 +685,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_integration_create(integration)
 
     Called when an integration is created.
-
-    This requires :attr:`Intents.integrations` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -774,8 +695,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when an integration is updated.
 
-    This requires :attr:`Intents.integrations` to be enabled.
-
     .. versionadded:: 2.0
 
     :param integration: The integration that was created.
@@ -784,8 +703,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. function:: on_raw_integration_delete(payload)
 
     Called when an integration is deleted.
-
-    This requires :attr:`Intents.integrations` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -796,8 +713,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called whenever a webhook is created, modified, or removed from a guild channel.
 
-    This requires :attr:`Intents.webhooks` to be enabled.
-
     :param channel: The channel that had its webhooks updated.
     :type channel: :class:`abc.GuildChannel`
 
@@ -805,8 +720,6 @@ to handle it, which defaults to print a traceback and ignoring the exception.
               on_member_remove(member)
 
     Called when a :class:`Member` leaves or joins a :class:`Guild`.
-
-    This requires :attr:`Intents.members` to be enabled.
 
     :param member: The member who joined or left.
     :type member: :class:`Member`
@@ -821,7 +734,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - roles
     - pending
 
-    This requires :attr:`Intents.members` to be enabled.
+
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
@@ -837,7 +750,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - status
     - activity
 
-    This requires :attr:`Intents.presences` and :attr:`Intents.members` to be enabled.
+
 
     .. versionadded:: 2.0
 
@@ -856,7 +769,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - username
     - discriminator
 
-    This requires :attr:`Intents.members` to be enabled.
+
 
     :param before: The updated user's old info.
     :type before: :class:`User`
@@ -868,7 +781,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a :class:`Guild` is either created by the :class:`Client` or when the
     :class:`Client` joins a guild.
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param guild: The guild that was joined.
     :type guild: :class:`Guild`
@@ -887,7 +800,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     In order for this event to be invoked then the :class:`Client` must have
     been part of the guild to begin with. (i.e. it is part of :attr:`Client.guilds`)
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param guild: The guild that got removed.
     :type guild: :class:`Guild`
@@ -901,7 +814,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - Changed AFK timeout
     - etc
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param before: The guild prior to being updated.
     :type before: :class:`Guild`
@@ -915,7 +828,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     To get the guild it belongs to, use :attr:`Role.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param role: The role that was created or deleted.
     :type role: :class:`Role`
@@ -924,7 +837,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Role` is changed guild-wide.
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param before: The updated role's old info.
     :type before: :class:`Role`
@@ -935,7 +848,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Guild` adds or removes :class:`Emoji`.
 
-    This requires :attr:`Intents.emojis_and_stickers` to be enabled.
+
 
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
@@ -948,7 +861,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`Guild` updates its stickers.
 
-    This requires :attr:`Intents.emojis_and_stickers` to be enabled.
+
 
     .. versionadded:: 2.0
 
@@ -965,7 +878,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when a guild becomes available or unavailable. The guild must have
     existed in the :attr:`Client.guilds` cache.
 
-    This requires :attr:`Intents.guilds` to be enabled.
+
 
     :param guild: The :class:`Guild` that has changed availability.
 
@@ -980,7 +893,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
-    This requires :attr:`Intents.voice_states` to be enabled.
+
 
     :param member: The member whose voice states changed.
     :type member: :class:`Member`
@@ -1019,7 +932,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when user gets banned from a :class:`Guild`.
 
-    This requires :attr:`Intents.bans` to be enabled.
+
 
     :param guild: The guild the user got banned from.
     :type guild: :class:`Guild`
@@ -1032,7 +945,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
     Called when a :class:`User` gets unbanned from a :class:`Guild`.
 
-    This requires :attr:`Intents.bans` to be enabled.
+
 
     :param guild: The guild the user got unbanned from.
     :type guild: :class:`Guild`
@@ -1051,7 +964,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
         attributes will be of :class:`Object` rather than the respective models.
 
-    This requires :attr:`Intents.invites` to be enabled.
+
 
     :param invite: The invite that was created.
     :type invite: :class:`Invite`
@@ -1071,7 +984,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
         Outside of those two attributes, the only other attribute guaranteed to be
         filled by the Discord gateway for this event is :attr:`Invite.code`.
 
-    This requires :attr:`Intents.invites` to be enabled.
+
 
     :param invite: The invite that was deleted.
     :type invite: :class:`Invite`
@@ -4068,14 +3981,6 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
-ShardInfo
-~~~~~~~~~~~
-
-.. attributetable:: ShardInfo
-
-.. autoclass:: ShardInfo()
-    :members:
-
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -4099,52 +4004,6 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
-
-.. _discord_ui_kit:
-
-Bot UI Kit
--------------
-
-The library has helpers to help create component-based UIs.
-
-View
-~~~~~~~
-
-.. attributetable:: discord.ui.View
-
-.. autoclass:: discord.ui.View
-    :members:
-
-Item
-~~~~~~~
-
-.. attributetable:: discord.ui.Item
-
-.. autoclass:: discord.ui.Item
-    :members:
-
-Button
-~~~~~~~
-
-.. attributetable:: discord.ui.Button
-
-.. autoclass:: discord.ui.Button
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.button
-
-Select
-~~~~~~~
-
-.. attributetable:: discord.ui.Select
-
-.. autoclass:: discord.ui.Select
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.select
-
 
 Exceptions
 ------------
@@ -4176,8 +4035,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: ConnectionClosed
 
-.. autoexception:: PrivilegedIntentsRequired
-
 .. autoexception:: InteractionResponded
 
 .. autoexception:: discord.opus.OpusError
@@ -4196,7 +4053,6 @@ Exception Hierarchy
                 - :exc:`InvalidArgument`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
-                - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
