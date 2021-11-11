@@ -3435,30 +3435,6 @@ Integration
 .. autoclass:: StreamIntegration()
     :members:
 
-Interaction
-~~~~~~~~~~~~
-
-.. attributetable:: Interaction
-
-.. autoclass:: Interaction()
-    :members:
-
-InteractionResponse
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionResponse
-
-.. autoclass:: InteractionResponse()
-    :members:
-
-InteractionMessage
-~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionMessage
-
-.. autoclass:: InteractionMessage()
-    :members:
-
 Member
 ~~~~~~
 
@@ -3885,14 +3861,6 @@ SelectOption
 .. autoclass:: SelectOption
     :members:
 
-Intents
-~~~~~~~~~~
-
-.. attributetable:: Intents
-
-.. autoclass:: Intents
-    :members:
-
 MemberCacheFlags
 ~~~~~~~~~~~~~~~~~~
 
@@ -4035,8 +4003,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: ConnectionClosed
 
-.. autoexception:: InteractionResponded
-
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -4053,7 +4019,6 @@ Exception Hierarchy
                 - :exc:`InvalidArgument`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
-                - :exc:`InteractionResponded`
             - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`

@@ -48,6 +48,7 @@ __all__ = (
     'InvalidArgument',
     'AuthFailure',
     'LoginFailure',
+    'ConnectionClosed',
 )
 
 
