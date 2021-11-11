@@ -35,8 +35,6 @@ if TYPE_CHECKING:
     except ModuleNotFoundError:
         _ResponseType = ClientResponse
 
-    from .interactions import Interaction
-
 __all__ = (
     'DiscordException',
     'ClientException',
@@ -48,6 +46,7 @@ __all__ = (
     'DiscordServerError',
     'InvalidData',
     'InvalidArgument',
+    'AuthFailure',
     'LoginFailure',
 )
 
@@ -57,7 +56,6 @@ class DiscordException(Exception):
 
     Ideally speaking, this could be caught to handle any exceptions raised from this library.
     """
-
     pass
 
 
@@ -66,19 +64,16 @@ class ClientException(DiscordException):
 
     These are usually for exceptions that happened due to user input.
     """
-
     pass
 
 
 class NoMoreItems(DiscordException):
     """Exception that is raised when an async iteration operation has no more items."""
-
     pass
 
 
 class GatewayNotFound(DiscordException):
     """An exception that is raised when the gateway for Discord could not be found"""
-
     def __init__(self):
         message = 'The gateway to connect to Discord was not found.'
         super().__init__(message)
@@ -120,7 +115,6 @@ class HTTPException(DiscordException):
     json: Dict[any, any]
         The raw error JSON.
     """
-
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
         self.status: int = response.status  # type: ignore
@@ -153,7 +147,6 @@ class Forbidden(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
-
     pass
 
 
@@ -162,7 +155,6 @@ class NotFound(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
-
     pass
 
 
@@ -173,7 +165,6 @@ class DiscordServerError(HTTPException):
 
     .. versionadded:: 1.5
     """
-
     pass
 
 
@@ -181,7 +172,6 @@ class InvalidData(ClientException):
     """Exception that's raised when the library encounters unknown
     or invalid data from Discord.
     """
-
     pass
 
 
@@ -193,7 +183,6 @@ class InvalidArgument(ClientException):
     ``TypeError`` except inherited from :exc:`ClientException` and thus
     :exc:`DiscordException`.
     """
-
     pass
 
 
@@ -202,8 +191,8 @@ class AuthFailure(ClientException):
     fails to log you in from improper credentials or some other misc.
     failure.
     """
-
     pass
+
 
 LoginFailure = AuthFailure
 
@@ -219,7 +208,6 @@ class ConnectionClosed(ClientException):
     reason: :class:`str`
         The reason provided for the closure.
     """
-
     def __init__(self, socket: ClientWebSocketResponse, *, code: Optional[int] = None):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
