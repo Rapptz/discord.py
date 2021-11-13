@@ -20,9 +20,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-"""
 
-"""
 If you're wondering why this is essentially copy pasted from the async_.py
 file, then it's due to needing two separate types to make the typing shenanigans
 a bit easier to write. It's an unfortunate design. Originally, these types were

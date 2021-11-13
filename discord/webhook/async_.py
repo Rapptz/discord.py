@@ -1238,7 +1238,7 @@ class Webhook(BaseWebhook):
         if content is None:
             content = MISSING
 
-        if self.type is WebhookType.application
+        if self.type is WebhookType.application:
             wait = True
 
         params = handle_message_parameters(
