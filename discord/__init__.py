@@ -57,6 +57,9 @@ from .sticker import *
 from .stage_instance import *
 from .components import *
 from .threads import *
+from .relationship import *
+from .guild_folder import *
+from .settings import *
 
 
 class _VersionInfo(NamedTuple):

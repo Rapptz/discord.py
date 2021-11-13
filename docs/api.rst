@@ -3,7 +3,7 @@
 API Reference
 ===============
 
-The following section outlines the API of discord.py.
+The following section outlines the API of discord.py-self.
 
 .. note::
 
@@ -11,7 +11,7 @@ The following section outlines the API of discord.py.
     in an output independent way.  If the logging module is not configured,
     these logs will not be output anywhere.  See :ref:`logging_setup` for
     more information on how to set up and use the logging module with
-    discord.py.
+    discord.py-self.
 
 Version Related Info
 ---------------------
@@ -186,8 +186,7 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 .. warning::
 
     All the events must be a |coroutine_link|_. If they aren't, then you might get unexpected
-    errors. In order to turn a function into a coroutine they must be ``async def``
-    functions.
+    errors. In order to turn a function into a coroutine they must be defined with ``async def``.
 
 .. function:: on_connect()
 
@@ -308,10 +307,10 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     Called when someone begins typing a message.
 
     The ``channel`` parameter can be a :class:`abc.Messageable` instance.
-    Which could either be :class:`TextChannel`, :class:`GroupChannel`, or
+    Which could either be :class:`TextChannel`, :class:`GroupChannel`, :class:`Thread`, or
     :class:`DMChannel`.
 
-    If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
+    If the ``channel`` is a :class:`TextChannel` or :class:`Thread` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
 
@@ -462,7 +461,9 @@ to handle it, which defaults to print a traceback and ignoring the exception.
 
 
 
-    .. note::
+    ..
+
+        todo: check this out
 
         This doesn't require :attr:`Intents.members` within a guild context,
         but due to Discord not providing updated user information in a direct message
@@ -2013,7 +2014,8 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.name`
-        - :attr:`~AuditLogDiff.type` (always set to ``1`` if so)
+        - :attr:`~AuditLogDif
+    .. attribute:: verified_bot_developerf.type` (always set to ``1`` if so)
 
     .. attribute:: emoji_create
 
@@ -2374,6 +2376,11 @@ of :class:`enum.Enum`.
 
         Represents the default avatar with the color red.
         See also :attr:`Colour.red`
+
+    .. attribute:: pink
+
+        Represents the default avatar with the color pink.
+        This is not currently used in the client.
 
 .. class:: StickerType
 
@@ -3308,6 +3315,33 @@ User
     .. automethod:: typing
         :async-with:
 
+Profile
+~~~~~~~~
+
+.. attributetable:: Profile
+
+.. autoclass:: Profile()
+    :members:
+    :inherited-members:
+
+Relationship
+~~~~~~~~~~~~~
+
+.. attributetable:: Relationship
+
+.. autoclass:: Relationship()
+    :members:
+    :inherited-members:
+
+UserSettings
+~~~~~~~~~~~~~
+
+.. attributetable:: UserSettings
+
+.. autoclass:: UserSettings()
+    :members:
+    :inherited-members:
+
 Attachment
 ~~~~~~~~~~~
 
@@ -3415,6 +3449,33 @@ Guild
         The :class:`User` that was banned.
 
         :type: :class:`User`
+
+GuildFolder
+~~~~~~~~~~~~
+
+.. attributetable:: GuildFolder
+
+.. autoclass:: GuildFolder()
+    :members:
+    :inherited-members:
+
+GuildSettings
+~~~~~~~~~~~~~~
+
+.. attributetable:: GuildSettings
+
+.. autoclass:: GuildSettings()
+    :members:
+    :inherited-members:
+
+ChannelSettings
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: ChannelSettings
+
+.. autoclass:: ChannelSettings()
+    :members:
+    :inherited-members:
 
 
 Integration

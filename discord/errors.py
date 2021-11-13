@@ -113,7 +113,7 @@ class HTTPException(DiscordException):
         The status code of the HTTP request.
     code: :class:`int`
         The Discord specific error code for the failure.
-    json: Dict[any, any]
+    json: :class:`dict`
         The raw error JSON.
     """
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):

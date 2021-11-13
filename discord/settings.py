@@ -258,7 +258,6 @@ class ChannelSettings:
         self._update(data)
 
     def _update(self, data: Dict[str, Any]) -> None:
-        breakpoint()
         self._channel_id = int(data['channel_id'])
         self.collapsed = data.get('collapsed', False)
 

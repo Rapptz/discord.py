@@ -147,7 +147,7 @@ class Client:
         If not given, defaults to off.
 
         .. versionadded:: 1.9
-    request_guilds :class:`bool`
+    request_guilds: :class:`bool`
         Whether to request guilds at startup (behaves similarly to the old
         guild_subscriptions option). Defaults to True.
 
@@ -1686,7 +1686,7 @@ class Client:
         return note
 
     async def fetch_private_channels(self) -> List[PrivateChannel]:
-        """|coro
+        """|coro|
 
         Retrieves all your private channels.
 
