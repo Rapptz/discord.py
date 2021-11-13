@@ -22,11 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-# If you're wondering why this is essentially copy pasted from the async_.py
-# file, then it's due to needing two separate types to make the typing shenanigans
-# a bit easier to write. It's an unfortunate design. Originally, these types were
-# merged and an adapter was used to differentiate between the async and sync versions.
-# However, this proved to be difficult to provide typings for, so here we are.
+"""
+If you're wondering why this is essentially copy pasted from the async_.py
+file, then it's due to needing two separate types to make the typing shenanigans
+a bit easier to write. It's an unfortunate design. Originally, these types were
+merged and an adapter was used to differentiate between the async and sync versions.
+However, this proved to be difficult to provide typings for, so here we are.
+"""
 
 from __future__ import annotations
 
@@ -119,11 +121,11 @@ class WebhookAdapter:
             headers['Content-Type'] = 'application/json'
             to_send = utils._to_json(payload)
 
-        if auth_token is not None:
-            headers['Authorization'] = f'Bot {auth_token}'
+        if auth_token is not None:  # TODO: is this possible with users?
+            headers['Authorization'] = f'{auth_token}'
 
         if reason is not None:
-            headers['X-Audit-Log-Reason'] = urlquote(reason, safe='/ ')
+            headers['X-Audit-Log-Reason'] = urlquote(reason)
 
         response: Optional[Response] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -151,7 +153,7 @@ class WebhookAdapter:
                         method, url, data=to_send, files=file_data, headers=headers, params=params
                     ) as response:
                         _log.debug(
-                            'Webhook ID %s with %s %s has returned status code %s',
+                            'Webhook ID %s with %s %s has returned status code %s.',
                             webhook_id,
                             method,
                             url,
@@ -169,7 +171,7 @@ class WebhookAdapter:
                         if remaining == '0' and response.status_code != 429:
                             delta = utils._parse_ratelimit_header(response)
                             _log.debug(
-                                'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', webhook_id, delta
+                                'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds.', webhook_id, delta
                             )
                             lock.delay_by(delta)
 
@@ -181,7 +183,7 @@ class WebhookAdapter:
                                 raise HTTPException(response, data)
 
                             retry_after: float = data['retry_after']  # type: ignore
-                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
+                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds.', webhook_id, retry_after)
                             time.sleep(retry_after)
                             continue
 
