@@ -7,14 +7,14 @@
 Introduction
 ==============
 
-This is the documentation for discord.py, a library for Python to aid
-in creating applications that utilise the Discord API.
+This is the documentation for discord.py-self, a library for Python to aid
+in creating self-bots that utilise the Discord API.
 
 Prerequisites
 ---------------
 
-discord.py works with Python 3.8 or higher. Support for earlier versions of Python
-is not provided. Python 2.7 or lower is not supported. Python 3.7 or lower is not supported.
+discord.py-self works with Python 3.8 or higher. Support for earlier versions of Python
+is not provided.
 
 
 .. _installing:
@@ -24,16 +24,16 @@ Installing
 
 You can get the library directly from PyPI: ::
 
-    python3 -m pip install -U discord.py
+    python3 -m pip install -U discord.py-self
 
 If you are using Windows, then the following should be used instead: ::
 
-    py -3 -m pip install -U discord.py
+    py -3 -m pip install -U discord.py-self
 
 
-To get voice support, you should use ``discord.py[voice]`` instead of ``discord.py``, e.g. ::
+To get voice support, you should use ``discord.py-self[voice]`` instead of ``discord.py``, e.g. ::
 
-    python3 -m pip install -U discord.py[voice]
+    python3 -m pip install -U discord.py-self[voice]
 
 On Linux environments, installing voice requires getting the following dependencies:
 
@@ -84,7 +84,7 @@ However, for the quick and dirty:
 
     .. code-block:: shell
 
-        $ pip install -U discord.py
+        $ pip install -U discord.py-self
 
 Congratulations. You now have a virtual environment all set up.
 
@@ -109,5 +109,5 @@ A quick example to showcase how events work:
             print(f'Message from {messsage.author}: {message.content}')
 
     client = MyClient()
-    client.run('my token goes here')
+    client.run('token')
 
