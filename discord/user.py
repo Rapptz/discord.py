@@ -55,6 +55,7 @@ if TYPE_CHECKING:
 __all__ = (
     'User',
     'ClientUser',
+    'Profile',
 )
 
 BU = TypeVar('BU', bound='BaseUser')
