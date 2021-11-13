@@ -51,7 +51,7 @@ from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException, InvalidArgument, NotFound
 from .stage_instance import StageInstance
 from .threads import Thread
 from .iterators import ArchivedThreadIterator
