@@ -2014,8 +2014,7 @@ of :class:`enum.Enum`.
 
         - :attr:`~AuditLogDiff.channel`
         - :attr:`~AuditLogDiff.name`
-        - :attr:`~AuditLogDif
-    .. attribute:: verified_bot_developerf.type` (always set to ``1`` if so)
+        - :attr:`~AuditLogDiff.type` (always set to ``1`` if so)
 
     .. attribute:: emoji_create
 
@@ -3299,6 +3298,15 @@ ClientUser
     :members:
     :inherited-members:
 
+UserSettings
+~~~~~~~~~~~~~
+
+.. attributetable:: UserSettings
+
+.. autoclass:: UserSettings()
+    :members:
+    :inherited-members:
+
 User
 ~~~~~
 
@@ -3324,21 +3332,21 @@ Profile
     :members:
     :inherited-members:
 
+Note
+~~~~~
+
+.. attributetable:: Note
+
+.. autoclass:: Note()
+    :members:
+    :inherited-members:
+
 Relationship
 ~~~~~~~~~~~~~
 
 .. attributetable:: Relationship
 
 .. autoclass:: Relationship()
-    :members:
-    :inherited-members:
-
-UserSettings
-~~~~~~~~~~~~~
-
-.. attributetable:: UserSettings
-
-.. autoclass:: UserSettings()
     :members:
     :inherited-members:
 
@@ -3450,15 +3458,6 @@ Guild
 
         :type: :class:`User`
 
-GuildFolder
-~~~~~~~~~~~~
-
-.. attributetable:: GuildFolder
-
-.. autoclass:: GuildFolder()
-    :members:
-    :inherited-members:
-
 GuildSettings
 ~~~~~~~~~~~~~~
 
@@ -3468,12 +3467,21 @@ GuildSettings
     :members:
     :inherited-members:
 
-ChannelSettings
-~~~~~~~~~~~~~~~~
+GuildFolder
+~~~~~~~~~~~~
 
-.. attributetable:: ChannelSettings
+.. attributetable:: GuildFolder
 
-.. autoclass:: ChannelSettings()
+.. autoclass:: GuildFolder()
+    :members:
+    :inherited-members:
+
+GuildSubscriptionOptions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: GuildSubscriptionOptions
+
+.. autoclass:: GuildSubscriptionOptions()
     :members:
     :inherited-members:
 
@@ -3586,6 +3594,17 @@ TextChannel
 
     .. automethod:: typing
         :async-with:
+
+
+ChannelSettings
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: ChannelSettings
+
+.. autoclass:: ChannelSettings()
+    :members:
+    :inherited-members:
+
 
 Thread
 ~~~~~~~~

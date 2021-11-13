@@ -266,7 +266,7 @@ class ChannelSettings:
 
     @property
     def channel(self) -> Optional[GuildChannel]:
-        """Optional[:class:`GuildChannel]: Returns the channel these settings are for."""
+        """Optional[:class:`GuildChannel`]: Returns the channel these settings are for."""
         guild = self._state._get_guild(self._guild_id)
         return guild and guild.get_channel(self._channel_id)
 

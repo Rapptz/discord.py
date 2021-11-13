@@ -577,7 +577,7 @@ class ApplicationFlags(BaseFlags):
 
 
 class GuildSubscriptionOptions:
-    """Controls the library's auto-subscribing feature.
+    r"""Controls the library's auto-subscribing feature.
 
     Subscribing refers to abusing the member sidebar to scrape all* guild
     members. However, you can only request 200 members per OPCode 14.
@@ -586,8 +586,8 @@ class GuildSubscriptionOptions:
     GUILD_MEMBER_LIST_UPDATE. You then also get subsequent GUILD_MEMBER_LIST_UPDATEs
     that act (kind of) like GUILD_MEMBER_UPDATE/ADD/REMOVEs.
 
-    *Discord doesn't provide offline members for "large" guilds.
-    *As this is dependent on the member sidebar, guilds that don't have
+    \*Discord doesn't provide offline members for "large" guilds.
+    \*As this is dependent on the member sidebar, guilds that don't have
     a channel (of any type, surprisingly) that @everyone or some other
     role everyone has can't access don't get the full online member list.
 
@@ -608,7 +608,7 @@ class GuildSubscriptionOptions:
         self.max_online = max_online
 
     def __repr__(self) -> str:
-        return '<GuildSubscriptionOptions auto_subscribe={0.auto_subscribe} concurrent_guilds={0.concurrent_guilds} max_online_count={0.max_online_count}' .format(self)
+        return f'<GuildSubscriptionOptions auto_subscribe={self.auto_subscribe} concurrent_guilds={self.concurrent_guilds} max_online_count={self.max_online_count}'
 
     @classmethod
     def all(cls) -> GuildSubscriptionOptions:
@@ -622,7 +622,16 @@ class GuildSubscriptionOptions:
 
     @classmethod
     def disabled(cls) -> GuildSubscriptionOptions:
-        """A factory method that creates a :class:`GuildSubscriptionOptions` with subscribing disabled."""
+        """A factory method that creates a :class:`GuildSubscriptionOptions` with subscribing disabled.
+
+        There is an alias for this called :meth`none`.
+        """
         return cls(auto_subscribe=False)
 
-    off = disabled
+    @classmethod
+    def off(cls) -> GuildSubscriptionOptions:
+        """A factory method that creates a :class:`GuildSubscriptionOptions` with subscribing disabled.
+
+        This is an alias of :meth:`disabled`.
+        """
+        return cls(auto_subscribe=False)

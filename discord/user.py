@@ -56,6 +56,7 @@ __all__ = (
     'User',
     'ClientUser',
     'Profile',
+    'Note',
 )
 
 BU = TypeVar('BU', bound='BaseUser')
