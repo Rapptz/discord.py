@@ -1880,3 +1880,6 @@ class HTTPClient:
         }
 
         return self.request(Route('POST', '/report'), json=payload)
+
+    def interact(self, data) -> Response[None]:
+        return self.request(Route('POST', '/interactions'), json=data)

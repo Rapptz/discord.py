@@ -24,9 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
+
 from .enums import try_enum, ComponentType, ButtonStyle
-from .utils import get_slots, MISSING
+from .utils import get_slots, MISSING, time_snowflake
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
@@ -38,6 +40,7 @@ if TYPE_CHECKING:
         ActionRow as ActionRowPayload,
     )
     from .emoji import Emoji
+    from .message import Message
 
 
 __all__ = (
@@ -70,10 +73,11 @@ class Component:
         The type of component.
     """
 
-    __slots__: Tuple[str, ...] = ('type',)
+    __slots__: Tuple[str, ...] = ('type', 'message')
 
     __repr_info__: ClassVar[Tuple[str, ...]]
     type: ComponentType
+    message: Message
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
@@ -110,15 +114,18 @@ class ActionRow(Component):
         The type of component.
     children: List[:class:`Component`]
         The children components that this holds, if any.
+    message: :class:`Message`
+        The originating message.
     """
 
     __slots__: Tuple[str, ...] = ('children',)
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ComponentPayload):
+    def __init__(self, data: ComponentPayload, message: Message):
+        self.message = message
         self.type: ComponentType = try_enum(ComponentType, data['type'])
-        self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+        self.children: List[Component] = [_component_factory(d, message) for d in data.get('components', [])]
 
     def to_dict(self) -> ActionRowPayload:
         return {
@@ -149,6 +156,8 @@ class Button(Component):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    message: :class:`Message`
+        The originating message, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -162,7 +171,8 @@ class Button(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ButtonComponentPayload):
+    def __init__(self, data: ButtonComponentPayload, message: Message):
+        self.message = message
         self.type: ComponentType = try_enum(ComponentType, data['type'])
         self.style: ButtonStyle = try_enum(ButtonStyle, data['style'])
         self.custom_id: Optional[str] = data.get('custom_id')
@@ -193,6 +203,32 @@ class Button(Component):
 
         return payload  # type: ignore
 
+    async def click(self):
+        """|coro|
+
+        Clicks the button.
+
+        Raises
+        -------
+        HTTPException
+            Clicking the button failed.
+        """
+        message = self.message
+        payload = {
+            'application_id': str(message.application_id),
+            'channel_id': str(message.channel.id),
+            'data': {
+                'component_type': 2,
+                'custom_id': self.custom_id,
+            },
+            'guild_id': message.guild and str(message.guild.id),
+            'message_flags': message.flags.value,
+            'message_id': str(message.id),
+            'nonce': str(time_snowflake(datetime.utcnow())),
+            'type': 3,  # Should be an enum but eh
+        }
+        await message._state.http.interact(payload)  # type: ignore
+
 
 class SelectMenu(Component):
     """Represents a select menu from the Discord Bot UI Kit.
@@ -218,6 +254,8 @@ class SelectMenu(Component):
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    message: :class:`Message`
+        The originating message, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -231,7 +269,8 @@ class SelectMenu(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: SelectMenuPayload):
+    def __init__(self, data: SelectMenuPayload, message: Message):
+        self.message = message
         self.type = ComponentType.select
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
@@ -358,14 +397,14 @@ class SelectOption:
         return payload
 
 
-def _component_factory(data: ComponentPayload) -> Component:
+def _component_factory(data: ComponentPayload, message: Message) -> Component:
     component_type = data['type']
     if component_type == 1:
-        return ActionRow(data)
+        return ActionRow(data, message)
     elif component_type == 2:
-        return Button(data)  # type: ignore
+        return Button(data, message)  # type: ignore
     elif component_type == 3:
-        return SelectMenu(data)  # type: ignore
+        return SelectMenu(data, message)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
         return Component._raw_construct(type=as_enum)

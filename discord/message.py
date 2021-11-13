@@ -75,7 +75,6 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
-    from .ui.view import View
 
     MR = TypeVar('MR', bound='MessageReference')
     EmojiInputType = Union[Emoji, PartialEmoji, str]
@@ -604,6 +603,8 @@ class Message(Hashable):
         .. versionadded:: 2.0
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
+    application_id: Optional[:class:`int`]
+        The application that sent this message, if applicable.
     """
 
     __slots__ = (
@@ -619,6 +620,7 @@ class Message(Hashable):
         'content',
         'channel',
         'webhook_id',
+        'application_id',
         'mention_everyone',
         'embeds',
         'id',
@@ -659,6 +661,7 @@ class Message(Hashable):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
+        self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
         self.attachments: List[Attachment] = [Attachment(data=a, state=self._state) for a in data['attachments']]
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
@@ -674,7 +677,7 @@ class Message(Hashable):
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+        self.components: List[Component] = [_component_factory(d, self) for d in data.get('components', [])]
         self.call: Optional[CallMessage] = None
 
         try:
@@ -1757,11 +1760,6 @@ class PartialMessage(Hashable):
             to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
             If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
             are used instead.
-        view: Optional[:class:`~discord.ui.View`]
-            The updated view to update this message with. If ``None`` is passed then
-            the view is removed.
-
-            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1818,17 +1816,6 @@ class PartialMessage(Hashable):
                     allowed_mentions = allowed_mentions.to_dict()
                 fields['allowed_mentions'] = allowed_mentions
 
-        try:
-            view = fields.pop('view')
-        except KeyError:
-            # To check for the view afterwards
-            view = None
-        else:
-            self._state.prevent_view_updates_for(self.id)
-            if view:
-                fields['components'] = view.to_components()
-            else:
-                fields['components'] = []
 
         if fields:
             data = await self._state.http.edit_message(self.channel.id, self.id, **fields)
@@ -1839,6 +1826,4 @@ class PartialMessage(Hashable):
         if fields:
             # data isn't unbound
             msg = self._state.create_message(channel=self.channel, data=data)  # type: ignore
-            if view and not view.is_finished():
-                self._state.store_view(view, self.id)
             return msg
