@@ -1,6 +1,5 @@
 :orphan:
 
-.. versionadded:: 2.0
 .. _tokens:
 
 Tokens
@@ -10,9 +9,24 @@ Tokens are how we authenticate with Discord.
 
 Regular (and bot) tokens have this format:
 
-.. image:: /images/token.png
+.. list-table:: Discord Token
+    :header-rows: 1
 
-MFA tokens, however, are just the HMAC prefixed with `mfa.` (as far as I know).
+    * -
+      - MjQ1NTU5MDg3NTI0MjE2ODMy
+      - DulyxA
+      - brcD2xRAqjACTuMcGPwy4TWVQdg
+    * - **Decode**
+      - :func:`base64.b64decode`
+      - :func:`base64.b64decode` + 1293840000
+      - N/A
+    * - **Output**
+      - User ID
+      - Unix TS
+      - HMAC
+
+
+MFA tokens, however, are just the HMAC prefixed with **mfa.**
 
 How do I obtain mine?
 ----------------------
