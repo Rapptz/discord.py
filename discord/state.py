@@ -59,6 +59,7 @@ from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .settings import UserSettings
 from .tracking import Tracking
+from .components import Interaction
 
 
 if TYPE_CHECKING:
@@ -262,6 +263,7 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
         self._voice_states: Dict[int, VoiceState] = {}
 
+        self._interactions: Dict[int, Interaction] = {}
         self._relationships: Dict[int, Relationship] = {}
         self._private_channels: Dict[int, PrivateChannel] = {}
         self._private_channels_by_user: Dict[int, DMChannel] = {}
@@ -1608,6 +1610,27 @@ class ConnectionState:
             pass
         else:
             self.dispatch('relationship_remove', old)
+
+    def parse_interaction_create(self, data) -> None:
+        i = Interaction(**data)
+        self._interactions[i.id] = i
+        self.dispatch('interaction', i)
+
+    def parse_interaction_success(self, data) -> None:
+        id = int(data['id'])
+        i = self._interactions.pop(id, None)
+        if i is None:
+            i = Interaction(**data)
+        i.successful = True
+        self.dispatch('interaction_finish', i)
+
+    def parse_interaction_failed(self, data) -> None:
+        id = int(data['id'])
+        i = self._interactions.pop(id, None)
+        if i is None:
+            i = Interaction(**data)
+        i.successful = False
+        self.dispatch('interaction_finish', i)
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, TextChannel):

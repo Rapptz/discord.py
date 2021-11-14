@@ -24,10 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from asyncio import TimeoutError
 from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 
 from .enums import try_enum, ComponentType, ButtonStyle
+from .errors import InvalidData
 from .utils import get_slots, MISSING, time_snowflake
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -52,6 +54,32 @@ __all__ = (
 )
 
 C = TypeVar('C', bound='Component')
+
+
+class Interaction:
+    """Represents an interaction.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The interaction ID.
+    nonce: Optional[Union[:class:`int`, :class:`str`]]
+        The interaction's nonce.
+    successful: Optional[:class:`bool`]
+        Whether the interaction succeeded.
+        This is not immediately available, and is filled when Discord notifies us about the outcome of the interaction.
+    """
+
+    __slots__ = ('id', 'nonce', 'successful')
+
+    def __init__(self, *, id: int, nonce: Optional[Union[int, str]] = None) -> None:
+        self.id = id
+        self.nonce = nonce
+        self.successful: Optional[bool] = None
+
+    def __repr__(self) -> str:
+        s = self.successful
+        return f'<Interaction id={self.id}{f" successful={s}" if s is not None else ""}>'
 
 
 class Component:
@@ -210,10 +238,21 @@ class Button(Component):
 
         Raises
         -------
+        InvalidData
+            Didn't receive a response from Discord.
+            Doesn't mean the interaction failed.
+        NotFound
+            The originating message was not found.
         HTTPException
             Clicking the button failed.
+
+        Returns
+        --------
+        :class:`Interaction`
+            The interaction that was created.
         """
         message = self.message
+        state = message._state
         payload = {
             'application_id': str(message.application_id),
             'channel_id': str(message.channel.id),
@@ -227,7 +266,17 @@ class Button(Component):
             'nonce': str(time_snowflake(datetime.utcnow())),
             'type': 3,  # Should be an enum but eh
         }
-        await message._state.http.interact(payload)  # type: ignore
+        await state.http.interact(payload)
+
+        try:
+            i = await state.client.wait_for(
+                'interaction',
+                check=lambda d: d.nonce == payload['nonce'],
+                timeout=5,
+            )
+        except TimeoutError as exc:
+            raise InvalidData('Did not receive a response from Discord.') from exc
+        return i
 
 
 class SelectMenu(Component):

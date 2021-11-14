@@ -518,7 +518,7 @@ class Message(Hashable):
     content: :class:`str`
         The actual contents of the message.
     nonce: Optional[Union[:class:`str`, :class:`int`]]
-        The value used by the discord guild and the client to verify that the message is successfully sent.
+        The value used by Discord clients to verify that the message is successfully sent.
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
