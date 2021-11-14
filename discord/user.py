@@ -635,7 +635,6 @@ class ClientUser(BaseUser):
 
     def _update(self, data: UserPayload) -> None:
         super()._update(data)
-        # There's actually an Optional[str] phone field as well but I won't use it
         self.verified = data.get('verified', False)
         self.email = data.get('email')
         self.phone = _get_as_snowflake(data, 'phone')
@@ -1015,7 +1014,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         self._stored: bool = False
 
     def __repr__(self) -> str:
-        return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
+        return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
 
     def __del__(self) -> None:
         try:

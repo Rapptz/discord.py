@@ -171,45 +171,43 @@ class UserSettings:
 
     @property
     def tracking(self) -> Optional[Tracking]:
-        """Returns your tracking settings if available."""
+        """Optional[:class:`Tracking`]: Returns your tracking settings if available."""
         return self._state.consents
 
     @property
     def animate_stickers(self) -> StickerAnimationOptions:
-        """Whether or not to animate stickers in the chat."""
+        """:class:`StickerAnimationOptions`: Whether or not to animate stickers in the chat."""
         return try_enum(StickerAnimationOptions, self._animate_stickers)
 
     @property
     def explicit_content_filter(self) -> UserContentFilter:
-        """The filter for explicit content in all messages."""
+        """:class:`UserContentFilter`: The filter for explicit content in all messages."""
         return try_enum(UserContentFilter, self._explicit_content_filter)
 
     @property
     def friend_source_flags(self) -> FriendFlags:
-        """Who can add you as a friend."""
+        """:class:`FriendFlags`: Who can add you as a friend."""
         return FriendFlags._from_dict(self._friend_source_flags)
 
     @property
     def guild_folders(self) -> List[GuildFolder]:
-        """A list of guild folders."""
+        """List[:class:`GuildFolder`]: A list of guild folders."""
         state = self._state
         return [GuildFolder(data=folder, state=state) for folder in self._guild_folders]
 
     @property
     def guild_positions(self) -> List[Guild]:
-        """A list of guilds in order of the guild/guild icons that are on
-        the left hand side of the UI.
-        """
+        """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
         return list(filter(None, map(self._get_guild, self._guild_positions)))
 
     @property
     def restricted_guilds(self) -> List[Guild]:
-        """A list of guilds that you will not receive DMs from."""
+        """List[:class:`Guild`]: A list of guilds that you will not receive DMs from."""
         return list(filter(None, map(self._get_guild, self._restricted_guilds)))
 
     @property
     def theme(self) -> Theme:
-        """The theme of the Discord UI."""
+        """:class:`Theme`: The theme of the Discord UI."""
         return try_enum(Theme, self._theme)
 
     def _get_guild(self, id: int) -> Optional[Guild]:
