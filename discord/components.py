@@ -260,14 +260,15 @@ class Button(Component):
                 'component_type': 2,
                 'custom_id': self.custom_id,
             },
-            'guild_id': message.guild and str(message.guild.id),
             'message_flags': message.flags.value,
             'message_id': str(message.id),
             'nonce': str(time_snowflake(datetime.utcnow())),
             'type': 3,  # Should be an enum but eh
         }
-        await state.http.interact(payload)
+        if message.guild:
+            payload['guild_id'] = str(message.guild.id)
 
+        await state.http.interact(payload)
         try:
             i = await state.client.wait_for(
                 'interaction',
@@ -275,7 +276,7 @@ class Button(Component):
                 timeout=5,
             )
         except TimeoutError as exc:
-            raise InvalidData('Did not receive a response from Discord.') from exc
+            raise InvalidData('Did not receive a response from Discord') from exc
         return i
 
 
@@ -295,14 +296,14 @@ class SelectMenu(Component):
         The placeholder text that is shown if nothing is selected, if any.
     min_values: :class:`int`
         The minimum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
     max_values: :class:`int`
         The maximum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
     options: List[:class:`SelectOption`]
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    hash: :class:`str`
+        Unknown.
     message: :class:`Message`
         The originating message, if any.
     """
@@ -314,6 +315,7 @@ class SelectMenu(Component):
         'max_values',
         'options',
         'disabled',
+        'hash',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -327,6 +329,7 @@ class SelectMenu(Component):
         self.max_values: int = data.get('max_values', 1)
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
+        self.hash: str = data.get('hash', '')
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -342,6 +345,55 @@ class SelectMenu(Component):
             payload['placeholder'] = self.placeholder
 
         return payload
+
+    async def choose(self, *options: SelectOption):
+        """|coro|
+
+        Chooses the given options from the select menu.
+
+        Raises
+        -------
+        InvalidData
+            Didn't receive a response from Discord.
+            Doesn't mean the interaction failed.
+        NotFound
+            The originating message was not found.
+        HTTPException
+            Choosing the options failed.
+
+        Returns
+        --------
+        :class:`Interaction`
+            The interaction that was created.
+        """
+        message = self.message
+        state = message._state
+        payload = {
+            'application_id': str(message.application_id),
+            'channel_id': str(message.channel.id),
+            'data': {
+                'component_type': 3,
+                'custom_id': self.custom_id,
+                'values': [op.value for op in options]
+            },
+            'message_flags': message.flags.value,
+            'message_id': str(message.id),
+            'nonce': str(time_snowflake(datetime.utcnow())),
+            'type': 3,  # Should be an enum but eh
+        }
+        if message.guild:
+            payload['guild_id'] = str(message.guild.id)
+
+        await state.http.interact(payload)
+        try:
+            i = await state.client.wait_for(
+                'interaction',
+                check=lambda d: d.nonce == payload['nonce'],
+                timeout=5,
+            )
+        except TimeoutError as exc:
+            raise InvalidData('Did not receive a response from Discord') from exc
+        return i
 
 
 class SelectOption:
