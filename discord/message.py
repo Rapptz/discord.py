@@ -898,7 +898,7 @@ class Message(Hashable):
         self.call = CallMessage(message=self, **call)
 
     def _handle_components(self, components: List[ComponentPayload]):
-        self.components = [_component_factory(d) for d in components]
+        self.components = [_component_factory(d, self) for d in components]
 
     def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
         self.guild = new_guild

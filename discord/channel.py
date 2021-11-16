@@ -89,15 +89,6 @@ if TYPE_CHECKING:
     from .types.snowflake import SnowflakeList
 
 
-async def _delete_messages(state, channel_id, messages):
-    delete_message = state.http.delete_message
-    for msg in messages:
-        try:
-            await delete_message(channel_id, msg.id)
-        except NotFound:
-            pass
-
-
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild text channel.
 
@@ -394,9 +385,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             messages = list(messages)
 
         if len(messages) == 0:
-            return  # do nothing
+            return  # Do nothing
 
-        await _delete_messages(self._state, self.id, messages)
+        await self._state._delete_messages(self.id, messages)
 
     async def purge(
         self,

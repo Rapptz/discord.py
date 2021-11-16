@@ -35,6 +35,7 @@ import time
 import os
 import random
 
+from .errors import NotFound
 from .guild import Guild
 from .activity import BaseActivity
 from .user import User, ClientUser
@@ -531,6 +532,14 @@ class ConnectionState:
 
         return channel or PartialMessageable(state=self, id=channel_id), guild
 
+    async def _delete_messages(self, channel_id, messages):
+        delete_message = self.http.delete_message
+        for msg in messages:
+            try:
+                await delete_message(channel_id, msg.id)
+            except NotFound:
+                pass
+
     def request_guild(self, guild_id: int) -> None:
         return self.ws.request_lazy_guild(guild_id, typing=True, activities=True, threads=True)
 
@@ -679,7 +688,7 @@ class ConnectionState:
         if guild_id in self._unavailable_guilds:  # I don't know how I feel about this :(
             return
 
-        # Channel will be the correct type here
+        # channel will be the correct type here
         message = Message(channel=channel, data=data, state=self)  # type: ignore
         self.dispatch('message', message)
         if self._messages is not None:
@@ -944,10 +953,10 @@ class ConnectionState:
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
-            _log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            _log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
-        thread = Thread(guild=guild, state=guild._state, data=data)
+        thread = Thread(guild=guild, state=self, data=data)
         has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
         if not has_thread:
@@ -988,49 +997,67 @@ class ConnectionState:
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
-            _log.debug('THREAD_LIST_SYNC referencing an unknown guild ID: %s. Discarding', guild_id)
+            _log.debug('THREAD_LIST_SYNC referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
         try:
             channel_ids = set(data['channel_ids'])
         except KeyError:
-            # If not provided, then the entire guild is being synced
-            # So all previous thread data should be overwritten
-            previous_threads = guild._threads.copy()
-            guild._clear_threads()
+            channel_ids = None
+            threads = guild._threads.copy()
         else:
-            previous_threads = guild._filter_threads(channel_ids)
+            threads = guild._filter_threads(channel_ids)
 
-        threads = {d['id']: guild._store_thread(d) for d in data.get('threads', [])}
+        new_threads = {}
+        for d in data.get('threads', []):
+            if (thread := threads.pop(int(d['id']), None)) is not None:
+                old = thread._update(d)
+                if old is not None:  # None = wasn't updated
+                    self.dispatch('thread_update', old, thread)
+            else:
+                thread = Thread(guild=guild, state=self, data=d)
+                new_threads[thread.id] = thread
+        old_threads = [t for t in threads.values() if t not in new_threads]
 
         for member in data.get('members', []):
             try:
-                # note: member['id'] is the thread_id
+                # Note: member['id'] is the thread_id
                 thread = threads[member['id']]
             except KeyError:
                 continue
             else:
                 thread._add_member(ThreadMember(thread, member))
 
-        for thread in threads.values():
-            old = previous_threads.pop(thread.id, None)
-            if old is None:
-                self.dispatch('thread_join', thread)
+        for k in new_threads.values():
+            guild._add_thread(k)
+            self.dispatch('thread_join', k)
 
-        for thread in previous_threads.values():
-            self.dispatch('thread_remove', thread)
+        for k in old_threads:
+            del guild._threads[k.id]
+            self.dispatch('thread_remove', k)
+
+        for message in data.get('most_recent_messages', []):
+            guild_id = utils._get_as_snowflake(message, 'guild_id')
+            channel, _ = self._get_guild_channel(message)
+            if guild_id in self._unavailable_guilds:  # I don't know how I feel about this :(
+                continue
+
+            # channel will be the correct type here
+            message = Message(channel=channel, data=message, state=self)  # type: ignore
+            if self._messages is not None:
+                self._messages.append(message)
 
     def parse_thread_member_update(self, data) -> None:
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
-            _log.debug('THREAD_MEMBER_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            _log.debug('THREAD_MEMBER_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
         thread_id = int(data['id'])
         thread: Optional[Thread] = guild.get_thread(thread_id)
         if thread is None:
-            _log.debug('THREAD_MEMBER_UPDATE referencing an unknown thread ID: %s. Discarding', thread_id)
+            _log.debug('THREAD_MEMBER_UPDATE referencing an unknown thread ID: %s. Discarding.', thread_id)
             return
 
         member = ThreadMember(thread, data)
@@ -1040,13 +1067,13 @@ class ConnectionState:
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
-            _log.debug('THREAD_MEMBERS_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
+            _log.debug('THREAD_MEMBERS_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
         thread_id = int(data['id'])
         thread: Optional[Thread] = guild.get_thread(thread_id)
         if thread is None:
-            _log.debug('THREAD_MEMBERS_UPDATE referencing an unknown thread ID: %s. Discarding', thread_id)
+            _log.debug('THREAD_MEMBERS_UPDATE referencing an unknown thread ID: %s. Discarding.', thread_id)
             return
 
         added_members = [ThreadMember(thread, d) for d in data.get('added_members', [])]
@@ -1061,8 +1088,8 @@ class ConnectionState:
                 self.dispatch('thread_join', thread)
 
         for member_id in removed_member_ids:
+            member = thread._pop_member(member_id)
             if member_id != self_id:
-                member = thread._pop_member(member_id)
                 if member is not None:
                     self.dispatch('thread_member_remove', member)
             else:
@@ -1084,6 +1111,11 @@ class ConnectionState:
             pass
 
         # self.dispatch('member_join', member)
+
+        if (presence := data.get('presence')) is not None:
+            old_member = copy.copy(member)
+            member._presence_update(presence, tuple())
+            self.dispatch('presence_update', old_member, member)
 
     def parse_guild_member_remove(self, data) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -1129,6 +1161,11 @@ class ConnectionState:
 
                 guild._add_member(member)
             _log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
+
+        if (presence := data.get('presence')) is not None:
+            member._presence_update(presence, tuple())
+            if old_member is not None:
+                self.dispatch('presence_update', old_member, member)
 
     def parse_guild_sync(self, data) -> None:
         print('I noticed you triggered a `GUILD_SYNC`.\nIf you want to share your secrets, please feel free to email me.')
