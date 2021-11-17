@@ -53,7 +53,6 @@ __all__ = (
     'ButtonStyle',
     'StagePrivacyLevel',
     'InteractionType',
-    'InteractionResponseType',
     'NSFWLevel',
     'RelationshipType',
     'HypeSquadHouse',
@@ -530,6 +529,7 @@ class UserFlags(Enum):
     partner = 2
     hypesquad = 4
     bug_hunter = 8
+    bug_hunter_level_1 = 8
     mfa_sms = 16
     premium_promo_dismissed = 32
     hypesquad_bravery = 64
@@ -543,6 +543,8 @@ class UserFlags(Enum):
     verified_bot = 65536
     verified_bot_developer = 131072
     discord_certified_moderator = 262144
+    bot_http_interactions = 524288
+    spammer = 1048576
 
 
 class ActivityType(Enum):
@@ -637,11 +639,11 @@ class UnavailableGuildType(Enum, comparable=True):
 
 
 class RequiredActionType(Enum, comparable=True):
-    verify_phone = 'REQUIRE_VERIFIED_PHONE'
-    verify_email = 'REQUIRE_VERIFIED_EMAIL'
-    captcha      = 'REQUIRE_CAPTCHA'
-    accept_terms = 'AGREEMENTS'
-    
+    verify_phone     = 'REQUIRE_VERIFIED_PHONE'
+    verify_email     = 'REQUIRE_VERIFIED_EMAIL'
+    complete_captcha = 'REQUIRE_CAPTCHA'
+    accept_terms     = 'AGREEMENTS'
+
 
 class BrowserEnum(Enum):
     google_chrome = 'chrome'
@@ -662,16 +664,6 @@ class InteractionType(Enum):
     ping = 1
     application_command = 2
     component = 3
-
-
-class InteractionResponseType(Enum):
-    pong = 1
-    # ack = 2 (deprecated)
-    # channel_message = 3 (deprecated)
-    channel_message = 4  # (with source)
-    deferred_channel_message = 5  # (with source)
-    deferred_message_update = 6  # for components
-    message_update = 7  # for components
 
 
 class VideoQualityMode(Enum):

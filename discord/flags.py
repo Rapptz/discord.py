@@ -346,8 +346,19 @@ class PublicUserFlags(BaseFlags):
 
     @flag_value
     def bug_hunter(self):
-        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter"""
+        """:class:`bool`: Returns ``True`` if the user is a level 1 Bug Hunter
+
+        There is an alias of this called :attr:`bug_hunter_level_1`.
+        """
         return UserFlags.bug_hunter.value
+
+    @alias_flag_value
+    def bug_hunter_level_1(self):
+        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter
+
+        This is an alias of :attr:`bug_hunter`.
+        """
+        return UserFlags.bug_hunter_level_1.value
 
     @flag_value
     def hypesquad_bravery(self):
@@ -381,7 +392,7 @@ class PublicUserFlags(BaseFlags):
 
     @flag_value
     def bug_hunter_level_2(self):
-        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter Level 2"""
+        """:class:`bool`: Returns ``True`` if the user is a level 2 Bug Hunter"""
         return UserFlags.bug_hunter_level_2.value
 
     @flag_value
@@ -409,6 +420,16 @@ class PublicUserFlags(BaseFlags):
         .. versionadded:: 2.0
         """
         return UserFlags.discord_certified_moderator.value
+
+    @flag_value
+    def bot_http_interactions(self):
+        """:class:`bool`: Returns ``True`` if the bot doesn't connect to the gateway but should still be shown as online."""
+        return UserFlags.bot_http_interactions.value
+
+    @flag_value
+    def spammer(self):
+        """:class:`bool`: Returns ``True`` if the user is marked as a spammer."""
+        return UserFlags.spammer.value
 
     def all(self) -> List[UserFlags]:
         """List[:class:`UserFlags`]: Returns all public flags the user has."""
@@ -574,6 +595,11 @@ class ApplicationFlags(BaseFlags):
     def embedded(self):
         """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
         return 1 << 17
+
+    @flag_value
+    def embedded_first_party(self):
+        """:class:`bool`: Returns ``True`` if a first party application is emdedded within the Discord client."""
+        return 1 << 20
 
 
 class GuildSubscriptionOptions:
