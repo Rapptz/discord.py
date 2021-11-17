@@ -1960,7 +1960,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         :class:`Permissions`
             The resolved permissions for the user.
         """
-
         base = Permissions.text()
         base.read_messages = True
         base.send_tts_messages = False
@@ -1999,7 +1998,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         HTTPException
             Adding a recipient to this group failed.
         """
-
         # TODO: wait for the corresponding WS event
         await self._get_channel()
         req = self._state.http.add_group_recipient
@@ -2021,7 +2019,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         HTTPException
             Removing a recipient from this group failed.
         """
-
         # TODO: wait for the corresponding WS event
         await self._get_channel()
         req = self._state.http.remove_group_recipient
@@ -2060,7 +2057,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         HTTPException
             Editing the group failed.
         """
-
         await self._get_channel()
 
         try:
@@ -2073,7 +2069,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         data = await self._state.http.edit_group(self.id, **fields)
         if data is not None:
-            # the payload will always be the proper channel payload
+            # The payload will always be the proper channel payload
             return self.__class__(me=self.me, state=self._state, data=payload)  # type: ignore
 
     async def leave(self) -> None:
@@ -2088,7 +2084,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         HTTPException
             Leaving the group failed.
         """
-
         await self._state.http.delete_channel(self.id)
 
 

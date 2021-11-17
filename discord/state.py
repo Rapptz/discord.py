@@ -1006,13 +1006,14 @@ class ConnectionState:
             self.dispatch('thread_delete', thread)
 
     def parse_thread_list_sync(self, data) -> None:
+        self_id = self.self_id
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
             _log.debug('THREAD_LIST_SYNC referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
-        try:
+        try:  # Never had this actually happen so IDK
             channel_ids = set(data['channel_ids'])
         except KeyError:
             channel_ids = None
@@ -1032,8 +1033,7 @@ class ConnectionState:
         old_threads = [t for t in threads.values() if t not in new_threads]
 
         for member in data.get('members', []):
-            try:
-                # Note: member['id'] is the thread_id
+            try:  # Note: member['id'] is the thread_id
                 thread = threads[member['id']]
             except KeyError:
                 continue
@@ -1042,11 +1042,13 @@ class ConnectionState:
 
         for k in new_threads.values():
             guild._add_thread(k)
-            self.dispatch('thread_join', k)
+            self.dispatch('thread_create', k)
+            if self_id in k.member_ids:
+                self.dispatch('thread_join', k)
 
         for k in old_threads:
             del guild._threads[k.id]
-            self.dispatch('thread_remove', k)
+            self.dispatch('thread_delete', k)  # Did the thread get deleted or did we get yeeted?
 
         for message in data.get('most_recent_messages', []):
             guild_id = utils._get_as_snowflake(message, 'guild_id')
@@ -1348,8 +1350,6 @@ class ConnectionState:
             self.dispatch('guild_join', guild)
 
     def parse_guild_create(self, data):
-        guild_id = int(data['id'])
-
         guild = self._get_create_guild(data)
 
         if guild is None:
