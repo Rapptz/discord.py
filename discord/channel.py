@@ -448,7 +448,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         List[:class:`.Message`]
             The list of messages that were deleted.
         """
-
         if check is MISSING:
             check = lambda m: True
 
@@ -461,7 +460,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         async for message in iterator:
             if count == 50:
                 to_delete = ret[-50:]
-                await _delete_messages(state, channel_id, to_delete)
+                await state._delete_messages(channel_id, to_delete)
                 count = 0
 
             if not check(message):
@@ -472,7 +471,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         # Some messages remaining to poll
         to_delete = ret[-count:]
-        await _delete_messages(state, channel_id, to_delete)
+        await state._delete_messages(channel_id, to_delete)
 
         return ret
 
@@ -1805,6 +1804,21 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         return PartialMessage(channel=self, id=message_id)
 
+    async def close(self):
+        """|coro|
+
+        "Deletes" the channel.
+
+        In reality, if you recreate a DM with the same user,
+        all your message history will be there.
+
+        Raises
+        -------
+        HTTPException
+            Closing the channel failed.
+        """
+        await self._state.http.delete_channel(self.id)
+
     async def connect(self, *, ring=True, **kwargs):
         await self._get_channel()
         call = self.call
@@ -2075,7 +2089,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
             Leaving the group failed.
         """
 
-        await self._state.http.leave_group(self.id)
+        await self._state.http.delete_channel(self.id)
 
 
 class PartialMessageable(discord.abc.Messageable, Hashable):

@@ -116,7 +116,7 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
         self.not_responding_msg = 'Gateway has stopped responding. Closing and restarting.'
         self.no_stop_msg = 'An error occurred while stopping the gateway. Ignoring.'
 
-        self._stop_ev = asyncio.Event()
+        self._stop = asyncio.Event()
         self._last_send = time.perf_counter()
         self._last_recv = time.perf_counter()
         self._last_ack = time.perf_counter()
@@ -125,7 +125,7 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
     async def run(self):
         while True:
             try:
-                await asyncio.wait_for(self._stop_ev.wait(), timeout=self.interval)
+                await asyncio.wait_for(self._stop.wait(), timeout=self.interval)
             except asyncio.TimeoutError:
                 pass
             else:
@@ -145,7 +145,6 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
             data = self.get_payload()
             _log.debug(self.msg)
             try:
-                # Block until sending is complete
                 total = 0
                 while True:
                     try:
@@ -173,7 +172,7 @@ class KeepAliveHandler:  # Inspired by enhanced-discord.py/Gnome
         self.ws.loop.create_task(self.run())
 
     def stop(self):
-        self._stop_ev.set()
+        self._stop.set()
 
     def tick(self):
         self._last_recv = time.perf_counter()
@@ -235,7 +234,7 @@ class DiscordWebSocket:
     RECONNECT
         Receive only. Tells the client to reconnect to a new gateway.
     REQUEST_MEMBERS
-        Send only. Asks for the full member list of a guild.
+        Send only. Asks for the guild members.
     INVALIDATE_SESSION
         Receive only. Tells the client to optionally invalidate the session
         and IDENTIFY again.
@@ -268,7 +267,7 @@ class DiscordWebSocket:
     INVALIDATE_SESSION = 9
     HELLO              = 10
     HEARTBEAT_ACK      = 11
-    GUILD_SYNC         = 12
+    GUILD_SYNC         = 12  # :(
     ACCESS_DM          = 13
     GUILD_SUBSCRIBE    = 14
 
@@ -276,15 +275,15 @@ class DiscordWebSocket:
         self.socket = socket
         self.loop = loop
 
-        # an empty dispatcher to prevent crashes
+        # An empty dispatcher to prevent crashes
         self._dispatch = lambda *args: None
-        # generic event listeners
+        # Generic event listeners
         self._dispatch_listeners = []
         # the keep alive
         self._keep_alive = None
         self.thread_id = threading.get_ident()
 
-        # ws related stuff
+        # WS related stuff
         self.session_id = None
         self.sequence = None
         self._zlib = zlib.decompressobj()
@@ -315,7 +314,7 @@ class DiscordWebSocket:
         socket = await client.http.ws_connect(gateway)
         ws = cls(socket, loop=client.loop)
 
-        # dynamically add attributes needed
+        # Dynamically add attributes needed
         ws.token = client.http.token
         ws._connection = client._connection
         ws._discord_parsers = client._connection.parsers
@@ -627,7 +626,7 @@ class DiscordWebSocket:
         }
 
         sent = utils._to_json(payload)
-        _log.debug('Sending "%s" to change status', sent)
+        _log.debug('Sending "%s" to change presence.', sent)
         await self.send(sent)
 
     async def request_lazy_guild(self, guild_id, *, typing=None, threads=None, activities=None, members=None, channels=None, thread_member_lists=None):

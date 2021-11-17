@@ -870,6 +870,11 @@ class ConnectionState:
             if channel is not None:
                 guild._remove_channel(channel)
                 self.dispatch('guild_channel_delete', channel)
+        else:
+            channel = self._get_private_channel(channel_id)
+            if channel is not None:
+                self._remove_private_channel(channel)
+                self.dispatch('private_channel_delete', channel)
 
     def parse_channel_update(self, data) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -956,11 +961,17 @@ class ConnectionState:
             _log.debug('THREAD_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
-        thread = Thread(guild=guild, state=self, data=data)
-        has_thread = guild.get_thread(thread.id)
-        guild._add_thread(thread)
-        if not has_thread:
-            self.dispatch('thread_join', thread)
+        existing = guild.get_thread(int(data['id']))
+        if existing is not None:  # Shouldn't happen
+            old = existing._update(data)
+            if old is not None:
+                self.dispatch('thread_update', old, existing)
+        else:
+            thread = Thread(guild=guild, state=self, data=data)
+            guild._add_thread(thread)
+            self.dispatch('thread_create', thread)
+            if self.self_id in thread.member_ids:  # Thread was created by us/we were added to a private thread
+                self.dispatch('thread_join', thread)
 
     def parse_thread_update(self, data) -> None:
         guild_id = int(data['guild_id'])
@@ -969,16 +980,17 @@ class ConnectionState:
             _log.debug('THREAD_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
-        thread_id = int(data['id'])
-        thread = guild.get_thread(thread_id)
-        if thread is not None:
-            old = copy.copy(thread)
-            thread._update(data)
-            self.dispatch('thread_update', old, thread)
-        else:
-            thread = Thread(guild=guild, state=guild._state, data=data)
+        existing = guild.get_thread(int(data['id']))
+        if existing is not None:
+            old = existing._update(data)
+            if old is not None:
+                self.dispatch('thread_update', old, existing)
+        else:  # Shouldn't happen
+            thread = Thread(guild=guild, state=self, data=data)
             guild._add_thread(thread)
-            self.dispatch('thread_join', thread)
+            self.dispatch('thread_create', thread)
+            if self.self_id in thread.member_ids:  # Thread was created by us/we were added to a private thread
+                self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data) -> None:
         guild_id = int(data['guild_id'])
