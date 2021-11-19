@@ -1207,14 +1207,19 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
             pass
 
 
-async def _get_client_version(session):
-    try:
-        request = await session.get('https://discord.com/api/downloads/distributions/app/installers/latest?arch=x86&channel=stable&platform=win', headers={'Accept-Encoding': 'gzip, deflate'}, timeout=7)
-        url = request.headers['location']
-        return url.split('/')[-2]
-    except (asyncio.TimeoutError, RuntimeError):
-        _log.warning('Could not fetch client version.')
-        return '1.0.9003'
+async def _get_info(session: ClientSession) -> Tuple[str, str, int]:
+    for _ in range(3):
+        try:
+            async with session.get('https://discord-user-api.cf/api/v1/properties/web', timeout=5) as resp:
+                json = await resp.json()
+                return json['chrome_user_agent'], json['chrome_version'], json['client_build_number']
+        except Exception:
+            continue
+    _log.warning('Info API down. Falling back to manual fetching...')
+    ua = await _get_user_agent(session)
+    bn = await _get_build_number(session)
+    bv = await _get_browser_version(session)
+    return ua, bv, bn
 
 
 async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord-S.C.U.M
@@ -1228,8 +1233,8 @@ async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord
         build_index = build_file.find('buildNumber') + 14
         return int(build_file[build_index:build_index + 6])
     except asyncio.TimeoutError:
-        _log.warning('Could not fetch client build number.')
-        return 103016
+        _log.critical('Could not fetch client build number. Falling back to hardcoded value...')
+        return 105304
 
 
 async def _get_user_agent(session: ClientSession) -> str:
@@ -1239,8 +1244,8 @@ async def _get_user_agent(session: ClientSession) -> str:
         response = json.loads(await request.text())
         return response[0]
     except asyncio.TimeoutError:
-        _log.warning('Could not fetch user-agent.')
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36'
+        _log.critical('Could not fetch user-agent. Falling back to hardcoded value...')
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
 
 
 async def _get_browser_version(session: ClientSession) -> str:
@@ -1252,5 +1257,5 @@ async def _get_browser_version(session: ClientSession) -> str:
             return response[0]['versions'][4]['version']
         raise RuntimeError
     except (asyncio.TimeoutError, RuntimeError):
-        _log.warning('Could not fetch browser version.')
-        return '91.0.4472.77'
+        _log.critical('Could not fetch browser version. Falling back to hardcoded value...')
+        return '96.0.4664.45'

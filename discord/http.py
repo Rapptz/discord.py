@@ -203,12 +203,10 @@ class HTTPClient:
     async def startup(self) -> None:
         if self._started:
             return
-        self.__session = aiohttp.ClientSession(connector=self.connector)
-        self.user_agent = ua = await utils._get_user_agent(self.__session)
-        self.client_build_number = bn = await utils._get_build_number(self.__session)
-        self.browser_version = bv = await utils._get_browser_version(self.__session)
+        self.__session = session = aiohttp.ClientSession(connector=self.connector)
+        self.user_agent, self.browser_version, self.client_build_number = ua, bv, bn = await utils._get_info(session)
         _log.info('Found user agent %s (%s), build number %s.', ua, bv, bn)
-        self.super_properties = super_properties = {
+        self.super_properties = sp = {
             'os': 'Windows',
             'browser': 'Chrome',
             'device': '',
@@ -224,13 +222,13 @@ class HTTPClient:
             'client_build_number': bn,
             'client_event_source': None
         }
-        self.encoded_super_properties = b64encode(json.dumps(self.super_properties).encode()).decode('utf-8')
+        self.encoded_super_properties = b64encode(json.dumps(sp).encode()).decode('utf-8')
         self._started = True
 
     async def ws_connect(self, url: str, *, compress: int = 0, host: Optional[str] = None) -> Any:
         websocket_key = b64encode(bytes(getrandbits(8) for _ in range(16))).decode()  # Thank you Discord-S.C.U.M
         if not host:
-            host = url[6:].split('?')[0].rstrip('/')  # Removes the 'wss://' and the query params
+            host = url[6:].split('?')[0].rstrip('/')  # Removes 'wss://' and the query params
 
         kwargs: Dict[str, Any] = {
             'proxy_auth': self.proxy_auth,
@@ -239,6 +237,17 @@ class HTTPClient:
             'timeout': 30.0,
             'autoclose': False,
             'headers': {
+                'Accept-Encoding': 'gzip, deflate',
+                'Accept-Language': 'en-US',
+                'Cache-Control': 'no-cache',
+                'Connection': 'Upgrade',
+                'Host': host,
+                'Origin': 'https://discord.com',
+                'Pragma': 'no-cache',
+                'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
+                'Sec-WebSocket-Key': websocket_key,
+                'Sec-WebSocket-Version': '13',
+                'Upgrade': 'websocket',
                 'User-Agent': self.user_agent,
             },
             'compress': compress,
