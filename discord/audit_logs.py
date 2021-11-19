@@ -219,7 +219,7 @@ class AuditLogChanges:
         for elem in data:
             attr = elem['key']
 
-            # special cases for role add/remove
+            # Special cases for role add/remove
             if attr == '$add':
                 self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore
                 continue
@@ -257,7 +257,7 @@ class AuditLogChanges:
 
             setattr(self.after, attr, after)
 
-        # add an alias
+        # Add an alias
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
             self.before.color = self.before.colour
@@ -364,13 +364,12 @@ class AuditLogEntry(Hashable):
         self.action = enums.try_enum(enums.AuditLogAction, data['action_type'])
         self.id = int(data['id'])
 
-        # this key is technically not usually present
         self.reason = data.get('reason')
         self.extra = data.get('options')
 
         if isinstance(self.action, enums.AuditLogAction) and self.extra:
             if self.action is enums.AuditLogAction.member_prune:
-                # member prune has two keys with useful information
+                # Member prune has two keys with useful information
                 self.extra: _AuditLogProxyMemberPrune = type(
                     '_AuditLogProxy', (), {k: int(v) for k, v in self.extra.items()}
                 )()
@@ -388,7 +387,7 @@ class AuditLogEntry(Hashable):
                 }
                 self.extra: _AuditLogProxyMemberDisconnect = type('_AuditLogProxy', (), elems)()
             elif self.action.name.endswith('pin'):
-                # the pin actions have a dict with some information
+                # The pin actions have a dict with some information
                 channel_id = int(self.extra['channel_id'])
                 elems = {
                     'channel': self.guild.get_channel(channel_id) or Object(id=channel_id),
@@ -396,7 +395,7 @@ class AuditLogEntry(Hashable):
                 }
                 self.extra: _AuditLogProxyPinAction = type('_AuditLogProxy', (), elems)()
             elif self.action.name.startswith('overwrite_'):
-                # the overwrite_ actions have a dict with some information
+                # The overwrite_ actions have a dict with some information
                 instance_id = int(self.extra['id'])
                 the_type = self.extra.get('type')
                 if the_type == '1':
@@ -424,7 +423,7 @@ class AuditLogEntry(Hashable):
         ]
         # fmt: on
 
-        # this key is not present when the above is present, typically.
+        # This key is not present when the above is present, typically
         # It's a list of { new_value: a, old_value: b, key: c }
         # where new_value and old_value are not guaranteed to be there depending
         # on the action type, so let's just fetch it for now and only turn it
@@ -489,8 +488,8 @@ class AuditLogEntry(Hashable):
         return self.guild.get_role(target_id) or Object(id=target_id)
 
     def _convert_target_invite(self, target_id: int) -> Invite:
-        # invites have target_id set to null
-        # so figure out which change has the full invite data
+        # Invites have target_id set to null
+        # So figure out which change has the full invite data
         changeset = self.before if self.action is enums.AuditLogAction.invite_delete else self.after
 
         fake_payload = {

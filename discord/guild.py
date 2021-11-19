@@ -969,7 +969,7 @@ class Guild(Hashable):
         if overwrites is MISSING:
             overwrites = {}
         elif not isinstance(overwrites, dict):
-            raise InvalidArgument('overwrites parameter expects a dict.')
+            raise InvalidArgument('overwrites parameter expects a dict')
 
         perms = []
         for target, perm in overwrites.items():
@@ -1533,7 +1533,7 @@ class Guild(Hashable):
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
-                raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
+                raise InvalidArgument('To transfer ownership you must be the owner of the guild')
 
             fields['owner_id'] = owner.id
 
@@ -1824,7 +1824,7 @@ class Guild(Hashable):
             then this returns ``None``.
         """
         if not isinstance(days, int):
-            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
@@ -1914,7 +1914,7 @@ class Guild(Hashable):
             The number of members estimated to be pruned.
         """
         if not isinstance(days, int):
-            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead.')
+            raise InvalidArgument(f'Expected int for ``days``, received {days.__class__.__name__} instead')
 
         if roles:
             role_ids = [str(role.id) for role in roles]
@@ -2491,7 +2491,7 @@ class Guild(Hashable):
             A list of all the roles in the guild.
         """
         if not isinstance(positions, dict):
-            raise InvalidArgument('positions parameter expects a dict.')
+            raise InvalidArgument('positions parameter expects a dict')
 
         role_positions: List[Dict[str, Any]] = []
         for role, position in positions.items():
