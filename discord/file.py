@@ -60,16 +60,19 @@ class File:
         The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
+    description: Optional[:class:`str`]
+        The description (alt text) for the file.
     spoiler: :class:`bool`
         Whether the attachment is a spoiler.
     """
 
-    __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', 'filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
 
     if TYPE_CHECKING:
         fp: io.BufferedIOBase
         filename: Optional[str]
         spoiler: bool
+        description: Optional[str]
 
     def __init__(
         self,
@@ -77,6 +80,7 @@ class File:
         filename: Optional[str] = None,
         *,
         spoiler: bool = False,
+        description: Optional[str] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
@@ -89,10 +93,9 @@ class File:
             self._original_pos = 0
             self._owner = True
 
-        # aiohttp only uses two methods from IOBase
-        # read and close, since I want to control when the files
-        # close, I need to stub it so it doesn't close unless
-        # I tell it to
+        # aiohttp only uses two methods from IOBase (read and close)
+        # Since I want to control when the files close, 
+        # I need to stub it so it doesn't close unless I tell it to
         self._closer = self.fp.close
         self.fp.close = lambda: None
 
@@ -108,6 +111,7 @@ class File:
             self.filename = 'SPOILER_' + self.filename
 
         self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+        self.description = description
 
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because

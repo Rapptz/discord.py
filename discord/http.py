@@ -266,6 +266,7 @@ class HTTPClient:
         bucket = route.bucket
         method = route.method
         url = route.url
+        breakpoint()
 
         lock = self._locks.get(bucket)
         if lock is None:
@@ -335,7 +336,7 @@ class HTTPClient:
                         f.reset(seek=tries)
 
                 if form:
-                    form_data = aiohttp.FormData()
+                    form_data = aiohttp.FormData(quote_fields=False)
                     for params in form:
                         form_data.add_field(**params)
                     kwargs['data'] = form_data
@@ -576,27 +577,25 @@ class HTTPClient:
         if stickers:
             payload['sticker_ids'] = stickers
 
-        form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
-        if len(files) == 1:
-            file = files[0]
-            form.append(
+        attachments = []
+        for index, file in enumerate(files):
+            attachment = {'id': str(index), 'filename': file.filename}
+            if file.description is not None:
+                attachment['description'] = file.description
+            attachments.append(attachment)
+            lol = (
                 {
-                    'name': 'file',
+                    'name': f'files[{index}]',
                     'value': file.fp,
                     'filename': file.filename,
                     'content_type': 'application/octet-stream',
                 }
             )
-        else:
-            for index, file in enumerate(files):
-                form.append(
-                    {
-                        'name': f'file{index}',
-                        'value': file.fp,
-                        'filename': file.filename,
-                        'content_type': 'application/octet-stream',
-                    }
-                )
+            form.append(lol)
+            breakpoint()
+
+        payload['attachments'] = attachments
+        form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
 
         return self.request(route, form=form, files=files)
 
@@ -649,7 +648,7 @@ class HTTPClient:
 
         return self.request(r, json=payload)
 
-    def ack_messages(self, read_states):  # TODO: type and implement
+    def ack_messages(self, read_states) -> Response[None]:  # TODO: type and implement
         payload = {
             'read_states': read_states
         }
@@ -1888,5 +1887,12 @@ class HTTPClient:
 
         return self.request(Route('POST', '/report'), json=payload)
 
-    def interact(self, data) -> Response[None]:
-        return self.request(Route('POST', '/interactions'), json=data)
+    def get_application_commands(self, id):
+        return self.request(Route('GET', '/applications/{user_id}/commands', user_id=id))
+
+    def interact(self, payload, *, form_data=False) -> Response[None]:
+        if form_data:
+            form = [{'name': 'payload_json', 'value': utils._to_json(payload)}]
+            return self.request(Route('POST', '/interactions'), form=form)
+        else:
+            return self.request(Route('POST', '/interactions'), json=payload)
