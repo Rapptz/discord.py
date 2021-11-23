@@ -266,7 +266,6 @@ class HTTPClient:
         bucket = route.bucket
         method = route.method
         url = route.url
-        breakpoint()
 
         lock = self._locks.get(bucket)
         if lock is None:
@@ -583,7 +582,7 @@ class HTTPClient:
             if file.description is not None:
                 attachment['description'] = file.description
             attachments.append(attachment)
-            lol = (
+            form.append(
                 {
                     'name': f'files[{index}]',
                     'value': file.fp,
@@ -591,8 +590,6 @@ class HTTPClient:
                     'content_type': 'application/octet-stream',
                 }
             )
-            form.append(lol)
-            breakpoint()
 
         payload['attachments'] = attachments
         form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
