@@ -28,7 +28,7 @@ from asyncio import TimeoutError
 from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 
-from .enums import try_enum, ComponentType, ButtonStyle
+from .enums import try_enum, ComponentType, ButtonStyle, InteractionType
 from .errors import InvalidData
 from .utils import get_slots, MISSING, time_snowflake
 from .partial_emoji import PartialEmoji, _EmojiTag
@@ -41,8 +41,11 @@ if TYPE_CHECKING:
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
     )
+    from .types.snowflake import Snowflake
     from .emoji import Emoji
     from .message import Message
+    from .state import ConnectionState
+    from .user import BaseUser
 
 
 __all__ = (
@@ -64,22 +67,61 @@ class Interaction:
     id: :class:`int`
         The interaction ID.
     nonce: Optional[Union[:class:`int`, :class:`str`]]
-        The interaction's nonce.
+        The interaction's nonce. Not always present.
+    name: Optional[:class:`str`]
+        The name of the application command, if applicable.
+    type: :class:`InteractionType`
+        The type of interaction.
     successful: Optional[:class:`bool`]
         Whether the interaction succeeded.
-        This is not immediately available, and is filled when Discord notifies us about the outcome of the interaction.
+        If this is your interaction, this is not immediately available.
+        It is filled when Discord notifies us about the outcome of the interaction.
+    user: :class:`User`
+        The user who initiated the interaction.
     """
 
-    __slots__ = ('id', 'nonce', 'successful')
+    __slots__ = ('id', 'type', 'nonce', 'user', 'name', 'successful')
 
-    def __init__(self, *, id: int, nonce: Optional[Union[int, str]] = None) -> None:
+    def __init__(
+        self,
+        id: int,
+        type: int,
+        nonce: Optional[Snowflake] = None,
+        *,
+        user: BaseUser,
+        name: Optional[str] = None,
+    ) -> None:
         self.id = id
         self.nonce = nonce
+        self.type = try_enum(InteractionType, type)
+        self.user = user
+        self.name = name
         self.successful: Optional[bool] = None
+
+    @classmethod
+    def _from_self(
+        cls, *, id: Snowflake, type: int, nonce: Optional[Snowflake] = None, user: BaseUser
+    ) -> Interaction:
+        return cls(int(id), type, nonce, user=user)
+
+    @classmethod
+    def _from_message(
+        cls, state: ConnectionState, *, id: Snowflake, type: int, user: BaseUser, **data: Dict[str, Any]
+    ) -> Interaction:
+        name = data.get('name')
+        user = state.store_user(user)
+        inst = cls(id, type, user=user, name=name)
+        inst.successful = True
+        return inst
 
     def __repr__(self) -> str:
         s = self.successful
-        return f'<Interaction id={self.id}{f" successful={s}" if s is not None else ""}>'
+        return f'<Interaction id={self.id} type={self.type}{f" successful={s}" if s is not None else ""} user={self.user!r}>'
+
+    def __bool__(self) -> bool:
+        if self.successful is not None:
+            return self.successful
+        raise TypeError('Interaction has not been resolved yet')
 
 
 class Component:
@@ -268,10 +310,11 @@ class Button(Component):
         if message.guild:
             payload['guild_id'] = str(message.guild.id)
 
+        state._interactions[payload['nonce']] = 3
         await state.http.interact(payload)
         try:
             i = await state.client.wait_for(
-                'interaction',
+                'interaction_finish',
                 check=lambda d: d.nonce == payload['nonce'],
                 timeout=5,
             )
@@ -384,10 +427,11 @@ class SelectMenu(Component):
         if message.guild:
             payload['guild_id'] = str(message.guild.id)
 
+        state._interactions[payload['nonce']] = 3
         await state.http.interact(payload)
         try:
             i = await state.client.wait_for(
-                'interaction',
+                'interaction_finish',
                 check=lambda d: d.nonce == payload['nonce'],
                 timeout=5,
             )

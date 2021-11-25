@@ -66,6 +66,8 @@ __all__ = (
     'RequiredActionType',
     'ReportType',
     'BrowserEnum',
+    'ApplicationCommandType',
+    'ApplicationCommandOptionType',
 )
 
 
@@ -206,7 +208,10 @@ class MessageType(Enum):
     call = 3
     channel_name_change = 4
     channel_icon_change = 5
+    channel_pinned_message = 6
     pins_add = 6
+    member_join = 7
+    user_join = 7
     new_member = 7
     premium_guild_subscription = 8
     premium_guild_tier_1 = 9
@@ -220,9 +225,10 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning = 17
     thread_created = 18
     reply = 19
-    application_command = 20
+    chat_input_command = 20
     thread_starter_message = 21
     guild_invite_reminder = 22
+    context_menu_command = 23
 
 
 class VoiceRegion(Enum):
@@ -384,6 +390,7 @@ class NotificationLevel(Enum, comparable=True):
 
     def __int__(self):
         return self.value
+
 
 class AuditLogActionCategory(Enum):
     create = 1
@@ -660,10 +667,34 @@ class InviteTarget(Enum):
     embedded_application = 2
 
 
-class InteractionType(Enum):
+class InteractionType(Enum, comparable=True):
     ping = 1
     application_command = 2
     component = 3
+
+
+class ApplicationCommandType(Enum, comparable=True):
+    chat_input = 1
+    chat = 1
+    slash = 1
+    user = 2
+    message = 3
+
+    def __int__(self):
+        return self.value
+
+
+class ApplicationCommandOptionType(Enum, comparable=True):
+    sub_command = 1
+    sub_command_group = 2
+    string = 3
+    integer = 4
+    boolean = 5
+    user = 6
+    channel = 7
+    role = 8
+    mentionable = 9
+    number = 10
 
 
 class VideoQualityMode(Enum):

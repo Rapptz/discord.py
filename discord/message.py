@@ -29,7 +29,7 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload, TypeVar, Type
+from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, overload, TypeVar, Type
 
 from . import utils
 from .reaction import Reaction
@@ -38,7 +38,7 @@ from .partial_emoji import PartialEmoji
 from .calls import CallMessage
 from .enums import MessageType, ChannelType, try_enum
 from .errors import InvalidArgument, HTTPException
-from .components import _component_factory
+from .components import _component_factory, Interaction
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
+    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
@@ -97,8 +97,8 @@ def convert_emoji_reaction(emoji):
     if isinstance(emoji, PartialEmoji):
         return emoji._as_reaction()
     if isinstance(emoji, str):
-        # Reactions can be in :name:id format, but not <:name:id>.
-        # No existing emojis have <> in them, so this should be okay.
+        # Reactions can be in :name:id format, but not <:name:id>
+        # Emojis can't have <> in them, so this should be okay
         return emoji.strip('<>')
 
     raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
@@ -151,9 +151,13 @@ class Attachment(Hashable):
         The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
 
         .. versionadded:: 1.7
+    description: Optional[:class:`str`]
+        The attachment's description (alt text).
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
+    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type', 'description')
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
@@ -165,6 +169,7 @@ class Attachment(Hashable):
         self.proxy_url: str = data.get('proxy_url')
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
+        self.description: Optional[str] = data.get('description')
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
@@ -342,7 +347,7 @@ class DeletedReferencedMessage:
     @property
     def id(self) -> int:
         """:class:`int`: The message ID of the deleted referenced message."""
-        # the parent's message id won't be None here
+        # The parent's message id won't be None here
         return self._parent.message_id # type: ignore
 
     @property
@@ -459,7 +464,7 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}  # type: ignore
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
@@ -478,7 +483,7 @@ def flatten_handlers(cls):
         if key.startswith('_handle_') and key != '_handle_member'
     ]
 
-    # store _handle_member last
+    # Store _handle_member last
     handlers.append(('member', cls._handle_member))
     cls._HANDLERS = handlers
     cls._CACHED_SLOTS = [attr for attr in cls.__slots__ if attr.startswith('_cs_')]
@@ -605,6 +610,12 @@ class Message(Hashable):
         The guild that the message belongs to, if applicable.
     application_id: Optional[:class:`int`]
         The application that sent this message, if applicable.
+
+        .. versionadded:: 2.0
+    interaction: Optional[:class:`Interaction`]
+        The interaction the message is replying to, if applicable.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -640,6 +651,7 @@ class Message(Hashable):
         'components',
         'guild',
         'call',
+        'interaction',
     )
 
     if TYPE_CHECKING:
@@ -681,7 +693,7 @@ class Message(Hashable):
         self.call: Optional[CallMessage] = None
 
         try:
-            # if the channel doesn't have a guild attribute, we handle that
+            # If the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild  # type: ignore
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -700,16 +712,16 @@ class Message(Hashable):
                 if resolved is None:
                     ref.resolved = DeletedReferencedMessage(ref)
                 else:
-                    # Right now the channel IDs match but maybe in the future they won't.
+                    # Right now the channel IDs match but maybe in the future they won't
                     if ref.channel_id == channel.id:
                         chan = channel
                     else:
                         chan, _ = state._get_guild_channel(resolved)
 
-                    # the channel will be the correct type here
+                    # The channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'interaction'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -900,6 +912,9 @@ class Message(Hashable):
     def _handle_components(self, components: List[ComponentPayload]):
         self.components = [_component_factory(d, self) for d in components]
 
+    def _handle_interaction(self, interaction: Dict[str, Any]):
+        self.interaction = Interaction._from_message(self._state, **interaction)
+
     def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
         self.guild = new_guild
         self.channel = new_channel
@@ -1015,7 +1030,8 @@ class Message(Hashable):
         return self.type not in (
             MessageType.default,
             MessageType.reply,
-            MessageType.application_command,
+            MessageType.chat_input_command,
+            MessageType.context_menu_command,
             MessageType.thread_starter_message,
         )
 
@@ -1029,7 +1045,12 @@ class Message(Hashable):
         returns an English message denoting the contents of the system message.
         """
 
-        if self.type in (MessageType.default, MessageType.reply):
+        if self.type in {
+            MessageType.default,
+            MessageType.reply,
+            MessageType.chat_input_command,
+            MessageType.context_menu_command,
+        }:
             return self.content
 
         if self.type is MessageType.recipient_add:
@@ -1074,9 +1095,9 @@ class Message(Hashable):
             return formats[created_at_ms % len(formats)].format(self.author.name)
 
         if self.type is MessageType.call:
-            call_ended = self.call.ended_timestamp is not None
+            call_ended = self.call.ended_timestamp is not None  # type: ignore
 
-            if self.channel.me in self.call.participants:
+            if self.channel.me in self.call.participants:  # type: ignore
                 return f'{self.author.name} started a call.'
             elif call_ended:
                 return f'You missed a call from {self.author.name}'

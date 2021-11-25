@@ -29,7 +29,7 @@ from collections import deque
 import copy
 import datetime
 import logging
-from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple, Deque
+from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Tuple, Deque
 import inspect
 import time
 import os
@@ -52,7 +52,6 @@ from .role import Role
 from .enums import ChannelType, RequiredActionType, Status, try_enum, UnavailableGuildType, VoiceRegion
 from . import utils
 from .flags import GuildSubscriptionOptions, MemberCacheFlags
-from .object import Object
 from .invite import Invite
 from .integrations import _integration_factory
 from .stage_instance import StageInstance
@@ -264,7 +263,7 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
         self._voice_states: Dict[int, VoiceState] = {}
 
-        self._interactions: Dict[int, Interaction] = {}
+        self._interactions: Dict[Union[int, str], Union[int, Interaction]] = {}
         self._relationships: Dict[int, Relationship] = {}
         self._private_channels: Dict[int, PrivateChannel] = {}
         self._private_channels_by_user: Dict[int, DMChannel] = {}
@@ -631,8 +630,8 @@ class ConnectionState:
             # Parsing that would require a redesign of the Relationship class ;-;
 
         # Self parsing
-        self.user = ClientUser(state=self, data=data['user'])
-        user = self.store_user(data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self.store_user(data['user'])
 
         # Temp user parsing
         temp_users = {user.id: user._to_minimal_user_json()}
@@ -670,7 +669,7 @@ class ConnectionState:
         self.analytics_token = data.get('analytics_token')
         region = data.get('geo_ordered_rtc_regions', ['us-west'])[0]
         self.preferred_region = try_enum(VoiceRegion, region)
-        self.settings = settings = UserSettings(data=data.get('user_settings', {}), state=self)
+        self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
         self.consents = Tracking(data.get('consents', {}))
 
         # We're done
@@ -901,7 +900,7 @@ class ConnectionState:
             _log.debug('CHANNEL_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_channel_create(self, data) -> None:
-        factory, ch_type = _channel_factory(data['type'])
+        factory, _ = _channel_factory(data['type'])
         if factory is None:
             _log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
@@ -1609,10 +1608,6 @@ class ConnectionState:
             coro = vc.on_voice_server_update(data)
             asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
-    def parse_user_required_action_update(self, data) -> None:
-        required_action = try_enum(RequiredActionType, data['required_action'])
-        self.dispatch('required_action_update', required_action)
-
     def parse_typing_start(self, data) -> None:
         channel, guild = self._get_guild_channel(data)
         if channel is not None:
@@ -1661,9 +1656,10 @@ class ConnectionState:
             self.dispatch('relationship_remove', old)
 
     def parse_interaction_create(self, data) -> None:
-        i = Interaction(**data)
+        type = self._interactions.pop(data['nonce'], 0)
+        i = Interaction._from_self(type=type, user=self.user, **data)
         self._interactions[i.id] = i
-        self.dispatch('interaction', i)
+        self.dispatch('interaction_create', i)
 
     def parse_interaction_success(self, data) -> None:
         id = int(data['id'])
