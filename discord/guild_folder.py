@@ -37,6 +37,21 @@ __all__ = ('GuildFolder',)
 
 
 class GuildFolder:
+    """Represents a guild folder
+
+    .. note::
+        Guilds not in folders *are* actually in folders API wise, with them being the only member.
+        Because Discord.
+
+    Attributes
+    ----------
+    id: Union[:class:`str`, :class:`int`]
+        The ID of the folder.
+    name: :class:`str`
+        The name of the folder.
+    guilds: List[:class:`Guild`]
+        The guilds in the folder.
+    """
     __slots__ = ('_state', 'id', 'name', '_colour', 'guilds')
 
     def __init__(self, *, data, state: ConnectionState) -> None:
@@ -51,11 +66,19 @@ class GuildFolder:
 
     @property
     def colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`] The colour of the folder.
+
+        There is an alias for this called :attr:`color`.
+        """
         colour = self._colour
         return colour and Colour(colour)
 
     @property
     def color(self) -> Optional[Colour]:
+        """Optional[:class:`Color`] The color of the folder.
+
+        This is an alias for :attr:`colour`.
+        """
         return self.colour
 
     def __str__(self) -> str:
