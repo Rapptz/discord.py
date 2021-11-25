@@ -62,6 +62,8 @@ class File:
         a string then the ``filename`` will default to the string given.
     description: Optional[:class:`str`]
         The description (alt text) for the file.
+
+        .. versionadded:: 2.0
     spoiler: :class:`bool`
         Whether the attachment is a spoiler.
     """
@@ -94,7 +96,7 @@ class File:
             self._owner = True
 
         # aiohttp only uses two methods from IOBase (read and close)
-        # Since I want to control when the files close, 
+        # Since I want to control when the files close,
         # I need to stub it so it doesn't close unless I tell it to
         self._closer = self.fp.close
         self.fp.close = lambda: None
