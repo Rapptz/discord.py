@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
 
@@ -91,7 +91,7 @@ def fill_with_flags(*, inverted: bool = False):
     return decorator
 
 
-# n.b. flags must inherit from this and use the decorator above
+# Flags must inherit from this and use the decorator above
 class BaseFlags:
     VALID_FLAGS: ClassVar[Dict[str, int]]
     DEFAULT_VALUE: ClassVar[int]
@@ -693,7 +693,7 @@ class GuildSubscriptionOptions:
         self.max_online = max_online
 
     def __repr__(self) -> str:
-        return f'<GuildSubscriptionOptions auto_subscribe={self.auto_subscribe} concurrent_guilds={self.concurrent_guilds} max_online_count={self.max_online_count}'
+        return f'<GuildSubscriptionOptions auto_subscribe={self.auto_subscribe} concurrent_guilds={self.concurrent_guilds} max_online={self.max_online}'
 
     @classmethod
     def all(cls) -> GuildSubscriptionOptions:

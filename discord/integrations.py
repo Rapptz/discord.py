@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING, overload, Type, Tuple
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
 from .utils import _get_as_snowflake, parse_time, MISSING
 from .user import User
 from .errors import InvalidArgument

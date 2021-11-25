@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Type, TypeVar, Union, List, TYPE_CHECKING, Any, Union
+from typing import Type, TypeVar, Union, List, TYPE_CHECKING, Any
 
 __all__ = (
     'AllowedMentions',
