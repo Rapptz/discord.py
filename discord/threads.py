@@ -46,7 +46,6 @@ if TYPE_CHECKING:
         ThreadMetadata,
         ThreadArchiveDuration,
     )
-    from .types.snowflake import SnowflakeList
     from .guild import Guild
     from .channel import TextChannel, CategoryChannel
     from .member import Member
@@ -217,8 +216,19 @@ class Thread(Messageable, Hashable):
 
     @property
     def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to."""
+        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to.
+
+        There is an alias for this named :attr:`channel`.
+        """
         return self.guild.get_channel(self.parent_id)  # type: ignore
+
+    @property
+    def channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to.
+
+        This is an alias of :attr:`parent`.
+        """
+        return self.parent
 
     @property
     def owner(self) -> Optional[Member]:
