@@ -43,10 +43,9 @@ if TYPE_CHECKING:
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
-    from .bot import Bot, AutoShardedBot
+    from .bot import Bot
     from .cog import Cog
     from .core import Command
-    from .help import HelpCommand
     from .view import StringView
 
 __all__ = (
@@ -57,7 +56,7 @@ MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')
-BotT = TypeVar('BotT', bound="Union[Bot, AutoShardedBot]")
+BotT = TypeVar('BotT', bound="Bot")
 CogT = TypeVar('CogT', bound="Cog")
 
 if TYPE_CHECKING:

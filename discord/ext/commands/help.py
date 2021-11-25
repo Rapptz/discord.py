@@ -25,10 +25,9 @@ DEALINGS IN THE SOFTWARE.
 import itertools
 import copy
 import functools
-import inspect
 import re
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import discord.utils
 
