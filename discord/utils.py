@@ -298,7 +298,7 @@ def oauth_url(
     redirect_uri: :class:`str`
         An optional valid redirect URI.
     scopes: Iterable[:class:`str`]
-        An optional valid list of scopes. Defaults to ``('bot', 'application.commands')``.
+        An optional valid list of scopes. Defaults to ``('bot', 'applications.commands')``.
 
         .. versionadded:: 1.7
     disable_guild_select: :class:`bool`
@@ -312,7 +312,7 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url += '&scope=' + '+'.join(scopes or ('bot', 'application.commands'))
+    url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
@@ -1155,9 +1155,9 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
 
     def get_browser(self, browser: Optional[BrowserEnum] = None) -> Optional[str]:
         if browser is not None:
-            return self.registry.get(platform.system())[browser.value]()
+            return self.registry.get(platform.system(), {})[browser.value]()
 
-        for browser in self.registry.get(platform.system()).values():
+        for browser in self.registry.get(platform.system(), {}).values():
             browser = browser()
             if browser is not None:
                 return browser
@@ -1172,7 +1172,7 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
     def launch(
         self,
         domain: Optional[str] = None,
-        server: Optional[Tuple[Optional[str], Optional[int]]] = (None, None),
+        server: Tuple[Optional[str], Optional[int]] = (None, None),
         width: int = 400,
         height: int = 500,
         browser_args: List[str] = [],
