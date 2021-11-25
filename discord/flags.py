@@ -183,7 +183,7 @@ class SystemChannelFlags(BaseFlags):
     __slots__ = ()
 
     # For some reason the flags for system channels are "inverted"
-    # ergo, if they're set then it means "suppress" (off in the GUI toggle)
+    # Ergo, if they're set then it means "suppress" (off in the GUI toggle)
     # Since this is counter-intuitive from an API perspective and annoying
     # these will be inverted automatically
 
@@ -196,7 +196,7 @@ class SystemChannelFlags(BaseFlags):
         elif toggle is False:
             self.value |= o
         else:
-            raise TypeError('Value to set for SystemChannelFlags must be a bool.')
+            raise TypeError('Value to set for SystemChannelFlags must be a bool')
 
     @flag_value
     def join_notifications(self):
@@ -216,6 +216,10 @@ class SystemChannelFlags(BaseFlags):
         """
         return 4
 
+    @flag_value
+    def join_notification_replies(self):
+        """:class:`bool`: Returns ``True`` if members are prompted to reply to join notifications with a sticker."""
+        return 8
 
 @fill_with_flags()
 class MessageFlags(BaseFlags):
@@ -432,8 +436,63 @@ class PublicUserFlags(BaseFlags):
         return UserFlags.spammer.value
 
     def all(self) -> List[UserFlags]:
-        """List[:class:`UserFlags`]: Returns all public flags the user has."""
+        """List[:class:`UserFlags`]: Returns all flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
+
+
+@fill_with_flags()
+class PrivateUserFlags(PublicUserFlags):
+    r"""Wraps up the Discord User flags.
+
+        This subclasses :class:`PublicUserFlags` and adds the extra flags,
+        so anything available in :class:`PublicUserFlags` is available here.
+
+        .. note::
+            Some of these are only available on your own user flags.
+
+        .. container:: operations
+
+            .. describe:: x == y
+
+                Checks if two UserFlags are equal.
+            .. describe:: x != y
+
+                Checks if two UserFlags are not equal.
+            .. describe:: hash(x)
+
+                Return the flag's hash.
+            .. describe:: iter(x)
+
+                Returns an iterator of ``(name, value)`` pairs. This allows it
+                to be, for example, constructed as a dict or a list of pairs.
+                Note that aliases are not shown.
+
+        .. versionadded:: 2.0
+
+        Attributes
+        -----------
+        value: :class:`int`
+            The raw value. This value is a bit array field of a 53-bit integer
+            representing the currently available flags. You should query
+            flags via the properties rather than using this raw value.
+        """
+
+    __slots__ = ()
+
+    @flag_value
+    def premium_promo_dismissed(self):
+        """:class:`bool`: Returns ``True`` if the user has dismissed the premium promo."""
+        return UserFlags.premium_promo_dismissed.value
+
+    @flag_value
+    def has_unread_urgent_messages(self):
+        """:class:`bool`: Returns ``True`` if the user has unread urgent system messages."""
+        return UserFlags.has_unread_urgent_messages.value
+
+    @flag_value
+    def mfa_sms(self):
+        """:class:`bool`: Returns ``True`` if the user has enabled SMS recovery for MFA enabled."""
+        return UserFlags.mfa_sms.value
 
 
 @fill_with_flags()
@@ -573,14 +632,14 @@ class ApplicationFlags(BaseFlags):
     @flag_value
     def gateway_guild_members(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
-        receive guild members information over the gateway.
+        receive full guild member lists.
         """
         return 1 << 14
 
     @flag_value
     def gateway_guild_members_limited(self):
         """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
-        guild members information over the gateway.
+        guild member lists.
         """
         return 1 << 15
 
