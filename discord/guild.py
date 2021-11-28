@@ -100,11 +100,15 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .voice_client import VoiceProtocol
 
-    import datetime
-
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
+
+
+class CommandCounts(NamedTuple):
+    chat_input: int
+    user: int
+    message: int
 
 
 class BanEntry(NamedTuple):
@@ -271,6 +275,7 @@ class Guild(Hashable):
         'vanity_code',
         'premium_progress_bar_enabled',
         'notification_settings',
+        'command_counts',
         '_members',
         '_channels',
         '_icon',
@@ -311,6 +316,7 @@ class Guild(Hashable):
         self._stage_instances: Dict[int, StageInstance] = {}
         self._state: ConnectionState = state
         self.notification_settings: Optional[GuildSettings] = None
+        self.command_counts: Optional[CommandCounts] = None
         self._from_data(data)
 
     # Get it running
@@ -479,6 +485,9 @@ class Guild(Hashable):
 
         if (settings := guild.get('settings')) is not None:
             self.notification_settings = GuildSettings(state=state, data=settings)
+
+        if (counts := guild.get('application_command_counts')) is not None:
+            self.command_counts = CommandCounts(counts.get(0, 0), counts.get(1, 0), counts.get(2, 0))
 
         for mdata in guild.get('merged_members', []):
             try:
@@ -914,7 +923,7 @@ class Guild(Hashable):
         return count == len(self._members)
 
     @property
-    def created_at(self) -> datetime.datetime:
+    def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
 

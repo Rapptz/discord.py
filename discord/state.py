@@ -36,7 +36,7 @@ import os
 import random
 
 from .errors import NotFound
-from .guild import Guild
+from .guild import CommandCounts, Guild
 from .activity import BaseActivity
 from .user import User, ClientUser
 from .emoji import Emoji
@@ -59,7 +59,7 @@ from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .settings import UserSettings
 from .tracking import Tracking
-from .components import Interaction
+from .interactions import Interaction
 
 
 if TYPE_CHECKING:
@@ -544,7 +544,7 @@ class ConnectionState:
 
     def chunker(
         self, guild_id: int, query: str = '', limit: int = 0, presences: bool = True, *, nonce: Optional[str] = None
-    ) -> None:
+    ):
         return self.ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def query_members(self, guild: Guild, query: str, limit: int, user_ids: List[int], cache: bool, presences: bool):
@@ -812,7 +812,6 @@ class ConnectionState:
 
     def parse_presence_update(self, data) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
-        # guild_id won't be None here
         guild = self._get_guild(guild_id)
         if guild is None:
             _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
@@ -852,6 +851,10 @@ class ConnectionState:
         old_settings = copy.copy(new_settings)
         new_settings._update(data)
         self.dispatch('guild_settings_update', old_settings, new_settings)
+
+    def parse_user_required_action_update(self, data) -> None:
+        required_action = try_enum(RequiredActionType, data['required_action'])
+        self.dispatch('required_action_update', required_action)
 
     def parse_invite_create(self, data) -> None:
         invite = Invite.from_gateway(state=self, data=data)
@@ -1274,6 +1277,14 @@ class ConnectionState:
                 else:
                     _log.debug('GUILD_MEMBER_LIST_UPDATE type UPDATE referencing an unknown member ID: %s. Discarding.', user_id)
 
+    def parse_guild_application_command_counts_update(self, data) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('GUILD_APPLICATION_COMMAND_COUNTS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        guild.command_counts = CommandCounts(data.get(0, 0), data.get(1, 0), data.get(2, 0))
+
     def parse_guild_emojis_update(self, data) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
@@ -1631,10 +1642,6 @@ class ConnectionState:
             if member is not None:
                 timestamp = datetime.datetime.fromtimestamp(data.get('timestamp'), tz=datetime.timezone.utc)
                 self.dispatch('typing', channel, member, timestamp)
-
-    def parse_user_required_action_update(self, data) -> None:
-        required_action = try_enum(RequiredActionType, data['required_action'])
-        self.dispatch('required_action_update', required_action)
 
     def parse_relationship_add(self, data) -> None:
         key = int(data['id'])
