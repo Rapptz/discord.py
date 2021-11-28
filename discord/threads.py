@@ -666,11 +666,11 @@ class Thread(Messageable, Hashable):
         """
         state = self._state
         await state.ws.request_lazy_guild(self.parent.guild.id, thread_member_lists=[self.id])  # type: ignore
-        future = state.ws.wait_for('THREAD_MEMBER_LIST_UPDATE', lambda d: int(d['thread_id']) == self.id)
+        future = state.ws.wait_for('thread_member_list_update', lambda d: int(d['thread_id']) == self.id)
         try:
-            data = await asyncio.wait_for(future, timeout=30)
+            data = await asyncio.wait_for(future, timeout=15)
         except asyncio.TimeoutError as exc:
-            raise InvalidData('Failed to retrieve members') from exc
+            raise InvalidData('Didn\'t receieve a response from Discord') from exc
 
         members = [ThreadMember(self, {'member': member}) for member in data['members']]
         for m in members:
