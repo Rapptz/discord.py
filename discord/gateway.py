@@ -24,10 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 import asyncio
 from collections import namedtuple, deque
-import concurrent.futures
 import logging
 import struct
-import sys
 import time
 import threading
 import traceback
@@ -100,7 +98,7 @@ class GatewayRatelimiter:
         async with self.lock:
             delta = self.get_delay()
             if delta:
-                _log.warning('WebSocket is ratelimited, waiting %.2f seconds.', delta)
+                _log.warning('Gateway is ratelimited, waiting %.2f seconds.', delta)
                 await asyncio.sleep(delta)
 
 
@@ -245,10 +243,12 @@ class DiscordWebSocket:
         a connection issue.
     GUILD_SYNC
         Send only. Requests a guild sync. This is unfortunately no longer functional.
-    ACCESS_DM
-        Send only. Tracking.
+    CALL_CONNECT
+        Send only. Maybe used for calling? Probably just tracking.
     GUILD_SUBSCRIBE
         Send only. Subscribes you to guilds/guild members. Might respond with GUILD_MEMBER_LIST_UPDATE.
+    REQUEST_COMMANDS
+        Send only. Requests application commands from a guild. Responds with GUILD_APPLICATION_COMMANDS_UPDATE.
     gateway
         The gateway we are currently connected to.
     token
@@ -268,8 +268,9 @@ class DiscordWebSocket:
     HELLO              = 10
     HEARTBEAT_ACK      = 11
     GUILD_SYNC         = 12  # :(
-    ACCESS_DM          = 13
+    CALL_CONNECT       = 13
     GUILD_SUBSCRIBE    = 14
+    REQUEST_COMMANDS   = 24
 
     def __init__(self, socket, *, loop):
         self.socket = socket
@@ -354,7 +355,7 @@ class DiscordWebSocket:
         Parameters
         -----------
         event: :class:`str`
-            The event name in all upper case to wait for.
+            The event to wait for.
         predicate
             A function that takes a data parameter to check for event
             properties. The data parameter is the 'd' key in the JSON message.
@@ -368,6 +369,7 @@ class DiscordWebSocket:
             A future to wait for.
         """
 
+        event = event.upper()
         future = self.loop.create_future()
         entry = EventListener(event=event, predicate=predicate, result=result, future=future)
         self._dispatch_listeners.append(entry)
@@ -690,13 +692,39 @@ class DiscordWebSocket:
 
     async def access_dm(self, channel_id):
         payload = {
-            'op': self.ACCESS_DM,
+            'op': self.CALL_CONNECT,
             'd': {
                 'channel_id': channel_id
             }
         }
 
         _log.debug('Sending ACCESS_DM for channel %s.', channel_id)
+        await self.send_as_json(payload)
+
+    async def request_commands(self, guild_id, type, *, nonce=None, limit=None, applications=None, offset=0, query=None, command_ids=None, application_id=None):
+        payload = {
+            'op': self.REQUEST_COMMANDS,
+            'd': {
+                'guild_id': guild_id,
+                'type': type,
+            }
+        }
+
+        if nonce is not None:
+            payload['d']['nonce'] = nonce
+        if applications is not None:
+            payload['d']['applications'] = applications
+        if limit is not None and limit != 25:
+            payload['d']['limit'] = limit
+        if offset:
+            payload['d']['offset'] = offset
+        if query is not None:
+            payload['d']['query'] = query
+        if command_ids is not None:
+            payload['d']['command_ids'] = command_ids
+        if application_id is not None:
+            payload['d']['application_id'] = application_id
+
         await self.send_as_json(payload)
 
     async def close(self, code=4000):
@@ -720,7 +748,7 @@ class DiscordVoiceWebSocket:
         Receive only. Tells the websocket that the initial connection has completed.
     HEARTBEAT
         Send only. Keeps your websocket connection alive.
-    SESSION_DESCRIPTION
+    SELECT_PROTOCOL_ACK
         Receive only. Gives you the secret key required for voice.
     SPEAKING
         Send and receive. Notifies the client if anyone begins speaking.
@@ -732,24 +760,25 @@ class DiscordVoiceWebSocket:
         Receive only. Tells you that your websocket connection was acknowledged.
     RESUMED
         Sent only. Tells you that your RESUME request has succeeded.
-    CLIENT_CONNECT
-        Indicates a user has connected to voice.
     CLIENT_DISCONNECT
         Receive only. Indicates a user has disconnected from voice.
     """
 
-    IDENTIFY            = 0
-    SELECT_PROTOCOL     = 1
-    READY               = 2
-    HEARTBEAT           = 3
-    SESSION_DESCRIPTION = 4
-    SPEAKING            = 5
-    HEARTBEAT_ACK       = 6
-    RESUME              = 7
-    HELLO               = 8
-    RESUMED             = 9
-    CLIENT_CONNECT      = 12
-    CLIENT_DISCONNECT   = 13
+    IDENTIFY              = 0
+    SELECT_PROTOCOL       = 1
+    READY                 = 2
+    HEARTBEAT             = 3
+    SELECT_PROTOCOL_ACK   = 4
+    SPEAKING              = 5
+    HEARTBEAT_ACK         = 6
+    RESUME                = 7
+    HELLO                 = 8
+    RESUMED               = 9
+    VIDEO                 = 12
+    CLIENT_DISCONNECT     = 13
+    SESSION_UPDATE        = 14
+    MEDIA_SINK_WANTS      = 15
+    VOICE_BACKEND_VERSION = 16
 
     def __init__(self, socket, loop, *, hook=None):
         self.ws = socket
@@ -861,7 +890,7 @@ class DiscordVoiceWebSocket:
         elif op == self.RESUMED:
             _log.info('Voice RESUME succeeded.')
             self.secret_key = self._connection.secret_key
-        elif op == self.SESSION_DESCRIPTION:
+        elif op == self.SELECT_PROTOCOL_ACK:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
         elif op == self.HELLO:

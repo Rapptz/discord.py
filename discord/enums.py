@@ -66,8 +66,8 @@ __all__ = (
     'RequiredActionType',
     'ReportType',
     'BrowserEnum',
-    'ApplicationCommandType',
-    'ApplicationCommandOptionType',
+    'CommandType',
+    'OptionType',
 )
 
 
@@ -673,7 +673,7 @@ class InteractionType(Enum, comparable=True):
     component = 3
 
 
-class ApplicationCommandType(Enum, comparable=True):
+class CommandType(Enum, comparable=True):
     chat_input = 1
     chat = 1
     slash = 1
@@ -684,7 +684,7 @@ class ApplicationCommandType(Enum, comparable=True):
         return self.value
 
 
-class ApplicationCommandOptionType(Enum, comparable=True):
+class OptionType(Enum, comparable=True):
     sub_command = 1
     sub_command_group = 2
     string = 3

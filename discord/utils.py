@@ -91,6 +91,7 @@ __all__ = (
     'escape_mentions',
     'as_chunks',
     'format_dt',
+    'set_target',
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -134,9 +135,11 @@ if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
     from .permissions import Permissions
-    from .abc import Snowflake
+    from .abc import Messageable, Snowflake
     from .invite import Invite
+    from .message import Message
     from .template import Template
+    from .commands import ApplicationCommand
 
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
@@ -1028,6 +1031,41 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
         return f'<t:{int(dt.timestamp())}>'
     return f'<t:{int(dt.timestamp())}:{style}>'
 
+
+def set_target(
+    items: Iterable[ApplicationCommand], *, channel: Messageable = None, message: Message = None, user: Snowflake = None
+) -> None:
+    """A helper function to set the target for a list of items.
+
+    This is used to set the target for a list of application commands.
+
+    Suppresses all AttributeErrors so you can pass multiple types of commands and
+    not worry about which elements support which parameter.
+
+    Parameters
+    -----------
+    items: Iterable[:class:`ApplicationCommand`]
+        A list of items to set the target for.
+    channel: :class:`Messageable`
+        The channel to target.
+    message: :class:`Message`
+        The message to target.
+    user: :class:`Snowflake`
+        The user to target.
+    """
+    attrs = {
+        'target_channel': channel,
+        'target_message': message,
+        'target_user': user,
+    }
+
+    for item in items:
+        for k, v in attrs.items():
+            if v is not None:
+                try:
+                    setattr(item, k, v)  # type: ignore
+                except AttributeError:
+                    pass
 
 class ExpiringQueue(asyncio.Queue):  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
     def __init__(self, timeout: int, maxsize: int = 0) -> None:
