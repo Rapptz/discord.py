@@ -1508,7 +1508,10 @@ class Client:
         data = await self.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
 
         if with_mutuals:
-            data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+            if not data['user'].get('bot', False):
+                data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+            else:
+                data['mutual_friends'] = []
 
         profile = Profile(state, data)
 
