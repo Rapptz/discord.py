@@ -135,9 +135,9 @@ class AllowedMentions:
         return data  # type: ignore
 
     def merge(self, other: AllowedMentions) -> AllowedMentions:
-        # Creates a new AllowedMentions by merging from another one.
+        # Creates a new AllowedMentions by merging from another one
         # Merge is done by using the 'self' values unless explicitly
-        # overridden by the 'other' values.
+        # overridden by the 'other' values
         everyone = self.everyone if other.everyone is default else other.everyone
         users = self.users if other.users is default else other.users
         roles = self.roles if other.roles is default else other.roles

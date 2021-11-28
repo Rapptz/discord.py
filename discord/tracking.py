@@ -70,7 +70,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         try:
             return library[data.get('location', 'None')]
         except KeyError:
-            return b64encode(json.dumps(data).encode()).decode('utf-8')
+            return b64encode(json.dumps(data, separators=(',', ':')).encode()).decode('utf-8')
 
     @classmethod
     def _empty(cls) -> ContextProperties:
