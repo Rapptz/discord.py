@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import asyncio
 from typing import (
     Any,
     Callable,
@@ -51,7 +50,7 @@ from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
-from .errors import ClientException, InvalidArgument, NotFound
+from .errors import ClientException, InvalidArgument
 from .stage_instance import StageInstance
 from .threads import Thread
 from .iterators import ArchivedThreadIterator
@@ -86,7 +85,6 @@ if TYPE_CHECKING:
         StoreChannel as StoreChannelPayload,
         GroupDMChannel as GroupChannelPayload,
     )
-    from .types.snowflake import SnowflakeList
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -1751,6 +1749,14 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
+
     def permissions_for(self, obj: Any = None, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
 
@@ -1935,6 +1941,14 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.

@@ -24,15 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from copy import copy
 from typing import Any, Dict, List, Optional, Type, TypeVar, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
 from .colour import Colour
-from .enums import DefaultAvatar, HypeSquadHouse, PremiumType, RelationshipAction, RelationshipType, try_enum, UserFlags
-from .errors import ClientException, NotFound
+from .enums import CommandType, DefaultAvatar, HypeSquadHouse, PremiumType, RelationshipAction, RelationshipType, try_enum, UserFlags
+from .errors import ClientException, InvalidArgument, NotFound
 from .flags import PublicUserFlags
+from .iterators import FakeCommandIterator
 from .object import Object
 from .relationship import Relationship
 from .settings import UserSettings
@@ -531,7 +531,6 @@ class BaseUser(_UserTag):
         :class:`bool`
             Indicates if the user is mentioned in the message.
         """
-
         if message.mention_everyone:
             return True
 
@@ -1099,6 +1098,69 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         data: DMChannelPayload = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
 
+    def user_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = [],
+        **kwargs,
+    ):
+        """Returns an iterator that allows you to see what user commands are available to use on this user.
+
+        Only available on bots.
+
+        .. note::
+
+            All parameters here are faked, as the only way to get commands in a DM is to fetch them all at once.
+            Because of this, some are silently ignored. The ones below currently work.
+            It is recommended to not pass any parameters to this iterator.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for command in user.user_commands():
+                print(command.name)
+
+        Flattening into a list ::
+
+            commands = await user.user_commands().flatten()
+            # commands is now a list of UserCommand...
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        query: Optional[:class:`str`]
+            The query to search for.
+        limit: Optional[:class:`int`]
+            The maximum number of commands to send back. Defaults to ``None`` to iterate over all results. Must be at least 1.
+        command_ids: Optional[List[:class:`int`]]
+            List of command IDs to search for. If the command doesn't exist it won't be returned.
+
+        Raises
+        ------
+        :exc:`.InvalidArgument`
+            The user is not a bot.
+            The limit was not > 0.
+            Both query and command_ids were passed.
+        :exc:`.HTTPException`
+            Getting the commands failed.
+
+        Yields
+        -------
+        :class:`.UserCommand`
+            A user command.
+        """
+        if query and command_ids:
+            raise InvalidArgument('Cannot specify both query and command_ids')
+        if limit is not None and limit <= 0:
+            raise InvalidArgument('limit must be > 0')
+
+        return FakeCommandIterator(self, CommandType.user, query, limit, command_ids)
+
     def is_friend(self) -> bool:
         """:class:`bool`: Checks if the user is your friend."""
         r = self.relationship
@@ -1201,7 +1263,10 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         data = await state.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
 
         if with_mutuals:
-            data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+            if not data['user'].get('bot', False):
+                data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+            else:
+                data['mutual_friends'] = []
 
         profile = Profile(state, data)
 

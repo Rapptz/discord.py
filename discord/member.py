@@ -39,9 +39,11 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import RelationshipAction, Status, try_enum
+from .enums import CommandType, RelationshipAction, Status, try_enum
+from .errors import InvalidArgument
 from .colour import Colour
 from .object import Object
+from .iterators import CommandIterator
 
 __all__ = (
     'VoiceState',
@@ -720,12 +722,13 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         guild_id = self.guild.id
         me = self._state.self_id == self.id
         payload: Dict[str, Any] = {}
+        data = None
 
         if nick is not MISSING:
             payload['nick'] = nick
 
         if avatar is not MISSING:
-            payload['avatar'] = utils._bytes_to_base64_data(avatar)
+            payload['avatar'] = utils._bytes_to_base64_data(avatar)  # type: ignore
 
         if me and payload:
             data = await http.edit_me(**payload)
@@ -763,7 +766,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         if data:
-            return Member(data=data, guild=self.guild, state=self._state)
+            return Member(data=data, guild=self.guild, state=self._state)  # type: ignore
 
     async def request_to_speak(self) -> None:
         """|coro|
@@ -934,3 +937,72 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             Sending the friend request failed.
         """
         await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
+
+    def user_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = None,
+        applications: bool = True,
+        application: Optional[Snowflake] = None,
+    ):
+        """Returns an iterator that allows you to see what user commands are available to use.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for command in member.user_commands():
+                print(command.name)
+
+        Flattening into a list ::
+
+            commands = await member.user_commands().flatten()
+            # commands is now a list of UserCommand...
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        query: Optional[:class:`str`]
+            The query to search for.
+        limit: Optional[:class:`int`]
+            The maximum number of commands to send back.
+        cache: :class:`bool`
+            Whether to cache the commands internally.
+        command_ids: Optional[List[:class:`int`]]
+            List of command IDs to search for. If the command doesn't exist it won't be returned.
+        applications: :class:`bool`
+            Whether to include applications in the response. This defaults to ``False``.
+        application: Optional[:class:`Snowflake`]
+            Query commands only for this application.
+
+        Raises
+        ------
+        :exc:`.InvalidArgument`
+            The limit was not > 0.
+            Both query and command_ids were passed.
+        :exc:`.HTTPException`
+            Getting the commands failed.
+
+        Yields
+        -------
+        :class:`.UserCommand`
+            A user command.
+        """
+        if query and command_ids:
+            raise InvalidArgument('Cannot specify both query and command_ids')
+        if limit is not None and limit <= 0:
+            raise InvalidArgument('limit must be > 0')
+
+        return CommandIterator(
+            self,
+            CommandType.user,
+            query,
+            limit,
+            command_ids,
+            applications=applications,
+            application=application,
+        )

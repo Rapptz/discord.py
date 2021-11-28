@@ -36,9 +36,9 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, ChannelType, try_enum
+from .enums import MessageType, ChannelType, CommandType, try_enum
 from .errors import InvalidArgument, HTTPException
-from .components import _component_factory, Interaction
+from .components import _component_factory
 from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags
@@ -48,6 +48,8 @@ from .guild import Guild
 from .mixins import Hashable
 from .sticker import StickerItem
 from .threads import Thread
+from .iterators import CommandIterator
+from .interactions import Interaction
 
 if TYPE_CHECKING:
     from .types.message import (
@@ -1601,6 +1603,79 @@ class Message(Hashable):
         """
 
         return await self.channel.send(content, reference=self, **kwargs)
+
+    def message_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = None,
+        applications: bool = True,
+        application: Optional[Snowflake] = None,
+    ):
+        """Returns an iterator that allows you to see what message commands are available to use.
+
+        .. note::
+            If this is a DM context, all parameters here are faked, as the only way to get commands is to fetch them all at once.
+            Because of this, all except ``query``, ``limit``, and ``command_ids`` are ignored.
+            It is recommended to not pass any parameters in that case.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for command in message.message_commands():
+                print(command.name)
+
+        Flattening into a list ::
+
+            commands = await message.message_commands().flatten()
+            # commands is now a list of SlashCommand...
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        query: Optional[:class:`str`]
+            The query to search for.
+        limit: Optional[:class:`int`]
+            The maximum number of commands to send back.
+        command_ids: Optional[List[:class:`int`]]
+            List of command IDs to search for. If the command doesn't exist it won't be returned.
+        applications: :class:`bool`
+            Whether to include applications in the response. This defaults to ``False``.
+        application: Optional[:class:`Snowflake`]
+            Query commands only for this application.
+
+        Raises
+        ------
+        :exc:`.InvalidArgument`
+            The user is not a bot.
+            The limit was not > 0.
+            Both query and command_ids were passed.
+        :exc:`.HTTPException`
+            Getting the commands failed.
+
+        Yields
+        -------
+        :class:`.MessageCommand`
+            A message command.
+        """
+        if query and command_ids:
+            raise InvalidArgument('Cannot specify both query and command_ids')
+        if limit is not None and limit <= 0:
+            raise InvalidArgument('limit must be > 0')
+
+        return CommandIterator(
+            self,
+            CommandType.message,
+            query,
+            limit,
+            command_ids,
+            applications=applications,
+            application=application,
+        )
 
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.

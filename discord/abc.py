@@ -43,9 +43,10 @@ from typing import (
     runtime_checkable,
 )
 
-from .iterators import HistoryIterator
+from .object import Object
+from .iterators import CommandIterator, HistoryIterator
 from .context_managers import Typing
-from .enums import ChannelType
+from .enums import CommandType, ChannelType
 from .errors import InvalidArgument, ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -69,8 +70,7 @@ __all__ = (
 T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
+    from .abc import PrivateChannel
     from .client import Client
     from .user import ClientUser, User
     from .asset import Asset
@@ -80,7 +80,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import DMChannel, GroupChannel, PartialMessageable, PrivateChannel, TextChannel, VocalGuildChannel
+    from .channel import DMChannel, GroupChannel, PartialMessageable, TextChannel, VocalGuildChannel
     from .threads import Thread
     from .enums import InviteTarget
     from .types.channel import (
@@ -347,7 +347,7 @@ class GuildChannel:
                         options['permission_overwrites'] = [c._asdict() for c in category._overwrites]
                 options['parent_id'] = parent_id
             elif lock_permissions and self.category_id is not None:
-                # if we're syncing permissions on a pre-existing channel category without changing it
+                # If we're syncing permissions on a pre-existing channel category without changing it
                 # we need to update the permissions to point to the pre-existing category
                 category = self.guild.get_channel(self.category_id)
                 if category:
@@ -447,6 +447,14 @@ class GuildChannel:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
+
     def overwrites_for(self, obj: Union[Role, User]) -> PermissionOverwrite:
         """Returns the channel-specific overwrites for a member or a role.
 
@@ -478,7 +486,7 @@ class GuildChannel:
         return PermissionOverwrite()
 
     @property
-    def overwrites(self) -> Dict[Union[Role, Member], PermissionOverwrite]:
+    def overwrites(self) -> Dict[Union[Object, Role, Member], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
@@ -487,7 +495,7 @@ class GuildChannel:
 
         Returns
         --------
-        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
+        Dict[Union[:class:`~discord.Object`, :class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
@@ -502,13 +510,10 @@ class GuildChannel:
             elif ow.is_member():
                 target = self.guild.get_member(ow.id)
 
-            # TODO: There is potential data loss here in the non-chunked
-            # case, i.e. target is None because get_member returned nothing.
-            # This can be fixed with a slight breaking change to the return type,
-            # i.e. adding discord.Object to the list of it
-            # However, for now this is an acceptable compromise.
-            if target is not None:
-                ret[target] = overwrite
+            if target is None:
+                target = Object(ow.id)
+
+            ret[target] = overwrite
         return ret
 
     @property
@@ -570,18 +575,18 @@ class GuildChannel:
         """
 
         # The current cases can be explained as:
-        # Guild owner get all permissions -- no questions asked. Otherwise...
-        # The @everyone role gets the first application.
+        # Guild owner get all permissions -- no questions asked
+        # The @everyone role gets the first application
         # After that, the applied roles that the user has in the channel
-        # (or otherwise) are then OR'd together.
+        # (or otherwise) are then OR'd together
         # After the role permissions are resolved, the member permissions
-        # have to take into effect.
-        # After all that is done.. you have to do the following:
+        # have to take into effect
+        # After all that is done, you have to do the following:
 
-        # If manage permissions is True, then all permissions are set to True.
+        # If manage permissions is True, then all permissions are set to True
 
         # The operation first takes into consideration the denied
-        # and then the allowed.
+        # and then the allowed
 
         if self.guild.owner_id == obj.id:
             return Permissions.all()
@@ -828,7 +833,7 @@ class GuildChannel:
         data = await self._state.http.create_channel(guild_id, self.type.value, reason=reason, **base_attrs)
         obj = cls(state=self._state, guild=self.guild, data=data)
 
-        # temporarily add it to the cache
+        # Temporarily add it to the cache
         self.guild._channels[obj.id] = obj  # type: ignore
         return obj
 
@@ -1232,7 +1237,7 @@ class Messageable:
         self,
         content=None,
         *,
-        tts=None,
+        tts=False,
         embed=None,
         embeds=None,
         file=None,
@@ -1336,7 +1341,7 @@ class Messageable:
         content = str(content) if content is not None else None
 
         if embed is not None and embeds is not None:
-            raise InvalidArgument('Cannot pass both embed and embeds parameter to send()')
+            raise InvalidArgument('Cannot pass both embed and embeds')
 
         if embed is not None:
             embed = embed.to_dict()
@@ -1368,10 +1373,10 @@ class Messageable:
                 raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
 
         if nonce is MISSING:
-            nonce = utils.time_snowflake(datetime.utcnow())
+            nonce = str(utils.time_snowflake(datetime.utcnow()))
 
         if file is not None and files is not None:
-            raise InvalidArgument('Cannot pass both file and files parameter to send()')
+            raise InvalidArgument('Cannot pass both file and files')
 
         if file is not None:
             if not isinstance(file, File):
@@ -1589,6 +1594,81 @@ class Messageable:
             The message with the message data parsed.
         """
         return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
+
+    def slash_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = None,
+        applications: bool = True,
+        application: Optional[Snowflake] = None,
+    ):
+        """Returns an iterator that allows you to see what slash commands are available to use.
+
+        .. note::
+            If this is a DM context, all parameters here are faked, as the only way to get commands is to fetch them all at once.
+            Because of this, all except ``query``, ``limit``, and ``command_ids`` are ignored.
+            It is recommended to not pass any parameters in that case.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for command in channel.slash_commands():
+                print(command.name)
+
+        Flattening into a list ::
+
+            commands = await channel.slash_commands().flatten()
+            # commands is now a list of SlashCommand...
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        query: Optional[:class:`str`]
+            The query to search for.
+        limit: Optional[:class:`int`]
+            The maximum number of commands to send back.
+        cache: :class:`bool`
+            Whether to cache the commands internally.
+        command_ids: Optional[List[:class:`int`]]
+            List of command IDs to search for. If the command doesn't exist it won't be returned.
+        applications: :class:`bool`
+            Whether to include applications in the response. This defaults to ``False``.
+        application: Optional[:class:`Snowflake`]
+            Query commands only for this application.
+
+        Raises
+        ------
+        :exc:`.InvalidArgument`
+            The user is not a bot.
+            The limit was not > 0.
+            Both query and command_ids were passed.
+        :exc:`.HTTPException`
+            Getting the commands failed.
+
+        Yields
+        -------
+        :class:`.SlashCommand`
+            A slash command.
+        """
+        if query and command_ids:
+            raise InvalidArgument('Cannot specify both query and command_ids')
+        if limit is not None and limit <= 0:
+            raise InvalidArgument('limit must be > 0')
+
+        return CommandIterator(
+            self,
+            CommandType.chat_input,
+            query,
+            limit,
+            command_ids,
+            applications=applications,
+            application=application,
+        )
 
 
 class Connectable(Protocol):
