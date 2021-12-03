@@ -78,6 +78,7 @@ from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .file import File
 from .settings import GuildSettings
+from .profile import MemberProfile
 
 
 __all__ = (
@@ -1620,35 +1621,6 @@ class Guild(Hashable):
 
         return [convert(d) for d in data]
 
-    async def active_threads(self) -> List[Thread]:
-        """|coro|
-
-        Returns a list of active :class:`Thread` that the client can access.
-
-        This includes both private and public threads.
-
-        .. versionadded:: 2.0
-
-        Raises
-        ------
-        HTTPException
-            The request to get the active threads failed.
-
-        Returns
-        --------
-        List[:class:`Thread`]
-            The active threads
-        """
-        data = await self._state.http.get_active_threads(self.id)
-        threads = [Thread(guild=self, state=self._state, data=d) for d in data.get('threads', [])]
-        thread_lookup: Dict[int, Thread] = {thread.id: thread for thread in threads}
-        for member in data.get('members', []):
-            thread = thread_lookup.get(int(member['id']))
-            if thread is not None:
-                thread._add_member(ThreadMember(parent=thread, data=member))
-
-        return threads
-
     async def fetch_member(self, member_id: int, /) -> Member:
         """|coro|
 
@@ -1677,6 +1649,58 @@ class Guild(Hashable):
         """
         data = await self._state.http.get_member(self.id, member_id)
         return Member(data=data, state=self._state, guild=self)
+
+    async def fetch_member_profile(
+        self, member_id: int, /, *, with_mutuals: bool = True, fetch_note: bool = True
+    ) -> MemberProfile:
+        """|coro|
+
+        Gets an arbitrary member's profile.
+
+        Parameters
+        ------------
+        member_id: :class:`int`
+            The ID of the member to fetch their profile for.
+        with_mutuals: :class:`bool`
+            Whether to fetch mutual guilds and friends.
+            This fills in :attr:`mutual_guilds` & :attr:`mutual_friends`.
+        fetch_note: :class:`bool`
+            Whether to pre-fetch the user's note.
+
+        Raises
+        -------
+        NotFound
+            A user with this ID does not exist.
+        Forbidden
+            Not allowed to fetch this profile.
+        HTTPException
+            Fetching the profile failed.
+        InvalidData
+            The profile is not from this guild.
+
+        Returns
+        --------
+        :class:`.MemberProfile`
+            The profile of the member.
+        """
+        state = self._state
+        data = await state.http.get_user_profile(member_id, self.id, with_mutual_guilds=with_mutuals)
+
+        if 'guild_member' not in data:
+            raise InvalidData('Member not in this guild')
+
+        if with_mutuals:
+            if not data['user'].get('bot', False):
+                data['mutual_friends'] = await state.http.get_mutual_friends(member_id)
+            else:
+                data['mutual_friends'] = []
+
+        profile = MemberProfile(state=state, data=data, guild=self)
+
+        if fetch_note:
+            await profile.note.fetch()
+
+        return profile
 
     async def fetch_ban(self, user: Snowflake) -> BanEntry:
         """|coro|
@@ -1746,7 +1770,7 @@ class Guild(Hashable):
         if ch_type in (ChannelType.group, ChannelType.private):
             raise InvalidData('Channel ID resolved to a private channel')
 
-        guild_id = int(data['guild_id'])
+        guild_id = int(data['guild_id'])  # type: ignore
         if self.id != guild_id:
             raise InvalidData('Guild ID resolved to a different guild')
 
