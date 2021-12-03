@@ -1689,7 +1689,7 @@ class Connectable(Protocol):
     __slots__ = ()
     _state: ConnectionState
 
-    async def _get_channel(self) -> ConnectableChannel:
+    async def _get_channel(self) -> Connectable:
         return self
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
