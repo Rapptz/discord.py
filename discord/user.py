@@ -41,11 +41,13 @@ from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_propert
 if TYPE_CHECKING:
     from datetime import datetime
 
+    from .abc import Snowflake as _Snowflake
     from .calls import PrivateCall
     from .channel import DMChannel
     from .guild import Guild
     from .member import VoiceState
     from .message import Message
+    from .profile import UserProfile
     from .state import ConnectionState
     from .types.channel import DMChannel as DMChannelPayload
     from .types.snowflake import Snowflake
@@ -55,7 +57,6 @@ if TYPE_CHECKING:
 __all__ = (
     'User',
     'ClientUser',
-    'Profile',
     'Note',
 )
 
@@ -67,13 +68,13 @@ class Note:
     __slots__ = ('_state', '_note', '_user_id', '_user')
 
     def __init__(
-        self, state: ConnectionState, user_id: int, *, user: BaseUser = MISSING, note: Optional[str] = MISSING
+        self, state: ConnectionState, user_id: int, *, user: _Snowflake = MISSING, note: Optional[str] = MISSING
     ) -> None:
         self._state = state
         self._user_id = user_id
         self._note = note
         if user is not MISSING:
-            self._user: Union[User, Object] = user
+            self._user = user
 
     @property
     def note(self) -> Optional[str]:
@@ -89,8 +90,8 @@ class Note:
         return self._note
 
     @cached_slot_property('_user')
-    def user(self) -> Union[User, Object]:
-        """Returns the :class:`User` the note belongs to.
+    def user(self) -> _Snowflake:
+        """:class:`Snowflake`: Returns the :class:`User` the note belongs to.
 
         If the user isn't in the cache, it returns a
         :class:`Object` instead.
@@ -121,7 +122,7 @@ class Note:
             data = await self._state.http.get_note(self.user.id)
             self._note = data['note']
             return data['note']
-        except NotFound:  # 404 = no note :(
+        except NotFound:  # 404 = no note
             self._note = None
             return None
 
@@ -163,24 +164,22 @@ class Note:
         base = f'<Note user={self.user!r}'
         note = self._note
         if note is not MISSING:
-            base += f' note={note or ""}>'
-        else:
-            base += '>'
-        return base
+            note = note or '""'
+            base += f' note={note}'
+        return base + '>'
 
     def __len__(self) -> int:
-        try:
-            return len(self._note)
-        except TypeError:
-            return 0
+        if (note := self._note):
+            return len(note)
+        return 0
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Note) -> bool:
         try:
-            return isinstance(other, Note) and self._note == other._note
+            return isinstance(other, Note) and self._note == other._note and self._user_id == other._user_id
         except TypeError:
             return False
 
-    def __ne__(self, other) -> bool:
+    def __ne__(self, other: Note) -> bool:
         return not self.__eq__(other)
 
     def __bool__(self) -> bool:
@@ -188,123 +187,6 @@ class Note:
             return bool(self._note)
         except TypeError:
             return False
-
-
-class Profile:
-    """Represents a Discord profile.
-
-    Attributes
-    ----------
-    flags: :class:`int`
-        The user's flags. Will be its own class (like public_flags) in the future.
-    bio: Optional[:class:`str`]
-        The user's "about me" field. Could be ``None``.
-    user: :class:`User`
-        The user the profile represents (with banner/accent_colour).
-    premium_since: Optional[:class:`datetime.datetime`]
-        A datetime object denoting how long a user has been premium (had Nitro).
-        Could be ``None``.
-    connected_accounts: Optional[List[:class:`dict`]]
-        The connected accounts that show up on the profile.
-        These are currently just the raw json, but this will change in the future.
-    note: :class:`Note`
-        Represents the note on the profile.
-    """
-
-    __slots__ = (
-        '_state',
-        'user',
-        'flags',
-        'bio',
-        'premium_since',
-        'connected_accounts',
-        'note',
-        'mutual_guilds',
-        'mutual_friends',
-    )
-
-    def __init__(self, state: ConnectionState, data) -> None:  # Type data
-        self._state = state
-
-        user = data['user']
-        self.flags: int = user.pop('flags', 0)  # TODO: figure them all out and parse them
-        self.bio: Optional[str] = user.pop('bio') or None
-        self.user: User = User(data=user, state=state)
-
-        self.premium_since: datetime = parse_time(data['premium_since'])
-        self.connected_accounts: List[dict] = data['connected_accounts']  # TODO: parse these
-
-        self.note: Note = Note(state, self.user.id, user=self.user)
-
-        if 'mutual_guilds' in data:
-            self.mutual_guilds: List[Guild] = self._parse_mutual_guilds(data['mutual_guilds'])
-        if 'mutual_friends' in data:  # TODO: maybe make Relationships
-            self.mutual_friends: List[User] = self._parse_mutual_friends(data['mutual_friends'])
-
-    def __str__(self) -> str:
-        return '{0.name}#{0.discriminator}'.format(self.user)
-
-    def __repr__(self) -> str:
-        return '<Profile user={0.user!r} bio={0.bio}>'.format(self)
-
-    def _parse_mutual_guilds(self, mutual_guilds) -> List[Guild]:
-        state = self._state
-
-        def get_guild(guild) -> Optional[Guild]:
-            return state._get_guild(int(guild['id']))
-
-        return list(filter(None, map(get_guild, mutual_guilds)))
-
-    def _parse_mutual_friends(self, mutual_friends) -> List[User]:
-        state = self._state
-        return [state.store_user(friend) for friend in mutual_friends]
-
-    @property
-    def nitro(self) -> bool:
-        return self.premium_since is not None
-
-    premium = nitro
-
-    def _has_flag(self, o) -> bool:
-        v = o.value
-        return (self.flags & v) == v
-
-    @property
-    def staff(self) -> bool:
-        return self._has_flag(UserFlags.staff)
-
-    @property
-    def partner(self) -> bool:
-        return self._has_flag(UserFlags.partner)
-
-    @property
-    def bug_hunter(self) -> bool:
-        return self._has_flag(UserFlags.bug_hunter)
-
-    @property
-    def early_supporter(self) -> bool:
-        return self._has_flag(UserFlags.early_supporter)
-
-    @property
-    def hypesquad(self) -> bool:
-        return self._has_flag(UserFlags.hypesquad)
-
-    @property
-    def hypesquad_house(self) -> HypeSquadHouse:
-        return self.hypesquad_houses[0]
-
-    @property
-    def hypesquad_houses(self) -> List[HypeSquadHouse]:
-        flags = (UserFlags.hypesquad_bravery, UserFlags.hypesquad_brilliance, UserFlags.hypesquad_balance)
-        return [house for house, flag in zip(HypeSquadHouse, flags) if self._has_flag(flag)]
-
-    @property
-    def team_user(self) -> bool:
-        return self._has_flag(UserFlags.team_user)
-
-    @property
-    def system(self) -> bool:
-        return self._has_flag(UserFlags.system)
 
 
 class _UserTag:
@@ -1029,10 +911,10 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         return self
 
     def _get_voice_client_key(self) -> Union[int, str]:
-        return self._state.user.id, 'self_id'
+        return self._state.self_id, 'self_id'
 
     def _get_voice_state_pair(self) -> Union[int, int]:
-        return self._state.user.id, self.dm_channel.id
+        return self._state.self_id, self.dm_channel.id
 
     async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
@@ -1052,21 +934,9 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         return getattr(self.dm_channel, 'call', None)
 
     @property
-    def relationship(self):
+    def relationship(self) -> Optional[Relationship]:
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
         return self._state.user.get_relationship(self.id)
-
-    @property
-    def mutual_guilds(self) -> List[Guild]:
-        """List[:class:`Guild`]: The guilds that the user shares with the client.
-
-        .. note::
-
-            This will only return mutual guilds within the client's internal cache.
-
-        .. versionadded:: 1.7
-        """
-        return [guild for guild in self._state._guilds.values() if guild.get_member(self.id)]
 
     async def connect(self, *, ring=True, **kwargs):
         channel = await self._get_channel()
@@ -1203,7 +1073,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id, action=RelationshipAction.unblock)
 
-    async def remove_friend(self) -> bool:
+    async def remove_friend(self) -> None:
         """|coro|
 
         Removes the user as a friend.
@@ -1233,7 +1103,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
 
     async def profile(
         self, *, with_mutuals: bool = True, fetch_note: bool = True
-    ) -> Profile:
+    ) -> UserProfile:
         """|coro|
 
         Gets the user's profile.
@@ -1255,9 +1125,11 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
 
         Returns
         --------
-        :class:`Profile`
+        :class:`UserProfile`
             The profile of the user.
         """
+        from .profile import UserProfile
+
         user_id = self.id
         state = self._state
         data = await state.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
@@ -1268,7 +1140,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
             else:
                 data['mutual_friends'] = []
 
-        profile = Profile(state, data)
+        profile = UserProfile(state=state, data=data)
 
         if fetch_note:
             await profile.note.fetch()

@@ -60,6 +60,7 @@ from .threads import *
 from .relationship import *
 from .guild_folder import *
 from .settings import *
+from .profile import *
 
 
 class _VersionInfo(NamedTuple):

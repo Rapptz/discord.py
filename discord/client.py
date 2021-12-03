@@ -33,7 +33,7 @@ from typing import Any, Callable, Coroutine, Dict, Generator, List, Optional, Se
 
 import aiohttp
 
-from .user import User, ClientUser, Profile, Note
+from .user import User, ClientUser, Note
 from .invite import Invite
 from .template import Template
 from .widget import Widget
@@ -59,6 +59,7 @@ from .appinfo import AppInfo
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
+from .profile import UserProfile
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
@@ -1470,8 +1471,8 @@ class Client:
 
 
     async def fetch_user_profile(
-        self, user_id: int, *, with_mutuals: bool = True, fetch_note: bool = True
-    ) -> Profile:
+        self, user_id: int, /, *, with_mutuals: bool = True, fetch_note: bool = True
+    ) -> UserProfile:
         """|coro|
 
         Gets an arbitrary user's profile.
@@ -1503,24 +1504,20 @@ class Client:
         :class:`.Profile`
             The profile of the user.
         """
-
         state = self._connection
-        data = await self.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
+        data = await state.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
 
         if with_mutuals:
             if not data['user'].get('bot', False):
-                data['mutual_friends'] = await self.http.get_mutual_friends(user_id)
+                data['mutual_friends'] = await state.http.get_mutual_friends(user_id)
             else:
                 data['mutual_friends'] = []
-
-        profile = Profile(state, data)
+        profile = UserProfile(state=state, data=data)
 
         if fetch_note:
             await profile.note.fetch()
 
         return profile
-
-    fetch_profile = fetch_user_profile
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
