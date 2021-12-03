@@ -1793,10 +1793,12 @@ class HTTPClient:
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
 
-    def get_user_profile(self, user_id: Snowflake, *, with_mutual_guilds: bool = True):  # TODO: return type
-        params = {
+    def get_user_profile(self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True):  # TODO: return type
+        params: Dict[str, Any] = {
             'with_mutual_guilds': str(with_mutual_guilds).lower()
         }
+        if guild_id is not MISSING:
+            params['guild_id'] = guild_id
 
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
 
