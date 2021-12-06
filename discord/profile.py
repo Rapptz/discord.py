@@ -85,7 +85,7 @@ class Profile:
 
         self.premium_since: Optional[datetime] = parse_time(data['premium_since'])
         self.boosting_since: Optional[datetime] = parse_time(data['premium_guild_since'])
-        self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connection_accounts']]  # TODO: parse these
+        self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]  # TODO: parse these
 
         self.mutual_guilds: Optional[List[Guild]] = self._parse_mutual_guilds(data.get('mutual_guilds'))
         self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))
@@ -131,6 +131,7 @@ class Profile:
         This is an alias for :attr:`premium`.
         """
         return self.premium
+
 
 class UserProfile(Profile, User):
     def __repr__(self) -> str:
