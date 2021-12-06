@@ -25,14 +25,16 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from .enums import FriendFlags, NotificationLevel, StickerAnimationOptions, Theme, UserContentFilter, try_enum
+from .activity import create_activity
+from .enums import FriendFlags, NotificationLevel, Status, StickerAnimationOptions, Theme, UserContentFilter, try_enum
 from .guild_folder import GuildFolder
 from .utils import MISSING, parse_time, utcnow
 
 if TYPE_CHECKING:
     from .abc import GuildChannel
+    from .activity import CustomActivity
     from .guild import Guild
     from .state import ConnectionState
     from .tracking import Tracking
@@ -105,7 +107,6 @@ class UserSettings:
         afk_timeout: int
         allow_accessibility_detection: bool
         animate_emojis: bool
-        animate_stickers: StickerAnimationOptions
         contact_sync_enabled: bool
         convert_emoticons: bool
         default_guilds_restricted: bool
@@ -113,10 +114,7 @@ class UserSettings:
         developer_mode: bool
         disable_games_tab: bool
         enable_tts_command: bool
-        explicit_content_filter: UserContentFilter
-        friend_source_flags: FriendFlags
         gif_auto_play: bool
-        guild_positions: List[Guild]
         inline_attachment_media: bool
         inline_embed_media: bool
         locale: str
@@ -124,10 +122,8 @@ class UserSettings:
         native_phone_integration_enabled: bool
         render_embeds: bool
         render_reactions: bool
-        restricted_guilds: List[Guild]
         show_current_game: bool
         stream_notifications_enabled: bool
-        theme: Theme
         timezone_offset: int
         view_nsfw_guilds: bool
 
@@ -150,6 +146,7 @@ class UserSettings:
             'developer_mode',
             'disable_games_tab',
             'enable_tts_command',
+            'gif_auto_play',
             'inline_attachment_media',
             'inline_embed_media',
             'locale',
@@ -177,45 +174,59 @@ class UserSettings:
     @property
     def animate_stickers(self) -> StickerAnimationOptions:
         """:class:`StickerAnimationOptions`: Whether or not to animate stickers in the chat."""
-        return try_enum(StickerAnimationOptions, self._animate_stickers)
+        return try_enum(StickerAnimationOptions, getattr(self, '_animate_stickers', 0))
+
+    @property
+    def custom_activity(self) -> Optional[CustomActivity]:
+        """Optional[:class:`CustomActivity]: The custom activity you have set."""
+        return create_activity(getattr(self, '_custom_status', None))
 
     @property
     def explicit_content_filter(self) -> UserContentFilter:
         """:class:`UserContentFilter`: The filter for explicit content in all messages."""
-        return try_enum(UserContentFilter, self._explicit_content_filter)
+        return try_enum(UserContentFilter, getattr(self, '_explicit_content_filter', 1))
 
     @property
     def friend_source_flags(self) -> FriendFlags:
         """:class:`FriendFlags`: Who can add you as a friend."""
-        return FriendFlags._from_dict(self._friend_source_flags)
+        return FriendFlags._from_dict(getattr(self, '_friend_source_flags', {'all': True}))
 
     @property
     def guild_folders(self) -> List[GuildFolder]:
         """List[:class:`GuildFolder`]: A list of guild folders."""
         state = self._state
-        return [GuildFolder(data=folder, state=state) for folder in self._guild_folders]
+        return [GuildFolder(data=folder, state=state) for folder in getattr(self, '_guild_folders', [])]
 
     @property
     def guild_positions(self) -> List[Guild]:
         """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
-        return list(filter(None, map(self._get_guild, self._guild_positions)))
+        return list(filter(None, map(self._get_guild, getattr(self, '_guild_positions', []))))
+
+    @property
+    def passwordless(self) -> bool:
+        """:class:`bool`: Whether the account is passwordless."""
+        return getattr(self, '_passwordless', False)
 
     @property
     def restricted_guilds(self) -> List[Guild]:
         """List[:class:`Guild`]: A list of guilds that you will not receive DMs from."""
-        return list(filter(None, map(self._get_guild, self._restricted_guilds)))
+        return list(filter(None, map(self._get_guild, getattr(self, '_restricted_guilds', []))))
+
+    @property
+    def status(self) -> Status:
+        return try_enum(Status, getattr(self, '_status', 'online'))
 
     @property
     def theme(self) -> Theme:
         """:class:`Theme`: The theme of the Discord UI."""
-        return try_enum(Theme, self._theme)
+        return try_enum(Theme, getattr(self, '_theme', 'dark'))  # Sane default :)
 
     def _get_guild(self, id: int) -> Optional[Guild]:
         return self._state._get_guild(int(id))
 
 
 class MuteConfig:
-    def __init__(self, muted: bool, config: Dict[str, Union[str, int]]) -> None:
+    def __init__(self, muted: bool, config: Dict[str, str]) -> None:
         until = parse_time(config.get('end_time'))
         if until is not None:
             if until <= utcnow():
@@ -250,7 +261,7 @@ class ChannelSettings:
         muted: MuteConfig
         collapsed: bool
 
-    def __init__(self, guild_id, *, data: Dict[str, any] = {}, state: ConnectionState) -> None:
+    def __init__(self, guild_id, *, data: Dict[str, Any] = {}, state: ConnectionState) -> None:
         self._guild_id: int = guild_id
         self._state = state
         self._update(data)
@@ -300,10 +311,11 @@ class ChannelSettings:
 
         Returns
         --------
-        Optional[:class:`ChannelSettings`]
-            The new notification settings. This is only returned if something is updated.
+        :class:`ChannelSettings`
+            The new notification settings.
         """
         payload = {}
+        data = None
 
         if muted is not MISSING:
             payload['muted'] = muted
@@ -327,7 +339,7 @@ class ChannelSettings:
 
         if payload:
             fields = {'channel_overrides': {str(self._channel_id): payload}}
-            data = self._state.http.edit_guild_settings(self._guild_id, fields)
+            data = await self._state.http.edit_guild_settings(self._guild_id, fields)
 
         if data:
             return ChannelSettings(
@@ -335,6 +347,8 @@ class ChannelSettings:
                 data=data['channel_overrides'][str(self._channel_id)],
                 state=self._state
             )
+        else:
+            return self
 
 
 class GuildSettings:
@@ -422,10 +436,11 @@ class GuildSettings:
 
         Returns
         --------
-        Optional[:class:`GuildSettings`]
-            The new notification settings. This is only returned if something is updated.
+        :class:`GuildSettings`
+            The new notification settings.
         """
         payload = {}
+        data = None
 
         if muted is not MISSING:
             payload['muted'] = muted
@@ -457,7 +472,9 @@ class GuildSettings:
             payload['hide_muted_channels'] = hide_muted_channels
 
         if payload:
-            data = self._state.http.edit_guild_settings(self._guild_id, payload)
+            data = await self._state.http.edit_guild_settings(self._guild_id, payload)
 
         if data:
             return GuildSettings(data=data, state=self._state)
+        else:
+            return self
