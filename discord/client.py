@@ -60,6 +60,7 @@ from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 from .profile import UserProfile
+from .connections import Connection
 
 if TYPE_CHECKING:
     from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
@@ -1098,7 +1099,7 @@ class Client:
             The preferred region to connect to.
         """
         state = self._connection
-        ws = state._get_websocket(self.id)
+        ws = self.ws
         channel_id = channel.id if channel else None
 
         if preferred_region is None or channel_id is None:
@@ -1106,7 +1107,7 @@ class Client:
         else:
             region = str(preferred_region) if preferred_region else str(state.preferred_region)
 
-        await ws.voice_state(None, channel_id, self_mute, self_deaf, self_video, region)
+        await ws.voice_state(None, channel_id, self_mute, self_deaf, self_video, preferred_region=region)
 
     # Guild stuff
 
@@ -1233,7 +1234,6 @@ class Client:
         self,
         *,
         name: str,
-        region: Union[VoiceRegion, str] = VoiceRegion.us_west,
         icon: bytes = MISSING,
         code: str = MISSING,
     ) -> Guild:
@@ -1402,7 +1402,7 @@ class Client:
         if not isinstance(invite, Invite):
             invite = await self.fetch_invite(invite, with_counts=False, with_expiration=False)
 
-        data = await self.http.join_guild(invite.code, guild_id=invite.guild.id, channel_id=invite.channel.id, channel_type=invite.channel.type.value)
+        data = await self.http.accept_invite(invite.code, guild_id=invite.guild.id, channel_id=invite.channel.id, channel_type=invite.channel.type.value)
         return Guild(data=data['guild'], state=self._connection)
 
     use_invite = accept_invite
@@ -1468,7 +1468,6 @@ class Client:
         """
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
-
 
     async def fetch_user_profile(
         self, user_id: int, /, *, with_mutuals: bool = True, fetch_note: bool = True
@@ -1553,10 +1552,10 @@ class Client:
             raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
 
         if ch_type in (ChannelType.group, ChannelType.private):
-            # the factory will be a DMChannel or GroupChannel here
+            # The factory will be a DMChannel or GroupChannel here
             channel = factory(me=self.user, data=data, state=self._connection) # type: ignore
         else:
-            # the factory can't be a DMChannel or GroupChannel here
+            # The factory can't be a DMChannel or GroupChannel here
             guild_id = int(data['guild_id']) # type: ignore
             guild = self.get_guild(guild_id) or Object(id=guild_id)
             # GuildChannels expect a Guild, we may be passing an Object
@@ -1637,12 +1636,32 @@ class Client:
         Returns
         ---------
         List[:class:`.StickerPack`]
-            All available premium sticker packs.
+            All available sticker packs.
         """
         data = await self.http.list_premium_sticker_packs(country, locale, payment_source_id)
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
-    async def fetch_notes(self) -> List[Note]:
+    async def fetch_sticker_pack(self, pack_id: int, /):
+        """|coro|
+
+        Retrieves a sticker pack with the specified ID.
+
+        Raises
+        -------
+        :exc:`.NotFound`
+            A sticker pack with that ID was not found.
+        :exc:`.HTTPException`
+            Retrieving the sticker packs failed.
+
+        Returns
+        -------
+        :class:`.StickerPack`
+            The sticker pack you requested.
+        """
+        data = await self.http.get_sticker_pack(pack_id)
+        return StickerPack(state=self._connection, data=data)
+
+    async def notes(self) -> List[Note]:
         """|coro|
 
         Retrieves a list of :class:`Note` objects representing all your notes.
@@ -1685,6 +1704,25 @@ class Client:
         await note.fetch()
         return note
 
+    async def connections(self) -> List[Connection]:
+        """|coro|
+
+        Retrieves all of your connections.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retreiving your connections failed.
+
+        Returns
+        -------
+        List[:class:`Connection`]
+            All your connections.
+        """
+        state = self._connection
+        data = await state.http.get_connections()
+        return [Connection(data=d, state=state) for d in data]
+
     async def fetch_private_channels(self) -> List[PrivateChannel]:
         """|coro|
 
@@ -1702,7 +1740,7 @@ class Client:
         """
         state = self._connection
         channels = await state.http.get_private_channels()
-        return [_private_channel_factory(data['type'])(me=self.user, data=data, state=state) for data in channels]
+        return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|

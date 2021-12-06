@@ -2944,7 +2944,7 @@ class Guild(Hashable):
             The preferred region to connect to.
         """
         state = self._state
-        ws = state._get_websocket(self.id)
+        ws = state.ws
         channel_id = channel.id if channel else None
 
         if preferred_region is None or channel_id is None:
@@ -2952,4 +2952,4 @@ class Guild(Hashable):
         else:
             region = str(preferred_region) if preferred_region else str(state.preferred_region)
 
-        await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, region)
+        await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, preferred_region=region)

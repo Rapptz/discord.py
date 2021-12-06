@@ -672,6 +672,9 @@ class ConnectionState:
         self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
         self.consents = Tracking(data.get('consents', {}))
 
+        if 'required_action' in data:  # Locked more than likely
+            self.parse_user_required_action_update(data)
+
         # We're done
         del self._ready_data
         self.call_handlers('connect')

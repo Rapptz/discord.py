@@ -24,8 +24,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Protocol, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
+from .connections import PartialConnection
 from .flags import PrivateUserFlags
 from .member import Member
 from .user import Note, User
@@ -50,9 +51,8 @@ class Profile:
         ``None`` if the user is not a premium user.
     boosting_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies when a user first boosted a guild.
-    connected_accounts: Optional[List[:class:`dict`]]
+    connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
-        These are currently just the raw json, but this will change in the future.
     note: :class:`Note`
         Represents the note on the profile.
     mutual_guilds: Optional[List[:class:`Guild`]]
@@ -85,7 +85,7 @@ class Profile:
 
         self.premium_since: Optional[datetime] = parse_time(data['premium_since'])
         self.boosting_since: Optional[datetime] = parse_time(data['premium_guild_since'])
-        self.connected_accounts: List[dict] = data['connected_accounts']  # TODO: parse these
+        self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connection_accounts']]  # TODO: parse these
 
         self.mutual_guilds: Optional[List[Guild]] = self._parse_mutual_guilds(data.get('mutual_guilds'))
         self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))

@@ -744,7 +744,7 @@ class CustomActivity(BaseActivity):
         super().__init__(**extra)
         self.name: Optional[str] = name
         self.state = state = extra.pop('state', None)
-        if self.name == 'Custom Activity':
+        if self.name == 'Custom Status':
             self.name = state
 
         self.emoji: Optional[PartialEmoji]

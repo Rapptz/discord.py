@@ -283,12 +283,13 @@ class HTTPClient:
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-origin',
             'User-Agent': self.user_agent,
+            'X-Discord-Locale': 'en-US',
             'X-Debug-Options': 'bugReporterEnabled',
             'X-Super-Properties': self.encoded_super_properties
         }
 
         # Header modification
-        if self.token is not None:
+        if self.token is not None and kwargs.get('auth', True):
             headers['Authorization'] = self.token
 
         reason = kwargs.pop('reason', None)
@@ -1296,6 +1297,9 @@ class HTTPClient:
 
         return self.request(Route('GET', '/sticker-packs'), params=params)
 
+    def get_sticker_pack(self, pack_id: Snowflake):
+        return self.request(Route('GET', '/sticker-packs/{pack_id}', pack_id=pack_id), auth=False)
+
     def get_all_guild_stickers(self, guild_id: Snowflake) -> Response[List[sticker.GuildSticker]]:
         return self.request(Route('GET', '/guilds/{guild_id}/stickers', guild_id=guild_id))
 
@@ -1834,6 +1838,15 @@ class HTTPClient:
     def edit_settings(self, **payload):  # TODO: return type, is this cheating?
         return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
 
+    def get_connections(self):
+        return self.request(Route('GET', '/users/@me/connections'))
+
+    def edit_connection(self, type, id, **payload):
+        return self.request(Route('PATCH', '/users/@me/connections/{type}/{id}', type=type, id=id), json=payload)
+
+    def delete_connection(self, type, id):
+        return self.request(Route('DELETE', '/users/@me/connections/{type}/{id}', type=type, id=id))
+
     def get_applications(self, *, with_team_applications: bool = True) -> Response[List[appinfo.AppInfo]]:
         params = {
             'with_team_applications': str(with_team_applications).lower()
@@ -1843,6 +1856,9 @@ class HTTPClient:
 
     def get_my_application(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True)
+
+    def get_partial_application(self, app_id: Snowflake):
+        return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id), auth=False)
 
     def get_app_entitlements(self, app_id: Snowflake):  # TODO: return type
         r = Route('GET', '/users/@me/applications/{app_id}/entitlements', app_id=app_id)
@@ -1868,7 +1884,7 @@ class HTTPClient:
     def get_team(self, team_id: Snowflake):  # TODO: return type
         return self.request(Route('GET', '/teams/{team_id}', team_id=team_id), super_properties_to_track=True)
 
-    def mobile_report(
+    def mobile_report(  # Report v1
         self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, reason: str
     ):  # TODO: return type
         payload = {
