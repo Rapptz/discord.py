@@ -24,12 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from asyncio import TimeoutError
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable, TYPE_CHECKING, Union
 
 from .enums import CommandType, ChannelType, OptionType, try_enum
-from .errors import InvalidData
+from .errors import InvalidData, InvalidArgument
 from .utils import time_snowflake
 
 if TYPE_CHECKING:
@@ -39,29 +38,37 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
 
-class ApplicationCommand:
-    def __init__(
-        self, data: Dict[str, Any]
-    ) -> None:
-        self.name: str = data['name']
-        self.description: str = data['description']
+@runtime_checkable
+class ApplicationCommand(Protocol):
+
+    __slots__ = ()
+
+    if TYPE_CHECKING:
+        _state: ConnectionState
+        _application_id: int
+        name: str
+        description: str
+        version: int
+        type: CommandType
+        target_channel: Optional[Messageable]
+        default_permission: bool
 
     async def __call__(self, data, channel: Optional[Messageable] = None) -> Interaction:
-        channel = channel or self.target_channel  # type: ignore
+        channel = channel or self.target_channel
         if channel is None:
             raise TypeError('__call__() missing 1 required keyword-only argument: \'channel\'')
-        state = self._state  # type: ignore
+        state = self._state
         channel = await channel._get_channel()
 
         payload = {
-            'application_id': str(self._application_id),  # type: ignore
+            'application_id': str(self._application_id),
             'channel_id': str(channel.id),
             'data': data,
             'nonce': str(time_snowflake(datetime.utcnow())),
             'type': 2,  # Should be an enum but eh
         }
-        if getattr(channel, 'guild', None):
-            payload['guild_id'] = str(channel.guild.id)  # type: ignore
+        if getattr(channel, 'guild', None) is not None:
+            payload['guild_id'] = str(channel.guild.id)
 
         state._interactions[payload['nonce']] = 2
         await state.http.interact(payload, form_data=True)
@@ -76,17 +83,33 @@ class ApplicationCommand:
         return i
 
 
-class _BaseCommand(ApplicationCommand):
+class BaseCommand(ApplicationCommand):
+
+    __slots__ = (
+        'name',
+        'description',
+        'id',
+        'version',
+        'type',
+        'default_permission',
+        '_dm_permission',
+        '_default_member_permissions',
+        '_state',
+        '_channel',
+        '_application_id'
+    )
+
     def __init__(
         self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None
     ) -> None:
-        super().__init__(data)
+        self.name = data['name']
+        self.description = data['description']
         self._state = state
         self._channel = channel
         self._application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])
-        self.version: int = int(data['version'])
-        self.type: CommandType = try_enum(CommandType, data['type'])
+        self.version = int(data['version'])
+        self.type = try_enum(CommandType, data['type'])
         self.default_permission: bool = data['default_permission']
         self._dm_permission = data['dm_permission']
         self._default_member_permissions = data['default_member_permissions']
@@ -128,19 +151,23 @@ class _BaseCommand(ApplicationCommand):
         self._channel = value
 
 
-class _SlashMixin:
+class SlashMixin(ApplicationCommand):
+    if TYPE_CHECKING:
+        _parent: SlashCommand
+        options: List[Option]
+        children: List[SubCommand]
+
     async def __call__(self, options, channel=None):
-        # This will always be used in a context where all these attributes are set
-        obj = getattr(self, '_parent', self)
+        obj = self._parent
         data = {
             'attachments': [],
-            'id': str(obj.id),  # type: ignore
-            'name': obj.name,  # type: ignore
+            'id': str(obj.id),
+            'name': obj.name,
             'options': options,
-            'type': obj.type.value,  # type: ignore
-            'version': str(obj.version),  # type: ignore
+            'type': obj.type.value,
+            'version': str(obj.version),
         }
-        return await super().__call__(data, channel)  # type: ignore
+        return await super().__call__(data, channel)
 
     def _parse_kwargs(self, kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
         possible_options = {o.name: o for o in self.options}
@@ -190,11 +217,11 @@ class _SlashMixin:
         for child in children:
             setattr(self, child.name, child)
 
-        self.options: List[Option] = options
-        self.children: List[SubCommand] = children
+        self.options = options
+        self.children = children
 
 
-class UserCommand(_BaseCommand):
+class UserCommand(BaseCommand):
     """Represents a user command.
 
     Attributes
@@ -210,6 +237,9 @@ class UserCommand(_BaseCommand):
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
     """
+
+    __slots__ = ('_user',)
+
     def __init__(self, *, user: Optional[Snowflake] = None, **kwargs):
         super().__init__(**kwargs)
         self._user = user
@@ -259,7 +289,7 @@ class UserCommand(_BaseCommand):
         self._user = value
 
 
-class MessageCommand(_BaseCommand):
+class MessageCommand(BaseCommand):
     """Represents a message command.
 
     Attributes
@@ -275,6 +305,9 @@ class MessageCommand(_BaseCommand):
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
     """
+
+    __slots__ = ('_message',)
+
     def __init__(self, *, message: Optional[Message] = None, **kwargs):
         super().__init__(**kwargs)
         self._message = message
@@ -324,7 +357,7 @@ class MessageCommand(_BaseCommand):
         self._message = value
 
 
-class SlashCommand(_SlashMixin, _BaseCommand):
+class SlashCommand(BaseCommand, SlashMixin):
     """Represents a slash command.
 
     Attributes
@@ -346,13 +379,16 @@ class SlashCommand(_SlashMixin, _BaseCommand):
         You can access (and use) subcommands directly as attributes of the class.
     """
 
+    __slots__ = ('_parent', 'options', 'children')
+
     def __init__(
         self, *, data: Dict[str, Any], **kwargs
     ) -> None:
         super().__init__(data=data, **kwargs)
+        self._parent = self
         self._unwrap_options(data.get('options', []))
 
-    async def __call__(self, channel, /, **kwargs):
+    async def __call__(self, channel: Optional[Messageable] = None, /, **kwargs):
         r"""Use the slash command.
 
         Parameters
@@ -363,9 +399,14 @@ class SlashCommand(_SlashMixin, _BaseCommand):
         \*\*kwargs: Any
             The options to use. These will be casted to the correct type.
             If an option has choices, they are automatically converted from name to value for you.
+
+        Raises
+        ------
+        InvalidArgument
+            Attempted to use a group.
         """
         if self.is_group():
-            raise TypeError('Cannot use a group')
+            raise InvalidArgument('Cannot use a group')
 
         return await super().__call__(self._parse_kwargs(kwargs), channel)
 
@@ -388,7 +429,7 @@ class SlashCommand(_SlashMixin, _BaseCommand):
         return bool(self.children)
 
 
-class SubCommand(_SlashMixin, ApplicationCommand):
+class SubCommand(SlashMixin):
     """Represents a slash command child.
 
     This could be a subcommand, or a subgroup.
@@ -405,8 +446,20 @@ class SubCommand(_SlashMixin, ApplicationCommand):
         The type of application command. Always :class:`CommandType.chat_input`.
     """
 
+    __slots__ = (
+        '_parent',
+        '_state',
+        '_type',
+        'parent',
+        'options',
+        'children',
+        'type',
+    )
+
     def __init__(self, *, parent, data):
-        super().__init__(data)
+        self.name = data['name']
+        self.description = data.get('description')
+        self._state = parent._state
         self.parent: Union[SlashCommand, SubCommand] = parent
         self._parent: SlashCommand = getattr(parent, 'parent', parent)  # type: ignore
         self.type = CommandType.chat_input  # Avoid confusion I guess
@@ -433,9 +486,14 @@ class SubCommand(_SlashMixin, ApplicationCommand):
         \*\*kwargs: Any
             The options to use. These will be casted to the correct type.
             If an option has choices, they are automatically converted from name to value for you.
+
+        Raises
+        ------
+        InvalidArgument
+            Attempted to use a group.
         """
         if self.is_group():
-            raise TypeError('Cannot use a group')
+            raise InvalidArgument('Cannot use a group')
 
         options = [{
             'type': self._type.value,
@@ -489,7 +547,7 @@ class SubCommand(_SlashMixin, ApplicationCommand):
         return self._parent.application
 
     @property
-    def target_channel(self):
+    def target_channel(self) -> Optional[Messageable]:
         """Optional[:class:`abc.Messageable`]: The channel this command will be used on.
 
         You can set this in order to use this command on a different channel without re-fetching it.
@@ -526,6 +584,19 @@ class Option:
     autocomplete: :class:`bool`
         Whether the option autocompletes. Always ``False`` if :attr:`choices` are present.
     """
+
+    __slots__ = (
+        'name',
+        'description',
+        'type',
+        'required',
+        'min_value',
+        'max_value',
+        'choices',
+        'channel_types',
+        'autocomplete',
+    )
+
     def __init__(self, data):
         self.name: str = data['name']
         self.description: str = data['description']
@@ -557,6 +628,9 @@ class OptionChoice:
     value: Any
         The choice's value. The type of this depends on the option's type.
     """
+
+    __slots__ = ('name', 'value')
+
     def __init__(self, data: Dict[str, str], type: OptionType):
         self.name: str = data['name']
         if type is OptionType.string:
@@ -575,7 +649,7 @@ class OptionChoice:
         return value
 
 
-def _command_factory(command_type: int) -> Tuple[CommandType, _BaseCommand]:
+def _command_factory(command_type: int) -> Tuple[CommandType, BaseCommand]:
     value = try_enum(CommandType, command_type)
     if value is CommandType.chat_input:
         return value, SlashCommand
@@ -584,4 +658,4 @@ def _command_factory(command_type: int) -> Tuple[CommandType, _BaseCommand]:
     elif value is CommandType.message:
         return value, MessageCommand
     else:
-        return value, _BaseCommand  # IDK about this
+        return value, BaseCommand  # IDK about this
