@@ -56,7 +56,7 @@ class ApplicationCommand(Protocol):
     async def __call__(self, data, channel: Optional[Messageable] = None) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
-            raise TypeError('__call__() missing 1 required keyword-only argument: \'channel\'')
+            raise TypeError('__call__() missing 1 required argument: \'channel\'')
         state = self._state
         channel = await channel._get_channel()
 
@@ -469,13 +469,13 @@ class SubCommand(SlashMixin):
     def _walk_parents(self):
         parent = self.parent
         while True:
-            if isinstance(parent, SubCommand):
-                parent = parent.parent
-            else:
+            if isinstance(parent, SlashCommand):
                 break
-            yield parent
+            else:
+                yield parent
+                parent = parent.parent
 
-    async def __call__(self, channel, /, **kwargs):
+    async def __call__(self, channel: Optional[Messageable] = None, /, **kwargs):
         r"""Use the sub command.
 
         Parameters
@@ -502,7 +502,7 @@ class SubCommand(SlashMixin):
         }]
         for parent in self._walk_parents():
             options = [{
-                'type': parent.type.value,
+                'type': parent._type.value,
                 'name': parent.name,
                 'options': options,
             }]
