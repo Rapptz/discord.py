@@ -263,7 +263,7 @@ class ConnectionState:
         self._voice_clients: Dict[int, VoiceProtocol] = {}
         self._voice_states: Dict[int, VoiceState] = {}
 
-        self._interactions: Dict[Union[int, str], Union[int, Interaction]] = {}
+        self._interactions: Dict[Union[int, str], Union[Tuple[int, str], Interaction]] = {}
         self._relationships: Dict[int, Relationship] = {}
         self._private_channels: Dict[int, PrivateChannel] = {}
         self._private_channels_by_user: Dict[int, DMChannel] = {}
@@ -1666,8 +1666,8 @@ class ConnectionState:
             self.dispatch('relationship_remove', old)
 
     def parse_interaction_create(self, data) -> None:
-        type = self._interactions.pop(data['nonce'], 0)
-        i = Interaction._from_self(type=type, user=self.user, **data)
+        type, name = self._interactions.pop(data['nonce'], (0, ''))
+        i = Interaction._from_self(type=type, user=self.user, name=name, **data)  # type: ignore
         self._interactions[i.id] = i
         self.dispatch('interaction_create', i)
 
@@ -1676,7 +1676,7 @@ class ConnectionState:
         i = self._interactions.pop(id, None)
         if i is None:
             i = Interaction(**data)
-        i.successful = True
+        i.successful = True  # type: ignore
         self.dispatch('interaction_finish', i)
 
     def parse_interaction_failed(self, data) -> None:

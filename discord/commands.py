@@ -70,7 +70,7 @@ class ApplicationCommand(Protocol):
         if getattr(channel, 'guild', None) is not None:
             payload['guild_id'] = str(channel.guild.id)
 
-        state._interactions[payload['nonce']] = 2
+        state._interactions[payload['nonce']] = (2, data['name'])
         await state.http.interact(payload, form_data=True)
         try:
             i = await state.client.wait_for(

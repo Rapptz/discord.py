@@ -76,9 +76,9 @@ class Interaction:
 
     @classmethod
     def _from_self(
-        cls, *, id: Snowflake, type: int, nonce: Optional[Snowflake] = None, user: ClientUser
+        cls, *, id: Snowflake, type: int, nonce: Optional[Snowflake] = None, user: ClientUser, name: str
     ) -> Interaction:
-        return cls(int(id), type, nonce, user=user)
+        return cls(int(id), type, nonce, user=user, name=name)
 
     @classmethod
     def _from_message(
