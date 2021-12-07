@@ -37,9 +37,43 @@ if TYPE_CHECKING:
     from .message import Message
     from .state import ConnectionState
 
+__all__ = (
+    'ApplicationCommand',
+    'BaseCommand',
+    'UserCommand',
+    'MessageCommand',
+    'SlashCommand',
+    'SubCommand',
+    'Option',
+    'OptionChoice',
+)
+
 
 @runtime_checkable
 class ApplicationCommand(Protocol):
+    """An ABC that represents a useable application command.
+
+    The following implement this ABC:
+
+    - :class:`~discord.BaseCommand`
+    - :class:`~discord.UserCommand`
+    - :class:`~discord.MessageCommand`
+    - :class:`~discord.SlashCommand`
+    - :class:`~discord.SubCommand`
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    version: :class:`int`
+        The command's version.
+    type: :class:`CommandType`
+        The type of application command.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    """
 
     __slots__ = ()
 
@@ -84,6 +118,23 @@ class ApplicationCommand(Protocol):
 
 
 class BaseCommand(ApplicationCommand):
+    """Represents a base command.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The command's ID.
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    version: :class:`int`
+        The command's version.
+    type: :class:`CommandType`
+        The type of application command.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    """
 
     __slots__ = (
         'name',
@@ -222,21 +273,7 @@ class SlashMixin(ApplicationCommand):
 
 
 class UserCommand(BaseCommand):
-    """Represents a user command.
-
-    Attributes
-    ----------
-    id: :class:`int`
-        The command's ID.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
-    type: :class:`CommandType`
-        The type of application command. Always :class:`CommandType.user`.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
-    """
+    """Represents a user command."""
 
     __slots__ = ('_user',)
 
@@ -557,6 +594,7 @@ class SubCommand(SlashMixin):
     @target_channel.setter
     def target_channel(self, value: Optional[Messageable]) -> None:
         self._parent.target_channel = value
+
 
 class Option:
     """Represents a command option.
