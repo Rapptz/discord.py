@@ -616,32 +616,76 @@ class ApplicationFlags(BaseFlags):
     """
 
     @flag_value
-    def gateway_presence(self):
+    def presence(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
         receive presence information over the gateway.
         """
         return 1 << 12
 
+    @alias_flag_value
+    def gateway_presence(self):
+        """:class:`bool`: Alias for :attr:`presence`."""
+        return 1 << 12
+
     @flag_value
-    def gateway_presence_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
-        presence information over the gateway.
+    def presence_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive
+        presence information over the gateway but is not whitelisted.
         """
         return 1 << 13
 
+    @alias_flag_value
+    def gateway_presence_limited(self):
+        """:class:`bool`: Alias for :attr:`presence_limited`."""
+        return 1 << 13
+
     @flag_value
-    def gateway_guild_members(self):
+    def guild_members(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
         receive full guild member lists.
         """
         return 1 << 14
 
+    @alias_flag_value
+    def gateway_guild_members(self):
+        """:class:`bool`: Alias for :attr:`guild_members`."""
+        return 1 << 14
+
     @flag_value
-    def gateway_guild_members_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
-        guild member lists.
+    def guild_members_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive full
+        guild member lists but is not whitelisted.
         """
         return 1 << 15
+
+    @alias_flag_value
+    def gateway_guild_members_limited(self):
+        """:class:`bool`: Alias for :attr:`guild_members_limited`."""
+        return 1 << 15
+
+    @flag_value
+    def message_content(self):
+        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
+        receive message content.
+        """
+        return 1 << 18
+
+    @alias_flag_value
+    def gateway_message_content(self):
+        """:class:`bool`: Alias for :attr:`message_content`."""
+        return 1 << 18
+
+    @flag_value
+    def message_content_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive full
+        message content but is not whitelisted.
+        """
+        return 1 << 19
+
+    @alias_flag_value
+    def gateway_message_content_limited(self):
+        """:class:`bool`: Alias for :attr:`message_content`."""
+        return 1 << 19
 
     @flag_value
     def verification_pending_guild_limit(self):
@@ -657,8 +701,13 @@ class ApplicationFlags(BaseFlags):
 
     @flag_value
     def embedded_first_party(self):
-        """:class:`bool`: Returns ``True`` if a first party application is emdedded within the Discord client."""
+        """:class:`bool`: Returns ``True`` if the embedded application is published by Discord."""
         return 1 << 20
+
+    @flag_value
+    def embedded_released(self):
+        """:class:`bool`: Returns ``True`` if the embedded application is released."""
+        return 1 << 1
 
 
 class GuildSubscriptionOptions:
