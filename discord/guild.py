@@ -201,27 +201,49 @@ class Guild(Hashable):
 
         They are currently as follows:
 
-        - ``ANIMATED_ICON``: Guild can upload an animated icon.
-        - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
+        - ``ANIMATED_BANNER``: Guild can have an animated banner.
+        - ``ANIMATED_ICON``: Guild can have an animated icon.
+        - ``BANNER``: Guild can have a banner. (i.e. :attr:`.banner`)
+        - ``CHANNEL_BANNER``: Guild can have channel banners.
         - ``COMMERCE``: Guild can sell things using store channels.
         - ``COMMUNITY``: Guild is a community server.
+        - ``DISCOVERABLE_DISABLED``: Guild is blacklisted from Server Discovery.
         - ``DISCOVERABLE``: Guild shows up in Server Discovery.
-        - ``FEATURABLE``: Guild is able to be featured in Server Discovery.
+        - ``ENABLED_DISCOVERABLE_BEFORE``: Guild has shown up in Server Discovery before.
+        - ``FEATURABLE``: Deprecated. Guild is able to be featured in Server Discovery.
+        - ``FORCE_RELAY``: Deprecated. Replaced by RELAY_ENABLED.
+        - ``HAS_DIRECTORY_ENTRY``: Guild is in a directory channel.
+        - ``HUB``: Guild is a student hub.
+        - ``INTERNAL_EMPLOYEE_ONLY``: Guild is only joinable by staff members.
         - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
+        - ``LURKABLE``: Deprecated. Guild is lurkable.
+        - ``MEMBER_LIST_DISABLED``: Guild's member list is hidden.
+        - ``MEMBER_PROFILES``: Guild members can have custom banners/bios.
         - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
         - ``MONETIZATION_ENABLED``: Guild has enabled monetization.
-        - ``MORE_EMOJI``: Guild has increased custom emoji slots.
-        - ``MORE_STICKERS``: Guild has increased custom sticker slots.
+        - ``MORE_EMOJI``: Guild has increased (+150) custom emoji slots.
+        - ``MORE_STICKERS``: Guild has increased (+160) custom sticker slots.
         - ``NEWS``: Guild can create news channels.
+        - ``NEW_THREAD_PERMISSIONS``: Guild has the new thread permissions.
         - ``PARTNERED``: Guild is a partnered server.
+        - ``PREMIUM_TIER_3_OVERRIDE``: Guild is forced to premium level 3.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
         - ``PRIVATE_THREADS``: Guild has access to create private threads.
+        - ``PUBLIC_DISABLED``: Deprecated. Replaced by COMMUNITY.
+        - ``PUBLIC``: Deprecated. Replaced by COMMUNITY.
+        - ``RELAY_ENABLED``: Guild is sharded over multiple nodes.
+        - ``ROLE_ICONS``: Guild can use role icons.
+        - ``ROLE_SUBSCRIPTIONS_ENABLED``: Guild can manage monetized channels/roles.
+        - ``ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE``: GUild can sell access to channels/roles.
         - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
+        - ``TEXT_IN_VOICE_ENABLED``: Guild has messageable voice channels.
+        - ``THREADS_ENABLED_TESTING``: Guild has the developer thread preview turned on. Used to give access to premium thread features.
+        - ``THREADS_ENABLED``: Guild can use threads.
         - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
-        - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
+        - ``TICKETED_EVENTS_ENABLED``: Guild can use ticketed events.
         - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
         - ``VERIFIED``: Guild is a verified server.
-        - ``VIP_REGIONS``: Guild has VIP voice regions.
+        - ``VIP_REGIONS``: Deprecated. Guild has VIP voice regions.
         - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
 
     premium_tier: :class:`int`
@@ -296,7 +318,7 @@ class Guild(Hashable):
         '_public_updates_channel_id',
         '_stage_instances',
         '_threads',
-        '_online_count',
+        '_presence_count',
         '_subscribing'
     )
 
@@ -416,7 +438,7 @@ class Guild(Hashable):
         return role
 
     def _from_data(self, guild: GuildPayload) -> None:
-        member_count = guild.get('member_count')
+        member_count = guild.get('member_count', guild.get('approximate_member_count'))
         if member_count is not None:
             self._member_count: int = member_count
 
@@ -475,7 +497,7 @@ class Guild(Hashable):
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
         self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
-        self._online_count: Optional[int] = None
+        self._presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
         self.vanity_code: Optional[str] = guild.get('vanity_url_code')
@@ -558,7 +580,7 @@ class Guild(Hashable):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
-        self_id = self._state.user.id
+        self_id = self._state.self_id
         # We are *always* cached
         return self.get_member(self_id)  # type: ignore
 
@@ -903,7 +925,7 @@ class Guild(Hashable):
 
     @property
     def online_count(self) -> Optional[int]:
-        """Optional[:class:`int`]: Returns the online member count. 
+        """Optional[:class:`int`]: Returns the online member count.
         This only exists after the first GUILD_MEMBER_LIST_UPDATE.
         """
         return self._online_count
@@ -1629,6 +1651,11 @@ class Guild(Hashable):
         .. note::
 
             This method is an API call. If you have member cache, consider :meth:`get_member` instead.
+
+        .. warning::
+
+            This API route is not used by the Discord client and may increase your chances at getting detected.
+            Consider :meth:`fetch_member_profile` instead.
 
         Parameters
         -----------

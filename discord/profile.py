@@ -107,8 +107,6 @@ class Profile:
             return
 
         state = self._state
-
-        state = self._state
         return [state.store_user(friend) for friend in mutual_friends]
 
     @property
