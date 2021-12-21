@@ -560,7 +560,8 @@ class Permissions(BaseFlags):
 
     @flag_value
     def start_embedded_activities(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can launch activities (applications with the :attr:`discord.ApplicationFlags.embedded` flag) in a voice channel.
+        """:class:`bool`: Returns ``True`` if a user can launch activities
+        (applications with the :attr:`discord.ApplicationFlags.embedded` flag) in a voice channel.
 
         .. versionadded:: 2.0
         """
@@ -568,8 +569,16 @@ class Permissions(BaseFlags):
 
     @flag_value
     def moderate_members(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can timeout users
+        """:class:`bool`: Returns ``True`` if a user can timeout members
         (prevent them from sending or reacting to messages, and from connecting to voice/stage channels).
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 40
+
+    @make_permission_alias('moderate_members')
+    def timeout_members(self) -> int:
+        """:class:`bool`: An alias for :attr:`moderate_members`.
 
         .. versionadded:: 2.0
         """
