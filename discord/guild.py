@@ -79,6 +79,7 @@ from .sticker import GuildSticker
 from .file import File
 from .settings import GuildSettings
 from .profile import MemberProfile
+from .partial_emoji import PartialEmoji
 
 
 __all__ = (
@@ -1437,8 +1438,6 @@ class Guild(Hashable):
         community: :class:`bool`
             Whether the guild should be a Community guild. If set to ``True``\, both ``rules_channel``
             and ``public_updates_channel`` parameters are required.
-        region: Union[:class:`str`, :class:`VoiceRegion`]
-            The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
@@ -1568,9 +1567,6 @@ class Guild(Hashable):
                 raise InvalidArgument('To transfer ownership you must be the owner of the guild')
 
             fields['owner_id'] = owner.id
-
-        if region is not MISSING:
-            fields['region'] = str(region)
 
         if verification_level is not MISSING:
             if not isinstance(verification_level, VerificationLevel):
@@ -2408,6 +2404,8 @@ class Guild(Hashable):
         colour: Union[Colour, int] = ...,
         hoist: bool = ...,
         mentionable: bool = ...,
+        icon: Optional[bytes] = ...,
+        emoji: Optional[PartialEmoji] = ...,
     ) -> Role:
         ...
 
@@ -2433,6 +2431,8 @@ class Guild(Hashable):
         colour: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
         mentionable: bool = MISSING,
+        icon: Optional[bytes] = MISSING,
+        emoji: Optional[PartialEmoji] = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
         """|coro|
@@ -2462,6 +2462,11 @@ class Guild(Hashable):
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
             Defaults to ``False``.
+        icon: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
+            Could be ``None`` to denote removal of the icon.
+        emoji: Optional[:class:`PartialEmoji`]
+            An emoji to show next to the role. Only unicode emojis are supported.
         reason: Optional[:class:`str`]
             The reason for creating this role. Shows up on the audit log.
 
@@ -2499,6 +2504,20 @@ class Guild(Hashable):
 
         if name is not MISSING:
             fields['name'] = name
+
+        if icon is not MISSING:
+            if icon is None:
+                fields['icon'] = icon
+            else:
+                fields['icon'] = utils._bytes_to_base64_data(icon)
+
+        if emoji is not MISSING:
+            if emoji is None:
+                fields['unicode_emoji'] = None
+            elif emoji.id is not None:
+                raise InvalidArgument('emoji only supports unicode emojis')
+            else:
+                fields['unicode_emoji'] = emoji.name
 
         data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)

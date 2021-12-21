@@ -25,11 +25,13 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, TypeVar, Union, TYPE_CHECKING
 
+from .asset import Asset
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
-from .utils import snowflake_time, _get_as_snowflake, MISSING
+from .utils import snowflake_time, _get_as_snowflake, MISSING, _bytes_to_base64_data
+from .partial_emoji import PartialEmoji
 
 __all__ = (
     'RoleTags',
@@ -184,6 +186,8 @@ class Role(Hashable):
         'guild',
         'tags',
         '_state',
+        '_icon',
+        '_emoji',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: RolePayload):
@@ -242,6 +246,8 @@ class Role(Hashable):
         self.hoist: bool = data.get('hoist', False)
         self.managed: bool = data.get('managed', False)
         self.mentionable: bool = data.get('mentionable', False)
+        self._icon: Optional[str] = data.get('icon')
+        self._emoji: Optional[str] = data.get('unicode_emoji')
         self.tags: Optional[RoleTags]
 
         try:
@@ -317,6 +323,26 @@ class Role(Hashable):
         role_id = self.id
         return [member for member in all_members if member._roles.has(role_id)]
 
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the role's icon asset, if available.
+
+        .. versionadded:: 2.0
+        """
+        if (icon := self._icon) is None:
+            return
+        return Asset._from_role_icon(self._state, self.id, icon)
+
+    @property
+    def emoji(self) -> Optional[PartialEmoji]:
+        """Optional[:class:`PartialEmoji`] Returns the role's unicode emoji, if available.
+
+        .. versionadded:: 2.0
+        """
+        if (emoji := self._emoji) is None:
+            return
+        return PartialEmoji.from_str(emoji)
+
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:
             raise InvalidArgument("Cannot move role to position 0 or below")
@@ -350,6 +376,8 @@ class Role(Hashable):
         hoist: bool = MISSING,
         mentionable: bool = MISSING,
         position: int = MISSING,
+        icon: Optional[bytes] = MISSING,
+        emoji: Optional[PartialEmoji] = MISSING,
         reason: Optional[str] = MISSING,
     ) -> Optional[Role]:
         """|coro|
@@ -382,6 +410,11 @@ class Role(Hashable):
         position: :class:`int`
             The new role's position. This must be below your top role's
             position or it will fail.
+        icon: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
+            Could be ``None`` to denote removal of the icon.
+        emoji: Optional[:class:`PartialEmoji`]
+            An emoji to show next to the role. Only unicode emojis are supported.
         reason: Optional[:class:`str`]
             The reason for editing this role. Shows up on the audit log.
 
@@ -394,6 +427,7 @@ class Role(Hashable):
         InvalidArgument
             An invalid position was given or the default
             role was asked to be moved.
+            A custom emoji was passed to ``emoji``.
 
         Returns
         --------
@@ -424,6 +458,20 @@ class Role(Hashable):
 
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
+
+        if icon is not MISSING:
+            if icon is None:
+                payload['icon'] = icon
+            else:
+                payload['icon'] = _bytes_to_base64_data(icon)
+
+        if emoji is not MISSING:
+            if emoji is None:
+                payload['unicode_emoji'] = None
+            elif emoji.id is not None:
+                raise InvalidArgument('emoji only supports unicode emojis')
+            else:
+                payload['unicode_emoji'] = emoji.name
 
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)

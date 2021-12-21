@@ -401,7 +401,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         if original != modified:
             to_return = User._copy(self._user)
             u.name, u._avatar, u.discriminator, u._public_flags = modified
-            # Signal to dispatch on_user_update
+            # Signal to dispatch user_update
             return to_return, u
 
     @property
@@ -419,7 +419,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
     @status.setter
     def status(self, value: Status) -> None:
-        # internal use only
+        # Internal use only
         self._client_status[None] = str(value)
 
     @property

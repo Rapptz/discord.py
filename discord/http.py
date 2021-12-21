@@ -1120,22 +1120,10 @@ class HTTPClient:
 
     # Guild management
 
-    def get_guilds(
-        self,
-        limit: int,
-        before: Optional[Snowflake] = None,
-        after: Optional[Snowflake] = None,
-        with_counts: bool = True
-    ) -> Response[List[guild.Guild]]:
-        params: Dict[str, Snowflake] = {
+    def get_guilds(self, with_counts: bool = True) -> Response[List[guild.Guild]]:
+        params = {
             'with_counts': str(with_counts).lower()
         }
-        if limit and limit != 200:
-            params['limit'] = limit
-        if before:
-            params['before'] = before
-        if after:
-            params['after'] = after
 
         return self.request(Route('GET', '/users/@me/guilds'), params=params, super_properties_to_track=True)
 
@@ -1147,8 +1135,12 @@ class HTTPClient:
 
         return self.request(r, json=payload)
 
-    def get_guild(self, guild_id: Snowflake) -> Response[guild.Guild]:
-        return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id))
+    def get_guild(self, guild_id: Snowflake, with_counts: bool = True) -> Response[guild.Guild]:
+        params = {
+            'with_counts': str(with_counts).lower()
+        }
+
+        return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id), params=params)
 
     def delete_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
@@ -1564,7 +1556,7 @@ class HTTPClient:
         self, guild_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None, **fields: Any
     ) -> Response[role.Role]:
         r = Route('PATCH', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id)
-        valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable')
+        valid_keys = ('name', 'permissions', 'color', 'hoist', 'mentionable', 'icon', 'unicode_emoji')
         payload = {k: v for k, v in fields.items() if k in valid_keys}
         return self.request(r, json=payload, reason=reason)
 
@@ -1784,7 +1776,7 @@ class HTTPClient:
     # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        # The gateway URL hasn't changed for over 5 years 
+        # The gateway URL hasn't changed for over 5 years
         # And, the official clients aren't GETting it anymore, sooooo...
         self.zlib = zlib
         if zlib:
@@ -1847,7 +1839,7 @@ class HTTPClient:
     def delete_connection(self, type, id):
         return self.request(Route('DELETE', '/users/@me/connections/{type}/{id}', type=type, id=id))
 
-    def get_applications(self, *, with_team_applications: bool = True) -> Response[List[appinfo.AppInfo]]:
+    def get_my_applications(self, *, with_team_applications: bool = True) -> Response[List[appinfo.AppInfo]]:
         params = {
             'with_team_applications': str(with_team_applications).lower()
         }
@@ -1857,8 +1849,21 @@ class HTTPClient:
     def get_my_application(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True)
 
+    def edit_application(self, app_id: Snowflake, payload) -> Response[appinfo.AppInfo]:
+        return self.request(Route('PATCH', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True, json=payload)
+
+    def delete_application(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
+        return self.request(Route('POST', '/applications/{app_id}/delete', app_id=app_id), super_properties_to_track=True)
+
     def get_partial_application(self, app_id: Snowflake):
         return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id), auth=False)
+
+    def create_app(self, name: str):
+        payload = {
+            'name': name
+        }
+
+        return self.request(Route('POST', '/applications'), json=payload)
 
     def get_app_entitlements(self, app_id: Snowflake):  # TODO: return type
         r = Route('GET', '/users/@me/applications/{app_id}/entitlements', app_id=app_id)
@@ -1883,6 +1888,15 @@ class HTTPClient:
 
     def get_team(self, team_id: Snowflake):  # TODO: return type
         return self.request(Route('GET', '/teams/{team_id}', team_id=team_id), super_properties_to_track=True)
+
+    def botify_app(self, app_id: Snowflake):
+        return self.request(Route('POST', '/applications/{app_id}/bot', app_id=app_id), super_properties_to_track=True)
+
+    def reset_secret(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
+        return self.request(Route('POST', '/applications/{app_id}/reset', app_id=app_id), super_properties_to_track=True)
+
+    def reset_token(self, app_id: Snowflake):
+        return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id), super_properties_to_track=True)
 
     def mobile_report(  # Report v1
         self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, reason: str
