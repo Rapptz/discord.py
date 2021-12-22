@@ -52,8 +52,7 @@ from .permissions import PermissionOverwrite
 from .colour import Colour
 from .errors import InvalidArgument, ClientException
 from .channel import *
-from .channel import _guild_channel_factory
-from .channel import _threaded_guild_channel_factory
+from .channel import _guild_channel_factory, _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
     VideoQualityMode,
@@ -74,12 +73,13 @@ from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
 from .stage_instance import StageInstance
-from .threads import Thread, ThreadMember
+from .threads import Thread
 from .sticker import GuildSticker
 from .file import File
 from .settings import GuildSettings
 from .profile import MemberProfile
 from .partial_emoji import PartialEmoji
+from .welcome_screen import *
 
 
 __all__ = (
@@ -2859,6 +2859,80 @@ class Guild(Hashable):
             payload['enabled'] = enabled
 
         await self._state.http.edit_widget(self.id, payload=payload)
+
+    async def welcome_screen(self) -> WelcomeScreen:
+        """|coro|
+
+        Returns the guild's welcome screen.
+
+        You must have the :attr:`~Permissions.manage_guild` permission to
+        use this.
+
+        .. note::
+
+            The guild must have the welcome screen enabled to get this information.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        NotFound
+            The guild does not have a welcome screen.
+        Forbidden
+            You do not have the :attr:`~Permissions.manage_guild` permission.
+        HTTPException
+            Retrieving the welcome screen failed.
+
+        Returns
+        --------
+        :class:`WelcomeScreen`
+            The welcome screen.
+        """
+        data = await self._state.http.get_welcome_screen(self.id)
+        return WelcomeScreen(data=data, guild=self)
+
+    async def edit_welcome_screen(
+        self,
+        *,
+        description: str = MISSING,
+        welcome_channels: List[WelcomeChannel] = MISSING,
+        enabled: bool = MISSING,
+    ):
+        """|coro|
+
+        Edit the welcome screen.
+        You must have the :attr:`~Permissions.manage_guild` permission to do this.
+
+        All parameters are optional.
+
+        Parameters
+        ------------
+        enabled: :class:`bool`
+            Whether the welcome screen will be shown.
+        description: :class:`str`
+            The welcome screen's description.
+        welcome_channels: Optional[List[:class:`WelcomeChannel`]]
+            The welcome channels (in order).
+
+        Raises
+        -------
+        HTTPException
+            Editing the welcome screen failed failed.
+        Forbidden
+            You don't have permissions to edit the welcome screen.
+        """
+        payload = {}
+
+        if enabled is not MISSING:
+            payload['enabled'] = enabled
+        if description is not MISSING:
+            payload['description'] = description
+        if welcome_channels is not MISSING:
+            channels = [channel.to_dict() for channel in welcome_channels] if welcome_channels else []
+            payload['welcome_channels'] = channels
+
+        if payload:
+            await self._state.http.edit_welcome_screen(self.id, payload)
 
     async def chunk(self, *, cache: bool = True) -> None:
         """|coro|
