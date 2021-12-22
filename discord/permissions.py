@@ -700,6 +700,7 @@ class PermissionOverwrite:
         use_external_stickers: Optional[bool]
         start_embedded_activities: Optional[bool]
         moderate_members: Optional[bool]
+        timeout_members: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
