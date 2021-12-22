@@ -61,6 +61,7 @@ from .relationship import *
 from .guild_folder import *
 from .settings import *
 from .profile import *
+from .welcome_screen import *
 
 
 class _VersionInfo(NamedTuple):
