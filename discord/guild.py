@@ -2916,6 +2916,8 @@ class Guild(Hashable):
 
         Raises
         -------
+        NotFound
+            The guild does not have a welcome screen.
         HTTPException
             Editing the welcome screen failed failed.
         Forbidden
