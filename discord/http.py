@@ -48,7 +48,7 @@ import weakref
 
 import aiohttp
 
-from .enums import RelationshipAction
+from .enums import RelationshipAction, InviteType
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, InvalidArgument
 from . import utils
 from .tracking import ContextProperties
@@ -58,8 +58,8 @@ _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from .file import File
-    from .enums import AuditLogAction
-
+    from .enums import AuditLogAction, ChannelType
+    from .message import Message
     from .types import (
         appinfo,
         audit_log,
@@ -803,6 +803,9 @@ class HTTPClient:
     def pins_from(self, channel_id: Snowflake) -> Response[List[message.Message]]:
         return self.request(Route('GET', '/channels/{channel_id}/pins', channel_id=channel_id))
 
+    def ack_pins(self, channel_id: Snowflake) -> Response[None]:
+        return self.request(Route('POST', '/channels/{channel_id}/pins/ack', channel_id=channel_id))
+
     # Member management
 
     def kick(self, user_id: Snowflake, guild_id: Snowflake, reason: Optional[str] = None) -> Response[None]:
@@ -1491,18 +1494,27 @@ class HTTPClient:
     def accept_invite(
         self,
         invite_id: str,
-        guild_id: Snowflake,
-        channel_id: Snowflake,
-        channel_type: int,
-        message_id: Snowflake = MISSING,
+        type: InviteType,
+        *,
+        guild_id: Snowflake = MISSING,
+        channel_id: Snowflake = MISSING,
+        channel_type: ChannelType = MISSING,
+        message: Message = MISSING,
     ):  # TODO: response type
-        if message_id is not MISSING:
-            props = ContextProperties._from_invite_embed(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type, message_id=message_id)  # Invite Button Embed
-        else:
-            props = choice((  # Join Guild, Accept Invite Page
+        if message is not MISSING:  # Invite Button Embed
+            props = ContextProperties._from_invite_embed(
+                guild_id=getattr(message.guild, 'id', None),
+                channel_id=message.channel.id,
+                channel_type=getattr(message.channel, 'type', None),
+                message_id=message.id
+            )
+        elif type is InviteType.guild or type is InviteType.group_dm:  # Join Guild, Accept Invite Page
+            props = choice((
                 ContextProperties._from_accept_invite_page(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type),
                 ContextProperties._from_join_guild_popup(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type)
             ))
+        else:  # Accept Invite Page
+            props = ContextProperties._from_accept_invite_page(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type)
         return self.request(Route('POST', '/invites/{invite_id}', invite_id=invite_id), context_properties=props, json={})
 
     def create_invite(
@@ -1533,6 +1545,18 @@ class HTTPClient:
             payload['target_application_id'] = str(target_application_id)
 
         return self.request(r, reason=reason, json=payload)
+
+    def create_group_invite(
+        self,
+        channel_id: Snowflake,
+        *,
+        max_age: int = 86400,
+    ) -> Response[invite.Invite]:
+        payload = {
+            'max_age': max_age,
+        }
+
+        return self.request(Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id), json=payload)
 
     def get_invite(
         self, invite_id: str, *, with_counts: bool = True, with_expiration: bool = True
