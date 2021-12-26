@@ -68,6 +68,10 @@ __all__ = (
     'BrowserEnum',
     'CommandType',
     'OptionType',
+    'ApplicationVerificationState',
+    'StoreApplicationState',
+    'RPCApplicationState',
+    'InviteType',
 )
 
 
@@ -157,7 +161,7 @@ class EnumMeta(type):
         return cls._enum_member_map_[key]
 
     def __setattr__(cls, name, value):
-        raise TypeError('Enums are immutable.')
+        raise TypeError('Enums are immutable')
 
     def __delattr__(cls, attr):
         raise TypeError('Enums are immutable')
@@ -199,6 +203,9 @@ class ChannelType(Enum):
 
     def __str__(self):
         return self.name
+
+    def __int__(self):
+        return self.value
 
 
 class MessageType(Enum):
@@ -544,9 +551,11 @@ class UserFlags(Enum):
     hypesquad_balance = 256
     early_supporter = 512
     team_user = 1024
+    partner_or_verification_application = 2048
     system = 4096
     has_unread_urgent_messages = 8192
     bug_hunter_level_2 = 16384
+    underage_deleted = 32768
     verified_bot = 65536
     verified_bot_developer = 131072
     discord_certified_moderator = 262144
@@ -630,7 +639,7 @@ class ReportType(Enum):
         return self.value
 
 
-class RelationshipAction(Enum, comparable=True):
+class RelationshipAction(Enum):
     send_friend_request    = 'request'
     unfriend               = 'unfriend'
     accept_request         = 'accept'
@@ -640,12 +649,12 @@ class RelationshipAction(Enum, comparable=True):
     remove_pending_request = 'remove'
 
 
-class UnavailableGuildType(Enum, comparable=True):
+class UnavailableGuildType(Enum):
     existing = 'ready'
     joined   = 'joined'
 
 
-class RequiredActionType(Enum, comparable=True):
+class RequiredActionType(Enum):
     verify_phone     = 'REQUIRE_VERIFIED_PHONE'
     verify_email     = 'REQUIRE_VERIFIED_EMAIL'
     complete_captcha = 'REQUIRE_CAPTCHA'
@@ -667,13 +676,19 @@ class InviteTarget(Enum):
     embedded_application = 2
 
 
-class InteractionType(Enum, comparable=True):
+class InviteType(Enum):
+    guild = 0
+    group_dm = 1
+    friend = 2
+
+
+class InteractionType(Enum):
     ping = 1
     application_command = 2
     component = 3
 
 
-class CommandType(Enum, comparable=True):
+class CommandType(Enum):
     chat_input = 1
     chat = 1
     slash = 1
@@ -684,7 +699,7 @@ class CommandType(Enum, comparable=True):
         return self.value
 
 
-class OptionType(Enum, comparable=True):
+class OptionType(Enum):
     sub_command = 1
     sub_command_group = 2
     string = 3
@@ -744,6 +759,31 @@ class NSFWLevel(Enum, comparable=True):
     explicit = 1
     safe = 2
     age_restricted = 3
+
+
+class ApplicationVerificationState(Enum, comparable=True):
+    ineligible = 1
+    unsubmitted = 2
+    submitted = 3
+    succeeded = 4
+
+
+class StoreApplicationState(Enum, comparable=True):
+    none = 1
+    paid = 2
+    submitted = 3
+    approved = 4
+    rejected = 5
+    blocked = 6
+
+
+class RPCApplicationState(Enum, comparable=True):
+    disabled = 0
+    none = 0
+    unsubmitted = 1
+    submitted = 2
+    approved = 3
+    rejected = 4
 
 
 T = TypeVar('T')

@@ -356,7 +356,7 @@ class PublicUserFlags(BaseFlags):
     def bug_hunter(self):
         """:class:`bool`: Returns ``True`` if the user is a level 1 Bug Hunter
 
-        There is an alias of this called :attr:`bug_hunter_level_1`.
+        There is an alias for this called :attr:`bug_hunter_level_1`.
         """
         return UserFlags.bug_hunter.value
 
@@ -454,11 +454,8 @@ class PublicUserFlags(BaseFlags):
 class PrivateUserFlags(PublicUserFlags):
     r"""Wraps up the Discord User flags.
 
-        This subclasses :class:`PublicUserFlags` and adds the extra flags,
-        so anything available in :class:`PublicUserFlags` is available here.
-
         .. note::
-            Some of these are only available on your own user flags.
+            These are only available on your own user flags.
 
         .. container:: operations
 
@@ -501,8 +498,18 @@ class PrivateUserFlags(PublicUserFlags):
 
     @flag_value
     def mfa_sms(self):
-        """:class:`bool`: Returns ``True`` if the user has enabled SMS recovery for MFA enabled."""
+        """:class:`bool`: Returns ``True`` if the user has SMS recovery for MFA enabled."""
         return UserFlags.mfa_sms.value
+
+    @flag_value
+    def underage_deleted(self):
+        """:class:`bool`: Returns ``True`` if the user has been flagged for deletion for being underage."""
+        return UserFlags.underage_deleted.value
+
+    @flag_value
+    def partner_or_verification_application(self):
+        """:class:`bool`: Returns ``True`` if the user has a partner or a verification application?"""
+        return UserFlags.partner_or_verification_application.value
 
 
 @fill_with_flags()
