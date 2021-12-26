@@ -1546,12 +1546,7 @@ class HTTPClient:
 
         return self.request(r, reason=reason, json=payload)
 
-    def create_group_invite(
-        self,
-        channel_id: Snowflake,
-        *,
-        max_age: int = 86400,
-    ) -> Response[invite.Invite]:
+    def create_group_invite(self, channel_id: Snowflake, *, max_age: int = 86400) -> Response[invite.Invite]:
         payload = {
             'max_age': max_age,
         }

@@ -1500,6 +1500,19 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
+    async def ack_pins(self) -> None:
+        """|coro|
+
+        Acks the channel's pins.
+
+        Raises
+        -------
+        ~discord.HTTPException
+            Acking the pinned messages failed.
+        """
+        channel = await self._get_channel()
+        await self._state.http.ack_pins(channel.id)
+
     async def pins(self) -> List[Message]:
         """|coro|
 

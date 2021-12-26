@@ -54,6 +54,7 @@ from .errors import ClientException, InvalidArgument
 from .stage_instance import StageInstance
 from .threads import Thread
 from .iterators import ArchivedThreadIterator
+from .invite import Invite
 
 __all__ = (
     'TextChannel',
@@ -2099,6 +2100,30 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
             Leaving the group failed.
         """
         await self._state.http.delete_channel(self.id)
+
+    async def create_invite(self, *, max_age: int = 86400) -> Invite:
+        """|coro|
+
+        Creates an instant invite from a group channel.
+
+        Parameters
+        ------------
+        max_age: :class:`int`
+            How long the invite should last in seconds.
+            Defaults to 86400. Does not support 0.
+
+        Raises
+        -------
+        ~discord.HTTPException
+            Invite creation failed.
+
+        Returns
+        --------
+        :class:`~discord.Invite`
+            The invite that was created.
+        """
+        data = await self._state.http.create_group_invite(self.id, max_age=max_age)
+        return Invite.from_incomplete(data=data, state=self._state)
 
 
 class PartialMessageable(discord.abc.Messageable, Hashable):
