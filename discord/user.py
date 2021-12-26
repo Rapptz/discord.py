@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Type, TypeVar, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
@@ -36,7 +36,7 @@ from .iterators import FakeCommandIterator
 from .object import Object
 from .relationship import Relationship
 from .settings import UserSettings
-from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, parse_time, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, copy_doc, snowflake_time, MISSING
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -478,6 +478,10 @@ class ClientUser(BaseUser):
         Specifies the type of premium a user has (i.e. Nitro or Nitro Classic). Could be None if the user is not premium.
     note: :class:`Note`
         The user's note. Not pre-fetched.
+    nsfw_allowed: :class:`bool`
+        Specifies if the user should be allowed to access NSFW content.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -491,6 +495,7 @@ class ClientUser(BaseUser):
         'note',
         'premium',
         'bio',
+        'nsfw_allowed',
     )
 
     if TYPE_CHECKING:
@@ -503,6 +508,7 @@ class ClientUser(BaseUser):
         premium: bool
         premium_type: Optional[PremiumType]
         bio: Optional[str]
+        nsfw_allowed: bool
 
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         super().__init__(state=state, data=data)
@@ -525,11 +531,7 @@ class ClientUser(BaseUser):
         self.premium = data.get('premium', False)
         self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
         self.bio = data.get('bio') or None
-
-    @property
-    def connected_accounts(self) -> Optional[List[dict]]:
-        """Optional[List[:class:`dict`]]: Returns a list of all linked accounts for this user if available."""
-        return self._state._connected_accounts
+        self.nsfw_allowed = data.get('nsfw_allowed', False)
 
     def get_relationship(self, user_id: int) -> Relationship:
         """Retrieves the :class:`Relationship` if applicable.
@@ -581,7 +583,7 @@ class ClientUser(BaseUser):
         accent_color: Colour = MISSING,
         bio: Optional[str] = MISSING,
         date_of_birth: datetime = MISSING,
-        ) -> ClientUser:
+    ) -> ClientUser:
         """|coro|
 
         Edits the current profile of the client.
@@ -642,7 +644,7 @@ class ClientUser(BaseUser):
         :class:`ClientUser`
             The newly edited client user.
         """
-        args: Dict[str, any] = {}
+        args: Dict[str, Any] = {}
 
         if any(x is not MISSING for x in ('new_password', 'email', 'username', 'discriminator')):
             if password is MISSING:
@@ -700,7 +702,7 @@ class ClientUser(BaseUser):
             else:
                 await http.change_hypesquad_house(house.value)
 
-        data = await http.edit_profile(**args)
+        data = await http.edit_profile(args)
         try:
             http._token(data['token'])
         except KeyError:
@@ -730,90 +732,8 @@ class ClientUser(BaseUser):
         data = await self._state.http.get_settings()
         return UserSettings(data=data, state=self._state)
 
+    @copy_doc(UserSettings.edit)
     async def edit_settings(self, **kwargs) -> UserSettings:  # TODO: I really wish I didn't have to do this...
-        """|coro|
-
-        Edits the client user's settings.
-
-        .. versionchanged:: 2.0
-            The edit is no longer in-place, instead the newly edited settings are returned.
-
-        Parameters
-        ----------
-        afk_timeout: :class:`int`
-            How long (in seconds) the user needs to be AFK until Discord
-            sends push notifications to your mobile device.
-        allow_accessibility_detection: :class:`bool`
-            Whether or not to allow Discord to track screen reader usage.
-        animate_emojis: :class:`bool`
-            Whether or not to animate emojis in the chat.
-        animate_stickers: :class:`StickerAnimationOptions`
-            Whether or not to animate stickers in the chat.
-        contact_sync_enabled: :class:`bool`
-            Whether or not to enable the contact sync on Discord mobile.
-        convert_emoticons: :class:`bool`
-            Whether or not to automatically convert emoticons into emojis.
-            e.g. :-) -> 😃
-        default_guilds_restricted: :class:`bool`
-            Whether or not to automatically disable DMs between you and
-            members of new guilds you join.
-        detect_platform_accounts: :class:`bool`
-            Whether or not to automatically detect accounts from services
-            like Steam and Blizzard when you open the Discord client.
-        developer_mode: :class:`bool`
-            Whether or not to enable developer mode.
-        disable_games_tab: :class:`bool`
-            Whether or not to disable the showing of the Games tab.
-        enable_tts_command: :class:`bool`
-            Whether or not to allow tts messages to be played/sent.
-        explicit_content_filter: :class:`UserContentFilter`
-            The filter for explicit content in all messages.
-        friend_source_flags: :class:`FriendFlags`
-            Who can add you as a friend.
-        gif_auto_play: :class:`bool`
-            Whether or not to automatically play gifs that are in the chat.
-        guild_positions: List[:class:`abc.Snowflake`]
-            A list of guilds in order of the guild/guild icons that are on
-            the left hand side of the UI.
-        inline_attachment_media: :class:`bool`
-            Whether or not to display attachments when they are uploaded in chat.
-        inline_embed_media: :class:`bool`
-            Whether or not to display videos and images from links posted in chat.
-        locale: :class:`str`
-            The :rfc:`3066` language identifier of the locale to use for the language
-            of the Discord client.
-        message_display_compact: :class:`bool`
-            Whether or not to use the compact Discord display mode.
-        native_phone_integration_enabled: :class:`bool`
-            Whether or not to enable the new Discord mobile phone number friend
-            requesting features.
-        render_embeds: :class:`bool`
-            Whether or not to render embeds that are sent in the chat.
-        render_reactions: :class:`bool`
-            Whether or not to render reactions that are added to messages.
-        restricted_guilds: List[:class:`abc.Snowflake`]
-            A list of guilds that you will not receive DMs from.
-        show_current_game: :class:`bool`
-            Whether or not to display the game that you are currently playing.
-        stream_notifications_enabled: :class:`bool`
-            Unknown.
-        theme: :class:`Theme`
-            The theme of the Discord UI.
-        timezone_offset: :class:`int`
-            The timezone offset to use.
-        view_nsfw_guilds: :class:`bool`
-            Whether or not to show NSFW guilds on iOS.
-
-        Raises
-        -------
-        HTTPException
-            Editing the settings failed.
-
-        Returns
-        -------
-        :class:`.UserSettings`
-            The client user's updated settings.
-        """
         payload = {}
 
         content_filter = kwargs.pop('explicit_content_filter', None)
@@ -841,6 +761,10 @@ class ClientUser(BaseUser):
         status = kwargs.pop('status', None)
         if status:
             payload['status'] = status.value
+
+        custom_activity = kwargs.pop('custom_activity', MISSING)
+        if custom_activity is not MISSING:
+            payload['custom_status'] = custom_activity and custom_activity.to_settings_dict()
 
         theme = kwargs.pop('theme', None)
         if theme:
@@ -895,7 +819,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         self._stored: bool = False
 
     def __repr__(self) -> str:
-        return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
 
     def __del__(self) -> None:
         try:
@@ -910,10 +834,10 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         self._stored = False
         return self
 
-    def _get_voice_client_key(self) -> Union[int, str]:
+    def _get_voice_client_key(self) -> Tuple[int, str]:
         return self._state.self_id, 'self_id'
 
-    def _get_voice_state_pair(self) -> Union[int, int]:
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
         return self._state.self_id, self.dm_channel.id
 
     async def _get_channel(self) -> DMChannel:
@@ -974,7 +898,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         *,
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = [],
-        **kwargs,
+        **_,
     ):
         """Returns an iterator that allows you to see what user commands are available to use on this user.
 

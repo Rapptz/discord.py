@@ -27,10 +27,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from .activity import create_activity
+from .activity import create_settings_activity
 from .enums import FriendFlags, NotificationLevel, Status, StickerAnimationOptions, Theme, UserContentFilter, try_enum
 from .guild_folder import GuildFolder
-from .utils import MISSING, parse_time, utcnow
+from .utils import copy_doc, MISSING, parse_time, utcnow
 
 if TYPE_CHECKING:
     from .abc import GuildChannel
@@ -134,6 +134,9 @@ class UserSettings:
     def __repr__(self) -> str:
         return '<Settings>'
 
+    def _get_guild(self, id: int) -> Optional[Guild]:
+        return self._state._get_guild(int(id))
+
     def _update(self, data: Dict[str, Any]) -> None:
         RAW_VALUES = {
             'afk_timeout',
@@ -166,6 +169,110 @@ class UserSettings:
             else:
                 setattr(self, '_' + key, value)
 
+    async def edit(self, **kwargs) -> UserSettings:
+        """|coro|
+
+        Edits the client user's settings.
+
+        .. versionchanged:: 2.0
+            The edit is no longer in-place, instead the newly edited settings are returned.
+
+        Parameters
+        ----------
+        afk_timeout: :class:`int`
+            How long (in seconds) the user needs to be AFK until Discord
+            sends push notifications to your mobile device.
+        allow_accessibility_detection: :class:`bool`
+            Whether or not to allow Discord to track screen reader usage.
+        animate_emojis: :class:`bool`
+            Whether or not to animate emojis in the chat.
+        animate_stickers: :class:`StickerAnimationOptions`
+            Whether or not to animate stickers in the chat.
+        contact_sync_enabled: :class:`bool`
+            Whether or not to enable the contact sync on Discord mobile.
+        convert_emoticons: :class:`bool`
+            Whether or not to automatically convert emoticons into emojis.
+            e.g. :-) -> 😃
+        default_guilds_restricted: :class:`bool`
+            Whether or not to automatically disable DMs between you and
+            members of new guilds you join.
+        detect_platform_accounts: :class:`bool`
+            Whether or not to automatically detect accounts from services
+            like Steam and Blizzard when you open the Discord client.
+        developer_mode: :class:`bool`
+            Whether or not to enable developer mode.
+        disable_games_tab: :class:`bool`
+            Whether or not to disable the showing of the Games tab.
+        enable_tts_command: :class:`bool`
+            Whether or not to allow tts messages to be played/sent.
+        explicit_content_filter: :class:`UserContentFilter`
+            The filter for explicit content in all messages.
+        friend_source_flags: :class:`FriendFlags`
+            Who can add you as a friend.
+        gif_auto_play: :class:`bool`
+            Whether or not to automatically play gifs that are in the chat.
+        guild_positions: List[:class:`abc.Snowflake`]
+            A list of guilds in order of the guild/guild icons that are on
+            the left hand side of the UI.
+        inline_attachment_media: :class:`bool`
+            Whether or not to display attachments when they are uploaded in chat.
+        inline_embed_media: :class:`bool`
+            Whether or not to display videos and images from links posted in chat.
+        locale: :class:`str`
+            The :rfc:`3066` language identifier of the locale to use for the language
+            of the Discord client.
+        message_display_compact: :class:`bool`
+            Whether or not to use the compact Discord display mode.
+        native_phone_integration_enabled: :class:`bool`
+            Whether or not to enable the new Discord mobile phone number friend
+            requesting features.
+        render_embeds: :class:`bool`
+            Whether or not to render embeds that are sent in the chat.
+        render_reactions: :class:`bool`
+            Whether or not to render reactions that are added to messages.
+        restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that you will not receive DMs from.
+        show_current_game: :class:`bool`
+            Whether or not to display the game that you are currently playing.
+        stream_notifications_enabled: :class:`bool`
+            Unknown.
+        theme: :class:`Theme`
+            The theme of the Discord UI.
+        timezone_offset: :class:`int`
+            The timezone offset to use.
+        view_nsfw_guilds: :class:`bool`
+            Whether or not to show NSFW guilds on iOS.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+
+        Returns
+        -------
+        :class:`.UserSettings`
+            The client user's updated settings.
+        """
+        return await self._state.user.edit_settings(**kwargs)  # type: ignore
+
+    async def fetch_tracking(self) -> Tracking:
+        """|coro|
+
+        Retrieves your :class:`Tracking` settings.
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the tracking settings failed.
+
+        Returns
+        -------
+        :class:`Tracking`
+            The tracking settings.
+        """
+        data = await self._state.http.get_tracking()
+        return Tracking(state=self._state, data=data)
+
     @property
     def tracking(self) -> Optional[Tracking]:
         """Optional[:class:`Tracking`]: Returns your tracking settings if available."""
@@ -179,7 +286,7 @@ class UserSettings:
     @property
     def custom_activity(self) -> Optional[CustomActivity]:
         """Optional[:class:`CustomActivity]: The custom activity you have set."""
-        return create_activity(getattr(self, '_custom_status', None))
+        return create_settings_activity(data=getattr(self, '_custom_status', None), state=self._state)
 
     @property
     def explicit_content_filter(self) -> UserContentFilter:
@@ -220,9 +327,6 @@ class UserSettings:
     def theme(self) -> Theme:
         """:class:`Theme`: The theme of the Discord UI."""
         return try_enum(Theme, getattr(self, '_theme', 'dark'))  # Sane default :)
-
-    def _get_guild(self, id: int) -> Optional[Guild]:
-        return self._state._get_guild(int(id))
 
 
 class MuteConfig:

@@ -27,9 +27,14 @@ from __future__ import annotations
 from base64 import b64encode
 import json
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, overload, Optional, TYPE_CHECKING
 
-from .types.snowflake import Snowflake
+from .utils import MISSING
+
+if TYPE_CHECKING:
+    from .enums import ChannelType
+    from .types.snowflake import Snowflake
+    from .state import ConnectionState
 
 __all__ = (
     'ContextProperties',
@@ -46,7 +51,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
     __slots__ = ('_data', 'value')
 
     def __init__(self, data) -> None:
-        self._data: Dict[str, any] = data
+        self._data: Dict[str, Snowflake] = data
         self.value: str = self._encode_data(data)
 
     def _encode_data(self, data) -> str:
@@ -140,13 +145,6 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return cls(data)
 
     @classmethod
-    def _from_accept_invite_page_blank(cls) -> ContextProperties:
-        data = {
-            'location': 'Accept Invite Page'
-        }
-        return cls(data)
-
-    @classmethod
     def _from_app(cls) -> ContextProperties:
         data = {
             'location': '/app'
@@ -176,44 +174,63 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     @classmethod
     def _from_accept_invite_page(
-        cls, *, guild_id: Snowflake, channel_id: Snowflake, channel_type: int
+        cls,
+        *,
+        guild_id: Snowflake = MISSING,
+        channel_id: Snowflake = MISSING,
+        channel_type: ChannelType = MISSING,
     ) -> ContextProperties:
-        data = {
+        data: Dict[str, Snowflake] = {
             'location': 'Accept Invite Page',
-            'location_guild_id': str(guild_id),
-            'location_channel_id': str(channel_id),
-            'location_channel_type': int(channel_type)
         }
+        if guild_id is not MISSING:
+            data['location_guild_id'] = str(guild_id)
+        if channel_id is not MISSING:
+            data['location_channel_id'] = str(channel_id)
+        if channel_type is not MISSING:
+            data['location_channel_type'] = int(channel_type)
         return cls(data)
 
     @classmethod
     def _from_join_guild_popup(
-        cls, *, guild_id: Snowflake, channel_id: Snowflake, channel_type: int
+        cls,
+        *,
+        guild_id: Snowflake = MISSING,
+        channel_id: Snowflake = MISSING,
+        channel_type: ChannelType = MISSING,
     ) -> ContextProperties:
-        data = {
+        data: Dict[str, Snowflake] = {
             'location': 'Join Guild',
-            'location_guild_id': str(guild_id),
-            'location_channel_id': str(channel_id),
-            'location_channel_type': int(channel_type)
         }
+        if guild_id is not MISSING:
+            data['location_guild_id'] = str(guild_id)
+        if channel_id is not MISSING:
+            data['location_channel_id'] = str(channel_id)
+        if channel_type is not MISSING:
+            data['location_channel_type'] = int(channel_type)
         return cls(data)
 
     @classmethod
     def _from_invite_embed(
-        cls, *, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, channel_type: int
+        cls,
+        *,
+        guild_id: Optional[Snowflake],
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        channel_type: Optional[ChannelType],
     ) -> ContextProperties:
         data = {
             'location': 'Invite Button Embed',
-            'location_guild_id': str(guild_id),
+            'location_guild_id': str(guild_id) if guild_id else None,
             'location_channel_id': str(channel_id),
-            'location_channel_type': int(channel_type),
-            'location_message_id': str(message_id)
+            'location_channel_type': int(channel_type) if channel_type else None,
+            'location_message_id': str(message_id),
         }
         return cls(data)
 
     @property
     def location(self) -> Optional[str]:
-        return self._data.get('location')
+        return self._data.get('location')  # type: ignore
 
     @property
     def guild_id(self) -> Optional[int]:
@@ -229,9 +246,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     @property
     def channel_type(self) -> Optional[int]:
-        data = self._data.get('location_channel_type')
-        if data is not None:
-            return data
+        return self._data.get('location_channel_type')  # type: ignore
 
     @property
     def message_id(self) -> Optional[int]:
@@ -243,10 +258,10 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return self.value is not None
 
     def __str__(self) -> str:
-        return self._data.get('location', 'None')
+        return self._data.get('location', 'None')  # type: ignore
 
     def __repr__(self) -> str:
-        return '<ContextProperties location={0.location}>'.format(self)
+        return f'<ContextProperties location={self.location}>'
 
     def __eq__(self, other) -> bool:
         return isinstance(other, ContextProperties) and self.value == other.value
@@ -262,7 +277,51 @@ class Tracking:
     ----------
     personalization: :class:`bool`
         Whether you have consented to your data being used for personalization.
+    usage_statistics: :class:`bool`
+        Whether you have consented to your data being used for usage statistics.
     """
 
-    def __init__(self, data: Dict[str, Any]):  # TODO: rest of the values
+    __slots__ = ('_state', 'personalization', 'usage_statistics')
+
+    def __init__(self, *, data: Dict[str, Dict[str, bool]], state: ConnectionState) -> None:
+        self._state = state
+        self._update(data)
+
+    def __bool__(self) -> bool:
+        return any({self.personalization, self.usage_statistics})
+
+    def _update(self, data: Dict[str, Dict[str, bool]]):
         self.personalization = data.get('personalization', {}).get('consented', False)
+        self.usage_statistics = data.get('usage_statistics', {}).get('consented', False)
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        personalization: bool = ...,
+        usage_statistics: bool = ...,
+    ) -> None:
+        ...
+
+    async def edit(self, **kwargs) -> None:
+        """|coro|
+
+        Edits your tracking settings.
+
+        Parameters
+        ----------
+        personalization: :class:`bool`
+            Whether you have consented to your data being used for personalization.
+        usage_statistics: :class:`bool`
+            Whether you have consented to your data being used for usage statistics.
+        """
+        payload = {
+            'grant': [k for k, v in kwargs.items() if v is True],
+            'revoke': [k for k, v in kwargs.items() if v is False],
+        }
+        data = await self._state.http.edit_tracking(payload)
+        self._update(data)
