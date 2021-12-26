@@ -1861,6 +1861,12 @@ class HTTPClient:
     def edit_settings(self, **payload):  # TODO: return type, is this cheating?
         return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
 
+    def get_tracking(self): # TODO: return type
+        return self.request(Route('GET', '/users/@me/consent'))
+
+    def edit_tracking(self, payload):
+        return self.request(Route('POST', '/users/@me/consent'), json=payload)
+
     def get_connections(self):
         return self.request(Route('GET', '/users/@me/connections'))
 
