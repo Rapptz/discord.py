@@ -102,6 +102,10 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
     return text
 
 
+def _gen_accept_encoding_header():
+    return 'gzip, deflate, br' if aiohttp.http_parser.HAS_BROTLI else 'gzip, deflate'
+
+
 class Route:
     BASE: ClassVar[str] = 'https://discord.com/api/v9'
 
@@ -149,6 +153,8 @@ class MaybeUnlock:
 # For some reason, the Discord voice websocket expects this header to be
 # completely lowercase while aiohttp respects spec and does it as case-insensitive
 aiohttp.hdrs.WEBSOCKET = 'websocket'  # type: ignore
+# Support brotli if installed
+aiohttp.client_reqrep.ClientRequest.DEFAULT_HEADERS[aiohttp.hdrs.ACCEPT_ENCODING] = _gen_accept_encoding_header()
 
 
 class _FakeResponse:

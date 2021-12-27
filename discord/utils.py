@@ -1263,10 +1263,10 @@ async def _get_info(session: ClientSession) -> Tuple[str, str, int]:
 async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord-S.C.U.M
     """Fetches client build number"""
     try:
-        login_page_request = await session.get('https://discord.com/login', headers={'Accept-Encoding': 'gzip, deflate'}, timeout=7)
+        login_page_request = await session.get('https://discord.com/login', timeout=7)
         login_page = await login_page_request.text()
         build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(login_page)[-2] + '.js'
-        build_request = await session.get(build_url, headers={'Accept-Encoding': 'gzip, deflate'}, timeout=7)
+        build_request = await session.get(build_url, timeout=7)
         build_file = await build_request.text()
         build_index = build_file.find('buildNumber') + 14
         return int(build_file[build_index:build_index + 6])
