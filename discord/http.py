@@ -236,7 +236,6 @@ class HTTPClient:
             'timeout': 30.0,
             'autoclose': False,
             'headers': {
-                'Accept-Encoding': 'gzip, deflate',
                 'Accept-Language': 'en-US',
                 'Cache-Control': 'no-cache',
                 'Connection': 'Upgrade',
