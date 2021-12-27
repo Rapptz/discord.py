@@ -28,7 +28,7 @@ import asyncio
 from base64 import b64encode
 import json
 import logging
-from random import choice, getrandbits
+from random import choice
 from typing import (
     Any,
     ClassVar,
@@ -154,7 +154,7 @@ class MaybeUnlock:
 # completely lowercase while aiohttp respects spec and does it as case-insensitive
 aiohttp.hdrs.WEBSOCKET = 'websocket'  # type: ignore
 # Support brotli if installed
-aiohttp.client_reqrep.ClientRequest.DEFAULT_HEADERS[aiohttp.hdrs.ACCEPT_ENCODING] = _gen_accept_encoding_header()
+aiohttp.client_reqrep.ClientRequest.DEFAULT_HEADERS[aiohttp.hdrs.ACCEPT_ENCODING] = _gen_accept_encoding_header()  # type: ignore
 
 
 class _FakeResponse:
@@ -226,7 +226,6 @@ class HTTPClient:
         self._started = True
 
     async def ws_connect(self, url: str, *, compress: int = 0, host: Optional[str] = None) -> Any:
-        websocket_key = b64encode(bytes(getrandbits(8) for _ in range(16))).decode()  # Thank you Discord-S.C.U.M
         if not host:
             host = url[6:].split('?')[0].rstrip('/')  # Removes 'wss://' and the query params
 
@@ -245,9 +244,6 @@ class HTTPClient:
                 'Origin': 'https://discord.com',
                 'Pragma': 'no-cache',
                 'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
-                'Sec-WebSocket-Key': websocket_key,
-                'Sec-WebSocket-Version': '13',
-                'Upgrade': 'websocket',
                 'User-Agent': self.user_agent,
             },
             'compress': compress,
@@ -275,8 +271,6 @@ class HTTPClient:
 
         # Header creation
         headers = {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip, deflate',
             'Accept-Language': 'en-US',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
