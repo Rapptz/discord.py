@@ -46,6 +46,10 @@ extras_require = {
     ]
 }
 
+found_packages = find_packages()
+
+found_packages.extend(['discord.ext.tasks', 'discord.ext.commands'])
+
 setup(name='discord.py-self',
       author='Dolfies',
       url='https://github.com/dolfies/discord.py-self',
@@ -54,7 +58,7 @@ setup(name='discord.py-self',
         "Issue tracker": "https://github.com/dolfies/discord.py-self/issues",
       },
       version=version,
-      packages=find_packages(),
+      packages=found_packages,
       license='MIT',
       description='A Python wrapper for the Discord user API',
       long_description=readme,
