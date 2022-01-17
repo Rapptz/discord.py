@@ -34,17 +34,18 @@ import inspect
 import time
 import os
 import random
+from sys import intern
 
 from .errors import NotFound
 from .guild import CommandCounts, Guild
-from .activity import BaseActivity
+from .activity import BaseActivity, create_activity
 from .user import User, ClientUser
 from .emoji import Emoji
 from .mentions import AllowedMentions
 from .partial_emoji import PartialEmoji
 from .message import Message
 from .channel import *
-from .channel import _channel_factory
+from .channel import _channel_factory, _private_channel_factory
 from .raw_models import *
 from .member import Member
 from .relationship import Relationship
@@ -57,10 +58,9 @@ from .integrations import _integration_factory
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .settings import UserSettings
+from .settings import UserSettings, GuildSettings
 from .tracking import Tracking
 from .interactions import Interaction
-
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -86,6 +86,8 @@ if TYPE_CHECKING:
     CS = TypeVar('CS', bound='ConnectionState')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
 
+MISSING = utils.MISSING
+
 
 class ChunkRequest:
     def __init__(
@@ -100,7 +102,7 @@ class ChunkRequest:
         self.resolver: Callable[[int], Any] = resolver
         self.loop: asyncio.AbstractEventLoop = loop
         self.cache: bool = cache
-        self.nonce: str = os.urandom(16).hex()
+        self.nonce: str = str(utils.time_snowflake(utils.utcnow()))
         self.buffer: List[Member] = []
         self.waiters: List[asyncio.Future[List[Member]]] = []
 
@@ -146,11 +148,6 @@ async def logging_coroutine(coroutine: Coroutine[Any, Any, T], *, info: str) -> 
 
 
 class ConnectionState:
-    if TYPE_CHECKING:
-        _get_websocket: Callable[..., DiscordWebSocket]
-        _get_client: Callable[..., Client]
-        _parsers: Dict[str, Callable[[Dict[str, Any]], None]]
-
     def __init__(
         self,
         *,
@@ -176,19 +173,21 @@ class ConnectionState:
         self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
 
         allowed_mentions = options.get('allowed_mentions')
-
         if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
             raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
         self.allowed_mentions: Optional[AllowedMentions] = allowed_mentions
         self._chunk_requests: Dict[Union[int, str], ChunkRequest] = {}
 
-        activity = options.get('activity', None)
-        if activity:
-            if not isinstance(activity, BaseActivity):
-                raise TypeError('activity parameter must derive from BaseActivity.')
+        activities = options.get('activities', [])
+        if not activities:
+            activity = options.get('activity')
+            if activity is not None:
+                activities = [activity]
 
-            activity = activity.to_dict()
+        if not all(isinstance(activity, BaseActivity) for activity in activities):
+            raise TypeError('activity parameter must derive from BaseActivity.')
+        activities = [activity.to_dict() for activity in activities]
 
         status = options.get('status', None)
         if status:
@@ -217,17 +216,18 @@ class ConnectionState:
                 raise TypeError(f'member_cache_flags parameter must be MemberCacheFlags not {type(cache_flags)!r}')
 
         self.member_cache_flags: MemberCacheFlags = cache_flags
-        self._activity: Optional[ActivityPayload] = activity
+        self._activities: List[ActivityPayload] = activities
         self._status: Optional[str] = status
 
         if cache_flags._empty:
             self.store_user = self.create_user  # type: ignore
-            self.deref_user = self.deref_user_no_intents  # type: ignore
+            self.deref_user = lambda _: None  # type: ignore
 
-        self.parsers = parsers = {}
+        parsers = {}
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
                 parsers[attr[6:].upper()] = func
+        self.parsers: Dict[str, Callable[[Dict[str, Any]], None]] = parsers
 
         self.clear()
 
@@ -237,7 +237,6 @@ class ConnectionState:
         self.consents: Optional[Tracking] = None
         self.analytics_token: Optional[str] = None
         self.session_id: Optional[str] = None
-        self.connected_accounts: Optional[List[dict]] = None
         self.preferred_region: Optional[VoiceRegion] = None
         # Originally, this code used WeakValueDictionary to maintain references to the
         # global user mapping
@@ -378,9 +377,6 @@ class ConnectionState:
 
     def create_user(self, data: UserPayload) -> User:
         return User(state=self, data=data)
-
-    def deref_user_no_intents(self, user_id: int) -> None:
-        pass
 
     def get_user(self, id: Optional[int]) -> Optional[User]:
         # The keys of self._users are ints
@@ -539,7 +535,7 @@ class ConnectionState:
             except NotFound:
                 pass
 
-    def request_guild(self, guild_id: int) -> None:
+    def request_guild(self, guild_id: int) -> Coroutine:
         return self.ws.request_lazy_guild(guild_id, typing=True, activities=True, threads=True)
 
     def chunker(
@@ -659,7 +655,7 @@ class ConnectionState:
 
         # Private channel parsing
         for pm in data.get('private_channels', []):
-            factory, _ = _channel_factory(pm['type'])
+            factory, _ = _private_channel_factory(pm['type'])
             if 'recipients' not in pm:
                 pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
             self._add_private_channel(factory(me=user, data=pm, state=self))
@@ -670,7 +666,7 @@ class ConnectionState:
         region = data.get('geo_ordered_rtc_regions', ['us-west'])[0]
         self.preferred_region = try_enum(VoiceRegion, region)
         self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
-        self.consents = Tracking(data.get('consents', {}))
+        self.consents = Tracking(data=data.get('consents', {}), state=self)
 
         if 'required_action' in data:  # Locked more than likely
             self.parse_user_required_action_update(data)
@@ -845,19 +841,79 @@ class ConnectionState:
     def parse_user_settings_update(self, data) -> None:
         new_settings = self.settings
         old_settings = copy.copy(new_settings)
-        new_settings._update(data)
+        new_settings._update(data)  # type: ignore
         self.dispatch('settings_update', old_settings, new_settings)
+        self.dispatch('internal_settings_update', old_settings, new_settings)
 
     def parse_user_guild_settings_update(self, data) -> None:
-        guild = self.get_guild(int(data['guild_id']))
-        new_settings = guild.notification_settings
-        old_settings = copy.copy(new_settings)
-        new_settings._update(data)
-        self.dispatch('guild_settings_update', old_settings, new_settings)
+        guild_id = int(data['guild_id'])
+        guild = self._get_guild(guild_id)
+        if guild is None:
+            _log.debug('USER_GUILD_SETTINGS_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+            return
+
+        settings = guild.notification_settings
+        if settings is not None:
+            old_settings = copy.copy(settings)
+            settings._update(data)
+        else:
+            old_settings = None
+            settings = GuildSettings(data=data, state=self)
+        self.dispatch('guild_settings_update', old_settings, settings)
 
     def parse_user_required_action_update(self, data) -> None:
         required_action = try_enum(RequiredActionType, data['required_action'])
         self.dispatch('required_action_update', required_action)
+
+    def parse_sessions_replace(self, data: List[Dict[str, Any]]) -> None:
+        overall = MISSING
+        this = MISSING
+        client_status = {}
+        client_activities = {}
+
+        if len(data) == 1:
+            overall = this = data[0]
+
+        def parse_key(key):
+            index = 0
+            while True:
+                if key not in client_status:
+                    return key
+                if not index:
+                    key += f'-{str(index + 1)}'
+                else:
+                    key = key.replace(str(index), str(index + 1))
+                index += 1
+
+        for session in data:
+            if session['session_id'] == 'all':
+                overall = session
+                data.remove(session)
+                continue
+            elif session['session_id'] == self.session_id:
+                this = session
+                continue
+            key = parse_key(intern(session['client_info']['client']))
+            client_status[key] = intern(session['status'])
+            client_activities[key] = tuple(session['activities'])
+
+        if overall is MISSING and this is MISSING:
+            _log.debug('SESSIONS_REPLACE has weird data: %s.', data)
+            return  # ._.
+        elif overall is MISSING:
+            overall = this
+        elif this is MISSING:
+            this = overall
+
+        client_status[None] = overall['status']
+        client_activities[None] = tuple(overall['activities'])
+        client_activities['this'] = tuple(this['activities'])
+        client_status['this'] = this['status']
+
+        client = self.client
+        client._client_status = client_status
+        client._client_activities = client_activities
+        client._session_count = len(data)
 
     def parse_invite_create(self, data) -> None:
         invite = Invite.from_gateway(state=self, data=data)

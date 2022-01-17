@@ -40,7 +40,8 @@ __all__ = (
     'ReactionIterator',
     'HistoryIterator',
     'AuditLogIterator',
-    'GuildIterator',
+    'CommandIterator',
+    'FakeCommandIterator',
 )
 
 if TYPE_CHECKING:
@@ -494,117 +495,6 @@ class AuditLogIterator(_AsyncIterator['AuditLogEntry']):
                     continue
 
                 await self.entries.put(AuditLogEntry(data=element, users=self._users, guild=self.guild))
-
-
-class GuildIterator(_AsyncIterator['Guild']):
-    """Iterator for receiving the client's guilds.
-
-    The guilds endpoint has the same two behaviours as described
-    in :class:`HistoryIterator`:
-    If ``before`` is specified, the guilds endpoint returns the ``limit``
-    newest guilds before ``before``, sorted with newest first. For filling over
-    100 guilds, update the ``before`` parameter to the oldest guild received.
-    Guilds will be returned in order by time.
-    If `after` is specified, it returns the ``limit`` oldest guilds after ``after``,
-    sorted with newest first.
-
-    Not that if both ``before`` and ``after`` are specified, ``before`` is ignored by the
-    guilds endpoint.
-
-    Parameters
-    -----------
-    bot: :class:`discord.Client`
-        The client to retrieve the guilds from.
-    limit: :class:`int`
-        Maximum number of guilds to retrieve.
-    before: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
-        Object before which all guilds must be.
-    after: Optional[Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]]
-        Object after which all guilds must be.
-    """
-
-    def __init__(self, bot, limit, before=None, after=None):
-        if isinstance(before, datetime.datetime):
-            before = Object(id=time_snowflake(before, high=False))
-        if isinstance(after, datetime.datetime):
-            after = Object(id=time_snowflake(after, high=True))
-
-        self.bot = bot
-        self.limit = limit
-        self.before = before
-        self.after = after
-
-        self._filter = None
-
-        self.state = self.bot._connection
-        self.get_guilds = self.bot.http.get_guilds
-        self.guilds = asyncio.Queue()
-
-        if self.before and self.after:
-            self._retrieve_guilds = self._retrieve_guilds_before_strategy  # type: ignore
-            self._filter = lambda m: int(m['id']) > self.after.id
-        elif self.after:
-            self._retrieve_guilds = self._retrieve_guilds_after_strategy  # type: ignore
-        else:
-            self._retrieve_guilds = self._retrieve_guilds_before_strategy  # type: ignore
-
-    async def next(self) -> Guild:
-        if self.guilds.empty():
-            await self.fill_guilds()
-
-        try:
-            return self.guilds.get_nowait()
-        except asyncio.QueueEmpty:
-            raise NoMoreItems()
-
-    def _get_retrieve(self):
-        l = self.limit
-        if l is None or l > 200:
-            r = 200
-        else:
-            r = l
-        self.retrieve = r
-        return r > 0
-
-    def create_guild(self, data):
-        from .guild import Guild
-
-        return Guild(state=self.state, data=data)
-
-    async def fill_guilds(self):
-        if self._get_retrieve():
-            data = await self._retrieve_guilds(self.retrieve)
-            self.limit = 0  # Max amount of guilds a user can be in is 200
-
-            if self._filter:
-                data = filter(self._filter, data)
-
-            for element in data:
-                await self.guilds.put(self.create_guild(element))
-
-    async def _retrieve_guilds(self, retrieve) -> List[Guild]:
-        """Retrieve guilds and update next parameters."""
-        raise NotImplementedError
-
-    async def _retrieve_guilds_before_strategy(self, retrieve):
-        """Retrieve guilds using before parameter."""
-        before = self.before.id if self.before else None
-        data: List[GuildPayload] = await self.get_guilds(retrieve, before=before)
-        if len(data):
-            if self.limit is not None:
-                self.limit -= retrieve
-            self.before = Object(id=int(data[-1]['id']))
-        return data
-
-    async def _retrieve_guilds_after_strategy(self, retrieve):
-        """Retrieve guilds using after parameter."""
-        after = self.after.id if self.after else None
-        data: List[GuildPayload] = await self.get_guilds(retrieve, after=after)
-        if len(data):
-            if self.limit is not None:
-                self.limit -= retrieve
-            self.after = Object(id=int(data[0]['id']))
-        return data
 
 
 class ArchivedThreadIterator(_AsyncIterator['Thread']):

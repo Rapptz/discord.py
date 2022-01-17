@@ -51,8 +51,13 @@ class _AppInfoOptional(TypedDict, total=False):
 class AppInfo(BaseAppInfo, _AppInfoOptional):
     rpc_origins: List[str]
     owner: User
-    bot_public: bool
-    bot_require_code_grant: bool
+    integration_public: bool
+    integration_require_code_grant: bool
+    secret: str
+    verification_state: int
+    store_application_state: int
+    rpc_application_state: int
+    interactions_endpoint_url: str
 
 class _PartialAppInfoOptional(TypedDict, total=False):
     rpc_origins: List[str]

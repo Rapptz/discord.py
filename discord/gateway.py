@@ -377,11 +377,12 @@ class DiscordWebSocket:
 
     async def identify(self):
         """Sends the IDENTIFY packet."""
+        state = self._connection
         payload = {
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
-                'capabilities': 125,
+                'capabilities': 253,
                 'properties': self._super_properties,
                 'presence': {
                     'status': 'online',
@@ -606,13 +607,13 @@ class DiscordWebSocket:
             if not self._can_handle_close():
                 raise ConnectionClosed(self.socket) from exc
 
-    async def change_presence(self, *, activity=None, status=None, since=0.0, afk=False):
-        if activity is not None:
-            if not isinstance(activity, BaseActivity):
+    async def change_presence(self, *, activities=None, status=None, since=0, afk=False):
+        if activities is not None:
+            if not all(isinstance(activity, BaseActivity) for activity in activities):
                 raise InvalidArgument('activity must derive from BaseActivity')
-            activity = [activity.to_dict()]
+            activities = [activity.to_dict() for activity in activities]
         else:
-            activity = []
+            activities = []
 
         if status == 'idle':
             since = int(time.time() * 1000)
@@ -620,10 +621,10 @@ class DiscordWebSocket:
         payload = {
             'op': self.PRESENCE,
             'd': {
-                'activities': activity,
+                'activities': activities,
                 'afk': afk,
                 'since': since,
-                'status': status
+                'status': str(status)
             }
         }
 

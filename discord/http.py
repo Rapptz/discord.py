@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         user,
         webhook,
         widget,
+        team,
         threads,
         sticker,
         welcome_screen,
@@ -1883,10 +1884,17 @@ class HTTPClient:
     def edit_application(self, app_id: Snowflake, payload) -> Response[appinfo.AppInfo]:
         return self.request(Route('PATCH', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True, json=payload)
 
-    def delete_application(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
+    def delete_application(self, app_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/applications/{app_id}/delete', app_id=app_id), super_properties_to_track=True)
 
-    def get_partial_application(self, app_id: Snowflake):
+    def transfer_application(self, app_id: Snowflake, team_id: Snowflake) -> Response[appinfo.AppInfo]:
+        payload = {
+            'team_id': team_id
+        }
+
+        return self.request(Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload, super_properties_to_track=True)
+
+    def get_partial_application(self, app_id: Snowflake) -> Response[appinfo.PartialAppInfo]:
         return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id), auth=False)
 
     def create_app(self, name: str):
@@ -1894,7 +1902,7 @@ class HTTPClient:
             'name': name
         }
 
-        return self.request(Route('POST', '/applications'), json=payload)
+        return self.request(Route('POST', '/applications'), json=payload, super_properties_to_track=True)
 
     def get_app_entitlements(self, app_id: Snowflake):  # TODO: return type
         r = Route('GET', '/users/@me/applications/{app_id}/entitlements', app_id=app_id)
@@ -1914,11 +1922,41 @@ class HTTPClient:
     def get_app_whitelist(self, app_id):
         return self.request(Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id), super_properties_to_track=True)
 
-    def get_teams(self):  # TODO: return type
+    def create_team(self, name: str):
+        payload = {
+            'name': name
+        }
+
+        return self.request(Route('POST', '/teams'), json=payload, super_properties_to_track=True)
+
+    def get_teams(self) -> Response[List[team.Team]]:
         return self.request(Route('GET', '/teams'), super_properties_to_track=True)
 
-    def get_team(self, team_id: Snowflake):  # TODO: return type
+    def get_team(self, team_id: Snowflake) -> Response[team.Team]:
         return self.request(Route('GET', '/teams/{team_id}', team_id=team_id), super_properties_to_track=True)
+
+    def edit_team(self, team_id: Snowflake, payload) -> Response[team.Team]:
+        return self.request(Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload, super_properties_to_track=True)
+
+    def delete_application(self, team_id: Snowflake) -> Response[None]:
+        return self.request(Route('POST', '/teams/{app_id}/delete', team_id=team_id), super_properties_to_track=True)
+
+    def get_team_applications(self, team_id: Snowflake) -> Response[List[appinfo.AppInfo]]:
+        return self.request(Route('GET', '/teams/{team_id}/applications', team_id=team_id), super_properties_to_track=True)
+
+    def get_team_members(self, team_id: Snowflake) -> Response[List[team.TeamMember]]:
+        return self.request(Route('GET', '/teams/{team_id}/members', team_id=team_id), super_properties_to_track=True)
+
+    def invite_team_member(self, team_id: Snowflake, username: str, discriminator: Snowflake):
+        payload = {
+            'username': username,
+            'discriminator': str(discriminator)
+        }
+
+        return self.request(Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload, super_properties_to_track=True)
+
+    def remove_team_member(self, team_id: Snowflake, user_id: Snowflake):
+        return self.request(Route('DELETE', '/teams/{team_id}/members/{user_id}', team_id=team_id, user_id=user_id), super_properties_to_track=True)
 
     def botify_app(self, app_id: Snowflake):
         return self.request(Route('POST', '/applications/{app_id}/bot', app_id=app_id), super_properties_to_track=True)

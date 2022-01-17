@@ -236,15 +236,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     joined_at: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member joined the guild.
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
-    activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
-        The activities that the user is currently doing.
-
-        .. note::
-
-            Due to a Discord API limitation, a user's Spotify activity may not appear
-            if they are listening to a song with a title longer
-            than 128 characters. See :issue:`1738` for more information.
-
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
@@ -262,7 +253,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         '_roles',
         'joined_at',
         'premium_since',
-        'activities',
+        '_activities',
         'guild',
         'pending',
         'nick',
@@ -271,6 +262,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         '_state',
         '_avatar',
         '_index',  # Member list index
+        '_communication_disabled_until',
     )
 
     if TYPE_CHECKING:
@@ -298,10 +290,11 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
         self._client_status: Dict[Optional[str], str] = {None: 'offline'}
-        self.activities: Tuple[ActivityTypes, ...] = tuple()
+        self._activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
+        self._communication_disabled_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
 
     def __str__(self) -> str:
         return str(self._user)
@@ -333,6 +326,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self.nick = data.get('nick', None)
         self.pending = data.get('pending', False)
+        self._communication_disabled_until = utils.parse_time(data.get('communication_disabled_until'))
 
     @classmethod
     def _try_upgrade(cls: Type[M], *, data: UserWithMemberPayload, guild: Guild, state: ConnectionState) -> Union[User, M]:
@@ -356,9 +350,10 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
-        self.activities = member.activities
+        self._activities = member._activities
         self._state = member._state
         self._avatar = member._avatar
+        self._communication_disabled_until = member._communication_disabled_until
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -366,8 +361,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         return self
 
     def _update(self, data: MemberPayload) -> None:
-        # the nickname change is optional,
-        # if it isn't in the payload then it didn't change
+        # The nickname change is optional
+        # If it isn't in the payload then it didn't change
         try:
             self.nick = data['nick']
         except KeyError:
@@ -381,9 +376,13 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
+        self._communication_disabled_until = utils.parse_time(data.get('communication_disabled_until'))
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(map(create_activity, data['activities']))
+        if self._self:
+            return
+
+        self._activities = tuple(map(create_activity, data['activities']))
         self._client_status = {
             sys.intern(key): sys.intern(value) for key, value in data.get('client_status', {}).items()  # type: ignore
         }
@@ -391,7 +390,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         if len(user) > 1:
             return self._update_inner_user(user)
-        return
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
@@ -407,7 +405,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status[None])
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status[None])
 
     @property
     def raw_status(self) -> str:
@@ -415,31 +414,37 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status[None]
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return client_status[None]
 
     @status.setter
     def status(self, value: Status) -> None:
         # Internal use only
-        self._client_status[None] = str(value)
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        client_status[None] = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.get('mobile', 'offline'))
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.get('mobile', 'offline'))
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.get('desktop', 'offline'))
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.get('desktop', 'offline'))
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.get('web', 'offline'))
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.get('web', 'offline'))
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        return 'mobile' in self._client_status
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return 'mobile' in client_status
 
     @property
     def colour(self) -> Colour:
@@ -527,6 +532,22 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         return Asset._from_guild_avatar(self._state, self.guild.id, self.id, self._avatar)
 
     @property
+    def activities(self) -> Tuple[ActivityTypes, ...]:
+        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities that
+        the user is currently doing.
+
+        .. note::
+
+            Due to a Discord API limitation, a user's Spotify activity may not appear
+            if they are listening to a song with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
+        """
+        if self._self:
+            return self._state.client.activities
+        return self._activities
+
+    @property
     def activity(self) -> Optional[ActivityTypes]:
         """Optional[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the primary
         activity the user is currently doing. Could be ``None`` if no activity is being done.
@@ -608,6 +629,43 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
 
+    @property
+    def timed_out(self) -> bool:
+        """:class:`bool`: Returns whether the member is timed out.
+
+        .. versionadded:: 2.0
+        """
+        return bool(self.timed_out_until)
+
+    @property
+    def timed_out_until(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns an aware datetime object that
+        specifies the date and time in UTC until the member is timed out.
+
+        There is an alias for this called :attr:`timeout_until`.
+
+        .. versionadded:: 2.0
+        """
+        until = self._communication_disabled_until
+        if until is None:
+            return
+        return until if until > utils.utcnow() else None
+
+    @property
+    def timeout_until(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns an aware datetime object that
+        specifies the date and time in UTC until the member is timed out.
+
+        This is an alias of :attr:`timed_out_until`.
+
+        .. versionadded:: 2.0
+        """
+        return self.timed_out_until
+
+    @property
+    def _self(self) -> bool:
+        return self._user.id == self._state.self_id
+
     async def ban(
         self,
         *,
@@ -643,8 +701,9 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         suppress: bool = MISSING,
         roles: List[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
-        reason: Optional[str] = None,
         avatar: Optional[bytes] = MISSING,
+        timeout_until: Optional[datetime.datetime] = MISSING,
+        reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
 
@@ -664,6 +723,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         | roles         | :attr:`Permissions.manage_roles`     |
         +---------------+--------------------------------------+
         | voice_channel | :attr:`Permissions.move_members`     |
+        +---------------+--------------------------------------+
+        | timeout_until | :attr:`Permissions.moderate_members` |
         +---------------+--------------------------------------+
 
         All parameters are optional.
@@ -702,6 +763,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         avatar: Optional[:class:`bytes`]
             The member's new guild avatar. Pass ``None`` to remove the avatar.
             You can only change your own guild avatar.
+        timeout_until: Optional[:class:`datetime.datetime`]
+            A datetime object denoting how long this member should be in timeout for.
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -728,7 +791,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             payload['nick'] = nick
 
         if avatar is not MISSING:
-            payload['avatar'] = utils._bytes_to_base64_data(avatar)  # type: ignore
+            payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
 
         if me and payload:
             data = await http.edit_me(**payload)
@@ -761,6 +824,9 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         if roles is not MISSING:
             payload['roles'] = tuple(r.id for r in roles)
+
+        if timeout_until is not MISSING:
+            payload['communication_disabled_until'] = timeout_until.isoformat() if timeout_until is not None else None
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
