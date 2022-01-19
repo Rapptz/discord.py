@@ -51,7 +51,7 @@ __all__ = (
     'VideoQualityMode',
     'ComponentType',
     'ButtonStyle',
-    'StagePrivacyLevel',
+    'PrivacyLevel',
     'InteractionType',
     'NSFWLevel',
     'RelationshipType',
@@ -72,6 +72,8 @@ __all__ = (
     'StoreApplicationState',
     'RPCApplicationState',
     'InviteType',
+    'ScheduledEventStatus',
+    'ScheduledEventEntityType',
 )
 
 
@@ -748,10 +750,23 @@ class ButtonStyle(Enum):
         return self.value
 
 
-class StagePrivacyLevel(Enum):
+class PrivacyLevel(Enum):
     public = 1
     closed = 2
     guild_only = 2
+
+
+class ScheduledEventEntityType(Enum):
+    stage_instance = 1
+    voice = 2
+    external = 3
+
+
+class ScheduledEventStatus(Enum):
+    scheduled = 1
+    active = 2
+    completed = 3
+    canceled = 4
 
 
 class NSFWLevel(Enum, comparable=True):

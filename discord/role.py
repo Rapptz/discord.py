@@ -311,6 +311,8 @@ class Role(Hashable):
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention a role."""
+        if self.id == self.guild.id:
+            return '@everyone'
         return f'<@&{self.id}>'
 
     @property

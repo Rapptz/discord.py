@@ -44,7 +44,7 @@ import datetime
 import discord.abc
 from .calls import PrivateCall, GroupCall
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, StagePrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
+from .enums import ChannelType, PrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
 from .mixins import Hashable
 from .object import Object
 from . import utils
@@ -657,7 +657,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The type of thread to create. If a ``message`` is passed then this parameter
             is ignored, as a thread created with a message is always a public thread.
             By default this creates a private thread if this is ``None``.
-        reason: :class:`str`
+        reason: Optional[:class:`str`]
             The reason for creating a new thread. Shows up on the audit log.
 
         Raises
@@ -1115,7 +1115,7 @@ class StageChannel(VocalGuildChannel):
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
     async def create_instance(
-        self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None
+        self, *, topic: str, privacy_level: PrivacyLevel = MISSING, reason: Optional[str] = None
     ) -> StageInstance:
         """|coro|
 
@@ -1130,9 +1130,9 @@ class StageChannel(VocalGuildChannel):
         -----------
         topic: :class:`str`
             The stage instance's topic.
-        privacy_level: :class:`StagePrivacyLevel`
-            The stage instance's privacy level. Defaults to :attr:`StagePrivacyLevel.guild_only`.
-        reason: :class:`str`
+        privacy_level: :class:`PrivacyLevel`
+            The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
+        reason: Optional[:class:`str`]
             The reason the stage instance was created. Shows up on the audit log.
 
         Raises
@@ -1153,7 +1153,7 @@ class StageChannel(VocalGuildChannel):
         payload: Dict[str, Any] = {'channel_id': self.id, 'topic': topic}
 
         if privacy_level is not MISSING:
-            if not isinstance(privacy_level, StagePrivacyLevel):
+            if not isinstance(privacy_level, PrivacyLevel):
                 raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value

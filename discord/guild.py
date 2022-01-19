@@ -1379,7 +1379,6 @@ class Guild(Hashable):
         splash: Optional[bytes] = MISSING,
         discovery_splash: Optional[bytes] = MISSING,
         community: bool = MISSING,
-        region: Optional[Union[str, VoiceRegion]] = MISSING,
         afk_channel: Optional[VoiceChannel] = MISSING,
         owner: Snowflake = MISSING,
         afk_timeout: int = MISSING,
@@ -2200,10 +2199,8 @@ class Guild(Hashable):
         """
         payload = {
             'name': name,
+            'description': description or '',
         }
-
-        if description:
-            payload['description'] = description
 
         try:
             emoji = unicodedata.name(emoji)
