@@ -1207,7 +1207,6 @@ class Message(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
         attachments: List[Attachment] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
@@ -1220,7 +1219,6 @@ class Message(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        embeds: List[Embed] = ...,
         attachments: List[Attachment] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
@@ -1231,8 +1229,6 @@ class Message(Hashable):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        embeds: List[Embed] = MISSING,
         attachments: List[Attachment] = MISSING,
         suppress: bool = MISSING,
         delete_after: Optional[float] = None,
@@ -1252,14 +1248,6 @@ class Message(Hashable):
         content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
-        embed: Optional[:class:`Embed`]
-            The new embed to replace the original with.
-            Could be ``None`` to remove the embed.
-        embeds: List[:class:`Embed`]
-            The new embeds to replace the original with. Must be a maximum of 10.
-            To remove all embeds ``[]`` should be passed.
-
-            .. versionadded:: 2.0
         attachments: List[:class:`Attachment`]
             A list of attachments to keep in the message. If ``[]`` is passed
             then all attachments are removed.
@@ -1288,9 +1276,7 @@ class Message(Hashable):
             Editing the message failed.
         Forbidden
             Tried to suppress a message without permissions or
-            edited a message's content or embed that isn't yours.
-        ~discord.InvalidArgument
-            You specified both ``embed`` and ``embeds``
+            edit a message that isn't yours.
         """
 
         payload: Dict[str, Any] = {}
@@ -1299,17 +1285,6 @@ class Message(Hashable):
                 payload['content'] = str(content)
             else:
                 payload['content'] = None
-
-        if embed is not MISSING and embeds is not MISSING:
-            raise InvalidArgument('cannot pass both embed and embeds parameter to edit()')
-
-        if embed is not MISSING:
-            if embed is None:
-                payload['embeds'] = []
-            else:
-                payload['embeds'] = [embed.to_dict()]
-        elif embeds is not MISSING:
-            payload['embeds'] = [e.to_dict() for e in embeds]
 
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
@@ -1837,9 +1812,6 @@ class PartialMessage(Hashable):
         content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
-        embed: Optional[:class:`Embed`]
-            The new embed to replace the original with.
-            Could be ``None`` to remove the embed.
         suppress: :class:`bool`
             Whether to suppress embeds for the message. This removes
             all the embeds if set to ``True``. If set to ``False``
@@ -1865,7 +1837,7 @@ class PartialMessage(Hashable):
             Editing the message failed.
         Forbidden
             Tried to suppress a message without permissions or
-            edited a message's content or embed that isn't yours.
+            edit a message that isn't yours.
 
         Returns
         ---------
@@ -1880,14 +1852,6 @@ class PartialMessage(Hashable):
         else:
             if content is not None:
                 fields['content'] = str(content)
-
-        try:
-            embed = fields['embed']
-        except KeyError:
-            pass
-        else:
-            if embed is not None:
-                fields['embed'] = embed.to_dict()
 
         try:
             suppress: bool = fields.pop('suppress')

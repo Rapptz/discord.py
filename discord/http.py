@@ -65,7 +65,6 @@ if TYPE_CHECKING:
         audit_log,
         channel,
         emoji,
-        embed,
         guild,
         integration,
         invite,
@@ -510,8 +509,6 @@ class HTTPClient:
         content: Optional[str],
         *,
         tts: bool = False,
-        embed: Optional[embed.Embed] = None,
-        embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[Snowflake] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
@@ -521,10 +518,6 @@ class HTTPClient:
         payload: Dict[str, Any] = {'tts': tts}
         if content:
             payload['content'] = content
-        if embed:
-            payload['embeds'] = [embed]
-        if embeds:
-            payload['embeds'] = embeds
         if nonce:
             payload['nonce'] = nonce
         if allowed_mentions:
@@ -546,8 +539,6 @@ class HTTPClient:
         files: Sequence[File],
         content: Optional[str] = None,
         tts: bool = False,
-        embed: Optional[embed.Embed] = None,
-        embeds: Optional[Iterable[Optional[embed.Embed]]] = None,
         nonce: Optional[Snowflake] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
@@ -558,10 +549,6 @@ class HTTPClient:
 
         if content:
             payload['content'] = content
-        if embed:
-            payload['embeds'] = [embed]
-        if embeds:
-            payload['embeds'] = embeds
         if nonce:
             payload['nonce'] = nonce
         if allowed_mentions:
@@ -598,8 +585,6 @@ class HTTPClient:
         files: Sequence[File],
         content: Optional[str] = None,
         tts: bool = False,
-        embed: Optional[embed.Embed] = None,
-        embeds: Optional[List[embed.Embed]] = None,
         nonce: Optional[Snowflake] = None,
         allowed_mentions: Optional[message.AllowedMentions] = None,
         message_reference: Optional[message.MessageReference] = None,
@@ -610,8 +595,6 @@ class HTTPClient:
             files=files,
             content=content,
             tts=tts,
-            embed=embed,
-            embeds=embeds,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
             message_reference=message_reference,

@@ -78,7 +78,6 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .channel import CategoryChannel
-    from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
     from .channel import DMChannel, GroupChannel, PartialMessageable, TextChannel, VocalGuildChannel
     from .threads import Thread
@@ -1171,7 +1170,6 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embed: Embed = ...,
         file: File = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1188,7 +1186,6 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embed: Embed = ...,
         files: List[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1205,7 +1202,6 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
         file: File = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1222,7 +1218,6 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
         files: List[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1238,8 +1233,6 @@ class Messageable:
         content=None,
         *,
         tts=False,
-        embed=None,
-        embeds=None,
         file=None,
         files=None,
         stickers=None,
@@ -1254,17 +1247,11 @@ class Messageable:
         Sends a message to the destination with the content given.
 
         The content must be a type that can convert to a string through ``str(content)``.
-        If the content is set to ``None`` (the default), then the ``embed`` parameter must
-        be provided.
+        If the content is set to ``None`` (the default), then a sticker or file must be sent.
 
         To upload a single file, the ``file`` parameter should be used with a
         single :class:`~discord.File` object. To upload multiple files, the ``files``
         parameter should be used with a :class:`list` of :class:`~discord.File` objects.
-        **Specifying both parameters will lead to an exception**.
-
-        To upload a single embed, the ``embed`` parameter should be used with a
-        single :class:`~discord.Embed` object. To upload multiple embeds, the ``embeds``
-        parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
         **Specifying both parameters will lead to an exception**.
 
         Parameters
@@ -1273,8 +1260,6 @@ class Messageable:
             The content of the message to send.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        embed: :class:`~discord.Embed`
-            The rich embed for the content.
         file: :class:`~discord.File`
             The file to upload.
         files: List[:class:`~discord.File`]
@@ -1308,10 +1293,6 @@ class Messageable:
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
 
             .. versionadded:: 1.6
-        embeds: List[:class:`~discord.Embed`]
-            A list of embeds to upload. Must be a maximum of 10.
-
-            .. versionadded:: 2.0
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
@@ -1326,7 +1307,6 @@ class Messageable:
         ~discord.InvalidArgument
             The ``files`` list is not of the appropriate size,
             you specified both ``file`` and ``files``,
-            or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`,
             :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
 
@@ -1339,17 +1319,6 @@ class Messageable:
         channel = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
-
-        if embed is not None and embeds is not None:
-            raise InvalidArgument('Cannot pass both embed and embeds')
-
-        if embed is not None:
-            embed = embed.to_dict()
-
-        elif embeds is not None:
-            if len(embeds) > 10:
-                raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
-            embeds = [embed.to_dict() for embed in embeds]
 
         if stickers is not None:
             stickers = [sticker.id for sticker in stickers]
@@ -1389,8 +1358,6 @@ class Messageable:
                     allowed_mentions=allowed_mentions,
                     content=content,
                     tts=tts,
-                    embed=embed,
-                    embeds=embeds,
                     nonce=nonce,
                     message_reference=reference,
                     stickers=stickers,
@@ -1410,8 +1377,6 @@ class Messageable:
                     files=files,
                     content=content,
                     tts=tts,
-                    embed=embed,
-                    embeds=embeds,
                     nonce=nonce,
                     allowed_mentions=allowed_mentions,
                     message_reference=reference,
@@ -1425,8 +1390,6 @@ class Messageable:
                 channel.id,
                 content,
                 tts=tts,
-                embed=embed,
-                embeds=embeds,
                 nonce=nonce,
                 allowed_mentions=allowed_mentions,
                 message_reference=reference,
