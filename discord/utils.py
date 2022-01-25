@@ -1071,10 +1071,7 @@ def set_target(
 
 
 def _generate_session_id() -> str:
-    return ''.join(
-        random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
-        for _ in range(16)
-    )
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
 
 class ExpiringQueue(asyncio.Queue):  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
