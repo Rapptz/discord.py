@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable
 
 from .enums import CommandType, ChannelType, OptionType, try_enum
 from .errors import InvalidData, InvalidArgument
-from .utils import time_snowflake
+from .utils import _generate_session_id, time_snowflake
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
@@ -99,6 +99,7 @@ class ApplicationCommand(Protocol):
             'channel_id': str(channel.id),
             'data': data,
             'nonce': str(time_snowflake(datetime.utcnow())),
+            'session_id': state.session_id or _generate_session_id(),
             'type': 2,  # Should be an enum but eh
         }
         if getattr(channel, 'guild', None) is not None:
@@ -143,19 +144,21 @@ class BaseCommand(ApplicationCommand):
         'version',
         'type',
         'default_permission',
-        '_dm_permission',
-        '_default_member_permissions',
+        '_data',
         '_state',
         '_channel',
-        '_application_id'
+        '_application_id',
+        '_dm_permission',
+        '_default_member_permissions',
     )
 
     def __init__(
         self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None
     ) -> None:
+        self._state = state
+        self._data = data
         self.name = data['name']
         self.description = data['description']
-        self._state = state
         self._channel = channel
         self._application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])
@@ -202,7 +205,7 @@ class BaseCommand(ApplicationCommand):
         self._channel = value
 
 
-class SlashMixin(ApplicationCommand):
+class SlashMixin(ApplicationCommand, Protocol):
     if TYPE_CHECKING:
         _parent: SlashCommand
         options: List[Option]
@@ -210,7 +213,10 @@ class SlashMixin(ApplicationCommand):
 
     async def __call__(self, options, channel=None):
         obj = self._parent
+        command = obj._data
+        command['name_localized'] = command['name']
         data = {
+            'application_command': command,
             'attachments': [],
             'id': str(obj.id),
             'name': obj.name,
@@ -299,7 +305,10 @@ class UserCommand(BaseCommand):
         if user is None:
             raise TypeError('__call__() missing 1 required positional argument: \'user\'')
 
+        command = self._data
+        command['name_localized'] = command['name']
         data = {
+            'application_command': command,
             'attachments': [],
             'id': str(self.id),
             'name': self.name,
@@ -367,7 +376,10 @@ class MessageCommand(BaseCommand):
         if message is None:
             raise TypeError('__call__() missing 1 required positional argument: \'message\'')
 
+        command = self._data
+        command['name_localized'] = command['name']
         data = {
+            'application_command': command,
             'attachments': [],
             'id': str(self.id),
             'name': self.name,

@@ -59,7 +59,9 @@ import json
 import logging
 import os
 import platform
+import random
 import re
+import string
 import subprocess
 import sys
 import tempfile
@@ -1066,6 +1068,14 @@ def set_target(
                     setattr(item, k, v)  # type: ignore
                 except AttributeError:
                     pass
+
+
+def _generate_session_id() -> str:
+    return ''.join(
+        random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
+        for _ in range(16)
+    )
+
 
 class ExpiringQueue(asyncio.Queue):  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
     def __init__(self, timeout: int, maxsize: int = 0) -> None:

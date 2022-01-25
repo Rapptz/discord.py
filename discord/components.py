@@ -30,7 +30,7 @@ from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Ty
 
 from .enums import try_enum, ComponentType, ButtonStyle
 from .errors import InvalidData
-from .utils import get_slots, MISSING, time_snowflake
+from .utils import _generate_session_id, get_slots, MISSING, time_snowflake
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
@@ -228,7 +228,7 @@ class Button(Component):
         message = self.message
         state = message._state
         payload = {
-            'application_id': str(message.application_id),
+            'application_id': str(message.application_id or message.author.id),
             'channel_id': str(message.channel.id),
             'data': {
                 'component_type': 2,
@@ -237,12 +237,13 @@ class Button(Component):
             'message_flags': message.flags.value,
             'message_id': str(message.id),
             'nonce': str(time_snowflake(datetime.utcnow())),
+            'session_id': state.session_id or _generate_session_id(),
             'type': 3,  # Should be an enum but eh
         }
         if message.guild:
             payload['guild_id'] = str(message.guild.id)
 
-        state._interactions[payload['nonce']] = 3
+        state._interactions[payload['nonce']] = (3, None)
         await state.http.interact(payload)
         try:
             i = await state.client.wait_for(
@@ -354,12 +355,13 @@ class SelectMenu(Component):
             'message_flags': message.flags.value,
             'message_id': str(message.id),
             'nonce': str(time_snowflake(datetime.utcnow())),
+            'session_id': state.session_id or _generate_session_id(),
             'type': 3,  # Should be an enum but eh
         }
         if message.guild:
             payload['guild_id'] = str(message.guild.id)
 
-        state._interactions[payload['nonce']] = 3
+        state._interactions[payload['nonce']] = (3, None)
         await state.http.interact(payload)
         try:
             i = await state.client.wait_for(
