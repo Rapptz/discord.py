@@ -42,6 +42,7 @@ class _ThreadMetadataOptional(TypedDict, total=False):
     archiver_id: Snowflake
     locked: bool
     invitable: bool
+    creation_timestamp: str
 
 
 class ThreadMetadata(_ThreadMetadataOptional):
@@ -67,6 +68,7 @@ class Thread(_ThreadOptional):
     message_count: int
     rate_limit_per_user: int
     thread_metadata: ThreadMetadata
+    member_ids_preview: List[Snowflake]
 
 
 class ThreadPaginationPayload(TypedDict):

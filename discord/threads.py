@@ -32,7 +32,7 @@ from .mixins import Hashable
 from .abc import Messageable
 from .enums import ChannelType, try_enum
 from .errors import ClientException, InvalidData
-from .utils import MISSING, parse_time, _get_as_snowflake
+from .utils import MISSING, parse_time, snowflake_time, _get_as_snowflake
 
 __all__ = (
     'Thread',
@@ -40,6 +40,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from .types.threads import (
         Thread as ThreadPayload,
         ThreadMember as ThreadMemberPayload,
@@ -135,7 +137,8 @@ class Thread(Messageable, Hashable):
         'invitable',
         'auto_archive_duration',
         'archive_timestamp',
-        'member_ids',
+        '_member_ids',
+        '_created_at',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
@@ -166,7 +169,7 @@ class Thread(Messageable, Hashable):
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.message_count = data['message_count']
         self.member_count = data['member_count']
-        self.member_ids = data['member_ids_preview']
+        self._member_ids = data['member_ids_preview']
         self._unroll_metadata(data['thread_metadata'])
 
         try:
@@ -180,6 +183,7 @@ class Thread(Messageable, Hashable):
         self.archived = data['archived']
         self.auto_archive_duration = data['auto_archive_duration']
         self.archive_timestamp = parse_time(data['archive_timestamp'])
+        self._created_at = parse_time(data.get('creation_timestamp'))
         self.locked = data.get('locked', False)
         self.invitable = data.get('invitable', True)
 
@@ -198,7 +202,7 @@ class Thread(Messageable, Hashable):
         if (member_count := data.get('member_count')) is not None:
             self.member_count = member_count
         if (member_ids := data.get('member_ids_preview')) is not None:
-            self.member_ids = member_ids
+            self._member_ids = member_ids
 
         attrs = [x for x in self.__slots__ if not any(y in x for y in ('member', 'guild', 'state', 'count'))]
 
@@ -235,6 +239,15 @@ class Thread(Messageable, Hashable):
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the thread."""
         return f'<#{self.id}>'
+
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the thread's creation time in UTC.
+
+        .. note::
+            This may be inaccurate for threads created before January 9th, 2022.
+        """
+        return self._created_at or snowflake_time(self.id)
 
     @property
     def members(self) -> List[ThreadMember]:
@@ -564,7 +577,7 @@ class Thread(Messageable, Hashable):
         if slowmode_delay is not MISSING:
             payload['rate_limit_per_user'] = slowmode_delay
 
-        data = await self._state.http.edit_channel(self.id, **payload)
+        data = await self._state.http.edit_channel(self.id, **payload, reason=reason)
         # The data payload will always be a Thread payload
         return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
 
@@ -789,9 +802,8 @@ class ThreadMember(Hashable):
         self.joined_at = parse_time(data.get('join_timestamp'))
         self.flags = data.get('flags')
 
-        if (data := data.get('member')) is not None:
+        if (mdata := data.get('member')) is not None:
             guild = self.parent.parent.guild  # type: ignore
-            mdata = data['member']
             mdata['guild_id'] = guild.id
             self.id = user_id = int(data['user_id'])
             mdata['presence'] = data.get('presence')

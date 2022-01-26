@@ -320,7 +320,8 @@ class Guild(Hashable):
         '_stage_instances',
         '_threads',
         '_presence_count',
-        '_subscribing'
+        '_subscribing',
+        '_threads_synced',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -341,6 +342,7 @@ class Guild(Hashable):
         self._state: ConnectionState = state
         self.notification_settings: Optional[GuildSettings] = None
         self.command_counts: Optional[CommandCounts] = None
+        self._threads_synced = False
         self._from_data(data)
 
     # Get it running

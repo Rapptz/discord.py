@@ -1031,7 +1031,7 @@ class ConnectionState:
             thread = Thread(guild=guild, state=self, data=data)
             guild._add_thread(thread)
             self.dispatch('thread_create', thread)
-            if self.self_id in thread.member_ids:  # Thread was created by us/we were added to a private thread
+            if self.self_id in thread._member_ids:  # Thread was created by us/we were added to a private thread
                 self.dispatch('thread_join', thread)
 
     def parse_thread_update(self, data) -> None:
@@ -1103,13 +1103,15 @@ class ConnectionState:
 
         for k in new_threads.values():
             guild._add_thread(k)
-            self.dispatch('thread_create', k)
-            if self_id in k.member_ids:
-                self.dispatch('thread_join', k)
+            if guild._threads_synced:
+                self.dispatch('thread_create', k)
+                if self_id in k.member_ids:
+                    self.dispatch('thread_join', k)
 
         for k in old_threads:
             del guild._threads[k.id]
-            self.dispatch('thread_delete', k)  # Did the thread get deleted or did we get yeeted?
+            if guild._threads_synced:
+                self.dispatch('thread_delete', k)  # Did the thread get deleted or did we get yeeted?
 
         for message in data.get('most_recent_messages', []):
             guild_id = utils._get_as_snowflake(message, 'guild_id')
@@ -1121,6 +1123,8 @@ class ConnectionState:
             message = Message(channel=channel, data=message, state=self)  # type: ignore
             if self._messages is not None:
                 self._messages.append(message)
+
+        guild._threads_synced = True
 
     def parse_thread_member_update(self, data) -> None:
         guild_id = int(data['guild_id'])
@@ -1167,6 +1171,8 @@ class ConnectionState:
             if member_id != self_id:
                 if member is not None:
                     self.dispatch('thread_member_remove', member)
+                else:
+                    self.dispatch('raw_thread_member_remove', thread, member_id)
             else:
                 self.dispatch('thread_remove', thread)
 
