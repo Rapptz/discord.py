@@ -1030,8 +1030,9 @@ class ConnectionState:
         else:
             thread = Thread(guild=guild, state=self, data=data)
             guild._add_thread(thread)
-            self.dispatch('thread_create', thread)
-            if self.self_id in thread._member_ids:  # Thread was created by us/we were added to a private thread
+            if data.get('newly_created', False):
+                self.dispatch('thread_create', thread)
+            else:
                 self.dispatch('thread_join', thread)
 
     def parse_thread_update(self, data) -> None:
@@ -1049,9 +1050,6 @@ class ConnectionState:
         else:  # Shouldn't happen
             thread = Thread(guild=guild, state=self, data=data)
             guild._add_thread(thread)
-            self.dispatch('thread_create', thread)
-            if self.self_id in thread.member_ids:  # Thread was created by us/we were added to a private thread
-                self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data) -> None:
         guild_id = int(data['guild_id'])
@@ -1074,7 +1072,7 @@ class ConnectionState:
             _log.debug('THREAD_LIST_SYNC referencing an unknown guild ID: %s. Discarding.', guild_id)
             return
 
-        try:  # Never had this actually happen so IDK
+        try:
             channel_ids = set(data['channel_ids'])
         except KeyError:
             channel_ids = None
@@ -1086,12 +1084,12 @@ class ConnectionState:
         for d in data.get('threads', []):
             if (thread := threads.pop(int(d['id']), None)) is not None:
                 old = thread._update(d)
-                if old is not None:  # None = wasn't updated
-                    self.dispatch('thread_update', old, thread)
+                if old is not None:
+                    self.dispatch('thread_update', old, thread)  # Honestly not sure if this is right
             else:
                 thread = Thread(guild=guild, state=self, data=d)
                 new_threads[thread.id] = thread
-        old_threads = [t for t in threads.values() if t not in new_threads]
+        old_threads = [t for t in threads.values() if t.id not in new_threads]
 
         for member in data.get('members', []):
             try:  # Note: member['id'] is the thread_id
@@ -1103,15 +1101,10 @@ class ConnectionState:
 
         for k in new_threads.values():
             guild._add_thread(k)
-            if guild._threads_synced:
-                self.dispatch('thread_create', k)
-                if self_id in k.member_ids:
-                    self.dispatch('thread_join', k)
 
         for k in old_threads:
             del guild._threads[k.id]
-            if guild._threads_synced:
-                self.dispatch('thread_delete', k)  # Did the thread get deleted or did we get yeeted?
+            self.dispatch('thread_delete', k)  # Again, not sure
 
         for message in data.get('most_recent_messages', []):
             guild_id = utils._get_as_snowflake(message, 'guild_id')
@@ -1123,8 +1116,6 @@ class ConnectionState:
             message = Message(channel=channel, data=message, state=self)  # type: ignore
             if self._messages is not None:
                 self._messages.append(message)
-
-        guild._threads_synced = True
 
     def parse_thread_member_update(self, data) -> None:
         guild_id = int(data['guild_id'])
