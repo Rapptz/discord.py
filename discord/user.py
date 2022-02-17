@@ -80,7 +80,7 @@ class BaseUser(_UserTag):
         _state: ConnectionState
         _avatar: Optional[str]
         _banner: Optional[str]
-        _accent_colour: Optional[str]
+        _accent_colour: Optional[int]
         _public_flags: int
 
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
