@@ -25,11 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, TypeVar, Union, overload, TYPE_CHECKING
 
+from .asset import Asset
 from .permissions import Permissions
 from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
-from .utils import snowflake_time, _get_as_snowflake, MISSING
+from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
 
 __all__ = (
     'RoleTags',
@@ -163,6 +164,18 @@ class Role(Hashable):
             compare for roles in the hierarchy is using the comparison
             operators on the role objects themselves.
 
+    unicode_emoji: Optional[:class:`str`]
+        The role's unicode emoji, if available.
+
+        .. note::
+
+            If :attr:`icon` is not ``None``, it is displayed as role icon
+            instead of the unicode emoji under this attribute.
+
+            If you want the icon that a role has displayed, consider using :attr:`display_icon`.
+
+        .. versionadded:: 2.0
+
     managed: :class:`bool`
         Indicates if the role is managed by the guild through some form of
         integrations such as Twitch.
@@ -178,6 +191,8 @@ class Role(Hashable):
         '_permissions',
         '_colour',
         'position',
+        '_icon',
+        'unicode_emoji',
         'managed',
         'mentionable',
         'hoist',
@@ -240,6 +255,8 @@ class Role(Hashable):
         self.position: int = data.get('position', 0)
         self._colour: int = data.get('color', 0)
         self.hoist: bool = data.get('hoist', False)
+        self._icon: Optional[str] = data.get('icon')
+        self.unicode_emoji: Optional[str] = data.get('unicode_emoji')
         self.managed: bool = data.get('managed', False)
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
@@ -298,6 +315,30 @@ class Role(Hashable):
         return self.colour
 
     @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Returns the role's icon asset, if available.
+
+        .. note::
+            If this is ``None``, the role might instead have unicode emoji as its icon
+            if :attr:`unicode_emoji` is not ``None``.
+
+            If you want the icon that a role has displayed, consider using :attr:`display_icon`.
+
+        .. versionadded:: 2.0
+        """
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='role')
+
+    @property
+    def display_icon(self) -> Optional[Union[Asset, str]]:
+        """Optional[Union[:class:`.Asset`, :class:`str`]]: Returns the role's display icon, if available.
+
+        .. versionadded:: 2.0
+        """
+        return self.icon or self.unicode_emoji
+
+    @property
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the role's creation time in UTC."""
         return snowflake_time(self.id)
@@ -348,6 +389,7 @@ class Role(Hashable):
         colour: Union[Colour, int] = MISSING,
         color: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
+        display_icon: Optional[Union[bytes, str]] = MISSING,
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
@@ -367,6 +409,9 @@ class Role(Hashable):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited role is returned instead.
 
+        .. versionadded:: 2.0
+            The ``display_icon`` keyword-only parameter was added.
+
         Parameters
         -----------
         name: :class:`str`
@@ -377,6 +422,12 @@ class Role(Hashable):
             The new colour to change to. (aliased to color as well)
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
+        display_icon: Optional[Union[:class:`bytes`, :class:`str`]]
+            A :term:`py:bytes-like object` representing the icon
+            or :class:`str` representing unicode emoji that should be used as a role icon.
+            Could be ``None`` to denote removal of the icon.
+            Only PNG/JPEG is supported.
+            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`features`.
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
         position: :class:`int`
@@ -421,6 +472,14 @@ class Role(Hashable):
 
         if hoist is not MISSING:
             payload['hoist'] = hoist
+
+        if display_icon is not MISSING:
+            payload['icon'] = None
+            payload['unicode_emoji'] = None
+            if isinstance(display_icon, bytes):
+                payload['icon'] = _bytes_to_base64_data(display_icon)
+            else:
+                payload['unicode_emoji'] = display_icon
 
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable

@@ -119,7 +119,10 @@ def _transform_overwrites(
 def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_guild_icon(entry._state, entry.guild.id, data)
+    if entry.action is enums.AuditLogAction.guild_update:
+        return Asset._from_guild_icon(entry._state, entry.guild.id, data)
+    else:
+        return Asset._from_icon(entry._state, entry._target_id, data, path='role')
 
 
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:

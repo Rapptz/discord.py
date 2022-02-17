@@ -212,6 +212,7 @@ class Guild(Hashable):
         - ``PARTNERED``: Guild is a partnered server.
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
         - ``PRIVATE_THREADS``: Guild has access to create private threads.
+        - ``ROLE_ICONS``: Guild is able to set role icons.
         - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
         - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
         - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
@@ -2394,6 +2395,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         colour: Union[Colour, int] = ...,
         hoist: bool = ...,
+        display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
     ) -> Role:
         ...
@@ -2407,6 +2409,7 @@ class Guild(Hashable):
         permissions: Permissions = ...,
         color: Union[Colour, int] = ...,
         hoist: bool = ...,
+        display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
     ) -> Role:
         ...
@@ -2419,6 +2422,7 @@ class Guild(Hashable):
         color: Union[Colour, int] = MISSING,
         colour: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
+        display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = MISSING,
         reason: Optional[str] = None,
     ) -> Role:
@@ -2434,6 +2438,9 @@ class Guild(Hashable):
         .. versionchanged:: 1.6
             Can now pass ``int`` to ``colour`` keyword-only parameter.
 
+        .. versionadded:: 2.0
+            The ``display_icon`` keyword-only parameter was added.
+
         Parameters
         -----------
         name: :class:`str`
@@ -2446,6 +2453,11 @@ class Guild(Hashable):
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.
+        display_icon: Union[:class:`bytes`, :class:`str`]
+            A :term:`py:bytes-like object` representing the icon
+            or :class:`str` representing unicode emoji that should be used as a role icon.
+            Only PNG/JPEG is supported.
+            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`features`.
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
             Defaults to ``False``.
@@ -2480,6 +2492,12 @@ class Guild(Hashable):
 
         if hoist is not MISSING:
             fields['hoist'] = hoist
+
+        if display_icon is not MISSING:
+            if isinstance(display_icon, bytes):
+                fields['icon'] = utils._bytes_to_base64_data(display_icon)
+            else:
+                fields['unicode_emoji'] = display_icon
 
         if mentionable is not MISSING:
             fields['mentionable'] = mentionable

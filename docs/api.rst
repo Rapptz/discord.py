@@ -1994,6 +1994,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.colour`
         - :attr:`~AuditLogDiff.mentionable`
         - :attr:`~AuditLogDiff.hoist`
+        - :attr:`~AuditLogDiff.icon`
+        - :attr:`~AuditLogDiff.unicode_emoji`
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.permissions`
 
@@ -2004,6 +2006,7 @@ of :class:`enum.Enum`.
         - The name has changed
         - The permissions have changed
         - The colour has changed
+        - The role icon (or unicode emoji) has changed
         - Its hoist/mentionable state has changed
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
@@ -2014,6 +2017,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.colour`
         - :attr:`~AuditLogDiff.mentionable`
         - :attr:`~AuditLogDiff.hoist`
+        - :attr:`~AuditLogDiff.icon`
+        - :attr:`~AuditLogDiff.unicode_emoji`
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.permissions`
 
@@ -2828,7 +2833,7 @@ AuditLogDiff
 
     .. attribute:: icon
 
-        A guild's icon. See also :attr:`Guild.icon`.
+        A guild's or role's icon. See also :attr:`Guild.icon` or :attr:`Role.icon`.
 
         :type: :class:`Asset`
 
@@ -3202,7 +3207,15 @@ AuditLogDiff
 
         The name of the emoji that represents a sticker being changed.
 
-        See also :attr:`GuildSticker.emoji`
+        See also :attr:`GuildSticker.emoji`.
+
+        :type: :class:`str`
+
+    .. attribute:: unicode_emoji
+
+        The unicode emoji that is used as an icon for the role being changed.
+
+        See also :attr:`Role.unicode_emoji`.
 
         :type: :class:`str`
 

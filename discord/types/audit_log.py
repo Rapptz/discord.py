@@ -84,7 +84,17 @@ AuditLogEvent = Literal[
 
 class _AuditLogChange_Str(TypedDict):
     key: Literal[
-        'name', 'description', 'preferred_locale', 'vanity_url_code', 'topic', 'code', 'allow', 'deny', 'permissions', 'tags'
+        'name',
+        'description',
+        'preferred_locale',
+        'vanity_url_code',
+        'topic',
+        'code',
+        'allow',
+        'deny',
+        'permissions',
+        'tags',
+        'unicode_emoji',
     ]
     new_value: str
     old_value: str
