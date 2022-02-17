@@ -28,6 +28,7 @@ import asyncio
 import collections.abc
 from typing import (
     Any,
+    AsyncIterable,
     AsyncIterator,
     Callable,
     Dict,
@@ -131,7 +132,6 @@ if TYPE_CHECKING:
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
 
-
     P = ParamSpec('P')
 
 else:
@@ -140,7 +140,7 @@ else:
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
-_Iter = Union[Iterator[T], AsyncIterator[T]]
+_Iter = Union[Iterable[T], AsyncIterable[T]]
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -809,7 +809,7 @@ def escape_mentions(text: str) -> str:
     return re.sub(r'@(everyone|here|[!&]?[0-9]{17,20})', '@\u200b\\1', text)
 
 
-def _chunk(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+def _chunk(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
     ret = []
     n = 0
     for item in iterator:
@@ -823,7 +823,7 @@ def _chunk(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
         yield ret
 
 
-async def _achunk(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+async def _achunk(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
     ret = []
     n = 0
     async for item in iterator:
@@ -838,12 +838,12 @@ async def _achunk(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[Li
 
 
 @overload
-def as_chunks(iterator: Iterator[T], max_size: int) -> Iterator[List[T]]:
+def as_chunks(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
     ...
 
 
 @overload
-def as_chunks(iterator: AsyncIterator[T], max_size: int) -> AsyncIterator[List[T]]:
+def as_chunks(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
     ...
 
 
@@ -854,7 +854,7 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
 
     Parameters
     ----------
-    iterator: Union[:class:`collections.abc.Iterator`, :class:`collections.abc.AsyncIterator`]
+    iterator: Union[:class:`collections.abc.Iterable`, :class:`collections.abc.AsyncIterable`]
         The iterator to chunk, can be sync or async.
     max_size: :class:`int`
         The maximum chunk size.
@@ -872,7 +872,7 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
     if max_size <= 0:
         raise ValueError('Chunk sizes must be greater than 0.')
 
-    if isinstance(iterator, AsyncIterator):
+    if isinstance(iterator, AsyncIterable):
         return _achunk(iterator, max_size)
     return _chunk(iterator, max_size)
 
