@@ -663,6 +663,27 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.remove_user_from_thread(self.id, user.id)
 
+    async def fetch_member(self, user_id: int, /) -> ThreadMember:
+        """|coro|
+
+        Retrieves a :class:`ThreadMember` for the given user ID.
+
+        Raises
+        -------
+        NotFound
+            The specified user is not a member of this thread.
+        HTTPException
+            Retrieving the member failed.
+
+        Returns
+        --------
+        :class:`ThreadMember`
+            The thread member from the user ID.
+        """
+
+        data = await self._state.http.get_thread_member(self.id, user_id)
+        return ThreadMember(parent=self, data=data)
+
     async def fetch_members(self) -> List[ThreadMember]:
         """|coro|
 
