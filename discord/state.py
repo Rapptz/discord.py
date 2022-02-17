@@ -31,6 +31,7 @@ import datetime
 import itertools
 import logging
 from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple, Deque
+import weakref
 import inspect
 
 import os
@@ -225,8 +226,7 @@ class ConnectionState:
         self._intents: Intents = intents
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.create_user  # type: ignore
-            self.deref_user = self.deref_user_no_intents  # type: ignore
+            self.store_user = self.store_user_no_intents  # type: ignore
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
@@ -237,19 +237,7 @@ class ConnectionState:
 
     def clear(self, *, views: bool = True) -> None:
         self.user: Optional[ClientUser] = None
-        # Originally, this code used WeakValueDictionary to maintain references to the
-        # global user mapping.
-
-        # However, profiling showed that this came with two cons:
-
-        # 1. The __weakref__ slot caused a non-trivial increase in memory
-        # 2. The performance of the mapping caused store_user to be a bottleneck.
-
-        # Since this is undesirable, a mapping is now used instead with stored
-        # references now using a regular dictionary with eviction being done
-        # using __del__. Testing this for memory leaks led to no discernable leaks,
-        # though more testing will have to be done.
-        self._users: Dict[int, User] = {}
+        self._users: weakref.WeakValueDictionary[int, User] = weakref.WeakValueDictionary()
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -324,7 +312,8 @@ class ConnectionState:
         for vc in self.voice_clients:
             vc.main_ws = ws  # type: ignore
 
-    def store_user(self, data: UserPayload) -> User:
+    def store_user(self, data):
+        # this way is 300% faster than `dict.setdefault`.
         user_id = int(data['id'])
         try:
             return self._users[user_id]
@@ -332,21 +321,16 @@ class ConnectionState:
             user = User(state=self, data=data)
             if user.discriminator != '0000':
                 self._users[user_id] = user
-                user._stored = True
             return user
 
-    def deref_user(self, user_id: int) -> None:
-        self._users.pop(user_id, None)
+    def store_user_no_intents(self, data):
+        return User(state=self, data=data)
 
     def create_user(self, data: UserPayload) -> User:
         return User(state=self, data=data)
 
-    def deref_user_no_intents(self, user_id: int) -> None:
-        return
-
-    def get_user(self, id: Optional[int]) -> Optional[User]:
-        # the keys of self._users are ints
-        return self._users.get(id)  # type: ignore
+    def get_user(self, id):
+        return self._users.get(id)
 
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
         # the id will be present here
@@ -551,8 +535,8 @@ class ConnectionState:
 
         self._ready_state = asyncio.Queue()
         self.clear(views=False)
-        self.user = ClientUser(state=self, data=data['user'])
-        self.store_user(data['user'])
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user  # type: ignore
 
         if self.application_id is None:
             try:
@@ -729,13 +713,9 @@ class ConnectionState:
 
         self.dispatch('presence_update', old_member, member)
 
-    def parse_user_update(self, data) -> None:
-        # self.user is *always* cached when this is called
-        user: ClientUser = self.user  # type: ignore
-        user._update(data)
-        ref = self._users.get(user.id)
-        if ref:
-            ref._update(data)
+    def parse_user_update(self, data):
+        if self.user:
+            self.user._update(data)
 
     def parse_invite_create(self, data) -> None:
         invite = Invite.from_gateway(state=self, data=data)
