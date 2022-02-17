@@ -35,6 +35,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Sequence,
     TYPE_CHECKING,
@@ -42,6 +43,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 from urllib.parse import quote as _uriquote
 import weakref
@@ -83,6 +85,7 @@ if TYPE_CHECKING:
         widget,
         threads,
         voice,
+        scheduled_event,
         sticker,
     )
     from .types.snowflake import Snowflake, SnowflakeList
@@ -1531,6 +1534,24 @@ class HTTPClient:
 
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
+
+    # Guild scheduled event management
+
+    @overload
+    def get_scheduled_events(
+        self, guild_id: Snowflake, with_user_count: Literal[True]
+    ) -> Response[List[scheduled_event.GuildScheduledEventWithUserCount]]:
+        ...
+
+    @overload
+    def get_scheduled_events(
+        self, guild_id: Snowflake, with_user_count: Literal[False]
+    ) -> Response[List[scheduled_event.GuildScheduledEvent]]:
+        ...
+
+    def get_scheduled_events(self, guild_id: Snowflake, with_user_count: bool) -> Response[Any]:
+        payload = {'with_user_count': with_user_count}
+        return self.request(Route('GET', '/guilds/{guild_id}/scheduled-events', guild_id=guild_id), json=payload)
 
     # Application commands (global)
 
