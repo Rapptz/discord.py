@@ -32,6 +32,7 @@ import re
 from urllib.parse import quote as urlquote
 from typing import Any, Dict, List, Literal, NamedTuple, Optional, TYPE_CHECKING, Tuple, Union, overload
 from contextvars import ContextVar
+import weakref
 
 import aiohttp
 
@@ -95,7 +96,7 @@ class AsyncDeferredLock:
 
 class AsyncWebhookAdapter:
     def __init__(self):
-        self._locks: Dict[Any, asyncio.Lock] = {}
+        self._locks: weakref.WeakValueDictionary[Any, asyncio.Lock] = weakref.WeakValueDictionary()
 
     async def request(
         self,

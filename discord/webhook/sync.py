@@ -38,6 +38,7 @@ import re
 
 from urllib.parse import quote as urlquote
 from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+import weakref
 
 from .. import utils
 from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
@@ -91,7 +92,7 @@ class DeferredLock:
 
 class WebhookAdapter:
     def __init__(self):
-        self._locks: Dict[Any, threading.Lock] = {}
+        self._locks: weakref.WeakValueDictionary[Any, threading.Lock] = weakref.WeakValueDictionary()
 
     def request(
         self,
