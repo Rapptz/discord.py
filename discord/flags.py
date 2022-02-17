@@ -419,6 +419,15 @@ class PublicUserFlags(BaseFlags):
         """
         return UserFlags.discord_certified_moderator.value
 
+    @flag_value
+    def bot_http_interactions(self):
+        """:class:`bool`: Returns ``True`` if the user is a bot that only uses HTTP interactions
+        and is shown in the online member list.
+
+        .. versionadded:: 2.0
+        """
+        return UserFlags.bot_http_interactions.value
+
     def all(self) -> List[UserFlags]:
         """List[:class:`UserFlags`]: Returns all public flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]

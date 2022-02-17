@@ -1363,6 +1363,11 @@ of :class:`enum.Enum`.
     .. attribute:: discord_certified_moderator
 
         The user is a Discord Certified Moderator.
+    .. attribute:: bot_http_interactions
+
+        The user is a bot that only uses HTTP interactions and is shown in the online member list.
+
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 
