@@ -43,10 +43,10 @@ import weakref
 from .. import utils
 from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
-from ..http import Route
+from ..http import Route, handle_message_parameters
 from ..channel import PartialMessageable
 
-from .async_ import BaseWebhook, handle_message_parameters, _WebhookState
+from .async_ import BaseWebhook, _WebhookState
 
 __all__ = (
     'SyncWebhook',

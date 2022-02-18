@@ -38,7 +38,8 @@ from .member import Member
 from .message import Message, Attachment
 from .object import Object
 from .permissions import Permissions
-from .webhook.async_ import async_context, Webhook, handle_message_parameters
+from .http import handle_message_parameters
+from .webhook.async_ import async_context, Webhook
 
 __all__ = (
     'Interaction',

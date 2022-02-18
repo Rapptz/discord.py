@@ -29,7 +29,21 @@ import datetime
 import re
 import io
 from os import PathLike
-from typing import Dict, TYPE_CHECKING, Union, List, Optional, Any, Callable, Tuple, ClassVar, Optional, overload, TypeVar, Type
+from typing import (
+    Dict,
+    TYPE_CHECKING,
+    Union,
+    List,
+    Optional,
+    Any,
+    Callable,
+    Tuple,
+    ClassVar,
+    Optional,
+    overload,
+    TypeVar,
+    Type,
+)
 
 from . import utils
 from .reaction import Reaction
@@ -43,6 +57,7 @@ from .member import Member
 from .flags import MessageFlags
 from .file import File
 from .utils import escape_mentions, MISSING
+from .http import handle_message_parameters
 from .guild import Guild
 from .mixins import Hashable
 from .sticker import StickerItem
@@ -350,7 +365,7 @@ class DeletedReferencedMessage:
     def id(self) -> int:
         """:class:`int`: The message ID of the deleted referenced message."""
         # the parent's message id won't be None here
-        return self._parent.message_id # type: ignore
+        return self._parent.message_id  # type: ignore
 
     @property
     def channel_id(self) -> int:
@@ -1217,6 +1232,8 @@ class Message(Hashable):
         attachments: List[:class:`Attachment`]
             A list of attachments to keep in the message. If ``[]`` is passed
             then all attachments are removed.
+
+            .. versionadded:: 2.0
         suppress: :class:`bool`
             Whether to suppress embeds for the message. This removes
             all the embeds if set to ``True``. If set to ``False``
@@ -1250,50 +1267,26 @@ class Message(Hashable):
             You specified both ``embed`` and ``embeds``
         """
 
-        payload: Dict[str, Any] = {}
-        if content is not MISSING:
-            if content is not None:
-                payload['content'] = str(content)
-            else:
-                payload['content'] = None
-
-        if embed is not MISSING and embeds is not MISSING:
-            raise InvalidArgument('cannot pass both embed and embeds parameter to edit()')
-
-        if embed is not MISSING:
-            if embed is None:
-                payload['embeds'] = []
-            else:
-                payload['embeds'] = [embed.to_dict()]
-        elif embeds is not MISSING:
-            payload['embeds'] = [e.to_dict() for e in embeds]
-
+        previous_allowed_mentions = self._state.allowed_mentions
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
-            flags.suppress_embeds = suppress
-            payload['flags'] = flags.value
-
-        if allowed_mentions is MISSING:
-            if self._state.allowed_mentions is not None and self.author.id == self._state.self_id:
-                payload['allowed_mentions'] = self._state.allowed_mentions.to_dict()
         else:
-            if allowed_mentions is not None:
-                if self._state.allowed_mentions is not None:
-                    payload['allowed_mentions'] = self._state.allowed_mentions.merge(allowed_mentions).to_dict()
-                else:
-                    payload['allowed_mentions'] = allowed_mentions.to_dict()
-
-        if attachments is not MISSING:
-            payload['attachments'] = [a.to_dict() for a in attachments]
+            flags = MISSING
 
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
-            if view:
-                payload['components'] = view.to_components()
-            else:
-                payload['components'] = []
 
-        data = await self._state.http.edit_message(self.channel.id, self.id, **payload)
+        params = handle_message_parameters(
+            content=content,
+            flags=flags,
+            embed=embed,
+            embeds=embeds,
+            attachments=attachments,
+            view=view,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_allowed_mentions,
+        )
+        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
         message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():

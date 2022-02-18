@@ -41,8 +41,9 @@ from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, Discor
 from ..message import Message
 from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
+from ..flags import MessageFlags
 from ..asset import Asset
-from ..http import Route
+from ..http import Route, handle_message_parameters
 from ..mixins import Hashable
 from ..channel import PartialMessageable
 
@@ -414,107 +415,6 @@ class AsyncWebhookAdapter:
             wehook_token=token,
         )
         return self.request(r, session=session)
-
-
-class ExecuteWebhookParameters(NamedTuple):
-    payload: Optional[Dict[str, Any]]
-    multipart: Optional[List[Dict[str, Any]]]
-    files: Optional[List[File]]
-
-
-def handle_message_parameters(
-    content: Optional[str] = MISSING,
-    *,
-    username: str = MISSING,
-    avatar_url: Any = MISSING,
-    tts: bool = False,
-    ephemeral: bool = False,
-    file: File = MISSING,
-    files: List[File] = MISSING,
-    embed: Optional[Embed] = MISSING,
-    embeds: List[Embed] = MISSING,
-    view: Optional[View] = MISSING,
-    allowed_mentions: Optional[AllowedMentions] = MISSING,
-    previous_allowed_mentions: Optional[AllowedMentions] = None,
-) -> ExecuteWebhookParameters:
-    if files is not MISSING and file is not MISSING:
-        raise TypeError('Cannot mix file and files keyword arguments.')
-    if embeds is not MISSING and embed is not MISSING:
-        raise TypeError('Cannot mix embed and embeds keyword arguments.')
-
-    payload = {}
-    if embeds is not MISSING:
-        if len(embeds) > 10:
-            raise InvalidArgument('embeds has a maximum of 10 elements.')
-        payload['embeds'] = [e.to_dict() for e in embeds]
-
-    if embed is not MISSING:
-        if embed is None:
-            payload['embeds'] = []
-        else:
-            payload['embeds'] = [embed.to_dict()]
-
-    if content is not MISSING:
-        if content is not None:
-            payload['content'] = str(content)
-        else:
-            payload['content'] = None
-
-    if view is not MISSING:
-        if view is not None:
-            payload['components'] = view.to_components()
-        else:
-            payload['components'] = []
-
-    payload['tts'] = tts
-    if avatar_url:
-        payload['avatar_url'] = str(avatar_url)
-    if username:
-        payload['username'] = username
-    if ephemeral:
-        payload['flags'] = 64
-
-    if allowed_mentions:
-        if previous_allowed_mentions is not None:
-            payload['allowed_mentions'] = previous_allowed_mentions.merge(allowed_mentions).to_dict()
-        else:
-            payload['allowed_mentions'] = allowed_mentions.to_dict()
-    elif previous_allowed_mentions is not None:
-        payload['allowed_mentions'] = previous_allowed_mentions.to_dict()
-
-    multipart = []
-    if file is not MISSING:
-        files = [file]
-
-    if files:
-        for index, file in enumerate(files):
-            attachments = []
-            for index, file in enumerate(files):
-                attachment = {
-                        "id": index,
-                        "filename": file.filename,
-                    }
-
-                if file.description is not None:
-                    attachment["description"] = file.description
-
-                attachments.append(attachment)
-
-            payload['attachments'] = attachments
-
-        multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
-        payload = None
-        for index, file in enumerate(files):
-            multipart.append(
-                {
-                    'name': f'files[{index}]',
-                    'value': file.fp,
-                    'filename': file.filename,
-                    'content_type': 'application/octet-stream',
-                }
-            )
-
-    return ExecuteWebhookParameters(payload=payload, multipart=multipart, files=files)
 
 
 async_context: ContextVar[AsyncWebhookAdapter] = ContextVar('async_webhook_context', default=AsyncWebhookAdapter())
@@ -1356,6 +1256,10 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
+        if ephemeral:
+            flags = MessageFlags._from_value(64)
+        else:
+            flags = MISSING
 
         application_webhook = self.type is WebhookType.application
         if ephemeral and not application_webhook:
@@ -1379,7 +1283,7 @@ class Webhook(BaseWebhook):
             files=files,
             embed=embed,
             embeds=embeds,
-            ephemeral=ephemeral,
+            flags=flags,
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
