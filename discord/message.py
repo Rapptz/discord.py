@@ -1627,7 +1627,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
+    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1650,7 +1650,7 @@ class PartialMessage(Hashable):
     to_message_reference_dict = Message.to_message_reference_dict
 
     def __init__(self, *, channel: PartialMessageableChannel, id: int):
-        if channel.type not in (
+        if not isinstance(channel, PartialMessageable) and channel.type not in (
             ChannelType.text,
             ChannelType.news,
             ChannelType.private,
@@ -1658,7 +1658,7 @@ class PartialMessage(Hashable):
             ChannelType.public_thread,
             ChannelType.private_thread,
         ):
-            raise TypeError(f'Expected TextChannel, DMChannel or Thread not {type(channel)!r}')
+            raise TypeError(f'Expected PartialMessageable, TextChannel, DMChannel or Thread not {type(channel)!r}')
 
         self.channel: PartialMessageableChannel = channel
         self._state: ConnectionState = channel._state
