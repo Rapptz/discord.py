@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import sys
 from typing import (
@@ -68,6 +67,7 @@ if TYPE_CHECKING:
         appinfo,
         audit_log,
         channel,
+        command,
         components,
         emoji,
         embed,
@@ -1699,12 +1699,12 @@ class HTTPClient:
 
     # Application commands (global)
 
-    def get_global_commands(self, application_id: Snowflake) -> Response[List[interactions.ApplicationCommand]]:
+    def get_global_commands(self, application_id: Snowflake) -> Response[List[command.ApplicationCommand]]:
         return self.request(Route('GET', '/applications/{application_id}/commands', application_id=application_id))
 
     def get_global_command(
         self, application_id: Snowflake, command_id: Snowflake
-    ) -> Response[interactions.ApplicationCommand]:
+    ) -> Response[command.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/commands/{command_id}',
@@ -1713,7 +1713,7 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id: Snowflake, payload) -> Response[interactions.ApplicationCommand]:
+    def upsert_global_command(self, application_id: Snowflake, payload) -> Response[command.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
@@ -1721,8 +1721,8 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         command_id: Snowflake,
-        payload: interactions.EditApplicationCommand,
-    ) -> Response[interactions.ApplicationCommand]:
+        payload: Dict[str, Any],
+    ) -> Response[command.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1748,7 +1748,7 @@ class HTTPClient:
 
     def bulk_upsert_global_commands(
         self, application_id: Snowflake, payload
-    ) -> Response[List[interactions.ApplicationCommand]]:
+    ) -> Response[List[command.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
@@ -1756,7 +1756,7 @@ class HTTPClient:
 
     def get_guild_commands(
         self, application_id: Snowflake, guild_id: Snowflake
-    ) -> Response[List[interactions.ApplicationCommand]]:
+    ) -> Response[List[command.ApplicationCommand]]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1770,7 +1770,7 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-    ) -> Response[interactions.ApplicationCommand]:
+    ) -> Response[command.ApplicationCommand]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
@@ -1784,8 +1784,8 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload: interactions.EditApplicationCommand,
-    ) -> Response[interactions.ApplicationCommand]:
+        payload: Dict[str, Any],
+    ) -> Response[command.ApplicationCommand]:
         r = Route(
             'POST',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1799,8 +1799,8 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-        payload: interactions.EditApplicationCommand,
-    ) -> Response[interactions.ApplicationCommand]:
+        payload: Dict[str, Any],
+    ) -> Response[command.ApplicationCommand]:
         valid_keys = (
             'name',
             'description',
@@ -1835,8 +1835,8 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload: List[interactions.EditApplicationCommand],
-    ) -> Response[List[interactions.ApplicationCommand]]:
+        payload: List[Dict[str, Any]],
+    ) -> Response[List[command.ApplicationCommand]]:
         r = Route(
             'PUT',
             '/applications/{application_id}/guilds/{guild_id}/commands',
@@ -1889,7 +1889,7 @@ class HTTPClient:
         token: str,
         *,
         type: InteractionResponseType,
-        data: Optional[interactions.InteractionApplicationCommandCallbackData] = None,
+        data: Optional[Dict[str, Any]] = None,
     ) -> Response[None]:
         r = Route(
             'POST',
@@ -2003,7 +2003,7 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-    ) -> Response[List[interactions.GuildApplicationCommandPermissions]]:
+    ) -> Response[List[command.GuildApplicationCommandPermissions]]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
@@ -2017,7 +2017,7 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-    ) -> Response[interactions.GuildApplicationCommandPermissions]:
+    ) -> Response[command.GuildApplicationCommandPermissions]:
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}/permissions',
@@ -2032,7 +2032,7 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-        payload: interactions.BaseGuildApplicationCommandPermissions,
+        payload: Dict[str, Any],
     ) -> Response[None]:
         r = Route(
             'PUT',
@@ -2047,7 +2047,7 @@ class HTTPClient:
         self,
         application_id: Snowflake,
         guild_id: Snowflake,
-        payload: List[interactions.PartialGuildApplicationCommandPermissions],
+        payload: List[Dict[str, Any]],
     ) -> Response[None]:
         r = Route(
             'PUT',
