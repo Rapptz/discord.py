@@ -26,6 +26,7 @@ from typing import Literal, Optional, TypedDict, Union
 
 from .snowflake import Snowflake
 from .user import User
+from .member import Member
 
 GuildScheduledEventPrivacyLevel = Literal[1]
 EventStatus = Literal[1, 2, 3, 4]
@@ -97,3 +98,12 @@ class _ExternalScheduledEventWithUserCount(ExternalScheduledEvent, _WithUserCoun
 GuildScheduledEventWithUserCount = Union[
     _StageInstanceScheduledEventWithUserCount, _VoiceScheduledEventWithUserCount, _ExternalScheduledEventWithUserCount
 ]
+
+
+class ScheduledEventUser(TypedDict):
+    guild_scheduled_event_id: Snowflake
+    user: User
+
+
+class ScheduledEventUserWithMember(ScheduledEventUser):
+    member: Member
