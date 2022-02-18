@@ -679,6 +679,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         auto_archive_duration: ThreadArchiveDuration = MISSING,
         type: Optional[ChannelType] = None,
         reason: Optional[str] = None,
+        invitable: bool = True,
     ) -> Thread:
         """|coro|
 
@@ -706,6 +707,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             By default this creates a private thread if this is ``None``.
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
+        invitable: :class:`bool`
+            Whether non-modertators can add users to the thread. Only applicable to private threads.
+            Defaults to ``True``.
 
         Raises
         -------
@@ -730,6 +734,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
                 type=type.value,
                 reason=reason,
+                invitable=invitable,
             )
         else:
             data = await self._state.http.start_thread_with_message(
