@@ -43,7 +43,7 @@ from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
-from ..http import Route, handle_message_parameters
+from ..http import Route, handle_message_parameters, MultipartParameters
 from ..mixins import Hashable
 from ..channel import PartialMessageable
 
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from ..file import File
     from ..embeds import Embed
     from ..mentions import AllowedMentions
+    from ..message import Attachment
     from ..state import ConnectionState
     from ..http import Response
     from ..types.webhook import (
@@ -349,16 +350,8 @@ class AsyncWebhookAdapter:
         token: str,
         *,
         session: aiohttp.ClientSession,
-        type: int,
-        data: Optional[Dict[str, Any]] = None,
+        params: MultipartParameters,
     ) -> Response[None]:
-        payload: Dict[str, Any] = {
-            'type': type,
-        }
-
-        if data is not None:
-            payload['data'] = data
-
         route = Route(
             'POST',
             '/interactions/{webhook_id}/{webhook_token}/callback',
@@ -366,7 +359,10 @@ class AsyncWebhookAdapter:
             webhook_token=token,
         )
 
-        return self.request(route, session=session, payload=payload)
+        if params.files:
+            return self.request(route, session=session, files=params.files, multipart=params.multipart)
+        else:
+            return self.request(route, session=session, payload=params.payload)
 
     def get_original_interaction_response(
         self,
@@ -415,6 +411,118 @@ class AsyncWebhookAdapter:
             wehook_token=token,
         )
         return self.request(r, session=session)
+
+
+def interaction_response_params(type: int, data: Optional[Dict[str, Any]] = None) -> MultipartParameters:
+    payload: Dict[str, Any] = {
+        'type': type,
+    }
+    if data is not None:
+        payload['data'] = data
+
+    return MultipartParameters(payload=payload, multipart=None, files=None)
+
+
+# This is a subset of handle_message_parameters
+def interaction_message_response_params(
+    *,
+    type: int,
+    content: Optional[str] = MISSING,
+    tts: bool = False,
+    flags: MessageFlags = MISSING,
+    file: File = MISSING,
+    files: List[File] = MISSING,
+    embed: Optional[Embed] = MISSING,
+    embeds: List[Embed] = MISSING,
+    attachments: List[Attachment] = MISSING,
+    view: Optional[View] = MISSING,
+    allowed_mentions: Optional[AllowedMentions] = MISSING,
+    previous_allowed_mentions: Optional[AllowedMentions] = None,
+) -> MultipartParameters:
+    if files is not MISSING and file is not MISSING:
+        raise TypeError('Cannot mix file and files keyword arguments.')
+    if embeds is not MISSING and embed is not MISSING:
+        raise TypeError('Cannot mix embed and embeds keyword arguments.')
+
+    data: Optional[Dict[str, Any]] = {
+        'tts': tts,
+    }
+
+    if embeds is not MISSING:
+        if len(embeds) > 10:
+            raise InvalidArgument('embeds has a maximum of 10 elements.')
+        data['embeds'] = [e.to_dict() for e in embeds]
+
+    if embed is not MISSING:
+        if embed is None:
+            data['embeds'] = []
+        else:
+            data['embeds'] = [embed.to_dict()]
+
+    if content is not MISSING:
+        if content is not None:
+            data['content'] = str(content)
+        else:
+            data['content'] = None
+
+    if view is not MISSING:
+        if view is not None:
+            data['components'] = view.to_components()
+        else:
+            data['components'] = []
+
+    if attachments is not MISSING:
+        # Note: This will be overwritten if file or files is provided
+        # However, right now this is only passed via edit not send
+        data['attachments'] = [a.to_dict() for a in attachments]
+
+    if flags is not MISSING:
+        data['flags'] = flags.value
+
+    if allowed_mentions:
+        if previous_allowed_mentions is not None:
+            data['allowed_mentions'] = previous_allowed_mentions.merge(allowed_mentions).to_dict()
+        else:
+            data['allowed_mentions'] = allowed_mentions.to_dict()
+    elif previous_allowed_mentions is not None:
+        data['allowed_mentions'] = previous_allowed_mentions.to_dict()
+
+    multipart = []
+    if file is not MISSING:
+        files = [file]
+
+    if files:
+        for index, file in enumerate(files):
+            attachments_payload = []
+            for index, file in enumerate(files):
+                attachment = {
+                    'id': index,
+                    'filename': file.filename,
+                }
+
+                if file.description is not None:
+                    attachment['description'] = file.description
+
+                attachments_payload.append(attachment)
+
+            data['attachments'] = attachments_payload
+
+        data = {'type': type, 'data': data}
+        multipart.append({'name': 'payload_json', 'value': utils._to_json(data)})
+        data = None
+        for index, file in enumerate(files):
+            multipart.append(
+                {
+                    'name': f'files[{index}]',
+                    'value': file.fp,
+                    'filename': file.filename,
+                    'content_type': 'application/octet-stream',
+                }
+            )
+    else:
+        data = {'type': type, 'data': data}
+
+    return MultipartParameters(payload=data, multipart=multipart, files=files)
 
 
 async_context: ContextVar[AsyncWebhookAdapter] = ContextVar('async_webhook_context', default=AsyncWebhookAdapter())

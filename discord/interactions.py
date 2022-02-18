@@ -31,6 +31,7 @@ import asyncio
 from . import utils
 from .enums import try_enum, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
+from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
 
 from .user import User
@@ -39,7 +40,7 @@ from .message import Message, Attachment
 from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
-from .webhook.async_ import async_context, Webhook
+from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 
 __all__ = (
     'Interaction',
@@ -421,9 +422,8 @@ class InteractionResponse:
 
         if defer_type:
             adapter = async_context.get()
-            await adapter.create_interaction_response(
-                parent.id, parent.token, session=parent._session, type=defer_type, data=data
-            )
+            params = interaction_response_params(type=defer_type, data=data)
+            await adapter.create_interaction_response(parent.id, parent.token, session=parent._session, params=params)
             self._responded = True
 
     async def pong(self) -> None:
@@ -446,9 +446,8 @@ class InteractionResponse:
         parent = self._parent
         if parent.type is InteractionType.ping:
             adapter = async_context.get()
-            await adapter.create_interaction_response(
-                parent.id, parent.token, session=parent._session, type=InteractionResponseType.pong.value
-            )
+            params = interaction_response_params(InteractionResponseType.pong.value)
+            await adapter.create_interaction_response(parent.id, parent.token, session=parent._session, params=params)
             self._responded = True
 
     async def send_message(
@@ -457,9 +456,12 @@ class InteractionResponse:
         *,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
+        file: File = MISSING,
+        files: List[File] = MISSING,
         view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
+        allowed_mentions: AllowedMentions = MISSING,
     ) -> None:
         """|coro|
 
@@ -475,6 +477,10 @@ class InteractionResponse:
         embed: :class:`Embed`
             The rich embed for the content to send. This cannot be mixed with
             ``embeds`` parameter.
+        file: :class:`~discord.File`
+            The file to upload.
+        files: List[:class:`~discord.File`]
+            A list of files to upload. Must be a maximum of 10.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         view: :class:`discord.ui.View`
@@ -483,13 +489,16 @@ class InteractionResponse:
             Indicates if the message should only be visible to the user who started the interaction.
             If a view is sent with an ephemeral message and it has no timeout set then the timeout
             is set to 15 minutes.
+        allowed_mentions: :class:`~discord.AllowedMentions`
+            Controls the mentions being processed in this message. See :meth:`.abc.Messageable.send` for
+            more information.
 
         Raises
         -------
         HTTPException
             Sending the message failed.
         TypeError
-            You specified both ``embed`` and ``embeds``.
+            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
             The length of ``embeds`` was invalid.
         InteractionResponded
@@ -498,38 +507,32 @@ class InteractionResponse:
         if self._responded:
             raise InteractionResponded(self._parent)
 
-        payload: Dict[str, Any] = {
-            'tts': tts,
-        }
-
-        if embed is not MISSING and embeds is not MISSING:
-            raise TypeError('cannot mix embed and embeds keyword arguments')
-
-        if embed is not MISSING:
-            embeds = [embed]
-
-        if embeds:
-            if len(embeds) > 10:
-                raise ValueError('embeds cannot exceed maximum of 10 elements')
-            payload['embeds'] = [e.to_dict() for e in embeds]
-
-        if content is not None:
-            payload['content'] = str(content)
-
         if ephemeral:
-            payload['flags'] = 64
-
-        if view is not MISSING:
-            payload['components'] = view.to_components()
+            flags = MessageFlags._from_value(64)
+        else:
+            flags = MISSING
 
         parent = self._parent
         adapter = async_context.get()
+        params = interaction_message_response_params(
+            type=InteractionResponseType.channel_message.value,
+            content=content,
+            tts=tts,
+            embeds=embeds,
+            embed=embed,
+            file=file,
+            files=files,
+            previous_allowed_mentions=parent._state.allowed_mentions,
+            allowed_mentions=allowed_mentions,
+            flags=flags,
+            view=view,
+        )
+
         await adapter.create_interaction_response(
             parent.id,
             parent.token,
             session=parent._session,
-            type=InteractionResponseType.channel_message.value,
-            data=payload,
+            params=params,
         )
 
         if view is not MISSING:
@@ -548,6 +551,7 @@ class InteractionResponse:
         embeds: List[Embed] = MISSING,
         attachments: List[Attachment] = MISSING,
         view: Optional[View] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> None:
         """|coro|
 
@@ -569,6 +573,9 @@ class InteractionResponse:
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message. See :meth:`.Message.edit`
+            for more information.
 
         Raises
         -------
@@ -589,42 +596,25 @@ class InteractionResponse:
         if parent.type is not InteractionType.component:
             return
 
-        payload = {}
-        if content is not MISSING:
-            if content is None:
-                payload['content'] = None
-            else:
-                payload['content'] = str(content)
-
-        if embed is not MISSING and embeds is not MISSING:
-            raise TypeError('cannot mix both embed and embeds keyword arguments')
-
-        if embed is not MISSING:
-            if embed is None:
-                embeds = []
-            else:
-                embeds = [embed]
-
-        if embeds is not MISSING:
-            payload['embeds'] = [e.to_dict() for e in embeds]
-
-        if attachments is not MISSING:
-            payload['attachments'] = [a.to_dict() for a in attachments]
-
-        if view is not MISSING:
+        if view is not MISSING and message_id is not None:
             state.prevent_view_updates_for(message_id)
-            if view is None:
-                payload['components'] = []
-            else:
-                payload['components'] = view.to_components()
 
         adapter = async_context.get()
+        params = interaction_message_response_params(
+            type=InteractionResponseType.message_update.value,
+            content=content,
+            embed=embed,
+            embeds=embeds,
+            attachments=attachments,
+            previous_allowed_mentions=parent._state.allowed_mentions,
+            allowed_mentions=allowed_mentions,
+        )
+
         await adapter.create_interaction_response(
             parent.id,
             parent.token,
             session=parent._session,
-            type=InteractionResponseType.message_update.value,
-            data=payload,
+            params=params,
         )
 
         if view and not view.is_finished():
