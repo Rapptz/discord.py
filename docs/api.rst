@@ -1368,6 +1368,11 @@ of :class:`enum.Enum`.
         The user is a bot that only uses HTTP interactions and is shown in the online member list.
 
         .. versionadded:: 2.0
+    .. attribute:: spammer
+
+        The user is flagged as a spammer by Discord.
+
+        ..versionadded:: 2.0
 
 .. class:: ActivityType
 
