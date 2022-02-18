@@ -151,9 +151,13 @@ class Attachment(Hashable):
         The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
 
         .. versionadded:: 1.7
+    description: Optional[:class:`str`]
+        The attachment's description. Only applicable to images.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type')
+    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type', 'description')
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
@@ -165,6 +169,7 @@ class Attachment(Hashable):
         self.proxy_url: str = data.get('proxy_url')
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
+        self.description: Optional[str] = data.get('description')
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
@@ -318,6 +323,8 @@ class Attachment(Hashable):
             result['width'] = self.width
         if self.content_type:
             result['content_type'] = self.content_type
+        if self.description is not None:
+            result['description'] = self.description
         return result
 
 

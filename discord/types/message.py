@@ -52,6 +52,7 @@ class Reaction(TypedDict):
 class _AttachmentOptional(TypedDict, total=False):
     height: Optional[int]
     width: Optional[int]
+    description: str
     content_type: str
     spoiler: bool
 

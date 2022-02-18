@@ -267,7 +267,8 @@ class HTTPClient:
                         f.reset(seek=tries)
 
                 if form:
-                    form_data = aiohttp.FormData()
+                    # with quote_fields=True '[' and ']' in file field names are escaped, which discord does not support
+                    form_data = aiohttp.FormData(quote_fields=False)  
                     for params in form:
                         form_data.add_field(**params)
                     kwargs['data'] = form_data
@@ -496,28 +497,31 @@ class HTTPClient:
             payload['components'] = components
         if stickers:
             payload['sticker_ids'] = stickers
+        if files:
+            attachments = []
+            for index, file in enumerate(files):
+                attachment = {
+                        "id": index,
+                        "filename": file.filename,
+                    }
+
+                if file.description is not None:
+                    attachment["description"] = file.description
+
+                attachments.append(attachment)
+
+            payload['attachments'] = attachments
 
         form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
-        if len(files) == 1:
-            file = files[0]
+        for index, file in enumerate(files):
             form.append(
                 {
-                    'name': 'file',
+                    'name': f'files[{index}]',
                     'value': file.fp,
                     'filename': file.filename,
-                    'content_type': 'application/octet-stream',
+                    'content_type': 'image/png',
                 }
             )
-        else:
-            for index, file in enumerate(files):
-                form.append(
-                    {
-                        'name': f'file{index}',
-                        'value': file.fp,
-                        'filename': file.filename,
-                        'content_type': 'application/octet-stream',
-                    }
-                )
 
         return self.request(route, form=form, files=files)
 

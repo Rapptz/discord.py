@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING, Union
+from typing import Optional, Union
 
 import os
 import io
@@ -62,14 +62,13 @@ class File:
         a string then the ``filename`` will default to the string given.
     spoiler: :class:`bool`
         Whether the attachment is a spoiler.
+    description: Optional[:class:`str`]
+        The file description to display, currently only supported for images.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
-
-    if TYPE_CHECKING:
-        fp: io.BufferedIOBase
-        filename: Optional[str]
-        spoiler: bool
+    __slots__ = ('fp', 'filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
 
     def __init__(
         self,
@@ -77,11 +76,12 @@ class File:
         filename: Optional[str] = None,
         *,
         spoiler: bool = False,
+        description: Optional[str] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
                 raise ValueError(f'File buffer {fp!r} must be seekable and readable')
-            self.fp = fp
+            self.fp: io.BufferedIOBase = fp
             self._original_pos = fp.tell()
             self._owner = False
         else:
@@ -102,12 +102,13 @@ class File:
             else:
                 self.filename = getattr(fp, 'name', None)
         else:
-            self.filename = filename
+            self.filename: Optional[str] = filename
 
         if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
             self.filename = 'SPOILER_' + self.filename
 
-        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+        self.spoiler: bool = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+        self.description: Optional[str] = description
 
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
