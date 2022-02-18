@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
+from datetime import datetime
 import time
 import asyncio
 
@@ -143,6 +144,7 @@ class Thread(Messageable, Hashable):
         'archiver_id',
         'auto_archive_duration',
         'archive_timestamp',
+        '_created_at',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
@@ -189,6 +191,7 @@ class Thread(Messageable, Hashable):
         self.archive_timestamp = parse_time(data['archive_timestamp'])
         self.locked = data.get('locked', False)
         self.invitable = data.get('invitable', True)
+        self._created_at = parse_time(data.get('create_timestamp'))
 
     def _update(self, data):
         try:
@@ -273,7 +276,7 @@ class Thread(Messageable, Hashable):
         if parent is None:
             raise ClientException('Parent channel not found')
         return parent.category
-    
+
     @property
     def category_id(self) -> Optional[int]:
         """The category channel ID the parent channel belongs to, if applicable.
@@ -293,6 +296,16 @@ class Thread(Messageable, Hashable):
         if parent is None:
             raise ClientException('Parent channel not found')
         return parent.category_id
+
+    @property
+    def created_at(self) -> Optional[datetime]:
+        """An aware timestamp of when the thread was created in UTC.
+
+        .. note::
+
+            This timestamp only exists for threads created after 9 January 2022, otherwise returns ``None``.
+        """
+        return self._created_at
 
     def is_private(self) -> bool:
         """:class:`bool`: Whether the thread is a private thread.
