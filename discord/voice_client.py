@@ -255,7 +255,7 @@ class Player:
 
     def is_playing(self) -> bool:
         """Indicates if we're currently playing audio."""
-        return self._player is not None and self._player.is_playing()
+        return self._player and self._player.is_playing()
 
     @property
     def paused(self) -> bool:
@@ -263,7 +263,7 @@ class Player:
 
     def is_paused(self) -> bool:
         """Indicates if we're playing audio, but if we're paused."""
-        return self._player is not None and self._player.is_paused()
+        return self._player and self._player.is_paused()
 
     def play(
         self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any] = None
@@ -307,7 +307,7 @@ class Player:
         if not self.encoder and not source.is_opus():
             self.encoder = opus.Encoder()
 
-        self._player = AudioPlayer(source, self, after=after)
+        self._player = AudioPlayer(source, self.client, after=after)
         self._player.start()
 
     def pause(self) -> None:
@@ -395,7 +395,6 @@ class VoiceClient(VoiceProtocol):
     endpoint_ip: str
     voice_port: int
     secret_key: List[int]
-    ssrc: int
 
     def __init__(self, client: Client, channel: abc.Connectable):
         if not has_nacl:
