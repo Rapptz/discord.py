@@ -514,6 +514,7 @@ class Intents(BaseFlags):
         self = cls.all()
         self.presences = False
         self.members = False
+        self.message_content = False
         return self
 
     @flag_value
@@ -891,6 +892,33 @@ class Intents(BaseFlags):
         This does not correspond to any attributes or classes in the library in terms of cache.
         """
         return 1 << 14
+
+    @flag_value
+    def message_content(self):
+        """:class:`bool`: Whether message content, attachments, embeds and components will be available in messages
+        which do not meet the following criteria:
+
+        - The message was sent by the client
+        - The message was sent in direct messages
+        - The message mentions the client
+
+        This applies to the following events:
+
+        - :func:`on_message`
+        - :func:`on_message_edit`
+        - :func:`on_message_delete`
+        - :func:`on_raw_message_edit`
+        
+        For more information go to the :ref:`message content intent documentation <need_message_content_intent>`.
+
+        .. note::
+
+            Currently, this requires opting in explicitly via the developer portal as well.
+            Bots in over 100 guilds will need to apply to Discord for verification.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 15
 
 
 @fill_with_flags()
