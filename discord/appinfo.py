@@ -28,6 +28,7 @@ from typing import List, TYPE_CHECKING, Optional
 
 from . import utils
 from .asset import Asset
+from .flags import ApplicationFlags
 
 if TYPE_CHECKING:
     from .guild import Guild
@@ -125,6 +126,7 @@ class AppInfo:
         'primary_sku_id',
         'slug',
         '_cover_image',
+        '_flags',
         'terms_of_service_url',
         'privacy_policy_url',
     )
@@ -151,6 +153,7 @@ class AppInfo:
 
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self.slug: Optional[str] = data.get('slug')
+        self._flags: int = data.get('flags', 0)
         self._cover_image: Optional[str] = data.get('cover_image')
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
@@ -188,6 +191,15 @@ class AppInfo:
         """
         return self._state._get_guild(self.guild_id)
 
+    @property
+    def flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The application's flags.
+
+        .. versionadded:: 2.0
+        """
+        return ApplicationFlags._from_value(self._flags)
+
+
 class PartialAppInfo:
     """Represents a partial AppInfo given by :func:`~discord.abc.GuildChannel.create_invite`
 
@@ -212,13 +224,25 @@ class PartialAppInfo:
         The application's privacy policy URL, if set.
     """
 
-    __slots__ = ('_state', 'id', 'name', 'description', 'rpc_origins', 'verify_key', 'terms_of_service_url', 'privacy_policy_url', '_icon')
+    __slots__ = (
+        '_state',
+        'id',
+        'name',
+        'description',
+        'rpc_origins',
+        'verify_key',
+        'terms_of_service_url',
+        'privacy_policy_url',
+        '_icon',
+        '_flags',
+    )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self._icon: Optional[str] = data.get('icon')
+        self._flags: int = data.get('flags', 0)
         self.description: str = data['description']
         self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
         self.verify_key: str = data['verify_key']
@@ -234,3 +258,11 @@ class PartialAppInfo:
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
+
+    @property
+    def flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The application's flags.
+
+        .. versionadded:: 2.0
+        """
+        return ApplicationFlags._from_value(self._flags)
