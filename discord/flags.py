@@ -1120,3 +1120,15 @@ class ApplicationFlags(BaseFlags):
     def embedded(self):
         """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
         return 1 << 17
+
+    @flag_value
+    def gateway_message_content(self):
+        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
+        read message content in guilds."""
+        return 1 << 18
+
+    @flag_value
+    def gateway_message_content_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is unverified and is allowed to
+        read message content in guilds."""
+        return 1 << 19
