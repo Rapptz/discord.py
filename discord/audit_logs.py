@@ -62,6 +62,10 @@ if TYPE_CHECKING:
     from .threads import Thread
 
 
+def _transform_timestamp(entry: AuditLogEntry, data: Optional[str]) -> Optional[datetime.datetime]:
+    return utils.parse_time(data)
+
+
 def _transform_permissions(entry: AuditLogEntry, data: str) -> Permissions:
     return Permissions(int(data))
 
@@ -85,10 +89,11 @@ def _transform_member_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Uni
         return None
     return entry._get_member(int(data))
 
+
 def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Guild]:
     if data is None:
         return None
-    return entry._state._get_guild(data)
+    return entry._state._get_guild(int(data))
 
 
 def _transform_overwrites(
@@ -149,7 +154,7 @@ def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
 
     return _transform
 
-def _transform_type(entry: AuditLogEntry, data: Union[int]) -> Union[enums.ChannelType, enums.StickerType]:
+def _transform_type(entry: AuditLogEntry, data: int) -> Union[enums.ChannelType, enums.StickerType]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
     else:
@@ -212,6 +217,8 @@ class AuditLogChanges:
         'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
         'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
         'type':                          (None, _transform_type),
+        'communication_disabled_until':  ('timed_out_until', _transform_timestamp),
+        'expire_behavior':               (None, _enum_transformer(enums.ExpireBehaviour)),
     }
     # fmt: on
 

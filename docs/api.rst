@@ -1940,6 +1940,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.nick`
         - :attr:`~AuditLogDiff.mute`
         - :attr:`~AuditLogDiff.deaf`
+        - :attr:`~AuditLogDiff.timed_out_until`
 
     .. attribute:: member_role_update
 
@@ -2350,6 +2351,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.archived`
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
+        - :attr:`~AuditLogDiff.invitable`
 
         .. versionadded:: 2.0
 
@@ -2367,6 +2369,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.archived`
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
+        - :attr:`~AuditLogDiff.invitable`
 
         .. versionadded:: 2.0
 
@@ -2384,6 +2387,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.archived`
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
+        - :attr:`~AuditLogDiff.invitable`
 
         .. versionadded:: 2.0
 
@@ -3263,6 +3267,43 @@ AuditLogDiff
     .. attribute:: default_auto_archive_duration
 
         The default auto archive duration for newly created threads being changed.
+
+        :type: :class:`int`
+
+    .. attribute:: invitable
+
+        Whetheer non-moderators can add users to this private thread.
+
+        :type: :class:`bool`
+
+    .. attribute:: timed_out_until
+
+        Whether the user is timed out, and if so until when.
+
+        :type: Optional[:class:`datetime.datetime`]
+
+    .. attribute:: enable_emoticons
+
+        Integration emoticons were enabled or disabled.
+
+        see also :attr:`Integration.enable_emoticons`
+
+        :type: :class:`bool`
+
+    .. attribute:: expire_behaviour
+                   expire_behavior
+
+        The behaviour of expiring subscribers changed.
+
+        see also :attr:`Integration.expire_grace_period`
+
+        :type: :class:`ExpireBehaviour`
+    
+    .. attribute:: expire_grace_period
+
+        The grace period before expiring subscribers changed.
+
+        see also :attr:`Integration.expire_grace_period`
 
         :type: :class:`int`
 
