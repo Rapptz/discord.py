@@ -197,6 +197,7 @@ class Guild(Hashable):
 
         They are currently as follows:
 
+        - ``ANIMATED_BANNER``: Guild can upload an animated banner.
         - ``ANIMATED_ICON``: Guild can upload an animated icon.
         - ``BANNER``: Guild can upload and use a banner. (i.e. :attr:`.banner`)
         - ``COMMERCE``: Guild can sell things using store channels.
