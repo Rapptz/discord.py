@@ -1539,11 +1539,6 @@ class Connectable(Protocol):
 
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.StageChannel`
-
-    Note
-    ----
-    This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
-    checks.
     """
 
     __slots__ = ()
