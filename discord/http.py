@@ -184,7 +184,7 @@ def handle_message_parameters(
         else:
             payload['components'] = []
 
-    if nonce is not MISSING:
+    if nonce is not None:
         payload['nonce'] = str(nonce)
 
     if message_reference is not MISSING:
