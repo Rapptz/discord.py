@@ -346,11 +346,11 @@ class ChannelNotFound(BadArgument):
 
     Attributes
     -----------
-    argument: :class:`str`
+    argument: Union[:class:`int`, :class:`str`]
         The channel supplied by the caller that was not found
     """
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
+    def __init__(self, argument: Union[int, str]) -> None:
+        self.argument: Union[int, str] = argument
         super().__init__(f'Channel "{argument}" not found.')
 
 class ThreadNotFound(BadArgument):
