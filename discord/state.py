@@ -446,10 +446,11 @@ class ConnectionState:
         # If presences are enabled then we get back the old guild.large behaviour
         return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
-    def _get_guild_channel(self, data: MessagePayload) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
+    def _get_guild_channel(self, data: MessagePayload, guild_id: Optional[int] = None) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
         channel_id = int(data['channel_id'])
         try:
-            guild = self._get_guild(int(data['guild_id']))
+            guild_id = guild_id or int(data['guild_id'])
+            guild = self._get_guild(guild_id)
         except KeyError:
             channel = DMChannel._from_message(self, channel_id)
             guild = None

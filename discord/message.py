@@ -716,8 +716,10 @@ class Message(Hashable):
                     # Right now the channel IDs match but maybe in the future they won't.
                     if ref.channel_id == channel.id:
                         chan = channel
+                    elif isinstance(channel, Thread) and channel.parent.id == ref.channel_id:
+                        chan = channel
                     else:
-                        chan, _ = state._get_guild_channel(resolved)
+                        chan, _ = state._get_guild_channel(resolved, ref.guild_id)
 
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
