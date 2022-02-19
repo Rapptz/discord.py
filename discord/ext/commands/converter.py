@@ -353,14 +353,17 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
 
     @staticmethod
     def _resolve_channel(ctx, guild_id, channel_id) -> Optional[PartialMessageableChannel]:
+        if channel_id is None:
+            # we were passed just a message id so we can assume the channel is the current context channel
+            return ctx.channel
+
         if guild_id is not None:
             guild = ctx.bot.get_guild(guild_id)
-            if guild is not None and channel_id is not None:
-                return guild._resolve_channel(channel_id)  # type: ignore
-            else:
+            if guild is None:
                 return None
-        else:
-            return ctx.bot.get_channel(channel_id) if channel_id else ctx.channel
+            return guild._resolve_channel(channel_id)
+
+        return ctx.bot.get_channel(channel_id)
 
     async def convert(self, ctx: Context, argument: str) -> discord.PartialMessage:
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
