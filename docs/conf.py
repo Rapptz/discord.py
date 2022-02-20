@@ -11,6 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import logging
 import sys
 import os
 import re
@@ -149,6 +150,21 @@ nitpick_ignore_files = [
   "migrating",
   "whats_new",
 ]
+
+
+# Ignore warnings about inconsistent order and/or count of references in translated messages.
+# This makes no sense, different languages can have different word order...
+def _i18n_warning_filter(record: logging.LogRecord) -> bool:
+  return not record.msg.startswith(
+    (
+      'inconsistent references in translated message',
+      'inconsistent term references in translated message',
+    )
+  )
+
+
+_i18n_logger = logging.getLogger('sphinx')
+_i18n_logger.addFilter(_i18n_warning_filter)
 
 # -- Options for HTML output ----------------------------------------------
 
