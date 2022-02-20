@@ -65,7 +65,7 @@ class TextInput(Item[V]):
         The style of the text input.
     placeholder: Optional[:class:`str`]
         The placeholder text to display when the text input is empty.
-    default_value: Optional[:class:`str`]
+    default: Optional[:class:`str`]
         The default value of the text input.
     required: :class:`bool`
         Whether the text input is required.
@@ -94,14 +94,14 @@ class TextInput(Item[V]):
         style: TextStyle = TextStyle.short,
         custom_id: str = MISSING,
         placeholder: Optional[str] = None,
-        default_value: Optional[str] = None,
+        default: Optional[str] = None,
         required: bool = True,
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
         row: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._value: Optional[str] = default_value
+        self._value: Optional[str] = default
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         self._underlying = TextInputComponent._raw_construct(
@@ -110,7 +110,7 @@ class TextInput(Item[V]):
             style=style,
             custom_id=custom_id,
             placeholder=placeholder,
-            default_value=default_value,
+            value=default,
             required=required,
             min_length=min_length,
             max_length=max_length,
@@ -193,13 +193,13 @@ class TextInput(Item[V]):
         self._underlying.style = value
 
     @property
-    def default_value(self) -> Optional[str]:
+    def default(self) -> Optional[str]:
         """:class:`str`: The default value of the text input."""
-        return self._underlying.default_value
+        return self._underlying.value
 
-    @default_value.setter
-    def default_value(self, value: Optional[str]) -> None:
-        self._underlying.default_value = value
+    @default.setter
+    def default(self, value: Optional[str]) -> None:
+        self._underlying.value = value
 
     def to_component_dict(self) -> TextInputPayload:
         return self._underlying.to_dict()
@@ -217,7 +217,7 @@ class TextInput(Item[V]):
             style=component.style,
             custom_id=component.custom_id,
             placeholder=component.placeholder,
-            default_value=component.default_value,
+            default=component.value,
             required=component.required,
             min_length=component.min_length,
             max_length=component.max_length,

@@ -391,7 +391,7 @@ class TextInput(Component):
         The style of the text input.
     placeholder: Optional[:class:`str`]
         The placeholder text to display when the text input is empty.
-    default_value: Optional[:class:`str`]
+    value: Optional[:class:`str`]
         The default value of the text input.
     required: :class:`bool`
         Whether the text input is required.
@@ -406,7 +406,7 @@ class TextInput(Component):
         'label',
         'custom_id',
         'placeholder',
-        'default_value',
+        'value',
         'required',
         'min_length',
         'max_length',
@@ -420,7 +420,7 @@ class TextInput(Component):
         self.label: str = data['label']
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
-        self.default_value: Optional[str] = data.get('value')
+        self.value: Optional[str] = data.get('value')
         self.required: bool = data.get('required', True)
         self.min_length: Optional[int] = data.get('min_length')
         self.max_length: Optional[int] = data.get('max_length')
@@ -437,8 +437,8 @@ class TextInput(Component):
         if self.placeholder:
             payload['placeholder'] = self.placeholder
 
-        if self.default_value:
-            payload['value'] = self.default_value
+        if self.value:
+            payload['value'] = self.value
 
         if self.min_length:
             payload['min_length'] = self.min_length
@@ -447,6 +447,14 @@ class TextInput(Component):
             payload['max_length'] = self.max_length
 
         return payload
+
+    @property
+    def default(self) -> Optional[str]:
+        """Optional[:class:`str`]: The default value of the text input.
+
+        This is an alias to :attr:`value`.
+        """
+        return self.value
 
 
 def _component_factory(data: ComponentPayload) -> Component:
