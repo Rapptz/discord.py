@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
-from .enums import try_enum, ComponentType, ButtonStyle
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         SelectMenu as SelectMenuPayload,
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
+        TextInput as TextInputPayload,
     )
     from .emoji import Emoji
 
@@ -370,6 +371,83 @@ class SelectOption:
         return payload
 
 
+class TextInput(Component):
+    """Represents a text input from the Discord Bot UI Kit.
+
+    .. note::
+        The user constructible and usable type to create a text input is
+        :class:`discord.ui.TextInput` not this one.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the text input that gets received during an interaction.
+    label: :class:`str`
+        The label to display above the text input.
+    style: :class:`TextStyle`
+        The style of the text input.
+    placeholder: Optional[:class:`str`]
+        The placeholder text to display when the text input is empty.
+    default_value: Optional[:class:`str`]
+        The default value of the text input.
+    required: :class:`bool`
+        Whether the text input is required.
+    min_length: Optional[:class:`int`]
+        The minimum length of the text input.
+    max_length: Optional[:class:`int`]
+        The maximum length of the text input.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'style',
+        'label',
+        'custom_id',
+        'placeholder',
+        'default_value',
+        'required',
+        'min_length',
+        'max_length',
+    )
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: TextInputPayload) -> None:
+        self.type: ComponentType = ComponentType.text_input
+        self.style: TextStyle = try_enum(TextStyle, data['style'])
+        self.label: str = data['label']
+        self.custom_id: str = data['custom_id']
+        self.placeholder: Optional[str] = data.get('placeholder')
+        self.default_value: Optional[str] = data.get('value')
+        self.required: bool = data.get('required', True)
+        self.min_length: Optional[int] = data.get('min_length')
+        self.max_length: Optional[int] = data.get('max_length')
+
+    def to_dict(self) -> TextInputPayload:
+        payload: TextInputPayload = {
+            'type': self.type.value,
+            'style': self.style.value,
+            'label': self.label,
+            'custom_id': self.custom_id,
+            'required': self.required,
+        }
+
+        if self.placeholder:
+            payload['placeholder'] = self.placeholder
+
+        if self.default_value:
+            payload['value'] = self.default_value
+
+        if self.min_length:
+            payload['min_length'] = self.min_length
+
+        if self.max_length:
+            payload['max_length'] = self.max_length
+
+        return payload
+
+
 def _component_factory(data: ComponentPayload) -> Component:
     component_type = data['type']
     if component_type == 1:
@@ -378,6 +456,8 @@ def _component_factory(data: ComponentPayload) -> Component:
         return Button(data)  # type: ignore
     elif component_type == 3:
         return SelectMenu(data)  # type: ignore
+    elif component_type == 4:
+        return TextInput(data)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
         return Component._raw_construct(type=as_enum)

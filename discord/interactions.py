@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from .embeds import Embed
     from .ui.view import View
+    from .ui.modal import Modal
     from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
 
@@ -626,6 +627,41 @@ class InteractionResponse:
         if view and not view.is_finished():
             state.store_view(view, message_id)
 
+        self._responded = True
+
+    async def send_modal(self, modal: Modal, /):
+        """|coro|
+
+        Responds to this interaction by sending a modal.
+
+        Parameters
+        -----------
+        modal: :class:`~discord.ui.Modal`
+            The modal to send.
+
+        Raises
+        -------
+        HTTPException
+            Sending the modal failed.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+        if self._responded:
+            raise InteractionResponded(self._parent)
+
+        parent = self._parent
+
+        adapter = async_context.get()
+
+        params = interaction_response_params(InteractionResponseType.modal.value, modal.to_dict())
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            params=params,
+        )
+        
+        self._parent._state.store_view(modal)
         self._responded = True
 
 

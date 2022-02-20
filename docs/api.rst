@@ -1418,6 +1418,9 @@ of :class:`enum.Enum`.
     .. attribute:: component
 
         Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+    .. attribute:: modal_submit
+
+        Represents submission of a modal interaction.
 
 .. class:: InteractionResponseType
 
@@ -1451,6 +1454,11 @@ of :class:`enum.Enum`.
         Responds to the interaction by editing the message.
 
         See also :meth:`InteractionResponse.edit_message`
+    .. attribute:: modal
+
+        Responds to the interaction with a modal.
+
+        See also :meth:`InteractionResponse.send_modal`
 
 .. class:: ComponentType
 
@@ -1467,6 +1475,10 @@ of :class:`enum.Enum`.
     .. attribute:: select
 
         Represents a select component.
+    
+    .. attribute:: text_input
+
+        Represents a text box component.
 
 
 .. class:: ButtonStyle
@@ -1509,6 +1521,22 @@ of :class:`enum.Enum`.
     .. attribute:: url
 
         An alias for :attr:`link`.
+
+.. class:: TextStyle
+
+    Represents the style of the text box component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: short
+
+        Represents a short text box.
+    .. attribute:: paragraph
+
+        Represents a long form text box.
+    .. attribute:: long
+
+        An alias for :attr:`paragraph`.
 
 .. class:: VoiceRegion
 
@@ -3398,6 +3426,16 @@ SelectMenu
     :inherited-members:
 
 
+TextInput
+~~~~~~~~~~
+
+.. attributetable:: TextInput
+
+.. autoclass:: TextInput()
+    :members:
+    :inherited-members:
+
+
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4061,6 +4099,14 @@ View
 .. autoclass:: discord.ui.View
     :members:
 
+Modal
+~~~~~~
+
+.. attributetable:: discord.ui.Modal
+
+.. autoclass:: discord.ui.Modal
+    :members:
+
 Item
 ~~~~~~~
 
@@ -4091,6 +4137,14 @@ Select
 
 .. autofunction:: discord.ui.select
 
+TextInput
+~~~~~~~~
+
+.. attributetable:: discord.ui.TextInput
+
+.. autoclass:: discord.ui.TextInput
+    :members:
+    :inherited-members:
 
 Exceptions
 ------------

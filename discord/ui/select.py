@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import (
-        ComponentInteractionData,
+        MessageComponentInteractionData,
     )
 
 S = TypeVar('S', bound='Select')
@@ -270,8 +270,7 @@ class Select(Item[V]):
     def refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def refresh_state(self, interaction: Interaction) -> None:
-        data: ComponentInteractionData = interaction.data  # type: ignore
+    def refresh_state(self, data: MessageComponentInteractionData) -> None:
         self._selected_values = data.get('values', [])
 
     @classmethod

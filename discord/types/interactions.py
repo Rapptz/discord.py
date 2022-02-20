@@ -163,13 +163,13 @@ class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData
 MessageComponentInteractionData = Union[ButtonMessageComponentInteractionData, SelectMessageComponentInteractionData]
 
 
-class ModalSubmitInputTextInteractionData(TypedDict):
+class ModalSubmitTextInputInteractionData(TypedDict):
     type: Literal[4]
     custom_id: str
     value: str
 
 
-ModalSubmitComponentItemInteractionData = ModalSubmitInputTextInteractionData
+ModalSubmitComponentItemInteractionData = ModalSubmitTextInputInteractionData
 
 
 class ModalSubmitActionRowInteractionData(TypedDict):
