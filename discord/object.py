@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from . import utils
 from .mixins import Hashable
+from .utils import snowflake_time
 
 from typing import (
     SupportsInt,
@@ -89,4 +89,7 @@ class Object(Hashable):
     @property
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
-        return utils.snowflake_time(self.id)
+        return snowflake_time(self.id)
+
+
+OLDEST_OBJECT = Object(id=0)
