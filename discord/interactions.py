@@ -286,7 +286,7 @@ class Interaction:
         attachments: List[Union[:class:`Attachment`, :class:`File`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
- 
+
             .. note::
 
                 New files will always appear after current attachments.
@@ -388,7 +388,7 @@ class InteractionResponse:
         """
         return self._responded
 
-    async def defer(self, *, ephemeral: bool = False) -> None:
+    async def defer(self, *, ephemeral: bool = False, thinking: bool = False) -> None:
         """|coro|
 
         Defers the interaction response.
@@ -396,11 +396,23 @@ class InteractionResponse:
         This is typically used when the interaction is acknowledged
         and a secondary action will be done later.
 
+        This is only supported with the following interaction types:
+
+        - :attr:`InteractionType.application_command`
+        - :attr:`InteractionType.component`
+        - :attr:`InteractionType.modal_submit`
+
         Parameters
         -----------
         ephemeral: :class:`bool`
             Indicates whether the deferred message will eventually be ephemeral.
             This only applies for interactions of type :attr:`InteractionType.application_command`.
+        thinking: :class:`bool`
+            Indicates whether the deferred type should be :attr:`InteractionResponseType.deferred_channel_message`
+            instead of the default :attr:`InteractionResponseType.deferred_message_update` if both are valid.
+            In UI terms, this is represented as if the bot is thinking of a response. It is your responsibility to
+            eventually send a followup message via :attr:`Interaction.followup` to make this thinking state go away.
+            Application commands (AKA Slash commands) cannot use :attr:`InteractionResponseType.deferred_message_update`.
 
         Raises
         -------
@@ -415,8 +427,12 @@ class InteractionResponse:
         defer_type: int = 0
         data: Optional[Dict[str, Any]] = None
         parent = self._parent
-        if parent.type is InteractionType.component:
-            defer_type = InteractionResponseType.deferred_message_update.value
+        if parent.type is InteractionType.component or parent.type is InteractionType.modal_submit:
+            defer_type = (
+                InteractionResponseType.deferred_channel_message.value
+                if thinking
+                else InteractionResponseType.deferred_message_update.value
+            )
         elif parent.type is InteractionType.application_command:
             defer_type = InteractionResponseType.deferred_channel_message.value
             if ephemeral:
@@ -572,7 +588,7 @@ class InteractionResponse:
         attachments: List[Union[:class:`Attachment`, :class:`File`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
- 
+
             .. note::
 
                 New files will always appear after current attachments.
@@ -660,7 +676,7 @@ class InteractionResponse:
             session=parent._session,
             params=params,
         )
-        
+
         self._parent._state.store_view(modal)
         self._responded = True
 
@@ -729,7 +745,7 @@ class InteractionMessage(Message):
         attachments: List[Union[:class:`Attachment`, :class:`File`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
- 
+
             .. note::
 
                 New files will always appear after current attachments.
@@ -765,7 +781,7 @@ class InteractionMessage(Message):
             view=view,
             allowed_mentions=allowed_mentions,
         )
-    
+
     async def add_files(self, *files: File) -> InteractionMessage:
         r"""|coro|
 
@@ -784,7 +800,7 @@ class InteractionMessage(Message):
             Editing the message failed.
         Forbidden
             Tried to edit a message that isn't yours.
-        
+
         Returns
         ---------
         :class:`InteractionMessage`
@@ -803,7 +819,7 @@ class InteractionMessage(Message):
         -----------
         \*attachments: :class:`Attachment`
             Attachments to remove from the message.
-        
+
         Raises
         -------
         HTTPException
