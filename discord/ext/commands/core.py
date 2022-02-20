@@ -1184,7 +1184,7 @@ class GroupMixin(Generic[CogT]):
 
         Raises
         -------
-        :exc:`.CommandRegistrationError`
+        CommandRegistrationError
             If the command or its alias is already registered by different command.
         TypeError
             If the command passed is not a subclass of :class:`.Command`.

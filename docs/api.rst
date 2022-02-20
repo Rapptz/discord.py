@@ -3157,7 +3157,7 @@ AuditLogDiff
 
         Integration emoticons were enabled or disabled.
 
-        see also :attr:`Integration.enable_emoticons`
+        see also :attr:`StreamIntegration.enable_emoticons`
 
         :type: :class:`bool`
 
@@ -3166,7 +3166,7 @@ AuditLogDiff
 
         The behaviour of expiring subscribers changed.
 
-        see also :attr:`Integration.expire_grace_period`
+        see also :attr:`StreamIntegration.expire_behaviour`
 
         :type: :class:`ExpireBehaviour`
     
@@ -3174,7 +3174,7 @@ AuditLogDiff
 
         The grace period before expiring subscribers changed.
 
-        see also :attr:`Integration.expire_grace_period`
+        see also :attr:`StreamIntegration.expire_grace_period`
 
         :type: :class:`int`
 

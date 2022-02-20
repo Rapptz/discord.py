@@ -475,9 +475,9 @@ class Client:
 
         Raises
         ------
-        :exc:`.LoginFailure`
+        LoginFailure
             The wrong credentials are passed.
-        :exc:`.HTTPException`
+        HTTPException
             An unknown HTTP related error occurred,
             usually when it isn't 200 or the known incorrect credentials
             passing status code.
@@ -506,10 +506,10 @@ class Client:
 
         Raises
         -------
-        :exc:`.GatewayNotFound`
+        GatewayNotFound
             If the gateway to connect to Discord is not found. Usually if this
             is thrown then there is a Discord API outage.
-        :exc:`.ConnectionClosed`
+        ConnectionClosed
             The websocket connection has been terminated.
         """
 
@@ -1106,7 +1106,7 @@ class Client:
 
         Raises
         ------
-        :exc:`.InvalidArgument`
+        InvalidArgument
             If the ``activity`` parameter is not the proper type.
         """
 
@@ -1186,7 +1186,7 @@ class Client:
 
         Raises
         ------
-        :exc:`.HTTPException`
+        HTTPException
             Getting the guilds failed.
 
         Yields
@@ -1261,9 +1261,9 @@ class Client:
 
         Raises
         -------
-        :exc:`.NotFound`
+        NotFound
             The template is invalid.
-        :exc:`.HTTPException`
+        HTTPException
             Getting the template failed.
 
         Returns
@@ -1300,9 +1300,9 @@ class Client:
 
         Raises
         ------
-        :exc:`.Forbidden`
+        Forbidden
             You do not have access to the guild.
-        :exc:`.HTTPException`
+        HTTPException
             Getting the guild failed.
 
         Returns
@@ -1348,9 +1348,9 @@ class Client:
 
         Raises
         ------
-        :exc:`.HTTPException`
+        HTTPException
             Guild creation failed.
-        :exc:`.InvalidArgument`
+        InvalidArgument
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
@@ -1386,9 +1386,9 @@ class Client:
 
         Raises
         -------
-        :exc:`.NotFound`
+        NotFound
             The stage instance or channel could not be found.
-        :exc:`.HTTPException`
+        HTTPException
             Getting the stage instance failed.
 
         Returns
@@ -1429,9 +1429,9 @@ class Client:
 
         Raises
         -------
-        :exc:`.NotFound`
+        NotFound
             The invite has expired or is invalid.
-        :exc:`.HTTPException`
+        HTTPException
             Getting the invite failed.
 
         Returns
@@ -1463,11 +1463,11 @@ class Client:
 
         Raises
         -------
-        :exc:`.Forbidden`
+        Forbidden
             You do not have permissions to revoke invites.
-        :exc:`.NotFound`
+        NotFound
             The invite is invalid or expired.
-        :exc:`.HTTPException`
+        HTTPException
             Revoking the invite failed.
         """
 
@@ -1496,9 +1496,9 @@ class Client:
 
         Raises
         -------
-        :exc:`.Forbidden`
+        Forbidden
             The widget for this guild is disabled.
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the widget failed.
 
         Returns
@@ -1517,7 +1517,7 @@ class Client:
 
         Raises
         -------
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the information failed somehow.
 
         Returns
@@ -1552,9 +1552,9 @@ class Client:
 
         Raises
         -------
-        :exc:`.NotFound`
+        NotFound
             A user with this ID does not exist.
-        :exc:`.HTTPException`
+        HTTPException
             Fetching the user failed.
 
         Returns
@@ -1582,13 +1582,13 @@ class Client:
 
         Raises
         -------
-        :exc:`.InvalidData`
+        InvalidData
             An unknown channel type was received from Discord.
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the channel failed.
-        :exc:`.NotFound`
+        NotFound
             Invalid Channel ID.
-        :exc:`.Forbidden`
+        Forbidden
             You do not have permission to fetch this channel.
 
         Returns
@@ -1625,11 +1625,11 @@ class Client:
 
         Raises
         --------
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the webhook failed.
-        :exc:`.NotFound`
+        NotFound
             Invalid webhook ID.
-        :exc:`.Forbidden`
+        Forbidden
             You do not have permission to fetch this webhook.
 
         Returns
@@ -1649,9 +1649,9 @@ class Client:
 
         Raises
         --------
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the sticker failed.
-        :exc:`.NotFound`
+        NotFound
             Invalid sticker ID.
 
         Returns
@@ -1672,7 +1672,7 @@ class Client:
 
         Raises
         -------
-        :exc:`.HTTPException`
+        HTTPException
             Retrieving the sticker packs failed.
 
         Returns

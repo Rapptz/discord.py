@@ -427,7 +427,7 @@ class Role(Hashable):
             or :class:`str` representing unicode emoji that should be used as a role icon.
             Could be ``None`` to denote removal of the icon.
             Only PNG/JPEG is supported.
-            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`features`.
+            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`Guild.features`.
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
         position: :class:`int`
