@@ -161,6 +161,10 @@ class Reaction:
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
 
+        .. versionchanged:: 2.0
+
+            ``limit`` and ``after`` parameters are now keyword-only.
+
         Examples
         ---------
 

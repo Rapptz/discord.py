@@ -408,12 +408,16 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.params = get_signature_parameters(function, globalns)
 
-    def add_check(self, func: Check) -> None:
+    def add_check(self, func: Check, /) -> None:
         """Adds a check to the command.
 
         This is the non-decorator interface to :func:`.check`.
 
         .. versionadded:: 1.3
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -423,13 +427,17 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.checks.append(func)
 
-    def remove_check(self, func: Check) -> None:
+    def remove_check(self, func: Check, /) -> None:
         """Removes a check from the command.
 
         This function is idempotent and will not raise an exception
         if the function is not in the command's checks.
 
         .. versionadded:: 1.3
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1156,7 +1164,7 @@ class GroupMixin(Generic[CogT]):
                 command.recursively_remove_all_commands()
             self.remove_command(command.name)
 
-    def add_command(self, command: Command[CogT, Any, Any]) -> None:
+    def add_command(self, command: Command[CogT, Any, Any], /) -> None:
         """Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -1164,6 +1172,10 @@ class GroupMixin(Generic[CogT]):
 
         .. versionchanged:: 1.4
              Raise :exc:`.CommandRegistrationError` instead of generic :exc:`.ClientException`
+
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1194,11 +1206,15 @@ class GroupMixin(Generic[CogT]):
                 raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
-    def remove_command(self, name: str) -> Optional[Command[CogT, Any, Any]]:
+    def remove_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
         """Remove a :class:`.Command` from the internal list
         of commands.
 
         This could also be used as a way to remove aliases.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1247,7 +1263,7 @@ class GroupMixin(Generic[CogT]):
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
 
-    def get_command(self, name: str) -> Optional[Command[CogT, Any, Any]]:
+    def get_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
         """Get a :class:`.Command` from the internal list
         of commands.
 
@@ -1256,6 +1272,10 @@ class GroupMixin(Generic[CogT]):
         The name could be fully qualified (e.g. ``'foo bar'``) will get
         the subcommand ``bar`` of the group command ``foo``. If a
         subcommand is not found then ``None`` is returned just as usual.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------

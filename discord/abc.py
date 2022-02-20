@@ -546,6 +546,9 @@ class GuildChannel:
         .. versionchanged:: 2.0
             The object passed in can now be a role object.
 
+        .. versionchanged:: 2.0
+            ``obj`` parameter is now positional-only.
+
         Parameters
         ----------
         obj: Union[:class:`~discord.Member`, :class:`~discord.Role`]

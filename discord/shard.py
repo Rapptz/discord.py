@@ -374,8 +374,19 @@ class AutoShardedClient(Client):
         """
         return [(shard_id, shard.ws.latency) for shard_id, shard in self.__shards.items()]
 
-    def get_shard(self, shard_id: int) -> Optional[ShardInfo]:
-        """Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found."""
+    def get_shard(self, shard_id: int, /) -> Optional[ShardInfo]:
+        """
+        Gets the shard information at a given shard ID or ``None`` if not found.
+
+        .. versionchanged:: 2.0
+
+            ``shard_id`` parameter is now positional-only.
+
+        Returns
+        --------
+        Optional[:class:`ShardInfo`]
+            Information about the shard with given ID. ``None`` if not found.
+        """
         try:
             parent = self.__shards[shard_id]
         except KeyError:

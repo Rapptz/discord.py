@@ -1422,7 +1422,7 @@ class Webhook(BaseWebhook):
 
         return msg
 
-    async def fetch_message(self, id: int) -> WebhookMessage:
+    async def fetch_message(self, id: int, /) -> WebhookMessage:
         """|coro|
 
         Retrieves a single :class:`~discord.WebhookMessage` owned by this webhook.
@@ -1582,6 +1582,10 @@ class Webhook(BaseWebhook):
         you only have an ID.
 
         .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+
+            ``message_id`` parameter is now positional-only.
 
         Parameters
         ------------

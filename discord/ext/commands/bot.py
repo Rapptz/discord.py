@@ -227,11 +227,15 @@ class BotBase(GroupMixin):
         self.add_check(func)  # type: ignore
         return func
 
-    def add_check(self, func: Check, *, call_once: bool = False) -> None:
+    def add_check(self, func: Check, /, *, call_once: bool = False) -> None:
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
         and :meth:`.check_once`.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -247,11 +251,15 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func: Check, *, call_once: bool = False) -> None:
+    def remove_check(self, func: Check, /, *, call_once: bool = False) -> None:
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
         if the function is not in the global checks.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -510,7 +518,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
+    def add_cog(self, cog: Cog, /, *, override: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -519,6 +527,10 @@ class BotBase(GroupMixin):
 
             :exc:`.ClientException` is raised when a cog with the same name
             is already loaded.
+
+        .. versionchanged:: 2.0
+
+            ``cog`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -554,10 +566,14 @@ class BotBase(GroupMixin):
         cog = cog._inject(self)
         self.__cogs[cog_name] = cog
 
-    def get_cog(self, name: str) -> Optional[Cog]:
+    def get_cog(self, name: str, /) -> Optional[Cog]:
         """Gets the cog instance requested.
 
         If the cog is not found, ``None`` is returned instead.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -573,13 +589,17 @@ class BotBase(GroupMixin):
         """
         return self.__cogs.get(name)
 
-    def remove_cog(self, name: str) -> Optional[Cog]:
+    def remove_cog(self, name: str, /) -> Optional[Cog]:
         """Removes a cog from the bot and returns it.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
 
         If no cog is found then this method has no effect.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------

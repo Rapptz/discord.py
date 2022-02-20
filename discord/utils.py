@@ -276,6 +276,11 @@ def oauth_url(
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
+    .. versionchanged:: 2.0
+
+        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
+        are now keyword-only.
+
     Parameters
     -----------
     client_id: Union[:class:`int`, :class:`str`]

@@ -639,6 +639,10 @@ class Guild(Hashable):
 
             This does *not* search for threads.
 
+        .. versionchanged:: 2.0
+
+            ``channel_id`` parameter is now positional-only.
+
         Parameters
         -----------
         channel_id: :class:`int`
@@ -741,6 +745,10 @@ class Guild(Hashable):
     def get_member(self, user_id: int, /) -> Optional[Member]:
         """Returns a member with the given ID.
 
+        .. versionchanged:: 2.0
+
+            ``user_id`` parameter is now positional-only.
+
         Parameters
         -----------
         user_id: :class:`int`
@@ -769,6 +777,10 @@ class Guild(Hashable):
 
     def get_role(self, role_id: int, /) -> Optional[Role]:
         """Returns a role with the given ID.
+
+        .. versionchanged:: 2.0
+
+            ``role_id`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -925,6 +937,10 @@ class Guild(Hashable):
         not being unique.
 
         If no member is found, ``None`` is returned.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1696,6 +1712,10 @@ class Guild(Hashable):
 
             This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_member` instead.
 
+        .. versionchanged:: 2.0
+
+            ``member_id`` parameter is now positional-only.
+
         Parameters
         -----------
         member_id: :class:`int`
@@ -2208,7 +2228,7 @@ class Guild(Hashable):
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
         return self._state.store_sticker(self, data)
 
-    async def delete_sticker(self, sticker: Snowflake, *, reason: Optional[str] = None) -> None:
+    async def delete_sticker(self, sticker: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the custom :class:`Sticker` from the guild.
@@ -2265,6 +2285,10 @@ class Guild(Hashable):
 
             This method is an API call.
             For general usage, consider iterating over :attr:`emojis` instead.
+
+        .. versionchanged:: 2.0
+
+            ``emoji_id`` parameter is now positional-only.
 
         Parameters
         -------------
@@ -2338,13 +2362,17 @@ class Guild(Hashable):
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=role_ids, reason=reason)
         return self._state.store_emoji(self, data)
 
-    async def delete_emoji(self, emoji: Snowflake, *, reason: Optional[str] = None) -> None:
+    async def delete_emoji(self, emoji: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes the custom :class:`Emoji` from the guild.
 
         You must have :attr:`~Permissions.manage_emojis` permission to
         do this.
+
+        .. versionchanged:: 2.0
+
+            ``emoji`` parameter is now positional-only.
 
         Parameters
         -----------

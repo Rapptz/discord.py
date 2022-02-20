@@ -170,6 +170,10 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             You must take care in passing the proper arguments when
             using this function.
 
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
+
         Parameters
         -----------
         command: :class:`.Command`

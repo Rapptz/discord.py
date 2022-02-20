@@ -741,6 +741,10 @@ class Client:
     def get_channel(self, id: int, /) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
         """Returns a channel or thread with the given ID.
 
+        .. versionchanged:: 2.0
+
+            ``id`` parameter is now positional-only.
+
         Parameters
         -----------
         id: :class:`int`
@@ -800,6 +804,10 @@ class Client:
     def get_guild(self, id: int, /) -> Optional[Guild]:
         """Returns a guild with the given ID.
 
+        .. versionchanged:: 2.0
+
+            ``id`` parameter is now positional-only.
+
         Parameters
         -----------
         id: :class:`int`
@@ -815,6 +823,10 @@ class Client:
     def get_user(self, id: int, /) -> Optional[User]:
         """Returns a user with the given ID.
 
+        .. versionchanged:: 2.0
+
+            ``id`` parameter is now positional-only.
+
         Parameters
         -----------
         id: :class:`int`
@@ -829,6 +841,10 @@ class Client:
 
     def get_emoji(self, id: int, /) -> Optional[Emoji]:
         """Returns an emoji with the given ID.
+
+        .. versionchanged:: 2.0
+
+            ``id`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1205,6 +1221,10 @@ class Client:
 
             This method is an API call. For general usage, consider :meth:`get_guild` instead.
 
+        .. versionchanged:: 2.0
+
+            ``guild_id`` parameter is now positional-only.
+
         Parameters
         -----------
         guild_id: :class:`int`
@@ -1238,6 +1258,10 @@ class Client:
         Creates a :class:`.Guild`.
 
         Bot accounts in more than 10 guilds are not allowed to create guilds.
+
+        .. versionchanged:: 2.0
+
+            ``name`` and ``region``, and ``icon`` parameters are now keyword-only.
 
         Parameters
         ----------
@@ -1352,13 +1376,17 @@ class Client:
         data = await self.http.get_invite(invite_id, with_counts=with_counts, with_expiration=with_expiration)
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite: Union[Invite, str]) -> None:
+    async def delete_invite(self, invite: Union[Invite, str], /) -> None:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
 
         You must have the :attr:`~.Permissions.manage_channels` permission in
         the associated guild to do this.
+
+        .. versionchanged:: 2.0
+
+            ``invite`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -1388,6 +1416,10 @@ class Client:
         .. note::
 
             The guild must have the widget enabled to get this information.
+
+        .. versionchanged:: 2.0
+
+            ``guild_id`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1441,6 +1473,10 @@ class Client:
 
             This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
+        .. versionchanged:: 2.0
+
+            ``user_id`` parameter is now positional-only.
+
         Parameters
         -----------
         user_id: :class:`int`
@@ -1471,6 +1507,10 @@ class Client:
             This method is an API call. For general usage, consider :meth:`get_channel` instead.
 
         .. versionadded:: 1.2
+
+        .. versionchanged:: 2.0
+
+            ``channel_id`` parameter is now positional-only.
 
         Raises
         -------
@@ -1510,6 +1550,10 @@ class Client:
         """|coro|
 
         Retrieves a :class:`.Webhook` with the specified ID.
+
+        .. versionchanged:: 2.0
+
+            ``webhook_id`` parameter is now positional-only.
 
         Raises
         --------

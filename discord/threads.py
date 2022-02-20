@@ -364,7 +364,7 @@ class Thread(Messageable, Hashable):
             raise ClientException('Parent channel not found')
         return parent.permissions_for(obj)
 
-    async def delete_messages(self, messages: Iterable[Snowflake]) -> None:
+    async def delete_messages(self, messages: Iterable[Snowflake], /) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -631,7 +631,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.leave_thread(self.id)
 
-    async def add_user(self, user: Snowflake):
+    async def add_user(self, user: Snowflake, /):
         """|coro|
 
         Adds a user to this thread.
@@ -655,7 +655,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.add_user_to_thread(self.id, user.id)
 
-    async def remove_user(self, user: Snowflake):
+    async def remove_user(self, user: Snowflake, /):
         """|coro|
 
         Removes a user from this thread.

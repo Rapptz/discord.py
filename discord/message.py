@@ -1376,7 +1376,7 @@ class Message(Hashable):
         await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
         self.pinned = False
 
-    async def add_reaction(self, emoji: EmojiInputType) -> None:
+    async def add_reaction(self, emoji: EmojiInputType, /) -> None:
         """|coro|
 
         Add a reaction to the message.
@@ -1386,6 +1386,10 @@ class Message(Hashable):
         You must have the :attr:`~Permissions.read_message_history` permission
         to use this. If nobody else has reacted to the message using this
         emoji, the :attr:`~Permissions.add_reactions` permission is required.
+
+        .. versionchanged:: 2.0
+
+            ``emoji`` parameter is now positional-only.
 
         Parameters
         ------------

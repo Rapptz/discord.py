@@ -360,7 +360,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
         )
 
-    async def delete_messages(self, messages: Iterable[Snowflake]) -> None:
+    async def delete_messages(self, messages: Iterable[Snowflake], /) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -375,6 +375,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         You must have the :attr:`~Permissions.manage_messages` permission to
         use this.
+
+        .. versionchanged:: 2.0
+
+            ``messages`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -638,6 +642,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         doing an unnecessary API call.
 
         .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+
+            ``message_id`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -1796,6 +1804,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
 
+        .. versionchanged:: 2.0
+
+            ``obj`` parameter is now positional-only.
+
         Parameters
         -----------
         obj: :class:`User`
@@ -1821,6 +1833,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
         doing an unnecessary API call.
 
         .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+
+            ``message_id`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -1943,6 +1959,10 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
         This also checks the kick_members permission if the user is the owner.
 
+        .. versionchanged:: 2.0
+
+            ``obj`` parameter is now positional-only.
+
         Parameters
         -----------
         obj: :class:`~discord.abc.Snowflake`
@@ -2027,6 +2047,10 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
         This is useful if you want to work with a message and only have its ID without
         doing an unnecessary API call.
+
+        .. versionchanged:: 2.0
+
+            ``message_id`` parameter is now positional-only.
 
         Parameters
         ------------

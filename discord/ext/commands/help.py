@@ -343,11 +343,15 @@ class HelpCommand:
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
 
-    def add_check(self, func):
+    def add_check(self, func, /):
         """
         Adds a check to the help command.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -357,7 +361,7 @@ class HelpCommand:
 
         self._command_impl.add_check(func)
 
-    def remove_check(self, func):
+    def remove_check(self, func, /):
         """
         Removes a check from the help command.
 
@@ -365,6 +369,10 @@ class HelpCommand:
         the function is not in the command's checks.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         ----------
