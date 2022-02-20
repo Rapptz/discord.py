@@ -535,7 +535,7 @@ def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional
     return (
         _get(iterable, **attrs)  # type: ignore
         if hasattr(iterable, '__iter__')  # isinstance(iterable, collections.abc.Iterable) is too slow
-        else _aget(predicate, **attrs)  # type: ignore
+        else _aget(iterable, **attrs)  # type: ignore
     )
 
 
