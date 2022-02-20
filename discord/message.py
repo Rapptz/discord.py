@@ -62,6 +62,7 @@ from .guild import Guild
 from .mixins import Hashable
 from .sticker import StickerItem
 from .threads import Thread
+from .channel import PartialMessageable
 
 if TYPE_CHECKING:
     from .types.message import (
@@ -85,7 +86,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel, PartialMessageable
+    from .channel import TextChannel, GroupChannel, DMChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
