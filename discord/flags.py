@@ -305,8 +305,8 @@ class MessageFlags(BaseFlags):
 
     @flag_value
     def loading(self):
-        """:class:`bool`: Returns ``True`` if the message is a deferred
-        interaction response and has a "bot is thinking" response.
+        """:class:`bool`: Returns ``True`` if the message is an
+        Interaction Response and the bot is "thinking".
 
         .. versionadded:: 2.0
         """
@@ -314,8 +314,8 @@ class MessageFlags(BaseFlags):
 
     @flag_value
     def failed_to_mention_some_roles_in_thread(self):
-        """:class:`bool`: Returns ``True`` if Discord failed to add some
-        mentioned members to the thread.
+        """:class:`bool`: Returns ``True`` if the source message failed to
+        mention some roles and add their members to the thread.
 
         There is an alias for this called :attr:`failed_to_mention_roles`.
 
