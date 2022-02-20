@@ -1475,7 +1475,7 @@ of :class:`enum.Enum`.
     .. attribute:: select
 
         Represents a select component.
-    
+
     .. attribute:: text_input
 
         Represents a text box component.
@@ -3197,7 +3197,7 @@ AuditLogDiff
         see also :attr:`StreamIntegration.expire_behaviour`
 
         :type: :class:`ExpireBehaviour`
-    
+
     .. attribute:: expire_grace_period
 
         The grace period before expiring subscribers changed.
@@ -4138,7 +4138,7 @@ Select
 .. autofunction:: discord.ui.select
 
 TextInput
-~~~~~~~~
+~~~~~~~~~~
 
 .. attributetable:: discord.ui.TextInput
 

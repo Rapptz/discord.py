@@ -47,6 +47,7 @@ __all__ = (
     'Button',
     'SelectMenu',
     'SelectOption',
+    'TextInput',
 )
 
 C = TypeVar('C', bound='Component')
