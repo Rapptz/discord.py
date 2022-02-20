@@ -141,6 +141,19 @@ class BotBase(GroupMixin):
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
             raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
 
+        self_bot = options.get('self_bot', False)
+        user_bot = options.get('user_bot', False)
+
+        if self_bot and user_bot:
+            raise TypeError('Both self_bot and user_bot are set')
+
+        if self_bot:
+            self._skip_check = lambda x, y: x != y
+        elif user_bot:
+            self._skip_check = lambda *_: False
+        else:
+            self._skip_check = lambda x, y: x == y
+
         if help_command is _default:
             self.help_command = DefaultHelpCommand()
         else:
@@ -335,7 +348,6 @@ class BotBase(GroupMixin):
         :class:`bool`
             Whether the user is the owner.
         """
-
         if self.owner_id:
             return user.id == self.owner_id
         elif self.owner_ids:
@@ -924,7 +936,7 @@ class BotBase(GroupMixin):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if message.author.id == self.user.id:  # type: ignore
+        if self._skip_check(message.author.id, self.user.id):  # type: ignore
             return ctx
 
         prefix = await self.get_prefix(message)
