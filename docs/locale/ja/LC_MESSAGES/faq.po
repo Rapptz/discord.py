@@ -96,7 +96,7 @@ msgid ""
 msgstr ""
 "もしロギングを有効にしている場合、ライブラリはブロッキングが起きていることを次のメッセージで警告しようと試みます: ``Heartbeat "
 "blocked for more than N seconds.`` "
-"ロギングを有効にするには、:ref:`logging_setup`をご覧ください。"
+"ロギングを有効にするには、:ref:`logging_setup` をご覧ください。"
 
 #: ../../faq.rst:45
 msgid ""
@@ -259,7 +259,7 @@ msgstr "メッセージにリアクションをつけるにはどうすればい
 
 #: ../../faq.rst:178
 msgid "You use the :meth:`Message.add_reaction` method."
-msgstr ":meth:`Client.add_reaction` を使用してください。"
+msgstr ":meth:`Message.add_reaction` を使用してください。"
 
 #: ../../faq.rst:180
 msgid ""
@@ -302,9 +302,9 @@ msgid ""
 "use :func:`utils.find`/ :func:`utils.get` on :attr:`Client.emojis` or "
 ":attr:`Guild.emojis` collections."
 msgstr ""
-"カスタム絵文字については、:class:`Emoji`のインスタンスを渡すといいでしょう。``'<:名前:ID>'``形式の文字列も渡せますが、その絵文字が使えるなら、:meth:`Client.get_emoji`でIDから絵文字を取得したり、:attr:`Client.emojis`"
-" や :attr:`Guild.emojis`に対して:func:`utils.find`/ "
-":func:`utils.get`を使ったりできるでしょう。"
+"カスタム絵文字については、:class:`Emoji` のインスタンスを渡すといいでしょう。``'<:名前:ID>'`` 形式の文字列も渡せますが、その絵文字が使えるなら、:meth:`Client.get_emoji` でIDから絵文字を取得したり、:attr:`Client.emojis`"
+" や :attr:`Guild.emojis` に対して :func:`utils.find`/ "
+":func:`utils.get` を使ったりできるでしょう。"
 
 #: ../../faq.rst:199
 msgid ""
@@ -312,7 +312,7 @@ msgid ""
 "prefixing ``:custom_emoji:`` with a backslash. For example, sending the "
 "message ``\\:python3:`` with the client will result in "
 "``<:python3:232720527448342530>``."
-msgstr "カスタム絵文字の名前とIDをクライアント側で知るには、``:カスタム絵文字:``の頭にバックスラッシュ(円記号)をつけます。たとえば、メッセージ``\\:python3:``を送信すると、結果は``<:python3:232720527448342530>``になります。"
+msgstr "カスタム絵文字の名前とIDをクライアント側で知るには、``:カスタム絵文字:`` の頭にバックスラッシュ(円記号)をつけます。たとえば、メッセージ ``\\:python3:`` を送信すると、結果は ``<:python3:232720527448342530>`` になります。"
 
 #: ../../faq.rst:219
 msgid "How do I pass a coroutine to the player's \"after\" function?"

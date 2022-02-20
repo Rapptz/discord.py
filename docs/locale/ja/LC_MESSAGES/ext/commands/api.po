@@ -289,7 +289,7 @@ msgstr "ボットにグローバルチェックを追加します。"
 msgid ""
 "This is the non-decorator interface to :meth:`.check` and "
 ":meth:`.check_once`."
-msgstr "これは:meth:`.check`と:meth:`.check_once`のデコレータでない実装です。"
+msgstr "これは :meth:`.check` と :meth:`.check_once` のデコレータでない実装です。"
 
 #: ../../ext/commands/api.rst discord.ext.commands.Bot.add_check
 #: discord.ext.commands.Bot.add_cog discord.ext.commands.Bot.add_command
@@ -2522,7 +2522,7 @@ msgstr "ボットにグローバルチェックを追加します。"
 #: discord.ext.commands.Group.add_check:3 of
 #, fuzzy
 msgid "This is the non-decorator interface to :func:`.check`."
-msgstr "これは:meth:`.check`と:meth:`.check_once`のデコレータでない実装です。"
+msgstr "これは :meth:`.check` と :meth:`.check_once` のデコレータでない実装です。"
 
 #: discord.ext.commands.Command.add_check:7
 #: discord.ext.commands.Group.add_check:7

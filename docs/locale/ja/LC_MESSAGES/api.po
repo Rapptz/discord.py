@@ -1533,7 +1533,7 @@ msgstr "実行中のアクティビティ。何も実行していない場合は
 msgid ""
 "Indicates what status to change to. If ``None``, then "
 ":attr:`.Status.online` is used."
-msgstr "変更するステータスを示します。 ``None`` の場合、:attr:`.Status.online`となります。"
+msgstr "変更するステータスを示します。 ``None`` の場合、:attr:`.Status.online` となります。"
 
 #: discord.AutoShardedClient.change_presence:15
 #: discord.Client.change_presence:17 of
@@ -3613,7 +3613,7 @@ msgid ""
 "programmed. If you want the bot to not reply to itself, consider checking"
 " the user IDs. Note that :class:`~ext.commands.Bot` does not have this "
 "problem."
-msgstr "Botのメッセージとプライベートメッセージはこのイベントを通して送信されます。Botのプログラムによっては「再帰呼び出し」を続けることになります。Botが自分自身に返信しないようにするためにはユーザーIDを確認する方法が考えられます。この問題はBotが抱えるものではありません。"
+msgstr "Botのメッセージとプライベートメッセージはこのイベントを通して送信されます。Botのプログラムによっては「再帰呼び出し」を続けることになります。Botが自分自身に返信しないようにするためにはユーザーIDを確認する方法が考えられます。この問題は :class:`~ext.commands.Bot` が抱えるものではありません。"
 
 #: ../../api.rst:288
 msgid "The current message."
@@ -3788,7 +3788,7 @@ msgid ""
 "when the ``'content'`` key is inaccessible. This denotes an \"embed\" "
 "only edit, which is an edit in which only the embeds are updated by the "
 "Discord embed server."
-msgstr "データのペイロードが部分的であるため、データにアクセスするときは気をつけてください。部分的なデータの主な場合のひとつは、``'content'``にアクセスできない場合です。Discordの埋め込みサーバーによって、埋め込みが更新される、\"埋め込み\"しか変わっていない編集がそうです。"
+msgstr "データのペイロードが部分的であるため、データにアクセスするときは気をつけてください。部分的なデータの主な場合のひとつは、``'content'`` にアクセスできない場合です。Discordの埋め込みサーバーによって、埋め込みが更新される、\"埋め込み\"しか変わっていない編集がそうです。"
 
 #: ../../api.rst:400
 #, fuzzy
@@ -3805,7 +3805,7 @@ msgstr ""
 msgid ""
 "To get the :class:`Message` being reacted, access it via "
 ":attr:`Reaction.message`."
-msgstr "リアクションの付いた:class:`Message`を取得するには、:attr:`Reaction.message`を使ってください。"
+msgstr "リアクションの付いた :class:`Message` を取得するには、:attr:`Reaction.message` を使ってください。"
 
 #: ../../api.rst:408 ../../api.rst:420 ../../api.rst:435 ../../api.rst:447
 #: ../../api.rst:458 ../../api.rst:470 ../../api.rst:481 ../../api.rst:493
@@ -3838,7 +3838,7 @@ msgstr "メッセージのリアクションが取り除かれたときに呼び
 
 #: ../../api.rst:433
 msgid "To get the message being reacted, access it via :attr:`Reaction.message`."
-msgstr "リアクションの付いたメッセージを取得するには、:attr:`Reaction.message`を使ってください。"
+msgstr "リアクションの付いたメッセージを取得するには、:attr:`Reaction.message` を使ってください。"
 
 #: ../../api.rst:444
 msgid ""
@@ -3935,7 +3935,7 @@ msgstr "ピン留めが更新されたプライベートチャンネル。"
 msgid ""
 "The latest message that was pinned as a naive datetime in UTC. Could be "
 "``None``."
-msgstr "最後にピン留めされたメッセージがピン留めされたUTC naive datetime。 ``None``の場合もあります。"
+msgstr "最後にピン留めされたメッセージがピン留めされたUTC naive datetime。 ``None`` の場合もあります。"
 
 #: ../../api.rst:533
 msgid "Called whenever a guild channel is deleted or created."
@@ -4202,7 +4202,7 @@ msgstr "ギルドが利用可能・不可能になったときに呼び出され
 
 #: ../../api.rst:718
 msgid "The :class:`Guild` that has changed availability."
-msgstr "利用状況が変わった:class:`Guild`。"
+msgstr "利用状況が変わった :class:`Guild` 。"
 
 #: ../../api.rst:722
 msgid "Called when a :class:`Member` changes their :class:`VoiceState`."
@@ -5171,7 +5171,7 @@ msgstr "ギルドのウィジェットに関連するものの変更"
 msgid ""
 "When this is the action, the type of :attr:`~AuditLogEntry.target` is the"
 " :class:`Guild`."
-msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` のtypeは :class:`Guild`になります。"
+msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` のtypeは :class:`Guild` になります。"
 
 #: ../../api.rst:1321 ../../api.rst:1344 ../../api.rst:1363 ../../api.rst:1382
 #: ../../api.rst:1401 ../../api.rst:1417 ../../api.rst:1432 ../../api.rst:1491
@@ -8908,7 +8908,7 @@ msgstr ""
 msgid ""
 "If this returns ``None``, you can create a DM channel by calling the "
 ":meth:`create_dm` coroutine function."
-msgstr "これが ``None``を返すなら、あなたは :meth:`create_dm` コルーチン関数を使って、DMチャンネルを作ることができます。"
+msgstr "これが ``None`` を返すなら、あなたは :meth:`create_dm` コルーチン関数を使って、DMチャンネルを作ることができます。"
 
 #: discord.User.dm_channel:6 of
 msgid "Optional[:class:`DMChannel`]"
@@ -14422,7 +14422,7 @@ msgstr ""
 msgid ""
 "For ease of use, all parameters that expect a :class:`str` are implicitly"
 " casted to :class:`str` for you."
-msgstr "使いやすさを考慮して、strが渡されることを想定されたすべてのパラメータは、暗黙的にstrにキャストされます。"
+msgstr "使いやすさを考慮して、:class:`str` が渡されることを想定されたすべてのパラメータは、暗黙的に :class:`str` にキャストされます。"
 
 #: discord.Embed:21 of
 msgid "The title of the embed. This can be set during initialisation."
