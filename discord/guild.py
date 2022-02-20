@@ -2759,10 +2759,10 @@ class Guild(Hashable):
     async def audit_logs(
         self,
         *,
-        limit: int = 100,
-        before: Optional[SnowflakeTime] = None,
-        after: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = None,
+        limit: Optional[int] = 100,
+        before: SnowflakeTime = MISSING,
+        after: SnowflakeTime = MISSING,
+        oldest_first: bool = MISSING,
         user: Snowflake = MISSING,
         action: AuditLogAction = MISSING,
     ) -> AsyncIterator[AuditLogEntry]:
@@ -2853,7 +2853,7 @@ class Guild(Hashable):
 
             return data.get('users', []), entries, after, limit
 
-        if user is not None:
+        if user is not MISSING:
             user_id = user.id
         else:
             user_id = None
@@ -2866,7 +2866,7 @@ class Guild(Hashable):
         if isinstance(after, datetime.datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
 
-        if oldest_first is None:
+        if oldest_first is MISSING:
             reverse = after is not None
         else:
             reverse = oldest_first
