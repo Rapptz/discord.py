@@ -44,7 +44,7 @@ from .oggparse import OggStream
 from .utils import MISSING
 
 if TYPE_CHECKING:
-    from .voice_client import VoiceClient
+    from .voice_client import Player
 
 
 AT = TypeVar('AT', bound='AudioSource')
@@ -151,7 +151,7 @@ class FFmpegAudio(AudioSource):
 
         self._process: subprocess.Popen = self._spawn_process(args, **kwargs)
         self._stdout: IO[bytes] = self._process.stdout  # type: ignore
-        self._stdin: Optional[IO[Bytes]] = None
+        self._stdin: Optional[IO[bytes]] = None
         self._pipe_thread: Optional[threading.Thread] = None
 
         if piping:
@@ -616,18 +616,18 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
 class AudioPlayer(threading.Thread):
     DELAY: float = OpusEncoder.FRAME_LENGTH / 1000.0
 
-    def __init__(self, source: AudioSource, client: VoiceClient, *, after=None):
+    def __init__(self, source: AudioSource, client: Player, *, after=None):
         threading.Thread.__init__(self)
         self.daemon: bool = True
         self.source: AudioSource = source
-        self.client: VoiceClient = client
+        self.client: Player = client
         self.after: Optional[Callable[[Optional[Exception]], Any]] = after
 
         self._end: threading.Event = threading.Event()
         self._resumed: threading.Event = threading.Event()
         self._resumed.set() # we are not paused
         self._current_error: Optional[Exception] = None
-        self._connected: threading.Event = client._connected
+        self._connected: threading.Event = client.client._connected
         self._lock: threading.Lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -638,7 +638,7 @@ class AudioPlayer(threading.Thread):
         self._start = time.perf_counter()
 
         # getattr lookup speed ups
-        play_audio = self.client.send_audio_packet
+        play_audio = self.client.send
         self._speak(True)
 
         while not self._end.is_set():

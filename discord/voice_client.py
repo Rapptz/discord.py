@@ -249,17 +249,9 @@ class Player:
 
         self._player._set_source(value)
 
-    @property
-    def playing(self) -> bool:
-        return self.is_playing()
-
     def is_playing(self) -> bool:
         """Indicates if we're currently playing audio."""
         return self._player and self._player.is_playing()
-
-    @property
-    def paused(self) -> bool:
-        return self.is_paused()
 
     def is_paused(self) -> bool:
         """Indicates if we're playing audio, but if we're paused."""
@@ -307,7 +299,7 @@ class Player:
         if not self.encoder and not source.is_opus():
             self.encoder = opus.Encoder()
 
-        self._player = AudioPlayer(source, self.client, after=after)
+        self._player = AudioPlayer(source, self, after=after)
         self._player.start()
 
     def pause(self) -> None:
@@ -324,7 +316,7 @@ class Player:
         """Stops playing audio."""
         if self._player:
             self._player.stop()
-            self._player = None
+            self._player = MISSING
 
 
 class Listener:
@@ -339,17 +331,9 @@ class Listener:
     def ws(self) -> DiscordVoiceWebSocket:
         return self.client.ws
 
-    @property
-    def listening(self) -> bool:
-        return self.is_playing()
-
     def is_listening(self) -> bool:
         """Indicates if we're currently listening."""
         return self._listener is not None and self._listener.is_listening()
-
-    @property
-    def paused(self) -> bool:
-        return self.is_paused()
 
     def is_paused(self) -> bool:
         """Indicates if we're listening, but we're paused."""
@@ -437,7 +421,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def ssrc(self) -> int:
         """:class:`str`: Our ssrc."""
-        return self.idrcs.get(self.user.id)
+        return self.idrcs.get(self.user.id)  # type: ignore
 
     @ssrc.setter
     def ssrc(self, value):
@@ -452,7 +436,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user
+        return self._state.user  # type: ignore
 
     # Connection related
 
@@ -481,7 +465,8 @@ class VoiceClient(VoiceProtocol):
             _log.info('Ignoring extraneous voice server update.')
             return
 
-        self.token = data.get('token')
+        if 'token' in data:
+            self.token = data['token']
         self.server_id = server_id = utils._get_as_snowflake(data, 'guild_id')
         if server_id is None:
             self.server_id = utils._get_as_snowflake(data, 'channel_id')
@@ -509,13 +494,14 @@ class VoiceClient(VoiceProtocol):
         self._voice_server_complete.set()
 
     async def voice_connect(self) -> None:
+        channel = await self.channel._get_channel() if self.channel else None
         if self.guild:
-            await self.guild.change_voice_state(channel=self.channel)
+            await self.guild.change_voice_state(channel=channel)
         else:
-            await self._state.client.change_voice_state(channel=self.channel)
+            await self._state.client.change_voice_state(channel=channel)
 
     async def voice_disconnect(self) -> None:
-        _log.info('The voice handshake is being terminated for channel ID %s (guild ID %s).', self.channel.id, getattr(self.guild, 'id', None))
+        _log.info('The voice handshake is being terminated for channel ID %s (guild ID %s).', (await self.channel._get_channel()).id, getattr(self.guild, 'id', None))
         if self.guild:
             await self.guild.change_voice_state(channel=None)
         else:
@@ -719,10 +705,6 @@ class VoiceClient(VoiceProtocol):
             await self.guild.change_voice_state(channel=channel)
         else:
             await self._state.client.change_voice_state(channel=channel)
-
-    @property
-    def connected(self) -> bool:
-        return self.is_connected()
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
