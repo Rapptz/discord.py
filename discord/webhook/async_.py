@@ -30,7 +30,7 @@ import json
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, NamedTuple, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
 from contextvars import ContextVar
 import weakref
 
@@ -434,7 +434,7 @@ def interaction_message_response_params(
     files: List[File] = MISSING,
     embed: Optional[Embed] = MISSING,
     embeds: List[Embed] = MISSING,
-    attachments: List[Attachment] = MISSING,
+    attachments: List[Union[Attachment, File]] = MISSING,
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
@@ -443,6 +443,12 @@ def interaction_message_response_params(
         raise TypeError('Cannot mix file and files keyword arguments.')
     if embeds is not MISSING and embed is not MISSING:
         raise TypeError('Cannot mix embed and embeds keyword arguments.')
+
+    if file is not MISSING:
+        files = [file]
+
+    if attachments is not MISSING and files is not MISSING:
+        raise TypeError('Cannot mix attachments and files keyword arguments.')
 
     data: Optional[Dict[str, Any]] = {
         'tts': tts,
@@ -471,11 +477,6 @@ def interaction_message_response_params(
         else:
             data['components'] = []
 
-    if attachments is not MISSING:
-        # Note: This will be overwritten if file or files is provided
-        # However, right now this is only passed via edit not send
-        data['attachments'] = [a.to_dict() for a in attachments]
-
     if flags is not MISSING:
         data['flags'] = flags.value
 
@@ -487,26 +488,25 @@ def interaction_message_response_params(
     elif previous_allowed_mentions is not None:
         data['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
+    if attachments is MISSING:
+        attachments = files  # type: ignore
+    else:
+        files = [a for a in attachments if isinstance(a, File)]
+
+    if attachments is not MISSING:
+        file_index = 0
+        attachments_payload = []
+        for attachment in attachments:
+            if isinstance(attachment, File):
+                attachments_payload.append(attachment.to_dict(file_index))
+                file_index += 1
+            else:
+                attachments_payload.append(attachment.to_dict())
+
+        data['attachments'] = attachments_payload
+
     multipart = []
-    if file is not MISSING:
-        files = [file]
-
     if files:
-        for index, file in enumerate(files):
-            attachments_payload = []
-            for index, file in enumerate(files):
-                attachment = {
-                    'id': index,
-                    'filename': file.filename,
-                }
-
-                if file.description is not None:
-                    attachment['description'] = file.description
-
-                attachments_payload.append(attachment)
-
-            data['attachments'] = attachments_payload
-
         data = {'type': type, 'data': data}
         multipart.append({'name': 'payload_json', 'value': utils._to_json(data)})
         data = None
@@ -656,8 +656,7 @@ class WebhookMessage(Message):
         content: Optional[str] = MISSING,
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        file: File = MISSING,
-        files: List[File] = MISSING,
+        attachments: List[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
@@ -679,13 +678,13 @@ class WebhookMessage(Message):
         embed: Optional[:class:`Embed`]
             The embed to edit the message with. ``None`` suppresses the embeds.
             This should not be mixed with the ``embeds`` parameter.
-        file: :class:`File`
-            The file to upload. This cannot be mixed with ``files`` parameter.
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
+ 
+            .. note::
 
-            .. versionadded:: 2.0
-        files: List[:class:`File`]
-            A list of files to send with the content. This cannot be mixed with the
-            ``file`` parameter.
+                New files will always appear after current attachments.
 
             .. versionadded:: 2.0
         allowed_mentions: :class:`AllowedMentions`
@@ -704,7 +703,7 @@ class WebhookMessage(Message):
         Forbidden
             Edited a message that is not yours.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds``
         ValueError
             The length of ``embeds`` was invalid
         InvalidArgument
@@ -720,11 +719,62 @@ class WebhookMessage(Message):
             content=content,
             embeds=embeds,
             embed=embed,
-            file=file,
-            files=files,
+            attachments=attachments,
             view=view,
             allowed_mentions=allowed_mentions,
         )
+
+    async def add_files(self, *files: File) -> WebhookMessage:
+        r"""|coro|
+
+        Adds new files to the end of the message attachments.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*files: :class:`File`
+            New files to add to the message.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`WebhookMessage`
+            The newly edited message.
+        """
+        return await self.edit(attachments=[*self.attachments, *files])
+
+    async def remove_attachments(self, *attachments: Attachment) -> WebhookMessage:
+        r"""|coro|
+
+        Removes attachments from the message.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*attachments: :class:`Attachment`
+            Attachments to remove from the message.
+        
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`WebhookMessage`
+            The newly edited message.
+        """
+        return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
 
     async def delete(self, *, delay: Optional[float] = None) -> None:
         """|coro|
@@ -1470,8 +1520,7 @@ class Webhook(BaseWebhook):
         content: Optional[str] = MISSING,
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        file: File = MISSING,
-        files: List[File] = MISSING,
+        attachments: List[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
@@ -1498,13 +1547,9 @@ class Webhook(BaseWebhook):
         embed: Optional[:class:`Embed`]
             The embed to edit the message with. ``None`` suppresses the embeds.
             This should not be mixed with the ``embeds`` parameter.
-        file: :class:`File`
-            The file to upload. This cannot be mixed with ``files`` parameter.
-
-            .. versionadded:: 2.0
-        files: List[:class:`File`]
-            A list of files to send with the content. This cannot be mixed with the
-            ``file`` parameter.
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
 
             .. versionadded:: 2.0
         allowed_mentions: :class:`AllowedMentions`
@@ -1524,7 +1569,7 @@ class Webhook(BaseWebhook):
         Forbidden
             Edited a message that is not yours.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds``
         ValueError
             The length of ``embeds`` was invalid
         InvalidArgument
@@ -1549,8 +1594,7 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         params = handle_message_parameters(
             content=content,
-            file=file,
-            files=files,
+            attachments=attachments,
             embed=embed,
             embeds=embeds,
             view=view,

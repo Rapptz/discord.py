@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import os
 import io
@@ -126,3 +126,14 @@ class File:
         self.fp.close = self._closer
         if self._owner:
             self._closer()
+
+    def to_dict(self, index: int) -> Dict[str, Any]:
+        payload = {
+            'id': index,
+            'filename': self.filename,
+        }
+
+        if self.description is not None:
+            payload['description'] = self.description
+
+        return payload

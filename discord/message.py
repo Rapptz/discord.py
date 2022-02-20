@@ -1176,7 +1176,7 @@ class Message(Hashable):
         *,
         content: Optional[str] = ...,
         embed: Optional[Embed] = ...,
-        attachments: List[Attachment] = ...,
+        attachments: List[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1190,7 +1190,7 @@ class Message(Hashable):
         *,
         content: Optional[str] = ...,
         embeds: List[Embed] = ...,
-        attachments: List[Attachment] = ...,
+        attachments: List[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1203,7 +1203,7 @@ class Message(Hashable):
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
         embeds: List[Embed] = MISSING,
-        attachments: List[Attachment] = MISSING,
+        attachments: List[Union[Attachment, File]] = MISSING,
         suppress: bool = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
@@ -1231,9 +1231,13 @@ class Message(Hashable):
             To remove all embeds ``[]`` should be passed.
 
             .. versionadded:: 2.0
-        attachments: List[:class:`Attachment`]
-            A list of attachments to keep in the message. If ``[]`` is passed
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
+
+            .. note::
+
+                New files will always appear after current attachments.
 
             .. versionadded:: 2.0
         suppress: :class:`bool`
@@ -1298,6 +1302,58 @@ class Message(Hashable):
             await self.delete(delay=delete_after)
 
         return message
+
+    async def add_files(self, *files: File) -> Message:
+        r"""|coro|
+
+        Adds new files to the end of the message attachments.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*files: :class:`File`
+            New files to add to the message.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`Message`
+            The newly edited message.
+        """
+        return await self.edit(attachments=[*self.attachments, *files])
+
+    async def remove_attachments(self, *attachments: Attachment) -> Message:
+        r"""|coro|
+
+        Removes attachments from the message.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*attachments: :class:`Attachment`
+            Attachments to remove from the message.
+        
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`Message`
+            The newly edited message.
+        """
+        return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
 
     async def publish(self) -> None:
         """|coro|
@@ -1643,6 +1699,8 @@ class PartialMessage(Hashable):
 
     jump_url: str = Message.jump_url  # type: ignore
     edit = Message.edit
+    add_files = Message.add_files
+    remove_attachments = Message.remove_attachments
     delete = Message.delete
     publish = Message.publish
     pin = Message.pin

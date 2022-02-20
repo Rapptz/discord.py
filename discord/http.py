@@ -52,13 +52,13 @@ import aiohttp
 
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
 from .gateway import DiscordClientWebSocketResponse
+from .file import File
 from . import __version__, utils
 from .utils import MISSING
 
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from .file import File
     from .ui.view import View
     from .embeds import Embed
     from .mentions import AllowedMentions
@@ -147,7 +147,7 @@ def handle_message_parameters(
     files: List[File] = MISSING,
     embed: Optional[Embed] = MISSING,
     embeds: List[Embed] = MISSING,
-    attachments: List[Attachment] = MISSING,
+    attachments: List[Union[Attachment, File]] = MISSING,
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
@@ -159,6 +159,12 @@ def handle_message_parameters(
         raise TypeError('Cannot mix file and files keyword arguments.')
     if embeds is not MISSING and embed is not MISSING:
         raise TypeError('Cannot mix embed and embeds keyword arguments.')
+
+    if file is not MISSING:
+        files = [file]
+
+    if attachments is not MISSING and files is not MISSING:
+        raise TypeError('Cannot mix attachments and files keyword arguments.')
 
     payload = {}
     if embeds is not MISSING:
@@ -190,11 +196,6 @@ def handle_message_parameters(
     if message_reference is not MISSING:
         payload['message_reference'] = message_reference
 
-    if attachments is not MISSING:
-        # Note: This will be overwritten if file or files is provided
-        # However, right now this is only passed via Message.edit not Messageable.send
-        payload['attachments'] = [a.to_dict() for a in attachments]
-
     if stickers is not MISSING:
         if stickers is not None:
             payload['sticker_ids'] = stickers
@@ -224,26 +225,25 @@ def handle_message_parameters(
         except KeyError:
             pass
 
+    if attachments is MISSING:
+        attachments = files  # type: ignore
+    else:
+        files = [a for a in attachments if isinstance(a, File)]
+
+    if attachments is not MISSING:
+        file_index = 0
+        attachments_payload = []
+        for attachment in attachments:
+            if isinstance(attachment, File):
+                attachments_payload.append(attachment.to_dict(file_index))
+                file_index += 1
+            else:
+                attachments_payload.append(attachment.to_dict())
+
+        payload['attachments'] = attachments_payload
+
     multipart = []
-    if file is not MISSING:
-        files = [file]
-
     if files:
-        for index, file in enumerate(files):
-            attachments_payload = []
-            for index, file in enumerate(files):
-                attachment = {
-                    'id': index,
-                    'filename': file.filename,
-                }
-
-                if file.description is not None:
-                    attachment['description'] = file.description
-
-                attachments_payload.append(attachment)
-
-            payload['attachments'] = attachments_payload
-
         multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         payload = None
         for index, file in enumerate(files):
@@ -596,7 +596,10 @@ class HTTPClient:
 
     def edit_message(self, channel_id: Snowflake, message_id: Snowflake, *, params: MultipartParameters) -> Response[message.Message]:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
-        return self.request(r, json=params.payload)
+        if params.files:
+            return self.request(r, files=params.files, form=params.multipart)
+        else:
+            return self.request(r, json=params.payload)
 
     def add_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
         r = Route(
