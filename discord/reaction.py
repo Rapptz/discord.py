@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, AsyncIterator, List, Union, Optional
-from typing_extensions import reveal_type
 
 from .object import Object
 
@@ -217,7 +216,7 @@ class Reaction:
 
         while limit > 0:
             retrieve = min(limit, 100)
-            
+
             message = self.message
             guild = message.guild
             state = message._state
@@ -236,7 +235,7 @@ class Reaction:
                     yield User(state=state, data=raw_user)
 
                 continue
-            
+
             for raw_user in reversed(data):
                 member_id = int(raw_user['id'])
                 member = guild.get_member(member_id)
