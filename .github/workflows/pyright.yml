@@ -1,0 +1,40 @@
+name: pyright
+
+on:
+  push:
+  pull_request:
+    types: [ opened, edited ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    name: check
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -U -r requirements.txt
+
+      - name: Setup node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install pyright
+        run: |
+          npm install -g pyright
+
+      - name: Type check
+        run: |
+          # It is OK for the types to not pass at this stage
+          # We are just running it as a quick reference check
+          pyright || echo "Type checking did not pass"

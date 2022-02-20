@@ -1,0 +1,73 @@
+name: build
+
+on:
+  push:
+  pull_request:
+    types: [ opened, edited ]
+
+jobs:
+  build-dists:
+    runs-on: ubuntu-latest
+    name: dists
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -U -r requirements.txt
+
+      - name: Build distributions
+        run: |
+          python ./setup.py sdist bdist_wheel
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: distributions
+          path: dist/*
+
+  build-docs:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ en, ja ]
+    name: docs (${{ matrix.language }})
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up CPython
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+          # Install all features
+          pip install -e .[docs,speed,voice]
+
+      - name: Build docs
+        shell: bash
+        run: |
+          cd docs && sphinx-build -b html -D language=${SPHINX_LANGUAGE} -a -n -T -W --keep-going . _build
+        env:
+          SPHINX_LANGUAGE: ${{ matrix.language }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: docs-${{matrix.language}}
+          path: docs/_build/*
