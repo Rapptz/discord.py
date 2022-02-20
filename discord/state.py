@@ -446,7 +446,9 @@ class ConnectionState:
         # If presences are enabled then we get back the old guild.large behaviour
         return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
-    def _get_guild_channel(self, data: MessagePayload, guild_id: Optional[int] = None) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
+    def _get_guild_channel(
+        self, data: MessagePayload, guild_id: Optional[int] = None
+    ) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
         channel_id = int(data['channel_id'])
         try:
             guild_id = guild_id or int(data['guild_id'])
@@ -691,7 +693,7 @@ class ConnectionState:
             self._view_store.dispatch_view(component_type, custom_id, interaction)
         elif data['type'] == 5:  # modal submit
             custom_id = interaction.data['custom_id']  # type: ignore
-            components = interaction.data['components'] # type: ignore
+            components = interaction.data['components']  # type: ignore
             self._view_store.dispatch_modal(custom_id, interaction, components)  # type: ignore
         self.dispatch('interaction', interaction)
 

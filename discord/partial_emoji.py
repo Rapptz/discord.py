@@ -31,14 +31,17 @@ from .asset import Asset, AssetMixin
 from .errors import InvalidArgument
 from . import utils
 
+# fmt: off
 __all__ = (
     'PartialEmoji',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from .state import ConnectionState
     from datetime import datetime
     from .types.message import PartialEmoji as PartialEmojiPayload
+
 
 class _EmojiTag:
     __slots__ = ()

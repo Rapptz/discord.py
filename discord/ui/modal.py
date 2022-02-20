@@ -42,9 +42,11 @@ if TYPE_CHECKING:
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
 
 
+# fmt: off
 __all__ = (
     'Modal',
 )
+# fmt: on
 
 
 _log = logging.getLogger(__name__)

@@ -82,7 +82,7 @@ def fill_with_flags(*, inverted: bool = False):
 
         if inverted:
             max_bits = max(cls.VALID_FLAGS.values()).bit_length()
-            cls.DEFAULT_VALUE = -1 + (2 ** max_bits)
+            cls.DEFAULT_VALUE = -1 + (2**max_bits)
         else:
             cls.DEFAULT_VALUE = 0
 
@@ -908,7 +908,7 @@ class Intents(BaseFlags):
         - :func:`on_message_edit`
         - :func:`on_message_delete`
         - :func:`on_raw_message_edit`
-        
+
         For more information go to the :ref:`message content intent documentation <need_message_content_intent>`.
 
         .. note::

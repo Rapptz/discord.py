@@ -28,9 +28,11 @@ from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECK
 
 from ..interactions import Interaction
 
+# fmt: off
 __all__ = (
     'Item',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from ..enums import ComponentType

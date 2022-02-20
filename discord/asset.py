@@ -33,9 +33,11 @@ from . import utils
 
 import yarl
 
+# fmt: off
 __all__ = (
     'Asset',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
@@ -46,6 +48,7 @@ VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 
 MISSING = utils.MISSING
+
 
 class AssetMixin:
     url: str
@@ -245,7 +248,7 @@ class Asset(AssetMixin):
             state,
             url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
             key=banner_hash,
-            animated=animated
+            animated=animated,
         )
 
     def __str__(self) -> str:

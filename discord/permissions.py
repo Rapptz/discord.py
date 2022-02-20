@@ -46,7 +46,9 @@ def make_permission_alias(alias: str) -> Callable[[Callable[[Any], int]], permis
 
     return decorator
 
+
 P = TypeVar('P', bound='Permissions')
+
 
 @fill_with_flags()
 class Permissions(BaseFlags):
@@ -554,20 +556,22 @@ class Permissions(BaseFlags):
     @flag_value
     def start_embedded_activities(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can launch an embedded application in a Voice channel.
-        
+
         .. versionadded:: 2.0
         """
         return 1 << 39
-    
+
     @flag_value
     def moderate_members(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can time out other members.
-        
+
         .. versionadded:: 2.0
         """
         return 1 << 40
 
+
 PO = TypeVar('PO', bound='PermissionOverwrite')
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)

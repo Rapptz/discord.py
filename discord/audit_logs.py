@@ -61,6 +61,10 @@ if TYPE_CHECKING:
     from .sticker import GuildSticker
     from .threads import Thread
 
+    TargetType = Union[
+        Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None
+    ]
+
 
 def _transform_timestamp(entry: AuditLogEntry, data: Optional[str]) -> Optional[datetime.datetime]:
     return utils.parse_time(data)
@@ -154,11 +158,13 @@ def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
 
     return _transform
 
+
 def _transform_type(entry: AuditLogEntry, data: int) -> Union[enums.ChannelType, enums.StickerType]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
     else:
         return enums.try_enum(enums.ChannelType, data)
+
 
 class AuditLogDiff:
     def __len__(self) -> int:
@@ -456,7 +462,7 @@ class AuditLogEntry(Hashable):
         return utils.snowflake_time(self.id)
 
     @utils.cached_property
-    def target(self) -> Union[Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None]:
+    def target(self) -> TargetType:
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:

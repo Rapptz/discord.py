@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         MessageUpdateEvent,
         ReactionClearEvent,
         ReactionClearEmojiEvent,
-        IntegrationDeleteEvent
+        IntegrationDeleteEvent,
     )
     from .message import Message
     from .partial_emoji import PartialEmoji
@@ -179,8 +179,7 @@ class RawReactionActionEvent(_RawReprMixin):
         .. versionadded:: 1.3
     """
 
-    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
-                 'event_type', 'member')
+    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji', 'event_type', 'member')
 
     def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: str) -> None:
         self.message_id: int = int(data['message_id'])

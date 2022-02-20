@@ -1348,7 +1348,7 @@ class Message(Hashable):
         -----------
         \*attachments: :class:`Attachment`
             Attachments to remove from the message.
-        
+
         Raises
         -------
         HTTPException

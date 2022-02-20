@@ -29,9 +29,11 @@ from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 from .enums import VoiceRegion
 from .guild import Guild
 
+# fmt: off
 __all__ = (
     'Template',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     import datetime
@@ -310,7 +312,7 @@ class Template:
     @property
     def url(self) -> str:
         """:class:`str`: The template url.
-        
+
         .. versionadded:: 2.0
         """
         return f'https://discord.new/{self.code}'

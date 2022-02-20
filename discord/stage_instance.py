@@ -31,9 +31,11 @@ from .mixins import Hashable
 from .errors import InvalidArgument
 from .enums import StagePrivacyLevel, try_enum
 
+# fmt: off
 __all__ = (
     'StageInstance',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from .types.channel import StageInstance as StageInstancePayload
@@ -107,12 +109,18 @@ class StageInstance(Hashable):
     def channel(self) -> Optional[StageChannel]:
         """Optional[:class:`StageChannel`]: The channel that stage instance is running in."""
         # the returned channel will always be a StageChannel or None
-        return self._state.get_channel(self.channel_id) # type: ignore
+        return self._state.get_channel(self.channel_id)  # type: ignore
 
     def is_public(self) -> bool:
         return self.privacy_level is StagePrivacyLevel.public
 
-    async def edit(self, *, topic: str = MISSING, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None) -> None:
+    async def edit(
+        self,
+        *,
+        topic: str = MISSING,
+        privacy_level: StagePrivacyLevel = MISSING,
+        reason: Optional[str] = None,
+    ) -> None:
         """|coro|
 
         Edits the stage instance.

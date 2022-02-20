@@ -48,14 +48,15 @@ __all__ = (
 C = TypeVar('C', bound='CooldownMapping')
 MC = TypeVar('MC', bound='MaxConcurrency')
 
+
 class BucketType(Enum):
-    default  = 0
-    user     = 1
-    guild    = 2
-    channel  = 3
-    member   = 4
+    default = 0
+    user = 1
+    guild = 2
+    channel = 3
+    member = 4
     category = 5
-    role     = 6
+    role = 6
 
     def get_key(self, msg: Message) -> Any:
         if self is BucketType.user:
@@ -192,6 +193,7 @@ class Cooldown:
     def __repr__(self) -> str:
         return f'<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>'
 
+
 class CooldownMapping:
     def __init__(
         self,
@@ -256,12 +258,12 @@ class CooldownMapping:
         bucket = self.get_bucket(message, current)
         return bucket.update_rate_limit(current)
 
-class DynamicCooldownMapping(CooldownMapping):
 
+class DynamicCooldownMapping(CooldownMapping):
     def __init__(
         self,
         factory: Callable[[Message], Cooldown],
-        type: Callable[[Message], Any]
+        type: Callable[[Message], Any],
     ) -> None:
         super().__init__(None, type)
         self._factory: Callable[[Message], Cooldown] = factory
@@ -277,6 +279,7 @@ class DynamicCooldownMapping(CooldownMapping):
 
     def create_bucket(self, message: Message) -> Cooldown:
         return self._factory(message)
+
 
 class _Semaphore:
     """This class is a version of a semaphore.
@@ -336,6 +339,7 @@ class _Semaphore:
     def release(self) -> None:
         self.value += 1
         self.wake_up()
+
 
 class MaxConcurrency:
     __slots__ = ('number', 'per', 'wait', '_mapping')

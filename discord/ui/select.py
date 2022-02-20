@@ -224,7 +224,6 @@ class Select(Item[V]):
             default=default,
         )
 
-
         self.append_option(option)
 
     def append_option(self, option: SelectOption):

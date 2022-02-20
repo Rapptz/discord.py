@@ -116,7 +116,7 @@ class StickerPack(Hashable):
         self.name: str = data['name']
         self.sku_id: int = int(data['sku_id'])
         self.cover_sticker_id: int = int(data['cover_sticker_id'])
-        self.cover_sticker: StandardSticker = get(self.stickers, id=self.cover_sticker_id) # type: ignore
+        self.cover_sticker: StandardSticker = get(self.stickers, id=self.cover_sticker_id)  # type: ignore
         self.description: str = data['description']
         self._banner: int = int(data['banner_asset_id'])
 

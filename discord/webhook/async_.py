@@ -681,7 +681,7 @@ class WebhookMessage(Message):
         attachments: List[Union[:class:`Attachment`, :class:`File`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
- 
+
             .. note::
 
                 New files will always appear after current attachments.
@@ -761,7 +761,7 @@ class WebhookMessage(Message):
         -----------
         \*attachments: :class:`Attachment`
             Attachments to remove from the message.
-        
+
         Raises
         -------
         HTTPException

@@ -66,12 +66,13 @@ if TYPE_CHECKING:
         VoiceServerUpdate as VoiceServerUpdatePayload,
         SupportedModes,
     )
-    
+
 
 has_nacl: bool
 
 try:
     import nacl.secret  # type: ignore
+
     has_nacl = True
 except ImportError:
     has_nacl = False
@@ -82,9 +83,8 @@ __all__ = (
 )
 
 
-
-
 _log = logging.getLogger(__name__)
+
 
 class VoiceProtocol:
     """A class that represents the Discord voice protocol.
@@ -195,6 +195,7 @@ class VoiceProtocol:
         key_id, _ = self.channel._get_voice_client_key()
         self.client._connection._remove_voice_client(key_id)
 
+
 class VoiceClient(VoiceProtocol):
     """Represents a Discord voice connection.
 
@@ -221,11 +222,11 @@ class VoiceClient(VoiceProtocol):
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
+
     endpoint_ip: str
     voice_port: int
     secret_key: List[int]
     ssrc: int
-
 
     def __init__(self, client: Client, channel: abc.Connectable):
         if not has_nacl:
@@ -309,8 +310,10 @@ class VoiceClient(VoiceProtocol):
         endpoint = data.get('endpoint')
 
         if endpoint is None or self.token is None:
-            _log.warning('Awaiting endpoint... This requires waiting. ' \
-                        'If timeout occurred considering raising the timeout and reconnecting.')
+            _log.warning(
+                'Awaiting endpoint... This requires waiting. '
+                'If timeout occurred considering raising the timeout and reconnecting.'
+            )
             return
 
         self.endpoint, _, _ = endpoint.rpartition(':')
@@ -359,7 +362,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect: bool, timeout: float) ->None:
+    async def connect(self, *, reconnect: bool, timeout: float) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -556,7 +559,7 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any]=None) -> None:
+    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any] = None) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted

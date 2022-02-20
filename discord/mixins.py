@@ -27,6 +27,7 @@ __all__ = (
     'Hashable',
 )
 
+
 class EqualityComparable:
     __slots__ = ()
 
@@ -39,6 +40,7 @@ class EqualityComparable:
         if isinstance(other, self.__class__):
             return other.id != self.id
         return True
+
 
 class Hashable(EqualityComparable):
     __slots__ = ()

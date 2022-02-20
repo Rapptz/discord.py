@@ -28,9 +28,11 @@ from typing import Any, Dict, Optional, Union
 import os
 import io
 
+# fmt: off
 __all__ = (
     'File',
 )
+# fmt: on
 
 
 class File:

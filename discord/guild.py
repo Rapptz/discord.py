@@ -81,9 +81,11 @@ from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 
 
+# fmt: off
 __all__ = (
     'Guild',
 )
+# fmt: on
 
 MISSING = utils.MISSING
 
@@ -2830,9 +2832,9 @@ class Guild(Hashable):
             if data and entries:
                 if limit is not None:
                     limit -= len(data)
-                
+
                 before = Object(id=int(entries[-1]['id']))
-            
+
             return data.get('users', []), entries, before, limit
 
         async def _after_strategy(retrieve, after, limit):
@@ -2846,7 +2848,7 @@ class Guild(Hashable):
             if data and entries:
                 if limit is not None:
                     limit -= len(data)
-                
+
                 after = Object(id=int(entries[0]['id']))
 
             return data.get('users', []), entries, after, limit
@@ -2863,7 +2865,6 @@ class Guild(Hashable):
             before = Object(id=utils.time_snowflake(before, high=False))
         if isinstance(after, datetime.datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
-
 
         if oldest_first is None:
             reverse = after is not None

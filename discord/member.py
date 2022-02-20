@@ -767,13 +767,15 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if roles is not MISSING:
             payload['roles'] = tuple(r.id for r in roles)
-        
+
         if timed_out_until is not MISSING:
             if timed_out_until is None:
                 payload['communication_disabled_until'] = None
             else:
                 if timed_out_until.tzinfo is None:
-                    raise TypeError('timed_out_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+                    raise TypeError(
+                        'timed_out_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
                 payload['communication_disabled_until'] = timed_out_until.isoformat()
 
         if payload:
@@ -940,7 +942,7 @@ class Member(discord.abc.Messageable, _UserTag):
         """Returns whether this member is timed out.
 
         .. versionadded:: 2.0
-        
+
         Returns
         --------
         :class:`bool`

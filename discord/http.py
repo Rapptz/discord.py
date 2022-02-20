@@ -594,7 +594,9 @@ class HTTPClient:
 
         return self.request(r, json=payload, reason=reason)
 
-    def edit_message(self, channel_id: Snowflake, message_id: Snowflake, *, params: MultipartParameters) -> Response[message.Message]:
+    def edit_message(
+        self, channel_id: Snowflake, message_id: Snowflake, *, params: MultipartParameters
+    ) -> Response[message.Message]:
         r = Route('PATCH', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
         if params.files:
             return self.request(r, files=params.files, form=params.multipart)

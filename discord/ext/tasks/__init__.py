@@ -48,9 +48,11 @@ from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
+# fmt: off
 __all__ = (
     'loop',
 )
+# fmt: on
 
 T = TypeVar('T')
 _func = Callable[..., Awaitable[Any]]

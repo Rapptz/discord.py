@@ -30,9 +30,11 @@ from .utils import SnowflakeList, snowflake_time, MISSING
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
 
+# fmt: off
 __all__ = (
     'Emoji',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from .types.emoji import Emoji as EmojiPayload

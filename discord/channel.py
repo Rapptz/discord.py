@@ -814,7 +814,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 before_timestamp = str(before.id)
             else:
                 before_timestamp = utils.snowflake_time(before.id).isoformat()
-            
+
         update_before = lambda data: data['thread_metadata']['archive_timestamp']
         endpoint = self.guild._state.http.get_public_archived_threads
 
@@ -823,7 +823,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             endpoint = self.guild._state.http.get_joined_private_archived_threads
         elif private:
             endpoint = self.guild._state.http.get_private_archived_threads
-        
+
         while True:
             retrieve = 50 if limit is None else max(limit, 50)
             data = await endpoint(self.id, before=before_timestamp, limit=retrieve)

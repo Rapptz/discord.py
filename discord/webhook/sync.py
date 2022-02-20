@@ -469,7 +469,7 @@ class SyncWebhookMessage(Message):
         -----------
         \*attachments: :class:`Attachment`
             Attachments to remove from the message.
-        
+
         Raises
         -------
         HTTPException

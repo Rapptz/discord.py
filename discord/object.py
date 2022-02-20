@@ -35,11 +35,15 @@ from typing import (
 
 if TYPE_CHECKING:
     import datetime
+
     SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
 
+# fmt: off
 __all__ = (
     'Object',
 )
+# fmt: on
+
 
 class Object(Hashable):
     """Represents a generic Discord object.

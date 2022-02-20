@@ -25,9 +25,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Type, TypeVar, Union, List, TYPE_CHECKING, Any, Union
 
+# fmt: off
 __all__ = (
     'AllowedMentions',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from .types.message import AllowedMentions as AllowedMentionsPayload

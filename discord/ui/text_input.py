@@ -40,10 +40,11 @@ if TYPE_CHECKING:
     from .view import View
 
 
+# fmt: off
 __all__ = (
     'TextInput',
 )
-
+# fmt: on
 
 V = TypeVar('V', bound='View', covariant=True)
 
@@ -177,7 +178,7 @@ class TextInput(Item[V]):
     def max_length(self) -> Optional[int]:
         """:class:`int`: The maximum length of the text input."""
         return self._underlying.max_length
-    
+
     @max_length.setter
     def max_length(self, value: Optional[int]) -> None:
         self._underlying.max_length = value

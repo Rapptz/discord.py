@@ -27,9 +27,11 @@ from typing import Any, TYPE_CHECKING, AsyncIterator, List, Union, Optional
 
 from .object import Object
 
+# fmt: off
 __all__ = (
     'Reaction',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from .user import User
@@ -39,6 +41,7 @@ if TYPE_CHECKING:
     from .partial_emoji import PartialEmoji
     from .emoji import Emoji
     from .abc import Snowflake
+
 
 class Reaction:
     """Represents a reaction to a message.
@@ -77,6 +80,7 @@ class Reaction:
     message: :class:`Message`
         Message this reaction is for.
     """
+
     __slots__ = ('message', 'count', 'emoji', 'me')
 
     def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
@@ -157,7 +161,9 @@ class Reaction:
         """
         await self.message.clear_reaction(self.emoji)
 
-    async def users(self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None) -> AsyncIterator[Union[Member, User]]:
+    async def users(
+        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
+    ) -> AsyncIterator[Union[Member, User]]:
         """Returns an :term:`asynchronous iterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
@@ -222,9 +228,7 @@ class Reaction:
             state = message._state
             after_id = after.id if after else None
 
-            data = await state.http.get_reaction_users(
-                message.channel.id, message.id, emoji, retrieve, after=after_id
-            )
+            data = await state.http.get_reaction_users(message.channel.id, message.id, emoji, retrieve, after=after_id)
 
             if data:
                 limit -= len(data)
@@ -241,4 +245,3 @@ class Reaction:
                 member = guild.get_member(member_id)
 
                 yield member or User(state=state, data=raw_user)
-

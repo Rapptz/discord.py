@@ -43,9 +43,11 @@ from ..components import (
 )
 from ..utils import MISSING
 
+# fmt: off
 __all__ = (
     'View',
 )
+# fmt: on
 
 
 if TYPE_CHECKING:
@@ -81,9 +83,11 @@ def _component_to_item(component: Component) -> Item:
 
 
 class _ViewWeights:
+    # fmt: off
     __slots__ = (
         'weights',
     )
+    # fmt: on
 
     def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
@@ -517,7 +521,7 @@ class ViewStore:
     def remove_view(self, view: View):
         if view.__discord_ui_modal__:
             self._modals.pop(view.custom_id, None)  # type: ignore
-            return 
+            return
 
         for item in view.children:
             if item.is_dispatchable():
@@ -542,7 +546,12 @@ class ViewStore:
         item.refresh_state(interaction.data)  # type: ignore
         view._dispatch_item(item, interaction)
 
-    def dispatch_modal(self, custom_id: str, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
+    def dispatch_modal(
+        self,
+        custom_id: str,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+    ):
         modal = self._modals.get(custom_id)
         if modal is None:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)

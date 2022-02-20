@@ -30,9 +30,11 @@ from typing import Any, Dict, Final, List, Mapping, Protocol, TYPE_CHECKING, Typ
 from . import utils
 from .colour import Colour
 
+# fmt: off
 __all__ = (
     'Embed',
 )
+# fmt: on
 
 
 class _EmptyEmbed:
@@ -366,7 +368,7 @@ class Embed:
             self._footer['icon_url'] = str(icon_url)
 
         return self
-    
+
     def remove_footer(self: E) -> E:
         """Clears embed's footer information.
 
@@ -381,7 +383,7 @@ class Embed:
             pass
 
         return self
-    
+
     @property
     def image(self) -> _EmbedMediaProxy:
         """Returns an ``EmbedProxy`` denoting the image contents.
