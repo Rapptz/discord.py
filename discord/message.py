@@ -1218,6 +1218,9 @@ class Message(Hashable):
         .. versionchanged:: 1.3
             The ``suppress`` keyword-only parameter was added.
 
+        .. versionchanged:: 2.0
+            Edits are no longer in-place, the newly edited role is returned instead.
+
         Parameters
         -----------
         content: Optional[:class:`str`]
@@ -1271,6 +1274,11 @@ class Message(Hashable):
             edited a message's content or embed that isn't yours.
         ~discord.InvalidArgument
             You specified both ``embed`` and ``embeds``
+
+        Returns
+        --------
+        :class:`Message`
+            The newly edited message.
         """
 
         previous_allowed_mentions = self._state.allowed_mentions
