@@ -400,6 +400,14 @@ def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional
     This is different from :func:`py:filter` due to the fact it stops the moment it finds
     a valid entry.
 
+    .. versionchanged:: 2.0
+
+        Both parameters are now positional-only.
+
+    .. versionchanged:: 2.0
+
+        The ``iterable`` parameter supports :term:`asynchronous iterable`\s.
+
     Parameters
     -----------
     predicate
@@ -407,14 +415,6 @@ def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional
     iterable: Union[:class:`collections.abc.Iterable`, :class:`collections.abc.AsyncIterable`]
         The iterable to search through. Using a :class:`collections.abc.AsyncIterable`,
         makes this function return a :term:`coroutine`.
-
-    .. versionchanged:: 2.0.0
-
-        Both parameters are now positional-only.
-
-    .. versionchanged:: 2.0.0
-
-        The ``iterable`` parameter supports :term:`asynchronous iterable`\s.
     """
 
     return (
@@ -489,6 +489,14 @@ def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional
     If nothing is found that matches the attributes passed, then
     ``None`` is returned.
 
+    .. versionchanged:: 2.0
+
+        The ``iterable`` parameter is now positional-only.
+
+    .. versionchanged:: 2.0
+
+        The ``iterable`` parameter supports :term:`asynchronous iterable`\s.
+
     Examples
     ---------
 
@@ -523,14 +531,6 @@ def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional
         makes this function return a :term:`coroutine`.
     \*\*attrs
         Keyword arguments that denote attributes to search with.
-
-    .. versionchanged:: 2.0
-
-        The ``iterable`` parameter is now positional-only.
-
-    .. versionchanged:: 2.0
-
-        The ``iterable`` parameter supports :term:`asynchronous iterable`\s.
     """
 
     return (
