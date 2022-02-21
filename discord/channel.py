@@ -2092,10 +2092,6 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         This is useful if you want to work with a message and only have its ID without
         doing an unnecessary API call.
 
-        .. versionchanged:: 2.0
-
-            ``message_id`` parameter is now positional-only.
-
         Parameters
         ------------
         message_id: :class:`int`
