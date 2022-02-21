@@ -406,7 +406,7 @@ class InteractionResponse:
         -----------
         ephemeral: :class:`bool`
             Indicates whether the deferred message will eventually be ephemeral.
-            This only applies for interactions of type :attr:`InteractionType.application_command`.
+            This only applies to :attr:`InteractionType.application_command` interactions, or if ``thinking`` is ``True``.
         thinking: :class:`bool`
             Indicates whether the deferred type should be :attr:`InteractionResponseType.deferred_channel_message`
             instead of the default :attr:`InteractionResponseType.deferred_message_update` if both are valid.
@@ -433,6 +433,8 @@ class InteractionResponse:
                 if thinking
                 else InteractionResponseType.deferred_message_update.value
             )
+            if thinking and ephemeral:
+                data = {'flags': 64}
         elif parent.type is InteractionType.application_command:
             defer_type = InteractionResponseType.deferred_channel_message.value
             if ephemeral:
