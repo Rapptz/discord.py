@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Optional, Tuple, Type, TypeVar
 
 from ..components import TextInput as TextInputComponent
 from ..enums import ComponentType, TextStyle
@@ -33,8 +33,6 @@ from ..utils import MISSING
 from .item import Item
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
-
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
     from .view import View
@@ -47,7 +45,7 @@ __all__ = (
 # fmt: on
 
 V = TypeVar('V', bound='View', covariant=True)
-
+TI = TypeVar('TI', bound='TextInput')
 
 class TextInput(Item[V]):
     """Represents a UI text input.
@@ -211,7 +209,7 @@ class TextInput(Item[V]):
         self._value = data.get('value', None)
 
     @classmethod
-    def from_component(cls, component: TextInput) -> Self:
+    def from_component(cls: Type[TI], component: TextInputComponent) -> TI:
         return cls(
             label=component.label,
             style=component.style,
