@@ -124,7 +124,7 @@ class Interaction:
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
-        self._session: ClientSession = state.http._HTTPClient__session
+        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
 
@@ -140,6 +140,7 @@ class Interaction:
 
         self.message: Optional[Message]
         try:
+            # The channel and message payloads are mismatched yet handled properly at runtime
             self.message = Message(state=self._state, channel=self.channel, data=data['message'])  # type: ignore
         except KeyError:
             self.message = None
@@ -151,15 +152,16 @@ class Interaction:
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
             try:
-                member = data['member']  # type: ignore
+                member = data['member']  # type: ignore - The key is optional and handled
             except KeyError:
                 pass
             else:
+                # The fallback to Object for guild causes a type check error but is explicitly allowed here
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
                 self._permissions = int(member.get('permissions', 0))
         else:
             try:
-                self.user = User(state=self._state, data=data['user'])
+                self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
             except KeyError:
                 pass
 
@@ -250,6 +252,7 @@ class Interaction:
             session=self._session,
         )
         state = _InteractionMessageState(self, self._state)
+        # The state and channel parameters are mocked here
         message = InteractionMessage(state=state, channel=channel, data=data)  # type: ignore
         self._original_message = message
         return message

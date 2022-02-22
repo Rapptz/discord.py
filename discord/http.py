@@ -1758,7 +1758,7 @@ class HTTPClient:
             'description',
             'options',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
         r = Route(
             'PATCH',
             '/applications/{application_id}/commands/{command_id}',
@@ -1834,7 +1834,7 @@ class HTTPClient:
             'description',
             'options',
         )
-        payload = {k: v for k, v in payload.items() if k in valid_keys}  # type: ignore
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
         r = Route(
             'PATCH',
             '/applications/{application_id}/guilds/{guild_id}/commands/{command_id}',
