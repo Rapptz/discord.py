@@ -232,7 +232,7 @@ class VoiceClient(VoiceProtocol):
     secret_key: List[int]
     ssrc: int
 
-    def __init__(self, client: Client, channel: VocalGuildChannel):
+    def __init__(self, client: Client, channel: abc.Connectable):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
