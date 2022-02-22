@@ -182,8 +182,8 @@ class Attachment(Hashable):
         self.height: Optional[int] = data.get('height')
         self.width: Optional[int] = data.get('width')
         self.filename: str = data['filename']
-        self.url: str = data.get('url')
-        self.proxy_url: str = data.get('proxy_url')
+        self.url: str = data['url']
+        self.proxy_url: str = data['proxy_url']
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
         self.description: Optional[str] = data.get('description')
@@ -483,13 +483,13 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: MessageReferencePayload = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: Dict[str, Any] = {'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result
+        return result  # type: ignore - Type checker doesn't understand these are the same.
 
     to_message_reference_dict = to_dict
 
@@ -718,7 +718,7 @@ class Message(Hashable):
                     # Right now the channel IDs match but maybe in the future they won't.
                     if ref.channel_id == channel.id:
                         chan = channel
-                    elif isinstance(channel, Thread) and channel.parent.id == ref.channel_id:
+                    elif isinstance(channel, Thread) and channel.parent_id == ref.channel_id:
                         chan = channel
                     else:
                         chan, _ = state._get_guild_channel(resolved, ref.guild_id)

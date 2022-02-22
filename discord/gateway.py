@@ -736,7 +736,7 @@ class DiscordWebSocket:
     async def voice_state(
         self,
         guild_id: int,
-        channel_id: int,
+        channel_id: Optional[int],
         self_mute: bool = False,
         self_deaf: bool = False,
     ) -> None:
