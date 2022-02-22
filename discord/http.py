@@ -341,7 +341,7 @@ class HTTPClient:
                 connector=self.connector, ws_response_class=DiscordClientWebSocketResponse
             )
 
-    async def ws_connect(self, url: str, *, compress: int = 0) -> Any:
+    async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
         kwargs = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
