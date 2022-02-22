@@ -31,7 +31,6 @@ from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..interactions import Interaction
 from ..utils import MISSING
 from ..components import (
     SelectOption,
@@ -301,7 +300,7 @@ def select(
     options: List[SelectOption] = MISSING,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[ItemCallbackType], ItemCallbackType]:
+) -> Callable[[ItemCallbackType[V, Select[V]]], Select[V]]:
     """A decorator that attaches a select menu to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -336,7 +335,7 @@ def select(
         Whether the select is disabled or not. Defaults to ``False``.
     """
 
-    def decorator(func: ItemCallbackType) -> ItemCallbackType:
+    def decorator(func: ItemCallbackType[V, Select[V]]) -> ItemCallbackType[V, Select[V]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
 
@@ -352,4 +351,4 @@ def select(
         }
         return func
 
-    return decorator
+    return decorator  # type: ignore
