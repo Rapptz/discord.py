@@ -255,7 +255,7 @@ class GuildChannel:
 
     if TYPE_CHECKING:
 
-        def __init__(self, *, state: ConnectionState, guild: Guild, data: Dict[str, Any]):
+        def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload):
             ...
 
     def __str__(self) -> str:
@@ -507,7 +507,7 @@ class GuildChannel:
 
         If there is no category then this is ``None``.
         """
-        return self.guild.get_channel(self.category_id)  # type: ignore
+        return self.guild.get_channel(self.category_id)  # type: ignore - These are coerced into CategoryChannel
 
     @property
     def permissions_synced(self) -> bool:
@@ -802,7 +802,7 @@ class GuildChannel:
             await http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
             (allow, deny) = overwrite.pair()
-            await http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
+            await http.edit_channel_permissions(self.id, target.id, str(allow.value), str(deny.value), perm_type, reason=reason)
         else:
             raise InvalidArgument('Invalid overwrite type provided.')
 
@@ -822,7 +822,7 @@ class GuildChannel:
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache
-        self.guild._channels[obj.id] = obj  # type: ignore
+        self.guild._channels[obj.id] = obj  # type: ignore - obj is a GuildChannel
         return obj
 
     async def clone(self: GCH, *, name: Optional[str] = None, reason: Optional[str] = None) -> GCH:
