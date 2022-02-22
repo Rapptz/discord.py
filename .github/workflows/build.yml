@@ -6,18 +6,23 @@ on:
     types: [ opened, edited ]
 
 jobs:
-  build-dists:
+  dists-and-docs:
     runs-on: ubuntu-latest
-    name: dists
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ '3.8', '3.x' ]
+
+    name: dists & docs ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Set up CPython
+      - name: Set up CPython ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
@@ -34,40 +39,33 @@ jobs:
           name: distributions
           path: dist/*
 
-  build-docs:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ en, ja ]
-    name: docs (${{ matrix.language }})
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Set up CPython
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
-      - name: Install dependencies
+      - name: Install package
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-
-          # Install all features
           pip install -e .[docs,speed,voice]
 
       - name: Build docs
         shell: bash
         run: |
-          cd docs && sphinx-build -b html -D language=${SPHINX_LANGUAGE} -a -n -T -W --keep-going . _build
-        env:
-          SPHINX_LANGUAGE: ${{ matrix.language }}
+          cd docs
 
-      - name: Upload artifacts
+          EXIT_STATUS=0
+          # Build English docs
+          sphinx-build -b html -D language=en -a -n -T -W --keep-going . _build_en || EXIT_STATUS=$?
+          # Build Japanese docs
+          sphinx-build -b html -D language=ja -a -n -T -W --keep-going . _build_ja || EXIT_STATUS=$?
+
+          exit ${EXIT_STATUS}
+
+      - name: Upload EN docs
         uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: docs-${{matrix.language}}
-          path: docs/_build/*
+          name: docs-en
+          path: docs/_build_en/*
+
+      - name: Upload JA docs
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: docs-ja
+          path: docs/_build_ja/*
