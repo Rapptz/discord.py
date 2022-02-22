@@ -461,8 +461,8 @@ class Cog(metaclass=CogMeta):
                 if command.parent is None:
                     bot.remove_command(command.name)
 
-            for _, method_name in self.__cog_listeners__:
-                bot.remove_listener(getattr(self, method_name))
+            for name, method_name in self.__cog_listeners__:
+                bot.remove_listener(getattr(self, method_name), name)
 
             if cls.bot_check is not Cog.bot_check:
                 bot.remove_check(self.bot_check)
