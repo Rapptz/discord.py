@@ -366,7 +366,7 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        return self._connection.application_flags  # type: ignore
+        return self._connection.application_flags
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -795,7 +795,7 @@ class Client:
         Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
-        return self._connection.get_channel(id)
+        return self._connection.get_channel(id)  # type: ignore - The cache contains all channel types
 
     def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
@@ -1154,7 +1154,7 @@ class Client:
                 continue
 
             if activity is not None:
-                me.activities = (activity,)
+                me.activities = (activity,)  # type: ignore - Type checker does not understand the downcast here
             else:
                 me.activities = ()
 
@@ -1251,11 +1251,11 @@ class Client:
         if isinstance(after, datetime.datetime):
             after = Object(id=time_snowflake(after, high=True))
 
-        predicate = None
+        predicate: Optional[Callable[[GuildPayload], bool]] = None
         strategy, state = _before_strategy, before
 
         if before and after:
-            predicate = lambda m: int(m['id']) > after.id  # type: ignore
+            predicate = lambda m: int(m['id']) > after.id
         elif after:
             strategy, state = _after_strategy, after
 
@@ -1425,6 +1425,7 @@ class Client:
         """
         data = await self.http.get_stage_instance(channel_id)
         guild = self.get_guild(int(data['guild_id']))
+        # Guild can technically be None here but this is being explicitly silenced right now.
         return StageInstance(guild=guild, state=self._connection, data=data)  # type: ignore
 
     # Invite management
@@ -1689,7 +1690,8 @@ class Client:
             The sticker you requested.
         """
         data = await self.http.get_sticker(sticker_id)
-        cls, _ = _sticker_factory(data['type'])  # type: ignore
+        cls, _ = _sticker_factory(data['type'])
+        # The type checker is not smart enough to figure out the constructor is correct
         return cls(state=self._connection, data=data)  # type: ignore
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
