@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+from sqlite3 import connect
 
 from typing import Any, List, Optional, TYPE_CHECKING, Union
 
@@ -260,12 +261,13 @@ class Widget:
         channels = {channel.id: channel for channel in self.channels}
         for member in data.get('members', []):
             connected_channel = _get_as_snowflake(member, 'channel_id')
-            if connected_channel in channels:
-                connected_channel = channels[connected_channel]  # type: ignore
-            elif connected_channel:
-                connected_channel = WidgetChannel(id=connected_channel, name='', position=0)
+            if connected_channel is not None:
+                if connected_channel in channels:
+                    connected_channel = channels[connected_channel]
+                else:
+                    connected_channel = WidgetChannel(id=connected_channel, name='', position=0)
 
-            self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))  # type: ignore
+            self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
 
     def __str__(self) -> str:
         return self.json_url

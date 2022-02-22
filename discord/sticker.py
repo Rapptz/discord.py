@@ -123,7 +123,7 @@ class StickerPack(Hashable):
     @property
     def banner(self) -> Optional[Asset]:
         """:class:`Asset`: The banner asset of the sticker pack."""
-        return self._banner and Asset._from_sticker_banner(self._state, self._banner)
+        return self._banner and Asset._from_sticker_banner(self._state, self._banner)  # type: ignore - type-checker thinks _banner could be Literal[0]
 
     def __repr__(self) -> str:
         return f'<StickerPack id={self.id} name={self.name!r} description={self.description!r}>'

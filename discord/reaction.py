@@ -87,7 +87,7 @@ class Reaction:
         self.message: Message = message
         self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count: int = data.get('count', 1)
-        self.me: bool = data.get('me')
+        self.me: bool = data['me']
 
     # TODO: typeguard
     def is_custom_emoji(self) -> bool:

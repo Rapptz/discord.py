@@ -884,8 +884,8 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.position: int = data['position']
-        self.bitrate: int = data.get('bitrate')
-        self.user_limit: int = data.get('user_limit')
+        self.bitrate: int = data['bitrate']
+        self.user_limit: int = data['user_limit']
         self._fill_overwrites(data)
 
     @property
