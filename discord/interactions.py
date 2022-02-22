@@ -630,6 +630,7 @@ class InteractionResponse:
             content=content,
             embed=embed,
             embeds=embeds,
+            view=view,
             attachments=attachments,
             previous_allowed_mentions=parent._state.allowed_mentions,
             allowed_mentions=allowed_mentions,
