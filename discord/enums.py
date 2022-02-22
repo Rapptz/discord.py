@@ -56,6 +56,7 @@ __all__ = (
     'InteractionType',
     'InteractionResponseType',
     'NSFWLevel',
+    'MFALevel',
 )
 
 
@@ -607,6 +608,11 @@ class NSFWLevel(Enum, comparable=True):
     explicit = 1
     safe = 2
     age_restricted = 3
+
+
+class MFALevel(Enum, comparable=True):
+    disabled = 0
+    require_2fa = 1
 
 
 E = TypeVar('E', bound='Enum')

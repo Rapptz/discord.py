@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
-from . import enums, utils
+from . import enums, flags, utils
 from .asset import Asset
 from .colour import Colour
 from .invite import Invite
@@ -72,10 +72,6 @@ if TYPE_CHECKING:
 
 def _transform_timestamp(entry: AuditLogEntry, data: Optional[str]) -> Optional[datetime.datetime]:
     return utils.parse_time(data)
-
-
-def _transform_permissions(entry: AuditLogEntry, data: str) -> Permissions:
-    return Permissions(int(data))
 
 
 def _transform_color(entry: AuditLogEntry, data: int) -> Colour:
@@ -153,12 +149,22 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
     return _transform
 
 
-T = TypeVar('T', bound=enums.Enum)
+E = TypeVar('E', bound=enums.Enum)
 
 
-def _enum_transformer(enum: Type[T]) -> Callable[[AuditLogEntry, int], T]:
-    def _transform(entry: AuditLogEntry, data: int) -> T:
+def _enum_transformer(enum: Type[E]) -> Callable[[AuditLogEntry, int], E]:
+    def _transform(entry: AuditLogEntry, data: int) -> E:
         return enums.try_enum(enum, data)
+
+    return _transform
+
+
+F = TypeVar('F', bound=flags.BaseFlags)
+
+
+def _flag_transformer(cls: Type[F]) -> Callable[[AuditLogEntry, Union[int, str]], F]:
+    def _transform(entry: AuditLogEntry, data: Union[int, str]) -> F:
+        return cls._from_value(int(data))
 
     return _transform
 
@@ -198,9 +204,9 @@ class AuditLogChanges:
     TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Transformer]]]] = {
         'verification_level':            (None, _enum_transformer(enums.VerificationLevel)),
         'explicit_content_filter':       (None, _enum_transformer(enums.ContentFilter)),
-        'allow':                         (None, _transform_permissions),
-        'deny':                          (None, _transform_permissions),
-        'permissions':                   (None, _transform_permissions),
+        'allow':                         (None, _flag_transformer(Permissions)),
+        'deny':                          (None, _flag_transformer(Permissions)),
+        'permissions':                   (None, _flag_transformer(Permissions)),
         'id':                            (None, _transform_snowflake),
         'color':                         ('colour', _transform_color),
         'owner_id':                      ('owner', _transform_member_id),
@@ -208,6 +214,7 @@ class AuditLogChanges:
         'channel_id':                    ('channel', _transform_channel),
         'afk_channel_id':                ('afk_channel', _transform_channel),
         'system_channel_id':             ('system_channel', _transform_channel),
+        'system_channel_flags':          (None, _flag_transformer(flags.SystemChannelFlags)),
         'widget_channel_id':             ('widget_channel', _transform_channel),
         'rules_channel_id':              ('rules_channel', _transform_channel),
         'public_updates_channel_id':     ('public_updates_channel', _transform_channel),
@@ -229,6 +236,7 @@ class AuditLogChanges:
         'type':                          (None, _transform_type),
         'communication_disabled_until':  ('timed_out_until', _transform_timestamp),
         'expire_behavior':               (None, _enum_transformer(enums.ExpireBehaviour)),
+        'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
     }
     # fmt: on
 
@@ -394,6 +402,18 @@ class AuditLogEntry(Hashable):
         self.reason = data.get('reason')
         extra = data.get('options')
 
+        # fmt: off
+        self.extra: Union[
+            _AuditLogProxyMemberPrune,
+            _AuditLogProxyMemberMoveOrMessageDelete,
+            _AuditLogProxyMemberDisconnect,
+            _AuditLogProxyPinAction,
+            _AuditLogProxyStageInstanceAction,
+            Member, User, None,
+            Role, Object
+        ] = None
+        # fmt: on
+
         if isinstance(self.action, enums.AuditLogAction) and extra:
             if self.action is enums.AuditLogAction.member_prune:
                 # member prune has two keys with useful information
@@ -434,18 +454,6 @@ class AuditLogEntry(Hashable):
                 self.extra = _AuditLogProxyStageInstanceAction(
                     channel=self.guild.get_channel(channel_id) or Object(id=channel_id)
                 )
-
-        # fmt: off
-        self.extra: Union[
-            _AuditLogProxyMemberPrune,
-            _AuditLogProxyMemberMoveOrMessageDelete,
-            _AuditLogProxyMemberDisconnect,
-            _AuditLogProxyPinAction,
-            _AuditLogProxyStageInstanceAction,
-            Member, User, None,
-            Role, Object
-        ]
-        # fmt: on
 
         # this key is not present when the above is present, typically.
         # It's a list of { new_value: a, old_value: b, key: c }

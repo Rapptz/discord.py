@@ -1802,6 +1802,15 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.icon`
         - :attr:`~AuditLogDiff.banner`
         - :attr:`~AuditLogDiff.vanity_url_code`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.preferred_locale`
+        - :attr:`~AuditLogDiff.prune_delete_days`
+        - :attr:`~AuditLogDiff.public_updates_channel`
+        - :attr:`~AuditLogDiff.region`
+        - :attr:`~AuditLogDiff.rules_channel`
+        - :attr:`~AuditLogDiff.verification_level`
+        - :attr:`~AuditLogDiff.widget_channel`
+        - :attr:`~AuditLogDiff.widget_enabled`
 
     .. attribute:: channel_create
 
@@ -2642,6 +2651,41 @@ of :class:`enum.Enum`.
 
         The guild may contain NSFW content.
 
+.. class:: MFALevel
+
+    Represents the Multi-Factor Authentication requirement level of a guild.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two MFA levels are equal.
+        .. describe:: x != y
+
+            Checks if two MFA levels are not equal.
+        .. describe:: x > y
+
+            Checks if a MFA level is higher than another.
+        .. describe:: x < y
+
+            Checks if a MFA level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a MFA level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a MFA level is lower or equal to another.
+
+    .. attribute:: disabled
+
+        The guild has no MFA requirement.
+
+    .. attribute:: require_2fa
+
+        The guild requires 2 factor authentication.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -2831,7 +2875,7 @@ AuditLogDiff
 
         The guild's MFA level. See :attr:`Guild.mfa_level`.
 
-        :type: :class:`int`
+        :type: :class:`MFALevel`
 
     .. attribute:: widget_enabled
 
@@ -3129,9 +3173,9 @@ AuditLogDiff
 
     .. attribute:: description
 
-        The description of a sticker being changed.
+        The description of a guild, or a sticker.
 
-        See also :attr:`GuildSticker.description`
+        See also :attr:`Guild.description`, or :attr:`GuildSticker.description`.
 
         :type: :class:`str`
 
@@ -3203,6 +3247,20 @@ AuditLogDiff
         The grace period before expiring subscribers changed.
 
         see also :attr:`StreamIntegration.expire_grace_period`
+
+        :type: :class:`int`
+
+    .. attribute:: preferred_locale
+
+        The preferred locale for the guild changed.
+
+        see also :attr:`Guild.preferred_locale`
+
+        :type: :class:`str`
+
+    .. attribute:: prune_delete_days
+
+        The number of days after which inactive and role-unassigned members are kicked has been changed.
 
         :type: :class:`int`
 

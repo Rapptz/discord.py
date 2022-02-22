@@ -66,6 +66,7 @@ from .enums import (
     ContentFilter,
     NotificationLevel,
     NSFWLevel,
+    MFALevel,
 )
 from .mixins import Hashable
 from .user import User
@@ -96,7 +97,6 @@ if TYPE_CHECKING:
         Ban as BanPayload,
         Guild as GuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
-        MFALevel,
         GuildFeature,
     )
     from .types.threads import (
@@ -202,10 +202,6 @@ class Guild(Hashable):
         .. versionadded:: 1.4
     description: Optional[:class:`str`]
         The guild's description.
-    mfa_level: :class:`int`
-        Indicates the guild's two factor authorisation level. If this value is 0 then
-        the guild does not require 2FA for their administrative members. If the value is
-        1 then they do.
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
     explicit_content_filter: :class:`ContentFilter`
@@ -253,6 +249,8 @@ class Guild(Hashable):
         results to a specific language.
     nsfw_level: :class:`NSFWLevel`
         The guild's NSFW level.
+    mfa_level: :class:`MFALevel`
+        The guild's Multi-Factor Authentication requirement level.
 
         .. versionadded:: 2.0
     """
@@ -265,7 +263,6 @@ class Guild(Hashable):
         'unavailable',
         'region',
         'owner_id',
-        'mfa_level',
         'emojis',
         'stickers',
         'features',
@@ -280,6 +277,7 @@ class Guild(Hashable):
         'premium_subscription_count',
         'preferred_locale',
         'nsfw_level',
+        'mfa_level',
         '_members',
         '_channels',
         '_icon',
@@ -444,7 +442,6 @@ class Guild(Hashable):
             role = Role(guild=self, data=r, state=state)
             self._roles[role.id] = role
 
-        self.mfa_level: MFALevel = guild.get('mfa_level', 0)
         self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
         self.stickers: Tuple[GuildSticker, ...] = tuple(
             map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
@@ -464,6 +461,7 @@ class Guild(Hashable):
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
+        self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
