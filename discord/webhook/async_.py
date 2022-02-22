@@ -895,16 +895,35 @@ class BaseWebhook(Hashable):
         return utils.snowflake_time(self.id)
 
     @property
-    def avatar(self) -> Asset:
-        """:class:`Asset`: Returns an :class:`Asset` for the avatar the webhook has.
+    def avatar(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the avatar the webhook has.
 
-        If the webhook does not have a traditional avatar, an asset for
-        the default avatar is returned instead.
+        If the webhook does not have a traditional avatar, ``None`` is returned.
+        If you want the avatar that a webhook has displayed, consider :attr:`display_avatar`.
         """
-        if self._avatar is None:
-            # Default is always blurple apparently
-            return Asset._from_default_avatar(self._state, 0)
-        return Asset._from_avatar(self._state, self.id, self._avatar)
+        if self._avatar is not None:
+            return Asset._from_avatar(self._state, self.id, self._avatar)
+        return None
+
+    @property
+    def default_avatar(self) -> Asset:
+        """
+        :class:`Asset`: Returns the default avatar. This is always the blurple avatar.
+
+        .. versionadded:: 2.0
+        """
+        # Default is always blurple apparently
+        return Asset._from_default_avatar(self._state, 0)
+
+    @property
+    def display_avatar(self) -> Asset:
+        """:class:`Asset`: Returns the webhook's display avatar.
+
+        This is either webhook's default avatar or uploaded avatar.
+
+        .. versionadded:: 2.0
+        """
+        return self.avatar or self.default_avatar
 
 
 class Webhook(BaseWebhook):
