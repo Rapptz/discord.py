@@ -228,7 +228,7 @@ class ConnectionState:
         self._intents: Intents = intents
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents  # type: ignore
+            self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
 
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
@@ -312,7 +312,7 @@ class ConnectionState:
 
     def _update_references(self, ws: DiscordWebSocket) -> None:
         for vc in self.voice_clients:
-            vc.main_ws = ws  # type: ignore
+            vc.main_ws = ws  # type: ignore - Silencing the unknown attribute (ok at runtime).
 
     def store_user(self, data):
         # this way is 300% faster than `dict.setdefault`.
@@ -404,6 +404,7 @@ class ConnectionState:
         except KeyError:
             return None
         else:
+            # Type narrowing can't figure out that channel_id isn't None here
             self._private_channels.move_to_end(channel_id)  # type: ignore
             return value
 
@@ -687,10 +688,12 @@ class ConnectionState:
     def parse_interaction_create(self, data: gw.InteractionCreateEvent) -> None:
         interaction = Interaction(data=data, state=self)
         if data['type'] == 3:  # interaction component
+            # These keys are always there for this interaction type
             custom_id = interaction.data['custom_id']  # type: ignore
             component_type = interaction.data['component_type']  # type: ignore
             self._view_store.dispatch_view(component_type, custom_id, interaction)
         elif data['type'] == 5:  # modal submit
+            # These keys are always there for this interaction type
             custom_id = interaction.data['custom_id']  # type: ignore
             components = interaction.data['components']  # type: ignore
             self._view_store.dispatch_modal(custom_id, interaction, components)  # type: ignore
@@ -744,11 +747,14 @@ class ConnectionState:
         channel_id = int(data['id'])
         if channel_type is ChannelType.group:
             channel = self._get_private_channel(channel_id)
-            old_channel = copy.copy(channel)
-            # the channel is a GroupChannel
-            channel._update_group(data)  # type: ignore
-            self.dispatch('private_channel_update', old_channel, channel)
-            return
+            if channel is not None:
+                old_channel = copy.copy(channel)
+                # the channel is a GroupChannel rather than PrivateChannel
+                channel._update_group(data)  # type: ignore
+                self.dispatch('private_channel_update', old_channel, channel)
+                return
+            else:
+                _log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
 
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         guild = self._get_guild(guild_id)
@@ -957,7 +963,7 @@ class ConnectionState:
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
             if member is not None:
-                guild._remove_member(member)  # type: ignore
+                guild._remove_member(member)
                 self.dispatch('member_remove', member)
         else:
             _log.debug('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
@@ -1001,10 +1007,10 @@ class ConnectionState:
         for emoji in before_emojis:
             self._emojis.pop(emoji.id, None)
         # guild won't be None here
-        guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))  # type: ignore
+        guild.emojis = tuple(map(lambda d: self.store_emoji(guild, d), data['emojis']))
         self.dispatch('guild_emojis_update', guild, before_emojis, guild.emojis)
 
-    def parse_guild_stickers_update(self, data) -> None:
+    def parse_guild_stickers_update(self, data: gw.GuildStickersUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
             _log.debug('GUILD_STICKERS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
@@ -1013,8 +1019,8 @@ class ConnectionState:
         before_stickers = guild.stickers
         for emoji in before_stickers:
             self._stickers.pop(emoji.id, None)
-        # guild won't be None here
-        guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))  # type: ignore
+
+        guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
     def _get_create_guild(self, data):
@@ -1178,8 +1184,10 @@ class ConnectionState:
         guild = self._get_guild(guild_id)
         presences = data.get('presences', [])
 
-        # the guild won't be None here
-        members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]  # type: ignore
+        if guild is None:
+            return
+
+        members = [Member(guild=guild, data=member, state=self) for member in data.get('members', [])]
         _log.debug('Processed a chunk for %s members in guild ID %s.', len(members), guild_id)
 
         if presences:
@@ -1294,8 +1302,7 @@ class ConnectionState:
                 if flags.voice:
                     if channel_id is None and flags._voice_only and member.id != self_id:
                         # Only remove from cache if we only have the voice flag enabled
-                        # Member doesn't meet the Snowflake protocol currently
-                        guild._remove_member(member)  # type: ignore
+                        guild._remove_member(member)
                     elif channel_id is not None:
                         guild._add_member(member)
 
@@ -1315,13 +1322,12 @@ class ConnectionState:
         channel, guild = self._get_guild_channel(data)
         if channel is not None:
             member = None
-            user_id = utils._get_as_snowflake(data, 'user_id')
+            user_id = int(data['user_id'])
             if isinstance(channel, DMChannel):
                 member = channel.recipient
 
             elif isinstance(channel, (Thread, TextChannel)) and guild is not None:
-                # user_id won't be None
-                member = guild.get_member(user_id)  # type: ignore
+                member = guild.get_member(user_id)
 
                 if member is None:
                     member_data = data.get('member')
@@ -1502,11 +1508,11 @@ class AutoShardedConnectionState(ConnectionState):
             self._update_message_references()
 
         self.dispatch('connect')
-        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore
+        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
 
         if self._ready_task is None:
             self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
-        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore
+        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore - This is an internal discord.py key

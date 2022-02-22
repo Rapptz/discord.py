@@ -32,7 +32,7 @@ from .role import Role
 from .channel import Channel, ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
-from .emoji import PartialEmoji
+from .emoji import Emoji, PartialEmoji
 from .member import Member, MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
@@ -267,7 +267,7 @@ class GuildMemberUpdateEvent(_GuildMemberUpdateEventOptional):
 
 class GuildEmojisUpdateEvent(TypedDict):
     guild_id: Snowflake
-    emojis: List[PartialEmoji]
+    emojis: List[Emoji]
 
 
 class GuildStickersUpdateEvent(TypedDict):
