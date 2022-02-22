@@ -185,7 +185,7 @@ class Embed:
         type: EmbedType = 'rich',
         url: MaybeEmpty[Any] = EmptyEmbed,
         description: MaybeEmpty[Any] = EmptyEmbed,
-        timestamp: datetime.datetime = None,
+        timestamp: MaybeEmpty[datetime.datetime] = EmptyEmbed,
     ):
 
         self.colour = colour if colour is not EmptyEmbed else color
@@ -203,7 +203,7 @@ class Embed:
         if self.url is not EmptyEmbed:
             self.url = str(self.url)
 
-        if timestamp:
+        if timestamp is not EmptyEmbed:
             self.timestamp = timestamp
 
     @classmethod

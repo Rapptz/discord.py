@@ -38,6 +38,7 @@ import io
 
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
 
+from .enums import SpeakingState
 from .errors import ClientException
 from .opus import Encoder as OpusEncoder
 from .oggparse import OggStream
@@ -656,7 +657,7 @@ class AudioPlayer(threading.Thread):
 
         # getattr lookup speed ups
         play_audio = self.client.send_audio_packet
-        self._speak(True)
+        self._speak(SpeakingState.voice)
 
         while not self._end.is_set():
             # are we paused?
@@ -714,19 +715,19 @@ class AudioPlayer(threading.Thread):
     def stop(self) -> None:
         self._end.set()
         self._resumed.set()
-        self._speak(False)
+        self._speak(SpeakingState.none)
 
     def pause(self, *, update_speaking: bool = True) -> None:
         self._resumed.clear()
         if update_speaking:
-            self._speak(False)
+            self._speak(SpeakingState.none)
 
     def resume(self, *, update_speaking: bool = True) -> None:
         self.loops = 0
         self._start = time.perf_counter()
         self._resumed.set()
         if update_speaking:
-            self._speak(True)
+            self._speak(SpeakingState.voice)
 
     def is_playing(self) -> bool:
         return self._resumed.is_set() and not self._end.is_set()
@@ -740,7 +741,7 @@ class AudioPlayer(threading.Thread):
             self.source = source
             self.resume(update_speaking=False)
 
-    def _speak(self, speaking: bool) -> None:
+    def _speak(self, speaking: SpeakingState) -> None:
         try:
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
         except Exception as e:
