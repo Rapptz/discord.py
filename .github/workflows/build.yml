@@ -33,11 +33,11 @@ jobs:
         run: |
           python ./setup.py sdist bdist_wheel
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: distributions
-          path: dist/*
+      # - name: Upload artifacts
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: distributions
+      #     path: dist/*
 
       - name: Install package
         run: |
@@ -56,16 +56,16 @@ jobs:
 
           exit ${EXIT_STATUS}
 
-      - name: Upload EN docs
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: docs-en
-          path: docs/_build_en/*
+      # - name: Upload EN docs
+      #   uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: docs-en
+      #     path: docs/_build_en/*
 
-      - name: Upload JA docs
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: docs-ja
-          path: docs/_build_ja/*
+      # - name: Upload JA docs
+      #   uses: actions/upload-artifact@v2
+      #   if: always()
+      #   with:
+      #     name: docs-ja
+      #     path: docs/_build_ja/*
