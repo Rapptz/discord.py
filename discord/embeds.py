@@ -311,7 +311,7 @@ class Embed:
         return getattr(self, '_colour', EmptyEmbed)
 
     @colour.setter
-    def colour(self, value: Union[int, Colour, _EmptyEmbed]):  # type: ignore
+    def colour(self, value: Union[int, Colour, _EmptyEmbed]):
         if isinstance(value, (Colour, _EmptyEmbed)):
             self._colour = value
         elif isinstance(value, int):
@@ -344,6 +344,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_footer', {}))  # type: ignore
 
     def set_footer(self: E, *, text: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> E:
@@ -397,6 +398,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
 
     def set_image(self: E, *, url: MaybeEmpty[Any]) -> E:
@@ -439,6 +441,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
     def set_thumbnail(self: E, *, url: MaybeEmpty[Any]) -> E:
@@ -480,6 +483,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_video', {}))  # type: ignore
 
     @property
@@ -490,6 +494,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_provider', {}))  # type: ignore
 
     @property
@@ -500,6 +505,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
 
     def set_author(self: E, *, name: Any, url: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> E:
@@ -553,6 +559,7 @@ class Embed:
 
         If the attribute has no value then :attr:`Empty` is returned.
         """
+        # Lying to the type checker for better developer UX.
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore
 
     def add_field(self: E, *, name: Any, value: Any, inline: bool = True) -> E:
@@ -726,4 +733,4 @@ class Embed:
         if self.title:
             result['title'] = self.title
 
-        return result  # type: ignore
+        return result  # type: ignore - This payload is equivalent to the EmbedData type

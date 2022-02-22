@@ -47,6 +47,7 @@ __all__ = (
 V = TypeVar('V', bound='View', covariant=True)
 TI = TypeVar('TI', bound='TextInput')
 
+
 class TextInput(Item[V]):
     """Represents a UI text input.
 

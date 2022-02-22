@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 import types
 from collections import namedtuple
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Type, TypeVar
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 __all__ = (
     'Enum',
@@ -59,15 +59,17 @@ __all__ = (
 )
 
 
-def _create_value_cls(name, comparable):
+def _create_value_cls(name: str, comparable: bool):
+    # All the type ignores here are due to the type checker being unable to recognise
+    # Runtime type creation without exploding.
     cls = namedtuple('_EnumValue_' + name, 'name value')
-    cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'
-    cls.__str__ = lambda self: f'{name}.{self.name}'
+    cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'  # type: ignore
+    cls.__str__ = lambda self: f'{name}.{self.name}'  # type: ignore
     if comparable:
-        cls.__le__ = lambda self, other: isinstance(other, self.__class__) and self.value <= other.value
-        cls.__ge__ = lambda self, other: isinstance(other, self.__class__) and self.value >= other.value
-        cls.__lt__ = lambda self, other: isinstance(other, self.__class__) and self.value < other.value
-        cls.__gt__ = lambda self, other: isinstance(other, self.__class__) and self.value > other.value
+        cls.__le__ = lambda self, other: isinstance(other, self.__class__) and self.value <= other.value  # type: ignore
+        cls.__ge__ = lambda self, other: isinstance(other, self.__class__) and self.value >= other.value  # type: ignore
+        cls.__lt__ = lambda self, other: isinstance(other, self.__class__) and self.value < other.value  # type: ignore
+        cls.__gt__ = lambda self, other: isinstance(other, self.__class__) and self.value > other.value  # type: ignore
     return cls
 
 
@@ -82,7 +84,7 @@ class EnumMeta(type):
         _enum_member_map_: ClassVar[Dict[str, Any]]
         _enum_value_map_: ClassVar[Dict[Any, Any]]
 
-    def __new__(cls, name, bases, attrs, *, comparable: bool = False):
+    def __new__(cls: Type[type], name: str, bases: Tuple[type, ...], attrs: Dict[str, Any], *, comparable: bool = False):
         value_mapping = {}
         member_mapping = {}
         member_names = []
@@ -117,7 +119,7 @@ class EnumMeta(type):
         attrs['_enum_member_names_'] = member_names
         attrs['_enum_value_cls_'] = value_cls
         actual_cls = super().__new__(cls, name, bases, attrs)
-        value_cls._actual_enum_cls_ = actual_cls  # type: ignore
+        value_cls._actual_enum_cls_ = actual_cls  # type: ignore - Runtime attribute isn't understood
         return actual_cls
 
     def __iter__(cls):
@@ -607,22 +609,22 @@ class NSFWLevel(Enum, comparable=True):
     age_restricted = 3
 
 
-T = TypeVar('T')
+E = TypeVar('E', bound='Enum')
 
 
-def create_unknown_value(cls: Type[T], val: Any) -> T:
-    value_cls = cls._enum_value_cls_  # type: ignore
+def create_unknown_value(cls: Type[E], val: Any) -> E:
+    value_cls = cls._enum_value_cls_  # type: ignore - This is narrowed below
     name = f'unknown_{val}'
     return value_cls(name=name, value=val)
 
 
-def try_enum(cls: Type[T], val: Any) -> T:
+def try_enum(cls: Type[E], val: Any) -> E:
     """A function that tries to turn the value into enum ``cls``.
 
     If it fails it returns a proxy invalid value instead.
     """
 
     try:
-        return cls._enum_value_map_[val]  # type: ignore
+        return cls._enum_value_map_[val]  # type: ignore - All errors are caught below
     except (KeyError, TypeError, AttributeError):
         return create_unknown_value(cls, val)

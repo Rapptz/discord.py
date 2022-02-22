@@ -126,7 +126,7 @@ class ActionRow(Component):
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore
+        }  # type: ignore - Type checker does not understand these are the same
 
 
 class Button(Component):
@@ -198,7 +198,7 @@ class Button(Component):
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        return payload  # type: ignore
+        return payload  # type: ignore - Type checker does not understand these are the same
 
 
 class SelectMenu(Component):
@@ -364,7 +364,7 @@ class SelectOption:
         }
 
         if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore
+            payload['emoji'] = self.emoji.to_dict()  # type: ignore - This Dict[str, Any] is compatible with PartialEmoji
 
         if self.description:
             payload['description'] = self.description
@@ -462,10 +462,13 @@ def _component_factory(data: ComponentPayload) -> Component:
     if component_type == 1:
         return ActionRow(data)
     elif component_type == 2:
+        # The type checker does not properly do narrowing here.
         return Button(data)  # type: ignore
     elif component_type == 3:
+        # The type checker does not properly do narrowing here.
         return SelectMenu(data)  # type: ignore
     elif component_type == 4:
+        # The type checker does not properly do narrowing here.
         return TextInput(data)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
