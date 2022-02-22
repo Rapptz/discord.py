@@ -69,7 +69,7 @@ c_int_ptr = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
 c_float_ptr = ctypes.POINTER(ctypes.c_float)
 
-_lib = None
+_lib: Any = None
 
 
 class EncoderStruct(ctypes.Structure):

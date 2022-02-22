@@ -44,7 +44,7 @@ import socket
 import logging
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .user import ClientUser
     from .opus import Encoder
+    from .channel import StageChannel, VoiceChannel
     from . import abc
 
     from .types.voice import (
@@ -66,6 +67,8 @@ if TYPE_CHECKING:
         VoiceServerUpdate as VoiceServerUpdatePayload,
         SupportedModes,
     )
+
+    VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
 
 has_nacl: bool
@@ -217,18 +220,19 @@ class VoiceClient(VoiceProtocol):
         The voice connection token.
     endpoint: :class:`str`
         The endpoint we are connecting to.
-    channel: :class:`abc.Connectable`
+    channel: Union[:class:`VoiceChannel`, :class:`StageChannel`]
         The voice channel connected to.
     loop: :class:`asyncio.AbstractEventLoop`
         The event loop that the voice client is running on.
     """
 
+    channel: VocalGuildChannel
     endpoint_ip: str
     voice_port: int
     secret_key: List[int]
     ssrc: int
 
-    def __init__(self, client: Client, channel: abc.Connectable):
+    def __init__(self, client: Client, channel: VocalGuildChannel):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -265,14 +269,14 @@ class VoiceClient(VoiceProtocol):
     )
 
     @property
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild we're connected to, if applicable."""
-        return getattr(self.channel, 'guild', None)
+    def guild(self) -> Guild:
+        """:class:`Guild`: The guild we're connected to."""
+        return self.channel.guild
 
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user
+        return self._state.user  # type: ignore - user can't be None after login
 
     def checked_add(self, attr, value, limit):
         val = getattr(self, attr)
@@ -295,8 +299,7 @@ class VoiceClient(VoiceProtocol):
                 # We're being disconnected so cleanup
                 await self.disconnect()
             else:
-                guild = self.guild
-                self.channel = channel_id and guild and guild.get_channel(int(channel_id))  # type: ignore
+                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore - this won't be None
         else:
             self._voice_state_complete.set()
 
@@ -305,7 +308,7 @@ class VoiceClient(VoiceProtocol):
             _log.info('Ignoring extraneous voice server update.')
             return
 
-        self.token = data.get('token')
+        self.token = data['token']
         self.server_id = int(data['guild_id'])
         endpoint = data.get('endpoint')
 
@@ -506,14 +509,14 @@ class VoiceClient(VoiceProtocol):
             if self.socket:
                 self.socket.close()
 
-    async def move_to(self, channel: abc.Snowflake) -> None:
+    async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
         """|coro|
 
         Moves you to a different voice channel.
 
         Parameters
         -----------
-        channel: :class:`abc.Snowflake`
+        channel: Optional[:class:`abc.Snowflake`]
             The channel to move to. Must be a voice channel.
         """
         await self.channel.guild.change_voice_state(channel=channel)

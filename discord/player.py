@@ -161,7 +161,7 @@ class FFmpegAudio(AudioSource):
         kwargs.update(subprocess_kwargs)
 
         self._process: subprocess.Popen = self._spawn_process(args, **kwargs)
-        self._stdout: IO[bytes] = self._process.stdout  # type: ignore
+        self._stdout: IO[bytes] = self._process.stdout  # type: ignore - process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
         self._pipe_thread: Optional[threading.Thread] = None
 
@@ -210,7 +210,8 @@ class FFmpegAudio(AudioSource):
                 self._process.terminate()
                 return
             try:
-                self._stdin.write(data)  # type: ignore
+                if self._stdin is not None:
+                    self._stdin.write(data)
             except Exception:
                 _log.debug('Write error for %s, this is probably not a problem', self, exc_info=True)
                 # at this point the source data is either exhausted or the process is fubar
@@ -359,7 +360,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         self,
         source: Union[str, io.BufferedIOBase],
         *,
-        bitrate: int = 128,
+        bitrate: Optional[int] = None,
         codec: Optional[str] = None,
         executable: str = 'ffmpeg',
         pipe=False,
@@ -378,6 +379,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-' if pipe else source)
 
         codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
+        bitrate = bitrate if bitrate is not None else 128
 
         # fmt: off
         args.extend(('-map_metadata', '-1',
@@ -462,7 +464,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
         executable = kwargs.get('executable')
         codec, bitrate = await cls.probe(source, method=method, executable=executable)
-        return cls(source, bitrate=bitrate, codec=codec, **kwargs)  # type: ignore
+        return cls(source, bitrate=bitrate, codec=codec, **kwargs)
 
     @classmethod
     async def probe(
@@ -494,7 +496,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
         Returns
         ---------
-        Optional[Tuple[Optional[:class:`str`], Optional[:class:`int`]]]
+        Optional[Tuple[Optional[:class:`str`], :class:`int`]]
             A 2-tuple with the codec and bitrate of the input source.
         """
 

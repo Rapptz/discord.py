@@ -104,7 +104,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel]
+    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
 
 
@@ -3069,7 +3069,7 @@ class Guild(Hashable):
         )
 
     async def change_voice_state(
-        self, *, channel: Optional[VocalGuildChannel], self_mute: bool = False, self_deaf: bool = False
+        self, *, channel: Optional[abc.Snowflake], self_mute: bool = False, self_deaf: bool = False
     ):
         """|coro|
 
@@ -3079,7 +3079,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        channel: Optional[:class:`VoiceChannel`]
+        channel: Optional[:class:`abc.Snowflake`]
             Channel the client wants to join. Use ``None`` to disconnect.
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
