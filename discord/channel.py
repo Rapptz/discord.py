@@ -760,10 +760,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         *,
         private: bool = False,
         joined: bool = False,
-        limit: Optional[int] = 50,
+        limit: Optional[int] = 100,
         before: Optional[Union[Snowflake, datetime.datetime]] = None,
     ) -> AsyncIterator[Thread]:
-        """Returns an :term:`asynchronous iterator` that iterates over all archived threads in the guild.
+        """Returns an :term:`asynchronous iterator` that iterates over all archived threads in the guild,
+        in order of decreasing ID for joined threads, and decreasing :attr:`Thread.archive_timestamp` otherwise.
 
         You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
         then :attr:`~Permissions.manage_threads` is also required.
@@ -825,22 +826,28 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             endpoint = self.guild._state.http.get_private_archived_threads
 
         while True:
-            retrieve = 50 if limit is None else max(limit, 50)
+            retrieve = 100
+            if limit is not None:
+                if limit <= 0:
+                    return
+                retrieve = max(2, min(retrieve, limit))
+
             data = await endpoint(self.id, before=before_timestamp, limit=retrieve)
 
             threads = data.get('threads', [])
-            for raw_thread in reversed(threads):
+            for raw_thread in threads:
                 yield Thread(guild=self.guild, state=self.guild._state, data=raw_thread)
+                # Currently the API doesn't let you request less than 2 threads.
+                # Bail out early if we had to retrieve more than what the limit was.
+                if limit is not None:
+                    limit -= 1
+                    if limit <= 0:
+                        return
 
             if not data.get('has_more', False):
                 return
 
-            if limit is not None:
-                limit -= len(threads)
-                if limit <= 0:
-                    return
-
-            before = update_before(threads[-1])
+            before_timestamp = update_before(threads[-1])
 
 
 class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
