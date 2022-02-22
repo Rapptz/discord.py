@@ -65,7 +65,10 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .message import Message
     from .role import Role
-    from .types.voice import VoiceState as VoiceStatePayload
+    from .types.voice import (
+        GuildVoiceState as GuildVoiceStatePayload,
+        VoiceState as VoiceStatePayload,
+    )
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -127,11 +130,13 @@ class VoiceState:
         'suppress',
     )
 
-    def __init__(self, *, data: VoiceStatePayload, channel: Optional[VocalGuildChannel] = None):
-        self.session_id: str = data.get('session_id')
+    def __init__(
+        self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel] = None
+    ):
+        self.session_id: Optional[str] = data.get('session_id')
         self._update(data, channel)
 
-    def _update(self, data: VoiceStatePayload, channel: Optional[VocalGuildChannel]):
+    def _update(self, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel]):
         self.self_mute: bool = data.get('self_mute', False)
         self.self_deaf: bool = data.get('self_deaf', False)
         self.self_stream: bool = data.get('self_stream', False)
@@ -748,10 +753,12 @@ class Member(discord.abc.Messageable, _UserTag):
             payload['mute'] = mute
 
         if suppress is not MISSING:
-            voice_state_payload = {
-                'channel_id': self.voice.channel.id,
+            voice_state_payload: Dict[str, Any] = {
                 'suppress': suppress,
             }
+
+            if self.voice is not None and self.voice.channel is not None:
+                voice_state_payload['channel_id'] = self.voice.channel.id
 
             if suppress or self.bot:
                 voice_state_payload['request_to_speak_timestamp'] = None
@@ -804,6 +811,9 @@ class Member(discord.abc.Messageable, _UserTag):
         HTTPException
             The operation failed.
         """
+        if self.voice is None or self.voice.channel is None:
+            raise RuntimeError('Cannot request to speak while not connected to a voice channel.')
+
         payload = {
             'channel_id': self.voice.channel.id,
             'request_to_speak_timestamp': datetime.datetime.utcnow().isoformat(),

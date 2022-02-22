@@ -52,7 +52,11 @@ class _InviteMetadata(TypedDict, total=False):
     expires_at: Optional[str]
 
 
-class VanityInvite(_InviteMetadata):
+class _VanityInviteOptional(_InviteMetadata, total=False):
+    revoked: bool
+
+
+class VanityInvite(_VanityInviteOptional):
     code: Optional[str]
 
 

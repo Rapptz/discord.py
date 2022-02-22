@@ -1123,7 +1123,7 @@ class HTTPClient:
     def guild_templates(self, guild_id: Snowflake) -> Response[List[template.Template]]:
         return self.request(Route('GET', '/guilds/{guild_id}/templates', guild_id=guild_id))
 
-    def create_template(self, guild_id: Snowflake, payload: template.CreateTemplate) -> Response[template.Template]:
+    def create_template(self, guild_id: Snowflake, payload: Dict[str, Any]) -> Response[template.Template]:
         return self.request(Route('POST', '/guilds/{guild_id}/templates', guild_id=guild_id), json=payload)
 
     def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
@@ -1229,7 +1229,7 @@ class HTTPClient:
         )
 
     def create_guild_sticker(
-        self, guild_id: Snowflake, payload: sticker.CreateGuildSticker, file: File, reason: str
+        self, guild_id: Snowflake, payload: Dict[str, Any], file: File, reason: Optional[str]
     ) -> Response[sticker.GuildSticker]:
         initial_bytes = file.fp.read(16)
 
@@ -1293,7 +1293,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         name: str,
-        image: bytes,
+        image: str,
         *,
         roles: Optional[SnowflakeList] = None,
         reason: Optional[str] = None,
