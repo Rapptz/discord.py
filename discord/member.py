@@ -59,6 +59,7 @@ if TYPE_CHECKING:
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
     )
+    from .types.gateway import GuildMemberUpdateEvent
     from .types.user import User as UserPayload
     from .abc import Snowflake
     from .state import ConnectionState
@@ -372,7 +373,7 @@ class Member(discord.abc.Messageable, _UserTag):
         ch = await self.create_dm()
         return ch
 
-    def _update(self, data: MemberPayload) -> None:
+    def _update(self, data: GuildMemberUpdateEvent) -> None:
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
         try:

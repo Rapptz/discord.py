@@ -82,6 +82,7 @@ if TYPE_CHECKING:
     )
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
+    from .types.gateway import MessageReactionRemoveEvent
     from .abc import Snowflake
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
@@ -762,7 +763,7 @@ class Message(Hashable):
 
         return reaction
 
-    def _remove_reaction(self, data: ReactionPayload, emoji: EmojiInputType, user_id: int) -> Reaction:
+    def _remove_reaction(self, data: MessageReactionRemoveEvent, emoji: EmojiInputType, user_id: int) -> Reaction:
         reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:
