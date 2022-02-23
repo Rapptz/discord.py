@@ -1720,7 +1720,6 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.preferred_locale`
         - :attr:`~AuditLogDiff.prune_delete_days`
         - :attr:`~AuditLogDiff.public_updates_channel`
-        - :attr:`~AuditLogDiff.region`
         - :attr:`~AuditLogDiff.rules_channel`
         - :attr:`~AuditLogDiff.verification_level`
         - :attr:`~AuditLogDiff.widget_channel`
