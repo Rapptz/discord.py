@@ -1391,14 +1391,9 @@ class Messageable:
         await self._state.http.send_typing(channel.id)
 
     def typing(self) -> Typing:
-        """Returns a context manager that allows you to type for an indefinite period of time.
+        """Returns an asynchronous context manager that allows you to type for an indefinite period of time.
 
         This is useful for denoting long computations in your bot.
-
-        .. note::
-
-            This is both a regular context manager and an async context manager.
-            This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
 
@@ -1408,6 +1403,8 @@ class Messageable:
 
             await channel.send('done!')
 
+        .. versionchanged:: 2.0
+            This no longer works with the ``with`` syntax, ``async with`` must be used instead.
         """
         return Typing(self)
 
