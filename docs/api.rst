@@ -2648,6 +2648,133 @@ of :class:`enum.Enum`.
 
         The guild may contain NSFW content.
 
+.. class:: Locale
+
+    Supported locales by Discord. Mainly used for application command localisation.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: american_english
+
+        The ``en-US`` locale.
+
+    .. attribute:: british_english
+
+        The ``en-GB`` locale.
+
+    .. attribute:: bulgarian
+
+        The ``bg`` locale.
+
+    .. attribute:: chinese
+
+        The ``zh-CN`` locale.
+
+    .. attribute:: taiwan_chinese
+
+        The ``zh-TW`` locale.
+
+    .. attribute:: croatian
+
+        The ``hr`` locale.
+
+    .. attribute:: czech
+
+        The ``cs`` locale.
+
+    .. attribute:: danish
+
+        The ``da`` locale.
+
+    .. attribute:: dutch
+
+        The ``nl`` locale.
+
+    .. attribute:: finnish
+
+        The ``fi`` locale.
+
+    .. attribute:: french
+
+        The ``fr`` locale.
+
+    .. attribute:: german
+
+        The ``de`` locale.
+
+    .. attribute:: greek
+
+        The ``el`` locale.
+
+    .. attribute:: hindi
+
+        The ``hi`` locale.
+
+    .. attribute:: hungarian
+
+        The ``hu`` locale.
+
+    .. attribute:: italian
+
+        The ``it`` locale.
+
+    .. attribute:: japanese
+
+        The ``ja`` locale.
+
+    .. attribute:: korean
+
+        The ``ko`` locale.
+
+    .. attribute:: lithuanian
+
+        The ``lt`` locale.
+
+    .. attribute:: norwegian
+
+        The ``no`` locale.
+
+    .. attribute:: polish
+
+        The ``pl`` locale.
+
+    .. attribute:: brazil_portuguese
+
+        The ``pt-BR`` locale.
+
+    .. attribute:: Romanian
+
+        The ``ro`` locale.
+
+    .. attribute:: Russian
+
+        The ``ru`` locale.
+
+    .. attribute:: spain_spanish
+
+        The ``es-ES`` locale.
+
+    .. attribute:: swedish
+
+        The ``sv-SE`` locale.
+
+    .. attribute:: thai
+
+        The ``th`` locale.
+
+    .. attribute:: turkish
+
+        The ``tr`` locale.
+
+    .. attribute:: ukrainian
+
+        The ``uk`` locale.
+
+    .. attribute:: vietnamese
+
+        The ``vi`` locale.
+
+
 .. class:: MFALevel
 
     Represents the Multi-Factor Authentication requirement level of a guild.

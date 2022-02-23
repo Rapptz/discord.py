@@ -57,6 +57,7 @@ __all__ = (
     'InteractionResponseType',
     'NSFWLevel',
     'MFALevel',
+    'Locale',
 )
 
 
@@ -613,6 +614,42 @@ class NSFWLevel(Enum, comparable=True):
 class MFALevel(Enum, comparable=True):
     disabled = 0
     require_2fa = 1
+
+
+class Locale(Enum):
+    american_english = 'en-US'
+    british_english = 'en-GB'
+    bulgarian = 'bg'
+    chinese = 'zh-CN'
+    taiwan_chinese = 'zh-TW'
+    croatian = 'hr'
+    czech = 'cs'
+    danish = 'da'
+    dutch = 'nl'
+    finnish = 'fi'
+    french = 'fr'
+    german = 'de'
+    greek = 'el'
+    hindi = 'hi'
+    hungarian = 'hu'
+    italian = 'it'
+    japanese = 'ja'
+    korean = 'ko'
+    lithuanian = 'lt'
+    norwegian = 'no'
+    polish = 'pl'
+    brazil_portuguese = 'pt-BR'
+    Romanian = 'ro'
+    Russian = 'ru'
+    spain_spanish = 'es-ES'
+    swedish = 'sv-SE'
+    thai = 'th'
+    turkish = 'tr'
+    ukrainian = 'uk'
+    vietnamese = 'vi'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 E = TypeVar('E', bound='Enum')
