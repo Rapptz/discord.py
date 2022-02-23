@@ -40,13 +40,10 @@ Client
 
 .. autoclass:: Client
     :members:
-    :exclude-members: fetch_guilds, event
+    :exclude-members: event
 
     .. automethod:: Client.event()
         :decorator:
-
-    .. automethod:: Client.fetch_guilds
-        :async-for:
 
 AutoShardedClient
 ~~~~~~~~~~~~~~~~~~
@@ -3357,10 +3354,7 @@ Messageable
 
 .. autoclass:: discord.abc.Messageable()
     :members:
-    :exclude-members: history, typing
-
-    .. automethod:: discord.abc.Messageable.history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: discord.abc.Messageable.typing
         :async-with:
@@ -3416,10 +3410,7 @@ User
 .. autoclass:: User()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:
@@ -3510,10 +3501,6 @@ Reaction
 
 .. autoclass:: Reaction()
     :members:
-    :exclude-members: users
-
-    .. automethod:: users
-        :async-for:
 
 Guild
 ~~~~~~
@@ -3522,13 +3509,6 @@ Guild
 
 .. autoclass:: Guild()
     :members:
-    :exclude-members: fetch_members, audit_logs
-
-    .. automethod:: fetch_members
-        :async-for:
-
-    .. automethod:: audit_logs
-        :async-for:
 
 .. class:: BanEntry
 
@@ -3596,10 +3576,7 @@ Member
 .. autoclass:: Member()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:
@@ -3671,10 +3648,7 @@ TextChannel
 .. autoclass:: TextChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:
@@ -3687,10 +3661,7 @@ Thread
 .. autoclass:: Thread()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:
@@ -3756,10 +3727,7 @@ DMChannel
 .. autoclass:: DMChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:
@@ -3772,10 +3740,7 @@ GroupChannel
 .. autoclass:: GroupChannel()
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: typing
         :async-with:

@@ -346,10 +346,7 @@ Context
 .. autoclass:: discord.ext.commands.Context
     :members:
     :inherited-members:
-    :exclude-members: history, typing
-
-    .. automethod:: discord.ext.commands.Context.history
-        :async-for:
+    :exclude-members: typing
 
     .. automethod:: discord.ext.commands.Context.typing
         :async-with:
