@@ -1304,7 +1304,6 @@ class StageChannel(VocalGuildChannel):
         self,
         *,
         name: str = ...,
-        topic: Optional[str] = ...,
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
