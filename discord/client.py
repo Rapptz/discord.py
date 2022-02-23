@@ -78,7 +78,8 @@ from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factor
 
 if TYPE_CHECKING:
     from .types.guild import Guild as GuildPayload
-    from .abc import SnowflakeTime, PrivateChannel, GuildChannel, Snowflake
+    from .abc import SnowflakeTime, Snowflake, PrivateChannel
+    from .guild import GuildChannel
     from .channel import DMChannel
     from .message import Message
     from .member import Member

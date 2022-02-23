@@ -41,6 +41,7 @@ from typing import (
     Tuple,
     Union,
     runtime_checkable,
+    overload,
 )
 
 import discord
@@ -48,7 +49,8 @@ from .errors import *
 
 if TYPE_CHECKING:
     from .context import Context
-    from discord.message import PartialMessageableChannel
+    from discord.state import Channel
+    from discord.threads import Thread
     from .bot import Bot, AutoShardedBot
 
     _Bot = Union[Bot, AutoShardedBot]
@@ -357,7 +359,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
     @staticmethod
     def _resolve_channel(
         ctx: Context[_Bot], guild_id: Optional[int], channel_id: Optional[int]
-    ) -> Optional[PartialMessageableChannel]:
+    ) -> Optional[Union[Channel, Thread]]:
         if channel_id is None:
             # we were passed just a message id so we can assume the channel is the current context channel
             return ctx.channel
@@ -373,8 +375,8 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
     async def convert(self, ctx: Context[_Bot], argument: str) -> discord.PartialMessage:
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
         channel = self._resolve_channel(ctx, guild_id, channel_id)
-        if not channel:
-            raise ChannelNotFound(channel_id)
+        if not channel or not isinstance(channel, discord.abc.Messageable):
+            raise ChannelNotFound(channel_id)  # type: ignore - channel_id won't be None here
         return discord.PartialMessage(channel=channel, id=message_id)
 
 
@@ -399,14 +401,14 @@ class MessageConverter(IDConverter[discord.Message]):
         if message:
             return message
         channel = PartialMessageConverter._resolve_channel(ctx, guild_id, channel_id)
-        if not channel:
-            raise ChannelNotFound(channel_id)
+        if not channel or not isinstance(channel, discord.abc.Messageable):
+            raise ChannelNotFound(channel_id)  # type: ignore - channel_id won't be None here
         try:
             return await channel.fetch_message(message_id)
         except discord.NotFound:
             raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise ChannelNotReadable(channel)
+            raise ChannelNotReadable(channel)  # type: ignore - type-checker thinks channel could be a DMChannel at this point
 
 
 class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
@@ -449,7 +451,8 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         else:
             channel_id = int(match.group(1))
             if guild:
-                result = guild.get_channel(channel_id)
+                # guild.get_channel returns an explicit union instead of the base class
+                result = guild.get_channel(channel_id)  # type: ignore
             else:
                 result = _get_from_guilds(bot, 'get_channel', channel_id)
 

@@ -33,7 +33,7 @@ import importlib.util
 import sys
 import traceback
 import types
-from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union
+from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union, overload
 
 import discord
 
@@ -65,6 +65,7 @@ MISSING: Any = discord.utils.MISSING
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
 CXT = TypeVar('CXT', bound='Context')
+BT = TypeVar('BT', bound='Union[Bot, AutoShardedBot]')
 
 
 def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
@@ -932,7 +933,15 @@ class BotBase(GroupMixin):
 
         return ret
 
-    async def get_context(self, message: Message, *, cls: Type[CXT] = Context) -> CXT:
+    @overload
+    async def get_context(self: BT, message: Message) -> Context[BT]:
+        ...
+
+    @overload
+    async def get_context(self, message: Message, *, cls: Type[CXT] = ...) -> CXT:
+        ...
+
+    async def get_context(self, message: Message, *, cls: Type[Context] = Context) -> Any:
         r"""|coro|
 
         Returns the invocation context from the message.
