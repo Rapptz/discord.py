@@ -46,7 +46,7 @@ import datetime
 
 import discord.abc
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, StagePrivacyLevel, try_enum, VoiceRegion, VideoQualityMode
+from .enums import ChannelType, StagePrivacyLevel, try_enum, VideoQualityMode
 from .mixins import Hashable
 from .object import Object
 from . import utils
@@ -879,8 +879,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
     def _update(self, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]) -> None:
         self.guild = guild
         self.name: str = data['name']
-        rtc = data.get('rtc_region')
-        self.rtc_region: Optional[VoiceRegion] = try_enum(VoiceRegion, rtc) if rtc is not None else None
+        self.rtc_region: Optional[str] = data.get('rtc_region')
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.position: int = data['position']
@@ -978,11 +977,14 @@ class VoiceChannel(VocalGuildChannel):
         The channel's preferred audio bitrate in bits per second.
     user_limit: :class:`int`
         The channel's limit for number of members that can be in a voice channel.
-    rtc_region: Optional[:class:`VoiceRegion`]
+    rtc_region: Optional[:class:`str`]
         The region for the voice channel's voice communication.
         A value of ``None`` indicates automatic voice region detection.
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+            The type of this attribute has changed to :class:`str`.
     video_quality_mode: :class:`VideoQualityMode`
         The camera video quality for the voice channel's participants.
 
@@ -1025,7 +1027,7 @@ class VoiceChannel(VocalGuildChannel):
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
-        rtc_region: Optional[VoiceRegion] = ...,
+        rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
     ) -> Optional[VoiceChannel]:
@@ -1049,6 +1051,9 @@ class VoiceChannel(VocalGuildChannel):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited channel is returned instead.
 
+        .. versionchanged:: 2.0
+            The ``region`` parameter now accepts :class:`str` instead of an enum.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1070,7 +1075,7 @@ class VoiceChannel(VocalGuildChannel):
         overwrites: :class:`Mapping`
             A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-        rtc_region: Optional[:class:`VoiceRegion`]
+        rtc_region: Optional[:class:`str`]
             The new region for the voice channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
 
@@ -1144,7 +1149,7 @@ class StageChannel(VocalGuildChannel):
         The channel's preferred audio bitrate in bits per second.
     user_limit: :class:`int`
         The channel's limit for number of members that can be in a stage channel.
-    rtc_region: Optional[:class:`VoiceRegion`]
+    rtc_region: Optional[:class:`str`]
         The region for the stage channel's voice communication.
         A value of ``None`` indicates automatic voice region detection.
     video_quality_mode: :class:`VideoQualityMode`
@@ -1304,7 +1309,7 @@ class StageChannel(VocalGuildChannel):
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
-        rtc_region: Optional[VoiceRegion] = ...,
+        rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
     ) -> Optional[StageChannel]:
@@ -1328,6 +1333,9 @@ class StageChannel(VocalGuildChannel):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited channel is returned instead.
 
+        .. versionchanged:: 2.0
+            The ``region`` parameter now accepts :class:`str` instead of an enum.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1345,7 +1353,7 @@ class StageChannel(VocalGuildChannel):
         overwrites: :class:`Mapping`
             A :class:`Mapping` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply to the channel.
-        rtc_region: Optional[:class:`VoiceRegion`]
+        rtc_region: Optional[:class:`str`]
             The new region for the stage channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
         video_quality_mode: :class:`VideoQualityMode`

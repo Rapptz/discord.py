@@ -26,7 +26,6 @@ from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
-from .enums import VoiceRegion
 from .guild import Guild
 
 # fmt: off
@@ -168,20 +167,20 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
-    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None) -> Guild:
+    async def create_guild(self, name: str, icon: bytes = MISSING) -> Guild:
         """|coro|
 
         Creates a :class:`.Guild` using the template.
 
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
+        .. versionchanged:: 2.0
+            The ``region`` parameter has been removed.
+
         Parameters
         ----------
         name: :class:`str`
             The name of the guild.
-        region: :class:`.VoiceRegion`
-            The region for the voice communication server.
-            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
@@ -199,13 +198,11 @@ class Template:
             The guild created. This is not the same guild that is
             added to cache.
         """
-        if icon is not None:
-            icon = _bytes_to_base64_data(icon)
+        base64_icon = None
+        if icon is not MISSING:
+            base64_icon = _bytes_to_base64_data(icon)
 
-        region = region or VoiceRegion.us_west
-        region_value = region.value
-
-        data = await self._state.http.create_from_template(self.code, name, region_value, icon)
+        data = await self._state.http.create_from_template(self.code, name, base64_icon)
         return Guild(data=data, state=self._state)
 
     async def sync(self) -> Template:

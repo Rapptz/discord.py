@@ -1535,89 +1535,6 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`paragraph`.
 
-.. class:: VoiceRegion
-
-    Specifies the region a voice server belongs to.
-
-    .. attribute:: amsterdam
-
-        The Amsterdam region.
-    .. attribute:: brazil
-
-        The Brazil region.
-    .. attribute:: dubai
-
-        The Dubai region.
-
-        .. versionadded:: 1.3
-
-    .. attribute:: eu_central
-
-        The EU Central region.
-    .. attribute:: eu_west
-
-        The EU West region.
-    .. attribute:: europe
-
-        The Europe region.
-
-        .. versionadded:: 1.3
-
-    .. attribute:: frankfurt
-
-        The Frankfurt region.
-    .. attribute:: hongkong
-
-        The Hong Kong region.
-    .. attribute:: india
-
-        The India region.
-
-        .. versionadded:: 1.2
-
-    .. attribute:: japan
-
-        The Japan region.
-    .. attribute:: london
-
-        The London region.
-    .. attribute:: russia
-
-        The Russia region.
-    .. attribute:: singapore
-
-        The Singapore region.
-    .. attribute:: southafrica
-
-        The South Africa region.
-    .. attribute:: south_korea
-
-        The South Korea region.
-    .. attribute:: sydney
-
-        The Sydney region.
-    .. attribute:: us_central
-
-        The US Central region.
-    .. attribute:: us_east
-
-        The US East region.
-    .. attribute:: us_south
-
-        The US South region.
-    .. attribute:: us_west
-
-        The US West region.
-    .. attribute:: vip_amsterdam
-
-        The Amsterdam region for VIP guilds.
-    .. attribute:: vip_us_east
-
-        The US East region for VIP guilds.
-    .. attribute:: vip_us_west
-
-        The US West region for VIP guilds.
-
 .. class:: VerificationLevel
 
     Specifies a :class:`Guild`\'s verification level, which is the criteria in
@@ -2937,12 +2854,6 @@ AuditLogDiff
 
         :type: Union[:class:`Member`, :class:`User`]
 
-    .. attribute:: region
-
-        The guild's voice region. See also :attr:`Guild.region`.
-
-        :type: :class:`VoiceRegion`
-
     .. attribute:: afk_channel
 
         The guild's AFK channel.
@@ -3261,7 +3172,7 @@ AuditLogDiff
 
         See also :attr:`VoiceChannel.rtc_region`.
 
-        :type: :class:`VoiceRegion`
+        :type: :class:`str`
 
     .. attribute:: video_quality_mode
 

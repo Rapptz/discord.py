@@ -59,7 +59,6 @@ from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
     VideoQualityMode,
-    VoiceRegion,
     ChannelType,
     try_enum,
     VerificationLevel,
@@ -171,9 +170,6 @@ class Guild(Hashable):
         All stickers that the guild owns.
 
         .. versionadded:: 2.0
-    region: :class:`VoiceRegion`
-        The region the guild belongs on. There is a chance that the region
-        will be a :class:`str` if the value is not recognised by the enumerator.
     afk_timeout: :class:`int`
         The timeout to get sent to the AFK channel.
     afk_channel: Optional[:class:`VoiceChannel`]
@@ -425,7 +421,6 @@ class Guild(Hashable):
             self._member_count: int = member_count
 
         self.name: str = guild.get('name', '')
-        self.region: VoiceRegion = try_enum(VoiceRegion, guild.get('region'))
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
         self.default_notifications: NotificationLevel = try_enum(
             NotificationLevel, guild.get('default_message_notifications')
@@ -1234,7 +1229,7 @@ class Guild(Hashable):
         position: int = MISSING,
         bitrate: int = MISSING,
         user_limit: int = MISSING,
-        rtc_region: Optional[VoiceRegion] = MISSING,
+        rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> VoiceChannel:
@@ -1261,7 +1256,7 @@ class Guild(Hashable):
             The channel's preferred audio bitrate in bits per second.
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
-        rtc_region: Optional[:class:`VoiceRegion`]
+        rtc_region: Optional[:class:`str`]
             The region for the voice channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
 
@@ -1298,7 +1293,7 @@ class Guild(Hashable):
             options['user_limit'] = user_limit
 
         if rtc_region is not MISSING:
-            options['rtc_region'] = None if rtc_region is None else str(rtc_region)
+            options['rtc_region'] = None if rtc_region is None else rtc_region
 
         if video_quality_mode is not MISSING:
             options['video_quality_mode'] = video_quality_mode.value
@@ -1468,7 +1463,6 @@ class Guild(Hashable):
         splash: Optional[bytes] = MISSING,
         discovery_splash: Optional[bytes] = MISSING,
         community: bool = MISSING,
-        region: Optional[Union[str, VoiceRegion]] = MISSING,
         afk_channel: Optional[VoiceChannel] = MISSING,
         owner: Snowflake = MISSING,
         afk_timeout: int = MISSING,
@@ -1498,6 +1492,9 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
             The newly updated guild is returned.
 
+        .. versionchanged:: 2.0
+            The ``region`` keyword parameter has been removed.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1526,8 +1523,6 @@ class Guild(Hashable):
         community: :class:`bool`
             Whether the guild should be a Community guild. If set to ``True``\, both ``rules_channel``
             and ``public_updates_channel`` parameters are required.
-        region: Union[:class:`str`, :class:`VoiceRegion`]
-            The new region for the guild's voice communication.
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
@@ -1655,9 +1650,6 @@ class Guild(Hashable):
                 raise InvalidArgument('To transfer ownership you must be the owner of the guild.')
 
             fields['owner_id'] = owner.id
-
-        if region is not MISSING:
-            fields['region'] = str(region)
 
         if verification_level is not MISSING:
             if not isinstance(verification_level, VerificationLevel):
