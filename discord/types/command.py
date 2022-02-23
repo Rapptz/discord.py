@@ -26,8 +26,8 @@ from __future__ import annotations
 
 from typing import List, Literal, TypedDict, Union
 
-from discord.types.channel import ChannelType
-from discord.types.snowflake import Snowflake
+from .channel import ChannelType
+from .snowflake import Snowflake
 
 ApplicationCommandType = Literal[1, 2, 3]
 ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -52,7 +52,7 @@ class _BaseValueApplicationCommandOption(_BaseApplicationCommandOption, total=Fa
     required: bool
 
 
-class _StringApplicationCommandOptionChoice(TypedDict, total=False):
+class _StringApplicationCommandOptionChoice(TypedDict):
     name: str
     value: str
 
@@ -66,7 +66,7 @@ class _StringApplicationCommandOption(_StringApplicationCommandOptionOptional):
     type: Literal[3]
 
 
-class _IntegerApplicationCommandOptionChoice(TypedDict, total=False):
+class _IntegerApplicationCommandOptionChoice(TypedDict):
     name: str
     value: int
 
@@ -104,7 +104,7 @@ _SnowflakeApplicationCommandOptionChoice = Union[
 ]
 
 
-class _NumberApplicationCommandOptionChoice(TypedDict, total=False):
+class _NumberApplicationCommandOptionChoice(TypedDict):
     name: str
     value: float
 
