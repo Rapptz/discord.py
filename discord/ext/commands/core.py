@@ -129,7 +129,15 @@ def get_signature_parameters(function: Callable[..., Any], globalns: Dict[str, A
     params = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
-    for name, parameter in signature.parameters.items():
+    required_params = discord.utils.is_inside_class(function) + 1
+    if len(signature.parameters) < required_params:
+        raise TypeError(f'Command signature requires at least {required_params - 1} parameter(s)')
+
+    iterator = iter(signature.parameters.items())
+    for _ in range(0, required_params):
+        next(iterator)
+
+    for name, parameter in iterator:
         annotation = parameter.annotation
         if annotation is parameter.empty:
             params[name] = parameter
@@ -638,21 +646,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         Useful for inspecting signature.
         """
-        result = self.params.copy()
-        if self.cog is not None:
-            # first parameter is self
-            try:
-                del result[next(iter(result))]
-            except StopIteration:
-                raise ValueError("missing 'self' parameter") from None
-
-        try:
-            # first/second parameter is context
-            del result[next(iter(result))]
-        except StopIteration:
-            raise ValueError("missing 'context' parameter") from None
-
-        return result
+        return self.params.copy()
 
     @property
     def full_parent_name(self) -> str:
@@ -726,20 +720,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         view = ctx.view
         iterator = iter(self.params.items())
-
-        if self.cog is not None:
-            # we have 'self' as the first parameter so just advance
-            # the iterator and resume parsing
-            try:
-                next(iterator)
-            except StopIteration:
-                raise discord.ClientException(f'Callback for {self.name} command is missing "self" parameter.')
-
-        # next we have the 'ctx' as the next parameter
-        try:
-            next(iterator)
-        except StopIteration:
-            raise discord.ClientException(f'Callback for {self.name} command is missing "ctx" parameter.')
 
         for name, param in iterator:
             ctx.current_parameter = param
