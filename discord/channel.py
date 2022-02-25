@@ -1683,6 +1683,11 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     Attributes
     ----------
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.0
     recipient: Optional[:class:`User`]
         The user you are participating with in the direct message channel.
         If this channel is received through the gateway, the recipient information
@@ -1693,11 +1698,12 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The direct message channel ID.
     """
 
-    __slots__ = ('id', 'recipient', 'me', '_state')
+    __slots__ = ('id', 'recipient', 'me', 'last_message_id', '_state')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.recipient: User = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
@@ -1725,16 +1731,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     def __repr__(self) -> str:
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
-    @classmethod
-    def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
-        self: DMC = cls.__new__(cls)
-        self._state = state
-        self.id = channel_id
-        self.recipient = None
-        # state.user won't be None here
-        self.me = state.user  # type: ignore
-        return self
-
     @property
     def call(self) -> Optional[PrivateCall]:
         """Optional[:class:`PrivateCall`]: The channel's currently active call."""
@@ -1757,6 +1753,27 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/@me/{self.id}'
+
+    @property
+    def last_message(self) -> Optional[Message]:
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     def permissions_for(self, obj: Any = None, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
@@ -1857,6 +1874,11 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     Attributes
     ----------
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.0
     recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
@@ -1873,7 +1895,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The group channel's name if provided.
     """
 
-    __slots__ = ('id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
+    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -1886,6 +1908,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self._icon: Optional[str] = data.get('icon')
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
 
         self.owner: Optional[BaseUser]
         if self.owner_id == self.me.id:
@@ -1950,6 +1973,27 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/@me/{self.id}'
+
+    @property
+    def last_message(self) -> Optional[Message]:
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
@@ -2163,6 +2207,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         self._channel: Object = Object(id=id)
         self.id: int = id
         self.type: Optional[ChannelType] = type
+        self.last_message_id: Optional[int] = None
 
     async def _get_channel(self) -> Object:
         return self._channel

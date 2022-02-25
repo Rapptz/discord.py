@@ -1463,6 +1463,19 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
+    async def ack(self) -> None:
+        """|coro|
+
+        Marks every message in this channel as read.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        """
+        channel = await self._get_channel()
+        await self._state.http.ack_message(channel.id, channel.last_message_id or utils.time_snowflake(utils.utcnow()))
+
     async def ack_pins(self) -> None:
         """|coro|
 
@@ -1655,6 +1668,8 @@ class Connectable(Protocol):
 
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.StageChannel`
+    - :class:`~discord.DMChannel`
+    - :class:`~discord.GroupChannel`
 
     Note
     ----
