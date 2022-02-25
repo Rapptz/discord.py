@@ -26,7 +26,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
 
-from .channel import ChannelType, ThreadMetadata
+
+from .channel import ChannelType, ChannelTypeWithoutThread, ThreadMetadata
+from .threads import ThreadType
 from .member import Member
 from .message import Attachment
 from .role import Role
@@ -40,25 +42,29 @@ if TYPE_CHECKING:
 InteractionType = Literal[1, 2, 3, 4, 5]
 
 
-class PartialChannel(TypedDict):
+class _BasePartialChannel(TypedDict):
     id: Snowflake
     name: str
-    type: ChannelType
     permissions: str
 
 
-class PartialThread(PartialChannel):
+class PartialChannel(_BasePartialChannel):
+    type: ChannelTypeWithoutThread
+
+
+class PartialThread(_BasePartialChannel):
+    type: ThreadType
     thread_metadata: ThreadMetadata
     parent_id: Snowflake
 
 
 class ResolvedData(TypedDict, total=False):
-    users: Dict[Snowflake, User]
-    members: Dict[Snowflake, Member]
-    roles: Dict[Snowflake, Role]
-    channels: Dict[Snowflake, Union[PartialChannel, PartialThread]]
-    messages: Dict[Snowflake, Message]
-    attachments: Dict[Snowflake, Attachment]
+    users: Dict[str, User]
+    members: Dict[str, Member]
+    roles: Dict[str, Role]
+    channels: Dict[str, Union[PartialChannel, PartialThread]]
+    messages: Dict[str, Message]
+    attachments: Dict[str, Attachment]
 
 
 class _BaseApplicationCommandInteractionDataOption(TypedDict):
@@ -114,7 +120,7 @@ ApplicationCommandInteractionDataOption = Union[
 ]
 
 
-class _BaseApplicationCommandInteractionDataOptional(TypedDict):
+class _BaseApplicationCommandInteractionDataOptional(TypedDict, total=False):
     resolved: ResolvedData
 
 
