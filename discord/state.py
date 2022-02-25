@@ -69,6 +69,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .client import Client
     from .gateway import DiscordWebSocket
+    from .app_commands import CommandTree
 
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
@@ -227,6 +228,7 @@ class ConnectionState:
         self._activity: Optional[ActivityPayload] = activity
         self._status: Optional[str] = status
         self._intents: Intents = intents
+        self._command_tree: Optional[CommandTree] = None
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
@@ -690,7 +692,9 @@ class ConnectionState:
 
     def parse_interaction_create(self, data: gw.InteractionCreateEvent) -> None:
         interaction = Interaction(data=data, state=self)
-        if data['type'] == 3:  # interaction component
+        if data['type'] == 2 and self._command_tree:  # application command
+            self._command_tree._from_interaction(interaction)
+        elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type
             custom_id = interaction.data['custom_id']  # type: ignore
             component_type = interaction.data['component_type']  # type: ignore
