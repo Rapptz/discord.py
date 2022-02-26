@@ -35,7 +35,7 @@ import os.path
 import struct
 import sys
 
-from .errors import DiscordException, InvalidArgument
+from .errors import DiscordException
 
 if TYPE_CHECKING:
     T = TypeVar('T')
@@ -447,7 +447,7 @@ class Decoder(_OpusStruct):
 
     def decode(self, data: Optional[bytes], *, fec: bool = False) -> bytes:
         if data is None and fec:
-            raise InvalidArgument("Invalid arguments: FEC cannot be used with null data")
+            raise TypeError("Invalid arguments: FEC cannot be used with null data")
 
         if data is None:
             frame_size = self._get_last_packet_duration() or self.SAMPLES_PER_FRAME

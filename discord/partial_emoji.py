@@ -28,7 +28,6 @@ from typing import Any, Dict, Optional, TYPE_CHECKING, Type, TypeVar, Union
 import re
 
 from .asset import Asset, AssetMixin
-from .errors import InvalidArgument
 from . import utils
 
 # fmt: off
@@ -230,6 +229,6 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
     async def read(self) -> bytes:
         if self.is_unicode_emoji():
-            raise InvalidArgument('PartialEmoji is not a custom emoji')
+            raise ValueError('PartialEmoji is not a custom emoji')
 
         return await super().read()

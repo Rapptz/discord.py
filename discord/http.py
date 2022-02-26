@@ -50,7 +50,7 @@ import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidArgument
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
 from .file import File
 from . import __version__, utils
@@ -169,7 +169,7 @@ def handle_message_parameters(
     payload = {}
     if embeds is not MISSING:
         if len(embeds) > 10:
-            raise InvalidArgument('embeds has a maximum of 10 elements.')
+            raise ValueError('embeds has a maximum of 10 elements.')
         payload['embeds'] = [e.to_dict() for e in embeds]
 
     if embed is not MISSING:
@@ -1233,7 +1233,7 @@ class HTTPClient:
 
         try:
             mime_type = utils._get_mime_type_for_image(initial_bytes)
-        except InvalidArgument:
+        except ValueError:
             if initial_bytes.startswith(b'{'):
                 mime_type = 'application/json'
             else:

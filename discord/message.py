@@ -50,7 +50,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .enums import MessageType, ChannelType, try_enum
-from .errors import InvalidArgument, HTTPException
+from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
 from .member import Member
@@ -118,7 +118,7 @@ def convert_emoji_reaction(emoji):
         # No existing emojis have <> in them, so this should be okay.
         return emoji.strip('<>')
 
-    raise InvalidArgument(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
+    raise TypeError(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
 
 
 class Attachment(Hashable):
@@ -1223,6 +1223,10 @@ class Message(Hashable):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited role is returned instead.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         -----------
         content: Optional[:class:`str`]
@@ -1274,7 +1278,7 @@ class Message(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
-        ~discord.InvalidArgument
+        TypeError
             You specified both ``embed`` and ``embeds``
 
         Returns
@@ -1457,6 +1461,10 @@ class Message(Hashable):
 
             ``emoji`` parameter is now positional-only.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         ------------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
@@ -1470,7 +1478,7 @@ class Message(Hashable):
             You do not have the proper permissions to react to the message.
         NotFound
             The emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
 
@@ -1490,6 +1498,10 @@ class Message(Hashable):
         The ``member`` parameter must represent a member and meet
         the :class:`abc.Snowflake` abc.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         ------------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
@@ -1505,7 +1517,7 @@ class Message(Hashable):
             You do not have the proper permissions to remove the reaction.
         NotFound
             The member or emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
 
@@ -1527,6 +1539,10 @@ class Message(Hashable):
 
         .. versionadded:: 1.3
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         -----------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
@@ -1540,7 +1556,7 @@ class Message(Hashable):
             You do not have the proper permissions to clear the reaction.
         NotFound
             The emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
 
@@ -1589,7 +1605,7 @@ class Message(Hashable):
             You do not have permissions to create a thread.
         HTTPException
             Creating the thread failed.
-        InvalidArgument
+        ValueError
             This message does not have guild info attached.
 
         Returns
@@ -1598,7 +1614,7 @@ class Message(Hashable):
             The created thread.
         """
         if self.guild is None:
-            raise InvalidArgument('This message does not have guild info attached.')
+            raise ValueError('This message does not have guild info attached.')
 
         default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration', 1440)
         data = await self._state.http.start_thread_with_message(
@@ -1617,15 +1633,20 @@ class Message(Hashable):
 
         .. versionadded:: 1.6
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Raises
         --------
         ~discord.HTTPException
             Sending the message failed.
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
-        ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size or
-            you specified both ``file`` and ``files``.
+        ValueError
+            The ``files`` list is not of the appropriate size
+        TypeError
+            You specified both ``file`` and ``files``.
 
         Returns
         ---------

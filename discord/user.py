@@ -366,6 +366,10 @@ class ClientUser(BaseUser):
         .. versionchanged:: 2.0
             The edit is no longer in-place, instead the newly edited client user is returned.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         -----------
         username: :class:`str`
@@ -378,7 +382,7 @@ class ClientUser(BaseUser):
         ------
         HTTPException
             Editing your profile failed.
-        InvalidArgument
+        ValueError
             Wrong image format passed for ``avatar``.
 
         Returns

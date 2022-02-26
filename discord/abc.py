@@ -47,7 +47,7 @@ from typing import (
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
 from .enums import ChannelType
-from .errors import InvalidArgument, ClientException
+from .errors import ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
@@ -277,7 +277,7 @@ class GuildChannel:
         reason: Optional[str],
     ) -> None:
         if position < 0:
-            raise InvalidArgument('Channel position cannot be less than 0.')
+            raise ValueError('Channel position cannot be less than 0.')
 
         http = self._state.http
         bucket = self._sorting_bucket
@@ -357,7 +357,7 @@ class GuildChannel:
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
-                    raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
+                    raise TypeError(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
                 allow, deny = perm.pair()
                 payload = {
@@ -380,7 +380,7 @@ class GuildChannel:
             pass
         else:
             if not isinstance(ch_type, ChannelType):
-                raise InvalidArgument('type field must be of type ChannelType')
+                raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
 
         if options:
@@ -750,6 +750,11 @@ class GuildChannel:
             overwrite.read_messages = True
             await channel.set_permissions(member, overwrite=overwrite)
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
+
         Parameters
         -----------
         target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
@@ -771,9 +776,12 @@ class GuildChannel:
             Editing channel specific permissions failed.
         ~discord.NotFound
             The role or member being edited is not part of the guild.
-        ~discord.InvalidArgument
-            The overwrite parameter invalid or the target type was not
+        TypeError
+            The ``overwrite`` parameter was invalid or the target type was not
             :class:`~discord.Role` or :class:`~discord.Member`.
+        ValueError
+            The ``overwrite`` parameter and ``positions`` parameters were both
+            unset.
         """
 
         http = self._state.http
@@ -783,18 +791,18 @@ class GuildChannel:
         elif isinstance(target, Role):
             perm_type = _Overwrites.ROLE
         else:
-            raise InvalidArgument('target parameter must be either Member or Role')
+            raise ValueError('target parameter must be either Member or Role')
 
         if overwrite is _undefined:
             if len(permissions) == 0:
-                raise InvalidArgument('No overwrite provided.')
+                raise ValueError('No overwrite provided.')
             try:
                 overwrite = PermissionOverwrite(**permissions)
             except (ValueError, TypeError):
-                raise InvalidArgument('Invalid permissions given to keyword arguments.')
+                raise TypeError('Invalid permissions given to keyword arguments.')
         else:
             if len(permissions) > 0:
-                raise InvalidArgument('Cannot mix overwrite and keyword arguments.')
+                raise TypeError('Cannot mix overwrite and keyword arguments.')
 
         # TODO: wait for event
 
@@ -806,7 +814,7 @@ class GuildChannel:
                 self.id, target.id, str(allow.value), str(deny.value), perm_type, reason=reason
             )
         else:
-            raise InvalidArgument('Invalid overwrite type provided.')
+            raise TypeError('Invalid overwrite type provided.')
 
     async def _clone_impl(
         self: GCH,
@@ -925,6 +933,10 @@ class GuildChannel:
 
         .. versionadded:: 1.7
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ------------
         beginning: :class:`bool`
@@ -959,8 +971,10 @@ class GuildChannel:
 
         Raises
         -------
-        InvalidArgument
-            An invalid position was given or a bad mix of arguments were passed.
+        ValueError
+            An invalid position was given.
+        TypeError
+            A bad mix of arguments were passed.
         Forbidden
             You do not have permissions to move the channel.
         HTTPException
@@ -974,7 +988,7 @@ class GuildChannel:
         before, after = kwargs.get('before'), kwargs.get('after')
         offset = kwargs.get('offset', 0)
         if sum(bool(a) for a in (beginning, end, before, after)) > 1:
-            raise InvalidArgument('Only one of [before, after, end, beginning] can be used.')
+            raise TypeError('Only one of [before, after, end, beginning] can be used.')
 
         bucket = self._sorting_bucket
         parent_id = kwargs.get('category', MISSING)
@@ -1017,7 +1031,7 @@ class GuildChannel:
             index = next((i + 1 for i, c in enumerate(channels) if c.id == after.id), None)
 
         if index is None:
-            raise InvalidArgument('Could not resolve appropriate move position')
+            raise ValueError('Could not resolve appropriate move position')
 
         channels.insert(max((index + offset), 0), self)
         payload = []
@@ -1262,6 +1276,10 @@ class Messageable:
         parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
         **Specifying both parameters will lead to an exception**.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ------------
         content: Optional[:class:`str`]
@@ -1320,9 +1338,10 @@ class Messageable:
             Sending the message failed.
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
-        ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size,
-            you specified both ``file`` and ``files``,
+        ValueError
+            The ``files`` list is not of the appropriate size.
+        TypeError
+            You specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`,
             :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
@@ -1347,12 +1366,12 @@ class Messageable:
             try:
                 reference = reference.to_message_reference_dict()
             except AttributeError:
-                raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
+                raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
             reference = MISSING
 
         if view and not hasattr(view, '__discord_ui_view__'):
-            raise InvalidArgument(f'view parameter must be View not {view.__class__!r}')
+            raise TypeError(f'view parameter must be View not {view.__class__!r}')
 
         with handle_message_parameters(
             content=content,

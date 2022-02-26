@@ -52,7 +52,7 @@ from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
-from .errors import ClientException, InvalidArgument
+from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
 
@@ -300,6 +300,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited channel is returned instead.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ----------
         name: :class:`str`
@@ -334,9 +338,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if
-            the permission overwrite information is not in proper form.
+        ValueError
+            The new ``position`` is less than 0 or greater than the number of channels.
+        TypeError
+            The permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
         HTTPException
@@ -613,6 +618,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         .. versionadded:: 1.3
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         -----------
         destination: :class:`TextChannel`
@@ -628,6 +637,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Following the channel failed.
         Forbidden
             You do not have the permissions to create a webhook.
+        ClientException
+            The channel is not a news channel.
+        TypeError
+            The destination channel is not a text channel.
 
         Returns
         --------
@@ -639,7 +652,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             raise ClientException('The channel must be a news channel.')
 
         if not isinstance(destination, TextChannel):
-            raise InvalidArgument(f'Expected TextChannel received {destination.__class__.__name__}')
+            raise TypeError(f'Expected TextChannel received {destination.__class__.__name__}')
 
         from .webhook import Webhook
 
@@ -1065,6 +1078,10 @@ class VoiceChannel(VocalGuildChannel):
         .. versionchanged:: 2.0
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1098,7 +1115,7 @@ class VoiceChannel(VocalGuildChannel):
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
@@ -1264,7 +1281,7 @@ class StageChannel(VocalGuildChannel):
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the ``privacy_level`` parameter is not the proper type.
         Forbidden
             You do not have permissions to create a stage instance.
@@ -1281,7 +1298,7 @@ class StageChannel(VocalGuildChannel):
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, StagePrivacyLevel):
-                raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
+                raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
 
@@ -1346,6 +1363,10 @@ class StageChannel(VocalGuildChannel):
         .. versionchanged:: 2.0
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1373,7 +1394,7 @@ class StageChannel(VocalGuildChannel):
 
         Raises
         ------
-        InvalidArgument
+        ValueError
             If the permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
@@ -1500,6 +1521,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited channel is returned instead.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1516,8 +1541,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        InvalidArgument
+        ValueError
             If position is less than 0 or greater than the number of categories.
+        TypeError
+            The overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the category.
         HTTPException
@@ -1741,6 +1768,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited channel is returned instead.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ----------
         name: :class:`str`
@@ -1765,9 +1796,10 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        InvalidArgument
-            If position is less than 0 or greater than the number of channels, or if
-            the permission overwrite information is not in proper form.
+        ValueError
+            The new ``position`` is less than 0 or greater than the number of channels.
+        TypeError
+            The permission overwrite information is not in proper form.
         Forbidden
             You do not have permissions to edit the channel.
         HTTPException

@@ -41,7 +41,7 @@ import aiohttp
 from . import utils
 from .activity import BaseActivity
 from .enums import SpeakingState
-from .errors import ConnectionClosed, InvalidArgument
+from .errors import ConnectionClosed
 
 _log = logging.getLogger(__name__)
 
@@ -681,7 +681,7 @@ class DiscordWebSocket:
     ) -> None:
         if activity is not None:
             if not isinstance(activity, BaseActivity):
-                raise InvalidArgument('activity must derive from BaseActivity.')
+                raise TypeError('activity must derive from BaseActivity.')
             activities = [activity.to_dict()]
         else:
             activities = []

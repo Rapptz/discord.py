@@ -27,7 +27,6 @@ from typing import Any, Dict, List, Optional, TypeVar, Union, overload, TYPE_CHE
 
 from .asset import Asset
 from .permissions import Permissions
-from .errors import InvalidArgument
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
@@ -360,10 +359,10 @@ class Role(Hashable):
 
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:
-            raise InvalidArgument("Cannot move role to position 0 or below")
+            raise ValueError("Cannot move role to position 0 or below")
 
         if self.is_default():
-            raise InvalidArgument("Cannot move default role")
+            raise ValueError("Cannot move default role")
 
         if self.position == position:
             return  # Save discord the extra request.
@@ -412,6 +411,10 @@ class Role(Hashable):
         .. versionadded:: 2.0
             The ``display_icon`` keyword-only parameter was added.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         -----------
         name: :class:`str`
@@ -442,7 +445,7 @@ class Role(Hashable):
             You do not have permissions to change the role.
         HTTPException
             Editing the role failed.
-        InvalidArgument
+        ValueError
             An invalid position was given or the default
             role was asked to be moved.
 

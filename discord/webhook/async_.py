@@ -37,7 +37,7 @@ import weakref
 import aiohttp
 
 from .. import utils
-from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
+from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
 from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
@@ -456,7 +456,7 @@ def interaction_message_response_params(
 
     if embeds is not MISSING:
         if len(embeds) > 10:
-            raise InvalidArgument('embeds has a maximum of 10 elements.')
+            raise ValueError('embeds has a maximum of 10 elements.')
         data['embeds'] = [e.to_dict() for e in embeds]
 
     if embed is not MISSING:
@@ -669,6 +669,10 @@ class WebhookMessage(Message):
         .. versionchanged:: 2.0
             The edit is no longer in-place, instead the newly edited message is returned.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         content: Optional[:class:`str`]
@@ -705,9 +709,8 @@ class WebhookMessage(Message):
         TypeError
             You specified both ``embed`` and ``embeds``
         ValueError
-            The length of ``embeds`` was invalid
-        InvalidArgument
-            There was no token associated with this webhook.
+            The length of ``embeds`` was invalid or
+            there was no token associated with this webhook.
 
         Returns
         --------
@@ -1059,6 +1062,10 @@ class Webhook(BaseWebhook):
     def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Webhook:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         url: :class:`str`
@@ -1077,7 +1084,7 @@ class Webhook(BaseWebhook):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             The URL is invalid.
 
         Returns
@@ -1088,7 +1095,7 @@ class Webhook(BaseWebhook):
         """
         m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
-            raise InvalidArgument('Invalid webhook URL given.')
+            raise ValueError('Invalid webhook URL given.')
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
@@ -1142,7 +1149,7 @@ class Webhook(BaseWebhook):
             Could not fetch the webhook
         NotFound
             Could not find the webhook by this ID
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it.
 
         Returns
@@ -1157,7 +1164,7 @@ class Webhook(BaseWebhook):
         elif self.token:
             data = await adapter.fetch_webhook_with_token(self.id, self.token, session=self.session)
         else:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         return Webhook(data, self.session, token=self.auth_token, state=self._state)
 
@@ -1186,11 +1193,11 @@ class Webhook(BaseWebhook):
             This webhook does not exist.
         Forbidden
             You do not have permissions to delete this webhook.
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it.
         """
         if self.token is None and self.auth_token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter = async_context.get()
 
@@ -1211,6 +1218,10 @@ class Webhook(BaseWebhook):
         """|coro|
 
         Edits this Webhook.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
 
         Parameters
         ------------
@@ -1238,12 +1249,12 @@ class Webhook(BaseWebhook):
             Editing the webhook failed.
         NotFound
             This webhook does not exist.
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it
             or it tried editing a channel without authentication.
         """
         if self.token is None and self.auth_token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         payload = {}
         if name is not MISSING:
@@ -1258,7 +1269,7 @@ class Webhook(BaseWebhook):
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
             if self.auth_token is None:
-                raise InvalidArgument('Editing channel requires authenticated webhook')
+                raise ValueError('Editing channel requires authenticated webhook')
 
             payload['channel_id'] = channel.id
             data = await adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
@@ -1352,6 +1363,10 @@ class Webhook(BaseWebhook):
         it must be a rich embed type. You cannot mix the ``embed`` parameter with the
         ``embeds`` parameter, which must be a :class:`list` of :class:`Embed` objects to send.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         content: :class:`str`
@@ -1415,10 +1430,9 @@ class Webhook(BaseWebhook):
         TypeError
             You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
-            The length of ``embeds`` was invalid.
-        InvalidArgument
-            There was no token associated with this webhook or ``ephemeral``
-            was passed with the improper webhook type or there was no state
+            The length of ``embeds`` was invalid, there was no token
+            associated with this webhook or ``ephemeral`` was passed
+            with the improper webhook type or there was no state
             attached with this webhook when giving it a view.
 
         Returns
@@ -1428,7 +1442,7 @@ class Webhook(BaseWebhook):
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
@@ -1440,14 +1454,14 @@ class Webhook(BaseWebhook):
 
         application_webhook = self.type is WebhookType.application
         if ephemeral and not application_webhook:
-            raise InvalidArgument('ephemeral messages can only be sent from application webhooks')
+            raise ValueError('ephemeral messages can only be sent from application webhooks')
 
         if application_webhook:
             wait = True
 
         if view is not MISSING:
             if isinstance(self._state, _WebhookState):
-                raise InvalidArgument('Webhook views require an associated state with the webhook')
+                raise ValueError('Webhook views require an associated state with the webhook')
             if ephemeral is True and view.timeout is None:
                 view.timeout = 15 * 60.0
 
@@ -1511,7 +1525,7 @@ class Webhook(BaseWebhook):
             You do not have the permissions required to get a message.
         ~discord.HTTPException
             Retrieving the message failed.
-        InvalidArgument
+        ValueError
             There was no token associated with this webhook.
 
         Returns
@@ -1521,7 +1535,7 @@ class Webhook(BaseWebhook):
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter = async_context.get()
         data = await adapter.get_webhook_message(
@@ -1554,6 +1568,10 @@ class Webhook(BaseWebhook):
 
         .. versionchanged:: 2.0
             The edit is no longer in-place, instead the newly edited message is returned.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
 
         Parameters
         ------------
@@ -1590,9 +1608,8 @@ class Webhook(BaseWebhook):
         TypeError
             You specified both ``embed`` and ``embeds``
         ValueError
-            The length of ``embeds`` was invalid
-        InvalidArgument
-            There was no token associated with this webhook or the webhook had
+            The length of ``embeds`` was invalid,
+            there was no token associated with this webhook or the webhook had
             no state.
 
         Returns
@@ -1602,11 +1619,11 @@ class Webhook(BaseWebhook):
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         if view is not MISSING:
             if isinstance(self._state, _WebhookState):
-                raise InvalidArgument('This webhook does not have state associated with it')
+                raise ValueError('This webhook does not have state associated with it')
 
             self._state.prevent_view_updates_for(message_id)
 
@@ -1650,6 +1667,10 @@ class Webhook(BaseWebhook):
 
             ``message_id`` parameter is now positional-only.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         message_id: :class:`int`
@@ -1661,9 +1682,11 @@ class Webhook(BaseWebhook):
             Deleting the message failed.
         Forbidden
             Deleted a message that is not yours.
+        ValueError
+            This webhook does not have a token associated with it.
         """
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter = async_context.get()
         await adapter.delete_webhook_message(

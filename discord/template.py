@@ -177,6 +177,10 @@ class Template:
         .. versionchanged:: 2.0
             The ``region`` parameter has been removed.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ----------
         name: :class:`str`
@@ -189,7 +193,7 @@ class Template:
         ------
         HTTPException
             Guild creation failed.
-        InvalidArgument
+        ValueError
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns

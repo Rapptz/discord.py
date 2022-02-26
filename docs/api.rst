@@ -4230,8 +4230,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: InvalidData
 
-.. autoexception:: InvalidArgument
-
 .. autoexception:: GatewayNotFound
 
 .. autoexception:: ConnectionClosed
@@ -4253,7 +4251,6 @@ Exception Hierarchy
         - :exc:`DiscordException`
             - :exc:`ClientException`
                 - :exc:`InvalidData`
-                - :exc:`InvalidArgument`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
