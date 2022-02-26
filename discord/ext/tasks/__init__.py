@@ -175,16 +175,10 @@ class Loop(Generic[LF]):
                         raise
                     await asyncio.sleep(backoff.delay())
                 else:
-                    await self._try_sleep_until(self._next_iteration)
-
                     if self._stop_next_iteration:
                         return
 
-                    now = datetime.datetime.now(datetime.timezone.utc)
-                    if now > self._next_iteration:
-                        self._next_iteration = now
-                        if self._time is not MISSING:
-                            self._prepare_time_index(now)
+                    await self._try_sleep_until(self._next_iteration)
 
                     self._current_loop += 1
                     if self._current_loop == self.count:
