@@ -1,3 +1,9 @@
+:orphan:
+
+.. currentmodule:: discord
+
+.. _guide_intro:
+
 Introduction
 =============
 
@@ -7,6 +13,8 @@ Prerequisites
 --------------
 
 discord.py requires Python 3.8.0 or higher. Support for earlier versions is not provided as they have been deprecated.
+
+.. _guide_intro_installation:
 
 Installation
 -------------
@@ -88,3 +96,4 @@ For a more in-depth look into virtual environments, see :doc:`py:tutorial/venv`.
 Next Steps
 -----------
 
+Now that you've installed discord.py, the next step would be to begin making your bot application. See :ref:`guide_quickstart` for a simple explanation on the commands extension.
