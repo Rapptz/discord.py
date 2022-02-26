@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, List, Optional, Union
+
+from .enums import AppCommandType
 from ..errors import DiscordException
 
 __all__ = (
@@ -34,7 +36,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .commands import Command, Group
+    from .commands import Command, Group, ContextMenu
 
 
 class CommandAlreadyRegistered(DiscordException):
@@ -50,8 +52,8 @@ class CommandAlreadyRegistered(DiscordException):
     """
 
     def __init__(self, name: str, guild_id: Optional[int]):
-        self.name = name
-        self.guild_id = guild_id
+        self.name: str = name
+        self.guild_id: Optional[int] = guild_id
         super().__init__(f'Command {name!r} already registered.')
 
 
@@ -65,11 +67,14 @@ class CommandNotFound(DiscordException):
     parents: List[:class:`str`]
         A list of parent command names that were previously found
         prior to the application command not being found.
+    type: :class:`AppCommandType`
+        The type of command that was not found.
     """
 
-    def __init__(self, name: str, parents: List[str]):
-        self.name = name
-        self.parents = parents
+    def __init__(self, name: str, parents: List[str], type: AppCommandType = AppCommandType.chat_input):
+        self.name: str = name
+        self.parents: List[str] = parents
+        self.type: AppCommandType = type
         super().__init__(f'Application command {name!r} not found')
 
 
@@ -81,14 +86,14 @@ class CommandSignatureMismatch(DiscordException):
 
     Attributes
     ------------
-    command: Union[:class:`~discord.app_commands.Command`, :class:`~discord.app_commands.Group`]
+    command: Union[:class:`~.app_commands.Command`, :class:`~.app_commands.ContextMenu`, :class:`~.app_commands.Group`]
         The command that had the signature mismatch.
     """
 
-    def __init__(self, command: Union[Command, Group]):
-        self.command: Union[Command, Group] = command
+    def __init__(self, command: Union[Command, ContextMenu, Group]):
+        self.command: Union[Command, ContextMenu, Group] = command
         msg = (
-            f'The signature for command {command!r} is different from the one provided by Discord. '
+            f'The signature for command {command.name!r} is different from the one provided by Discord. '
             'This can happen because either your code is out of date or you have not synced the '
             'commands with Discord, causing the mismatch in data. It is recommended to sync the '
             'command tree to fix this issue.'

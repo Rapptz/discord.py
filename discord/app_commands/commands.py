@@ -56,6 +56,7 @@ from ..utils import resolve_annotation, MISSING, is_inside_class
 from ..user import User
 from ..member import Member
 from ..role import Role
+from ..message import Message
 from ..mixins import Hashable
 from ..permissions import Permissions
 
@@ -74,6 +75,7 @@ if TYPE_CHECKING:
 __all__ = (
     'CommandParameter',
     'Command',
+    'ContextMenu',
     'Group',
     'command',
     'describe',
@@ -87,6 +89,18 @@ else:
 T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Group')
 Coro = Coroutine[Any, Any, T]
+
+ContextMenuCallback = Union[
+    # If groups end up support context menus these would be uncommented
+    # Callable[[GroupT, Interaction, Member], Coro[Any]],
+    # Callable[[GroupT, Interaction, User], Coro[Any]],
+    # Callable[[GroupT, Interaction, Message], Coro[Any]],
+    # Callable[[GroupT, Interaction, Union[Member, User]], Coro[Any]],
+    Callable[[Interaction, Member], Coro[Any]],
+    Callable[[Interaction, User], Coro[Any]],
+    Callable[[Interaction, Message], Coro[Any]],
+    Callable[[Interaction, Union[Member, User]], Coro[Any]],
+]
 
 if TYPE_CHECKING:
     CommandCallback = Union[
@@ -149,8 +163,7 @@ class CommandParameter:
     min_value: Optional[int] = None
     max_value: Optional[int] = None
     autocomplete: bool = MISSING
-    annotation: Any = MISSING
-    # restrictor: Optional[RestrictorType] = None
+    _annotation: Any = MISSING
 
     def to_dict(self) -> Dict[str, Any]:
         base = {
@@ -231,7 +244,7 @@ def _annotation_to_type(
 
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
-    if origin is not Union:  # TODO: Python 3.10
+    if origin is not Union:
         # Only Union/Optional is supported so bail early
         raise TypeError(f'unsupported type annotation {annotation!r}')
 
@@ -262,6 +275,31 @@ def _annotation_to_type(
         return (AppCommandOptionType.user, default)
 
     return (AppCommandOptionType.mentionable, default)
+
+
+def _context_menu_annotation(annotation: Any, *, _none=NoneType) -> AppCommandType:
+    if annotation is Message:
+        return AppCommandType.message
+
+    supported_types: Set[Any] = {Member, User}
+    if annotation in supported_types:
+        return AppCommandType.user
+
+    # Check if there's an origin
+    origin = getattr(annotation, '__origin__', None)
+    if origin is not Union:
+        # Only Union is supported so bail early
+        msg = (
+            f'unsupported type annotation {annotation!r}, must be either discord.Member, '
+            'discord.User, discord.Message, or a typing.Union of discord.Member and discord.User'
+        )
+        raise TypeError(msg)
+
+    # Only Union[Member, User] is supported
+    if not all(arg in supported_types for arg in annotation.__args__):
+        raise TypeError(f'unsupported types given inside {annotation!r}')
+
+    return AppCommandType.user
 
 
 def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Dict[str, Any]) -> None:
@@ -304,7 +342,7 @@ def _get_parameter(annotation: Any, parameter: inspect.Parameter) -> CommandPara
         if not isinstance(result.default, valid_types):
             raise TypeError(f'invalid default parameter type given ({result.default.__class__}), expected {valid_types}')
 
-    result.annotation = annotation
+    result._annotation = annotation
     return result
 
 
@@ -341,6 +379,31 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     return result
 
 
+def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, AppCommandType]:
+    params = inspect.signature(func).parameters
+    if len(params) != 2:
+        msg = (
+            'context menu callbacks require 2 parameters, the first one being the annotation and the '
+            'other one explicitly annotated with either discord.Message, discord.User, discord.Member, '
+            'or a typing.Union of discord.Member and discord.User'
+        )
+        raise TypeError(msg)
+
+    iterator = iter(params.values())
+    next(iterator)  # skip interaction
+    parameter = next(iterator)
+    if parameter.annotation is parameter.empty:
+        msg = (
+            'second parameter of context menu callback must be explicitly annotated with either discord.Message, '
+            'discord.User, discord.Member, or a typing.Union of discord.Member and discord.User'
+        )
+        raise TypeError(msg)
+
+    resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
+    type = _context_menu_annotation(resolved)
+    return (parameter.name, resolved, type)
+
+
 class Command(Generic[GroupT, P, T]):
     """A class that implements an application command.
 
@@ -349,6 +412,7 @@ class Command(Generic[GroupT, P, T]):
 
     - :func:`~discord.app_commands.command`
     - :meth:`Group.command <discord.app_commands.Group.command>`
+    - :meth:`CommandTree.command <discord.app_commands.CommandTree.command>`
 
     .. versionadded:: 2.0
 
@@ -356,8 +420,6 @@ class Command(Generic[GroupT, P, T]):
     ------------
     name: :class:`str`
         The name of the application command.
-    type: :class:`AppCommandType`
-        The type of application command.
     callback: :ref:`coroutine <coroutine>`
         The coroutine that is executed when the command is called.
     description: :class:`str`
@@ -373,7 +435,6 @@ class Command(Generic[GroupT, P, T]):
         name: str,
         description: str,
         callback: CommandCallback[GroupT, P, T],
-        type: AppCommandType = AppCommandType.chat_input,
         parent: Optional[Group] = None,
     ):
         self.name: str = name
@@ -381,7 +442,6 @@ class Command(Generic[GroupT, P, T]):
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
-        self.type: AppCommandType = type
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
 
     def _copy_with_binding(self, binding: GroupT) -> Command:
@@ -391,7 +451,6 @@ class Command(Generic[GroupT, P, T]):
         copy.description = self.description
         copy._callback = self._callback
         copy.parent = self.parent
-        copy.type = self.type
         copy._params = self._params.copy()
         copy.binding = binding
         return copy
@@ -399,7 +458,7 @@ class Command(Generic[GroupT, P, T]):
     def to_dict(self) -> Dict[str, Any]:
         # If we have a parent then our type is a subcommand
         # Otherwise, the type falls back to the specific command type (e.g. slash command or context menu)
-        option_type = self.type.value if self.parent is None else AppCommandOptionType.subcommand.value
+        option_type = AppCommandType.chat_input.value if self.parent is None else AppCommandOptionType.subcommand.value
         return {
             'name': self.name,
             'description': self.description,
@@ -431,20 +490,8 @@ class Command(Generic[GroupT, P, T]):
                 raise CommandSignatureMismatch(self) from None
             raise
 
-    def get_parameter(self, name: str) -> Optional[CommandParameter]:
-        """Returns the :class:`CommandParameter` with the given name.
-
-        Parameters
-        -----------
-        name: :class:`str`
-            The parameter name to get.
-
-        Returns
-        --------
-        Optional[:class:`CommandParameter`]
-            The command parameter, if found.
-        """
-        return self._params.get(name)
+    def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
+        return None
 
     @property
     def root_parent(self) -> Optional[Group]:
@@ -454,8 +501,64 @@ class Command(Generic[GroupT, P, T]):
         parent = self.parent
         return parent.parent or parent
 
-    def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
-        return None
+
+class ContextMenu:
+    """A class that implements a context menu application command.
+
+    These are usually not created manually, instead they are created using
+    one of the following decorators:
+
+    - :func:`~discord.app_commands.context_menu`
+    - :meth:`CommandTree.command <discord.app_commands.CommandTree.context_menu>`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    name: :class:`str`
+        The name of the context menu.
+    callback: :ref:`coroutine <coroutine>`
+        The coroutine that is executed when the context menu is called.
+    type: :class:`.AppCommandType`
+        The type of context menu application command.
+    """
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        callback: ContextMenuCallback,
+        type: AppCommandType,
+    ):
+        self.name: str = name
+        self._callback: ContextMenuCallback = callback
+        self.type: AppCommandType = type
+        (param, annotation, actual_type) = _get_context_menu_parameter(callback)
+        if actual_type != type:
+            raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
+        self._param_name = param
+        self._annotation = annotation
+
+    @classmethod
+    def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
+        (param, annotation, type) = _get_context_menu_parameter(callback)
+
+        self = cls.__new__(cls)
+        self.name = callback.__name__.title() if name is MISSING else name
+        self._callback = callback
+        self.type = type
+        self._param_name = param
+        self._annotation = annotation
+        return self
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'name': self.name,
+            'type': self.type.value,
+        }
+
+    async def _invoke(self, interaction: Interaction, arg: Any):
+        await self._callback(interaction, arg)
 
 
 class Group:
@@ -581,7 +684,12 @@ class Group:
             attribute will always be ``None`` in this case.
         ValueError
             There are too many commands already registered.
+        TypeError
+            The wrong command type was passed.
         """
+
+        if not isinstance(command, (Command, Group)):
+            raise TypeError(f'expected Command or Group not {command.__class__!r}')
 
         if not override and command.name in self._children:
             raise CommandAlreadyRegistered(command.name, guild_id=None)
@@ -658,7 +766,6 @@ class Group:
                 name=name if name is not MISSING else func.__name__,
                 description=desc,
                 callback=func,
-                type=AppCommandType.chat_input,
                 parent=self,
             )
             self.add_command(command)
@@ -701,9 +808,45 @@ def command(
             name=name if name is not MISSING else func.__name__,
             description=desc,
             callback=func,
-            type=AppCommandType.chat_input,
             parent=None,
         )
+
+    return decorator
+
+
+def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], ContextMenu]:
+    """Creates a application command context menu from a regular function.
+
+    This function must have a signature of :class:`~discord.Interaction` as its first parameter
+    and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`,
+    or a :obj:`typing.Union` of ``Member`` and ``User`` as its second parameter.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.context_menu()
+        async def react(interaction: discord.Interaction, message: discord.Message):
+            await interaction.response.send_message('Very cool message!', ephemeral=True)
+
+        @app_commands.context_menu()
+        async def ban(interaction: discord.Interaction, user: discord.Member):
+            await interaction.response.send_message(f'Should I actually ban {user}...', ephemeral=True)
+
+    Parameters
+    ------------
+    name: :class:`str`
+        The name of the context menu command. If not given, it defaults to a title-case
+        version of the callback name. Note that unlike regular slash commands this can
+        have spaces and upper case characters in the name.
+    """
+
+    def decorator(func: ContextMenuCallback) -> ContextMenu:
+        if not inspect.iscoroutinefunction(func):
+            raise TypeError('context menu function must be a coroutine function')
+
+        return ContextMenu._from_decorator(func, name=name)
 
     return decorator
 

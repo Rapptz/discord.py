@@ -30,6 +30,7 @@ from ..member import Member
 from ..object import Object
 from ..role import Role
 from ..message import Message, Attachment
+from ..channel import PartialMessageable
 from .models import AppCommandChannel, AppCommandThread
 
 if TYPE_CHECKING:
@@ -86,6 +87,27 @@ class Namespace:
         resolved: ResolvedData,
         options: List[ApplicationCommandInteractionDataOption],
     ):
+        completed = self._get_resolved_items(interaction, resolved)
+        for option in options:
+            opt_type = option['type']
+            name = option['name']
+            if opt_type in (3, 4, 5):  # string, integer, boolean
+                value = option['value']  # type: ignore -- Key is there
+                self.__dict__[name] = value
+            elif opt_type == 10:  # number
+                value = option['value']  # type: ignore -- Key is there
+                if value is None:
+                    self.__dict__[name] = float('nan')
+                else:
+                    self.__dict__[name] = float(value)
+            elif opt_type in (6, 7, 8, 9, 11):
+                # Remaining ones should be snowflake based ones with resolved data
+                snowflake: str = option['value']  # type: ignore -- Key is there
+                value = completed.get(snowflake)
+                self.__dict__[name] = value
+
+    @classmethod
+    def _get_resolved_items(cls, interaction: Interaction, resolved: ResolvedData) -> Dict[str, Any]:
         completed: Dict[str, Any] = {}
         state = interaction._state
         members = resolved.get('members', {})
@@ -126,25 +148,18 @@ class Namespace:
             }
         )
 
-        # TODO: messages
+        guild = state._get_guild(guild_id)
+        for (message_id, message_data) in resolved.get('messages', {}).items():
+            channel_id = int(message_data['channel_id'])
+            if guild is None:
+                channel = PartialMessageable(state=state, id=channel_id)
+            else:
+                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
 
-        for option in options:
-            opt_type = option['type']
-            name = option['name']
-            if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore -- Key is there
-                self.__dict__[name] = value
-            elif opt_type == 10:  # number
-                value = option['value']  # type: ignore -- Key is there
-                if value is None:
-                    self.__dict__[name] = float('nan')
-                else:
-                    self.__dict__[name] = float(value)
-            elif opt_type in (6, 7, 8, 9, 11):
-                # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore -- Key is there
-                value = completed.get(snowflake)
-                self.__dict__[name] = value
+            # Type checker doesn't understand this due to failure to narrow
+            completed[message_id] = Message(state=state, channel=channel, data=message_data)  # type: ignore
+
+        return completed
 
     def __repr__(self) -> str:
         items = (f'{k}={v!r}' for k, v in self.__dict__.items())
