@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
 from ..interactions import Interaction
 from ..member import Member
 from ..object import Object
@@ -32,9 +32,33 @@ from ..role import Role
 from ..message import Message, Attachment
 from ..channel import PartialMessageable
 from .models import AppCommandChannel, AppCommandThread
+from .enums import AppCommandOptionType
 
 if TYPE_CHECKING:
     from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
+
+
+class ResolveKey(NamedTuple):
+    id: str
+    # CommandOptionType does not use 0 or negative numbers so those can be safe for library
+    # internal use, if necessary. Likewise, only 6, 7, 8, and 11 are actually in use.
+    type: int
+
+    @classmethod
+    def any_with(cls, id: str) -> ResolveKey:
+        return ResolveKey(id=id, type=-1)
+
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, ResolveKey):
+            return NotImplemented
+        if self.type == -1 or o.type == -1:
+            return self.id == o.id
+        return (self.id, self.type) == (o.id, o.type)
+
+    def __hash__(self) -> int:
+        # Most of the time an ID lookup is all that is necessary
+        # In case of collision then we look up both the ID and the type.
+        return hash(self.id)
 
 
 class Namespace:
@@ -103,47 +127,62 @@ class Namespace:
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
                 snowflake: str = option['value']  # type: ignore -- Key is there
-                value = completed.get(snowflake)
+                if opt_type == 9:  # Mentionable
+                    # Mentionable is User | Role, these do not cause any conflict
+                    key = ResolveKey.any_with(snowflake)
+                else:
+                    # The remaining keys can conflict, for example, a role and a channel
+                    # could end up with the same ID in very old guilds since they used to default
+                    # to sharing the guild ID. Old general channels no longer exist, but some old
+                    # servers will still have them so this needs to be handled.
+                    key = ResolveKey(id=snowflake, type=opt_type)
+
+                value = completed.get(key)
                 self.__dict__[name] = value
 
     @classmethod
-    def _get_resolved_items(cls, interaction: Interaction, resolved: ResolvedData) -> Dict[str, Any]:
-        completed: Dict[str, Any] = {}
+    def _get_resolved_items(cls, interaction: Interaction, resolved: ResolvedData) -> Dict[ResolveKey, Any]:
+        completed: Dict[ResolveKey, Any] = {}
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
         guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
                 member_data = members[user_id]
             except KeyError:
-                completed[user_id] = state.create_user(user_data)
+                completed[ResolveKey(id=user_id, type=type)] = state.create_user(user_data)
             else:
                 member_data['user'] = user_data
                 # Guild ID can't be None in this case.
                 # There's a type mismatch here that I don't actually care about
                 member = Member(state=state, guild=guild, data=member_data)  # type: ignore
-                completed[user_id] = member
+                completed[ResolveKey(id=user_id, type=type)] = member
 
+        type = AppCommandOptionType.role.value
         completed.update(
             {
                 # The guild ID can't be None in this case.
-                role_id: Role(guild=guild, state=state, data=role_data)  # type: ignore
+                ResolveKey(id=role_id, type=type): Role(guild=guild, state=state, data=role_data)  # type: ignore
                 for role_id, role_data in resolved.get('roles', {}).items()
             }
         )
 
+        type = AppCommandOptionType.channel.value
         for (channel_id, channel_data) in resolved.get('channels', {}).items():
+            key = ResolveKey(id=channel_id, type=type)
             if channel_data['type'] in (10, 11, 12):
                 # The guild ID can't be none in this case
-                completed[channel_id] = AppCommandThread(state=state, data=channel_data, guild_id=guild_id)  # type: ignore
+                completed[key] = AppCommandThread(state=state, data=channel_data, guild_id=guild_id)  # type: ignore
             else:
                 # The guild ID can't be none in this case
-                completed[channel_id] = AppCommandChannel(state=state, data=channel_data, guild_id=guild_id)  # type: ignore
+                completed[key] = AppCommandChannel(state=state, data=channel_data, guild_id=guild_id)  # type: ignore
 
+        type = AppCommandOptionType.attachment.value
         completed.update(
             {
-                attachment_id: Attachment(data=attachment_data, state=state)
+                ResolveKey(id=attachment_id, type=type): Attachment(data=attachment_data, state=state)
                 for attachment_id, attachment_data in resolved.get('attachments', {}).items()
             }
         )
@@ -157,7 +196,9 @@ class Namespace:
                 channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
 
             # Type checker doesn't understand this due to failure to narrow
-            completed[message_id] = Message(state=state, channel=channel, data=message_data)  # type: ignore
+            message = Message(state=state, channel=channel, data=message_data)  # type: ignore
+            key = ResolveKey(id=message_id, type=-1)
+            completed[key] = message
 
         return completed
 

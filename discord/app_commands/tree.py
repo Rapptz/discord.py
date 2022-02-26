@@ -27,7 +27,7 @@ import inspect
 from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, Union, overload
 
 
-from .namespace import Namespace
+from .namespace import Namespace, ResolveKey
 from .models import AppCommand
 from .commands import Command, ContextMenu, Group, _shorten
 from .enums import AppCommandType
@@ -532,8 +532,14 @@ class CommandTree:
             raise CommandNotFound(name, [], AppCommandType(type))
 
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
+
+        target_id = data.get('target_id')
+        # Right now, the only types are message and user
+        # Therefore, there's no conflict with snowflakes
+
         # This will always work at runtime
-        value = resolved.get(data.get('target_id'))  # type: ignore
+        key = ResolveKey.any_with(target_id)  # type: ignore
+        value = resolved.get(key)
         if ctx_menu.type.value != type:
             raise CommandSignatureMismatch(ctx_menu)
 

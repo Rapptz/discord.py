@@ -50,7 +50,7 @@ import re
 from .enums import AppCommandOptionType, AppCommandType
 from ..interactions import Interaction
 from ..enums import ChannelType, try_enum
-from .models import Choice
+from .models import AppCommandChannel, AppCommandThread, Choice
 from .errors import CommandSignatureMismatch, CommandAlreadyRegistered
 from ..utils import resolve_annotation, MISSING, is_inside_class
 from ..user import User
@@ -195,6 +195,8 @@ annotation_to_option_type: Dict[Any, AppCommandOptionType] = {
     User: AppCommandOptionType.user,
     Member: AppCommandOptionType.user,
     Role: AppCommandOptionType.role,
+    AppCommandChannel: AppCommandOptionType.channel,
+    AppCommandThread: AppCommandOptionType.channel,
     # StageChannel: AppCommandOptionType.channel,
     # StoreChannel: AppCommandOptionType.channel,
     # VoiceChannel: AppCommandOptionType.channel,
