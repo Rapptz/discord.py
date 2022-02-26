@@ -81,7 +81,7 @@ General questions regarding library usage belong here.
 Where can I find usage examples?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
+Example code can be found in the :repo:`examples folder <examples>`
 in the repository.
 
 How do I set the "Playing" status?
@@ -253,7 +253,7 @@ this together we can do the following: ::
 How do I run something in the background?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_
+:repo:`Check the background_task.py example. <examples/background_task.py>`
 
 How do I get a specific model?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
