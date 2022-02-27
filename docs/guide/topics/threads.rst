@@ -109,7 +109,7 @@ We touched on it earlier a bit, but now we'll go into how to add people to threa
 
 The go-to practice for doing this is pinging the member, like so:
 
-.. image:: /images/guide/threads/mention_member_to_thread.gif
+.. image:: /images/guide/threads/mention_member_to_thread.png
 
 The API has methods of adding members that do not require pinging them, which is implemeted with :meth:`~Thread.add_user`.
 You can add it as a command, like so:
@@ -129,7 +129,7 @@ You can add it as a command, like so:
 
 Which performs the following:
 
-.. image:: /images/guide/threads/add_member_to_thread.gif
+.. image:: /images/guide/threads/add_member_to_thread.png
 
 Another method in which to do so is to mention a role within the thread.
 
