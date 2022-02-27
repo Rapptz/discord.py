@@ -22,17 +22,21 @@ To add a custom emoji reaction you can do the following:
 
     await message.add_reaction("<:amogus:819046807370989599>")
 
-which will add a reaction to a message like so:
+Which would add a reaction to the message like so:
 
 .. image:: /images/guide/topics/reactions/add_custom_emoji.png
     :scale: 50%
 
-You must have the permission :attr:`~Permissions.read_message_history` to add reactions.
+
+.. note::
+
+    You must have the permission :attr:`~Permissions.read_message_history` to add reactions.
+
 If no one else has reacted to the message using this emoji, you will also need the
 :attr:`~Permissions.add_reactions` permission.
 
 :meth:`~Message.add_reaction` can also take many types, not just :class:`str`. This includes :class:`~Emoji` or :class:`~PartialEmoji`.
-For example, the following is an alternative way to add a custom emoji reaction:
+For example, the following shows an alternative way to add a custom emoji reaction:
 
 .. code-block:: python3
 
@@ -53,7 +57,7 @@ Because of this, to add 😄 / ``:smile:`` you would do either of the following:
     # get the unicode emoji via the name (obtained via the unicode database)
     await message.add_reaction("\N{SMILING FACE WITH OPEN MOUTH AND SMILING EYES}")
 
-This would then result in
+This would then result in:
 
 .. image:: /images/guide/topics/reactions/add_standard_emoji.png
     :scale: 50%
@@ -75,7 +79,7 @@ This can be anything that meets the abc :class:`~abc.Snowflake`, like :class:`~d
         guild.me
     )
 
-This remove a custom emoji reaction with the id ``819046807370989599`` from us (see :attr:`~Guild.me`) on the message:
+This removes a custom emoji reaction with the id ``819046807370989599`` added by us (see :attr:`~Guild.me`) from the message:
 
 .. image:: /images/guide/topics/reactions/remove_reaction_before.png
     :scale: 50%
@@ -83,7 +87,7 @@ This remove a custom emoji reaction with the id ``819046807370989599`` from us (
 .. image:: /images/guide/topics/reactions/remove_reaction_after.png
     :scale: 50%
 
-Removing a single emoji from the message is also possible: 
+Removing all reactions of a single emoji from a message is also possible: 
 
 .. code-block:: python3
 
@@ -101,7 +105,7 @@ To remove a reaction that is not your own, you will need the :attr:`~Permissions
 
 
 Getting reactions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 The :attr:`~Message.reactions` attribute allows you to get a list of the reactions on the message. This returns a :class:`~Reaction`
 per unique emoji on the message.
@@ -124,7 +128,7 @@ You can also flatten the users into a list.
     await channel.send(f'{winner} has won the raffle.')
 
 Next Steps
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
 
 You can find further information about :class:`~Reaction` in its documentation.
 Additionally, :meth:`~Client.wait_for` can pair well with reactions.
