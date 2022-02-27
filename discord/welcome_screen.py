@@ -178,7 +178,7 @@ class WelcomeScreen:
         if description is not MISSING:
             payload['description'] = description
         if welcome_channels is not MISSING:
-            channels = [channel.to_dict() for channel in welcome_channels] if welcome_channels else []
+            channels = [channel._to_dict() for channel in welcome_channels] if welcome_channels else []
             payload['welcome_channels'] = channels
 
         if payload:
