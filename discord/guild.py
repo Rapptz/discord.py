@@ -199,54 +199,6 @@ class Guild(Hashable):
     features: List[:class:`str`]
         A list of features that the guild has. The features that a guild can have are
         subject to arbitrary change by Discord.
-
-        They are currently as follows:
-
-        - ``ANIMATED_BANNER``: Guild can have an animated banner.
-        - ``ANIMATED_ICON``: Guild can have an animated icon.
-        - ``BANNER``: Guild can have a banner. (i.e. :attr:`.banner`)
-        - ``CHANNEL_BANNER``: Guild can have channel banners.
-        - ``COMMERCE``: Guild can sell things using store channels.
-        - ``COMMUNITY``: Guild is a community server.
-        - ``DISCOVERABLE_DISABLED``: Guild is blacklisted from Server Discovery.
-        - ``DISCOVERABLE``: Guild shows up in Server Discovery.
-        - ``ENABLED_DISCOVERABLE_BEFORE``: Guild has shown up in Server Discovery before.
-        - ``FEATURABLE``: Deprecated. Guild is able to be featured in Server Discovery.
-        - ``FORCE_RELAY``: Deprecated. Replaced by RELAY_ENABLED.
-        - ``HAS_DIRECTORY_ENTRY``: Guild is in a directory channel.
-        - ``HUB``: Guild is a student hub.
-        - ``INTERNAL_EMPLOYEE_ONLY``: Guild is only joinable by staff members.
-        - ``INVITE_SPLASH``: Guild's invite page can have a special splash.
-        - ``LURKABLE``: Deprecated. Guild is lurkable.
-        - ``MEMBER_LIST_DISABLED``: Guild's member list is hidden.
-        - ``MEMBER_PROFILES``: Guild members can have custom banners/bios.
-        - ``MEMBER_VERIFICATION_GATE_ENABLED``: Guild has Membership Screening enabled.
-        - ``MONETIZATION_ENABLED``: Guild has enabled monetization.
-        - ``MORE_EMOJI``: Guild has increased (+150) custom emoji slots.
-        - ``MORE_STICKERS``: Guild has increased (+160) custom sticker slots.
-        - ``NEWS``: Guild can create news channels.
-        - ``NEW_THREAD_PERMISSIONS``: Guild has the new thread permissions.
-        - ``PARTNERED``: Guild is a partnered server.
-        - ``PREMIUM_TIER_3_OVERRIDE``: Guild is forced to premium level 3.
-        - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
-        - ``PRIVATE_THREADS``: Guild has access to create private threads.
-        - ``PUBLIC_DISABLED``: Deprecated. Replaced by COMMUNITY.
-        - ``PUBLIC``: Deprecated. Replaced by COMMUNITY.
-        - ``RELAY_ENABLED``: Guild is sharded over multiple nodes.
-        - ``ROLE_ICONS``: Guild can use role icons.
-        - ``ROLE_SUBSCRIPTIONS_ENABLED``: Guild can manage monetized channels/roles.
-        - ``ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE``: GUild can sell access to channels/roles.
-        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
-        - ``TEXT_IN_VOICE_ENABLED``: Guild has messageable voice channels.
-        - ``THREADS_ENABLED_TESTING``: Guild has the developer thread preview turned on. Used to give access to premium thread features.
-        - ``THREADS_ENABLED``: Guild can use threads.
-        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
-        - ``TICKETED_EVENTS_ENABLED``: Guild can use ticketed events.
-        - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
-        - ``VERIFIED``: Guild is a verified server.
-        - ``VIP_REGIONS``: Deprecated. Guild has VIP voice regions.
-        - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
-
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
