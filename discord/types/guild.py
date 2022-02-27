@@ -32,6 +32,7 @@ from .role import Role
 from .member import Member
 from .emoji import Emoji
 from .user import User
+from .sticker import GuildSticker
 from .threads import Thread
 
 
@@ -107,6 +108,7 @@ class _BaseGuildPreview(UnavailableGuild):
     splash: Optional[str]
     discovery_splash: Optional[str]
     emojis: List[Emoji]
+    stickers: List[GuildSticker]
     features: List[GuildFeature]
     description: Optional[str]
 
