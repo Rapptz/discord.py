@@ -82,7 +82,7 @@ We import ``discord.ext.commands`` here as we will need it for our bot.
     intents = discord.Intents.default()
     bot = commands.Bot(command_prefix="!", description="This is my awesome bot!", intents=intents)
 
-This is your bot instance. You can name it whatever you like but for simplicity's sake we will keep it as is.
+This is your bot instance. You can name the variable whatever you like but for simplicity's sake we will name it ``bot``.
 You will need to specify a ``command_prefix`` here, we use ``!``, but you can use any string, or a list of strings for multiple prefixes.
 
 .. note::

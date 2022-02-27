@@ -73,7 +73,7 @@ To quickly get a virtual environment working in your project folder:
         $ cd your_bot_source
         $ python3 -m venv .venv
 
-    The ``.venv`` argument is the output folder of the virtual environment, this can be named anything but be sure to keep it in mind.
+    The ``.venv`` argument is the output folder of the virtual environment, this can be named anything but be sure to remember it.
 
 2. Activate the virtual environment:
 
@@ -99,4 +99,4 @@ For a more in-depth look into virtual environments, see :doc:`py:tutorial/venv`.
 Next Steps
 -----------
 
-Now that you've installed discord.py, the next step would be to begin making your bot application. See :ref:`guide_quickstart` for a simple explanation on the commands extension.
+Now that you've installed discord.py, the next step is to begin making your bot application. See :ref:`guide_quickstart` for a simple explanation on the commands extension.
