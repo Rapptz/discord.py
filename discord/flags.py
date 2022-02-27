@@ -304,6 +304,24 @@ class MessageFlags(BaseFlags):
         """
         return 64
 
+    @flag_value
+    def loading(self):
+        """:class:`bool`: Returns ``True`` if the message is an interaction response and the bot
+        is "thinking".
+
+        .. versionadded:: 2.0
+        """
+        return 128
+
+    @flag_value
+    def failed_to_mention_some_roles_in_thread(self):
+        """:class:`bool`: Returns ``True`` if the message failed to mention some roles in a thread
+        and add their members to the thread.
+
+        .. versionadded:: 2.0
+        """
+        return 256
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
