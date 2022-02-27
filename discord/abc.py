@@ -190,6 +190,9 @@ class PrivateChannel(Snowflake, Protocol):
 
     me: ClientUser
 
+    def _add_call(self, **kwargs):
+        raise NotImplementedError
+
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
