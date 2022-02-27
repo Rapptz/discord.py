@@ -12,7 +12,7 @@ This section will show you how to create and manage threads within your code.
 You can view our API Reference at :class:`~Thread`.
 
 Creating a thread
-------------------
+~~~~~~~~~~~~~~~~~~
 
 Threads are creatable in any channel you have the :attr:`~Permissions.create_public_threads` or :attr:`~Permissions.create_private_threads` permissions in.
 Private threads are currently locked to level 2 server boosting or higher.
@@ -96,24 +96,64 @@ The thread will not show up in the text channel, as previously shown with a publ
 .. image:: /images/guide/threads/create_private_thread.png
     :scale: 90
 
+
 .. warning::
     Thread creation shows up in the audit logs, even if the thread is private.
     Be wary of this if you don't intend for others to know about the thread.
+
+
+Adding members to threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We touched on it earlier a bit, but now we'll go into how to add people to threads.
+
+The go-to practice for doing this is pinging the member, like so:
+
+.. image:: /images/guide/threads/mention_member_to_thread.gif
+
+The API has methods of adding members that do not require pinging them, which is implemeted with :meth:`~Thread.add_user`.
+You can add it as a command, like so:
+
+.. code-block:: python3
+
+    async def is_thread():
+        def predicate(ctx: commands.Context) -> bool:
+            return isinstance(ctx.channel, discord.Thread)
+        return commands.check(predicate)
+
+    @bot.command()
+    @is_thread() # we use the defined check above so that this command can only be used in a thread.
+    async def add_to_thread(ctx: commands.Context, *, member: discord.Member) -> None:
+        await ctx.channel.add_user(member)
+        await ctx.message.add_reaction("\U00002705")
+
+Which performs the following:
+
+.. image:: /images/guide/threads/add_member_to_thread.gif
+
+Another method in which to do so is to mention a role within the thread.
+
+.. note::
+    There is a limit of around 100 members per addition to a thread, so if your role contains more than 100 members they will not be added.
+
 
 Setting the archive duration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Threads automatically archive after a set period of time of inactivity. You can choose this period when creating the thread.
 The current accepted values are:
+
     - 1 hour
     - 24 hours
     - 3 days
     - 1 week
 
-.. note::
-    The options for 3 days and 1 week are locked behind server boost level 1 and 2, respectively.
 
-To pass an auto archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`~TextChannel.create_thread` call:
+.. note::
+    The options for both "3 days" and "1 week" are locked behind server boost level 1 and 2, respectively.
+
+
+To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`~TextChannel.create_thread` call:
 
 .. code-block:: python3
 
@@ -145,4 +185,4 @@ You can browse threads within :class:`~TextChannel` instances with the following
 The former is a property of the channel instance that returns a list of all valid :class:`~Thread` instances
 
 The latter returns an :term:`asynchronous iterator` that iterates over all of the archived threads in the guild,
-in order of descending ID for threads you have joined, or desceding :attr:`~Thread.archive_timestamp` otherwise.
+in order of descending ID for threads you have joined, or descending :attr:`~Thread.archive_timestamp` otherwise.
