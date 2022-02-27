@@ -34,7 +34,7 @@ You will need a bot application before being able to run a bot. A step-by-step t
     .. image:: /images/discord_bot_token.png
         :scale: 100%
     
-.. warning::
+.. danger::
 
     This token is **VERY IMPORTANT** and you should treat it like the password to your bot. Keep it as secure as possible and never give this to anyone.
     If you ever leak it, you can click the ``Regenerate`` button to forcibly invalidate all copies of the token. This will also terminate all running instances of this bot.
@@ -64,7 +64,7 @@ This step-by-step walkthrough will show you how to make a bot using the commands
 
     .. note::
 
-        Due to the lack of features with Python's built in IDLE, it is not recommended to be used as your bot's editor.
+        Due to the lack of features with Python's built in IDLE, it is not recommended to be used as your editor.
 
 3. Now you can start creating your bot. The following steps will go over a simple bot line-by-line to help you understand what's happening.
 
@@ -103,11 +103,19 @@ For a list of available events, see :ref:`discord-api-events`.
 .. warning::
 
     Using :meth:`@bot.event <ext.commands.Bot.event>` is also valid, but keep in mind that using :meth:`@bot.event <ext.commands.Bot.event>` with the ``on_message`` event can cause your commands to stop responding.
-    To remedy this, either switch to :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event.
+    To remedy this, either switch to :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event:
+
+    .. code-block:: python
+
+        @bot.event
+        async def on_message(message: discord.Message):
+            print(f'Received "{message.clean_content}" from {message.author}')
+            # IMPORTANT:
+            await bot.process_commands(message)
 
 .. warning::
 
-    ``on_ready`` can and will be called multiple times throughout your bots uptime. Avoid running expensive API calls such as changing your bot's presence, sending messages etc. in this event.
+    ``on_ready`` can and will be called multiple times throughout your bots uptime. Avoid running expensive API calls such as changing your bots presence, sending messages etc. in this event.
 
 .. code-block:: python
 
@@ -131,7 +139,7 @@ This creates a command ``!echo`` that we can type into a channel, and the bot wi
     TOKEN = "your bot token here"
     bot.run(TOKEN)
 
-This is the final step, you put your bot token here and run the script. Your bot should now be live!
+This is the final step, you put your bot token here and the bot will start up.
 
 .. note::
 
@@ -140,3 +148,7 @@ This is the final step, you put your bot token here and run the script. Your bot
 .. warning::
 
     As this is an example, token security is not applied here. However, you should be very careful with your bot token. Keep it in a secure place and only access it when you are starting the bot.
+
+
+Running Your New Bot
+---------------------

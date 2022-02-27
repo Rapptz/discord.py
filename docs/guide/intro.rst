@@ -27,6 +27,9 @@ If you are on Windows, you should use the following command instead: ::
 
     py -3 -m pip install -U discord.py
 
+Voice Support
+~~~~~~~~~~~~~~
+
 Voice support (e.g. joining voice channels and playing music) is not supported by default, and can be installed by installing ``discord.py[voice]`` instead of ``discord.py``; ::
 
     pip install -U discord.py[voice]
