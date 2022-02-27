@@ -171,7 +171,153 @@ Since our component callbacks assign the ``result`` attribute of the view, we ca
 Persistent Views
 -----------------
 
+There are instances where we might want to create a view that will persist for a long time.
+For example, a view which allows members of a Guild to select a role to assign to themselves.
 
+.. image:: /images/guide/interactions/views2.png
+
+Let's make one such view.
+
+
+Designing a Persistent View
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We'll start by creating a class to represent the view, again like above we'll create a 
+subclass of :class:`~discord.ui.View`. We'll also create a :class:`~discord.ui.Select` component,
+which is a dropdown menu using the :func:`@select <discord.ui.select>` decorator. We'll set some 
+placeholder text for the dropdown menu and set both the minimum and maximum number of elements 
+a user can select to `1`.
+
+To start out our code might look like this:
+
+.. code-block:: python3
+
+    class RoleSelector(discord.ui.View):
+        def __init__(self) -> None:
+            super().__init__(timeout=None)
+
+        @discord.ui.select(
+            placeholder='Select a role',
+            min_values=1,
+            max_values=1,
+        )
+        async def selector(
+            self,
+            component: discord.ui.Select['RoleSelector'],
+            interaction: discord.Interaction,
+        ) -> None:
+            raise NotImplementedError
+
+This is missing a few important things however, for example the select component 
+needs to know what roles to display in the dropdown, so we'll need to pass in the roles to the component, 
+using the :meth:`~discord.ui.Select.add_option` method, we can iterate over the roles and add the
+role name as the ``label`` and the role ID as the ``value``.
+
+Additionally, since this view is persistent we'll need to specify a :attr:`~discord.ui.Select.custom_id` for our 
+:class:`~discord.ui.Select` component, which is used to identify the component when a user interacts with it.
+Since we could have multiple role selectors, we'll use the ID of the message the view is attached to as part of the ``custom_id``.
+
+After adding these details our code will look something like this:
+
+.. code-block:: python3
+    :emphasize-lines: 2,5-9
+
+    class RoleSelector(discord.ui.View):
+        def __init__(self, message_id: int, roles: List[discord.Role]) -> None:
+            super().__init__(timeout=None)
+
+            self.selector.custom_id = f'role_selector_{message_id}'
+
+            self.roles: List[discord.Role] = roles
+            for role in roles:
+                self.selector.add_option(label=role.name, value=str(role.id))
+
+        @discord.ui.select(
+            placeholder='Select a role',
+            min_values=1,
+            max_values=1,
+        )
+        async def selector(
+            self,
+            component: discord.ui.Select['RoleSelector'],
+            interaction: discord.Interaction,
+        ) -> None:
+            raise NotImplementedError
+
+We'll also need to add a body to our ``selector`` callback function which will assign the selected role to the user:
+This is fairly simple to do, when the callback is invoked we can access the options the user selected via the
+:attr:`~discord.ui.Select.options` attribute. This holds a list of values, but since we limited the number of values to `1`
+we can just access the first element directly. We can then use sets to determine what roles the user already has, and then with :meth:`Member.edit <discord.Member.edit>` 
+override the members roles.
+
+Our function body might look like this:
+
+.. code-block:: python3
+    :emphasize-lines: 21-24
+
+    class RoleSelector(discord.ui.View):
+        def __init__(self, guild: discord.Guild, roles: List[discord.Role]) -> None:
+            super().__init__(timeout=None)
+
+            self.selector.custom_id = f'role_selector_{guild.id}'
+
+            self.roles: List[discord.Role] = roles
+            for role in roles:
+                self.selector.add_option(label=role.name, value=str(role.id))
+
+        @discord.ui.select(
+            placeholder='Select a role',
+            min_values=1,
+            max_values=1,
+        )
+        async def selector(
+            self,
+            component: discord.ui.Select['RoleSelector'],
+            interaction: discord.Interaction,
+        ) -> None:
+            role_id = int(component.values[0])
+            role = discord.utils.get(self.roles, id=role_id)
+            new_roles = set(interaction.user.roles) - set(self.roles) | {role}
+            await interaction.user.edit(roles=new_roles)
+
+
+Making a View Persist
+~~~~~~~~~~~~~~~~~~~~~~
+
+Now our view class is complete we can manually attach an instance to a message to retrieve the ID.
+When we're doing this the ``custom_id`` can be set to anything since the view handling will be done 
+when we mark the view as persistent.
+
+.. code-block:: python3
+
+    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031]
+    roles = [guild.get_role(id) for id in ROLE_IDS]
+    await channel.send('Choose your house', view=RoleSelector(0, roles))
+
+Once we have a message ID we just need to create an instance of our view and attach it to the :class:`~discord.Client`
+with the :meth:`~discord.Client.add_view` method.
+
+.. code-block:: python3
+
+    GUILD_ID = 336642139381301249
+    SELECTOR_MESSAGE_ID = 881049369850306610
+    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031]
+
+    client = discord.Client()
+    client.views_set = False
+
+    @client.event
+    async def on_ready():
+        if not client.views_set:
+            guild = client.get_guild(GUILD_ID)
+            roles = [guild.get_role(id) for id in ROLE_IDS]
+            client.add_view(RoleSelector(SELECTOR_MESSAGE_ID, roles))
+            client.views_set = True
+
+
+    client.run(...)
+
+If we did everything correctly, the user should be able to select a role and the role should be assigned to the user.
 
 
 Further Reading
