@@ -31,7 +31,7 @@ You must have the permission :attr:`~Permissions.read_message_history` to add re
 If no one else has reacted to the message using this emoji, you will also need the
 :attr:`~Permissions.add_reactions` permission.
 
-:meth:`~Message.add_reaction` can also take one of many types, not just :class:`str`. This includes :class:`~Emoji` or :class:`~PartialEmoji`.
+:meth:`~Message.add_reaction` can also take many types, not just :class:`str`. This includes :class:`~Emoji` or :class:`~PartialEmoji`.
 For example, the following is an alternative way to add a custom emoji reaction:
 
 .. code-block:: python3
