@@ -28,7 +28,54 @@ Defining an Embed
 ------------------
 
 Embeds are fairly straightforward to define in discord.py.
-To recreate the image above, we'll define an embed as such:
+
+Let's try recreating the image above.
+First, we'll need to construct a :class:`Embed` object.
+
+.. code-block:: python3
+
+    my_embed = discord.Embed()
+
+We should set the colour of the embed next.
+
+Seems like it's conveniently the same colour as :meth:`Colour.purple`!
+So, all we need to do is provide it to the ``colour`` parameter of the constructor.
+
+.. code-block:: python3
+    :emphasize-lines: 2
+
+    my_embed = discord.Embed(
+        colour=discord.Colour.purple()
+    )
+
+.. tip::
+
+    There is also a ``color`` parameter, and respective aliases for ``discord.Color``.
+    In case you prefer that spelling.
+
+Next, we'll set the title of the embed.
+
+Just like ``colour``, it's another parameter of the constructor, called ``title``.
+
+.. code-block:: python3
+    :emphasize-lines: 3
+
+    my_embed = discord.Embed(
+        colour=discord.Colour.purple(),
+        title="Hello, World!",
+    )
+
+Let's see how that looks so far if we send it.
+
+.. code-block:: python3
+
+    await channel.send(embed=my_embed)
+
+
+.. image:: /images/guide/topics/embeds/simple_embed_2.png
+    :scale: 38%
+
+So close! Now, all we need to do is add the description.
 
 .. code-block:: python3
 
@@ -38,26 +85,18 @@ To recreate the image above, we'll define an embed as such:
         description="This bot is running on discord.py!"
     )
 
-As you can see, the interface that discord.py provides is
-essentially a direct mapping of what you see in the Discord client.
+.. image:: /images/guide/topics/embeds/simple_embed_final.png
+    :scale: 38%
 
-First, we call the constructor for :class:`Embed` and provide the following keyword arguments:
+And that's it!
+
+As you can see, the interface that discord.py provides is essentially a direct mapping of what you see in the Discord client.
+
+To summarise, we call the constructor for :class:`Embed` and provide the following keyword arguments:
 
 - ``colour`` to set the colour of the embed.
 - ``title`` to set the title of the embed.
 - ``description`` to set the description of the embed.
-
-.. tip::
-
-    There is also a ``color`` parameter, and respective aliases for ``discord.Color``.
-    In case you prefer that spelling.
-
-To send this embed, all we need to do is send it to a channel and provide it in the
-embed parameter:
-
-.. code-block:: python3
-
-    await channel.send(embed=my_embed)
 
 Using Embed Components
 -----------------------
@@ -74,8 +113,9 @@ The :class:`Embed` class allows usage of the `factory` pattern.
 Description
 ~~~~~~~~~~~~
 
-An embed's description allows you to use markdown. Usually, in a message's content
-it is not possible to send hyperlinks. However, embeds allow you to do this.
+An embed's description allows you to use markdown
+Usually, in a message's content it is not possible to send hyperlinks.
+However, embeds allow you to do this.
 
 .. code-block:: python3
 
@@ -93,8 +133,7 @@ it is not possible to send hyperlinks. However, embeds allow you to do this.
 Fields
 ~~~~~~~
 
-Fields can be used to add subsections to an embed, they can contain two articles of
-information; a name and a value.
+Fields can be used to add subsections to an embed, they can contain two articles of information; a name and a value.
 
 .. code-block:: python3
 
@@ -115,8 +154,7 @@ This becomes:
 .. image:: /images/guide/topics/embeds/field_embed.png
     :scale: 50%
 
-Fields have one more parameter, ``inline``. This determines the positioning of the field
-within the embed.
+Fields have one more parameter, ``inline``. This determines the positioning of the field within the embed.
 
 By default, ``inline`` is set to ``True`` for all fields.
 If it is set to ``False`` it will be displayed in a block, on its own.
@@ -139,9 +177,9 @@ If it is set to ``False`` it will be displayed in a block, on its own.
 Author
 ~~~~~~~
 
-Embeds can also have an author. This is a small section of information that appears
-at the top of the embed, it can contain an icon, a name, and a URL, which is opened when the
-user clicks on the name.
+Embeds can also have an author.
+This is a small section of information that appears at the top of the embed,
+it can contain an icon, a name, and a URL, which is opened when the user clicks on the name.
 
 .. code-block:: python3
 
@@ -151,8 +189,7 @@ user clicks on the name.
         icon_url=bot.user.display_avatar
     )
 
-In this example, we use the :meth:`Bot.user.display_avatar <ClientUser.display_avatar>`,
-which is an :class:`Asset` instance, for the icon.
+In this example, we use the :meth:`Bot.user.display_avatar <ClientUser.display_avatar>`, which is an :class:`Asset` instance, for the icon.
 However, you can use any image URL for ``icon_url``.
 
 .. image:: /images/guide/topics/embeds/author_embed.png
