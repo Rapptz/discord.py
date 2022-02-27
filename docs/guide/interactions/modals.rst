@@ -7,7 +7,6 @@ Modals
 
 Modals are a form of interaction response which prompt the user for additional information.
 
-
 This section will detail how to create and use these modals in your code.
 
 
@@ -27,10 +26,10 @@ For example, the following code:
             label="Additional Information", style=discord.TextStyle.long, required=False
         )
 
-        async def on_submit(self, interaction):
+        async def on_submit(self, interaction: discord.Interaction) -> None:
             ... # do something with the data
 
-            await interaction.response.send_message(f'Thank you {self.name}, your submission was recorded.')
+            await interaction.response.send_message(f'Thank you {self.name.value}, your submission was recorded.')
 
 produces a modal which appears as:
 
@@ -52,9 +51,7 @@ Fields
 ~~~~~~~
 
 Inside the class body, modal fields are defined by assigning them to attributes of the class. In our example above we have
-three fields: ``name``, ``feedback``, and ``additional_information``.
-
-All of which are instances of the :class:`~discord.ui.TextInput` class.
+three fields: ``name``, ``feedback``, and ``additional_information`` all of which are instances of the :class:`~discord.ui.TextInput` class.
 
 .. note:: 
 
@@ -77,22 +74,22 @@ Modal fields can be modified at an instance level by attribute access. For examp
     form.name.label = "Your Name"
 
 
-Handling a User Responses
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Handling User Responses
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once A user has clicked `Submit` the user-defined :meth:`~discord.ui.Modal.on_submit` method will be called.
+Once the user has clicked `Submit` the user-defined :meth:`~discord.ui.Modal.on_submit` method will be called.
 
 The values of the fields are accessible through the relevant attributes on the fields.
 For instance, in the example above the value of the ``name`` field is accessible through ``self.name.value``.
 
-the ``on_submit`` is passed a new :class:`~discord.Interaction` instance, which requires a response.
+The ``on_submit`` is passed a new :class:`~discord.Interaction` instance, which requires a response.
 
 
 Handling an error
 ~~~~~~~~~~~~~~~~~~
 
-In the event an exception is raised within the :meth:`~discord.ui.Modal.on_submit` callback, similarly to :class:`~discord.ui.View`
-the :meth:`~discord.ui.Modal.on_error` method will be called.
+In the event an exception is raised within the :meth:`~discord.ui.Modal.on_submit` callback, 
+the :meth:`~discord.ui.Modal.on_error` method will be called, in a similar fashion to :class:`~discord.ui.View`.
 
 This method is passed the exception raised, and the :class:`~discord.Interaction` instance, allowing you to handle the error and if necessary
 send a response to the user.
@@ -109,12 +106,12 @@ For example, a slash command invocation may respond with a modal:
 .. code-block:: python3
 
     @discord.app_commands.command()
-    async def feedback(interaction):
+    async def feedback(interaction: discord.Interaction) -> None:
         """Send important feedback."""
         await interaction.response.send_modal(FeedbackForm())
 
 
-Once a modal is sent it will be displayed to the user, who will be able to submit the modal.
+Once a modal is sent it will be displayed to the user, who will be able to submit it.
 
 .. note::
 

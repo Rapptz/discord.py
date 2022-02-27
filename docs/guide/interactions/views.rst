@@ -13,11 +13,11 @@ This section details how to create and use views in various situations.
 Creating a View
 -----------------
 
-Lets start off with a simple example, a confirmation prompt.
+Let's start off with a simple example, a confirmation prompt.
 
-By the end of this section we'll have a generic confirmation prompt we can use in any situation.
+By the end of this section we'll have a generic confirmation prompt we can use in a variety of situations.
 
-for example a ban command.
+For example, a ban command:
 
 .. image:: /images/guide/interactions/views1.png
 
@@ -27,17 +27,17 @@ The first step is to create a :class:`~discord.ui.View` subclass. Let's call it 
 
     class Confirm(discord.ui.View):
         
-        def __init__(self, user, *, timeout=None):
-            self.user = user
-            self.result = None
+        def __init__(self, user: discord.User, *, timeout: Optional[int] = None) -> None:
             super().__init__(timeout=timeout)
+            self.user: discord.User = user
+            self.result: Optional[bool] = None
 
-        async def interaction_check(self, interaction):
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
             return interaction.user == self.user 
 
-We'll need to override the constructor to set-up some context specific variables.
-We'll need ``user`` parameter to check who we're actually prompting for confirmation.
-We'll also need to set-up a ``result`` attribute to store the result of the prompt.
+In the constructor, or the ``__init__`` method, we initialise some context-specific attributes; ``user``, which
+we can use later to know who we are prompting for confirmation, and ``result`` which we'll use to store the result of 
+the prompt.
 
 The :class:`~discord.ui.View` class also supports a :meth:`~discord.ui.View.interaction_check` method, which we'll
 use to check if the user who clicked on buttons in the view is the same as the user we're prompting for confirmation.
@@ -46,8 +46,7 @@ It should return a boolean value, which when ``False`` will ignore the interacti
 Creating components
 ~~~~~~~~~~~~~~~~~~~~
 
-We also need to create components for our UI, in this example 
-two buttons, a `Yes` and `No` button.
+We also need to create components for our UI, two buttons, a `Yes` and `No` button.
 
 There are two main ways to create components, we'll cover both in this section.
 
@@ -60,31 +59,41 @@ Our code might look like this:
 
 .. code-block:: python3
 
-    class YesButton(discord.ui.Button):
-        def __init__(self):
+    class YesButton(discord.ui.Button[Confirm]):
+        def __init__(self) -> None:
             super().__init__(
                 label="Yes",
                 style=discord.ButtonStyle.danger,
             )
 
-        async def callback(self, interaction):
+        async def callback(self, interaction: discord.Interaction) -> None:
             self.view.result = True
             self.view.stop()
 
 There's a bit to unpack here already, the ``__init__`` is setting the ``style`` and ``label`` parameters, which 
 set the colour and text of the button respectively.
 
-And then theres the :meth:`~discord.ui.Button.callback` method, this is the method that will be called when the button is clicked.
-In this case it's being used to set the ``result`` attribute of the :class:`~discord.ui.View` we'll be creating later. 
+And then theres the :meth:`Button.callback() <discord.ui.Button.callback>` method, this is the method that will be called when the button is clicked.
+In this case it's being used to set the ``result`` attribute of the :class:`~discord.ui.View` subclass we created earlier.
 
-Now we've made out first component, we should add it to the view.
+Now we've made our first component, we should add it to the view.
 
 The :class:`~discord.ui.View` class has a :meth:`~discord.ui.View.add_item` method, which takes a component as a parameter.
-so in our ``__init__`` method we can add
+so in our ``__init__`` method we can add:
 
 .. code-block:: python3
+    :emphasize-lines: 7
 
-    self.add_item(YesButton())
+    class Confirm(discord.ui.View):
+
+        def __init__(self, user: discord.User, *, timeout: Optional[int] = None) -> None:
+            super().__init__(timeout=timeout)
+            self.user: discord.User = user
+            self.result: Optional[bool] = None
+            self.add_item(YesButton())
+
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            return interaction.user == self.user 
 
 After the call to the parent constructor.
 
@@ -93,20 +102,32 @@ Decorator-based Components
 
 In reality, our components are relatively simple, so we can use a helper function decorator instead.
 
-In this case since we're creating a button we can use the :func:`~discord.ui.button` decorator inside our ``View`` like so:
+In this case, we're creating a button we can use the :func:`~discord.ui.button` decorator inside our ``View`` like so:
 
 .. code-block:: python3
+    :emphasize-lines: 12-15
 
     class Confirm(discord.ui.View):
 
-        ... # the rest of our code from before
+        def __init__(self, user: discord.User, *, timeout: Optional[int] = None) -> None:
+            super().__init__(timeout=timeout)
+            self.user: discord.User = user
+            self.result: Optional[bool] = None
+            self.add_item(YesButton())
+
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            return interaction.user == self.user 
 
         @discord.ui.button(label="No", style=discord.ButtonStyle.primary)
-        async def no_button(self, button, interaction):
+        async def no_button(
+            self,
+            button: discord.ui.Button[Confirm],
+            interaction: discord.Interaction,
+        ) -> None:
             self.result = False
             self.stop()
 
-Using the decorator approach greatly simplifies the code, however it's not as flexible as using a custom class.
+Using the decorator approach greatly simplifies the code, but it's not as flexible as using a custom class.
 We set parameters prior to the creation of the view-instance, so context-specific variables are not available.
 If modifications are needed, we would instead have to override component instance attributes in the ``__init__`` method.
 
@@ -129,7 +150,7 @@ Our command might look like this:
 
     @discord.app_commands.command()
     @discord.app_commands.describe(member="The member to ban.")
-    async def ban(interaction, member: discord.Member):
+    async def ban(interaction: discord.Interaction, member: discord.Member) -> None:
         """Ban a member from the server."""
         confirmation = Confirm(interaction.user)
         await confirmation.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
@@ -138,8 +159,8 @@ Our command might look like this:
             await member.ban()
 
 We first assign the ``View`` instance to the variable ``confirmation``, because we'll need it later.
-We in our interaction response send the instance via the ``view`` parameter.
-Finally using the :meth:`~discord.ui.View.wait` method we wait for the view to stop listening for interactions,
+In our interaction response we send the instance via the ``view`` parameter.
+Finally, using :meth:`confirmation.wait() <discord.ui.View.wait>`, we wait for the view to stop listening for interactions,
 which occurs either when the user clicks on a button (as we had called :meth:`View.stop() <discord.ui.View.stop>`)
 or the view had timed-out.
 
