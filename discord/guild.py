@@ -251,8 +251,7 @@ class Guild(Hashable):
         The guild's Multi-Factor Authentication requirement level.
 
         .. versionchanged:: 2.0
-
-            The type of this attribute is now :class:`MFALevel`.
+            This field is now an enum instead of an :class:`int`.
     """
 
     __slots__ = (

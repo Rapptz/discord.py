@@ -3263,7 +3263,7 @@ AuditLogDiff
 
         Integration emoticons were enabled or disabled.
 
-        see also :attr:`StreamIntegration.enable_emoticons`
+        See also :attr:`StreamIntegration.enable_emoticons`
 
         :type: :class:`bool`
 
@@ -3272,7 +3272,7 @@ AuditLogDiff
 
         The behaviour of expiring subscribers changed.
 
-        see also :attr:`StreamIntegration.expire_behaviour`
+        See also :attr:`StreamIntegration.expire_behaviour`
 
         :type: :class:`ExpireBehaviour`
 
@@ -3280,7 +3280,7 @@ AuditLogDiff
 
         The grace period before expiring subscribers changed.
 
-        see also :attr:`StreamIntegration.expire_grace_period`
+        See also :attr:`StreamIntegration.expire_grace_period`
 
         :type: :class:`int`
 
@@ -3288,7 +3288,7 @@ AuditLogDiff
 
         The preferred locale for the guild changed.
 
-        see also :attr:`Guild.preferred_locale`
+        See also :attr:`Guild.preferred_locale`
 
         :type: :class:`str`
 
