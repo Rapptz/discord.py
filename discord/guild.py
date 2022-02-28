@@ -245,10 +245,14 @@ class Guild(Hashable):
         results to a specific language.
     nsfw_level: :class:`NSFWLevel`
         The guild's NSFW level.
+
+        .. versionadded:: 2.0
     mfa_level: :class:`MFALevel`
         The guild's Multi-Factor Authentication requirement level.
 
-        .. versionadded:: 2.0
+        .. versionchanged:: 2.0
+
+            The type of this attribute is now :class:`MFALevel`.
     """
 
     __slots__ = (
