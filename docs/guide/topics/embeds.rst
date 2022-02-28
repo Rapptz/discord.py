@@ -182,7 +182,7 @@ Let's see what that looks like:
 .. image:: /images/guide/topics/embeds/field_weather_embed_2.png
     :scale: 38%
 
-Alright! Now, let's add two more fields to tell us the humidity and wind speed.
+We should add two more fields to tell us the humidity and wind speed.
 
 .. code-block:: python3
 
@@ -231,16 +231,28 @@ Embeds can also have an author.
 This is a small section of information that appears at the top of the embed,
 it can contain an icon, a name, and a URL, which is opened when the user clicks on the name.
 
+Let's set the author of the embed to "Today's Weather" and link to a Google search of "Weather In San Francisco".
+We'll use the :meth:`my_weather_embed.set_author() <Embed.set_author>` to set these values.
+
 .. code-block:: python3
 
     my_weather_embed.set_author(
         name="Today's Weather",
         url="https://goo.gl/search/Weather+In+San+Francisco",
-        icon_url=bot.user.display_avatar
     )
 
-In this example, we use the :meth:`Bot.user.display_avatar <ClientUser.display_avatar>`, which is an :class:`Asset` instance, for the icon.
-However, you can use any image URL for ``icon_url``.
+That should look a lot like this:
+
+.. image:: /images/guide/topics/embeds/author_embed_1.png
+    :scale: 38%
+
+It appears like a "subtitle" above the title in the embed.
+
+With the :attr:`Embed.author`, we can also set the icon of the author.
+The ``icon_url`` keyword-only argument of :meth:`my_weather_embed.set_author() <Embed.set_author>` accepts a string, or anything that can be cast to a string, as the URL.
+This allows us to conveniently use :class:`Asset` instances, which is used throughout the library.
+
+In this example, we will use the :meth:`Bot.user.display_avatar <ClientUser.display_avatar>`, an :class:`Asset` instance, for the icon.
 
 .. image:: /images/guide/topics/embeds/author_embed.png
     :scale: 50%
