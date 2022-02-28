@@ -82,12 +82,10 @@ You can customize individual modal instances with normal attribute access and as
 Handling User Responses
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once the user has clicked `Submit` the :meth:`Modal.on_submit <discord.ui.Modal.on_submit>` callback is called.
+Once the user has clicked `Submit` the :meth:`Modal.on_submit <discord.ui.Modal.on_submit>` callback is called. 
+The callback is passed a new :class:`~discord.Interaction` instance, which requires a response.
 
-
-For instance, in the example above the value of the ``name`` field is accessible through ``self.name.value``.
-
-The ``on_submit`` is passed a new :class:`~discord.Interaction` instance, which requires a response.
+In the example above we respond by sending a message to the user confirming their submission was recorded.
 
 
 Handling an error
@@ -118,6 +116,7 @@ send a response to the user.
         async def on_error(self, error: Exception, interaction: discord.Interaction) -> None:
             if not interaction.response.is_done():
                 await interaction.response.send_message('An error occurred, please try again.')
+
 
 Sending a Modal
 -----------------
