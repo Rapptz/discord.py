@@ -98,6 +98,8 @@ To summarise, we call the constructor for :class:`Embed` and provide the followi
 - ``title`` to set the title of the embed.
 - ``description`` to set the description of the embed.
 
+Let's take a look at what else we can add to an embed.
+
 Using Embed Components
 -----------------------
 
@@ -110,54 +112,102 @@ The :class:`Embed` class allows usage of the `factory` pattern.
 
     We will discover this as we go through the guide.
 
-Description
-~~~~~~~~~~~~
+Markdown
+~~~~~~~~~
 
-An embed's description allows you to use markdown
+An embed's description and fields allow you to use markdown, so
+that includes **this**, *that*, and even ``this`` -- read more about it at :ref:`_guide_topic_markdown`.
+
 Usually, in a message's content it is not possible to send hyperlinks.
-However, embeds allow you to do this.
+However, embeds allow you to include them! So you can do little tricks like:
 
 .. code-block:: python3
 
-    my_embed.description = """**Hello!** My name is Danny! \N{GRINNING FACE WITH SMILING EYES}
-    I have a page dedicated to [C++ Tutorials](https://rapptz.github.io/cpptuts)!
+    my_embed.description = """**Hello**! My name is Danny!
+    Check out my GitHub: [click here!](https://github.com/Rapptz)
+    I have a page dedicated to [`C++ Tutorials`](https://rapptz.github.io/cpptuts)!
     """
 
 .. image:: /images/guide/topics/embeds/hyperlink_description_embed.png
-    :scale: 50%
+    :scale: 38%
 
 .. tip::
 
     Hyperlinks in markdown follow a specific format: ``[text](link)``.
+
+It is also possible to add tooltips to hyperlinks, which are displayed when you hover over the hyperlink.
+
+.. code-block:: python3
+
+    my_embed.description = """**Hello**! My name is Danny!
+    Check out my GitHub: [click here!](https://github.com/Rapptz "My GitHub")
+    I have a page dedicated to [`C++ Tutorials`](https://rapptz.github.io/cpptuts)!
+    """
+
+.. image:: /images/guide/topics/embeds/hyperlink_tooltip_description_embed.png
+    :scale: 38%
 
 Fields
 ~~~~~~~
 
 Fields can be used to add subsections to an embed, they can contain two articles of information; a name and a value.
 
+Let's make an embed that tells us the weather in San Francisco.
+
+We'll start off with the simple stuff, a colour, a title and a description.
+
 .. code-block:: python3
 
-    my_weather_embed = (
-        discord.Embed(
-            colour=discord.Colour.yellow(),
-            title="Weather in San Francisco, CA",
-            description="Clear with a high of 59 degrees Fahrenheit.",
-        )
-        .add_field(name="Precipitation", value="2%")
-        .add_field(name="Humidity", value="76%")
+    my_weather_embed = discord.Embed(
+        colour=discord.Colour.yellow(),
+        title="Weather in San Francisco, CA",
+        description="Clear with a high of 59 degrees Fahrenheit.",
     )
 
-    await channel.send(embed=my_weather_embed)
+That should look like this:
 
-This becomes:
+.. image:: /images/guide/topics/embeds/field_weather_embed_1.png
+    :scale: 38%
 
-.. image:: /images/guide/topics/embeds/field_embed.png
-    :scale: 50%
+Now, let's add a field that tells us the precipitation in San Francisco.
 
-Fields have one more parameter, ``inline``. This determines the positioning of the field within the embed.
+We should use :meth:`my_weather_embed.add_field() <Embed.add_field>` to add it.
+
+.. code-block:: python3
+
+    my_weather_embed.add_field(name="Precipitation", value="2%")
+
+Let's see what that looks like:
+
+.. image:: /images/guide/topics/embeds/field_weather_embed_2.png
+    :scale: 38%
+
+Alright! Now, let's add two more fields to tell us the humidity and wind speed.
+
+.. code-block:: python3
+
+    my_weather_embed.add_field(name="Humidity", value="76%")
+    my_weather_embed.add_field(name="Wind Speed", value="4 mph")
+
+.. image:: /images/guide/topics/embeds/field_weather_embed_3.png
+    :scale: 38%
+
+Alright! Now, what happens if we try to add a fourth field...?
+
+.. image:: /images/guide/topics/embeds/field_weather_embed_4.png
+    :scale: 38%
+
+.. hint::
+
+    In the Discord client, each row of fields can contain a maximum of 3 fields.
+
+If you wanted to, you could try using the ``inline`` keyword-only argument of :meth:`~Embed.add_field`.
+This determines the positioning of the field within the embed.
 
 By default, ``inline`` is set to ``True`` for all fields.
 If it is set to ``False`` it will be displayed in a block, on its own.
+
+Let's see what happens when we set it to ``False`` for the wind field.
 
 .. code-block:: python3
 
