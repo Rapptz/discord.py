@@ -39,6 +39,8 @@ You will need a bot application before being able to run a bot. A step-by-step t
     This token is **VERY IMPORTANT** and you should treat it like the password to your bot. Keep it as secure as possible and never give this to anyone.
     If you ever leak it, you can click the ``Regenerate`` button to forcibly invalidate all copies of the token. This will also terminate all running instances of this bot.
 
+.. _guide_quickstart_client_secret:
+
 .. warning::
 
     You may be thinking to use the ``Client Secret`` for your bot token. This is **NOT** what you are looking for, you need the bot **Token**, which is a completely different format.
@@ -51,20 +53,21 @@ A Simple Bot
 
 This step-by-step walkthrough will show you how to make a bot using the commands framework.
 
+.. note::
+
+    This walkthrough does not cover application commands (slash commands). For a detailed walkthrough of application commands, see [insert guide here].
+
 1. Create a new Python file in the folder you want to work in.
 
     .. warning::
 
-        Do not name the file ``discord.py``, this will cause conflicts with the discord.py library.
+        Do not name the file ``discord.py``, this will cause conflicts with the discord.py library. Also, do not create a sub-folder in your project named ``discord``, as that too will cause conflicts.
     
 2. Open the new Python file in your preferred editor.
 
     If you do not have an editor installed, you can use a community recommended one, such as `Visual Studio Code <https://code.visualstudio.com/>`_,
     `PyCharm <https://www.jetbrains.com/pycharm/>`_ or `Sublime Text 4 <https://www.sublimetext.com/>`_.
-
-    .. note::
-
-        Due to the lack of features with Python's built in IDLE, it is not recommended to be used as your editor.
+    We don't recommend Python's built in IDLE, as the lack of features compared to other simple editors makes it very bothersome for projects with many files.
 
 3. Now you can start creating your bot. The following steps will go over a simple bot line-by-line to help you understand what's happening.
 
@@ -87,7 +90,7 @@ You will need to specify a ``command_prefix`` here, we use ``!``, but you can us
 
 .. note::
 
-    ``Intents`` are a way to specify which gateway events you wish to receive. ``Intents.default()`` means you will receive all events that are not locked behind bot verification.
+    ``Intents`` are the method to specify which gateway events you wish to receive. ``Intents.default()`` means you will receive all events that are not locked behind bot verification.
     For more information, see :ref:`intents_primer`.
 
 .. code-block:: python
@@ -99,6 +102,8 @@ You will need to specify a ``command_prefix`` here, we use ``!``, but you can us
 This is the ``ready`` event. It is called when the bot has finished loading and everything is cached.
 We use the :meth:`@bot.listen() <ext.commands.Bot.listen>` decorator as to not override the main event.
 For a list of available events, see :ref:`discord-api-events`.
+
+.. _guide_quickstart_bot_event_warning:
 
 .. warning::
 
@@ -115,7 +120,7 @@ For a list of available events, see :ref:`discord-api-events`.
 
 .. warning::
 
-    ``on_ready`` can and will be called multiple times throughout your bots uptime. Avoid running expensive API calls such as changing your bots presence, sending messages etc. in this event.
+    ``on_ready`` can and will be called multiple times throughout your bots uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
 
 .. code-block:: python
 
@@ -139,11 +144,11 @@ This creates a command ``!echo`` that we can type into a channel, and the bot wi
     TOKEN = "your bot token here"
     bot.run(TOKEN)
 
-This is the final step, you put your bot token here and the bot will start up.
+This is the final step, you put your bot token here, save and run the file and the bot will start up.
 
 .. note::
 
-    :meth:`~ext.commands.Bot.run` is blocking, so any code after it will **not be run**. 
+    :meth:`~ext.commands.Bot.run` is blocking, so any code after it will **not be run** until the bot has been stopped.
 
 .. warning::
 
@@ -152,3 +157,78 @@ This is the final step, you put your bot token here and the bot will start up.
 
 Running Your New Bot
 ---------------------
+
+Now that you have your code ready, go to your terminal and ``cd`` into your project directory:
+
+.. code-block:: shell
+
+    $ cd my_bot_folder
+
+Activate the virtual environment (if you made one):
+
+.. code-block:: shell
+
+    $ source .venv/bin/activate  # for Linux users
+    $ .\.venv\Scripts\activate   # for Windows users
+
+And run your bot!
+
+.. code-block:: shell
+
+    (.venv) $ python your_bot.py
+    Ready! I am Documentation#7968 and my ID is 699701272739053589
+
+.. image:: /images/discord_echo_example.png
+    :scale: 100 %
+
+Common Issues
+--------------
+
+Is your bot not starting, or is something going wrong? Here is a list of possible reasons:
+
+Improper token has been passed
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you get a traceback similar to:
+
+.. code-block:: python
+
+    Traceback (most recent call last):
+        File "G:\Programming\Python\discord.py-2.0\bot.py", line 17, in <module>
+            bot.run(INVALID_TOKEN)
+        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 704, in run
+            return future.result()
+        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 683, in runner
+            await self.start(*args, **kwargs)
+        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 646, in start
+            await self.login(token)
+        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 512, in login
+            data = await self.http.static_login(token.strip())
+        File "G:\Programming\Python\discord.py-2.0\discord\http.py", line 537, in static_login
+            raise LoginFailure('Improper token has been passed.') from exc
+    discord.errors.LoginFailure: Improper token has been passed.
+
+This means you have passed an invalid token to :meth:`bot.run() <ext.commands.Bot.run>`:
+
+- Perhaps you are reading from your secure file incorrectly?
+- Did you copy the :ref:`Client Secret <guide_quickstart_client_secret>` instead of your bot token?
+- Did you regenerate your token?
+
+Be sure to copy the correct token from the bot tab on the Discord developer portal. A real token looks like: ::
+
+    MjM4NDk0NzU2NTIxMzc3Nzky.CunGFQ.wUILz7z6HoJzVeq6pyHPmVgQgV4
+
+My bot isn't responding to commands
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you ran a command, but the bot isn't responding, there can be a few reasons why.
+
+- Are you using the correct prefix?
+- - If you set ``command_prefix="!"``, you must invoke the command with that specific prefix, e.g. ``!echo Hello, world``
+- Did you override ``on_message`` using :meth:`@bot.event <ext.commands.Bot.event>`?
+- - There are two ways to fix this: either replace ``@bot.event`` with :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event. See :ref:`here <guide_quickstart_bot_event_warning>` for more information.
+
+I can't find my issue here
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you've encountered a different issue, or need further support for other reasons, you can join our `public Discord server <https://discord.gg/dpy/>`_ and ask your question there - we'll be happy to help.
