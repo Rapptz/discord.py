@@ -26,7 +26,8 @@ from __future__ import annotations
 import inspect
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+from enum import Enum
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Literal, Optional, Set, Tuple, Type, TypeVar, Union
 
 from .enums import AppCommandOptionType
 from .errors import TransformerError
@@ -113,6 +114,13 @@ class CommandParameter:
 
     async def transform(self, interaction: Interaction, value: Any) -> Any:
         if hasattr(self._annotation, '__discord_app_commands_transformer__'):
+            # This one needs special handling for type safety reasons
+            if self._annotation.__discord_app_commands_is_choice__:
+                choice = next((c for c in self.choices if c.value == value), None)
+                if choice is None:
+                    raise TransformerError(value, self.type, self._annotation)
+                return choice
+
             return await self._annotation.transform(interaction, value)
         return value
 
@@ -149,6 +157,7 @@ class Transformer:
     """
 
     __discord_app_commands_transformer__: ClassVar[bool] = True
+    __discord_app_commands_is_choice__: ClassVar[bool] = False
 
     @classmethod
     def type(cls) -> AppCommandOptionType:
@@ -221,22 +230,91 @@ class _TransformMetadata:
         self.metadata: Type[Transformer] = metadata
 
 
+async def _identity_transform(cls, interaction: Interaction, value: Any) -> Any:
+    return value
+
+
 def _make_range_transformer(
     opt_type: AppCommandOptionType,
     *,
     min: Optional[Union[int, float]] = None,
     max: Optional[Union[int, float]] = None,
 ) -> Type[Transformer]:
-    async def transform(cls, interaction: Interaction, value: Any) -> Any:
-        return value
-
     ns = {
         'type': classmethod(lambda _: opt_type),
         'min_value': classmethod(lambda _: min),
         'max_value': classmethod(lambda _: max),
-        'transform': classmethod(transform),
+        'transform': classmethod(_identity_transform),
     }
     return type('RangeTransformer', (Transformer,), ns)
+
+
+def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
+    if len(values) < 2:
+        raise TypeError(f'typing.Literal requires at least two values.')
+
+    first = type(values[0])
+    if first is int:
+        opt_type = AppCommandOptionType.integer
+    elif first is float:
+        opt_type = AppCommandOptionType.number
+    elif first is str:
+        opt_type = AppCommandOptionType.string
+    else:
+        raise TypeError(f'expected int, str, or float values not {first!r}')
+
+    ns = {
+        'type': classmethod(lambda _: opt_type),
+        'transform': classmethod(_identity_transform),
+        '__discord_app_commands_transformer_choices__': [Choice(name=str(v), value=v) for v in values],
+    }
+    return type('LiteralTransformer', (Transformer,), ns)
+
+
+def _make_choice_transformer(inner_type: Any) -> Type[Transformer]:
+    if inner_type is int:
+        opt_type = AppCommandOptionType.integer
+    elif inner_type is float:
+        opt_type = AppCommandOptionType.number
+    elif inner_type is str:
+        opt_type = AppCommandOptionType.string
+    else:
+        raise TypeError(f'expected int, str, or float values not {inner_type!r}')
+
+    ns = {
+        'type': classmethod(lambda _: opt_type),
+        'transform': classmethod(_identity_transform),
+        '__discord_app_commands_is_choice__': True,
+    }
+    return type('ChoiceTransformer', (Transformer,), ns)
+
+
+def _make_enum_transformer(enum) -> Type[Transformer]:
+    values = list(enum)
+    if len(values) < 2:
+        raise TypeError(f'enum.Enum requires at least two values.')
+
+    first = type(values[0].value)
+    if first is int:
+        opt_type = AppCommandOptionType.integer
+    elif first is float:
+        opt_type = AppCommandOptionType.number
+    elif first is str:
+        opt_type = AppCommandOptionType.string
+    else:
+        raise TypeError(f'expected int, str, or float values not {first!r}')
+
+    async def transform(cls, interaction: Interaction, value: Any) -> Any:
+        return enum(value)
+
+    ns = {
+        'type': classmethod(lambda _: opt_type),
+        'transform': classmethod(transform),
+        '__discord_app_commands_transformer_enum__': enum,
+        '__discord_app_commands_transformer_choices__': [Choice(name=v.name, value=v.value) for v in values],
+    }
+
+    return type(f'{enum.__name__}EnumTransformer', (Transformer,), ns)
 
 
 if TYPE_CHECKING:
@@ -465,11 +543,24 @@ def get_supported_annotation(
     if hasattr(annotation, '__discord_app_commands_transform__'):
         return (annotation.metadata, MISSING)
 
-    if inspect.isclass(annotation) and issubclass(annotation, Transformer):
-        return (annotation, MISSING)
+    if inspect.isclass(annotation):
+        if issubclass(annotation, Transformer):
+            return (annotation, MISSING)
+        if issubclass(annotation, Enum):
+            return (_make_enum_transformer(annotation), MISSING)
+        if annotation is Choice:
+            raise TypeError(f'Choice requires a type argument of int, str, or float')
 
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
+    if origin is Literal:
+        args = annotation.__args__  # type: ignore
+        return (_make_literal_transformer(args), MISSING)
+
+    if origin is Choice:
+        arg = annotation.__args__[0]  # type: ignore
+        return (_make_choice_transformer(arg), MISSING)
+
     if origin is not Union:
         # Only Union/Optional is supported right now so bail early
         raise TypeError(f'unsupported type annotation {annotation!r}')
@@ -522,9 +613,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     # Verify validity of the default parameter
     if default is not MISSING:
-        valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
-        if not isinstance(default, valid_types):
-            raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
+        enum_type = getattr(inner, '__discord_app_commands_transformer_enum__', None)
+        if default.__class__ is not enum_type:
+            valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
+            if not isinstance(default, valid_types):
+                raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
 
     result = CommandParameter(
         type=type,
@@ -533,6 +626,13 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
         required=default is MISSING,
         name=parameter.name,
     )
+
+    try:
+        choices = inner.__discord_app_commands_transformer_choices__
+    except AttributeError:
+        pass
+    else:
+        result.choices = choices
 
     # These methods should be duck typed
     if type in (AppCommandOptionType.number, AppCommandOptionType.integer):

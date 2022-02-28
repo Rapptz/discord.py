@@ -31,7 +31,7 @@ from ..enums import ChannelType, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time
 from .enums import AppCommandOptionType, AppCommandType
-from typing import List, NamedTuple, TYPE_CHECKING, Optional, Union
+from typing import Generic, List, NamedTuple, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
     'AppCommand',
@@ -41,6 +41,8 @@ __all__ = (
     'Argument',
     'Choice',
 )
+
+ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 
 
 def is_app_command_argument_type(value: int) -> bool:
@@ -145,7 +147,7 @@ class AppCommand(Hashable):
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
 
 
-class Choice(NamedTuple):
+class Choice(Generic[ChoiceT]):
     """Represents an application command argument choice.
 
     .. versionadded:: 2.0
@@ -160,6 +162,10 @@ class Choice(NamedTuple):
 
             Checks if two choices are not equal.
 
+        .. describe:: hash(x)
+
+            Returns the choice's hash.
+
     Parameters
     -----------
     name: :class:`str`
@@ -168,8 +174,20 @@ class Choice(NamedTuple):
         The value of the choice.
     """
 
-    name: str
-    value: Union[int, str, float]
+    __slots__ = ('name', 'value')
+
+    def __init__(self, *, name: str, value: ChoiceT):
+        self.name: str = name
+        self.value: ChoiceT = value
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, Choice) and self.name == o.name and self.value == o.value
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.value))
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
 
     def to_dict(self) -> ApplicationCommandOptionChoice:
         return {

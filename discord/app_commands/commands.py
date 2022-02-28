@@ -77,6 +77,7 @@ __all__ = (
     'Group',
     'command',
     'describe',
+    'choices',
 )
 
 if TYPE_CHECKING:
@@ -171,6 +172,31 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
         raise TypeError(f'unknown parameter given: {first}')
 
 
+def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
+    for name, param in params.items():
+        choices = all_choices.pop(name, MISSING)
+        if choices is MISSING:
+            continue
+
+        if not isinstance(choices, list):
+            raise TypeError('choices must be a list of Choice')
+
+        if not all(isinstance(choice, Choice) for choice in choices):
+            raise TypeError('choices must be a list of Choice')
+
+        if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
+            raise TypeError('choices are only supported for integer, string, or number option types')
+
+        # There's a type safety hole if someone does Choice[float] as an annotation
+        # but the values are actually Choice[int]. Since the input-output is the same this feels
+        # safe enough to ignore.
+        param.choices = choices
+
+    if all_choices:
+        first = next(iter(all_choices))
+        raise TypeError(f'unknown parameter given: {first}')
+
+
 def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, CommandParameter]:
     params = inspect.signature(func).parameters
     cache = {}
@@ -202,6 +228,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
                 param.description = '...'
     else:
         _populate_descriptions(result, descriptions)
+
+    try:
+        choices = func.__discord_app_commands_param_choices__
+    except AttributeError:
+        pass
+    else:
+        _populate_choices(result, choices)
 
     return result
 
@@ -313,15 +346,15 @@ class Command(Generic[GroupT, P, T]):
     async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
         values = namespace.__dict__
         for name, param in self._params.items():
-            if not param.required:
-                values.setdefault(name, param.default)
-            else:
-                try:
-                    value = values[name]
-                except KeyError:
-                    raise CommandSignatureMismatch(self) from None
+            try:
+                value = values[name]
+            except KeyError:
+                if not param.required:
+                    values[name] = param.default
                 else:
-                    values[name] = await param.transform(interaction, value)
+                    raise CommandSignatureMismatch(self) from None
+            else:
+                values[name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
@@ -768,7 +801,7 @@ def describe(**parameters: str) -> Callable[[T], T]:
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commads.describe(member='the member to ban')
+        @app_commands.describe(member='the member to ban')
         async def ban(interaction: discord.Interaction, member: discord.Member):
             await interaction.response.send_message(f'Banned {member}')
 
@@ -787,7 +820,79 @@ def describe(**parameters: str) -> Callable[[T], T]:
         if isinstance(inner, Command):
             _populate_descriptions(inner._params, parameters)
         else:
-            inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+            try:
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore - Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def choices(**parameters: List[Choice]) -> Callable[[T], T]:
+    r"""Instructs the given parameters by their name to use the given choices for their choices.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.describe(fruits='fruits to choose from')
+        @app_commands.choices(fruits=[
+            Choice(name='apple', value=1),
+            Choice(name='banana', value=2),
+            Choice(name='cherry', value=3),
+        ])
+        async def fruit(interaction: discord.Interaction, fruits: Choice[int]):
+            await interaction.response.send_message(f'Your favourite fruit is {fruits.name}.')
+
+    .. note::
+
+        This is not the only way to provide choices to a command. There are two more ergonomic ways
+        of doing this. The first one is to use a :obj:`typing.Literal` annotation:
+
+        .. code-block:: python3
+
+            @app_commands.command()
+            @app_commands.describe(fruits='fruits to choose from')
+            async def fruit(interaction: discord.Interaction, fruits: Literal['apple', 'banana', 'cherry']):
+                await interaction.response.send_message(f'Your favourite fruit is {fruits}.')
+
+        The second way is to use an :class:`enum.Enum`:
+
+        .. code-block:: python3
+
+            class Fruits(enum.Enum):
+                apple = 1
+                banana = 2
+                cherry = 3
+
+            @app_commands.command()
+            @app_commands.describe(fruits='fruits to choose from')
+            async def fruit(interaction: discord.Interaction, fruits: Fruits):
+                await interaction.response.send_message(f'Your favourite fruit is {fruits}.')
+
+
+    Parameters
+    -----------
+    \*\*parameters
+        The choices of the parameters.
+
+    Raises
+    --------
+    TypeError
+        The parameter name is not found.
+    """
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_choices(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
 
         return inner
 
