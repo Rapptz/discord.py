@@ -31,9 +31,8 @@ Which would add a reaction to the message like so:
 .. note::
 
     You must have the permission :attr:`~Permissions.read_message_history` to add reactions.
-
-If no one else has reacted to the message using this emoji, you will also need the
-:attr:`~Permissions.add_reactions` permission.
+    Additionally, if no one else has reacted to the message using this emoji, you will also need the
+    :attr:`~Permissions.add_reactions` permission.
 
 :meth:`~Message.add_reaction` can also take many types, not just :class:`str`. This includes :class:`~Emoji` or :class:`~PartialEmoji`.
 For example, the following shows an alternative way to add a custom emoji reaction:
@@ -67,10 +66,9 @@ You can find the documentation for adding reactions to a message object at :meth
 Removing a reaction
 ~~~~~~~~~~~~~~~~~~~~~
 
-It is also possible to remove reactions from a message.
-
-It is similar to adding a reaction, but you must also specify a member to remove the reaction from.
+Removing reactions is similar to adding a reaction, but you must also specify a member to remove the reaction from.
 This can be anything that meets the abc :class:`~abc.Snowflake`, like :class:`~discord.Member` or :class:`~discord.Object`.
+This means that you cannot pass simply only an id, and you must instead pass something with an ``id`` attribute.
 
 .. code-block:: python3
 
@@ -101,8 +99,9 @@ It is also possible to remove all reactions from a message, not just a singular 
 
 If you have a :class:`~Reaction`, you can also call :meth:`.clear() <Reaction.clear>` on that to clear reactions of that given emoji.
 
-To remove a reaction that is not your own, you will need the :attr:`~Permissions.manage_messages` permission.
-
+.. note:: 
+    
+    To remove a reaction that is not your own, you will need the :attr:`~Permissions.manage_messages` permission.
 
 Getting reactions
 ~~~~~~~~~~~~~~~~~~
