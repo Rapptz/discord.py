@@ -42,6 +42,7 @@ from ..message import Attachment
 __all__ = (
     'Transformer',
     'Transform',
+    'Range',
 )
 
 T = TypeVar('T')
@@ -220,30 +221,27 @@ class _TransformMetadata:
         self.metadata: Type[Transformer] = metadata
 
 
-def _dynamic_transformer(
+def _make_range_transformer(
     opt_type: AppCommandOptionType,
     *,
-    channel_types: List[ChannelType] = MISSING,
     min: Optional[Union[int, float]] = None,
     max: Optional[Union[int, float]] = None,
 ) -> Type[Transformer]:
-    types = channel_types or []
-
     async def transform(cls, interaction: Interaction, value: Any) -> Any:
         return value
 
     ns = {
         'type': classmethod(lambda _: opt_type),
-        'channel_types': classmethod(lambda _: types),
         'min_value': classmethod(lambda _: min),
         'max_value': classmethod(lambda _: max),
         'transform': classmethod(transform),
     }
-    return type('_DynamicTransformer', (Transformer,), ns)
+    return type('RangeTransformer', (Transformer,), ns)
 
 
 if TYPE_CHECKING:
     from typing_extensions import Annotated as Transform
+    from typing_extensions import Annotated as Range
 else:
 
     class Transform:
@@ -273,6 +271,60 @@ else:
             if not is_valid:
                 raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
 
+            return _TransformMetadata(transformer)
+
+    class Range:
+        """A type annotation that can be applied to a parameter to require a numeric type
+        to fit within the range provided.
+
+        During type checking time this is equivalent to :obj:`py:Annotated` so type checkers understand
+        the intent of the code.
+
+        Some example ranges:
+
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ----------
+
+        .. code-block:: python3
+
+            @app_commands.command()
+            async def range(interaction: discord.Interaction, value: app_commands.Range[10:12]):
+                await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
+        """
+
+        def __class_getitem__(cls, obj) -> _TransformMetadata:
+            if not isinstance(obj, tuple):
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+
+            if len(obj) == 2:
+                obj = (*obj, None)
+            elif len(obj) != 3:
+                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+
+            obj_type, min, max = obj
+
+            if min is None and max is None:
+                raise TypeError('Range must not be empty')
+
+            if min is not None and max is not None:
+                # At this point max and min are both not none
+                if type(min) != type(max):
+                    raise TypeError('Both min and max in Range must be the same type')
+
+            if obj_type is int:
+                opt_type = AppCommandOptionType.integer
+            elif obj_type is float:
+                opt_type = AppCommandOptionType.number
+            else:
+                raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
+
+            transformer = _make_range_transformer(opt_type, min=obj_type(min), max=obj_type(max))
             return _TransformMetadata(transformer)
 
 
