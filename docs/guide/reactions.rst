@@ -5,7 +5,7 @@
 Reactions
 ==========
 
-Reactions are a feature within discord where you can add emojis next to messages.
+Reactions are a feature within Discord where you can add emojis next to messages.
 They have many uses, but a common one for bots is for polls or giving feedback to a command without sending a new message.
 Anyone can react to a message.
 
@@ -42,8 +42,8 @@ For example, the following shows an alternative way to add a custom emoji reacti
     emoji = client.get_emoji(819046807370989599)
     await message.add_reaction(emoji)
 
-You may notice that if you try to add a standard discord emoji like ``:smile:``, you'll receive an error.
-This is because to add standard discord emojis to a message, you must pass their unicode values.
+You may notice that if you try to add a standard Discord emoji like ``:smile:``, you'll receive an error.
+This is because to add standard Discord emojis to a message, you must pass their unicode values.
 Because of this, to add 😄 / ``:smile:`` you would do either of the following:
 
 .. code-block:: python3
