@@ -406,9 +406,9 @@ class AsyncWebhookAdapter:
     ) -> Response[None]:
         r = Route(
             'DELETE',
-            '/webhooks/{webhook_id}/{wehook_token}/messages/@original',
+            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
             webhook_id=application_id,
-            wehook_token=token,
+            webhook_token=token,
         )
         return self.request(r, session=session)
 

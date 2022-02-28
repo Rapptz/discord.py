@@ -58,7 +58,7 @@ class TextInput(Item[V]):
     label: :class:`str`
         The label to display above the text input.
     custom_id: :class:`str`
-        The ID of the text input that gets recieved during an interaction.
+        The ID of the text input that gets received during an interaction.
         If not given then one is generated for you.
     style: :class:`discord.TextStyle`
         The style of the text input.
