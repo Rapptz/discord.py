@@ -257,6 +257,8 @@ In this example, we will use the :meth:`Bot.user.display_avatar <ClientUser.disp
 .. image:: /images/guide/topics/embeds/author_embed.png
     :scale: 50%
 
+This isn't the only place you can add images though. Let's see how else we can incorporate images into our weather embed.
+
 Images
 ~~~~~~~
 
@@ -265,7 +267,7 @@ There are two ways to add images to an embed:
 - As the embed's ``image``.
 - As the embed's ``thumbnail``.
 
-We will use this `image of the Golden Gate Bridge`_ on the weather embed by calling
+We will add an `image of the Golden Gate Bridge`_ to the weather embed by calling
 :meth:`my_weather_embed.set_image() <Embed.set_image>`:
 
 .. code-block:: python3
@@ -284,27 +286,28 @@ the embed.
 The alternative to this, is to set :attr:`Embed.thumbnail`, which would be displayed in the top right
 corner of the embed.
 
-Rather than setting the URL, we are going to attach a file for the thumbnail.
+Rather than setting the image to a URL like we did before, let's try attaching a file for thumbnail.
+
+First, we have to construct a :class:`File` object. The first argument is the file path, and the second is the name of the attachment that will be used to refer to it within Discord.
 
 .. code-block:: python3
 
     my_file = discord.File('./images/sunny_weather.png', 'thumbnail.png')
 
+Next, we need to call :meth:`my_weather_embed.set_thumbnail() <Embed.set_thumbnail>` to set the thumbnail.
+To refer to our attachment for the thumbnail, we will use a special URI scheme that Discord provides - ``attachment://``.
+
+Since we called our file ``thumbnail.png``, we will set the ``url`` parameter to ``attachment://thumbnail.png``.
+
+.. code-block:: python3
+
     my_weather_embed.set_thumbnail(url="attachment://thumbnail.png")
-
-    await channel.send(embed=my_weather_embed, file=my_file)
-
-What we do here is first retrieve the file from the local filesystem via :class:`discord.File`,
-and then refer to the filename in the embed.
-
-In this case the we provide the filename as ``thumbnail.png``,
-so to refer to it, we use ``attachment://thumbnail.png``.
-
-.. note::
-
-    ``attachment://`` is a special URI scheme that Discord understands and will automatically
-    place the attached file as the thumbnail of the embed.
 
 .. warning::
 
     Make sure to provide the file with the ``file`` parameter before sending the message.
+    Otherwise, Discord will not know what attachment you are referring to within the embed.
+
+    .. code-block:: python3
+
+        await message.channel.send(embed=my_weather_embed, file=my_file)
