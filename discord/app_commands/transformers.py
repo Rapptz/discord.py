@@ -1,0 +1,496 @@
+"""
+The MIT License (MIT)
+
+Copyright (c) 2015-present Rapptz
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+"""
+
+from __future__ import annotations
+import inspect
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Set, Tuple, Type, TypeVar, Union
+
+from .enums import AppCommandOptionType
+from .errors import TransformerError
+from .models import AppCommandChannel, AppCommandThread, Choice
+from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..enums import ChannelType
+from ..utils import MISSING
+from ..user import User
+from ..role import Role
+from ..member import Member
+from ..message import Attachment
+
+__all__ = (
+    'Transformer',
+    'Transform',
+)
+
+T = TypeVar('T')
+NoneType = type(None)
+
+if TYPE_CHECKING:
+    from ..interactions import Interaction
+
+
+@dataclass
+class CommandParameter:
+    """Represents a application command parameter.
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The name of the parameter.
+    description: :class:`str`
+        The description of the parameter
+    required: :class:`bool`
+        Whether the parameter is required
+    choices: List[:class:`~discord.app_commands.Choice`]
+        A list of choices this parameter takes
+    type: :class:`~discord.app_commands.AppCommandOptionType`
+        The underlying type of this parameter.
+    channel_types: List[:class:`~discord.ChannelType`]
+        The channel types that are allowed for this parameter.
+    min_value: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum supported value for this parameter.
+    max_value: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum supported value for this parameter.
+    autocomplete: :class:`bool`
+        Whether this parameter enables autocomplete.
+    """
+
+    name: str = MISSING
+    description: str = MISSING
+    required: bool = MISSING
+    default: Any = MISSING
+    choices: List[Choice] = MISSING
+    type: AppCommandOptionType = MISSING
+    channel_types: List[ChannelType] = MISSING
+    min_value: Optional[Union[int, float]] = None
+    max_value: Optional[Union[int, float]] = None
+    autocomplete: bool = MISSING
+    _annotation: Any = MISSING
+
+    def to_dict(self) -> Dict[str, Any]:
+        base = {
+            'type': self.type.value,
+            'name': self.name,
+            'description': self.description,
+            'required': self.required,
+        }
+
+        if self.choices:
+            base['choices'] = [choice.to_dict() for choice in self.choices]
+        if self.channel_types:
+            base['channel_types'] = [t.value for t in self.channel_types]
+        if self.autocomplete:
+            base['autocomplete'] = True
+        if self.min_value is not None:
+            base['min_value'] = self.min_value
+        if self.max_value is not None:
+            base['max_value'] = self.max_value
+
+        return base
+
+    async def transform(self, interaction: Interaction, value: Any) -> Any:
+        if hasattr(self._annotation, '__discord_app_commands_transformer__'):
+            return await self._annotation.transform(interaction, value)
+        return value
+
+
+class Transformer:
+    """The base class that allows a type annotation in an application command parameter
+    to map into a :class:`AppCommandOptionType` and transform the raw value into one from
+    this type.
+
+    This class is customisable through the overriding of :obj:`classmethod`s in the class
+    and by using it as the second type parameter of the :class:`~discord.app_commands.Transform`
+    class. For example, to convert a string into a custom pair type:
+
+    .. code-block:: python3
+
+        class Point(typing.NamedTuple):
+            x: int
+            y: int
+
+        class PointTransformer(app_commands.Transformer):
+            @classmethod
+            async def transform(cls, interaction: discord.Interaction, value: str) -> Point:
+                (x, _, y) = value.partition(',')
+                return Point(x=int(x.strip()), y=int(y.strip()))
+
+        @app_commands.command()
+        async def graph(
+            interaction: discord.Interaction,
+            point: app_commands.Transform[Point, PointTransformer],
+        ):
+            await interaction.response.send_message(str(point))
+
+    .. versionadded:: 2.0
+    """
+
+    __discord_app_commands_transformer__: ClassVar[bool] = True
+
+    @classmethod
+    def type(cls) -> AppCommandOptionType:
+        """:class:`AppCommandOptionType`: The option type associated with this transformer.
+
+        This must be a :obj:`classmethod`.
+
+        Defaults to :attr:`AppCommandOptionType.string`.
+        """
+        return AppCommandOptionType.string
+
+    @classmethod
+    def channel_types(cls) -> List[ChannelType]:
+        """List[:class:`~discord.ChannelType`]: A list of channel types that are allowed to this parameter.
+
+        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.channel`.
+
+        Defaults to an empty list.
+        """
+        return []
+
+    @classmethod
+    def min_value(cls) -> Optional[Union[int, float]]:
+        """Optional[:class:`int`]: The minimum supported value for this parameter.
+
+        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.number` or
+        :attr:`AppCommandOptionType.integer`.
+
+        Defaults to ``None``.
+        """
+        return None
+
+    @classmethod
+    def max_value(cls) -> Optional[Union[int, float]]:
+        """Optional[:class:`int`]: The maximum supported value for this parameter.
+
+        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.number` or
+        :attr:`AppCommandOptionType.integer`.
+
+        Defaults to ``None``.
+        """
+        return None
+
+    @classmethod
+    async def transform(cls, interaction: Interaction, value: Any) -> Any:
+        """|coro|
+
+        Transforms the converted option value into another value.
+
+        The value passed into this transform function is the same as the
+        one in the :class:`conversion table <discord.app_commands.Namespace>`.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction being handled.
+        value: Any
+            The value of the given argument after being resolved.
+            See the :class:`conversion table <discord.app_commands.Namespace>`
+            for how certain option types correspond to certain values.
+        """
+        raise NotImplementedError('Derived classes need to implement this.')
+
+
+class _TransformMetadata:
+    __discord_app_commands_transform__: ClassVar[bool] = True
+    __slots__ = ('metadata',)
+
+    def __init__(self, metadata: Type[Transformer]):
+        self.metadata: Type[Transformer] = metadata
+
+
+def _dynamic_transformer(
+    opt_type: AppCommandOptionType,
+    *,
+    channel_types: List[ChannelType] = MISSING,
+    min: Optional[Union[int, float]] = None,
+    max: Optional[Union[int, float]] = None,
+) -> Type[Transformer]:
+    types = channel_types or []
+
+    async def transform(cls, interaction: Interaction, value: Any) -> Any:
+        return value
+
+    ns = {
+        'type': classmethod(lambda _: opt_type),
+        'channel_types': classmethod(lambda _: types),
+        'min_value': classmethod(lambda _: min),
+        'max_value': classmethod(lambda _: max),
+        'transform': classmethod(transform),
+    }
+    return type('_DynamicTransformer', (Transformer,), ns)
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Annotated as Transform
+else:
+
+    class Transform:
+        """A type annotation that can be applied to a parameter to customise the behaviour of
+        an option type by transforming with the given :class:`Transformer`. This requires
+        the usage of two generic parameters, the first one is the type you're converting to and the second
+        one is the type of the :class:`Transformer` actually doing the transformation.
+
+        During type checking time this is equivalent to :obj:`py:Annotated` so type checkers understand
+        the intent of the code.
+
+        For example usage, check :class:`Transformer`.
+
+        .. versionadded:: 2.0
+        """
+
+        def __class_getitem__(cls, items) -> _TransformMetadata:
+            if not isinstance(items, tuple):
+                raise TypeError(f'expected tuple for arguments, received {items.__class__!r} instead')
+
+            if len(items) != 2:
+                raise TypeError(f'Transform only accepts exactly two arguments')
+
+            _, transformer = items
+
+            is_valid = inspect.isclass(transformer) and issubclass(transformer, Transformer)
+            if not is_valid:
+                raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
+
+            return _TransformMetadata(transformer)
+
+
+def passthrough_transformer(opt_type: AppCommandOptionType) -> Type[Transformer]:
+    class _Generated(Transformer):
+        @classmethod
+        def type(cls) -> AppCommandOptionType:
+            return opt_type
+
+        @classmethod
+        async def transform(cls, interaction: Interaction, value: Any) -> Any:
+            return value
+
+    return _Generated
+
+
+class MemberTransformer(Transformer):
+    @classmethod
+    def type(cls) -> AppCommandOptionType:
+        return AppCommandOptionType.user
+
+    @classmethod
+    async def transform(cls, interaction: Interaction, value: Any) -> Member:
+        if not isinstance(value, Member):
+            raise TransformerError(value, cls.type(), cls)
+        return value
+
+
+def channel_transformer(*channel_types: Type[Any], raw: Optional[bool] = False) -> Type[Transformer]:
+    if raw:
+
+        async def transform(cls, interaction: Interaction, value: Any):
+            if not isinstance(value, channel_types):
+                raise TransformerError(value, AppCommandOptionType.channel, cls)
+            return value
+
+    elif raw is False:
+
+        async def transform(cls, interaction: Interaction, value: Any):
+            resolved = value.resolve()
+            if resolved is None or not isinstance(resolved, channel_types):
+                raise TransformerError(value, AppCommandOptionType.channel, cls)
+            return resolved
+
+    else:
+
+        async def transform(cls, interaction: Interaction, value: Any):
+            if isinstance(value, channel_types):
+                return value
+
+            resolved = value.resolve()
+            if resolved is None or not isinstance(resolved, channel_types):
+                raise TransformerError(value, AppCommandOptionType.channel, cls)
+            return resolved
+
+    if len(channel_types) == 1:
+        name = channel_types[0].__name__
+        types = CHANNEL_TO_TYPES[channel_types[0]]
+    else:
+        name = 'MultiChannel'
+        types = []
+
+        for t in channel_types:
+            try:
+                types.extend(CHANNEL_TO_TYPES[t])
+            except KeyError:
+                raise TypeError(f'Union type of channels must be entirely made up of channels') from None
+
+    return type(
+        f'{name}Transformer',
+        (Transformer,),
+        {
+            'type': classmethod(lambda cls: AppCommandOptionType.channel),
+            'transform': classmethod(transform),
+            'channel_types': classmethod(lambda cls: types),
+        },
+    )
+
+
+CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
+    AppCommandChannel: [
+        ChannelType.stage_voice,
+        ChannelType.store,
+        ChannelType.voice,
+        ChannelType.text,
+        ChannelType.category,
+    ],
+    AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
+    StageChannel: [ChannelType.stage_voice],
+    StoreChannel: [ChannelType.store],
+    VoiceChannel: [ChannelType.voice],
+    TextChannel: [ChannelType.text],
+    CategoryChannel: [ChannelType.category],
+}
+
+BUILT_IN_TRANSFORMERS: Dict[Any, Type[Transformer]] = {
+    str: passthrough_transformer(AppCommandOptionType.string),
+    int: passthrough_transformer(AppCommandOptionType.integer),
+    float: passthrough_transformer(AppCommandOptionType.number),
+    bool: passthrough_transformer(AppCommandOptionType.boolean),
+    User: passthrough_transformer(AppCommandOptionType.user),
+    Member: MemberTransformer,
+    Role: passthrough_transformer(AppCommandOptionType.role),
+    AppCommandChannel: channel_transformer(AppCommandChannel, raw=True),
+    AppCommandThread: channel_transformer(AppCommandThread, raw=True),
+    StageChannel: channel_transformer(StageChannel),
+    StoreChannel: channel_transformer(StoreChannel),
+    VoiceChannel: channel_transformer(VoiceChannel),
+    TextChannel: channel_transformer(TextChannel),
+    CategoryChannel: channel_transformer(CategoryChannel),
+    Attachment: passthrough_transformer(AppCommandOptionType.attachment),
+}
+
+ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
+    AppCommandOptionType.string: (str, NoneType),
+    AppCommandOptionType.integer: (int, NoneType),
+    AppCommandOptionType.boolean: (bool, NoneType),
+}
+
+
+def get_supported_annotation(
+    annotation: Any,
+    *,
+    _none=NoneType,
+    _mapping: Dict[Any, Type[Transformer]] = BUILT_IN_TRANSFORMERS,
+) -> Tuple[Any, Any]:
+    """Returns an appropriate, yet supported, annotation along with an optional default value.
+
+    This differs from the built in mapping by supporting a few more things.
+    Likewise, this returns a "transformed" annotation that is ready to use with CommandParameter.transform.
+    """
+
+    try:
+        return (_mapping[annotation], MISSING)
+    except KeyError:
+        pass
+
+    if hasattr(annotation, '__discord_app_commands_transform__'):
+        return (annotation.metadata, MISSING)
+
+    if inspect.isclass(annotation) and issubclass(annotation, Transformer):
+        return (annotation, MISSING)
+
+    # Check if there's an origin
+    origin = getattr(annotation, '__origin__', None)
+    if origin is not Union:
+        # Only Union/Optional is supported right now so bail early
+        raise TypeError(f'unsupported type annotation {annotation!r}')
+
+    default = MISSING
+    args = annotation.__args__  # type: ignore
+    if args[-1] is _none:
+        if len(args) == 2:
+            underlying = args[0]
+            inner, _ = get_supported_annotation(underlying)
+            if inner is None:
+                raise TypeError(f'unsupported inner optional type {underlying!r}')
+            return (inner, None)
+        else:
+            args = args[:-1]
+            default = None
+
+    # Check for channel union types
+    if any(arg in CHANNEL_TO_TYPES for arg in args):
+        # If any channel type is given, then *all* must be channel types
+        return (channel_transformer(*args, raw=None), default)
+
+    # The only valid transformations here are:
+    # [Member, User] => user
+    # [Member, User, Role] => mentionable
+    # [Member | User, Role] => mentionable
+    supported_types: Set[Any] = {Role, Member, User}
+    if not all(arg in supported_types for arg in args):
+        raise TypeError(f'unsupported types given inside {annotation!r}')
+    if args == (User, Member) or args == (Member, User):
+        return (passthrough_transformer(AppCommandOptionType.user), default)
+
+    return (passthrough_transformer(AppCommandOptionType.mentionable), default)
+
+
+def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> CommandParameter:
+    """Returns the appropriate :class:`CommandParameter` for the given annotation.
+
+    The resulting ``_annotation`` attribute might not match the one given here and might
+    be transformed in order to be easier to call from the ``transform`` asynchronous function
+    of a command parameter.
+    """
+
+    (inner, default) = get_supported_annotation(annotation)
+    type = inner.type()
+    if default is MISSING:
+        default = parameter.default
+        if default is parameter.empty:
+            default = MISSING
+
+    # Verify validity of the default parameter
+    if default is not MISSING:
+        valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
+        if not isinstance(default, valid_types):
+            raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
+
+    result = CommandParameter(
+        type=type,
+        _annotation=inner,
+        default=default,
+        required=default is MISSING,
+        name=parameter.name,
+    )
+
+    # These methods should be duck typed
+    if type in (AppCommandOptionType.number, AppCommandOptionType.integer):
+        result.min_value = inner.min_value()
+        result.max_value = inner.max_value()
+
+    if type is AppCommandOptionType.channel:
+        result.channel_types = inner.channel_types()
+
+    if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
+        raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
+
+    return result

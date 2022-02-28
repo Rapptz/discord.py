@@ -24,14 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import Any, TYPE_CHECKING, List, Optional, Type, Union
 
-from .enums import AppCommandType
+
+from .enums import AppCommandOptionType, AppCommandType
 from ..errors import DiscordException
 
 __all__ = (
     'AppCommandError',
     'CommandInvokeError',
+    'TransformerError',
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
@@ -39,6 +41,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
+    from .transformers import Transformer
 
 
 class AppCommandError(DiscordException):
@@ -80,6 +83,49 @@ class CommandInvokeError(AppCommandError):
         self.original: Exception = e
         self.command: Union[Command, ContextMenu] = command
         super().__init__(f'Command {command.name!r} raised an exception: {e.__class__.__name__}: {e}')
+
+
+class TransformerError(AppCommandError):
+    """An exception raised when a :class:`Transformer` or type annotation fails to
+    convert to its target type.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. note::
+
+        If the transformer raises a custom :exc:`AppCommandError` then it will
+        be propagated rather than wrapped into this exception.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: Any
+        The value that failed to convert.
+    type: :class:`AppCommandOptionType`
+        The type of argument that failed to convert.
+    transformer: Type[:class:`Transformer`]
+        The transformer that failed the conversion.
+    """
+
+    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Type[Transformer]):
+        self.value: Any = value
+        self.type: AppCommandOptionType = opt_type
+        self.transformer: Type[Transformer] = transformer
+
+        try:
+            result_type = transformer.transform.__annotations__['return']
+        except KeyError:
+            name = transformer.__name__
+            if name.endswith('Transformer'):
+                result_type = name[:-11]
+            else:
+                result_type = name
+        else:
+            if isinstance(result_type, type):
+                result_type = result_type.__name__
+
+        super().__init__(f'Failed to convert {value} to {result_type!s}')
 
 
 class CommandAlreadyRegistered(AppCommandError):
