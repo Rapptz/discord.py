@@ -24,6 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 import inspect
+import sys
+import traceback
 from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, Union, overload
 
 
@@ -31,7 +33,12 @@ from .namespace import Namespace, ResolveKey
 from .models import AppCommand
 from .commands import Command, ContextMenu, Group, _shorten
 from .enums import AppCommandType
-from .errors import CommandAlreadyRegistered, CommandNotFound, CommandSignatureMismatch
+from .errors import (
+    AppCommandError,
+    CommandAlreadyRegistered,
+    CommandNotFound,
+    CommandSignatureMismatch,
+)
 from ..errors import ClientException
 from ..utils import MISSING
 
@@ -385,6 +392,35 @@ class CommandTree:
                 base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id)
                 return base
 
+    async def on_error(
+        self,
+        interaction: Interaction,
+        command: Optional[Union[ContextMenu, Command]],
+        error: AppCommandError,
+    ) -> None:
+        """|coro|
+
+        A callback that is called when any command raises an :exc:`AppCommandError`.
+
+        The default implementation prints the traceback to stderr.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that is being handled.
+        command: Optional[Union[:class:`~discord.app_commands.Command`, :class:`~discord.app_commands.ContextMenu`]]
+            The command that failed, if any.
+        error: :exc:`AppCommandError`
+            The exception that was raised.
+        """
+
+        if command is not None:
+            print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
+        else:
+            print(f'Ignoring exception in command tree:', file=sys.stderr)
+
+        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+
     def command(
         self,
         *,
@@ -519,8 +555,8 @@ class CommandTree:
         async def wrapper():
             try:
                 await self.call(interaction)
-            except Exception as e:
-                print(f'Error:', e)
+            except AppCommandError as e:
+                await self.on_error(interaction, None, e)
 
         self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
@@ -547,7 +583,10 @@ class CommandTree:
             raise RuntimeError('This should not happen if Discord sent well-formed data.')
 
         # I assume I don't have to type check here.
-        await ctx_menu._invoke(interaction, value)
+        try:
+            await ctx_menu._invoke(interaction, value)
+        except AppCommandError as e:
+            await self.on_error(interaction, ctx_menu, e)
 
     async def call(self, interaction: Interaction):
         """|coro|
@@ -623,4 +662,9 @@ class CommandTree:
         # At this point options refers to the arguments of the command
         # and command refers to the class type we care about
         namespace = Namespace(interaction, data.get('resolved', {}), options)
-        await command._invoke_with_namespace(interaction, namespace)
+
+        try:
+            await command._invoke_with_namespace(interaction, namespace)
+        except AppCommandError as e:
+            await command._invoke_error_handler(interaction, e)
+            await self.on_error(interaction, command, e)

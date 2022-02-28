@@ -51,7 +51,7 @@ from .enums import AppCommandOptionType, AppCommandType
 from ..interactions import Interaction
 from ..enums import ChannelType, try_enum
 from .models import AppCommandChannel, AppCommandThread, Choice
-from .errors import CommandSignatureMismatch, CommandAlreadyRegistered
+from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..utils import resolve_annotation, MISSING, is_inside_class
 from ..user import User
 from ..member import Member
@@ -62,7 +62,6 @@ from ..permissions import Permissions
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
-    from ..interactions import Interaction
     from ..types.interactions import (
         ResolvedData,
         PartialThread,
@@ -89,6 +88,10 @@ else:
 T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Group')
 Coro = Coroutine[Any, Any, T]
+Error = Union[
+    Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
+    Callable[[Interaction, AppCommandError], Coro[Any]],
+]
 
 ContextMenuCallback = Union[
     # If groups end up support context menus these would be uncommented
@@ -444,6 +447,7 @@ class Command(Generic[GroupT, P, T]):
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
+        self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
 
     def _copy_with_binding(self, binding: GroupT) -> Command:
@@ -453,6 +457,7 @@ class Command(Generic[GroupT, P, T]):
         copy.description = self.description
         copy._callback = self._callback
         copy.parent = self.parent
+        copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.binding = binding
         return copy
@@ -468,6 +473,21 @@ class Command(Generic[GroupT, P, T]):
             'options': [param.to_dict() for param in self._params.values()],
         }
 
+    async def _invoke_error_handler(self, interaction: Interaction, error: AppCommandError) -> None:
+        # These type ignores are because the type checker can't narrow this type properly.
+        if self.on_error is not None:
+            if self.binding is not None:
+                await self.on_error(self.binding, interaction, error)  # type: ignore
+            else:
+                await self.on_error(interaction, error)  # type: ignore
+
+        parent = self.parent
+        if parent is not None:
+            await parent.on_error(interaction, self, error)
+
+            if parent.parent is not None:
+                await parent.parent.on_error(interaction, self, error)
+
     async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
         defaults = ((name, param.default) for name, param in self._params.items() if not param.required)
         namespace._update_with_defaults(defaults)
@@ -477,7 +497,7 @@ class Command(Generic[GroupT, P, T]):
             if self.binding is not None:
                 return await self._callback(self.binding, interaction, **namespace.__dict__)  # type: ignore
             return await self._callback(interaction, **namespace.__dict__)  # type: ignore
-        except TypeError:
+        except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
             # from the Python compiler showcasing that the signature is incorrect. This lovely
@@ -490,7 +510,11 @@ class Command(Generic[GroupT, P, T]):
             frame = inspect.trace()[-1].frame
             if frame.f_locals.get('self') is self:
                 raise CommandSignatureMismatch(self) from None
+            raise CommandInvokeError(self, e) from e
+        except AppCommandError:
             raise
+        except Exception as e:
+            raise CommandInvokeError(self, e) from e
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
         return None
@@ -502,6 +526,32 @@ class Command(Generic[GroupT, P, T]):
             return None
         parent = self.parent
         return parent.parent or parent
+
+    def error(self, coro: Error[GroupT]) -> Error[GroupT]:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in the body
+        of the command or during handling of the command. The error handler must take
+        2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
 
 
 class ContextMenu:
@@ -560,7 +610,12 @@ class ContextMenu:
         }
 
     async def _invoke(self, interaction: Interaction, arg: Any):
-        await self._callback(interaction, arg)
+        try:
+            await self._callback(interaction, arg)
+        except AppCommandError:
+            raise
+        except Exception as e:
+            raise CommandInvokeError(self, e) from e
 
 
 class Group:
@@ -667,6 +722,25 @@ class Group:
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
         return self._children.get(name)
+
+    async def on_error(self, interaction: Interaction, command: Command, error: AppCommandError) -> None:
+        """|coro|
+
+        A callback that is called when a child's command raises an :exc:`AppCommandError`.
+
+        The default implementation does nothing.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that is being handled.
+        command: :class`~discord.app_commands.Command`
+            The command that failed.
+        error: :exc:`AppCommandError`
+            The exception that was raised.
+        """
+
+        pass
 
     def add_command(self, command: Union[Command, Group], /, *, override: bool = False):
         """Adds a command or group to this group's internal list of commands.

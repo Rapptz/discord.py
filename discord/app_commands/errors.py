@@ -30,6 +30,8 @@ from .enums import AppCommandType
 from ..errors import DiscordException
 
 __all__ = (
+    'AppCommandError',
+    'CommandInvokeError',
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
@@ -39,8 +41,53 @@ if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
 
 
-class CommandAlreadyRegistered(DiscordException):
+class AppCommandError(DiscordException):
+    """The base exception type for all application command related errors.
+
+    This inherits from :exc:`discord.DiscordException`.
+
+    This exception and exceptions inherited from it are handled
+    in a special way as they are caught and passed into various error handlers
+    in this order:
+
+    - :meth:`Command.error <discord.app_commands.Command.error>`
+    - :meth:`Group.on_error <discord.app_commands.Group.on_error>`
+    - :meth:`CommandTree.on_error <discord.app_commands.CommandTree.on_error>`
+
+    .. versionadded:: 2.0
+    """
+
+    pass
+
+
+class CommandInvokeError(AppCommandError):
+    """An exception raised when the command being invoked raised an exception.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    original: :exc:`Exception`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    command: Union[:class:`Command`, :class:`ContextMenu`]
+        The command that failed.
+    """
+
+    def __init__(self, command: Union[Command, ContextMenu], e: Exception) -> None:
+        self.original: Exception = e
+        self.command: Union[Command, ContextMenu] = command
+        super().__init__(f'Command {command.name!r} raised an exception: {e.__class__.__name__}: {e}')
+
+
+class CommandAlreadyRegistered(AppCommandError):
     """An exception raised when a command is already registered.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -57,8 +104,12 @@ class CommandAlreadyRegistered(DiscordException):
         super().__init__(f'Command {name!r} already registered.')
 
 
-class CommandNotFound(DiscordException):
+class CommandNotFound(AppCommandError):
     """An exception raised when an application command could not be found.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
 
     Attributes
     ------------
@@ -78,11 +129,15 @@ class CommandNotFound(DiscordException):
         super().__init__(f'Application command {name!r} not found')
 
 
-class CommandSignatureMismatch(DiscordException):
+class CommandSignatureMismatch(AppCommandError):
     """An exception raised when an application command from Discord has a different signature
     from the one provided in the code. This happens because your command definition differs
     from the command definition you provided Discord. Either your code is out of date or the
     data from Discord is out of sync.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
 
     Attributes
     ------------
