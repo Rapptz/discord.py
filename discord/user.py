@@ -349,7 +349,7 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar: bytes = MISSING) -> ClientUser:
+    async def edit(self, *, username: str = MISSING, avatar: Optional[bytes] = MISSING) -> ClientUser:
         """|coro|
 
         Edits the current profile of the client.
@@ -374,7 +374,7 @@ class ClientUser(BaseUser):
         -----------
         username: :class:`str`
             The new username you wish to change to.
-        avatar: :class:`bytes`
+        avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
 
@@ -395,7 +395,10 @@ class ClientUser(BaseUser):
             payload['username'] = username
 
         if avatar is not MISSING:
-            payload['avatar'] = _bytes_to_base64_data(avatar)
+            if avatar is not None:
+                payload['avatar'] = _bytes_to_base64_data(avatar)
+            else:
+                payload['avatar'] = None
 
         data: UserPayload = await self._state.http.edit_profile(payload)
         return ClientUser(state=self._state, data=data)
