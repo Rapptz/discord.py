@@ -43,6 +43,13 @@ extras_require = {
     ],
     'speed': [
         'orjson>=3.5.4',
+    ],
+    'test': [
+        'coverage[toml]',
+        'pytest',
+        'pytest-asyncio',
+        'pytest-cov',
+        'pytest-mock'
     ]
 }
 
