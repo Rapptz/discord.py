@@ -139,7 +139,7 @@ def test_valid_icon_size():
     ]
 )
 def test_resolve_invite(url, code):
-    assert utils.resolve_invite(url) == code
+    assert utils.resolve_invite(url).code == code
 
 
 @pytest.mark.parametrize(

@@ -738,8 +738,7 @@ class ResolvedInvite(NamedTuple):
 
 
 def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
-    """
-    Resolves an invite from a :class:`~discord.Invite`, URL or code.
+    """Resolves an invite from a :class:`~discord.Invite`, URL or code.
 
     .. versionchanged:: 2.0
         Now returns a :class:`.ResolvedInvite` instead of a
