@@ -1020,6 +1020,53 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param after: The stage instance after the update.
     :type after: :class:`StageInstance`
 
+.. function:: on_scheduled_event_create(event)
+              on_scheduled_event_delete(event)
+
+    Called when a :class:`ScheduledEvent` is created or deleted.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param event: The scheduled event that was created or deleted.
+    :type event: :class:`ScheduledEvent`
+
+.. function:: on_scheduled_event_update(before, after)
+
+    Called when a :class:`ScheduledEvent` is updated.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - The scheduled start/end times are changed.
+    - The channel is changed.
+    - The description is changed.
+    - The status is changed.
+    - The image is changed.
+
+    .. versionadded:: 2.0
+
+    :param before: The scheduled event before the update.
+    :type before: :class:`ScheduledEvent`
+    :param after: The scheduled event after the update.
+    :type after: :class:`ScheduledEvent`
+
+.. function:: on_scheduled_event_user_add(event, user)
+              on_scheduled_event_user_remove(event, user)
+
+    Called when a user is added or removed from a :class:`ScheduledEvent`.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param event: The scheduled event that the user was added or removed from.
+    :type event: :class:`ScheduledEvent`
+    :param user: The user that was added or removed.
+    :type user: :class:`User`
+
 .. function:: on_member_ban(guild, user)
 
     Called when user gets banned from a :class:`Guild`.
@@ -1109,6 +1156,22 @@ Utility Functions
 .. autofunction:: discord.utils.escape_markdown
 
 .. autofunction:: discord.utils.escape_mentions
+
+.. class:: ResolvedInvite
+
+    A data class which represents a resolved invite returned from :func:`discord.utils.resolve_invite`.
+
+    .. attribute:: code
+
+        The invite code.
+
+        :type: :class:`str`
+
+    ..  attribute:: event
+
+        The id of the scheduled event that the invite refers to.
+
+        :type: Optional[:class:`int`]
 
 .. autofunction:: discord.utils.resolve_invite
 
@@ -2503,19 +2566,11 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
-.. class:: StagePrivacyLevel
+.. class:: PrivacyLevel
 
-    Represents a stage instance's privacy level.
+    Represents the privacy level of a stage instance or scheduled event.
 
     .. versionadded:: 2.0
-
-    .. attribute:: public
-
-        The stage instance can be joined by external users.
-
-    .. attribute:: closed
-
-        The stage instance can only be joined by members of the guild.
 
     .. attribute:: guild_only
 
@@ -2725,6 +2780,50 @@ of :class:`enum.Enum`.
     .. attribute:: require_2fa
 
         The guild requires 2 factor authentication.
+
+.. class:: EntityType
+
+    Represents the type of entity that a scheduled event is for.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: stage_instance
+
+        The scheduled event will occur in a stage instance.
+
+    .. attribute:: voice
+
+        The scheduled event will occur in a voice channel.
+
+    .. attribute:: external
+
+        The scheduled event will occur externally.
+
+.. class:: EventStatus
+
+    Represents the status of an event.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: scheduled
+
+        The event is scheduled.
+
+    .. attribute:: active
+
+        The event is active.
+
+    .. attribute:: completed
+
+        The event has ended.
+
+    .. attribute:: cancelled
+
+        The event has been cancelled.
+
+    .. attribute:: canceled
+
+        An alias for :attr:`cancelled`.
 
 .. _discord-api-audit-logs:
 
@@ -3007,9 +3106,9 @@ AuditLogDiff
 
     .. attribute:: privacy_level
 
-        The privacy level of the stage instance.
+        The privacy level of the stage instance or scheduled event
 
-        :type: :class:`StagePrivacyLevel`
+        :type: :class:`PrivacyLevel`
 
     .. attribute:: roles
 
@@ -3207,9 +3306,10 @@ AuditLogDiff
 
     .. attribute:: description
 
-        The description of a guild, or a sticker.
+        The description of a guild, a sticker, or a scheduled event.
 
-        See also :attr:`Guild.description`, or :attr:`GuildSticker.description`.
+        See also :attr:`Guild.description`, :attr:`GuildSticker.description`, or
+        :attr:`ScheduledEvent.description`.
 
         :type: :class:`str`
 
@@ -3561,6 +3661,15 @@ Guild
         The :class:`User` that was banned.
 
         :type: :class:`User`
+
+
+ScheduledEvent
+~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEvent
+
+.. autoclass:: ScheduledEvent()
+    :members:
 
 
 Integration

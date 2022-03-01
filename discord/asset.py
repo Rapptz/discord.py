@@ -209,6 +209,15 @@ class Asset(AssetMixin):
         )
 
     @classmethod
+    def _from_scheduled_event_cover_image(cls, state, scheduled_event_id: int, cover_image_hash: str) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/guild-events/{scheduled_event_id}/{cover_image_hash}.png?size=1024',
+            key=cover_image_hash,
+            animated=False,
+        )
+
+    @classmethod
     def _from_guild_image(cls, state, guild_id: int, image: str, path: str) -> Asset:
         animated = image.startswith('a_')
         format = 'gif' if animated else 'png'

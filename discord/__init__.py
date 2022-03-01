@@ -56,6 +56,7 @@ from .raw_models import *
 from .team import *
 from .sticker import *
 from .stage_instance import *
+from .scheduled_event import *
 from .interactions import *
 from .components import *
 from .threads import *

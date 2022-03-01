@@ -146,7 +146,7 @@ class GroupDMChannel(_BaseChannel):
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
 
-PrivacyLevel = Literal[1, 2]
+PrivacyLevel = Literal[2]
 
 
 class StageInstance(TypedDict):

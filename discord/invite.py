@@ -31,6 +31,7 @@ from .object import Object
 from .mixins import Hashable
 from .enums import ChannelType, VerificationLevel, InviteTarget, try_enum
 from .appinfo import PartialAppInfo
+from .scheduled_event import ScheduledEvent
 
 __all__ = (
     'PartialInviteChannel',
@@ -51,6 +52,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .abc import GuildChannel
     from .user import User
+    from .abc import Snowflake
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]
@@ -304,6 +306,14 @@ class Invite(Hashable):
         The embedded application the invite targets, if any.
 
         .. versionadded:: 2.0
+    scheduled_event: Optional[:class:`ScheduledEvent`]
+        The scheduled event associated with this invite, if any.
+
+        .. versionadded:: 2.0
+    scheduled_event_id: Optional[:class:`int`]
+        The ID of the scheduled event associated with this invite, if any.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -324,6 +334,8 @@ class Invite(Hashable):
         'approximate_presence_count',
         'target_application',
         'expires_at',
+        'scheduled_event',
+        'scheduled_event_id',
     )
 
     BASE = 'https://discord.gg'
@@ -365,6 +377,17 @@ class Invite(Hashable):
         self.target_application: Optional[PartialAppInfo] = (
             PartialAppInfo(data=application, state=state) if application else None
         )
+
+        scheduled_event = data.get('guild_scheduled_event')
+        self.scheduled_event: Optional[ScheduledEvent] = (
+            ScheduledEvent(
+                state=self._state,
+                data=scheduled_event,
+            )
+            if scheduled_event
+            else None
+        )
+        self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
 
     @classmethod
     def from_incomplete(cls: Type[I], *, state: ConnectionState, data: InvitePayload) -> I:
@@ -451,7 +474,33 @@ class Invite(Hashable):
     @property
     def url(self) -> str:
         """:class:`str`: A property that retrieves the invite URL."""
-        return self.BASE + '/' + self.code
+        url = self.BASE + '/' + self.code
+        if self.scheduled_event_id is not None:
+            url += '?event=' + str(self.scheduled_event_id)
+        return url
+
+    def set_scheduled_event(self: I, scheduled_event: Snowflake, /) -> I:
+        """Sets the scheduled event for this invite.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ----------
+        scheduled_event: :class:`~discord.abc.Snowflake`
+            The ID of the scheduled event.
+
+        Returns
+        --------
+        :class:`Invite`
+            The invite with the new scheduled event.
+        """
+        self.scheduled_event_id = scheduled_event.id
+        try:
+            self.scheduled_event = self.guild.get_scheduled_event(scheduled_event.id)  # type: ignore - handled below
+        except AttributeError:
+            self.scheduled_event = None
+
+        return self
 
     async def delete(self, *, reason: Optional[str] = None):
         """|coro|

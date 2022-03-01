@@ -29,7 +29,7 @@ from .activity import PartialPresenceUpdate
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
-from .channel import Channel, ChannelType, StageInstance
+from .channel import ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji
@@ -41,6 +41,7 @@ from .appinfo import GatewayAppInfo, PartialAppInfo
 from .guild import Guild, UnavailableGuild
 from .user import User
 from .threads import Thread, ThreadMember
+from .scheduled_event import GuildScheduledEvent
 
 
 class SessionStartLimit(TypedDict):
@@ -347,6 +348,17 @@ class WebhooksUpdateEvent(TypedDict):
 
 
 StageInstanceCreateEvent = StageInstanceUpdateEvent = StageInstanceDeleteEvent = StageInstance
+
+GuildScheduledEventCreateEvent = GuildScheduledEventUpdateEvent = GuildScheduledEventDeleteEvent = GuildScheduledEvent
+
+
+class _GuildScheduledEventUsersEvent(TypedDict):
+    guild_scheduled_event_id: Snowflake
+    user_id: Snowflake
+    guild_id: Snowflake
+
+
+GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEventUsersEvent
 
 VoiceStateUpdateEvent = GuildVoiceState
 

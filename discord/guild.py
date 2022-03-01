@@ -60,6 +60,8 @@ from .enums import (
     AuditLogAction,
     VideoQualityMode,
     ChannelType,
+    EntityType,
+    PrivacyLevel,
     try_enum,
     VerificationLevel,
     ContentFilter,
@@ -74,6 +76,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, _integration_factory
+from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
@@ -293,6 +296,7 @@ class Guild(Hashable):
         '_rules_channel_id',
         '_public_updates_channel_id',
         '_stage_instances',
+        '_scheduled_events',
         '_threads',
     )
 
@@ -465,6 +469,11 @@ class Guild(Hashable):
         for s in guild.get('stage_instances', []):
             stage_instance = StageInstance(guild=self, data=s, state=state)
             self._stage_instances[stage_instance.id] = stage_instance
+
+        self._scheduled_events: Dict[int, ScheduledEvent] = {}
+        for s in guild.get('guild_scheduled_events', []):
+            scheduled_event = ScheduledEvent(data=s, state=state)
+            self._scheduled_events[scheduled_event.id] = scheduled_event
 
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
@@ -866,6 +875,31 @@ class Guild(Hashable):
             The stage instance or ``None`` if not found.
         """
         return self._stage_instances.get(stage_instance_id)
+
+    @property
+    def scheduled_events(self) -> List[ScheduledEvent]:
+        """List[:class:`ScheduledEvent`]: Returns a :class:`list` of the guild's scheduled events.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._scheduled_events.values())
+
+    def get_scheduled_event(self, scheduled_event_id: int, /) -> Optional[ScheduledEvent]:
+        """Returns a scheduled event with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        scheduled_event_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`ScheduledEvent`]
+            The scheduled event or ``None`` if not found.
+        """
+        return self._scheduled_events.get(scheduled_event_id)
 
     @property
     def owner(self) -> Optional[Member]:
@@ -2412,6 +2446,190 @@ class Guild(Hashable):
             An error occurred deleting the sticker.
         """
         await self._state.http.delete_guild_sticker(self.id, sticker.id, reason)
+
+    async def fetch_scheduled_events(self, *, with_counts: bool = True) -> List[ScheduledEvent]:
+        """|coro|
+
+        Retrieves a list of all scheduled events for the guild.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        with_counts: :class:`bool`
+            Whether to include the number of users that are subscribed to the event.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the scheduled events failed.
+
+        Returns
+        --------
+        List[:class:`ScheduledEvent`]
+            The scheduled events.
+        """
+        data = await self._state.http.get_scheduled_events(self.id, with_counts)
+        return [ScheduledEvent(state=self._state, data=d) for d in data]
+
+    async def fetch_scheduled_event(self, scheduled_event_id: int, /, *, with_counts: bool = True) -> ScheduledEvent:
+        """|coro|
+
+        Retrieves a scheduled event from the guild.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        id: :class:`int`
+            The scheduled event ID.
+        with_counts: :class:`bool`
+            Whether to include the number of users that are subscribed to the event.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        NotFound
+            The scheduled event was not found.
+        HTTPException
+            Retrieving the scheduled event failed.
+
+        Returns
+        --------
+        :class:`ScheduledEvent`
+            The scheduled event.
+        """
+        data = await self._state.http.get_scheduled_event(self.id, scheduled_event_id, with_counts)
+        return ScheduledEvent(state=self._state, data=data)
+
+    async def create_scheduled_event(
+        self,
+        *,
+        name: str,
+        start_time: datetime.datetime,
+        entity_type: EntityType,
+        privacy_level: PrivacyLevel = MISSING,
+        channel: Optional[Snowflake] = MISSING,
+        location: str = MISSING,
+        end_time: datetime.datetime = MISSING,
+        description: str = MISSING,
+        image: bytes = MISSING,
+        reason: Optional[str] = None,
+    ) -> ScheduledEvent:
+        r"""|coro|
+
+        Creates a scheduled event for the guild.
+
+        Requires :attr:`~Permissions.manage_events` permissions.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        name: :class:`str`
+            The name of the scheduled event.
+        description: :class:`str`
+            The description of the scheduled event.
+        channel: Optional[:class:`abc.Snowflake`]
+            The channel to send the scheduled event to.
+
+            Required if ``entity_type`` is either :attr:`EntityType.voice` or
+            :attr:`EntityType.stage_instance`.
+        start_time: :class:`datetime.datetime`
+            The scheduled start time of the scheduled event. This must be a timezone-aware
+            datetime object. Consider using :func:`utils.utcnow`.
+        end_time: :class:`datetime.datetime`
+            The scheduled end time of the scheduled event. This must be a timezone-aware
+            datetime object. Consider using :func:`utils.utcnow`.
+
+            Required if the entity type is :attr:`EntityType.external`.
+        entity_type: :class:`EntityType`
+            The entity type of the scheduled event.
+        image: :class:`bytes`
+            The image of the scheduled event.
+        location: :class:`str`
+            The location of the scheduled event.
+
+            Required if the ``entity_type`` is :attr:`EntityType.external`.
+        reason: Optional[:class:`str`]
+            The reason for creating this scheduled event. Shows up on the audit log.
+
+        Raises
+        -------
+        TypeError
+            `image` was not a :term:`py:bytes-like object`, or ``privacy_level``
+            was not a :class:`PrivacyLevel`, or ``entity_type`` was not an
+            :class:`EntityType`, ``status`` was not an :class:`EventStatus`,
+            or an argument was provided that was incompatible with the provided
+            ``entity_type``.
+        ValueError
+            ``start_time`` or ``end_time`` was not a timezone-aware datetime object.
+        Forbidden
+            You are not allowed to create scheduled events.
+        HTTPException
+            Creating the scheduled event failed.
+
+        Returns
+        --------
+        :class:`ScheduledEvent`
+            The created scheduled event.
+        """
+        payload = {}
+        metadata = {}
+
+        payload['name'] = name
+
+        if start_time is not MISSING:
+            if start_time.tzinfo is None:
+                raise ValueError(
+                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
+            payload['scheduled_start_time'] = start_time.isoformat()
+
+        if not isinstance(entity_type, EntityType):
+            raise TypeError('entity_type must be of type EntityType')
+
+        payload['entity_type'] = entity_type.value
+
+        payload['privacy_level'] = PrivacyLevel.guild_only.value
+
+        if description is not MISSING:
+            payload['description'] = description
+
+        if image is not MISSING:
+            image_as_str: str = utils._bytes_to_base64_data(image)
+            payload['image'] = image_as_str
+
+        if entity_type in (EntityType.stage_instance, EntityType.voice):
+            if channel is MISSING or channel is None:
+                raise TypeError('channel must be set when entity_type is voice or stage_instance')
+
+            payload['channel_id'] = channel.id
+
+            if location is not MISSING:
+                raise TypeError('location cannot be set when entity_type is voice or stage_instance')
+        else:
+            if channel is not MISSING:
+                raise TypeError('channel cannot be set when entity_type is external')
+
+            if location is MISSING or location is None:
+                raise TypeError('location must be set when entity_type is external')
+
+            metadata['location'] = location
+
+            if end_time is not MISSING:
+                if end_time.tzinfo is None:
+                    raise ValueError(
+                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                payload['scheduled_end_time'] = end_time.isoformat()
+
+        if metadata:
+            payload['entity_metadata'] = metadata
+
+        data = await self._state.http.create_guild_scheduled_event(self.id, **payload, reason=reason)
+        return ScheduledEvent(state=self._state, data=data)
 
     async def fetch_emojis(self) -> List[Emoji]:
         r"""|coro|

@@ -23,8 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict
+
+from .scheduled_event import GuildScheduledEvent
+from .sticker import GuildSticker
 from .snowflake import Snowflake
-from .channel import GuildChannel
+from .channel import GuildChannel, StageInstance
 from .voice import GuildVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
@@ -142,6 +145,9 @@ class Guild(_BaseGuildPreview, _GuildOptional):
     premium_tier: PremiumTier
     preferred_locale: str
     public_updates_channel_id: Optional[Snowflake]
+    stickers: List[GuildSticker]
+    stage_instances: List[StageInstance]
+    guild_scheduled_events: List[GuildScheduledEvent]
 
 
 class InviteGuild(Guild, total=False):
