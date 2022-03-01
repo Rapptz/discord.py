@@ -37,39 +37,27 @@ from typing import (
     Set,
     TYPE_CHECKING,
     Tuple,
-    Type,
     TypeVar,
     Union,
 )
 from textwrap import TextWrapper
 
-import sys
 import re
 
 from .enums import AppCommandOptionType, AppCommandType
 from ..interactions import Interaction
-from ..enums import ChannelType, try_enum
-from .models import AppCommandChannel, AppCommandThread, Choice
+from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..utils import resolve_annotation, MISSING, is_inside_class
-from ..user import User
-from ..member import Member
-from ..role import Role
-from ..message import Message
-from ..mixins import Hashable
-from ..permissions import Permissions
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
-    from ..types.interactions import (
-        ResolvedData,
-        PartialThread,
-        PartialChannel,
-        ApplicationCommandInteractionDataOption,
-    )
-    from ..state import ConnectionState
+    from ..user import User
+    from ..member import Member
+    from ..message import Message
     from .namespace import Namespace
+    from .models import ChoiceT
 
 __all__ = (
     'Command',
@@ -93,25 +81,33 @@ Error = Union[
     Callable[[Interaction, AppCommandError], Coro[Any]],
 ]
 
-ContextMenuCallback = Union[
-    # If groups end up support context menus these would be uncommented
-    # Callable[[GroupT, Interaction, Member], Coro[Any]],
-    # Callable[[GroupT, Interaction, User], Coro[Any]],
-    # Callable[[GroupT, Interaction, Message], Coro[Any]],
-    # Callable[[GroupT, Interaction, Union[Member, User]], Coro[Any]],
-    Callable[[Interaction, Member], Coro[Any]],
-    Callable[[Interaction, User], Coro[Any]],
-    Callable[[Interaction, Message], Coro[Any]],
-    Callable[[Interaction, Union[Member, User]], Coro[Any]],
-]
 
 if TYPE_CHECKING:
     CommandCallback = Union[
         Callable[Concatenate[GroupT, Interaction, P], Coro[T]],
         Callable[Concatenate[Interaction, P], Coro[T]],
     ]
+
+    ContextMenuCallback = Union[
+        # If groups end up support context menus these would be uncommented
+        # Callable[[GroupT, Interaction, Member], Coro[Any]],
+        # Callable[[GroupT, Interaction, User], Coro[Any]],
+        # Callable[[GroupT, Interaction, Message], Coro[Any]],
+        # Callable[[GroupT, Interaction, Union[Member, User]], Coro[Any]],
+        Callable[[Interaction, Member], Coro[Any]],
+        Callable[[Interaction, User], Coro[Any]],
+        Callable[[Interaction, Message], Coro[Any]],
+        Callable[[Interaction, Union[Member, User]], Coro[Any]],
+    ]
+
+    AutocompleteCallback = Union[
+        Callable[[GroupT, Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
+        Callable[[Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
+    ]
 else:
     CommandCallback = Callable[..., Coro[T]]
+    ContextMenuCallback = Callable[..., Coro[T]]
+    AutocompleteCallback = Callable[..., Coro[T]]
 
 
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
@@ -197,6 +193,25 @@ def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str
         raise TypeError(f'unknown parameter given: {first}')
 
 
+def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Dict[str, Any]) -> None:
+    for name, param in params.items():
+        callback = autocomplete.pop(name, MISSING)
+        if callback is MISSING:
+            continue
+
+        if not inspect.iscoroutinefunction(callback):
+            raise TypeError('autocomplete callback must be a coroutine function')
+
+        if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
+            raise TypeError('autocomplete is only supported for integer, string, or number option types')
+
+        param.autocomplete = callback
+
+    if autocomplete:
+        first = next(iter(autocomplete))
+        raise TypeError(f'unknown parameter given: {first}')
+
+
 def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, CommandParameter]:
     params = inspect.signature(func).parameters
     cache = {}
@@ -235,6 +250,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
         pass
     else:
         _populate_choices(result, choices)
+
+    try:
+        autocomplete = func.__discord_app_commands_param_autocomplete__
+    except AttributeError:
+        pass
+    else:
+        _populate_autocomplete(result, autocomplete)
 
     return result
 
@@ -381,6 +403,27 @@ class Command(Generic[GroupT, P, T]):
         except Exception as e:
             raise CommandInvokeError(self, e) from e
 
+    async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
+        value = namespace.__dict__[name]
+
+        try:
+            param = self._params[name]
+        except KeyError:
+            raise CommandSignatureMismatch(self) from None
+
+        if param.autocomplete is None:
+            raise CommandSignatureMismatch(self)
+
+        if self.binding is not None:
+            choices = await param.autocomplete(self.binding, interaction, value, namespace)
+        else:
+            choices = await param.autocomplete(interaction, value, namespace)
+
+        if interaction.response.is_done():
+            return
+
+        await interaction.response.autocomplete(choices)
+
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
         return None
 
@@ -417,6 +460,69 @@ class Command(Generic[GroupT, P, T]):
 
         self.on_error = coro
         return coro
+
+    def autocomplete(
+        self, name: str
+    ) -> Callable[[AutocompleteCallback[GroupT, ChoiceT]], AutocompleteCallback[GroupT, ChoiceT]]:
+        """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
+
+        The coroutine callback must have 3 parameters, the :class:`~discord.Interaction`,
+        the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`,
+        depending on the type of the parameter being marked as autocomplete), and then the
+        :class:`Namespace` that represents possible values are partially filled in.
+
+        The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
+        Only up to 25 objects are supported.
+
+        Example:
+
+        .. code-block:: python3
+
+            @app_commands.command()
+            async def fruits(interaction: discord.Interaction, fruits: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruits}')
+
+            @fruits.autocomplete('fruits')
+            async def fruits_autocomplete(
+                interaction: discord.Interaction,
+                current: str,
+                namespace: app_commands.Namespace
+            ) -> List[app_commands.Choice[str]]:
+                fruits = ['Banana', 'Pineapple', 'Apple', 'Watermelon', 'Melon', 'Cherry']
+                return [
+                    app_commands.Choice(name=fruit, value=fruit)
+                    for fruit in fruits if current.lower() in fruit.lower()
+                ]
+
+
+        Parameters
+        -----------
+        name: :clas:`str`
+            The parameter name to register as autocomplete.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine or
+            the parameter is not found or of an invalid type.
+        """
+
+        def decorator(coro: AutocompleteCallback[GroupT, ChoiceT]) -> AutocompleteCallback[GroupT, ChoiceT]:
+            if not inspect.iscoroutinefunction(coro):
+                raise TypeError('The error handler must be a coroutine.')
+
+            try:
+                param = self._params[name]
+            except KeyError:
+                raise TypeError(f'unknown parameter: {name!r}') from None
+
+            if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
+                raise TypeError('autocomplete is only supported for integer, string, or number option types')
+
+            param.autocomplete = coro
+            return coro
+
+        return decorator
 
 
 class ContextMenu:
@@ -882,7 +988,7 @@ def choices(**parameters: List[Choice]) -> Callable[[T], T]:
     Raises
     --------
     TypeError
-        The parameter name is not found.
+        The parameter name is not found or the parameter type was incorrect.
     """
 
     def decorator(inner: T) -> T:
@@ -893,6 +999,57 @@ def choices(**parameters: List[Choice]) -> Callable[[T], T]:
                 inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callable[[T], T]:
+    r"""Associates the given parameters with the given autocomplete callback.
+
+    Autocomplete is only supported on types that have :class:`str`, :class:`int`, or :class:`float`
+    values.
+
+    Example:
+
+    .. code-block:: python3
+
+            @app_commands.command()
+            @app_commands.autocomplete(fruits=fruits_autocomplete)
+            async def fruits(interaction: discord.Interaction, fruits: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruits}')
+
+            async def fruits_autocomplete(
+                interaction: discord.Interaction,
+                current: str,
+                namespace: app_commands.Namespace
+            ) -> List[app_commands.Choice[str]]:
+                fruits = ['Banana', 'Pineapple', 'Apple', 'Watermelon', 'Melon', 'Cherry']
+                return [
+                    app_commands.Choice(name=fruit, value=fruit)
+                    for fruit in fruits if current.lower() in fruit.lower()
+                ]
+
+    Parameters
+    -----------
+    \*\*parameters
+        The parameters to mark as autocomplete.
+
+    Raises
+    --------
+    TypeError
+        The parameter name is not found or the parameter type was incorrect.
+    """
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_autocomplete(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
 
         return inner
 

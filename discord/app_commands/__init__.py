@@ -14,5 +14,5 @@ from .enums import *
 from .errors import *
 from .models import *
 from .tree import *
-from .namespace import Namespace
+from .namespace import *
 from .transformers import *

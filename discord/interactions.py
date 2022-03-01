@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from .embeds import Embed
     from .ui.view import View
+    from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
     from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
@@ -684,6 +685,47 @@ class InteractionResponse:
         )
 
         self._parent._state.store_view(modal)
+        self._responded = True
+
+    async def autocomplete(self, choices: List[Choice[ChoiceT]]) -> None:
+        """|coro|
+
+        Responds to this interaction by giving the user the choices they can use.
+
+        Parameters
+        -----------
+        choices: List[:class:`~discord.app_commands.Choice`]
+            The list of new choices as the user is typing.
+
+        Raises
+        -------
+        HTTPException
+            Sending the choices failed.
+        ValueError
+            This interaction cannot respond with autocomplete.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+        if self._responded:
+            raise InteractionResponded(self._parent)
+
+        payload: Dict[str, Any] = {
+            'choices': [option.to_dict() for option in choices],
+        }
+
+        parent = self._parent
+        if parent.type is not InteractionType.autocomplete:
+            raise ValueError('cannot respond to this interaction with autocomplete.')
+
+        adapter = async_context.get()
+        params = interaction_response_params(type=InteractionResponseType.autocomplete_result.value, data=payload)
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            params=params,
+        )
+
         self._responded = True
 
 

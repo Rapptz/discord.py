@@ -1478,6 +1478,9 @@ of :class:`enum.Enum`.
     .. attribute:: component
 
         Represents a component based interaction, i.e. using the Discord Bot UI Kit.
+    .. attribute:: autocomplete
+
+        Represents an auto complete interaction.
     .. attribute:: modal_submit
 
         Represents submission of a modal interaction.
@@ -1514,6 +1517,11 @@ of :class:`enum.Enum`.
         Responds to the interaction by editing the message.
 
         See also :meth:`InteractionResponse.edit_message`
+    .. attribute:: autocomplete_result
+
+        Responds to the autocomplete interaction with suggested choices.
+
+        See also :meth:`InteractionResponse.autocomplete`
     .. attribute:: modal
 
         Responds to the interaction with a modal.

@@ -27,7 +27,22 @@ import inspect
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Literal, Optional, Set, Tuple, Type, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from .enums import AppCommandOptionType
 from .errors import TransformerError
@@ -75,8 +90,6 @@ class CommandParameter:
         The minimum supported value for this parameter.
     max_value: Optional[Union[:class:`int`, :class:`float`]]
         The maximum supported value for this parameter.
-    autocomplete: :class:`bool`
-        Whether this parameter enables autocomplete.
     """
 
     name: str = MISSING
@@ -88,7 +101,7 @@ class CommandParameter:
     channel_types: List[ChannelType] = MISSING
     min_value: Optional[Union[int, float]] = None
     max_value: Optional[Union[int, float]] = None
-    autocomplete: bool = MISSING
+    autocomplete: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
     _annotation: Any = MISSING
 
     def to_dict(self) -> Dict[str, Any]:

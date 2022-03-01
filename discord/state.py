@@ -692,7 +692,7 @@ class ConnectionState:
 
     def parse_interaction_create(self, data: gw.InteractionCreateEvent) -> None:
         interaction = Interaction(data=data, state=self)
-        if data['type'] == 2 and self._command_tree:  # application command
+        if data['type'] in (2, 4) and self._command_tree:  # application command and auto complete
             self._command_tree._from_interaction(interaction)
         elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type

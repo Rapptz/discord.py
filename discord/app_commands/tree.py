@@ -26,7 +26,7 @@ from __future__ import annotations
 import inspect
 import sys
 import traceback
-from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, Union, overload
+from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
 
 
 from .namespace import Namespace, ResolveKey
@@ -40,6 +40,7 @@ from .errors import (
     CommandSignatureMismatch,
 )
 from ..errors import ClientException
+from ..enums import InteractionType
 from ..utils import MISSING
 
 if TYPE_CHECKING:
@@ -580,7 +581,7 @@ class CommandTree:
             raise CommandSignatureMismatch(ctx_menu)
 
         if value is None:
-            raise RuntimeError('This should not happen if Discord sent well-formed data.')
+            raise AppCommandError('This should not happen if Discord sent well-formed data.')
 
         # I assume I don't have to type check here.
         try:
@@ -608,6 +609,8 @@ class CommandTree:
         CommandSignatureMismatch
             The interaction data referred to a parameter that was not found in the
             application command definition.
+        AppCommandError
+            An error occurred while calling the command.
         """
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         type = data.get('type', 1)
@@ -662,6 +665,14 @@ class CommandTree:
         # At this point options refers to the arguments of the command
         # and command refers to the class type we care about
         namespace = Namespace(interaction, data.get('resolved', {}), options)
+
+        # Auto complete handles the namespace differently... so at this point this is where we decide where that is.
+        if interaction.type is InteractionType.autocomplete:
+            focused = next((opt['name'] for opt in options if opt.get('focused')), None)
+            if focused is None:
+                raise AppCommandError('This should not happen, but there is no focused element. This is a Discord bug.')
+            await command._invoke_autocomplete(interaction, focused, namespace)
+            return
 
         try:
             await command._invoke_with_namespace(interaction, namespace)

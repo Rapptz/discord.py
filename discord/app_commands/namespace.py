@@ -37,6 +37,8 @@ from .enums import AppCommandOptionType
 if TYPE_CHECKING:
     from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
 
+__all__ = ('Namespace',)
+
 
 class ResolveKey(NamedTuple):
     id: str

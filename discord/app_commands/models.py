@@ -31,7 +31,7 @@ from ..enums import ChannelType, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time
 from .enums import AppCommandOptionType, AppCommandType
-from typing import Generic, List, NamedTuple, TYPE_CHECKING, Optional, TypeVar, Union
+from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
     'AppCommand',
