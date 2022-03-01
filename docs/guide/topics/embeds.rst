@@ -19,7 +19,7 @@ Discord typically uses embeds to display information related to links:
 .. image:: /images/guide/topics/embeds/link_embed.png
     :scale: 50%
 
-Bots are also able to send embeds without any links in the message content:
+Bots and webhooks alike are also able to send embeds without any links in the message content:
 
 .. image:: /images/guide/topics/embeds/simple_embed.png
     :scale: 50%
@@ -207,7 +207,7 @@ This determines the positioning of the field within the embed.
 By default, ``inline`` is set to ``True`` for all fields.
 If it is set to ``False`` it will be displayed in a block, on its own.
 
-Let's see what happens when we set it to ``False`` for the wind field.
+Let's see what happens when we set it to ``False`` for the ``Wind`` field.
 
 .. code-block:: python3
 
@@ -228,11 +228,10 @@ Author
 ~~~~~~~
 
 Embeds can also have an author.
-This is a small section of information that appears at the top of the embed,
-it can contain an icon, a name, and a URL, which is opened when the user clicks on the name.
+This is a small section of information that appears at the top of the embed, it can contain an icon, a name, and a URL, which is opened when the user clicks on the name.
 
 Let's set the author of the embed to "Today's Weather" and link to a Google search of "Weather In San Francisco".
-We'll use the :meth:`my_weather_embed.set_author() <Embed.set_author>` to set these values.
+We'll use :meth:`my_weather_embed.set_author() <Embed.set_author>` to set these values.
 
 .. code-block:: python3
 
@@ -248,11 +247,20 @@ That should look a lot like this:
 
 It appears like a "subtitle" above the title in the embed.
 
-With the :attr:`Embed.author`, we can also set the icon of the author.
+With :attr:`Embed.author`, we can also set the icon of the author.
 The ``icon_url`` keyword-only argument of :meth:`my_weather_embed.set_author() <Embed.set_author>` accepts a string, or anything that can be cast to a string, as the URL.
-This allows us to conveniently use :class:`Asset` instances, which is used throughout the library.
+This allows us to conveniently provide an :class:`Asset` instance, which is used throughout the library.
 
-In this example, we will use the :meth:`Bot.user.display_avatar <ClientUser.display_avatar>`, an :class:`Asset` instance, for the icon.
+In this example, we will use the :meth:`bot.user.display_avatar <ClientUser.display_avatar>`, an :class:`Asset` instance, for the icon.
+
+.. code-block:: python3
+    :emphasize-lines: 3
+
+    my_weather_embed.set_author(
+        name="Today's Weather",
+        url="https://goo.gl/search/Weather+In+San+Francisco",
+        icon_url=bot.user.display_avatar,
+    )
 
 .. image:: /images/guide/topics/embeds/author_embed.png
     :scale: 50%
@@ -267,8 +275,7 @@ There are two ways to add images to an embed:
 - As the embed's ``image``.
 - As the embed's ``thumbnail``.
 
-We will add an `image of the Golden Gate Bridge`_ to the weather embed by calling
-:meth:`my_weather_embed.set_image() <Embed.set_image>`:
+We will add an `image of the Golden Gate Bridge`_ to the weather embed by calling :meth:`my_weather_embed.set_image() <Embed.set_image>`:
 
 .. code-block:: python3
 
@@ -280,11 +287,9 @@ We will add an `image of the Golden Gate Bridge`_ to the weather embed by callin
 .. image:: /images/guide/topics/embeds/image_embed.png
     :scale: 50%
 
-As seen above, when setting :attr:`Embed.image`, the provided URL will be displayed at the bottom of
-the embed.
+As seen above, when setting :attr:`Embed.image`, the provided URL will be displayed at the bottom of the embed.
 
-The alternative to this, is to set :attr:`Embed.thumbnail`, which would be displayed in the top right
-corner of the embed.
+The alternative to this, is to set :attr:`Embed.thumbnail`, which would be displayed in the top right corner of the embed.
 
 Rather than setting the image to a URL like we did before, let's try attaching a file for thumbnail.
 
