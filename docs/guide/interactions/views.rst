@@ -73,7 +73,7 @@ Our code might look like this:
 There's a bit to unpack here already, the ``__init__`` is setting the ``style`` and ``label`` parameters, which 
 set the colour and text of the button respectively.
 
-And then theres the :meth:`Button.callback() <discord.ui.Button.callback>` method, this is the method that will be called when the button is clicked.
+And then there's the :meth:`Button.callback() <discord.ui.Button.callback>` method, this is the method that will be called when the button is clicked.
 In this case it's being used to set the ``result`` attribute of the :class:`~discord.ui.View` subclass we created earlier.
 
 Now we've made our first component, we should add it to the view.
