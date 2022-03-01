@@ -210,6 +210,17 @@ class CommandTree:
     ) -> Optional[Union[Command, Group]]:
         ...
 
+    @overload
+    def remove_command(
+        self,
+        command: str,
+        /,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: AppCommandType = ...,
+    ) -> Optional[Union[Command, ContextMenu, Group]]:
+        ...
+
     def remove_command(
         self,
         command: str,
@@ -278,6 +289,17 @@ class CommandTree:
     ) -> Optional[Union[Command, Group]]:
         ...
 
+    @overload
+    def get_command(
+        self,
+        command: str,
+        /,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: AppCommandType = ...,
+    ) -> Optional[Union[Command, ContextMenu, Group]]:
+        ...
+
     def get_command(
         self,
         command: str,
@@ -337,6 +359,15 @@ class CommandTree:
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
     ) -> List[Union[Command, Group]]:
+        ...
+
+    @overload
+    def get_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: AppCommandType = ...,
+    ) -> Union[List[Union[Command, Group]], List[ContextMenu]]:
         ...
 
     def get_commands(
