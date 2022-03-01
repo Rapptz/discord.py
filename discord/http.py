@@ -59,6 +59,8 @@ from .utils import MISSING
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .ui.view import View
     from .embeds import Embed
     from .mentions import AllowedMentions
@@ -100,7 +102,6 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
     BE = TypeVar('BE', bound=BaseException)
-    MU = TypeVar('MU', bound='MaybeUnlock')
     Response = Coroutine[Any, Any, T]
 
 
@@ -287,7 +288,7 @@ class MaybeUnlock:
         self.lock: asyncio.Lock = lock
         self._unlock: bool = True
 
-    def __enter__(self: MU) -> MU:
+    def __enter__(self) -> Self:
         return self
 
     def defer(self) -> None:

@@ -24,9 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 
 __all__ = (
     'SystemChannelFlags',
@@ -37,7 +41,6 @@ __all__ = (
     'ApplicationFlags',
 )
 
-FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
 
 
@@ -47,7 +50,7 @@ class flag_value:
         self.__doc__ = func.__doc__
 
     @overload
-    def __get__(self: FV, instance: None, owner: Type[BF]) -> FV:
+    def __get__(self, instance: None, owner: Type[BF]) -> Self:
         ...
 
     @overload

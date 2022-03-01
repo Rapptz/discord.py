@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Type, TypeVar, Union, TYPE_CHECKING
+from typing import List, Optional, Union, TYPE_CHECKING
 from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
@@ -40,6 +40,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.invite import (
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
@@ -203,9 +205,6 @@ class PartialInviteGuild:
         if self._splash is None:
             return None
         return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
-
-
-I = TypeVar('I', bound='Invite')
 
 
 class Invite(Hashable):
@@ -390,7 +389,7 @@ class Invite(Hashable):
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
 
     @classmethod
-    def from_incomplete(cls: Type[I], *, state: ConnectionState, data: InvitePayload) -> I:
+    def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
         guild: Optional[Union[Guild, PartialInviteGuild]]
         try:
             guild_data = data['guild']
@@ -414,7 +413,7 @@ class Invite(Hashable):
         return cls(state=state, data=data, guild=guild, channel=channel)
 
     @classmethod
-    def from_gateway(cls: Type[I], *, state: ConnectionState, data: GatewayInvitePayload) -> I:
+    def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
         guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         guild: Optional[Union[Guild, Object]] = state._get_guild(guild_id)
         channel_id = int(data['channel_id'])
@@ -479,7 +478,7 @@ class Invite(Hashable):
             url += '?event=' + str(self.scheduled_event_id)
         return url
 
-    def set_scheduled_event(self: I, scheduled_event: Snowflake, /) -> I:
+    def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.
 
         .. versionadded:: 2.0

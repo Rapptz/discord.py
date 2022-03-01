@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+from __future__ import annotations
 
 import types
 from collections import namedtuple
@@ -61,6 +62,9 @@ __all__ = (
     'EventStatus',
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 
 def _create_value_cls(name: str, comparable: bool):
     # All the type ignores here are due to the type checker being unable to recognise
@@ -87,7 +91,7 @@ class EnumMeta(type):
         _enum_member_map_: ClassVar[Dict[str, Any]]
         _enum_value_map_: ClassVar[Dict[Any, Any]]
 
-    def __new__(cls: Type[type], name: str, bases: Tuple[type, ...], attrs: Dict[str, Any], *, comparable: bool = False):
+    def __new__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any], *, comparable: bool = False) -> Self:
         value_mapping = {}
         member_mapping = {}
         member_names = []

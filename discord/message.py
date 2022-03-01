@@ -41,8 +41,6 @@ from typing import (
     ClassVar,
     Optional,
     overload,
-    TypeVar,
-    Type,
 )
 
 from . import utils
@@ -65,6 +63,8 @@ from .threads import Thread
 from .channel import PartialMessageable
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.message import (
         Message as MessagePayload,
         Attachment as AttachmentPayload,
@@ -93,7 +93,6 @@ if TYPE_CHECKING:
     from .role import Role
     from .ui.view import View
 
-    MR = TypeVar('MR', bound='MessageReference')
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
 __all__ = (
@@ -425,7 +424,7 @@ class MessageReference:
         self.fail_if_not_exists: bool = fail_if_not_exists
 
     @classmethod
-    def with_state(cls: Type[MR], state: ConnectionState, data: MessageReferencePayload) -> MR:
+    def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> Self:
         self = cls.__new__(cls)
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data.pop('channel_id'))
@@ -436,7 +435,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls: Type[MR], message: Message, *, fail_if_not_exists: bool = True) -> MR:
+    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> Self:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6

@@ -32,6 +32,9 @@ __all__ = (
     'PermissionOverwrite',
 )
 
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
 class permission_alias(alias_flag_value):
@@ -45,9 +48,6 @@ def make_permission_alias(alias: str) -> Callable[[Callable[[Any], int]], permis
         return ret
 
     return decorator
-
-
-P = TypeVar('P', bound='Permissions')
 
 
 @fill_with_flags()
@@ -139,20 +139,20 @@ class Permissions(BaseFlags):
     __gt__ = is_strict_superset
 
     @classmethod
-    def none(cls: Type[P]) -> P:
+    def none(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``False``."""
         return cls(0)
 
     @classmethod
-    def all(cls: Type[P]) -> P:
+    def all(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
         return cls(0b11111111111111111111111111111111111111111)
 
     @classmethod
-    def all_channel(cls: Type[P]) -> P:
+    def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
@@ -178,7 +178,7 @@ class Permissions(BaseFlags):
         return cls(0b111110110110011111101111111111101010001)
 
     @classmethod
-    def general(cls: Type[P]) -> P:
+    def general(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "General" permissions from the official Discord UI set to ``True``.
 
@@ -191,7 +191,7 @@ class Permissions(BaseFlags):
         return cls(0b01110000000010000000010010110000)
 
     @classmethod
-    def membership(cls: Type[P]) -> P:
+    def membership(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Membership" permissions from the official Discord UI set to ``True``.
 
@@ -200,7 +200,7 @@ class Permissions(BaseFlags):
         return cls(0b10000000000001100000000000000000000000111)
 
     @classmethod
-    def text(cls: Type[P]) -> P:
+    def text(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Text" permissions from the official Discord UI set to ``True``.
 
@@ -215,13 +215,13 @@ class Permissions(BaseFlags):
         return cls(0b111110010000000000001111111100001000000)
 
     @classmethod
-    def voice(cls: Type[P]) -> P:
+    def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
         return cls(0b1000000000000011111100000000001100000000)
 
     @classmethod
-    def stage(cls: Type[P]) -> P:
+    def stage(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Stage Channel" permissions from the official Discord UI set to ``True``.
 
@@ -230,7 +230,7 @@ class Permissions(BaseFlags):
         return cls(1 << 32)
 
     @classmethod
-    def stage_moderator(cls: Type[P]) -> P:
+    def stage_moderator(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Stage Moderator" permissions from the official Discord UI set to ``True``.
 
@@ -239,7 +239,7 @@ class Permissions(BaseFlags):
         return cls(0b100000001010000000000000000000000)
 
     @classmethod
-    def advanced(cls: Type[P]) -> P:
+    def advanced(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
 
@@ -570,9 +570,6 @@ class Permissions(BaseFlags):
         return 1 << 40
 
 
-PO = TypeVar('PO', bound='PermissionOverwrite')
-
-
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
     aliases = set()
@@ -721,7 +718,7 @@ class PermissionOverwrite:
         return allow, deny
 
     @classmethod
-    def from_pair(cls: Type[PO], allow: Permissions, deny: Permissions) -> PO:
+    def from_pair(cls, allow: Permissions, deny: Permissions) -> Self:
         """Creates an overwrite from an allow/deny pair of :class:`Permissions`."""
         ret = cls()
         for key, value in allow:

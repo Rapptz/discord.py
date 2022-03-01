@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union, Type, TypeVar, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
@@ -34,6 +34,8 @@ from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from datetime import datetime
 
     from .channel import DMChannel
@@ -51,8 +53,6 @@ __all__ = (
     'User',
     'ClientUser',
 )
-
-BU = TypeVar('BU', bound='BaseUser')
 
 
 class _UserTag:
@@ -120,7 +120,7 @@ class BaseUser(_UserTag):
         self.system = data.get('system', False)
 
     @classmethod
-    def _copy(cls: Type[BU], user: BU) -> BU:
+    def _copy(cls, user: Self) -> Self:
         self = cls.__new__(cls)  # bypass __init__
 
         self.name = user.name

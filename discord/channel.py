@@ -37,8 +37,6 @@ from typing import (
     Optional,
     TYPE_CHECKING,
     Tuple,
-    Type,
-    TypeVar,
     Union,
     overload,
 )
@@ -69,6 +67,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.threads import ThreadArchiveDuration
     from .role import Role
     from .member import Member, VoiceState
@@ -1827,9 +1827,6 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
 
-DMC = TypeVar('DMC', bound='DMChannel')
-
-
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
@@ -1883,8 +1880,8 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @classmethod
-    def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
-        self: DMC = cls.__new__(cls)
+    def _from_message(cls, state: ConnectionState, channel_id: int) -> Self:
+        self = cls.__new__(cls)
         self._state = state
         self.id = channel_id
         self.recipient = None

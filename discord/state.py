@@ -82,7 +82,6 @@ if TYPE_CHECKING:
     from .types import gateway as gw
 
     T = TypeVar('T')
-    CS = TypeVar('CS', bound='ConnectionState')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
 
 
