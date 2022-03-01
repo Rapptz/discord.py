@@ -1359,11 +1359,7 @@ class Client:
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         .. versionchanged:: 2.0
-            ``name`` and ``icon`` parameters are now keyword-only.
-            The `region`` parameter has been removed.
-
-        .. versionchanged:: 2.0
-            ``name`` and ``region``, and ``icon`` parameters are now keyword-only.
+            ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
 
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising

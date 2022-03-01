@@ -263,7 +263,6 @@ class Guild(Hashable):
         'name',
         'id',
         'unavailable',
-        'region',
         'owner_id',
         'emojis',
         'stickers',
