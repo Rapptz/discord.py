@@ -46,6 +46,7 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .enums import Status
@@ -316,7 +317,7 @@ class AutoShardedClient(Client):
     """
 
     if TYPE_CHECKING:
-        _connection: AutoShardedConnectionState
+        _connection: AutoShardedConnectionState[Self]
 
     def __init__(self, *args: Any, loop: Optional[asyncio.AbstractEventLoop] = None, **kwargs: Any) -> None:
         kwargs.pop('shard_id', None)

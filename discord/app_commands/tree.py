@@ -26,7 +26,7 @@ from __future__ import annotations
 import inspect
 import sys
 import traceback
-from typing import Callable, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Callable, Dict, Generic, List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, overload
 
 
 from .namespace import Namespace, ResolveKey
@@ -52,8 +52,10 @@ if TYPE_CHECKING:
 
 __all__ = ('CommandTree',)
 
+ClientT = TypeVar('ClientT', bound='Client')
 
-class CommandTree:
+
+class CommandTree(Generic[ClientT]):
     """Represents a container that holds application command information.
 
     Parameters
@@ -62,8 +64,8 @@ class CommandTree:
         The client instance to get application command information from.
     """
 
-    def __init__(self, client: Client):
-        self.client = client
+    def __init__(self, client: ClientT):
+        self.client: ClientT = client
         self._http = client.http
         self._state = client._connection
         self._state._command_tree = self

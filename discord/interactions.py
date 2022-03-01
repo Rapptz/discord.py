@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import asyncio
 
 from . import utils
@@ -53,6 +53,7 @@ if TYPE_CHECKING:
         Interaction as InteractionPayload,
         InteractionData,
     )
+    from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .file import File
@@ -70,9 +71,10 @@ if TYPE_CHECKING:
     ]
 
 MISSING: Any = utils.MISSING
+ClientT = TypeVar('ClientT', bound='Client')
 
 
-class Interaction:
+class Interaction(Generic[ClientT]):
     """Represents a Discord interaction.
 
     An interaction happens when a user does an action that needs to
@@ -116,6 +118,7 @@ class Interaction:
         'version',
         '_permissions',
         '_state',
+        '_client',
         '_session',
         '_original_message',
         '_cs_response',
@@ -123,8 +126,9 @@ class Interaction:
         '_cs_channel',
     )
 
-    def __init__(self, *, data: InteractionPayload, state: ConnectionState):
-        self._state: ConnectionState = state
+    def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
+        self._state: ConnectionState[ClientT] = state
+        self._client: ClientT = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
@@ -165,6 +169,11 @@ class Interaction:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
             except KeyError:
                 pass
+
+    @property
+    def client(self) -> ClientT:
+        """:class:`Client`: The client that is handling this interaction."""
+        return self._client
 
     @property
     def guild(self) -> Optional[Guild]:

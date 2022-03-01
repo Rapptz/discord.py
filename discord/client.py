@@ -77,6 +77,7 @@ from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from .types.guild import Guild as GuildPayload
     from .abc import SnowflakeTime, Snowflake, PrivateChannel
     from .guild import GuildChannel
@@ -254,7 +255,7 @@ class Client:
         }
 
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
-        self._connection: ConnectionState = self._get_state(**options)
+        self._connection: ConnectionState[Self] = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
         self._ready: asyncio.Event = asyncio.Event()
