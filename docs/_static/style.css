@@ -1147,6 +1147,15 @@ table.docutils tbody tr td ol.last {
   margin-bottom: 0;
 }
 
+/* added when the `align` attribute is specified in the `image` directive */
+main img.align-left {
+  margin-left: .5em;
+}
+
+main img.align-right {
+  margin-right: .5em;
+}
+
 .align-default {
   text-align: left !important;
 }
