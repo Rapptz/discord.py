@@ -1047,9 +1047,6 @@ def evaluate_annotation(
         if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
             raise TypeError('Literal arguments must be of type str, int, bool, or NoneType.')
 
-        if evaluated_args == args:
-            return tp
-
         try:
             return tp.copy_with(evaluated_args)
         except AttributeError:
