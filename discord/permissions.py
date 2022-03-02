@@ -554,7 +554,7 @@ class Permissions(BaseFlags):
         return 1 << 38
 
     @flag_value
-    def start_embedded_activities(self) -> int:
+    def use_embedded_activities(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can launch an embedded application in a Voice channel.
 
         .. versionadded:: 2.0
