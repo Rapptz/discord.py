@@ -94,7 +94,7 @@ class Interaction(Generic[ClientT]):
         The channel ID the interaction was sent from.
     application_id: :class:`int`
         The application ID that the interaction was for.
-    user: Optional[Union[:class:`User`, :class:`Member`]]
+    user: Union[:class:`User`, :class:`Member`]
         The user or member that sent the interaction.
     message: Optional[:class:`Message`]
         The message that sent this interaction.
@@ -150,7 +150,7 @@ class Interaction(Generic[ClientT]):
         except KeyError:
             self.message = None
 
-        self.user: Optional[Union[User, Member]] = None
+        self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
         # TODO: there's a potential data loss here
