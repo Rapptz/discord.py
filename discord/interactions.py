@@ -163,7 +163,7 @@ class Interaction(Generic[ClientT]):
             else:
                 # The fallback to Object for guild causes a type check error but is explicitly allowed here
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
-                self._permissions = int(member.get('permissions', 0))
+                self._permissions = self.user._permissions or 0
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled

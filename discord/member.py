@@ -272,6 +272,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'pending',
         'nick',
         'timed_out_until',
+        '_permissions',
         '_client_status',
         '_user',
         '_state',
@@ -307,6 +308,12 @@ class Member(discord.abc.Messageable, _UserTag):
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
+        self._permissions: Optional[int]
+        try:
+            self._permissions = int(data['permissions'])
+        except KeyError:
+            self._permissions = None
+
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
 
     def __str__(self) -> str:
@@ -365,6 +372,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.pending = member.pending
         self.activities = member.activities
         self.timed_out_until = member.timed_out_until
+        self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
 
@@ -617,6 +625,22 @@ class Member(discord.abc.Messageable, _UserTag):
             return Permissions.all()
 
         return base
+
+    @property
+    def resolved_permissions(self) -> Optional[Permissions]:
+        """Optional[:class:`Permissions`]: Returns the member's resolved permissions
+        from an interaction.
+
+        This is only available in interaction contexts and represents the resolved
+        permissions of the member in the channel the interaction was executed in.
+        This is more or less equivalent to calling :meth:`abc.GuildChannel.permissions_for`
+        but stored and returned as an attribute by the Discord API rather than computed.
+
+        .. versionadded:: 2.0
+        """
+        if self._permissions is None:
+            return None
+        return Permissions(self._permissions)
 
     @property
     def voice(self) -> Optional[VoiceState]:
