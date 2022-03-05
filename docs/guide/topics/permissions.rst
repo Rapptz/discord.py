@@ -11,6 +11,49 @@ Permissions are the bread and butter of how control over a discord server (which
 Controlling permissions is necessary for securing and controlling how your guild functions and operates.
 
 
+Permission hierarchy explanation
+---------------------------------
+
+Discord permissions work on a hierarchy system. This means that roles placed logically above each other (in the Roles UI) have descending order of precedence.
+
+If you have a role list, like so:
+
+- ``Administrator (#1)``
+- ``Manager (#2)``
+- ``Moderator (#3)``
+- ``@everyone (#4)``
+
+This means that Administrator role (someone who has it) can kick, ban and timeout Manager.
+Manager **cannot** kick, ban or timeout Administrator.
+
+discord.py is aware of this and has implemented the :meth:`~Role.__gt__` and similar methods on :class:`~Role` that allows you to perform the following:
+
+.. code-block:: python3
+
+    if administrator_role > manager_role:
+        # The administrator role is greater in the hierarchy than manager.
+
+One small caveat to note with the discord permissions system, is that in the case of overwrites, explicit allow will always overwrite explicit deny.
+
+What I mean by this, is the following:
+
+Take a scenario where you have a text channel, that gives the ``@everyone`` role the ``send_messages`` overwrite set to ``True`` (or a green check-mark in the UI).
+If you then have a Muted role, that is supposed to disallow members from sending messages, but that role has the ``send_messages`` overwrite set to ``False`` (or a red cross in the UI)
+then members with that Muted role **can** still send  messages within this channel.
+
+The solution to this issue is to set the ``@everyone`` role overwrites for ``send_messages`` to ``None`` (or a grey strike in the UI).
+This allows for permissions to be cascaded to it.
+
+.. image:: /images/guide/topics/permissions/green_check.png
+    :scale: 80%
+
+.. image:: /images/guide/topics/permissions/red_cross.png
+    :scale: 80%
+
+.. image:: /images/guide/topics/permissions/grey_strike.png
+    :scale: 80%
+
+
 Using permissions within discord.py
 ------------------------------------
 
