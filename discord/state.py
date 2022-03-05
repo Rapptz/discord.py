@@ -98,8 +98,6 @@ if TYPE_CHECKING:
     T = TypeVar('T')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
 
-ClientT = TypeVar('ClientT', bound='Client')
-
 
 class ChunkRequest:
     def __init__(
@@ -159,10 +157,10 @@ async def logging_coroutine(coroutine: Coroutine[Any, Any, T], *, info: str) -> 
         _log.exception('Exception occurred during %s', info)
 
 
-class ConnectionState(Generic[ClientT]):
+class ConnectionState:
     if TYPE_CHECKING:
         _get_websocket: Callable[..., DiscordWebSocket]
-        _get_client: Callable[..., ClientT]
+        _get_client: Callable[..., Client]
         _parsers: Dict[str, Callable[[Dict[str, Any]], None]]
 
     def __init__(
@@ -1487,7 +1485,7 @@ class ConnectionState(Generic[ClientT]):
         return Message(state=self, channel=channel, data=data)
 
 
-class AutoShardedConnectionState(ConnectionState[ClientT]):
+class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.shard_ids: Union[List[int], range] = []
