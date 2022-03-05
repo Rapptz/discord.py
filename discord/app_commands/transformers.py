@@ -44,11 +44,10 @@ from typing import (
     Union,
 )
 
-from .enums import AppCommandOptionType
 from .errors import TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
-from ..enums import ChannelType
+from ..enums import AppCommandOptionType, ChannelType
 from ..utils import MISSING
 from ..user import User
 from ..role import Role
@@ -82,7 +81,7 @@ class CommandParameter:
         Whether the parameter is required
     choices: List[:class:`~discord.app_commands.Choice`]
         A list of choices this parameter takes
-    type: :class:`~discord.app_commands.AppCommandOptionType`
+    type: :class:`~discord.AppCommandOptionType`
         The underlying type of this parameter.
     channel_types: List[:class:`~discord.ChannelType`]
         The channel types that are allowed for this parameter.
@@ -140,10 +139,10 @@ class CommandParameter:
 
 class Transformer:
     """The base class that allows a type annotation in an application command parameter
-    to map into a :class:`AppCommandOptionType` and transform the raw value into one from
-    this type.
+    to map into a :class:`~discord.AppCommandOptionType` and transform the raw value into one
+    from this type.
 
-    This class is customisable through the overriding of :obj:`classmethod`s in the class
+    This class is customisable through the overriding of :func:`classmethod` in the class
     and by using it as the second type parameter of the :class:`~discord.app_commands.Transform`
     class. For example, to convert a string into a custom pair type:
 
@@ -174,11 +173,11 @@ class Transformer:
 
     @classmethod
     def type(cls) -> AppCommandOptionType:
-        """:class:`AppCommandOptionType`: The option type associated with this transformer.
+        """:class:`~discord.AppCommandOptionType`: The option type associated with this transformer.
 
         This must be a :obj:`classmethod`.
 
-        Defaults to :attr:`AppCommandOptionType.string`.
+        Defaults to :attr:`~discord.AppCommandOptionType.string`.
         """
         return AppCommandOptionType.string
 
@@ -186,7 +185,7 @@ class Transformer:
     def channel_types(cls) -> List[ChannelType]:
         """List[:class:`~discord.ChannelType`]: A list of channel types that are allowed to this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.channel`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.channel`.
 
         Defaults to an empty list.
         """
@@ -196,8 +195,8 @@ class Transformer:
     def min_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The minimum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.number` or
-        :attr:`AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
+        :attr:`~discord.AppCommandOptionType.integer`.
 
         Defaults to ``None``.
         """
@@ -207,8 +206,8 @@ class Transformer:
     def max_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The maximum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`AppCommandOptionType.number` or
-        :attr:`AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
+        :attr:`~discord.AppCommandOptionType.integer`.
 
         Defaults to ``None``.
         """
@@ -341,7 +340,7 @@ else:
         the usage of two generic parameters, the first one is the type you're converting to and the second
         one is the type of the :class:`Transformer` actually doing the transformation.
 
-        During type checking time this is equivalent to :obj:`py:Annotated` so type checkers understand
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
         For example usage, check :class:`Transformer`.
@@ -368,7 +367,7 @@ else:
         """A type annotation that can be applied to a parameter to require a numeric type
         to fit within the range provided.
 
-        During type checking time this is equivalent to :obj:`py:Annotated` so type checkers understand
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
         Some example ranges:

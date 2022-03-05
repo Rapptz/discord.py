@@ -1463,149 +1463,6 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.5
 
-.. class:: InteractionType
-
-    Specifies the type of :class:`Interaction`.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: ping
-
-        Represents Discord pinging to see if the interaction response server is alive.
-    .. attribute:: application_command
-
-        Represents a slash command interaction.
-    .. attribute:: component
-
-        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
-    .. attribute:: autocomplete
-
-        Represents an auto complete interaction.
-    .. attribute:: modal_submit
-
-        Represents submission of a modal interaction.
-
-.. class:: InteractionResponseType
-
-    Specifies the response type for the interaction.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: pong
-
-        Pongs the interaction when given a ping.
-
-        See also :meth:`InteractionResponse.pong`
-    .. attribute:: channel_message
-
-        Respond to the interaction with a message.
-
-        See also :meth:`InteractionResponse.send_message`
-    .. attribute:: deferred_channel_message
-
-        Responds to the interaction with a message at a later time.
-
-        See also :meth:`InteractionResponse.defer`
-    .. attribute:: deferred_message_update
-
-        Acknowledges the component interaction with a promise that
-        the message will update later (though there is no need to actually update the message).
-
-        See also :meth:`InteractionResponse.defer`
-    .. attribute:: message_update
-
-        Responds to the interaction by editing the message.
-
-        See also :meth:`InteractionResponse.edit_message`
-    .. attribute:: autocomplete_result
-
-        Responds to the autocomplete interaction with suggested choices.
-
-        See also :meth:`InteractionResponse.autocomplete`
-    .. attribute:: modal
-
-        Responds to the interaction with a modal.
-
-        See also :meth:`InteractionResponse.send_modal`
-
-.. class:: ComponentType
-
-    Represents the component type of a component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: action_row
-
-        Represents the group component which holds different components in a row.
-    .. attribute:: button
-
-        Represents a button component.
-    .. attribute:: select
-
-        Represents a select component.
-
-    .. attribute:: text_input
-
-        Represents a text box component.
-
-
-.. class:: ButtonStyle
-
-    Represents the style of the button component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: primary
-
-        Represents a blurple button for the primary action.
-    .. attribute:: secondary
-
-        Represents a grey button for the secondary action.
-    .. attribute:: success
-
-        Represents a green button for a successful action.
-    .. attribute:: danger
-
-        Represents a red button for a dangerous action.
-    .. attribute:: link
-
-        Represents a link button.
-
-    .. attribute:: blurple
-
-        An alias for :attr:`primary`.
-    .. attribute:: grey
-
-        An alias for :attr:`secondary`.
-    .. attribute:: gray
-
-        An alias for :attr:`secondary`.
-    .. attribute:: green
-
-        An alias for :attr:`success`.
-    .. attribute:: red
-
-        An alias for :attr:`danger`.
-    .. attribute:: url
-
-        An alias for :attr:`link`.
-
-.. class:: TextStyle
-
-    Represents the style of the text box component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: short
-
-        Represents a short text box.
-    .. attribute:: paragraph
-
-        Represents a long form text box.
-    .. attribute:: long
-
-        An alias for :attr:`paragraph`.
-
 .. class:: VerificationLevel
 
     Specifies a :class:`Guild`\'s verification level, which is the criteria in
@@ -2582,7 +2439,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: guild_only
 
-        Alias for :attr:`.closed`
+       The stage instance or scheduled event is only accessible within the guild.
 
 .. class:: NSFWLevel
 
@@ -3585,51 +3442,6 @@ Message
 .. autoclass:: Message()
     :members:
 
-Component
-~~~~~~~~~~
-
-.. attributetable:: Component
-
-.. autoclass:: Component()
-    :members:
-
-ActionRow
-~~~~~~~~~~
-
-.. attributetable:: ActionRow
-
-.. autoclass:: ActionRow()
-    :members:
-
-Button
-~~~~~~~
-
-.. attributetable:: Button
-
-.. autoclass:: Button()
-    :members:
-    :inherited-members:
-
-SelectMenu
-~~~~~~~~~~~
-
-.. attributetable:: SelectMenu
-
-.. autoclass:: SelectMenu()
-    :members:
-    :inherited-members:
-
-
-TextInput
-~~~~~~~~~~
-
-.. attributetable:: TextInput
-
-.. autoclass:: TextInput()
-    :members:
-    :inherited-members:
-
-
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3696,30 +3508,6 @@ Integration
     :members:
 
 .. autoclass:: StreamIntegration()
-    :members:
-
-Interaction
-~~~~~~~~~~~~
-
-.. attributetable:: Interaction
-
-.. autoclass:: Interaction()
-    :members:
-
-InteractionResponse
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionResponse
-
-.. autoclass:: InteractionResponse()
-    :members:
-
-InteractionMessage
-~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionMessage
-
-.. autoclass:: InteractionMessage()
     :members:
 
 Member
@@ -4125,14 +3913,6 @@ PartialMessage
 .. autoclass:: PartialMessage
     :members:
 
-SelectOption
-~~~~~~~~~~~~~
-
-.. attributetable:: SelectOption
-
-.. autoclass:: SelectOption
-    :members:
-
 Intents
 ~~~~~~~~~~
 
@@ -4260,68 +4040,6 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
-
-.. _discord_ui_kit:
-
-Bot UI Kit
--------------
-
-The library has helpers to help create component-based UIs.
-
-View
-~~~~~~~
-
-.. attributetable:: discord.ui.View
-
-.. autoclass:: discord.ui.View
-    :members:
-
-Modal
-~~~~~~
-
-.. attributetable:: discord.ui.Modal
-
-.. autoclass:: discord.ui.Modal
-    :members:
-
-Item
-~~~~~~~
-
-.. attributetable:: discord.ui.Item
-
-.. autoclass:: discord.ui.Item
-    :members:
-
-Button
-~~~~~~~
-
-.. attributetable:: discord.ui.Button
-
-.. autoclass:: discord.ui.Button
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.button
-
-Select
-~~~~~~~
-
-.. attributetable:: discord.ui.Select
-
-.. autoclass:: discord.ui.Select
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.select
-
-TextInput
-~~~~~~~~~~
-
-.. attributetable:: discord.ui.TextInput
-
-.. autoclass:: discord.ui.TextInput
-    :members:
-    :inherited-members:
 
 Exceptions
 ------------

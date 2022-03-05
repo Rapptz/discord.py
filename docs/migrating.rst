@@ -894,8 +894,8 @@ dictionary to a set that does not have aliases. To retrieve the previous diction
 Command instances have gained new attributes and properties:
 
 1. :attr:`~ext.commands.Command.signature` to get the signature of the command.
-2. :attr:`~.Command.usage`, an attribute to override the default signature.
-3. :attr:`~.Command.root_parent` to get the root parent group of a subcommand.
+2. :attr:`~ext.commands.Command.usage`, an attribute to override the default signature.
+3. :attr:`~ext.commands.Command.root_parent` to get the root parent group of a subcommand.
 
 For :class:`~ext.commands.Group` and :class:`~ext.commands.Bot` the following changed:
 
@@ -942,7 +942,7 @@ have been removed. The :class:`~ext.commands.Command` instance was not kept up-t
 the up to date :class:`~ext.commands.Command` instance, use the :attr:`.Context.command`
 attribute.
 
-The error handlers, either :meth:`.Command.error` or :func:`.on_command_error`,
+The error handlers, either :meth:`~ext.commands.Command.error` or :func:`.on_command_error`,
 have been re-ordered to use the :class:`~ext.commands.Context` as its first parameter to be consistent with other events
 and commands.
 

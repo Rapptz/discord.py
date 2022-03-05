@@ -44,7 +44,7 @@ from textwrap import TextWrapper
 
 import re
 
-from .enums import AppCommandOptionType, AppCommandType
+from ..enums import AppCommandOptionType, AppCommandType
 from ..interactions import Interaction
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
@@ -63,6 +63,7 @@ __all__ = (
     'Command',
     'ContextMenu',
     'Group',
+    'context_menu',
     'command',
     'describe',
     'choices',
@@ -307,7 +308,7 @@ class Command(Generic[GroupT, P, T]):
     description: :class:`str`
         The description of the application command. This shows up in the UI to describe
         the application command.
-    parent: Optional[:class:`CommandGroup`]
+    parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
     """
 
@@ -497,7 +498,7 @@ class Command(Generic[GroupT, P, T]):
 
         Parameters
         -----------
-        name: :clas:`str`
+        name: :class:`str`
             The parameter name to register as autocomplete.
 
         Raises
@@ -605,7 +606,7 @@ class Group:
         The description of the group. This shows up in the UI to describe
         the group. If not given, it defaults to the docstring of the
         class shortened to 100 characters.
-    parent: Optional[:class:`CommandGroup`]
+    parent: Optional[:class:`Group`]
         The parent group. ``None`` if there isn't one.
     """
 
@@ -705,7 +706,7 @@ class Group:
         -----------
         interaction: :class:`~discord.Interaction`
             The interaction that is being handled.
-        command: :class`~discord.app_commands.Command`
+        command: :class:`~discord.app_commands.Command`
             The command that failed.
         error: :exc:`AppCommandError`
             The exception that was raised.

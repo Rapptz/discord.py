@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, List, Optional, Type, Union
 
 
-from .enums import AppCommandOptionType, AppCommandType
+from ..enums import AppCommandOptionType, AppCommandType
 from ..errors import DiscordException
 
 __all__ = (
@@ -102,7 +102,7 @@ class TransformerError(AppCommandError):
     -----------
     value: Any
         The value that failed to convert.
-    type: :class:`AppCommandOptionType`
+    type: :class:`~discord.AppCommandOptionType`
         The type of argument that failed to convert.
     transformer: Type[:class:`Transformer`]
         The transformer that failed the conversion.
@@ -164,7 +164,7 @@ class CommandNotFound(AppCommandError):
     parents: List[:class:`str`]
         A list of parent command names that were previously found
         prior to the application command not being found.
-    type: :class:`AppCommandType`
+    type: :class:`~discord.AppCommandType`
         The type of command that was not found.
     """
 

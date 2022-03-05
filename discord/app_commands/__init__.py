@@ -10,7 +10,6 @@ Application commands support for the Discord API
 """
 
 from .commands import *
-from .enums import *
 from .errors import *
 from .models import *
 from .tree import *

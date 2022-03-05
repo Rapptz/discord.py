@@ -27,10 +27,9 @@ from datetime import datetime
 
 
 from ..permissions import Permissions
-from ..enums import ChannelType, try_enum
+from ..enums import AppCommandOptionType, AppCommandType, ChannelType, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time
-from .enums import AppCommandOptionType, AppCommandType
 from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
@@ -100,7 +99,7 @@ class AppCommand(Hashable):
         The application command's ID.
     application_id: :class:`int`
         The application command's application's ID.
-    type: :class:`ApplicationCommandType`
+    type: :class:`~discord.AppCommandType`
         The application command's type.
     name: :class:`str`
         The application command's name.
@@ -424,7 +423,7 @@ class AppCommandThread(Hashable):
 
     @property
     def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to."""
+        """Optional[:class:`~discord.TextChannel`]: The parent channel this thread belongs to."""
         return self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
@@ -486,7 +485,7 @@ class Argument:
 
     Attributes
     ------------
-    type: :class:`AppCommandOptionType`
+    type: :class:`~discord.AppCommandOptionType`
         The type of argument.
     name: :class:`str`
         The name of the argument.
@@ -543,7 +542,7 @@ class AppCommandGroup:
 
     Attributes
     ------------
-    type: :class:`ApplicationCommandOptionType`
+    type: :class:`~discord.AppCommandOptionType`
         The type of subcommand.
     name: :class:`str`
         The name of the subcommand.

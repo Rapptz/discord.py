@@ -31,8 +31,8 @@ from ..object import Object
 from ..role import Role
 from ..message import Message, Attachment
 from ..channel import PartialMessageable
+from ..enums import AppCommandOptionType
 from .models import AppCommandChannel, AppCommandThread
-from .enums import AppCommandOptionType
 
 if TYPE_CHECKING:
     from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
@@ -84,27 +84,27 @@ class Namespace:
     This namespace object converts resolved objects into their appropriate form depending on their
     type. Consult the table below for conversion information.
 
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    |               Option Type                |                                 Resolved Type                                 |
-    +==========================================+===============================================================================+
-    | :attr:`AppCommandOptionType.string`      | :class:`str`                                                                  |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.integer`     | :class:`int`                                                                  |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.boolean`     | :class:`bool`                                                                 |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.number`      | :class:`float`                                                                |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.user`        | :class:`~discord.User` or :class:`~discord.Member`                            |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.channel`     | :class:`.AppCommandChannel` or :class:`.AppCommandThread`                     |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.role`        | :class:`~discord.Role`                                                        |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.mentionable` | :class:`~discord.User` or :class:`~discord.Member`, or :class:`~discord.Role` |
-    +------------------------------------------+-------------------------------------------------------------------------------+
-    | :attr:`AppCommandOptionType.attachment`  | :class:`~discord.Attachment`                                                  |
-    +------------------------------------------+-------------------------------------------------------------------------------+
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    |                Option Type                |                                 Resolved Type                                 |
+    +===========================================+===============================================================================+
+    | :attr:`.AppCommandOptionType.string`      | :class:`str`                                                                  |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.integer`     | :class:`int`                                                                  |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.boolean`     | :class:`bool`                                                                 |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.number`      | :class:`float`                                                                |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.user`        | :class:`~discord.User` or :class:`~discord.Member`                            |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.channel`     | :class:`.AppCommandChannel` or :class:`.AppCommandThread`                     |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.role`        | :class:`~discord.Role`                                                        |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.mentionable` | :class:`~discord.User` or :class:`~discord.Member`, or :class:`~discord.Role` |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
+    | :attr:`.AppCommandOptionType.attachment`  | :class:`~discord.Attachment`                                                  |
+    +-------------------------------------------+-------------------------------------------------------------------------------+
     """
 
     def __init__(
