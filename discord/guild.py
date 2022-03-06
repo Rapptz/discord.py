@@ -488,7 +488,7 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
-        self.premium_progress_bar_enabled: bool = guild.get("premium_progress_bar_enabled", False)
+        self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
