@@ -328,6 +328,10 @@ class Command(Generic[GroupT, P, T]):
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
 
+    @property
+    def callback(self) -> CommandCallback[GroupT, P, T]:
+        return self._callback
+
     def _copy_with_binding(self, binding: GroupT) -> Command:
         cls = self.__class__
         copy = cls.__new__(cls)
@@ -562,6 +566,10 @@ class ContextMenu:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
         self._param_name = param
         self._annotation = annotation
+
+    @property
+    def callback(self) -> ContextMenuCallback:
+        return self._callback
 
     @classmethod
     def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
