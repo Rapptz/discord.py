@@ -2403,7 +2403,7 @@ class Guild(Hashable):
         name: :class:`str`
             The sticker name. Must be at least 2 characters.
         description: :class:`str`
-            The sticker's description. Can be ``None``.
+            The sticker's description.
         emoji: :class:`str`
             The name of a unicode emoji that represents the sticker's expression.
         file: :class:`File`
