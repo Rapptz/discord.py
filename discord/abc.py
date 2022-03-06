@@ -1686,14 +1686,14 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = VoiceClient,
+        cls: Callable[[Client, Connectable], T] = MISSING,
     ) -> T:
         """|coro|
 
-        Connects to voice and creates a :class:`VoiceClient` to establish
+        Connects to voice and creates a :class:`~discord.VoiceClient` to establish
         your connection to the voice server.
 
-        This requires :attr:`Intents.voice_states`.
+        This requires :attr:`~discord.Intents.voice_states`.
 
         Parameters
         -----------
@@ -1703,7 +1703,7 @@ class Connectable(Protocol):
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.
-        cls: Type[:class:`VoiceProtocol`]
+        cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
 
@@ -1729,6 +1729,10 @@ class Connectable(Protocol):
             raise ClientException('Already connected to a voice channel.')
 
         client = state._get_client()
+
+        if cls is MISSING:
+            cls = VoiceClient
+
         voice = cls(client, self)
 
         if not isinstance(voice, VoiceProtocol):
