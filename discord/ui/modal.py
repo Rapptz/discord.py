@@ -69,18 +69,6 @@ class Modal(View):
     custom_id: :class:`str`
         The ID of the modal that gets received during an interaction.
         If not given then one is generated for you.
-
-    Attributes
-    ------------
-    timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
-    title: :class:`str`
-        The title of the modal.
-    children: List[:class:`Item`]
-        The list of children attached to this view.
-    custom_id: :class:`str`
-        The ID of the modal that gets received during an interaction.
         
     Examples
     ----------
@@ -94,6 +82,18 @@ class Modal(View):
 
             async def on_submit(self, interaction: discord.Interaction):
                 await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
+
+    Attributes
+    ------------
+    timeout: Optional[:class:`float`]
+        Timeout from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+    title: :class:`str`
+        The title of the modal.
+    children: List[:class:`Item`]
+        The list of children attached to this view.
+    custom_id: :class:`str`
+        The ID of the modal that gets received during an interaction.
     """
 
     if TYPE_CHECKING:
