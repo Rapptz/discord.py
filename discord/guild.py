@@ -3344,7 +3344,7 @@ class Guild(Hashable):
         -------
         ClientException
             The members intent is not enabled.
-        
+
         Returns
         --------
         Optional[List[:class:`Member`]]
