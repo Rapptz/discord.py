@@ -4053,8 +4053,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: LoginFailure
 
-.. autoexception:: NoMoreItems
-
 .. autoexception:: HTTPException
     :members:
 
@@ -4091,7 +4089,6 @@ Exception Hierarchy
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
-            - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
