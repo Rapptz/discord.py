@@ -103,8 +103,9 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
-    locale: :class:`Locale`
-        The locale of the user invoking the interaction.
+    locale: Optional[:class:`Locale`]
+        The locale of the user invoking the interaction. This field
+        is not available on `InteractionType.ping` interactions.
     guild_locale: Optional[:class:`Locale`]
         The preferred locale of the guild the interaction was sent from, if any.
     """
@@ -149,6 +150,12 @@ class Interaction:
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
 
+        self.locale: Optional[Locale]
+        try:
+            self.locale = try_enum(Locale, data['locale'])
+        except KeyError:
+            self.locale = None
+
         self.message: Optional[Message]
         try:
             # The channel and message payloads are mismatched yet handled properly at runtime
@@ -159,7 +166,6 @@ class Interaction:
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
-        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
 
         # TODO: there's a potential data loss here
