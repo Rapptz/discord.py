@@ -32,7 +32,7 @@ from typing import Optional, TYPE_CHECKING
 
 import discord.utils
 
-from .core import Group, Command
+from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
@@ -190,11 +190,13 @@ class _HelpCommandImpl(Command):
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original = inject
         self._injected = inject
+        self.params = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
 
     async def prepare(self, ctx):
         self._injected = injected = self._original.copy()
         injected.context = ctx
         self.callback = injected.command_callback
+        self.params = get_signature_parameters(injected.command_callback, globals(), skip_parameters=1)
 
         on_error = injected.on_help_command_error
         if not hasattr(on_error, '__help_command_not_overriden__'):
@@ -217,16 +219,6 @@ class _HelpCommandImpl(Command):
 
     async def _on_error_cog_implementation(self, dummy, ctx, error):
         await self._injected.on_help_command_error(ctx, error)
-
-    @property
-    def clean_params(self):
-        result = self.params.copy()
-        try:
-            del result[next(iter(result))]
-        except StopIteration:
-            raise ValueError('Missing context parameter') from None
-        else:
-            return result
 
     def _inject_into_cog(self, cog):
         # Warning: hacky
