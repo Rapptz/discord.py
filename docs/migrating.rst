@@ -864,7 +864,6 @@ Parameters in the following methods are now all positional-only:
 - :meth:`Guild.get_member`
 - :meth:`Guild.get_member_named`
 - :meth:`Guild.fetch_member`
-- :meth:`Guild.get_stage_instance`
 - :meth:`Client.get_user`
 - :meth:`Client.fetch_user`
 - :meth:`Guild.get_role`
@@ -910,6 +909,7 @@ As a result, these parameters can no longer be ``None``:
 - ``mute``, ``deafen``, ``suppress``, and ``roles`` in :meth:`Member.edit`
 - ``position`` in :meth:`Role.edit`
 - ``icon`` in :meth:`Template.create_guild`
+- ``name`` in :meth:`Template.edit`
 - ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` in :meth:`utils.oauth_url`
 - ``content``, ``username``, ``avatar_url``, ``tts``, ``file``, ``files``, ``embed``, ``embeds``, and ``allowed_mentions`` in :meth:`Webhook.send`
 
