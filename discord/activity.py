@@ -27,6 +27,8 @@ from __future__ import annotations
 import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
+from discord.state import ConnectionState
+
 from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
@@ -809,15 +811,16 @@ ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
 
 
 @overload
-def create_activity(data: ActivityPayload) -> ActivityTypes:
+def create_activity(data: ActivityPayload, state: ConnectionState) -> ActivityTypes:
     ...
 
 
 @overload
-def create_activity(data: None) -> None:
+def create_activity(data: None, state: ConnectionState) -> None:
     ...
 
-def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
+
+def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> Optional[ActivityTypes]:
     if not data:
         return None
 
