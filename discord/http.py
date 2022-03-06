@@ -224,7 +224,9 @@ def handle_message_parameters(
         try:
             payload['allowed_mentions']['replied_user'] = mention_author
         except KeyError:
-            pass
+            payload['allowed_mentions'] = {
+                'replied_user': mention_author,
+            }
 
     if attachments is MISSING:
         attachments = files  # type: ignore
