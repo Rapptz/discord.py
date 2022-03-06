@@ -63,6 +63,7 @@ class _AttachmentOptional(TypedDict, total=False):
     description: str
     content_type: str
     spoiler: bool
+    ephemeral: bool
 
 
 class Attachment(_AttachmentOptional):
