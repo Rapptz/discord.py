@@ -229,7 +229,7 @@ class Interaction:
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction was created."""
         return utils.snowflake_time(self.id)
-    
+
     @utils.cached_slot_property('_cs_expires_at')
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
