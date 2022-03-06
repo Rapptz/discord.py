@@ -406,7 +406,7 @@ class HelpCommand:
         """
         command_name = self._command_impl.name
         ctx = self.context
-        if ctx is None or ctx.command is None or ctx.command.qualified_name != command_name:
+        if ctx is discord.utils.MISSING or ctx.command is None or ctx.command.qualified_name != command_name:
             return command_name
         return ctx.invoked_with
 
