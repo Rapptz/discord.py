@@ -1061,8 +1061,6 @@ class Client:
             :ref:`event reference <discord-api-events>`.
         """
 
-        assert isinstance(self.loop, asyncio.AbstractEventLoop)
-
         future = self.loop.create_future()
         if check is None:
 
