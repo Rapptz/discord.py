@@ -149,6 +149,13 @@ class Interaction:
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
 
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self.guild_locale: Optional[Locale]
+        try:
+            self.guild_locale = try_enum(Locale, data.get['guild_locale'])
+        except KeyError:
+            self.guild_locale = None
+
         self.message: Optional[Message]
         try:
             # The channel and message payloads are mismatched yet handled properly at runtime
@@ -158,9 +165,6 @@ class Interaction:
 
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
-
-        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
-        self.guild_locale: Optional[Locale]
 
         # TODO: there's a potential data loss here
         if self.guild_id:
