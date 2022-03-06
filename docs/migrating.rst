@@ -791,6 +791,9 @@ The return type of the following methods has been changed to an :term:`asynchron
 - :meth:`Guild.fetch_members`
 - :meth:`Reaction.users`
 
+The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an 
+:term:`asynchronous generator` will now raise :class:`StopAsyncIteration`.
+
 Removal of ``InvalidArgument`` Exception
 -------------------------------------------
 
