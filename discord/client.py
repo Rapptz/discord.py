@@ -232,7 +232,7 @@ class Client:
     ):
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
-        self.loop: Optional[asyncio.AbstractEventLoop] = loop if loop else None
+        self.loop: asyncio.AbstractEventLoop = MISSING if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.shard_id: Optional[int] = options.get('shard_id')
         self.shard_count: Optional[int] = options.get('shard_count')
@@ -643,13 +643,10 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
-        await self.login(token)
-        await self.connect(reconnect=reconnect)
-
-    async def arun(self, *args, **kwargs):
         self.loop = asyncio.get_running_loop()
         try:
-            await self.start(*args, **kwargs)
+            await self.login(token)
+            await self.connect(reconnect=reconnect)
         finally:
             if not self.is_closed():
                 await self.close()
@@ -678,13 +675,50 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
-        try:
-            asyncio.run(self.arun(*args, **kwargs))
-        except KeyboardInterrupt:
-            # nothing to do here
-            # `asyncio.run` handles the loop cleanup
-            # and `self.arun` closes all sockets and the HTTPClient instance.
-            return
+        if self.loop is MISSING:
+            try:
+                asyncio.run(self.start(*args, **kwargs))
+            except KeyboardInterrupt:
+                # nothing to do here
+                # `asyncio.run` handles the loop cleanup
+                # and `self.arun` closes all sockets and the HTTPClient instance.
+                return
+        else:
+            loop = self.loop
+
+            try:
+                loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
+                loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
+            except NotImplementedError:
+                pass
+
+            async def runner():
+                try:
+                    await self.start(*args, **kwargs)
+                finally:
+                    if not self.is_closed():
+                        await self.close()
+
+            def stop_loop_on_completion(f):
+                loop.stop()
+
+            future = asyncio.ensure_future(runner(), loop=loop)
+            future.add_done_callback(stop_loop_on_completion)
+            try:
+                loop.run_forever()
+            except KeyboardInterrupt:
+                _log.info('Received signal to terminate bot and event loop.')
+            finally:
+                future.remove_done_callback(stop_loop_on_completion)
+                _log.info('Cleaning up tasks.')
+                _cleanup_loop(loop)
+
+            if not future.cancelled():
+                try:
+                    return future.result()
+                except KeyboardInterrupt:
+                    # I am unsure why this gets raised here but suppress it anyway
+                    return None
 
     # properties
 
