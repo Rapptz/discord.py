@@ -159,6 +159,7 @@ class Interaction:
 
         self.locale: Optional[Locale]
         try:
+            # PING interactions don't have a locale
             self.locale = try_enum(Locale, data['locale'])
         except KeyError:
             self.locale = None
