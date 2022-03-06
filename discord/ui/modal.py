@@ -81,6 +81,19 @@ class Modal(View):
         The list of children attached to this view.
     custom_id: :class:`str`
         The ID of the modal that gets received during an interaction.
+        
+    Examples
+    ----------
+    
+    .. code-block:: python3
+        from discord import ui
+
+        class Questionnaire(ui.Modal, title='Questionnaire Response'):
+            name = ui.TextInput(label='Name')
+            answer = ui.TextInput(label='Answer', style=discord.TextStyle.paragraph)
+
+            async def on_submit(self, interaction: discord.Interaction):
+                await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
     """
 
     if TYPE_CHECKING:
