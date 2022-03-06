@@ -58,18 +58,7 @@ class Modal(View):
     This object must be inherited to create a modal popup window within discord.
 
     .. versionadded:: 2.0
-
-    Parameters
-    -----------
-    title: :class:`str`
-        The title of the modal.
-    timeout: Optional[:class:`float`]
-        Timeout in seconds from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
-    custom_id: :class:`str`
-        The ID of the modal that gets received during an interaction.
-        If not given then one is generated for you.
-        
+    
     Examples
     ----------
     
@@ -82,6 +71,17 @@ class Modal(View):
 
             async def on_submit(self, interaction: discord.Interaction):
                 await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
+
+    Parameters
+    -----------
+    title: :class:`str`
+        The title of the modal.
+    timeout: Optional[:class:`float`]
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+    custom_id: :class:`str`
+        The ID of the modal that gets received during an interaction.
+        If not given then one is generated for you.
 
     Attributes
     ------------
