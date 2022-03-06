@@ -915,7 +915,7 @@ Allowed types for the following parameters have been changed:
 - ``rtc_region`` in :meth:`Guild.create_voice_channel` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`StageChannel.edit` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`VoiceChannel.edit` is now of type Optional[:class:`str`].
-- ``preferred_locale`` in :meth`Guild.edit` is now of type :class:`Locale`. 
+- ``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`. 
 
 Attribute Type Changes
 ------------------------
