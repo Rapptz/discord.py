@@ -812,6 +812,10 @@ class ConnectionState:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
 
+    def parse_presences_replace(self, data) -> None:
+        for presence in data:
+            self.parse_presence_update(presence)
+
     def parse_presence_update(self, data) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
         guild = self._get_guild(guild_id)
