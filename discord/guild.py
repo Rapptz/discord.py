@@ -204,7 +204,12 @@ class Guild(Hashable):
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
     vanity_url_code: Optional[:class:`str`]
+
         The guild's vanity url code, if any
+
+
+        The guild's vanity url code, if any.
+
 
         .. versionadded:: 2.0
     explicit_content_filter: :class:`ContentFilter`
@@ -461,7 +466,7 @@ class Guild(Hashable):
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
-        self.vanity_url_code : Optional[str] = guild.get('vanity_url_code')
+        self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Optional[str] = guild.get('preferred_locale')
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
