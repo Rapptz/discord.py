@@ -1275,11 +1275,11 @@ async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord
         build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z0-9]+)\.js').findall(login_page)[-2] + '.js'
         build_request = await session.get(build_url, timeout=7)
         build_file = await build_request.text()
-        build_index = build_file.find('buildNumber') + 14
+        build_index = build_file.find('buildNumber') + 24
         return int(build_file[build_index:build_index + 6])
     except asyncio.TimeoutError:
         _log.critical('Could not fetch client build number. Falling back to hardcoded value...')
-        return 105304
+        return 117300
 
 
 async def _get_user_agent(session: ClientSession) -> str:
@@ -1290,7 +1290,7 @@ async def _get_user_agent(session: ClientSession) -> str:
         return response[0]
     except asyncio.TimeoutError:
         _log.critical('Could not fetch user-agent. Falling back to hardcoded value...')
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
 
 
 async def _get_browser_version(session: ClientSession) -> str:
@@ -1303,4 +1303,4 @@ async def _get_browser_version(session: ClientSession) -> str:
         raise RuntimeError
     except (asyncio.TimeoutError, RuntimeError):
         _log.critical('Could not fetch browser version. Falling back to hardcoded value...')
-        return '96.0.4664.45'
+        return '99.0.4844.51'
