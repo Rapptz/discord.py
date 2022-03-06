@@ -117,6 +117,9 @@ class TextInput(Item[V]):
         )
         self.row: Optional[int] = row
 
+    def __str__(self) -> str:
+        return self.value or ''
+
     @property
     def custom_id(self) -> str:
         """:class:`str`: The ID of the select menu that gets received during an interaction."""
