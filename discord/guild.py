@@ -255,6 +255,19 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             This field is now an enum instead of an :class:`int`.
+
+    approximate_member_count: Optional[:class:`int`]
+        The approximate number of members in the guild. This is ``None`` unless the guild is obtained
+        using :meth:`Client.fetch_guild` with ``with_counts=True``.
+        .. versionadded:: 2.0
+
+    approximate_presence_count: Optional[:class:`int`]
+        The approximate number of members currently active in the guild.
+        This includes idle, dnd, online, and invisible members. Offline members are excluded.
+        This is ``None`` unless the guild is obtained using :meth:`Client.fetch_guild`
+        with ``with_counts=True``.
+    
+        .. versionchanged:: 2.0
     """
 
     __slots__ = (
@@ -297,6 +310,8 @@ class Guild(Hashable):
         '_stage_instances',
         '_scheduled_events',
         '_threads',
+        'approximate_member_count',
+        'approximate_presence_count',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -463,6 +478,8 @@ class Guild(Hashable):
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
+        self.approximate_presence_count = guild.get("approximate_presence_count")
+        self.approximate_member_count = guild.get("approximate_member_count")
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
