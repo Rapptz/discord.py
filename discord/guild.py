@@ -478,8 +478,8 @@ class Guild(Hashable):
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
-        self.approximate_presence_count = guild.get("approximate_presence_count")
-        self.approximate_member_count = guild.get("approximate_member_count")
+        self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
+        self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
