@@ -1352,6 +1352,54 @@ class Client:
         data = await self.http.get_guild(guild_id, with_counts=with_counts)
         return Guild(data=data, state=self._connection)
 
+    async def find_guild(self, guild_id: int, /, *, with_counts: bool = True) -> Guild:
+        """|coro|
+
+        Retrieves a :class:`.Guild` from an ID.
+
+        .. note::
+
+            Using this, you will **not** receive :attr:`.Guild.channels`, :attr:`.Guild.members`,
+            :attr:`.Member.activity` and :attr:`.Member.voice` per :class:`.Member`.
+
+        .. note::
+
+            This method is uses :meth:`get_guild` if no data found, it uses an API call via :meth:`fetch_guild`.
+
+        .. versionadded:: 2.0
+
+            ``guild_id`` parameter is now positional-only.
+
+        with_counts: Optional[:class:`bool`]
+            Whether to include count information in the guild. This fills the
+            :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`
+            attributes without needing any privileged intents. Defaults to ``True``.
+
+            .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The guild's ID to fetch from.
+
+        Raises
+        ------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`.Guild`
+            The guild from the ID.
+        """
+        cached_guild = self.get_guild(id)
+        if cached_guild == None:
+            return await self.fetch_guild(guild_id, with_counts=with_counts)
+
+        return cached_guild
+
     async def create_guild(
         self,
         *,
@@ -1436,6 +1484,36 @@ class Client:
         guild = self.get_guild(int(data['guild_id']))
         # Guild can technically be None here but this is being explicitly silenced right now.
         return StageInstance(guild=guild, state=self._connection, data=data)  # type: ignore
+
+    async def find_stage_instance(self, channel_id: int, /) -> StageInstance:
+        """|coro|
+
+        Gets a :class:`.StageInstance` for a stage channel id.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        channel_id: :class:`int`
+            The stage channel ID.
+
+        Raises
+        -------
+        NotFound
+            The stage instance or channel could not be found.
+        HTTPException
+            Getting the stage instance failed.
+
+        Returns
+        --------
+        :class:`.StageInstance`
+            The stage instance from the stage channel ID.
+        """
+        cached_stage_instance = self.get_stage_instance(channel_id)
+        if cached_stage_instance == None:
+            return self.fetch_stage_instance(channel_id)
+
+        return cached_stage_instance
 
     # Invite management
 
@@ -1631,6 +1709,44 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
+    async def find_user(self, user_id: int, /) -> User:
+        """|coro|
+
+        Retrieves a :class:`~discord.User` based on their ID.
+        You do not have to share any guilds with the user to get this information,
+        however many operations do require that you do.
+
+        .. note::
+
+            This method is uses :meth:`get_user` but fetches from API if returned None, This might require :attr:`discord.Intents.members` and member cache enabled.
+
+        .. versionchanged:: 2.0
+
+            ``user_id`` parameter is now positional-only.
+
+        Parameters
+        -----------
+        user_id: :class:`int`
+            The user's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            A user with this ID does not exist.
+        HTTPException
+            Fetching the user failed.
+
+        Returns
+        --------
+        :class:`~discord.User`
+            The user you requested.
+        """
+        cached_user = await self.get_user(user_id)
+        if cached_user == None:
+            return await self.fetch_user(user_id)
+
+        return cached_user
+
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
 
@@ -1679,6 +1795,43 @@ class Client:
             channel = factory(guild=guild, state=self._connection, data=data)  # type: ignore
 
         return channel
+
+    async def find_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
+        """|coro|
+
+        Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or :class:`.Thread` with the specified ID.
+
+        .. note::
+
+            This method uses :meth:`get_channel` if returned None uses an API call.
+
+        .. versionadded:: 2.0
+
+        .. versionchanged:: 2.0
+
+            ``channel_id`` parameter is now positional-only.
+
+        Raises
+        -------
+        InvalidData
+            An unknown channel type was received from Discord.
+        HTTPException
+            Retrieving the channel failed.
+        NotFound
+            Invalid Channel ID.
+        Forbidden
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, :class:`.Thread`]
+            The channel from the ID.
+        """
+        cached_channel = self.get_channel(channel_id)
+        if cached_channel == None:
+            return await self.fetch_channel(channel_id)
+
+        return cached_channel
 
     async def fetch_webhook(self, webhook_id: int, /) -> Webhook:
         """|coro|
@@ -1729,6 +1882,31 @@ class Client:
         cls, _ = _sticker_factory(data['type'])
         # The type checker is not smart enough to figure out the constructor is correct
         return cls(state=self._connection, data=data)  # type: ignore
+
+    async def find_sticker(self, sticker_id: int, /) -> Union[StandardSticker, GuildSticker]:
+        """|coro|
+
+        Retrieves a :class:`.Sticker` with the specified ID.
+
+        .. versionadded:: 2.0
+
+        Raises
+        --------
+        HTTPException
+            Retrieving the sticker failed.
+        NotFound
+            Invalid sticker ID.
+
+        Returns
+        --------
+        Union[:class:`.StandardSticker`, :class:`.GuildSticker`]
+            The sticker you requested.
+        """
+        cached_sticker = self.get_sticker(sticker_id)
+        if cached_sticker == None:
+            return await self.fetch_sticker(sticker_id)
+
+        return cached_sticker
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
