@@ -263,9 +263,9 @@ class Guild(Hashable):
         .. versionadded:: 2.0
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
-        Offline members are excluded. This is ``None`` unless the guild is obtained using 
+        Offline members are excluded. This is ``None`` unless the guild is obtained using
         :meth:`Client.fetch_guild` with ``with_counts=True``.
-    
+
         .. versionchanged:: 2.0
     """
 
