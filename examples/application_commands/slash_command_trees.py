@@ -39,6 +39,6 @@ async def plant(interaction: discord.Interaction, apple: str):
 
     # remove the apple from the list
     apples_picked.remove(apple)
-    await interaction.response.send_message(f'Your planted {apple}!')
+    await interaction.response.send_message(f'You planted {apple}!')
 
 client.run('token')
