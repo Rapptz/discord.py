@@ -27,8 +27,9 @@ from __future__ import annotations
 from typing import List, Literal, TypedDict, Union
 from .emoji import PartialEmoji
 
-ComponentType = Literal[1, 2, 3]
+ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
+TextStyle = Literal[1, 2]
 
 
 class ActionRow(TypedDict):
@@ -73,4 +74,19 @@ class SelectMenu(_SelectMenuOptional):
     options: List[SelectOption]
 
 
-Component = Union[ActionRow, ButtonComponent, SelectMenu]
+class _TextInputOptional(TypedDict, total=False):
+    placeholder: str
+    value: str
+    required: bool
+    min_length: int
+    max_length: int
+
+
+class TextInput(_TextInputOptional):
+    type: Literal[4]
+    custom_id: str
+    style: TextStyle
+    label: str
+
+
+Component = Union[ActionRow, ButtonComponent, SelectMenu, TextInput]

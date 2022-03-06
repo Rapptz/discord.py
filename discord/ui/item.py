@@ -28,9 +28,11 @@ from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECK
 
 from ..interactions import Interaction
 
+# fmt: off
 __all__ = (
     'Item',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     from ..enums import ComponentType
@@ -39,7 +41,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item')
 V = TypeVar('V', bound='View', covariant=True)
-ItemCallbackType = Callable[[Any, I, Interaction], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[V, I, Interaction], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):
@@ -73,7 +75,7 @@ class Item(Generic[V]):
     def refresh_component(self, component: Component) -> None:
         return None
 
-    def refresh_state(self, interaction: Interaction) -> None:
+    def refresh_state(self, data: Dict[str, Any]) -> None:
         return None
 
     @classmethod

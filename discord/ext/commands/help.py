@@ -32,7 +32,7 @@ from typing import Optional, TYPE_CHECKING
 
 import discord.utils
 
-from .core import Group, Command
+from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
@@ -190,11 +190,13 @@ class _HelpCommandImpl(Command):
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original = inject
         self._injected = inject
+        self.params = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
 
     async def prepare(self, ctx):
         self._injected = injected = self._original.copy()
         injected.context = ctx
         self.callback = injected.command_callback
+        self.params = get_signature_parameters(injected.command_callback, globals(), skip_parameters=1)
 
         on_error = injected.on_help_command_error
         if not hasattr(on_error, '__help_command_not_overriden__'):
@@ -217,16 +219,6 @@ class _HelpCommandImpl(Command):
 
     async def _on_error_cog_implementation(self, dummy, ctx, error):
         await self._injected.on_help_command_error(ctx, error)
-
-    @property
-    def clean_params(self):
-        result = self.params.copy()
-        try:
-            del result[next(iter(result))]
-        except StopIteration:
-            raise ValueError('Missing context parameter') from None
-        else:
-            return result
 
     def _inject_into_cog(self, cog):
         # Warning: hacky
@@ -326,7 +318,7 @@ class HelpCommand:
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
-        self.context: Optional[Context] = None
+        self.context: Context = discord.utils.MISSING
         self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self):
@@ -343,11 +335,15 @@ class HelpCommand:
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
 
-    def add_check(self, func):
+    def add_check(self, func, /):
         """
         Adds a check to the help command.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -357,7 +353,7 @@ class HelpCommand:
 
         self._command_impl.add_check(func)
 
-    def remove_check(self, func):
+    def remove_check(self, func, /):
         """
         Removes a check from the help command.
 
@@ -365,6 +361,10 @@ class HelpCommand:
         the function is not in the command's checks.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -924,7 +924,7 @@ class DefaultHelpCommand(HelpCommand):
     def shorten_text(self, text):
         """:class:`str`: Shortens text to fit into the :attr:`width`."""
         if len(text) > self.width:
-            return text[:self.width - 3].rstrip() + '...'
+            return text[: self.width - 3].rstrip() + '...'
         return text
 
     def get_ending_note(self):

@@ -24,25 +24,34 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import List, Literal, TypedDict
 
+
 class _EmbedFooterOptional(TypedDict, total=False):
     icon_url: str
     proxy_icon_url: str
 
+
 class EmbedFooter(_EmbedFooterOptional):
     text: str
 
+
 class _EmbedFieldOptional(TypedDict, total=False):
     inline: bool
+
 
 class EmbedField(_EmbedFieldOptional):
     name: str
     value: str
 
-class EmbedThumbnail(TypedDict, total=False):
-    url: str
+
+class _EmbedThumbnailOptional(TypedDict, total=False):
     proxy_url: str
     height: int
     width: int
+
+
+class EmbedThumbnail(_EmbedThumbnailOptional):
+    url: str
+
 
 class EmbedVideo(TypedDict, total=False):
     url: str
@@ -50,23 +59,34 @@ class EmbedVideo(TypedDict, total=False):
     height: int
     width: int
 
-class EmbedImage(TypedDict, total=False):
-    url: str
+
+class _EmbedImageOptional(TypedDict, total=False):
     proxy_url: str
     height: int
     width: int
+
+
+class EmbedImage(_EmbedImageOptional):
+    url: str
+
 
 class EmbedProvider(TypedDict, total=False):
     name: str
     url: str
 
-class EmbedAuthor(TypedDict, total=False):
-    name: str
+
+class _EmbedAuthorOptional(TypedDict, total=False):
     url: str
     icon_url: str
     proxy_icon_url: str
 
+
+class EmbedAuthor(_EmbedAuthorOptional):
+    name: str
+
+
 EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link']
+
 
 class Embed(TypedDict, total=False):
     title: str

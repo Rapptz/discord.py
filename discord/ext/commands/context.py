@@ -49,9 +49,11 @@ if TYPE_CHECKING:
     from .help import HelpCommand
     from .view import StringView
 
+# fmt: off
 __all__ = (
     'Context',
 )
+# fmt: on
 
 MISSING: Any = discord.utils.MISSING
 
@@ -122,7 +124,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         or invoked.
     """
 
-    def __init__(self,
+    def __init__(
+        self,
         *,
         message: Message,
         bot: BotT,
@@ -170,12 +173,16 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             You must take care in passing the proper arguments when
             using this function.
 
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
+
         Parameters
         -----------
         command: :class:`.Command`
             The command that is going to be called.
         \*args
-            The arguments to to use.
+            The arguments to use.
         \*\*kwargs
             The keyword arguments to use.
 
@@ -233,7 +240,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             view.index = len(self.prefix or '')
             view.previous = 0
             self.invoked_parents = []
-            self.invoked_with = view.get_word() # advance to get the root command
+            self.invoked_with = view.get_word()  # advance to get the root command
         else:
             to_call = cmd
 

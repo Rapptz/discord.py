@@ -26,8 +26,10 @@ from __future__ import annotations
 
 import copy
 import asyncio
+from datetime import datetime
 from typing import (
     Any,
+    AsyncIterator,
     Callable,
     Dict,
     List,
@@ -42,15 +44,16 @@ from typing import (
     runtime_checkable,
 )
 
-from .iterators import HistoryIterator
+from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
 from .enums import ChannelType
-from .errors import InvalidArgument, ClientException
+from .errors import ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
 from .file import File
+from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from . import utils
@@ -67,7 +70,7 @@ __all__ = (
 T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from typing_extensions import Self
 
     from .client import Client
     from .user import ClientUser
@@ -84,6 +87,7 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
+        Channel as ChannelPayload,
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
@@ -214,9 +218,6 @@ class _Overwrites:
         return self.type == 1
 
 
-GCH = TypeVar('GCH', bound='GuildChannel')
-
-
 class GuildChannel:
     """An ABC that details the common operations on a Discord guild channel.
 
@@ -253,7 +254,7 @@ class GuildChannel:
 
     if TYPE_CHECKING:
 
-        def __init__(self, *, state: ConnectionState, guild: Guild, data: Dict[str, Any]):
+        def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload):
             ...
 
     def __str__(self) -> str:
@@ -275,7 +276,7 @@ class GuildChannel:
         reason: Optional[str],
     ) -> None:
         if position < 0:
-            raise InvalidArgument('Channel position cannot be less than 0.')
+            raise ValueError('Channel position cannot be less than 0.')
 
         http = self._state.http
         bucket = self._sorting_bucket
@@ -302,11 +303,8 @@ class GuildChannel:
             payload.append(d)
 
         await http.bulk_channel_update(self.guild.id, payload, reason=reason)
-        self.position = position
-        if parent_id is not _undefined:
-            self.category_id = int(parent_id) if parent_id else None
 
-    async def _edit(self, options: Dict[str, Any], reason: Optional[str]):
+    async def _edit(self, options: Dict[str, Any], reason: Optional[str]) -> Optional[ChannelPayload]:
         try:
             parent = options.pop('category')
         except KeyError:
@@ -358,7 +356,7 @@ class GuildChannel:
             perms = []
             for target, perm in overwrites.items():
                 if not isinstance(perm, PermissionOverwrite):
-                    raise InvalidArgument(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
+                    raise TypeError(f'Expected PermissionOverwrite received {perm.__class__.__name__}')
 
                 allow, deny = perm.pair()
                 payload = {
@@ -381,12 +379,11 @@ class GuildChannel:
             pass
         else:
             if not isinstance(ch_type, ChannelType):
-                raise InvalidArgument('type field must be of type ChannelType')
+                raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
 
         if options:
-            data = await self._state.http.edit_channel(self.id, reason=reason, **options)
-            self._update(self.guild, data)
+            return await self._state.http.edit_channel(self.id, reason=reason, **options)
 
     def _fill_overwrites(self, data: GuildChannelPayload) -> None:
         self._overwrites = []
@@ -509,7 +506,7 @@ class GuildChannel:
 
         If there is no category then this is ``None``.
         """
-        return self.guild.get_channel(self.category_id)  # type: ignore
+        return self.guild.get_channel(self.category_id)  # type: ignore - These are coerced into CategoryChannel
 
     @property
     def permissions_synced(self) -> bool:
@@ -547,6 +544,9 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             The object passed in can now be a role object.
+
+        .. versionchanged:: 2.0
+            ``obj`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -749,6 +749,11 @@ class GuildChannel:
             overwrite.read_messages = True
             await channel.set_permissions(member, overwrite=overwrite)
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
+
+
         Parameters
         -----------
         target: Union[:class:`~discord.Member`, :class:`~discord.Role`]
@@ -770,9 +775,12 @@ class GuildChannel:
             Editing channel specific permissions failed.
         ~discord.NotFound
             The role or member being edited is not part of the guild.
-        ~discord.InvalidArgument
-            The overwrite parameter invalid or the target type was not
+        TypeError
+            The ``overwrite`` parameter was invalid or the target type was not
             :class:`~discord.Role` or :class:`~discord.Member`.
+        ValueError
+            The ``overwrite`` parameter and ``positions`` parameters were both
+            unset.
         """
 
         http = self._state.http
@@ -782,18 +790,18 @@ class GuildChannel:
         elif isinstance(target, Role):
             perm_type = _Overwrites.ROLE
         else:
-            raise InvalidArgument('target parameter must be either Member or Role')
+            raise ValueError('target parameter must be either Member or Role')
 
         if overwrite is _undefined:
             if len(permissions) == 0:
-                raise InvalidArgument('No overwrite provided.')
+                raise ValueError('No overwrite provided.')
             try:
                 overwrite = PermissionOverwrite(**permissions)
             except (ValueError, TypeError):
-                raise InvalidArgument('Invalid permissions given to keyword arguments.')
+                raise TypeError('Invalid permissions given to keyword arguments.')
         else:
             if len(permissions) > 0:
-                raise InvalidArgument('Cannot mix overwrite and keyword arguments.')
+                raise TypeError('Cannot mix overwrite and keyword arguments.')
 
         # TODO: wait for event
 
@@ -801,17 +809,19 @@ class GuildChannel:
             await http.delete_channel_permissions(self.id, target.id, reason=reason)
         elif isinstance(overwrite, PermissionOverwrite):
             (allow, deny) = overwrite.pair()
-            await http.edit_channel_permissions(self.id, target.id, allow.value, deny.value, perm_type, reason=reason)
+            await http.edit_channel_permissions(
+                self.id, target.id, str(allow.value), str(deny.value), perm_type, reason=reason
+            )
         else:
-            raise InvalidArgument('Invalid overwrite type provided.')
+            raise TypeError('Invalid overwrite type provided.')
 
     async def _clone_impl(
-        self: GCH,
+        self,
         base_attrs: Dict[str, Any],
         *,
         name: Optional[str] = None,
         reason: Optional[str] = None,
-    ) -> GCH:
+    ) -> Self:
         base_attrs['permission_overwrites'] = [x._asdict() for x in self._overwrites]
         base_attrs['parent_id'] = self.category_id
         base_attrs['name'] = name or self.name
@@ -821,10 +831,10 @@ class GuildChannel:
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache
-        self.guild._channels[obj.id] = obj  # type: ignore
+        self.guild._channels[obj.id] = obj  # type: ignore - obj is a GuildChannel
         return obj
 
-    async def clone(self: GCH, *, name: Optional[str] = None, reason: Optional[str] = None) -> GCH:
+    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
         """|coro|
 
         Clones this channel. This creates a channel with the same properties
@@ -922,6 +932,10 @@ class GuildChannel:
 
         .. versionadded:: 1.7
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
+
         Parameters
         ------------
         beginning: :class:`bool`
@@ -956,8 +970,10 @@ class GuildChannel:
 
         Raises
         -------
-        InvalidArgument
-            An invalid position was given or a bad mix of arguments were passed.
+        ValueError
+            An invalid position was given.
+        TypeError
+            A bad mix of arguments were passed.
         Forbidden
             You do not have permissions to move the channel.
         HTTPException
@@ -971,7 +987,7 @@ class GuildChannel:
         before, after = kwargs.get('before'), kwargs.get('after')
         offset = kwargs.get('offset', 0)
         if sum(bool(a) for a in (beginning, end, before, after)) > 1:
-            raise InvalidArgument('Only one of [before, after, end, beginning] can be used.')
+            raise TypeError('Only one of [before, after, end, beginning] can be used.')
 
         bucket = self._sorting_bucket
         parent_id = kwargs.get('category', MISSING)
@@ -1014,7 +1030,7 @@ class GuildChannel:
             index = next((i + 1 for i, c in enumerate(channels) if c.id == after.id), None)
 
         if index is None:
-            raise InvalidArgument('Could not resolve appropriate move position')
+            raise ValueError('Could not resolve appropriate move position')
 
         channels.insert(max((index + offset), 0), self)
         payload = []
@@ -1167,6 +1183,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1185,6 +1202,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1203,6 +1221,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1221,6 +1240,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1240,6 +1260,7 @@ class Messageable:
         reference=None,
         mention_author=None,
         view=None,
+        suppress_embeds=False,
     ):
         """|coro|
 
@@ -1258,6 +1279,10 @@ class Messageable:
         single :class:`~discord.Embed` object. To upload multiple embeds, the ``embeds``
         parameter should be used with a :class:`list` of :class:`~discord.Embed` objects.
         **Specifying both parameters will lead to an exception**.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
 
         Parameters
         ------------
@@ -1310,6 +1335,10 @@ class Messageable:
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1317,9 +1346,10 @@ class Messageable:
             Sending the message failed.
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
-        ~discord.InvalidArgument
-            The ``files`` list is not of the appropriate size,
-            you specified both ``file`` and ``files``,
+        ValueError
+            The ``files`` list is not of the appropriate size.
+        TypeError
+            You specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`,
             :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
@@ -1333,107 +1363,48 @@ class Messageable:
         channel = await self._get_channel()
         state = self._state
         content = str(content) if content is not None else None
-
-        if embed is not None and embeds is not None:
-            raise InvalidArgument('cannot pass both embed and embeds parameter to send()')
-
-        if embed is not None:
-            embed = embed.to_dict()
-
-        elif embeds is not None:
-            if len(embeds) > 10:
-                raise InvalidArgument('embeds parameter must be a list of up to 10 elements')
-            embeds = [embed.to_dict() for embed in embeds]
+        previous_allowed_mention = state.allowed_mentions
 
         if stickers is not None:
             stickers = [sticker.id for sticker in stickers]
-
-        if allowed_mentions is not None:
-            if state.allowed_mentions is not None:
-                allowed_mentions = state.allowed_mentions.merge(allowed_mentions).to_dict()
-            else:
-                allowed_mentions = allowed_mentions.to_dict()
         else:
-            allowed_mentions = state.allowed_mentions and state.allowed_mentions.to_dict()
-
-        if mention_author is not None:
-            allowed_mentions = allowed_mentions or AllowedMentions().to_dict()
-            allowed_mentions['replied_user'] = bool(mention_author)
+            stickers = MISSING
 
         if reference is not None:
             try:
                 reference = reference.to_message_reference_dict()
             except AttributeError:
-                raise InvalidArgument('reference parameter must be Message, MessageReference, or PartialMessage') from None
-
-        if view:
-            if not hasattr(view, '__discord_ui_view__'):
-                raise InvalidArgument(f'view parameter must be View not {view.__class__!r}')
-
-            components = view.to_components()
+                raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
-            components = None
+            reference = MISSING
 
-        if file is not None and files is not None:
-            raise InvalidArgument('cannot pass both file and files parameter to send()')
+        if view and not hasattr(view, '__discord_ui_view__'):
+            raise TypeError(f'view parameter must be View not {view.__class__!r}')
 
-        if file is not None:
-            if not isinstance(file, File):
-                raise InvalidArgument('file parameter must be File')
+        if suppress_embeds:
+            from .message import MessageFlags  # circular import
 
-            try:
-                data = await state.http.send_files(
-                    channel.id,
-                    files=[file],
-                    allowed_mentions=allowed_mentions,
-                    content=content,
-                    tts=tts,
-                    embed=embed,
-                    embeds=embeds,
-                    nonce=nonce,
-                    message_reference=reference,
-                    stickers=stickers,
-                    components=components,
-                )
-            finally:
-                file.close()
-
-        elif files is not None:
-            if len(files) > 10:
-                raise InvalidArgument('files parameter must be a list of up to 10 elements')
-            elif not all(isinstance(file, File) for file in files):
-                raise InvalidArgument('files parameter must be a list of File')
-
-            try:
-                data = await state.http.send_files(
-                    channel.id,
-                    files=files,
-                    content=content,
-                    tts=tts,
-                    embed=embed,
-                    embeds=embeds,
-                    nonce=nonce,
-                    allowed_mentions=allowed_mentions,
-                    message_reference=reference,
-                    stickers=stickers,
-                    components=components,
-                )
-            finally:
-                for f in files:
-                    f.close()
+            flags = MessageFlags._from_value(4)
         else:
-            data = await state.http.send_message(
-                channel.id,
-                content,
-                tts=tts,
-                embed=embed,
-                embeds=embeds,
-                nonce=nonce,
-                allowed_mentions=allowed_mentions,
-                message_reference=reference,
-                stickers=stickers,
-                components=components,
-            )
+            flags = MISSING
+
+        with handle_message_parameters(
+            content=content,
+            tts=tts,
+            file=file if file is not None else MISSING,
+            files=files if files is not None else MISSING,
+            embed=embed if embed is not None else MISSING,
+            embeds=embeds if embeds is not None else MISSING,
+            nonce=nonce,
+            allowed_mentions=allowed_mentions,
+            message_reference=reference,
+            previous_allowed_mentions=previous_allowed_mention,
+            mention_author=mention_author,
+            stickers=stickers,
+            view=view,
+            flags=flags,
+        ) as params:
+            data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
         if view:
@@ -1455,14 +1426,9 @@ class Messageable:
         await self._state.http.send_typing(channel.id)
 
     def typing(self) -> Typing:
-        """Returns a context manager that allows you to type for an indefinite period of time.
+        """Returns an asynchronous context manager that allows you to type for an indefinite period of time.
 
         This is useful for denoting long computations in your bot.
-
-        .. note::
-
-            This is both a regular context manager and an async context manager.
-            This means that both ``with`` and ``async with`` work with this.
 
         Example Usage: ::
 
@@ -1472,6 +1438,8 @@ class Messageable:
 
             await channel.send('done!')
 
+        .. versionchanged:: 2.0
+            This no longer works with the ``with`` syntax, ``async with`` must be used instead.
         """
         return Typing(self)
 
@@ -1531,7 +1499,7 @@ class Messageable:
         data = await state.http.pins_from(channel.id)
         return [state.create_message(channel=channel, data=m) for m in data]
 
-    def history(
+    async def history(
         self,
         *,
         limit: Optional[int] = 100,
@@ -1539,8 +1507,8 @@ class Messageable:
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = None,
-    ) -> HistoryIterator:
-        """Returns an :class:`~discord.AsyncIterator` that enables receiving the destination's message history.
+    ) -> AsyncIterator[Message]:
+        """Returns an :term:`asynchronous iterator` that enables receiving the destination's message history.
 
         You must have :attr:`~discord.Permissions.read_message_history` permissions to use this.
 
@@ -1556,7 +1524,7 @@ class Messageable:
 
         Flattening into a list: ::
 
-            messages = await channel.history(limit=123).flatten()
+            messages = [message async for message in channel.history(limit=123)]
             # messages is now a list of Message...
 
         All parameters are optional.
@@ -1597,7 +1565,101 @@ class Messageable:
         :class:`~discord.Message`
             The message with the message data parsed.
         """
-        return HistoryIterator(self, limit=limit, before=before, after=after, around=around, oldest_first=oldest_first)
+
+        async def _around_strategy(retrieve, around, limit):
+            if not around:
+                return []
+
+            around_id = around.id if around else None
+            data = await self._state.http.logs_from(channel.id, retrieve, around=around_id)
+
+            return data, None, limit
+
+        async def _after_strategy(retrieve, after, limit):
+            after_id = after.id if after else None
+            data = await self._state.http.logs_from(channel.id, retrieve, after=after_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=int(data[0]['id']))
+
+            return data, after, limit
+
+        async def _before_strategy(retrieve, before, limit):
+            before_id = before.id if before else None
+            data = await self._state.http.logs_from(channel.id, retrieve, before=before_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[-1]['id']))
+
+            return data, before, limit
+
+        if isinstance(before, datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
+        if isinstance(after, datetime):
+            after = Object(id=utils.time_snowflake(after, high=True))
+        if isinstance(around, datetime):
+            around = Object(id=utils.time_snowflake(around))
+
+        if oldest_first is None:
+            reverse = after is not None
+        else:
+            reverse = oldest_first
+
+        after = after or OLDEST_OBJECT
+        predicate = None
+
+        if around:
+            if limit is None:
+                raise ValueError('history does not support around with limit=None')
+            if limit > 101:
+                raise ValueError("history max limit 101 when specifying around parameter")
+
+            # Strange Discord quirk
+            limit = 100 if limit == 101 else limit
+
+            strategy, state = _around_strategy, around
+
+            if before and after:
+                predicate = lambda m: after.id < int(m['id']) < before.id
+            elif before:
+                predicate = lambda m: int(m['id']) < before.id
+            elif after:
+                predicate = lambda m: after.id < int(m['id'])
+        elif reverse:
+            strategy, state = _after_strategy, after
+            if before:
+                predicate = lambda m: int(m['id']) < before.id
+        else:
+            strategy, state = _before_strategy, before
+            if after and after != OLDEST_OBJECT:
+                predicate = lambda m: int(m['id']) > after.id
+
+        channel = await self._get_channel()
+
+        while True:
+            retrieve = min(100 if limit is None else limit, 100)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 100:
+                limit = 0
+
+            if reverse:
+                data = reversed(data)
+            if predicate:
+                data = filter(predicate, data)
+
+            for raw_message in data:
+                yield self._state.create_message(channel=channel, data=raw_message)
 
 
 class Connectable(Protocol):
@@ -1608,11 +1670,6 @@ class Connectable(Protocol):
 
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.StageChannel`
-
-    Note
-    ----
-    This ABC is not decorated with :func:`typing.runtime_checkable`, so will fail :func:`isinstance`/:func:`issubclass`
-    checks.
     """
 
     __slots__ = ()
@@ -1635,6 +1692,8 @@ class Connectable(Protocol):
 
         Connects to voice and creates a :class:`VoiceClient` to establish
         your connection to the voice server.
+
+        This requires :attr:`Intents.voice_states`.
 
         Parameters
         -----------

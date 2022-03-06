@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict
-from .user import PartialUser
+from .user import User
 from .snowflake import Snowflake
 
 
@@ -33,7 +33,7 @@ StatusType = Literal['idle', 'dnd', 'online', 'offline']
 
 
 class PartialPresenceUpdate(TypedDict):
-    user: PartialUser
+    user: User
     guild_id: Snowflake
     status: StatusType
     activities: List[Activity]
@@ -41,9 +41,9 @@ class PartialPresenceUpdate(TypedDict):
 
 
 class ClientStatus(TypedDict, total=False):
-    desktop: str
-    mobile: str
-    web: str
+    desktop: StatusType
+    mobile: StatusType
+    web: StatusType
 
 
 class ActivityTimestamps(TypedDict, total=False):

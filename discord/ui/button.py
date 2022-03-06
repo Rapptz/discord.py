@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
+from typing import Callable, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
 
@@ -40,10 +40,11 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import View
     from ..emoji import Emoji
 
-B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
 
 
@@ -196,7 +197,7 @@ class Button(Item[V]):
             self._underlying.emoji = None
 
     @classmethod
-    def from_component(cls: Type[B], button: ButtonComponent) -> B:
+    def from_component(cls, button: ButtonComponent) -> Self:
         return cls(
             style=button.style,
             label=button.label,
@@ -234,7 +235,7 @@ def button(
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
-) -> Callable[[ItemCallbackType], ItemCallbackType]:
+) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -271,7 +272,7 @@ def button(
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    def decorator(func: ItemCallbackType) -> ItemCallbackType:
+    def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
@@ -287,4 +288,4 @@ def button(
         }
         return func
 
-    return decorator
+    return decorator  # type: ignore

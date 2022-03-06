@@ -28,14 +28,15 @@ import io
 import os
 from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union
 from .errors import DiscordException
-from .errors import InvalidArgument
 from . import utils
 
 import yarl
 
+# fmt: off
 __all__ = (
     'Asset',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     ValidStaticFormatTypes = Literal['webp', 'jpeg', 'jpg', 'png']
@@ -46,6 +47,7 @@ VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
 
 
 MISSING = utils.MISSING
+
 
 class AssetMixin:
     url: str
@@ -207,12 +209,23 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_guild_image(cls, state, guild_id: int, image: str, path: str) -> Asset:
+    def _from_scheduled_event_cover_image(cls, state, scheduled_event_id: int, cover_image_hash: str) -> Asset:
         return cls(
             state,
-            url=f'{cls.BASE}/{path}/{guild_id}/{image}.png?size=1024',
-            key=image,
+            url=f'{cls.BASE}/guild-events/{scheduled_event_id}/{cover_image_hash}.png?size=1024',
+            key=cover_image_hash,
             animated=False,
+        )
+
+    @classmethod
+    def _from_guild_image(cls, state, guild_id: int, image: str, path: str) -> Asset:
+        animated = image.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/{path}/{guild_id}/{image}.{format}?size=1024',
+            key=image,
+            animated=animated,
         )
 
     @classmethod
@@ -243,7 +256,7 @@ class Asset(AssetMixin):
             state,
             url=f'{cls.BASE}/banners/{user_id}/{banner_hash}.{format}?size=512',
             key=banner_hash,
-            animated=animated
+            animated=animated,
         )
 
     def __str__(self) -> str:
@@ -285,6 +298,10 @@ class Asset(AssetMixin):
     ) -> Asset:
         """Returns a new asset with the passed components replaced.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         -----------
         size: :class:`int`
@@ -298,7 +315,7 @@ class Asset(AssetMixin):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             An invalid size or format was passed.
 
         Returns
@@ -312,20 +329,20 @@ class Asset(AssetMixin):
         if format is not MISSING:
             if self._animated:
                 if format not in VALID_ASSET_FORMATS:
-                    raise InvalidArgument(f'format must be one of {VALID_ASSET_FORMATS}')
+                    raise ValueError(f'format must be one of {VALID_ASSET_FORMATS}')
             else:
                 if format not in VALID_STATIC_FORMATS:
-                    raise InvalidArgument(f'format must be one of {VALID_STATIC_FORMATS}')
+                    raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{format}')
 
         if static_format is not MISSING and not self._animated:
             if static_format not in VALID_STATIC_FORMATS:
-                raise InvalidArgument(f'static_format must be one of {VALID_STATIC_FORMATS}')
+                raise ValueError(f'static_format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{static_format}')
 
         if size is not MISSING:
             if not utils.valid_icon_size(size):
-                raise InvalidArgument('size must be a power of 2 between 16 and 4096')
+                raise ValueError('size must be a power of 2 between 16 and 4096')
             url = url.with_query(size=size)
         else:
             url = url.with_query(url.raw_query_string)
@@ -336,6 +353,10 @@ class Asset(AssetMixin):
     def with_size(self, size: int, /) -> Asset:
         """Returns a new asset with the specified size.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         size: :class:`int`
@@ -343,7 +364,7 @@ class Asset(AssetMixin):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             The asset had an invalid size.
 
         Returns
@@ -352,13 +373,17 @@ class Asset(AssetMixin):
             The new updated asset.
         """
         if not utils.valid_icon_size(size):
-            raise InvalidArgument('size must be a power of 2 between 16 and 4096')
+            raise ValueError('size must be a power of 2 between 16 and 4096')
 
         url = str(yarl.URL(self._url).with_query(size=size))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_format(self, format: ValidAssetFormatTypes, /) -> Asset:
         """Returns a new asset with the specified format.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
 
         Parameters
         ------------
@@ -367,7 +392,7 @@ class Asset(AssetMixin):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             The asset had an invalid format.
 
         Returns
@@ -378,10 +403,10 @@ class Asset(AssetMixin):
 
         if self._animated:
             if format not in VALID_ASSET_FORMATS:
-                raise InvalidArgument(f'format must be one of {VALID_ASSET_FORMATS}')
+                raise ValueError(f'format must be one of {VALID_ASSET_FORMATS}')
         else:
             if format not in VALID_STATIC_FORMATS:
-                raise InvalidArgument(f'format must be one of {VALID_STATIC_FORMATS}')
+                raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
 
         url = yarl.URL(self._url)
         path, _ = os.path.splitext(url.path)
@@ -394,6 +419,10 @@ class Asset(AssetMixin):
         This only changes the format if the underlying asset is
         not animated. Otherwise, the asset is not changed.
 
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ------------
         format: :class:`str`
@@ -401,7 +430,7 @@ class Asset(AssetMixin):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             The asset had an invalid format.
 
         Returns

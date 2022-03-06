@@ -33,7 +33,7 @@ import importlib.util
 import sys
 import traceback
 import types
-from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union
+from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union, overload
 
 import discord
 
@@ -45,9 +45,12 @@ from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     import importlib.machinery
 
     from discord.message import Message
+    from discord.abc import User
     from ._types import (
         Check,
         CoroFunc,
@@ -65,6 +68,8 @@ MISSING: Any = discord.utils.MISSING
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
 CXT = TypeVar('CXT', bound='Context')
+BT = TypeVar('BT', bound='Union[Bot, AutoShardedBot]')
+
 
 def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
     """A callable that implements a command prefix equivalent to being mentioned.
@@ -73,6 +78,7 @@ def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
     """
     # bot.user will never be None when this is called
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
+
 
 def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], Message], List[str]]:
     """A callable that implements when mentioned or other prefixes provided.
@@ -103,6 +109,7 @@ def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], M
     ----------
     :func:`.when_mentioned`
     """
+
     def inner(bot, msg):
         r = list(prefixes)
         r = when_mentioned(bot, msg) + r
@@ -110,14 +117,18 @@ def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], M
 
     return inner
 
+
 def _is_submodule(parent: str, child: str) -> bool:
     return parent == child or child.startswith(parent + ".")
+
 
 class _DefaultRepr:
     def __repr__(self):
         return '<default-help-command>'
 
+
 _default = _DefaultRepr()
+
 
 class BotBase(GroupMixin):
     def __init__(self, command_prefix, help_command=_default, description=None, **options):
@@ -227,11 +238,15 @@ class BotBase(GroupMixin):
         self.add_check(func)  # type: ignore
         return func
 
-    def add_check(self, func: Check, *, call_once: bool = False) -> None:
+    def add_check(self, func: Check, /, *, call_once: bool = False) -> None:
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
         and :meth:`.check_once`.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -247,11 +262,15 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func: Check, *, call_once: bool = False) -> None:
+    def remove_check(self, func: Check, /, *, call_once: bool = False) -> None:
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
         if the function is not in the global checks.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -315,7 +334,7 @@ class BotBase(GroupMixin):
         # type-checker doesn't distinguish between functions and methods
         return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
-    async def is_owner(self, user: discord.User) -> bool:
+    async def is_owner(self, user: User) -> bool:
         """|coro|
 
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
@@ -510,7 +529,7 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog: Cog, *, override: bool = False) -> None:
+    def add_cog(self, cog: Cog, /, *, override: bool = False) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -519,6 +538,10 @@ class BotBase(GroupMixin):
 
             :exc:`.ClientException` is raised when a cog with the same name
             is already loaded.
+
+        .. versionchanged:: 2.0
+
+            ``cog`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -536,7 +559,7 @@ class BotBase(GroupMixin):
             The cog does not inherit from :class:`.Cog`.
         CommandError
             An error happened during loading.
-        .ClientException
+        ClientException
             A cog with the same name is already loaded.
         """
 
@@ -554,10 +577,14 @@ class BotBase(GroupMixin):
         cog = cog._inject(self)
         self.__cogs[cog_name] = cog
 
-    def get_cog(self, name: str) -> Optional[Cog]:
+    def get_cog(self, name: str, /) -> Optional[Cog]:
         """Gets the cog instance requested.
 
         If the cog is not found, ``None`` is returned instead.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -573,13 +600,17 @@ class BotBase(GroupMixin):
         """
         return self.__cogs.get(name)
 
-    def remove_cog(self, name: str) -> Optional[Cog]:
+    def remove_cog(self, name: str, /) -> Optional[Cog]:
         """Removes a cog from the bot and returns it.
 
         All registered commands and event listeners that the
         cog has registered will be removed as well.
 
         If no cog is found then this method has no effect.
+
+        .. versionchanged:: 2.0
+
+            ``name`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -813,11 +844,13 @@ class BotBase(GroupMixin):
             raise errors.ExtensionNotLoaded(name)
 
         # get the previous module states from sys modules
+        # fmt: off
         modules = {
             name: module
             for name, module in sys.modules.items()
             if _is_submodule(lib.__name__, name)
         }
+        # fmt: on
 
         try:
             # Unload and then load the module...
@@ -893,15 +926,38 @@ class BotBase(GroupMixin):
                 if isinstance(ret, collections.abc.Iterable):
                     raise
 
-                raise TypeError("command_prefix must be plain string, iterable of strings, or callable "
-                                f"returning either of these, not {ret.__class__.__name__}")
+                raise TypeError(
+                    "command_prefix must be plain string, iterable of strings, or callable "
+                    f"returning either of these, not {ret.__class__.__name__}"
+                )
 
             if not ret:
                 raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
-    async def get_context(self, message: Message, *, cls: Type[CXT] = Context) -> CXT:
+    @overload
+    async def get_context(
+        self,
+        message: Message,
+    ) -> Context[Self]:  # type: ignore
+        ...
+
+    @overload
+    async def get_context(
+        self,
+        message: Message,
+        *,
+        cls: Type[CXT] = ...,
+    ) -> CXT:  # type: ignore
+        ...
+
+    async def get_context(
+        self,
+        message: Message,
+        *,
+        cls: Type[CXT] = MISSING,
+    ) -> Any:
         r"""|coro|
 
         Returns the invocation context from the message.
@@ -930,6 +986,8 @@ class BotBase(GroupMixin):
             The invocation context. The type of this can change via the
             ``cls`` parameter.
         """
+        if cls is MISSING:
+            cls = Context  # type: ignore
 
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
@@ -954,14 +1012,17 @@ class BotBase(GroupMixin):
 
             except TypeError:
                 if not isinstance(prefix, list):
-                    raise TypeError("get_prefix must return either a string or a list of string, "
-                                    f"not {prefix.__class__.__name__}")
+                    raise TypeError(
+                        "get_prefix must return either a string or a list of string, " f"not {prefix.__class__.__name__}"
+                    )
 
                 # It's possible a bad command_prefix got us here.
                 for value in prefix:
                     if not isinstance(value, str):
-                        raise TypeError("Iterable command_prefix or list returned from get_prefix must "
-                                        f"contain only strings, not {value.__class__.__name__}")
+                        raise TypeError(
+                            "Iterable command_prefix or list returned from get_prefix must "
+                            f"contain only strings, not {value.__class__.__name__}"
+                        )
 
                 # Getting here shouldn't happen
                 raise
@@ -1033,6 +1094,7 @@ class BotBase(GroupMixin):
     async def on_message(self, message):
         await self.process_commands(message)
 
+
 class Bot(BotBase, discord.Client):
     """Represents a discord bot.
 
@@ -1103,10 +1165,13 @@ class Bot(BotBase, discord.Client):
 
         .. versionadded:: 1.7
     """
+
     pass
+
 
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
     """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
     """
+
     pass

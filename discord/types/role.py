@@ -24,11 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import TypedDict, Optional
 from .snowflake import Snowflake
 
 
 class _RoleOptional(TypedDict, total=False):
+    icon: Optional[str]
+    unicode_emoji: Optional[str]
     tags: RoleTags
 
 

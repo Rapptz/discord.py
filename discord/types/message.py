@@ -36,6 +36,14 @@ from .interactions import MessageInteraction
 from .sticker import StickerItem
 
 
+class _PartialMessageOptional(TypedDict, total=False):
+    guild_id: Snowflake
+
+
+class PartialMessage(_PartialMessageOptional):
+    channel_id: Snowflake
+
+
 class ChannelMention(TypedDict):
     id: Snowflake
     guild_id: Snowflake
@@ -52,6 +60,7 @@ class Reaction(TypedDict):
 class _AttachmentOptional(TypedDict, total=False):
     height: Optional[int]
     width: Optional[int]
+    description: str
     content_type: str
     spoiler: bool
 

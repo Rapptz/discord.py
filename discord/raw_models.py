@@ -24,21 +24,24 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Set, List
+from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
 
 if TYPE_CHECKING:
-    from .types.raw_models import (
+    from .types.gateway import (
         MessageDeleteEvent,
-        BulkMessageDeleteEvent,
-        ReactionActionEvent,
+        MessageDeleteBulkEvent as BulkMessageDeleteEvent,
+        MessageReactionAddEvent,
+        MessageReactionRemoveEvent,
+        MessageReactionRemoveAllEvent as ReactionClearEvent,
+        MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
         MessageUpdateEvent,
-        ReactionClearEvent,
-        ReactionClearEmojiEvent,
-        IntegrationDeleteEvent
+        IntegrationDeleteEvent,
     )
     from .message import Message
     from .partial_emoji import PartialEmoji
     from .member import Member
+
+    ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
 
 __all__ = (
@@ -53,6 +56,8 @@ __all__ = (
 
 
 class _RawReprMixin:
+    __slots__: Tuple[str, ...] = ()
+
     def __repr__(self) -> str:
         value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
         return f'<{self.__class__.__name__} {value}>'
@@ -179,8 +184,7 @@ class RawReactionActionEvent(_RawReprMixin):
         .. versionadded:: 1.3
     """
 
-    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji',
-                 'event_type', 'member')
+    __slots__ = ('message_id', 'user_id', 'channel_id', 'guild_id', 'emoji', 'event_type', 'member')
 
     def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: str) -> None:
         self.message_id: int = int(data['message_id'])

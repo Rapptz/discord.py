@@ -43,14 +43,12 @@ from .errors import (
 
 from .enums import Status
 
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .enums import Status
-
-    EI = TypeVar('EI', bound='EventItem')
 
 __all__ = (
     'AutoShardedClient',
@@ -77,12 +75,12 @@ class EventItem:
         self.shard: Optional['Shard'] = shard
         self.error: Optional[Exception] = error
 
-    def __lt__(self: EI, other: EI) -> bool:
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type < other.type
 
-    def __eq__(self: EI, other: EI) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type == other.type
@@ -374,8 +372,19 @@ class AutoShardedClient(Client):
         """
         return [(shard_id, shard.ws.latency) for shard_id, shard in self.__shards.items()]
 
-    def get_shard(self, shard_id: int) -> Optional[ShardInfo]:
-        """Optional[:class:`ShardInfo`]: Gets the shard information at a given shard ID or ``None`` if not found."""
+    def get_shard(self, shard_id: int, /) -> Optional[ShardInfo]:
+        """
+        Gets the shard information at a given shard ID or ``None`` if not found.
+
+        .. versionchanged:: 2.0
+
+            ``shard_id`` parameter is now positional-only.
+
+        Returns
+        --------
+        Optional[:class:`ShardInfo`]
+            Information about the shard with given ID. ``None`` if not found.
+        """
         try:
             parent = self.__shards[shard_id]
         except KeyError:
@@ -470,7 +479,7 @@ class AutoShardedClient(Client):
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
-        shard_id: int = None,
+        shard_id: Optional[int] = None,
     ) -> None:
         """|coro|
 
@@ -483,6 +492,10 @@ class AutoShardedClient(Client):
 
         .. versionchanged:: 2.0
             Removed the ``afk`` keyword-only parameter.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`TypeError`.
 
         Parameters
         ----------
@@ -498,7 +511,7 @@ class AutoShardedClient(Client):
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the ``activity`` parameter is not of proper type.
         """
 

@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict, Union
 from .user import PartialUser
 from .snowflake import Snowflake
-from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration
+from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration, ThreadType
 
 
 OverwriteType = Literal[0, 1]
@@ -38,7 +38,8 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelType = Literal[0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
 class _BaseChannel(TypedDict):
@@ -145,7 +146,7 @@ class GroupDMChannel(_BaseChannel):
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
 
-PrivacyLevel = Literal[1, 2]
+PrivacyLevel = Literal[2]
 
 
 class StageInstance(TypedDict):

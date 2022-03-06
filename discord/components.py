@@ -24,18 +24,21 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
-from .enums import try_enum, ComponentType, ButtonStyle
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.components import (
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
         SelectMenu as SelectMenuPayload,
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
+        TextInput as TextInputPayload,
     )
     from .emoji import Emoji
 
@@ -46,9 +49,8 @@ __all__ = (
     'Button',
     'SelectMenu',
     'SelectOption',
+    'TextInput',
 )
-
-C = TypeVar('C', bound='Component')
 
 
 class Component:
@@ -80,8 +82,8 @@ class Component:
         return f'<{self.__class__.__name__} {attrs}>'
 
     @classmethod
-    def _raw_construct(cls: Type[C], **kwargs) -> C:
-        self: C = cls.__new__(cls)
+    def _raw_construct(cls, **kwargs) -> Self:
+        self = cls.__new__(cls)
         for slot in get_slots(cls):
             try:
                 value = kwargs[slot]
@@ -124,7 +126,7 @@ class ActionRow(Component):
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore
+        }  # type: ignore - Type checker does not understand these are the same
 
 
 class Button(Component):
@@ -196,7 +198,7 @@ class Button(Component):
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        return payload  # type: ignore
+        return payload  # type: ignore - Type checker does not understand these are the same
 
 
 class SelectMenu(Component):
@@ -277,14 +279,14 @@ class SelectOption:
     -----------
     label: :class:`str`
         The label of the option. This is displayed to users.
-        Can only be up to 25 characters.
+        Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
         If not provided when constructed then it defaults to the
         label. Can only be up to 100 characters.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
-        Can only be up to 50 characters.
+        Can only be up to 100 characters.
     emoji: Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]
         The emoji of the option, if available.
     default: :class:`bool`
@@ -362,7 +364,7 @@ class SelectOption:
         }
 
         if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore
+            payload['emoji'] = self.emoji.to_dict()  # type: ignore - This Dict[str, Any] is compatible with PartialEmoji
 
         if self.description:
             payload['description'] = self.description
@@ -370,14 +372,104 @@ class SelectOption:
         return payload
 
 
+class TextInput(Component):
+    """Represents a text input from the Discord Bot UI Kit.
+
+    .. note::
+        The user constructible and usable type to create a text input is
+        :class:`discord.ui.TextInput` not this one.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    custom_id: Optional[:class:`str`]
+        The ID of the text input that gets received during an interaction.
+    label: :class:`str`
+        The label to display above the text input.
+    style: :class:`TextStyle`
+        The style of the text input.
+    placeholder: Optional[:class:`str`]
+        The placeholder text to display when the text input is empty.
+    value: Optional[:class:`str`]
+        The default value of the text input.
+    required: :class:`bool`
+        Whether the text input is required.
+    min_length: Optional[:class:`int`]
+        The minimum length of the text input.
+    max_length: Optional[:class:`int`]
+        The maximum length of the text input.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'style',
+        'label',
+        'custom_id',
+        'placeholder',
+        'value',
+        'required',
+        'min_length',
+        'max_length',
+    )
+
+    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+
+    def __init__(self, data: TextInputPayload) -> None:
+        self.type: ComponentType = ComponentType.text_input
+        self.style: TextStyle = try_enum(TextStyle, data['style'])
+        self.label: str = data['label']
+        self.custom_id: str = data['custom_id']
+        self.placeholder: Optional[str] = data.get('placeholder')
+        self.value: Optional[str] = data.get('value')
+        self.required: bool = data.get('required', True)
+        self.min_length: Optional[int] = data.get('min_length')
+        self.max_length: Optional[int] = data.get('max_length')
+
+    def to_dict(self) -> TextInputPayload:
+        payload: TextInputPayload = {
+            'type': self.type.value,
+            'style': self.style.value,
+            'label': self.label,
+            'custom_id': self.custom_id,
+            'required': self.required,
+        }
+
+        if self.placeholder:
+            payload['placeholder'] = self.placeholder
+
+        if self.value:
+            payload['value'] = self.value
+
+        if self.min_length:
+            payload['min_length'] = self.min_length
+
+        if self.max_length:
+            payload['max_length'] = self.max_length
+
+        return payload
+
+    @property
+    def default(self) -> Optional[str]:
+        """Optional[:class:`str`]: The default value of the text input.
+
+        This is an alias to :attr:`value`.
+        """
+        return self.value
+
+
 def _component_factory(data: ComponentPayload) -> Component:
     component_type = data['type']
     if component_type == 1:
         return ActionRow(data)
     elif component_type == 2:
+        # The type checker does not properly do narrowing here.
         return Button(data)  # type: ignore
     elif component_type == 3:
+        # The type checker does not properly do narrowing here.
         return SelectMenu(data)  # type: ignore
+    elif component_type == 4:
+        # The type checker does not properly do narrowing here.
+        return TextInput(data)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
         return Component._raw_construct(type=as_enum)

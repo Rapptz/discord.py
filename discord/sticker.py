@@ -28,7 +28,7 @@ import unicodedata
 
 from .mixins import Hashable
 from .asset import Asset, AssetMixin
-from .utils import cached_slot_property, find, snowflake_time, get, MISSING
+from .utils import cached_slot_property, find, snowflake_time, get, MISSING, _get_as_snowflake
 from .errors import InvalidData
 from .enums import StickerType, StickerFormatType, try_enum
 
@@ -51,7 +51,8 @@ if TYPE_CHECKING:
         Sticker as StickerPayload,
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
-        ListPremiumStickerPacks as ListPremiumStickerPacksPayload
+        ListPremiumStickerPacks as ListPremiumStickerPacksPayload,
+        EditGuildSticker,
     )
 
 
@@ -86,9 +87,9 @@ class StickerPack(Hashable):
         The stickers of this sticker pack.
     sku_id: :class:`int`
         The SKU ID of the sticker pack.
-    cover_sticker_id: :class:`int`
+    cover_sticker_id: Optional[:class:`int`]
          The ID of the sticker used for the cover of the sticker pack.
-    cover_sticker: :class:`StandardSticker`
+    cover_sticker: Optional[:class:`StandardSticker`]
         The sticker used for the cover of the sticker pack.
     """
 
@@ -114,15 +115,15 @@ class StickerPack(Hashable):
         self.stickers: List[StandardSticker] = [StandardSticker(state=self._state, data=sticker) for sticker in stickers]
         self.name: str = data['name']
         self.sku_id: int = int(data['sku_id'])
-        self.cover_sticker_id: int = int(data['cover_sticker_id'])
-        self.cover_sticker: StandardSticker = get(self.stickers, id=self.cover_sticker_id) # type: ignore
+        self.cover_sticker_id: Optional[int] = _get_as_snowflake(data, 'cover_sticker_id')
+        self.cover_sticker: Optional[StandardSticker] = get(self.stickers, id=self.cover_sticker_id)
         self.description: str = data['description']
-        self._banner: int = int(data['banner_asset_id'])
+        self._banner: Optional[int] = _get_as_snowflake(data, 'banner_asset_id')
 
     @property
-    def banner(self) -> Asset:
+    def banner(self) -> Optional[Asset]:
         """:class:`Asset`: The banner asset of the sticker pack."""
-        return Asset._from_sticker_banner(self._state, self._banner)
+        return self._banner and Asset._from_sticker_banner(self._state, self._banner)  # type: ignore - type-checker thinks _banner could be Literal[0]
 
     def __repr__(self) -> str:
         return f'<StickerPack id={self.id} name={self.name!r} description={self.description!r}>'
@@ -440,10 +441,10 @@ class GuildSticker(Sticker):
         description: str = MISSING,
         emoji: str = MISSING,
         reason: Optional[str] = None,
-    ) -> None:
+    ) -> GuildSticker:
         """|coro|
 
-        Edits a :class:`Sticker` for the guild.
+        Edits a :class:`GuildSticker` for the guild.
 
         Parameters
         -----------
@@ -462,8 +463,13 @@ class GuildSticker(Sticker):
             You are not allowed to edit stickers.
         HTTPException
             An error occurred editing the sticker.
+
+        Returns
+        --------
+        :class:`GuildSticker`
+            The newly modified sticker.
         """
-        payload = {}
+        payload: EditGuildSticker = {}
 
         if name is not MISSING:
             payload['name'] = name
@@ -482,8 +488,7 @@ class GuildSticker(Sticker):
             payload['tags'] = emoji
 
         data: GuildStickerPayload = await self._state.http.modify_guild_sticker(self.guild_id, self.id, payload, reason)
-
-        self._from_data(data)
+        return GuildSticker(state=self._state, data=data)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|

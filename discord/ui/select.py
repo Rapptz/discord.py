@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Type, Callable, Union
+from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
 import inspect
 import os
 
@@ -31,7 +31,6 @@ from .item import Item, ItemCallbackType
 from ..enums import ComponentType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..interactions import Interaction
 from ..utils import MISSING
 from ..components import (
     SelectOption,
@@ -44,13 +43,14 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import (
-        ComponentInteractionData,
+        MessageComponentInteractionData,
     )
 
-S = TypeVar('S', bound='Select')
 V = TypeVar('V', bound='View', covariant=True)
 
 
@@ -197,13 +197,13 @@ class Select(Item[V]):
         -----------
         label: :class:`str`
             The label of the option. This is displayed to users.
-            Can only be up to 25 characters.
+            Can only be up to 100 characters.
         value: :class:`str`
             The value of the option. This is not displayed to users.
             If not given, defaults to the label. Can only be up to 100 characters.
         description: Optional[:class:`str`]
             An additional description of the option, if any.
-            Can only be up to 50 characters.
+            Can only be up to 100 characters.
         emoji: Optional[Union[:class:`str`, :class:`.Emoji`, :class:`.PartialEmoji`]]
             The emoji of the option, if available. This can either be a string representing
             the custom or unicode emoji or an instance of :class:`.PartialEmoji` or :class:`.Emoji`.
@@ -223,7 +223,6 @@ class Select(Item[V]):
             emoji=emoji,
             default=default,
         )
-
 
         self.append_option(option)
 
@@ -270,12 +269,11 @@ class Select(Item[V]):
     def refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def refresh_state(self, interaction: Interaction) -> None:
-        data: ComponentInteractionData = interaction.data  # type: ignore
+    def refresh_state(self, data: MessageComponentInteractionData) -> None:
         self._selected_values = data.get('values', [])
 
     @classmethod
-    def from_component(cls: Type[S], component: SelectMenu) -> S:
+    def from_component(cls, component: SelectMenu) -> Self:
         return cls(
             custom_id=component.custom_id,
             placeholder=component.placeholder,
@@ -303,7 +301,7 @@ def select(
     options: List[SelectOption] = MISSING,
     disabled: bool = False,
     row: Optional[int] = None,
-) -> Callable[[ItemCallbackType], ItemCallbackType]:
+) -> Callable[[ItemCallbackType[V, Select[V]]], Select[V]]:
     """A decorator that attaches a select menu to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -338,7 +336,7 @@ def select(
         Whether the select is disabled or not. Defaults to ``False``.
     """
 
-    def decorator(func: ItemCallbackType) -> ItemCallbackType:
+    def decorator(func: ItemCallbackType[V, Select[V]]) -> ItemCallbackType[V, Select[V]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
 
@@ -354,4 +352,4 @@ def select(
         }
         return func
 
-    return decorator
+    return decorator  # type: ignore

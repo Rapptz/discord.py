@@ -37,15 +37,16 @@ import time
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+import weakref
 
 from .. import utils
-from ..errors import InvalidArgument, HTTPException, Forbidden, NotFound, DiscordServerError
-from ..message import Message
-from ..http import Route
+from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
+from ..message import Message, MessageFlags
+from ..http import Route, handle_message_parameters
 from ..channel import PartialMessageable
 
-from .async_ import BaseWebhook, handle_message_parameters, _WebhookState
+from .async_ import BaseWebhook, _WebhookState
 
 __all__ = (
     'SyncWebhook',
@@ -58,6 +59,7 @@ if TYPE_CHECKING:
     from ..file import File
     from ..embeds import Embed
     from ..mentions import AllowedMentions
+    from ..message import Attachment
     from ..types.webhook import (
         Webhook as WebhookPayload,
     )
@@ -91,7 +93,7 @@ class DeferredLock:
 
 class WebhookAdapter:
     def __init__(self):
-        self._locks: Dict[Any, threading.Lock] = {}
+        self._locks: weakref.WeakValueDictionary[Any, threading.Lock] = weakref.WeakValueDictionary()
 
     def request(
         self,
@@ -380,11 +382,14 @@ class SyncWebhookMessage(Message):
         content: Optional[str] = MISSING,
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        file: File = MISSING,
-        files: List[File] = MISSING,
+        attachments: List[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> SyncWebhookMessage:
         """Edits the message.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError` or :exc:`TypeError` in various cases.
 
         Parameters
         ------------
@@ -395,11 +400,15 @@ class SyncWebhookMessage(Message):
         embed: Optional[:class:`Embed`]
             The embed to edit the message with. ``None`` suppresses the embeds.
             This should not be mixed with the ``embeds`` parameter.
-        file: :class:`File`
-            The file to upload. This cannot be mixed with ``files`` parameter.
-        files: List[:class:`File`]
-            A list of files to send with the content. This cannot be mixed with the
-            ``file`` parameter.
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
+
+            .. note::
+
+                New files will always appear after current attachments.
+
+            .. versionadded:: 2.0
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
@@ -411,21 +420,72 @@ class SyncWebhookMessage(Message):
         Forbidden
             Edited a message that is not yours.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds``
         ValueError
-            The length of ``embeds`` was invalid
-        InvalidArgument
-            There was no token associated with this webhook.
+            The length of ``embeds`` was invalid or
+            there was no token associated with this webhook.
+
+        Returns
+        --------
+        :class:`SyncWebhookMessage`
+            The newly edited message.
         """
-        self._state._webhook.edit_message(
+        return self._state._webhook.edit_message(
             self.id,
             content=content,
             embeds=embeds,
             embed=embed,
-            file=file,
-            files=files,
+            attachments=attachments,
             allowed_mentions=allowed_mentions,
         )
+
+    def add_files(self, *files: File) -> SyncWebhookMessage:
+        r"""Adds new files to the end of the message attachments.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*files: :class:`File`
+            New files to add to the message.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`SyncWebhookMessage`
+            The newly edited message.
+        """
+        return self.edit(attachments=[*self.attachments, *files])
+
+    def remove_attachments(self, *attachments: Attachment) -> SyncWebhookMessage:
+        r"""Removes attachments from the message.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*attachments: :class:`Attachment`
+            Attachments to remove from the message.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to edit a message that isn't yours.
+
+        Returns
+        --------
+        :class:`SyncWebhookMessage`
+            The newly edited message.
+        """
+        return self.edit(attachments=[a for a in self.attachments if a not in attachments])
 
     def delete(self, *, delay: Optional[float] = None) -> None:
         """Deletes the message.
@@ -517,12 +577,12 @@ class SyncWebhook(BaseWebhook):
         return f'<Webhook id={self.id!r}>'
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str` : Returns the webhook's url."""
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None):
+    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -561,7 +621,7 @@ class SyncWebhook(BaseWebhook):
         return cls(data, session, token=bot_token)
 
     @classmethod
-    def from_url(cls, url: str, *, session: Session = MISSING, bot_token: Optional[str] = None):
+    def from_url(cls, url: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -579,7 +639,7 @@ class SyncWebhook(BaseWebhook):
 
         Raises
         -------
-        InvalidArgument
+        ValueError
             The URL is invalid.
 
         Returns
@@ -590,7 +650,7 @@ class SyncWebhook(BaseWebhook):
         """
         m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
-            raise InvalidArgument('Invalid webhook URL given.')
+            raise ValueError('Invalid webhook URL given.')
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
@@ -626,7 +686,7 @@ class SyncWebhook(BaseWebhook):
             Could not fetch the webhook
         NotFound
             Could not find the webhook by this ID
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it.
 
         Returns
@@ -641,11 +701,11 @@ class SyncWebhook(BaseWebhook):
         elif self.token:
             data = adapter.fetch_webhook_with_token(self.id, self.token, session=self.session)
         else:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         return SyncWebhook(data, self.session, token=self.auth_token, state=self._state)
 
-    def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True):
+    def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True) -> None:
         """Deletes this Webhook.
 
         Parameters
@@ -666,11 +726,11 @@ class SyncWebhook(BaseWebhook):
             This webhook does not exist.
         Forbidden
             You do not have permissions to delete this webhook.
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it.
         """
         if self.token is None and self.auth_token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter: WebhookAdapter = _get_webhook_adapter()
 
@@ -687,7 +747,7 @@ class SyncWebhook(BaseWebhook):
         avatar: Optional[bytes] = MISSING,
         channel: Optional[Snowflake] = None,
         prefer_auth: bool = True,
-    ):
+    ) -> SyncWebhook:
         """Edits this Webhook.
 
         Parameters
@@ -712,12 +772,17 @@ class SyncWebhook(BaseWebhook):
             Editing the webhook failed.
         NotFound
             This webhook does not exist.
-        InvalidArgument
+        ValueError
             This webhook does not have a token associated with it
             or it tried editing a channel without authentication.
+
+        Returns
+        --------
+        :class:`SyncWebhook`
+            The newly edited webhook.
         """
         if self.token is None and self.auth_token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         payload = {}
         if name is not MISSING:
@@ -728,22 +793,24 @@ class SyncWebhook(BaseWebhook):
 
         adapter: WebhookAdapter = _get_webhook_adapter()
 
+        data: Optional[WebhookPayload] = None
         # If a channel is given, always use the authenticated endpoint
         if channel is not None:
             if self.auth_token is None:
-                raise InvalidArgument('Editing channel requires authenticated webhook')
+                raise ValueError('Editing channel requires authenticated webhook')
 
             payload['channel_id'] = channel.id
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
-            return
 
         if prefer_auth and self.auth_token:
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
         elif self.token:
             data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session, reason=reason)
-            self._update(data)
+
+        if data is None:
+            raise RuntimeError('Unreachable code hit: data was not assigned')
+
+        return SyncWebhook(data=data, session=self.session, token=self.auth_token, state=self._state)
 
     def _create_message(self, data):
         state = _WebhookState(self, parent=self._state)
@@ -758,7 +825,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -766,6 +833,7 @@ class SyncWebhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[True],
+        suppress_embeds: bool = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -775,7 +843,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -783,6 +851,7 @@ class SyncWebhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[False] = ...,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         ...
 
@@ -791,7 +860,7 @@ class SyncWebhook(BaseWebhook):
         content: str = MISSING,
         *,
         username: str = MISSING,
-        avatar_url: str = MISSING,
+        avatar_url: Any = MISSING,
         tts: bool = False,
         file: File = MISSING,
         files: List[File] = MISSING,
@@ -800,6 +869,7 @@ class SyncWebhook(BaseWebhook):
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
+        suppress_embeds: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -823,9 +893,10 @@ class SyncWebhook(BaseWebhook):
         username: :class:`str`
             The username to send with this message. If no username is provided
             then the default username for the webhook is used.
-        avatar_url: Union[:class:`str`, :class:`Asset`]
+        avatar_url: :class:`str`
             The avatar URL to send with this message. If no avatar URL is provided
-            then the default avatar for the webhook is used.
+            then the default avatar for the webhook is used. If this is not a
+            string then it is explicitly cast using ``str``.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         file: :class:`File`
@@ -847,6 +918,10 @@ class SyncWebhook(BaseWebhook):
             The thread to send this message to.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -859,9 +934,8 @@ class SyncWebhook(BaseWebhook):
         TypeError
             You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
         ValueError
-            The length of ``embeds`` was invalid
-        InvalidArgument
-            There was no token associated with this webhook.
+            The length of ``embeds`` was invalid or
+            there was no token associated with this webhook.
 
         Returns
         ---------
@@ -870,11 +944,16 @@ class SyncWebhook(BaseWebhook):
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
+
+        if suppress_embeds:
+            flags = MessageFlags._from_value(4)
+        else:
+            flags = MISSING
 
         params = handle_message_parameters(
             content=content,
@@ -887,6 +966,7 @@ class SyncWebhook(BaseWebhook):
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
+            flags=flags,
         )
         adapter: WebhookAdapter = _get_webhook_adapter()
         thread_id: Optional[int] = None
@@ -906,7 +986,7 @@ class SyncWebhook(BaseWebhook):
         if wait:
             return self._create_message(data)
 
-    def fetch_message(self, id: int) -> SyncWebhookMessage:
+    def fetch_message(self, id: int, /) -> SyncWebhookMessage:
         """Retrieves a single :class:`~discord.SyncWebhookMessage` owned by this webhook.
 
         .. versionadded:: 2.0
@@ -924,7 +1004,7 @@ class SyncWebhook(BaseWebhook):
             You do not have the permissions required to get a message.
         ~discord.HTTPException
             Retrieving the message failed.
-        InvalidArgument
+        ValueError
             There was no token associated with this webhook.
 
         Returns
@@ -934,7 +1014,7 @@ class SyncWebhook(BaseWebhook):
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter: WebhookAdapter = _get_webhook_adapter()
         data = adapter.get_webhook_message(
@@ -952,10 +1032,9 @@ class SyncWebhook(BaseWebhook):
         content: Optional[str] = MISSING,
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        file: File = MISSING,
-        files: List[File] = MISSING,
+        attachments: List[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
-    ):
+    ) -> SyncWebhookMessage:
         """Edits a message owned by this webhook.
 
         This is a lower level interface to :meth:`WebhookMessage.edit` in case
@@ -974,11 +1053,11 @@ class SyncWebhook(BaseWebhook):
         embed: Optional[:class:`Embed`]
             The embed to edit the message with. ``None`` suppresses the embeds.
             This should not be mixed with the ``embeds`` parameter.
-        file: :class:`File`
-            The file to upload. This cannot be mixed with ``files`` parameter.
-        files: List[:class:`File`]
-            A list of files to send with the content. This cannot be mixed with the
-            ``file`` parameter.
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
+
+            .. versionadded:: 2.0
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
@@ -990,28 +1069,26 @@ class SyncWebhook(BaseWebhook):
         Forbidden
             Edited a message that is not yours.
         TypeError
-            You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            You specified both ``embed`` and ``embeds``
         ValueError
-            The length of ``embeds`` was invalid
-        InvalidArgument
-            There was no token associated with this webhook.
+            The length of ``embeds`` was invalid or
+            there was no token associated with this webhook.
         """
 
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         params = handle_message_parameters(
             content=content,
-            file=file,
-            files=files,
+            attachments=attachments,
             embed=embed,
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
         adapter: WebhookAdapter = _get_webhook_adapter()
-        adapter.edit_webhook_message(
+        data = adapter.edit_webhook_message(
             self.id,
             self.token,
             message_id,
@@ -1020,8 +1097,9 @@ class SyncWebhook(BaseWebhook):
             multipart=params.multipart,
             files=params.files,
         )
+        return self._create_message(data)
 
-    def delete_message(self, message_id: int):
+    def delete_message(self, message_id: int, /) -> None:
         """Deletes a message owned by this webhook.
 
         This is a lower level interface to :meth:`WebhookMessage.delete` in case
@@ -1040,9 +1118,11 @@ class SyncWebhook(BaseWebhook):
             Deleting the message failed.
         Forbidden
             Deleted a message that is not yours.
+        ValueError
+            This webhook does not have a token associated with it.
         """
         if self.token is None:
-            raise InvalidArgument('This webhook does not have a token associated with it')
+            raise ValueError('This webhook does not have a token associated with it')
 
         adapter: WebhookAdapter = _get_webhook_adapter()
         adapter.delete_webhook_message(

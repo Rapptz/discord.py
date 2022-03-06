@@ -29,6 +29,7 @@ from itertools import groupby
 
 import traceback
 import asyncio
+import logging
 import sys
 import time
 import os
@@ -41,16 +42,23 @@ from ..components import (
     SelectMenu as SelectComponent,
 )
 
+# fmt: off
 __all__ = (
     'View',
 )
+# fmt: on
 
 
 if TYPE_CHECKING:
     from ..interactions import Interaction
     from ..message import Message
     from ..types.components import Component as ComponentPayload
+    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
+    from .modal import Modal
+
+
+_log = logging.getLogger(__name__)
 
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
@@ -74,9 +82,11 @@ def _component_to_item(component: Component) -> Item:
 
 
 class _ViewWeights:
+    # fmt: off
     __slots__ = (
         'weights',
     )
+    # fmt: on
 
     def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
@@ -138,10 +148,11 @@ class View:
     """
 
     __discord_ui_view__: ClassVar[bool] = True
-    __view_children_items__: ClassVar[List[ItemCallbackType]] = []
+    __discord_ui_modal__: ClassVar[bool] = False
+    __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
-        children: List[ItemCallbackType] = []
+        children: List[ItemCallbackType[Any, Any]] = []
         for base in reversed(cls.__mro__):
             for member in base.__dict__.values():
                 if hasattr(member, '__discord_ui_model_type__'):
@@ -152,16 +163,19 @@ class View:
 
         cls.__view_children_items__ = children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
-        self.timeout = timeout
-        self.children: List[Item] = []
+    def _init_children(self) -> List[Item]:
+        children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = partial(func, self, item)
+            item.callback = partial(func, self, item)  # type: ignore
             item._view = self
             setattr(self, func.__name__, item)
-            self.children.append(item)
+            children.append(item)
+        return children
 
+    def __init__(self, *, timeout: Optional[float] = 180.0):
+        self.timeout = timeout
+        self.children: List[Item] = self._init_children()
         self.__weights = _ViewWeights(self.children)
         loop = asyncio.get_running_loop()
         self.id: str = os.urandom(16).hex()
@@ -376,6 +390,10 @@ class View:
         if self.__stopped.done():
             return
 
+        if self.__cancel_callback:
+            self.__cancel_callback(self)
+            self.__cancel_callback = None
+
         self.__stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
@@ -460,6 +478,8 @@ class ViewStore:
         self._views: Dict[Tuple[int, Optional[int], str], Tuple[View, Item]] = {}
         # message_id: View
         self._synced_message_views: Dict[int, View] = {}
+        # custom_id: Modal
+        self._modals: Dict[str, Modal] = {}
         self._state: ConnectionState = state
 
     @property
@@ -483,6 +503,10 @@ class ViewStore:
             del self._views[k]
 
     def add_view(self, view: View, message_id: Optional[int] = None):
+        if view.__discord_ui_modal__:
+            self._modals[view.custom_id] = view  # type: ignore
+            return
+
         self.__verify_integrity()
 
         view._start_listening_from_store(self)
@@ -494,6 +518,10 @@ class ViewStore:
             self._synced_message_views[message_id] = view
 
     def remove_view(self, view: View):
+        if view.__discord_ui_modal__:
+            self._modals.pop(view.custom_id, None)  # type: ignore
+            return
+
         for item in view.children:
             if item.is_dispatchable():
                 self._views.pop((item.type.value, item.custom_id), None)  # type: ignore
@@ -503,7 +531,7 @@ class ViewStore:
                 del self._synced_message_views[key]
                 break
 
-    def dispatch(self, component_type: int, custom_id: str, interaction: Interaction):
+    def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction):
         self.__verify_integrity()
         message_id: Optional[int] = interaction.message and interaction.message.id
         key = (component_type, message_id, custom_id)
@@ -514,8 +542,22 @@ class ViewStore:
             return
 
         view, item = value
-        item.refresh_state(interaction)
+        item.refresh_state(interaction.data)  # type: ignore
         view._dispatch_item(item, interaction)
+
+    def dispatch_modal(
+        self,
+        custom_id: str,
+        interaction: Interaction,
+        components: List[ModalSubmitComponentInteractionDataPayload],
+    ):
+        modal = self._modals.get(custom_id)
+        if modal is None:
+            _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
+            return
+
+        modal.refresh(components)
+        modal._dispatch_submit(interaction)
 
     def is_message_tracked(self, message_id: int):
         return message_id in self._synced_message_views

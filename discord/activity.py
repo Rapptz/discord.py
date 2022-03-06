@@ -807,13 +807,16 @@ class CustomActivity(BaseActivity):
 
 ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
 
+
 @overload
 def create_activity(data: ActivityPayload) -> ActivityTypes:
     ...
 
+
 @overload
 def create_activity(data: None) -> None:
     ...
+
 
 def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
     if not data:
@@ -831,11 +834,11 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
             return Activity(**data)
         else:
             # we removed the name key from data already
-            return CustomActivity(name=name, **data) # type: ignore
+            return CustomActivity(name=name, **data)  # type: ignore
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             # the url won't be None here
-            return Streaming(**data) # type: ignore
+            return Streaming(**data)  # type: ignore
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)

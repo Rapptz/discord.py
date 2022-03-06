@@ -25,13 +25,14 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
-from .enums import VoiceRegion
+from .utils import parse_time, _bytes_to_base64_data, MISSING
 from .guild import Guild
 
+# fmt: off
 __all__ = (
     'Template',
 )
+# fmt: on
 
 if TYPE_CHECKING:
     import datetime
@@ -166,20 +167,24 @@ class Template:
             f' creator={self.creator!r} source_guild={self.source_guild!r} is_dirty={self.is_dirty}>'
         )
 
-    async def create_guild(self, name: str, region: Optional[VoiceRegion] = None, icon: Any = None) -> Guild:
+    async def create_guild(self, name: str, icon: bytes = MISSING) -> Guild:
         """|coro|
 
         Creates a :class:`.Guild` using the template.
 
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
+        .. versionchanged:: 2.0
+            The ``region`` parameter has been removed.
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
+
         Parameters
         ----------
         name: :class:`str`
             The name of the guild.
-        region: :class:`.VoiceRegion`
-            The region for the voice communication server.
-            Defaults to :attr:`.VoiceRegion.us_west`.
         icon: :class:`bytes`
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
@@ -188,7 +193,7 @@ class Template:
         ------
         HTTPException
             Guild creation failed.
-        InvalidArgument
+        ValueError
             Invalid icon image format given. Must be PNG or JPG.
 
         Returns
@@ -197,16 +202,14 @@ class Template:
             The guild created. This is not the same guild that is
             added to cache.
         """
-        if icon is not None:
-            icon = _bytes_to_base64_data(icon)
+        base64_icon = None
+        if icon is not MISSING:
+            base64_icon = _bytes_to_base64_data(icon)
 
-        region = region or VoiceRegion.us_west
-        region_value = region.value
-
-        data = await self._state.http.create_from_template(self.code, name, region_value, icon)
+        data = await self._state.http.create_from_template(self.code, name, base64_icon)
         return Guild(data=data, state=self._state)
 
-    async def sync(self) -> None:
+    async def sync(self) -> Template:
         """|coro|
 
         Sync the template to the guild's current state.
@@ -216,6 +219,9 @@ class Template:
 
         .. versionadded:: 1.7
 
+        .. versionchanged:: 2.0
+            The template is no longer edited in-place, instead it is returned.
+
         Raises
         -------
         HTTPException
@@ -224,17 +230,22 @@ class Template:
             You don't have permissions to edit the template.
         NotFound
             This template does not exist.
+
+        Returns
+        --------
+        :class:`Template`
+            The newly edited template.
         """
 
         data = await self._state.http.sync_template(self.source_guild.id, self.code)
-        self._store(data)
+        return Template(state=self._state, data=data)
 
     async def edit(
         self,
         *,
         name: str = MISSING,
         description: Optional[str] = MISSING,
-    ) -> None:
+    ) -> Template:
         """|coro|
 
         Edit the template metadata.
@@ -243,6 +254,9 @@ class Template:
         source guild to do this.
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+            The template is no longer edited in-place, instead it is returned.
 
         Parameters
         ------------
@@ -259,6 +273,11 @@ class Template:
             You don't have permissions to edit the template.
         NotFound
             This template does not exist.
+
+        Returns
+        --------
+        :class:`Template`
+            The newly edited template.
         """
         payload = {}
 
@@ -268,7 +287,7 @@ class Template:
             payload['description'] = description
 
         data = await self._state.http.edit_template(self.source_guild.id, self.code, payload)
-        self._store(data)
+        return Template(state=self._state, data=data)
 
     async def delete(self) -> None:
         """|coro|
@@ -294,7 +313,7 @@ class Template:
     @property
     def url(self) -> str:
         """:class:`str`: The template url.
-        
+
         .. versionadded:: 2.0
         """
         return f'https://discord.new/{self.code}'

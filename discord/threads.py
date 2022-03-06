@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
+from datetime import datetime
 import time
 import asyncio
 
@@ -111,6 +112,9 @@ class Thread(Messageable, Hashable):
         Whether the thread is archived.
     locked: :class:`bool`
         Whether the thread is locked.
+    invitable: :class:`bool`
+        Whether non-moderators can add other non-moderators to this thread.
+        This is always ``True`` for public threads.
     archiver_id: Optional[:class:`int`]
         The user's ID that archived this thread.
     auto_archive_duration: :class:`int`
@@ -136,9 +140,11 @@ class Thread(Messageable, Hashable):
         'me',
         'locked',
         'archived',
+        'invitable',
         'archiver_id',
         'auto_archive_duration',
         'archive_timestamp',
+        '_created_at',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
@@ -184,6 +190,8 @@ class Thread(Messageable, Hashable):
         self.auto_archive_duration = data['auto_archive_duration']
         self.archive_timestamp = parse_time(data['archive_timestamp'])
         self.locked = data.get('locked', False)
+        self.invitable = data.get('invitable', True)
+        self._created_at = parse_time(data.get('create_timestamp'))
 
     def _update(self, data):
         try:
@@ -268,7 +276,7 @@ class Thread(Messageable, Hashable):
         if parent is None:
             raise ClientException('Parent channel not found')
         return parent.category
-    
+
     @property
     def category_id(self) -> Optional[int]:
         """The category channel ID the parent channel belongs to, if applicable.
@@ -288,6 +296,16 @@ class Thread(Messageable, Hashable):
         if parent is None:
             raise ClientException('Parent channel not found')
         return parent.category_id
+
+    @property
+    def created_at(self) -> Optional[datetime]:
+        """An aware timestamp of when the thread was created in UTC.
+
+        .. note::
+
+            This timestamp only exists for threads created after 9 January 2022, otherwise returns ``None``.
+        """
+        return self._created_at
 
     def is_private(self) -> bool:
         """:class:`bool`: Whether the thread is a private thread.
@@ -346,7 +364,7 @@ class Thread(Messageable, Hashable):
             raise ClientException('Parent channel not found')
         return parent.permissions_for(obj)
 
-    async def delete_messages(self, messages: Iterable[Snowflake]) -> None:
+    async def delete_messages(self, messages: Iterable[Snowflake], /) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -521,9 +539,10 @@ class Thread(Messageable, Hashable):
         name: str = MISSING,
         archived: bool = MISSING,
         locked: bool = MISSING,
+        invitable: bool = MISSING,
         slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
-    ):
+    ) -> Thread:
         """|coro|
 
         Edits the thread.
@@ -543,6 +562,9 @@ class Thread(Messageable, Hashable):
             Whether to archive the thread or not.
         locked: :class:`bool`
             Whether to lock the thread or not.
+        invitable: :class:`bool`
+            Whether non-moderators can add other non-moderators to this thread.
+            Only available for private threads.
         auto_archive_duration: :class:`int`
             The new duration in minutes before a thread is automatically archived for inactivity.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
@@ -556,6 +578,11 @@ class Thread(Messageable, Hashable):
             You do not have permissions to edit the thread.
         HTTPException
             Editing the thread failed.
+
+        Returns
+        --------
+        :class:`Thread`
+            The newly edited thread.
         """
         payload = {}
         if name is not MISSING:
@@ -566,20 +593,22 @@ class Thread(Messageable, Hashable):
             payload['auto_archive_duration'] = auto_archive_duration
         if locked is not MISSING:
             payload['locked'] = locked
+        if invitable is not MISSING:
+            payload['invitable'] = invitable
         if slowmode_delay is not MISSING:
             payload['rate_limit_per_user'] = slowmode_delay
 
-        await self._state.http.edit_channel(self.id, **payload)
+        data = await self._state.http.edit_channel(self.id, **payload)
+        # The data payload will always be a Thread payload
+        return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
 
     async def join(self):
         """|coro|
 
         Joins this thread.
 
-        You must have :attr:`~Permissions.send_messages` and :attr:`~Permissions.use_threads`
-        to join a public thread. If the thread is private then :attr:`~Permissions.send_messages`
-        and either :attr:`~Permissions.use_private_threads` or :attr:`~Permissions.manage_messages`
-        is required to join the thread.
+        You must have :attr:`~Permissions.send_messages_in_threads` to join a thread.
+        If the thread is private, :attr:`~Permissions.manage_threads` is also needed.
 
         Raises
         -------
@@ -602,14 +631,13 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.leave_thread(self.id)
 
-    async def add_user(self, user: Snowflake):
+    async def add_user(self, user: Snowflake, /):
         """|coro|
 
         Adds a user to this thread.
 
-        You must have :attr:`~Permissions.send_messages` and :attr:`~Permissions.use_threads`
-        to add a user to a public thread. If the thread is private then :attr:`~Permissions.send_messages`
-        and either :attr:`~Permissions.use_private_threads` or :attr:`~Permissions.manage_messages`
+        You must have :attr:`~Permissions.send_messages_in_threads` to add a user to a thread.
+        If the thread is private then and :attr:`invitable` is ``False`` then :attr:`~Permissions.manage_messages`
         is required to add a user to the thread.
 
         Parameters
@@ -626,7 +654,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.add_user_to_thread(self.id, user.id)
 
-    async def remove_user(self, user: Snowflake):
+    async def remove_user(self, user: Snowflake, /):
         """|coro|
 
         Removes a user from this thread.
@@ -636,7 +664,7 @@ class Thread(Messageable, Hashable):
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-            The user to add to the thread.
+            The user to remove from the thread.
 
         Raises
         -------
@@ -646,6 +674,27 @@ class Thread(Messageable, Hashable):
             Removing the user from the thread failed.
         """
         await self._state.http.remove_user_from_thread(self.id, user.id)
+
+    async def fetch_member(self, user_id: int, /) -> ThreadMember:
+        """|coro|
+
+        Retrieves a :class:`ThreadMember` for the given user ID.
+
+        Raises
+        -------
+        NotFound
+            The specified user is not a member of this thread.
+        HTTPException
+            Retrieving the member failed.
+
+        Returns
+        --------
+        :class:`ThreadMember`
+            The thread member from the user ID.
+        """
+
+        data = await self._state.http.get_thread_member(self.id, user_id)
+        return ThreadMember(parent=self, data=data)
 
     async def fetch_members(self) -> List[ThreadMember]:
         """|coro|
