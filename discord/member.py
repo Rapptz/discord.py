@@ -55,7 +55,10 @@ if TYPE_CHECKING:
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
-    from .types.activity import PartialPresenceUpdate
+    from .types.activity import (
+        ClientStatus as ClientStatusPayload,
+        PartialPresenceUpdate,
+    )
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
@@ -161,6 +164,46 @@ class VoiceState:
         ]
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {inner}>'
+
+
+class _ClientStatus:
+    __slots__ = ('_status', 'desktop', 'mobile', 'web')
+
+    def __init__(self):
+        self._status: str = 'offline'
+
+        self.desktop: Optional[str] = None
+        self.mobile: Optional[str] = None
+        self.web: Optional[str] = None
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('_status', self._status),
+            ('desktop', self.desktop),
+            ('mobile', self.mobile),
+            ('web', self.web),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {inner}>'
+
+    def _update(self, status: str, data: ClientStatusPayload, /) -> None:
+        self._status = status
+
+        self.desktop = data.get('desktop')
+        self.mobile = data.get('mobile')
+        self.web = data.get('web')
+
+    @classmethod
+    def _copy(cls, client_status: Self, /) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+
+        self._status = client_status._status
+
+        self.desktop = client_status.desktop
+        self.mobile = client_status.mobile
+        self.web = client_status.web
+
+        return self
 
 
 def flatten_user(cls):
@@ -303,7 +346,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
-        self._client_status: Dict[Optional[str], str] = {None: 'offline'}
+        self._client_status: _ClientStatus = _ClientStatus()
         self.activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
@@ -366,7 +409,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self._client_status = member._client_status.copy()
+        self._client_status = _ClientStatus._copy(member._client_status)
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
@@ -405,10 +448,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = tuple(map(create_activity, data['activities']))
-        self._client_status = {
-            sys.intern(key): sys.intern(value) for key, value in data.get('client_status', {}).items()  # type: ignore
-        }
-        self._client_status[None] = sys.intern(data['status'])
+        self._client_status._update(data['status'], data['client_status'])
 
         if len(user) > 1:
             return self._update_inner_user(user)
@@ -428,7 +468,7 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status[None])
+        return try_enum(Status, self._client_status._status)
 
     @property
     def raw_status(self) -> str:
@@ -436,31 +476,31 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status[None]
+        return self._client_status._status
 
     @status.setter
     def status(self, value: Status) -> None:
         # internal use only
-        self._client_status[None] = str(value)
+        self._client_status._status = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.get('mobile', 'offline'))
+        return try_enum(Status, self._client_status.mobile or 'offline')
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.get('desktop', 'offline'))
+        return try_enum(Status, self._client_status.desktop or 'offline')
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.get('web', 'offline'))
+        return try_enum(Status, self._client_status.web or 'offline')
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        return 'mobile' in self._client_status
+        return self._client_status.mobile is not None
 
     @property
     def colour(self) -> Colour:
