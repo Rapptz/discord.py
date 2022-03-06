@@ -1316,6 +1316,28 @@ class Message(Hashable):
 
         return message
 
+    async def suppress(self) -> Message:
+        """
+        |coro|
+
+        Suppresses a message.
+
+        Raises
+        -------
+        HTTPException
+            Suppressing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions.
+        """
+
+        flags = MessageFlags._from_value(self.flags.value)
+        params = handle_message_parameters(flags=flags)
+            
+        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+        message = Message(state=self._state, channel=self.channel, data=data)
+
+        return message
+
     async def add_files(self, *files: File) -> Message:
         r"""|coro|
 
