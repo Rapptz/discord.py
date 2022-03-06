@@ -2384,7 +2384,7 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str,
         emoji: str,
         file: File,
         reason: Optional[str] = None,
@@ -2402,7 +2402,7 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The sticker name. Must be at least 2 characters.
-        description: Optional[:class:`str`]
+        description: :class:`str`
             The sticker's description. Can be ``None``.
         emoji: :class:`str`
             The name of a unicode emoji that represents the sticker's expression.
@@ -2427,8 +2427,7 @@ class Guild(Hashable):
             'name': name,
         }
 
-        if description:
-            payload['description'] = description
+        payload['description'] = description
 
         try:
             emoji = unicodedata.name(emoji)
