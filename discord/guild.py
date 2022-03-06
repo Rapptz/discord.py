@@ -1933,6 +1933,42 @@ class Guild(Hashable):
         data = await self._state.http.get_member(self.id, member_id)
         return Member(data=data, state=self._state, guild=self)
 
+    async def find_member(self, member_id: int, /) -> Member:
+        """|coro|
+
+        Retrieves a :class:`Member` from a guild ID, and a member ID.
+
+        .. note::
+
+            This method uses :meth:`get_member` if returned None, uses an API call. Might require :attr:`Intents.members` and member cache enabled.
+
+        .. versionchanged:: 2.0
+
+            ``member_id`` parameter is now positional-only.
+
+        Parameters
+        -----------
+        member_id: :class:`int`
+            The member's ID to fetch from.
+
+        Raises
+        -------
+        Forbidden
+            You do not have access to the guild.
+        HTTPException
+            Fetching the member failed.
+
+        Returns
+        --------
+        :class:`Member`
+            The member from the member ID.
+        """
+        cached_member = self.get_member(member_id)
+        if cached_member == None:
+            return await self.fetch_member(member_id)
+
+        return cached_member
+
     async def fetch_ban(self, user: Snowflake) -> BanEntry:
         """|coro|
 
@@ -2007,6 +2043,41 @@ class Guild(Hashable):
 
         channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore - channel won't be a private channel
         return channel
+
+    async def find_channel_or_thread(self, channel_id: int, /) -> Union[GuildChannel, Thread]:
+        """|coro|
+
+        Retrieves a :class:`.abc.GuildChannel` or :class:`.Thread` with the specified ID.
+
+        .. note::
+
+            This method uses :meth:`get_channel` if returned None, uses an API call.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        InvalidData
+            An unknown channel type was received from Discord
+            or the guild the channel belongs to is not the same
+            as the one in this object points to.
+        HTTPException
+            Retrieving the channel failed.
+        NotFound
+            Invalid Channel ID.
+        Forbidden
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
+            The channel from the ID.
+        """
+        cached_channel_or_thread = self.get_channel_or_thread(channel_id)
+        if cached_channel_or_thread == None:
+            return await self.fetch_channel(channel_id)
+
+        return cached_channel_or_thread
 
     async def bans(self) -> List[BanEntry]:
         """|coro|
@@ -2488,6 +2559,40 @@ class Guild(Hashable):
         data = await self._state.http.get_scheduled_events(self.id, with_counts)
         return [ScheduledEvent(state=self._state, data=d) for d in data]
 
+    async def find_scheduled_event(self, scheduled_event_id: int, with_counts: bool = True) -> ScheduledEvent:
+        """|coro|
+
+        Retrieves a list of all scheduled events for the guild.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        with_counts: :class:`bool`
+            Whether to include the number of users that are subscribed to the event.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the scheduled events failed.
+
+        Returns
+        --------
+        :class:`ScheduledEvent`
+            The scheduled events.
+        """
+        cached_scheduled_event = self.get_scheduled_event(scheduled_event_id)
+        if cached_scheduled_event == None:
+            scheduled_events = await self.fetch_scheduled_events(self, with_counts=with_counts)
+            for scheduled_event in scheduled_events:
+                if scheduled_event.id == scheduled_event_id:
+                    return scheduled_event
+                else:
+                    continue
+
+        return cached_scheduled_event
+
     async def fetch_scheduled_event(self, scheduled_event_id: int, /, *, with_counts: bool = True) -> ScheduledEvent:
         """|coro|
 
@@ -2806,6 +2911,38 @@ class Guild(Hashable):
         """
         data = await self._state.http.get_roles(self.id)
         return [Role(guild=self, state=self._state, data=d) for d in data]
+
+    async def find_role(self, role_id: int, /):
+        """|coro|
+
+        Retrieves requested :class:`Role` that the guild has.
+
+        .. note::
+
+            This method uses :meth:`get_role` if returned None, uses an API call.
+
+        .. versionadded:: 1.3
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the roles failed.
+
+        Returns
+        -------
+        :class:`Role`
+            All roles in the guild.
+        """
+        cached_role = self.get_role(role_id)
+        if cached_role == None:
+            all_roles = await self.fetch_roles(self)
+            for role in all_roles:
+                if role.id == role_id:
+                    return role
+                else:
+                    continue
+
+        return cached_role
 
     @overload
     async def create_role(
