@@ -1693,7 +1693,7 @@ class Connectable(Protocol):
         Connects to voice and creates a :class:`~discord.VoiceClient` to establish
         your connection to the voice server.
 
-        This requires :attr:`Intents.voice_states`.
+        This requires :attr:`~discord.Intents.voice_states`.
 
         Parameters
         -----------
