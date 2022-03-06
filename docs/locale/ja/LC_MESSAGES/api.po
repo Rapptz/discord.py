@@ -64,7 +64,6 @@ msgid ""
 msgstr "``'1.0.0rc1'`` のようなバージョンの文字列表現。これは :pep:`440` に基づいています。"
 
 #: ../../api.rst:34
-#, fuzzy
 msgid "Clients"
 msgstr "クライアント"
 
@@ -249,14 +248,13 @@ msgid ""
 msgstr ""
 
 #: discord.client.Client:6 of
-#, fuzzy
 msgid ""
 "The maximum number of messages to store in the internal message cache. "
 "This defaults to ``1000``. Passing in ``None`` disables the message "
 "cache."
 msgstr ""
-"内部のメッセージキャッシュに格納するメッセージの最大数。デフォルトでは5000に設定されています。 ``None`` "
-"あるいは100未満の値を渡すと、渡された値の代わりにデフォルトの値が使用されます。"
+"内部のメッセージキャッシュに格納するメッセージの最大数。デフォルトでは1000に設定されています。 ``None`` "
+"を渡すと、メッセージキャッシュが無効になります。"
 
 #: discord.client.Client:9 of
 msgid "Allow disabling the message cache and change the default size to ``1000``."
@@ -284,7 +282,6 @@ msgid "An object that represents proxy HTTP Basic Authorization."
 msgstr "プロキシのHTTP Basic認証を表すオブジェクト。"
 
 #: discord.client.Client:22 of
-#, fuzzy
 msgid "Integer starting at ``0`` and less than :attr:`.shard_count`."
 msgstr "0から始まり、 :attr:`.shard_count` より小さい整数。"
 
@@ -293,9 +290,8 @@ msgid "The total number of shards."
 msgstr "Shardの総数。"
 
 #: discord.Client.application_id:1 discord.client.Client:26 of
-#, fuzzy
 msgid "The client's application ID."
-msgstr "Botのアプリケーション情報。"
+msgstr ""
 
 #: discord.client.Client:28 of
 msgid ""
@@ -434,11 +430,8 @@ msgid ""
 msgstr "クライアントが現在接続しているWebSocketゲートウェイ。 ``None`` でもかまいません。"
 
 #: discord.client.Client:88 of
-#, fuzzy
 msgid "The event loop that the client uses for asynchronous operations."
-msgstr ""
-":class:`asyncio.AbstractEventLoop` -- "
-"クライアントのHTTPリクエストとWebSocket操作に使われるイベントループ。"
+msgstr "クライアントのHTTPリクエストとWebSocket操作に使われるイベントループ。"
 
 #: ../../api.rst ../../docstring discord.Activity.end
 #: discord.Activity.large_image_text discord.Activity.large_image_url
@@ -850,14 +843,12 @@ msgstr "例"
 #: discord.webhook.sync.SyncWebhookMessage.delete
 #: discord.webhook.sync.SyncWebhookMessage.edit
 #: discord.webhook.sync.SyncWebhookMessage.remove_attachments of
-#, fuzzy
 msgid "Raises"
 msgstr "例外"
 
 #: discord.client.Client.event:15 of
-#, fuzzy
 msgid "The coroutine passed is not actually a coroutine."
-msgstr ":exc:`TypeError` -- 渡されたコルーチンが実際にはコルーチンではない。"
+msgstr "渡されたコルーチンが実際にはコルーチンではない。"
 
 #: discord.AutoShardedClient.latency:1 discord.Client.latency:1 of
 msgid "Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."
@@ -870,16 +861,14 @@ msgstr "これはDiscord WebSocketプロトコルの待ち時間とも言えま�
 #: discord.AutoShardedClient.latency:7 discord.Client.latency:5
 #: discord.Guild.bitrate_limit:3 discord.ShardInfo.latency:3
 #: discord.VoiceClient.average_latency:5 discord.VoiceClient.latency:8 of
-#, fuzzy
 msgid ":class:`float`"
-msgstr ":class:`str`"
+msgstr ":class:`float`"
 
 #: discord.client.Client.is_ws_ratelimited:1
 #: discord.shard.AutoShardedClient.is_ws_ratelimited:1
 #: discord.shard.ShardInfo.is_ws_ratelimited:1 of
-#, fuzzy
 msgid ":class:`bool`: Whether the websocket is currently rate limited."
-msgstr "WebSocketが閉じられているかどうかを表します。"
+msgstr ":class:`bool`: WebSocketが閉じられているかどうかを表します。"
 
 #: discord.client.Client.is_ws_ratelimited:3
 #: discord.shard.AutoShardedClient.is_ws_ratelimited:3
@@ -890,58 +879,48 @@ msgid ""
 msgstr ""
 
 #: discord.Client.user:1 of
-#, fuzzy
 msgid "Represents the connected client. ``None`` if not logged in."
-msgstr "Optional[:class:`.ClientUser`] -- 接続しているクライアントを表します。接続していない場合はNoneです。"
+msgstr "接続しているクライアントを表します。接続していない場合はNoneです。"
 
 #: discord.Client.user:3 of
-#, fuzzy
 msgid "Optional[:class:`.ClientUser`]"
-msgstr ":class:`~discord.ClientUser`"
+msgstr "Optional[:class:`.ClientUser`]"
 
 #: discord.Client.guilds:1 of
-#, fuzzy
 msgid "The guilds that the connected client is a member of."
-msgstr "List[:class:`.Guild`] -- 接続したクライアントがメンバーであるギルド。"
+msgstr "接続したクライアントがメンバーであるギルド。"
 
 #: discord.Client.guilds:3 of
-#, fuzzy
 msgid "List[:class:`.Guild`]"
-msgstr ":class:`.Guild`"
+msgstr "List[:class:`.Guild`]"
 
 #: discord.Client.emojis:1 of
-#, fuzzy
 msgid "The emojis that the connected client has."
-msgstr "List[:class:`.Emoji`] -- 接続したクライアントがアクセスできる絵文字。"
+msgstr "接続したクライアントがアクセスできる絵文字。"
 
 #: discord.Client.emojis:3 of
-#, fuzzy
 msgid "List[:class:`.Emoji`]"
-msgstr ":class:`.Webhook`"
+msgstr "List[:class:`.Emoji`]"
 
 #: discord.Client.stickers:1 of
-#, fuzzy
 msgid "The stickers that the connected client has."
-msgstr "List[:class:`.Emoji`] -- 接続したクライアントがアクセスできる絵文字。"
+msgstr "接続したクライアントがアクセスできるスタンプ。"
 
 #: discord.Client.stickers:5 of
-#, fuzzy
 msgid "List[:class:`.GuildSticker`]"
-msgstr ":class:`.Guild`"
+msgstr "List[:class:`.GuildSticker`]"
 
 #: discord.Client.cached_messages:1 of
-#, fuzzy
 msgid "Read-only list of messages the connected client has cached."
-msgstr "Sequence[:class:`.Message`] -- 接続されたクライアントにキャッシュされたメッセージの読み取り専用リスト。"
+msgstr "接続されたクライアントにキャッシュされたメッセージの読み取り専用リスト。"
 
 #: discord.Client.cached_messages:5 of
 msgid "Sequence[:class:`.Message`]"
-msgstr ""
+msgstr "Sequence[:class:`.Message`]"
 
 #: discord.Client.private_channels:1 of
-#, fuzzy
 msgid "The private channels that the connected client is participating on."
-msgstr "List[:class:`.abc.PrivateChannel`] -- 接続されたクライアントが参加しているプライベートチャンネル。"
+msgstr "接続されたクライアントが参加しているプライベートチャンネル。"
 
 #: discord.Client.private_channels:5 of
 msgid ""
@@ -954,7 +933,6 @@ msgid "List[:class:`.abc.PrivateChannel`]"
 msgstr ""
 
 #: discord.Client.voice_clients:1 of
-#, fuzzy
 msgid "Represents a list of voice connections."
 msgstr "Discordの音声接続を表します。"
 
@@ -1005,19 +983,16 @@ msgid "Optional[:class:`int`]"
 msgstr ""
 
 #: discord.Client.application_flags:1 of
-#, fuzzy
 msgid "The client's application flags."
-msgstr "Botのアプリケーション情報。"
+msgstr ""
 
 #: discord.Client.application_flags:5 of
-#, fuzzy
 msgid ":class:`~discord.ApplicationFlags`"
-msgstr ":class:`~discord.ClientUser`"
+msgstr ":class:`~discord.ApplicationFlags`"
 
 #: discord.client.Client.is_ready:1 of
-#, fuzzy
 msgid ":class:`bool`: Specifies if the client's internal cache is ready for use."
-msgstr "クライアントの内部キャッシュを使用できる状態にするかどうかを指定します。"
+msgstr ":class:`bool`: クライアントの内部キャッシュを使用できる状態にするかどうかを指定します。"
 
 #: discord.abc.Connectable.connect:1 discord.abc.GuildChannel.clone:1
 #: discord.abc.GuildChannel.create_invite:1 discord.abc.GuildChannel.delete:1
@@ -1200,17 +1175,14 @@ msgid ""
 msgstr "認証用のトークン。このライブラリが処理するため、トークンの頭に何も付けないでください。"
 
 #: discord.client.Client.login:10 of
-#, fuzzy
 msgid "The wrong credentials are passed."
-msgstr ":exc:`.LoginFailure` -- 誤った資格情報が渡された。"
+msgstr "誤った資格情報が渡された。"
 
 #: discord.client.Client.login:11 of
-#, fuzzy
 msgid ""
 "An unknown HTTP related error occurred,     usually when it isn't 200 or "
 "the known incorrect credentials     passing status code."
 msgstr ""
-":exc:`.HTTPException` -- "
 "不明なHTTP関連のエラーが発生した。通常、ステータスコードが200でないか、既知の誤った資格情報がステータスコードを渡しています。"
 
 #: discord.client.Client.connect:3 discord.shard.AutoShardedClient.connect:3 of
@@ -1231,19 +1203,16 @@ msgstr "インターネットの障害やDiscord側の特定の障害が発生�
 
 #: discord.client.Client.connect:14 discord.shard.AutoShardedClient.connect:14
 #: of
-#, fuzzy
 msgid ""
 "If the gateway to connect to Discord is not found. Usually if this     is"
 " thrown then there is a Discord API outage."
 msgstr ""
-":exc:`.GatewayNotFound` -- "
 "Discordに接続するゲートウェイが見つからない。通常、これが発生した場合はAPIの停止が考えられます。"
 
 #: discord.client.Client.connect:15 discord.shard.AutoShardedClient.connect:15
 #: of
-#, fuzzy
 msgid "The websocket connection has been terminated."
-msgstr ":exc:`.ConnectionClosed` -- WebSocket接続が終了した。"
+msgstr "WebSocket接続が終了した。"
 
 #: discord.client.Client.close:3 discord.shard.AutoShardedClient.close:3 of
 msgid "Closes the connection to Discord."
@@ -1267,9 +1236,8 @@ msgid "A shorthand coroutine for :meth:`login` + :meth:`connect`."
 msgstr ":meth:`login` + :meth:`connect` を簡略化したコルーチン。"
 
 #: discord.client.Client.start:5 of
-#, fuzzy
 msgid "An unexpected keyword argument was received."
-msgstr ":exc:`TypeError` -- 予期しないキーワード引数を受け取った。"
+msgstr "予期しないキーワード引数を受け取った。"
 
 #: discord.client.Client.run:1 of
 msgid ""
@@ -1298,9 +1266,8 @@ msgid ""
 msgstr "この関数はブロッキングを行うため、必ず最後に呼び出してください。この関数を呼び出した後に呼び出されるイベントや関数は、Botが停止するまで実行されません。"
 
 #: discord.client.Client.is_closed:1 of
-#, fuzzy
 msgid ":class:`bool`: Indicates if the websocket connection is closed."
-msgstr "WebSocketが閉じられているかどうかを表します。"
+msgstr ":class:`bool`: WebSocketが閉じられているかどうかを表します。"
 
 #: discord.Client.activity:1 of
 msgid "The activity being used upon logging in."
@@ -1308,52 +1275,45 @@ msgstr ""
 
 #: discord.Client.activity:4 of
 msgid "Optional[:class:`.BaseActivity`]"
-msgstr ""
+msgstr "Optional[:class:`.BaseActivity`]"
 
 #: discord.Client.status:1 of
-#, fuzzy
 msgid ":class:`.Status`: The status being used upon logging on to Discord."
-msgstr "Discordにログインした際の、開始時アクティビティ。"
+msgstr ":class:`.Status`: Discordにログインした際の、開始時ステータス。"
 
 #: discord.Client.allowed_mentions:1 of
 msgid "The allowed mention configuration."
 msgstr ""
 
 #: discord.Client.allowed_mentions:5 of
-#, fuzzy
 msgid "Optional[:class:`~discord.AllowedMentions`]"
-msgstr ":class:`~discord.ClientUser`"
+msgstr "Optional[:class:`~discord.AllowedMentions`]"
 
 #: discord.Client.intents:1 of
 msgid "The intents configured for this connection."
 msgstr ""
 
 #: discord.Client.intents:5 of
-#, fuzzy
 msgid ":class:`~discord.Intents`"
-msgstr ":class:`~discord.ClientUser`"
+msgstr ":class:`~discord.Intents`"
 
 #: discord.Client.users:1 of
-#, fuzzy
 msgid "Returns a list of all the users the bot can see."
-msgstr "List[:class:`~discord.User`] -- ボットが見ることができるすべてのユーザーのリストを返します。"
+msgstr "ボットが見ることができるすべてのユーザーのリストを返します。"
 
 #: discord.Client.users:3 of
-#, fuzzy
 msgid "List[:class:`~discord.User`]"
-msgstr ":class:`~discord.User`"
+msgstr "List[:class:`~discord.User`]"
 
 #: discord.client.Client.get_channel:1
 #: discord.guild.Guild.get_channel_or_thread:1 of
-#, fuzzy
 msgid "Returns a channel or thread with the given ID."
-msgstr "このユーザーと :class:`DMChannel` を作ります。"
+msgstr "与えられたIDを持つチャンネルかスレッドを返します。"
 
 #: discord.client.Client.get_channel:5 discord.client.Client.get_emoji:5
 #: discord.client.Client.get_guild:5 discord.client.Client.get_user:5 of
-#, fuzzy
 msgid "``id`` parameter is now positional-only."
-msgstr "すべてのパラメータがオプションです。"
+msgstr ""
 
 #: discord.channel.TextChannel.get_thread:5 discord.client.Client.get_channel:7
 #: discord.client.Client.get_emoji:7 discord.client.Client.get_guild:7
@@ -1362,9 +1322,8 @@ msgstr "すべてのパラメータがオプションです。"
 #: discord.guild.Guild.get_channel_or_thread:5 discord.guild.Guild.get_member:7
 #: discord.guild.Guild.get_role:7 discord.guild.Guild.get_stage_instance:5
 #: discord.guild.Guild.get_thread:5 discord.member.Member.get_role:5 of
-#, fuzzy
 msgid "The ID to search for."
-msgstr "検索するイテラブル。"
+msgstr "検索するID。"
 
 #: discord.CategoryChannel.overwrites discord.StageChannel.overwrites
 #: discord.StageChannel.voice_states discord.StoreChannel.overwrites
@@ -1627,18 +1586,16 @@ msgid "Return type"
 msgstr "戻り値の型"
 
 #: discord.client.Client.get_channel:11 of
-#, fuzzy
 msgid ""
 "Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
 ":class:`.abc.PrivateChannel`]]"
 msgstr ""
-"Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
-":class:`.abc.PrivateChannel`]"
+"Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, "
+":class:`.abc.PrivateChannel`]]"
 
 #: discord.client.Client.get_partial_messageable:1 of
-#, fuzzy
 msgid "Returns a partial messageable with the given channel ID."
-msgstr "このユーザーと :class:`DMChannel` を作ります。"
+msgstr ""
 
 #: discord.client.Client.get_partial_messageable:3 of
 msgid ""
@@ -1647,70 +1604,60 @@ msgid ""
 msgstr ""
 
 #: discord.client.Client.get_partial_messageable:8 of
-#, fuzzy
 msgid "The channel ID to create a partial messageable for."
-msgstr "更新後のメッセージ。"
+msgstr ""
 
 #: discord.client.Client.get_partial_messageable:10 of
 msgid "The underlying channel type for the partial messageable."
 msgstr ""
 
 #: discord.client.Client.get_partial_messageable:13 of
-#, fuzzy
 msgid "The partial messageable"
-msgstr "現在のメッセージ。"
+msgstr ""
 
 #: discord.client.Client.get_partial_messageable:14 of
-#, fuzzy
 msgid ":class:`.PartialMessageable`"
-msgstr ":class:`bytes`"
+msgstr ":class:`.PartialMessageable`"
 
 #: discord.client.Client.get_stage_instance:1 of
-#, fuzzy
 msgid "Returns a stage instance with the given stage channel ID."
-msgstr "このユーザーと :class:`DMChannel` を作ります。"
+msgstr ""
 
 #: discord.client.Client.get_stage_instance:8 of
 msgid "The returns stage instance of ``None`` if not found."
 msgstr ""
 
 #: discord.client.Client.get_stage_instance:9 of
-#, fuzzy
 msgid "Optional[:class:`.StageInstance`]"
-msgstr ":class:`str`"
+msgstr "Optional[:class:`.StageInstance`]"
 
 #: discord.client.Client.get_guild:1 of
-#, fuzzy
 msgid "Returns a guild with the given ID."
-msgstr "Optional[:class:`.Guild`]: 与えられたIDを持つギルドを返します。"
+msgstr "与えられたIDを持つギルドを返します。"
 
 #: discord.client.Client.get_guild:10 of
 msgid "The guild or ``None`` if not found."
 msgstr ""
 
 #: discord.client.Client.get_guild:11 of
-#, fuzzy
 msgid "Optional[:class:`.Guild`]"
-msgstr ":class:`.Guild`"
+msgstr "Optional[:class:`.Guild`]"
 
 #: discord.client.Client.get_user:1 of
-#, fuzzy
 msgid "Returns a user with the given ID."
-msgstr "Optional[:class:`~discord.User`]: 与えられたIDを持つユーザーを返します。"
+msgstr "与えられたIDを持つユーザーを返します。"
 
 #: discord.client.Client.get_user:10 of
 msgid "The user or ``None`` if not found."
 msgstr ""
 
 #: discord.client.Client.get_user:11 of
-#, fuzzy
 msgid "Optional[:class:`~discord.User`]"
-msgstr ":class:`~discord.User`"
+msgstr "Optional[:class:`~discord.User`]"
 
 #: discord.client.Client.get_emoji:1 of
-#, fuzzy
 msgid "Returns an emoji with the given ID."
-msgstr "Optional[:class:`.Emoji`]: 与えられたIDを持つ絵文字を返します。"
+msgstr "与えられたIDを持つ絵文字を返します。"
 
 #: discord.client.Client.get_emoji:10 of
 msgid "The custom emoji or ``None`` if not found."
@@ -1721,9 +1668,8 @@ msgid "Optional[:class:`.Emoji`]"
 msgstr ""
 
 #: discord.client.Client.get_sticker:1 of
-#, fuzzy
 msgid "Returns a guild sticker with the given ID."
-msgstr "Optional[:class:`.Guild`]: 与えられたIDを持つギルドを返します。"
+msgstr "与えられたIDを持つギルドスタンプを返します。"
 
 #: discord.client.Client.get_sticker:7 of
 msgid ""
@@ -1736,9 +1682,8 @@ msgid "The sticker or ``None`` if not found."
 msgstr ""
 
 #: discord.client.Client.get_sticker:11 of
-#, fuzzy
 msgid "Optional[:class:`.GuildSticker`]"
-msgstr ":class:`.Guild`"
+msgstr "Optional[:class:`.GuildSticker`]"
 
 #: discord.client.Client.get_all_channels:1 of
 msgid ""
@@ -1769,18 +1714,16 @@ msgid "Yields"
 msgstr "Yieldする値"
 
 #: discord.client.Client.get_all_channels:15 of
-#, fuzzy
 msgid ":class:`.abc.GuildChannel` -- A channel the client can 'access'."
-msgstr "クライアントが「アクセス」できるすべての :class:`.abc.GuildChannel` のジェネレータを取得します。"
+msgstr ":class:`.abc.GuildChannel` -- クライアントが「アクセス」できる :class:`.abc.GuildChannel` 。"
 
 #: discord.client.Client.get_all_members:1 of
 msgid "Returns a generator with every :class:`.Member` the client can see."
 msgstr "クライアントが参照可能なすべての :class:`.Member` のジェネレータを返します。"
 
 #: discord.client.Client.get_all_members:9 of
-#, fuzzy
 msgid ":class:`.Member` -- A member the client can see."
-msgstr "クライアントが参照可能なすべての :class:`.Member` のジェネレータを返します。"
+msgstr ":class:`.Member` -- クライアントが参照可能な :class:`.Member` 。"
 
 #: discord.client.Client.wait_until_ready:3 of
 msgid "Waits until the client's internal cache is all ready."
@@ -1861,9 +1804,8 @@ msgid ""
 msgstr "タイムアウトして :exc:`asyncio.TimeoutError` が発生するまでの秒数。"
 
 #: discord.client.Client.wait_for:65 of
-#, fuzzy
 msgid "If a timeout is provided and it was reached."
-msgstr ":exc:`asyncio.TimeoutError` -- タイムアウト値が設定されていて、かつその時間が経過した。"
+msgstr "タイムアウト値が設定されていて、かつその時間が経過した。"
 
 #: discord.client.Client.wait_for:67 of
 msgid ""
@@ -1917,16 +1859,14 @@ msgid ""
 msgstr "変更するステータスを示します。 ``None`` の場合、:attr:`.Status.online` となります。"
 
 #: discord.client.Client.change_presence:25 of
-#, fuzzy
 msgid "If the ``activity`` parameter is not the proper type."
-msgstr ":exc:`.InvalidArgument` -- ``activity`` に渡された値が適切な型でない。"
+msgstr "``activity`` に渡された値が適切な型でない。"
 
 #: discord.client.Client.fetch_guilds:1 of
-#, fuzzy
 msgid ""
 "Retrieves an :term:`asynchronous iterator` that enables receiving your "
 "guilds."
-msgstr "Botが所属するGuildを取得できる、 :class:`AsyncIterator` を取得します。"
+msgstr "Botが所属するGuildを取得できる、 :term:`asynchronous iterator` を取得します。"
 
 #: discord.client.Client.fetch_guilds:5 of
 msgid ""
@@ -1959,7 +1899,6 @@ msgid "All parameters are optional."
 msgstr "すべてのパラメータがオプションです。"
 
 #: discord.client.Client.fetch_guilds:26 of
-#, fuzzy
 msgid ""
 "The number of guilds to retrieve. If ``None``, it retrieves every guild "
 "you have access to. Note, however, that this would make it a slow "
@@ -1969,69 +1908,60 @@ msgstr ""
 "の場合、あなたがアクセスできるギルドすべてを取得します。ただし、これには時間がかかります。デフォルトは100です。"
 
 #: discord.client.Client.fetch_guilds:31 of
-#, fuzzy
 msgid ""
 "Retrieves guilds before this date or object. If a datetime is provided, "
 "it is recommended to use a UTC aware datetime. If the datetime is naive, "
 "it is assumed to be local time."
 msgstr ""
-"この日付またはオブジェクトの前のGuildを取得します。もし日付が与えられた場合は、それはUTC時刻を表し、timezone "
-"naiveであるdatetimeでないといけません。"
+"この日付またはオブジェクトの前のGuildを取得します。もし日付が与えられた場合は、UTC時刻のtimezone aware日付であることが推薦です。 timezone "
+"naiveである場合は現地時間として扱いされます。"
 
 #: discord.client.Client.fetch_guilds:35 of
-#, fuzzy
 msgid ""
 "Retrieve guilds after this date or object. If a datetime is provided, it "
 "is recommended to use a UTC aware datetime. If the datetime is naive, it "
 "is assumed to be local time."
 msgstr ""
-"この日付またはオブジェクトの後のGuildを取得します。もし日付が与えられた場合は、それはUTC時刻を表し、timezone "
-"naiveであるdatetimeでないといけません。"
+"この日付またはオブジェクトの後のGuildを取得します。もし日付が与えられた場合は、UTC時刻のtimezone aware日付であることが推薦です。 timezone "
+"naiveである場合は現地時間として扱いされます。"
 
 #: discord.client.Client.fetch_guilds:40 of
-#, fuzzy
 msgid "Getting the guilds failed."
-msgstr "ギルドのアイコンの変更"
+msgstr ""
 
 #: discord.client.Client.fetch_guilds:42 of
 msgid ":class:`.Guild` -- The guild with the guild data parsed."
 msgstr ":class:`.Guild` -- データを解析したGuild。"
 
 #: discord.client.Client.fetch_template:3 of
-#, fuzzy
 msgid "Gets a :class:`.Template` from a discord.new URL or code."
-msgstr ":class:`.Invite` をdiscord.gg URLやIDから取得します。"
+msgstr ":class:`.Template` をdiscord.new URLやIDから取得します。"
 
 #: discord.client.Client.fetch_template:5 of
-#, fuzzy
 msgid "The Discord Template Code or URL (must be a discord.new URL)."
-msgstr "Discordの招待ID、またはURL（discord.gg URLである必要があります）。"
+msgstr "Discordのテンプレートコード、またはURL（discord.new URLである必要があります）。"
 
 #: discord.client.Client.fetch_template:8 of
-#, fuzzy
 msgid "The template is invalid."
-msgstr "メンバーがオンライン。"
+msgstr ""
 
 #: discord.client.Client.fetch_template:9 of
 msgid "Getting the template failed."
 msgstr ""
 
 #: discord.client.Client.fetch_template:11 of
-#, fuzzy
 msgid "The template from the URL/code."
-msgstr "ギルドの名前。"
+msgstr ""
 
 #: discord.client.Client.fetch_template:12 of
-#, fuzzy
 msgid ":class:`.Template`"
-msgstr ":class:`.Widget`"
+msgstr ":class:`.Template`"
 
 #: discord.client.Client.fetch_guild:3 of
 msgid "Retrieves a :class:`.Guild` from an ID."
 msgstr "IDから :class:`.Guild` を取得します。"
 
 #: discord.client.Client.fetch_guild:7 of
-#, fuzzy
 msgid ""
 "Using this, you will **not** receive :attr:`.Guild.channels`, "
 ":attr:`.Guild.members`, :attr:`.Member.activity` and "
@@ -2057,14 +1987,12 @@ msgid "The guild's ID to fetch from."
 msgstr "取得したいギルドのID。"
 
 #: discord.client.Client.fetch_guild:21 discord.guild.Guild.fetch_member:16 of
-#, fuzzy
 msgid "You do not have access to the guild."
-msgstr ":exc:`.Forbidden` -- ギルドにアクセスできない。"
+msgstr "ギルドにアクセスできない。"
 
 #: discord.client.Client.fetch_guild:22 of
-#, fuzzy
 msgid "Getting the guild failed."
-msgstr "ギルドのアイコンの変更"
+msgstr ""
 
 #: discord.client.Client.fetch_guild:24 of
 msgid "The guild from the ID."
@@ -2134,15 +2062,13 @@ msgstr ""
 
 #: discord.client.Client.create_guild:28
 #: discord.template.Template.create_guild:20 of
-#, fuzzy
 msgid "Guild creation failed."
-msgstr ":exc:`.HTTPException` -- ギルドの作成に失敗した。"
+msgstr "ギルドの作成に失敗した。"
 
 #: discord.client.Client.create_guild:29
 #: discord.template.Template.create_guild:21 of
-#, fuzzy
 msgid "Invalid icon image format given. Must be PNG or JPG."
-msgstr ":exc:`.InvalidArgument` -- アイコン画像として無効なフォーマットの画像が渡された。PNGかJPGで指定してください。"
+msgstr "アイコン画像として無効なフォーマットの画像が渡された。PNGかJPGで指定してください。"
 
 #: discord.client.Client.create_guild:31
 #: discord.template.Template.create_guild:23 of
@@ -2150,42 +2076,36 @@ msgid "The guild created. This is not the same guild that is added to cache."
 msgstr "作成されたギルド。キャッシュに追加されるギルドとは別物です。"
 
 #: discord.client.Client.fetch_stage_instance:3 of
-#, fuzzy
 msgid "Gets a :class:`.StageInstance` for a stage channel id."
-msgstr "ギルドIDから :class:`.Widget` を取得します。"
+msgstr "ステージチャンネルIDから :class:`.StageInstance` を取得します。"
 
 #: discord.client.Client.fetch_stage_instance:7 of
-#, fuzzy
 msgid "The stage channel ID."
-msgstr "ボイスチャンネル。"
+msgstr "ステージチャンネルのID"
 
 #: discord.channel.StageChannel.fetch_instance:7
 #: discord.client.Client.fetch_stage_instance:10 of
-#, fuzzy
 msgid "The stage instance or channel could not be found."
-msgstr "作成、または削除されたギルドチャンネル。"
+msgstr ""
 
 #: discord.channel.StageChannel.fetch_instance:8
 #: discord.client.Client.fetch_stage_instance:11 of
-#, fuzzy
 msgid "Getting the stage instance failed."
-msgstr ":exc:`.HTTPException` -- 招待の取得に失敗した。"
+msgstr ""
 
 #: discord.client.Client.fetch_stage_instance:13 of
 msgid "The stage instance from the stage channel ID."
 msgstr ""
 
 #: discord.client.Client.fetch_stage_instance:14 of
-#, fuzzy
 msgid ":class:`.StageInstance`"
-msgstr ":class:`str`"
+msgstr ":class:`.StageInstance`"
 
 #: discord.client.Client.fetch_invite:3 of
 msgid "Gets an :class:`.Invite` from a discord.gg URL or ID."
 msgstr ":class:`.Invite` をdiscord.gg URLやIDから取得します。"
 
 #: discord.client.Client.fetch_invite:7 of
-#, fuzzy
 msgid ""
 "If the invite is for a guild you have not joined, the guild and channel "
 "attributes of the returned :class:`.Invite` will be "
@@ -2215,23 +2135,19 @@ msgid ""
 msgstr ""
 
 #: discord.client.Client.fetch_invite:17 of
-#, fuzzy
 msgid ""
 "Whether to include the expiration date of the invite. This fills the "
 ":attr:`.Invite.expires_at` field."
 msgstr ""
-"招待にカウントの情報を含めるかどうか。これにより :attr:`.Invite.approximate_member_count` と "
-":attr:`.Invite.approximate_presence_count` が追加されます。"
+""
 
 #: discord.client.Client.fetch_invite:23 of
-#, fuzzy
 msgid "The invite has expired or is invalid."
-msgstr ":exc:`.NotFound` -- 招待の有効期限が切れている、または無効。"
+msgstr "招待の有効期限が切れている、または無効。"
 
 #: discord.client.Client.fetch_invite:24 of
-#, fuzzy
 msgid "Getting the invite failed."
-msgstr ":exc:`.HTTPException` -- 招待の取得に失敗した。"
+msgstr "招待の取得に失敗した。"
 
 #: discord.client.Client.fetch_invite:26 of
 msgid "The invite from the URL/ID."
@@ -2252,28 +2168,24 @@ msgid ""
 msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.manage_channels` 権限が必要です。"
 
 #: discord.client.Client.delete_invite:10 of
-#, fuzzy
 msgid "``invite`` parameter is now positional-only."
-msgstr ":exc:`InvalidArgument` -- ``activity`` に渡された値が適切な型でない。"
+msgstr ""
 
 #: discord.client.Client.delete_invite:12 of
 msgid "The invite to revoke."
 msgstr "取り消す招待。"
 
 #: discord.client.Client.delete_invite:15 discord.invite.Invite.delete:10 of
-#, fuzzy
 msgid "You do not have permissions to revoke invites."
-msgstr ":exc:`.Forbidden` -- 招待を取り消す権限が無い。"
+msgstr "招待を取り消す権限が無い。"
 
 #: discord.client.Client.delete_invite:16 discord.invite.Invite.delete:11 of
-#, fuzzy
 msgid "The invite is invalid or expired."
-msgstr ":exc:`.NotFound` -- 招待が無効、あるいは期限切れになっている。"
+msgstr "招待が無効、あるいは期限切れになっている。"
 
 #: discord.client.Client.delete_invite:17 discord.invite.Invite.delete:12 of
-#, fuzzy
 msgid "Revoking the invite failed."
-msgstr ":exc:`.HTTPException` -- 招待の取り消しに失敗した。"
+msgstr "招待の取り消しに失敗した。"
 
 #: discord.client.Client.fetch_widget:3 of
 msgid "Gets a :class:`.Widget` from a guild ID."
@@ -2288,14 +2200,12 @@ msgid "The ID of the guild."
 msgstr "ギルドのID。"
 
 #: discord.client.Client.fetch_widget:16 discord.guild.Guild.widget:9 of
-#, fuzzy
 msgid "The widget for this guild is disabled."
-msgstr ":exc:`.Forbidden` -- ギルドのウィジェットが有効化されていない。"
+msgstr "ギルドのウィジェットが有効化されていない。"
 
 #: discord.client.Client.fetch_widget:17 discord.guild.Guild.widget:10 of
-#, fuzzy
 msgid "Retrieving the widget failed."
-msgstr ":exc:`.HTTPException` -- ウィジェットの取得に失敗した。"
+msgstr "ウィジェットの取得に失敗した。"
 
 #: discord.client.Client.fetch_widget:19 discord.guild.Guild.widget:12 of
 msgid "The guild's widget."
@@ -2310,9 +2220,8 @@ msgid "Retrieves the bot's application information."
 msgstr "Botのアプリケーション情報を取得します。"
 
 #: discord.client.Client.application_info:5 of
-#, fuzzy
 msgid "Retrieving the information failed somehow."
-msgstr ":exc:`.HTTPException` -- 何らかの要因で情報の取得に失敗した。"
+msgstr "何らかの要因で情報の取得に失敗した。"
 
 #: discord.client.Client.application_info:7 of
 msgid "The bot's application information."
@@ -2323,14 +2232,13 @@ msgid ":class:`.AppInfo`"
 msgstr ":class:`.AppInfo`"
 
 #: discord.client.Client.fetch_user:3 of
-#, fuzzy
 msgid ""
 "Retrieves a :class:`~discord.User` based on their ID. You do not have to "
 "share any guilds with the user to get this information, however many "
 "operations do require that you do."
 msgstr ""
 "IDをもとに :class:`~discord.User` "
-"を取得します。Botアカウントでのみ使用できます。そのユーザーとギルドを共有する必要はありませんが、操作の多くはそれを必要とします。"
+"を取得します。そのユーザーとギルドを共有する必要はありませんが、操作の多くはそれを必要とします。"
 
 #: discord.client.Client.fetch_user:9 of
 #, fuzzy
@@ -2348,14 +2256,12 @@ msgid "The user's ID to fetch from."
 msgstr "取得したいユーザーのID。"
 
 #: discord.client.Client.fetch_user:18 of
-#, fuzzy
 msgid "A user with this ID does not exist."
-msgstr ":exc:`.NotFound` -- 指定のIDを持つユーザーが存在しない。"
+msgstr "指定のIDを持つユーザーが存在しない。"
 
 #: discord.client.Client.fetch_user:19 of
-#, fuzzy
 msgid "Fetching the user failed."
-msgstr ":exc:`.HTTPException` -- ユーザーの取得に失敗した。"
+msgstr "ユーザーの取得に失敗した。"
 
 #: discord.client.Client.fetch_user:21 of
 msgid "The user you requested."
@@ -2367,13 +2273,12 @@ msgid ":class:`~discord.User`"
 msgstr ":class:`~discord.User`"
 
 #: discord.client.Client.fetch_channel:3 of
-#, fuzzy
 msgid ""
 "Retrieves a :class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, or "
 ":class:`.Thread` with the specified ID."
 msgstr ""
-"指定されたIDを持つ :class:`.abc.GuildChannel` または :class:`.abc.PrivateChannel` "
-"を取得します。"
+"指定されたIDを持つ :class:`.abc.GuildChannel` 、 :class:`.abc.PrivateChannel` "
+"または `:class:`.Thread` を取得します。"
 
 #: discord.client.Client.fetch_channel:7 of
 msgid ""
@@ -2387,27 +2292,23 @@ msgstr ""
 
 #: discord.client.Client.fetch_channel:15 discord.guild.Guild.fetch_channels:11
 #: of
-#, fuzzy
 msgid "An unknown channel type was received from Discord."
-msgstr ":exc:`.InvalidData` -- 不明なチャンネルタイプをDiscordから受信した。"
+msgstr "不明なチャンネルタイプをDiscordから受信した。"
 
 #: discord.client.Client.fetch_channel:16 discord.guild.Guild.fetch_channel:12
 #: of
-#, fuzzy
 msgid "Retrieving the channel failed."
-msgstr ":exc:`.HTTPException` -- チャンネルの取得に失敗した。"
+msgstr "チャンネルの取得に失敗した。"
 
 #: discord.client.Client.fetch_channel:17 discord.guild.Guild.fetch_channel:13
 #: of
-#, fuzzy
 msgid "Invalid Channel ID."
-msgstr "ボイスチャンネル。"
+msgstr ""
 
 #: discord.client.Client.fetch_channel:18 discord.guild.Guild.fetch_channel:14
 #: of
-#, fuzzy
 msgid "You do not have permission to fetch this channel."
-msgstr ":exc:`.Forbidden` -- 指定のチャンネルを取得する権限がない。"
+msgstr "指定のチャンネルを取得する権限がない。"
 
 #: discord.client.Client.fetch_channel:20 discord.guild.Guild.fetch_channel:16
 #: of
@@ -2415,11 +2316,12 @@ msgid "The channel from the ID."
 msgstr "IDから取得したチャンネル。"
 
 #: discord.client.Client.fetch_channel:21 of
-#, fuzzy
 msgid ""
 "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, "
 ":class:`.Thread`]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgstr ""
+"Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, "
+":class:`.Thread`]"
 
 #: discord.client.Client.fetch_webhook:3 of
 msgid "Retrieves a :class:`.Webhook` with the specified ID."
@@ -2430,18 +2332,16 @@ msgid "``webhook_id`` parameter is now positional-only."
 msgstr ""
 
 #: discord.client.Client.fetch_webhook:9 of
-#, fuzzy
 msgid "Retrieving the webhook failed."
-msgstr ":exc:`.HTTPException` -- Webhookの取得に失敗した。"
+msgstr "Webhookの取得に失敗した。"
 
 #: discord.client.Client.fetch_webhook:10 of
 msgid "Invalid webhook ID."
 msgstr ""
 
 #: discord.client.Client.fetch_webhook:11 of
-#, fuzzy
 msgid "You do not have permission to fetch this webhook."
-msgstr ":exc:`.Forbidden` -- このWebhookを取得する権限がない。"
+msgstr "このWebhookを取得する権限がない。"
 
 #: discord.client.Client.fetch_webhook:13 of
 msgid "The webhook you requested."
@@ -2452,49 +2352,42 @@ msgid ":class:`.Webhook`"
 msgstr ":class:`.Webhook`"
 
 #: discord.client.Client.fetch_sticker:3 of
-#, fuzzy
 msgid "Retrieves a :class:`.Sticker` with the specified ID."
-msgstr "特定のIDの :class:`.Webhook` を取得します。"
+msgstr "特定のIDの :class:`.Sticker` を取得します。"
 
 #: discord.client.Client.fetch_sticker:7 discord.sticker.StickerItem.fetch:5 of
-#, fuzzy
 msgid "Retrieving the sticker failed."
-msgstr ":exc:`.HTTPException` -- ウィジェットの取得に失敗した。"
+msgstr "スタンプの取得に失敗した。"
 
 #: discord.client.Client.fetch_sticker:8 of
 msgid "Invalid sticker ID."
 msgstr ""
 
 #: discord.client.Client.fetch_sticker:10 of
-#, fuzzy
 msgid "The sticker you requested."
-msgstr "あなたがリクエストしたユーザー。"
+msgstr "あなたがリクエストしたスタンプ。"
 
 #: discord.client.Client.fetch_sticker:11 of
-#, fuzzy
 msgid "Union[:class:`.StandardSticker`, :class:`.GuildSticker`]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgstr "Union[:class:`.StandardSticker`, :class:`.GuildSticker`]"
 
 #: discord.client.Client.fetch_premium_sticker_packs:3 of
 msgid "Retrieves all available premium sticker packs."
 msgstr ""
 
 #: discord.client.Client.fetch_premium_sticker_packs:7 of
-#, fuzzy
 msgid "Retrieving the sticker packs failed."
-msgstr "役職の名前を返します。"
+msgstr ""
 
 #: discord.client.Client.fetch_premium_sticker_packs:9 of
 msgid "All available premium sticker packs."
 msgstr ""
 
 #: discord.client.Client.fetch_premium_sticker_packs:10 of
-#, fuzzy
 msgid "List[:class:`.StickerPack`]"
-msgstr ":class:`str`"
+msgstr "List[:class:`.StickerPack`]"
 
 #: discord.client.Client.create_dm:3 of
-#, fuzzy
 msgid "Creates a :class:`.DMChannel` with this user."
 msgstr "このユーザーと :class:`DMChannel` を作ります。"
 
@@ -2507,9 +2400,8 @@ msgid ""
 msgstr ""
 
 #: discord.client.Client.create_dm:10 of
-#, fuzzy
 msgid "The user to create a DM with."
-msgstr ":class:`User` – 招待を作成したユーザー。"
+msgstr ""
 
 #: discord.abc.GuildChannel.clone:20 discord.channel.CategoryChannel.clone:20
 #: discord.channel.StageChannel.clone:20 discord.channel.StoreChannel.clone:20
@@ -2517,16 +2409,14 @@ msgstr ":class:`User` – 招待を作成したユーザー。"
 #: discord.client.Client.create_dm:13
 #: discord.member.flatten_user.<locals>.generate_function.<locals>.general:8
 #: discord.user.User.create_dm:8 of
-#, fuzzy
 msgid "The channel that was created."
-msgstr "チャンネルが作成されました。"
+msgstr "作成されたチャンネル。"
 
 #: discord.client.Client.create_dm:14
 #: discord.member.flatten_user.<locals>.generate_function.<locals>.general:9
 #: discord.user.User.create_dm:9 of
-#, fuzzy
 msgid ":class:`.DMChannel`"
-msgstr ":class:`.Widget`"
+msgstr ":class:`.DMChannel`"
 
 #: discord.client.Client.add_view:1 of
 msgid "Registers a :class:`~discord.ui.View` for persistent listening."
@@ -2550,9 +2440,8 @@ msgid ""
 msgstr ""
 
 #: discord.client.Client.add_view:15 of
-#, fuzzy
 msgid "A view was not passed."
-msgstr "招待の更新。"
+msgstr ""
 
 #: discord.client.Client.add_view:16 of
 msgid ""
@@ -2565,9 +2454,8 @@ msgid "A sequence of persistent views added to the client."
 msgstr ""
 
 #: discord.Client.persistent_views:5 of
-#, fuzzy
 msgid "Sequence[:class:`.View`]"
-msgstr ":class:`.Invite`"
+msgstr "Sequence[:class:`.View`]"
 
 #: ../../api.rst:49
 msgid "AutoShardedClient"
@@ -2618,13 +2506,12 @@ msgstr ""
 "1`` までのシャードを起動します。"
 
 #: discord.shard.AutoShardedClient:23 of
-#, fuzzy
 msgid "An optional list of shard_ids to launch the shards with."
-msgstr "Optional[List[:class:`int`]] -- シャードの起動時に使用するshard_idsのオプションリスト。"
+msgstr "シャードの起動時に使用するshard_idsのオプションリスト。"
 
 #: discord.shard.AutoShardedClient:25 of
 msgid "Optional[List[:class:`int`]]"
-msgstr ""
+msgstr "Optional[List[:class:`int`]]"
 
 #: discord.AutoShardedClient.latency:3 of
 msgid ""
@@ -2662,9 +2549,8 @@ msgid "Information about the shard with given ID. ``None`` if not found."
 msgstr ""
 
 #: discord.shard.AutoShardedClient.get_shard:8 of
-#, fuzzy
 msgid "Optional[:class:`ShardInfo`]"
-msgstr ":class:`str`"
+msgstr "Optional[:class:`ShardInfo`]"
 
 #: discord.AutoShardedClient.shards:1 of
 msgid "Returns a mapping of shard IDs to their respective info object."
@@ -2693,9 +2579,8 @@ msgstr ""
 "が渡された場合はBotがアクセスできるすべてのシャードのプレゼンスが変更されます。"
 
 #: discord.shard.AutoShardedClient.change_presence:27 of
-#, fuzzy
 msgid "If the ``activity`` parameter is not of proper type."
-msgstr ":exc:`InvalidArgument` -- ``activity`` に渡された値が適切な型でない。"
+msgstr "``activity`` に渡された値が適切な型でない。"
 
 #: discord.shard.AutoShardedClient.is_ws_ratelimited:6 of
 msgid ""
@@ -2704,9 +2589,8 @@ msgid ""
 msgstr ""
 
 #: ../../api.rst:57
-#, fuzzy
 msgid "Application Info"
-msgstr ":class:`str` -- アプリケーションの名前。"
+msgstr "アプリケーション情報"
 
 #: ../../api.rst:60
 msgid "AppInfo"
@@ -2717,7 +2601,6 @@ msgid "Represents the application info for the bot provided by Discord."
 msgstr "Discordが提供するBotのアプリケーション情報を表します。"
 
 #: discord.appinfo.AppInfo:6 discord.appinfo.PartialAppInfo:7 of
-#, fuzzy
 msgid "The application ID."
 msgstr "Botのアプリケーション情報。"
 
@@ -2803,9 +2686,8 @@ msgid ":class:`int`"
 msgstr ""
 
 #: discord.appinfo.AppInfo:12 discord.appinfo.PartialAppInfo:13 of
-#, fuzzy
 msgid "The application name."
-msgstr ":class:`str` -- アプリケーションの名前。"
+msgstr "アプリケーションの名前。"
 
 #: ../../api.rst:2824 ../../api.rst:2965 ../../api.rst:2985 ../../api.rst:3086
 #: ../../api.rst:3174 ../../api.rst:3198 ../../api.rst:3206 ../../api.rst:3214
@@ -2885,37 +2767,33 @@ msgid ":class:`str`"
 msgstr ":class:`str`"
 
 #: discord.appinfo.AppInfo:18 of
-#, fuzzy
 msgid "The application owner."
-msgstr ":class:`User` -- アプリケーションの所有者。"
+msgstr "アプリケーションの所有者。"
 
 #: ../../api.rst:3563 discord.appinfo.AppInfo:20
 #: discord.integrations.BotIntegration:39 discord.integrations.Integration:45
 #: discord.integrations.StreamIntegration:63 discord.template.Template:33 of
-#, fuzzy
 msgid ":class:`User`"
-msgstr ":class:`str`"
+msgstr ":class:`User`"
 
 #: discord.appinfo.AppInfo:24 of
 #, fuzzy
 msgid "The application's team."
-msgstr ":class:`str` -- アプリケーションの名前。"
+msgstr "アプリケーションのチーム。"
 
 #: discord.appinfo.AppInfo:28 of
 msgid "Optional[:class:`Team`]"
-msgstr ""
+msgstr "Optional[:class:`Team`]"
 
 #: discord.appinfo.AppInfo:32 discord.appinfo.PartialAppInfo:19 of
-#, fuzzy
 msgid "The application description."
-msgstr "Optional[:class:`str`] -- アプリケーションの説明。"
+msgstr "アプリケーションの説明。"
 
 #: discord.appinfo.AppInfo:38 of
-#, fuzzy
 msgid ""
 "Whether the bot can be invited by anyone or if it is locked to the "
 "application owner."
-msgstr ":class:`bool` -- 誰でもBotを招待することができるか、それともアプリケーション所有者のみに限定されているか。"
+msgstr "誰でもBotを招待することができるか、それともアプリケーション所有者のみに限定されているか。"
 
 #: ../../api.rst:2918 ../../api.rst:3037 ../../api.rst:3045 ../../api.rst:3070
 #: ../../api.rst:3078 ../../api.rst:3135 ../../api.rst:3222 ../../api.rst:3228
@@ -3033,20 +2911,18 @@ msgid ":class:`bool`"
 msgstr ":class:`bool`"
 
 #: discord.appinfo.AppInfo:45 of
-#, fuzzy
 msgid ""
 "Whether the bot requires the completion of the full oauth2 code grant "
 "flow to join."
-msgstr ":class:`bool` -- Botの参加に、完全なOAuth2認可コードフローの完了を必要とするかどうか。"
+msgstr "Botの参加に、完全なOAuth2認可コードフローの完了を必要とするかどうか。"
 
 #: discord.appinfo.AppInfo:52 discord.appinfo.PartialAppInfo:25 of
 msgid "A list of RPC origin URLs, if RPC is enabled."
 msgstr ""
 
 #: discord.appinfo.AppInfo:54 discord.appinfo.PartialAppInfo:27 of
-#, fuzzy
 msgid "Optional[List[:class:`str`]]"
-msgstr ":class:`str`"
+msgstr "Optional[List[:class:`str`]]"
 
 #: discord.appinfo.AppInfo:58 discord.appinfo.PartialAppInfo:31 of
 msgid ""
@@ -3104,29 +2980,25 @@ msgstr ""
 #: discord.webhook.async_.Webhook:89 discord.webhook.sync.SyncWebhook:41
 #: discord.webhook.sync.SyncWebhook:66 discord.widget.WidgetMember:55
 #: discord.widget.WidgetMember:61 of
-#, fuzzy
 msgid "Optional[:class:`str`]"
-msgstr ":class:`str`"
+msgstr "Optional[:class:`str`]"
 
 #: discord.appinfo.AppInfo:95 discord.appinfo.PartialAppInfo:38 of
-#, fuzzy
 msgid "The application's terms of service URL, if set."
-msgstr ":class:`str` -- アプリケーションの名前。"
+msgstr "アプリケーションの利用規約URL。"
 
 #: discord.appinfo.AppInfo:103 discord.appinfo.PartialAppInfo:44 of
 msgid "The application's privacy policy URL, if set."
-msgstr ""
+msgstr "アプリケーションのプライバシーポリシーURL。"
 
 #: discord.AppInfo.icon:1 discord.PartialAppInfo.icon:1 of
-#, fuzzy
 msgid "Retrieves the application's icon asset, if any."
-msgstr ":class:`.Asset` -- アプリケーションのアイコンアセット。"
+msgstr "アプリケーションのアイコンアセット。"
 
 #: discord.AppInfo.cover_image:5 discord.AppInfo.icon:3
 #: discord.PartialAppInfo.icon:3 discord.Role.icon:11 discord.Team.icon:3 of
-#, fuzzy
 msgid "Optional[:class:`.Asset`]"
-msgstr ":class:`str`"
+msgstr "Optional[:class:`.Asset`]"
 
 #: discord.AppInfo.cover_image:1 of
 msgid "Retrieves the cover image on a store embed, if any."
@@ -3146,19 +3018,16 @@ msgstr ""
 #: discord.Interaction.guild:3 discord.PartialMessage.guild:3
 #: discord.SyncWebhook.guild:5 discord.Webhook.guild:5
 #: discord.message.Message:200 of
-#, fuzzy
 msgid "Optional[:class:`Guild`]"
-msgstr ":class:`.Guild`"
+msgstr "Optional[:class:`Guild`]"
 
 #: discord.AppInfo.flags:1 discord.PartialAppInfo.flags:1 of
-#, fuzzy
 msgid "The application's flags."
-msgstr ":class:`str` -- アプリケーションの名前。"
+msgstr ""
 
 #: discord.AppInfo.flags:5 discord.PartialAppInfo.flags:5 of
-#, fuzzy
 msgid ":class:`ApplicationFlags`"
-msgstr ":class:`.Profile`"
+msgstr ":class:`ApplicationFlags`"
 
 #: ../../api.rst:68
 msgid "PartialAppInfo"
@@ -3175,22 +3044,20 @@ msgid "Team"
 msgstr ""
 
 #: discord.team.Team:1 of
-#, fuzzy
 msgid "Represents an application team for a bot provided by Discord."
-msgstr "Discordが提供するBotのアプリケーション情報を表します。"
+msgstr "Discordが提供するBotのアプリケーションのチームを表します。"
 
 #: discord.team.Team:5 of
-#, fuzzy
 msgid "The team ID."
-msgstr "アムステルダムリージョン。"
+msgstr "チームのID"
 
 #: discord.team.Team:11 of
 msgid "The team name"
-msgstr ""
+msgstr "チームの名前"
 
 #: discord.team.Team:17 of
 msgid "The team's owner ID."
-msgstr ""
+msgstr "チーム所有者のID"
 
 #: discord.team.Team:23 of
 msgid "A list of the members in the team"
@@ -3198,12 +3065,11 @@ msgstr ""
 
 #: discord.team.Team:27 of
 msgid "List[:class:`TeamMember`]"
-msgstr ""
+msgstr "List[:class:`TeamMember`]"
 
 #: discord.Team.icon:1 of
-#, fuzzy
 msgid "Retrieves the team's icon asset, if any."
-msgstr "Botのアプリケーション情報を取得します。"
+msgstr "チームのアイコンアセットを取得します。"
 
 #: discord.Team.owner:1 of
 msgid "The team's owner."
@@ -3218,67 +3084,55 @@ msgid "TeamMember"
 msgstr ""
 
 #: discord.team.TeamMember:1 of
-#, fuzzy
 msgid "Represents a team member in a team."
-msgstr "オーディオストリームを表します。"
+msgstr "チームのメンバーを表します。"
 
 #: discord.team.TeamMember:7 of
-#, fuzzy
 msgid "Checks if two team members are equal."
-msgstr "二つのユーザーが等しいかを比較します。"
+msgstr "二つのチームメンバーが等しいかを比較します。"
 
 #: discord.team.TeamMember:11 of
-#, fuzzy
 msgid "Checks if two team members are not equal."
-msgstr "二つのユーザーが等しいものではないか比較します。"
+msgstr "二つのチームメンバーが等しいものではないか比較します。"
 
 #: discord.team.TeamMember:15 of
-#, fuzzy
 msgid "Return the team member's hash."
-msgstr "ユーザーのハッシュ値を返します。"
+msgstr "チームメンバーのハッシュ値を返します。"
 
 #: discord.team.TeamMember:19 of
-#, fuzzy
 msgid "Returns the team member's name with discriminator."
-msgstr "ユーザー名とディスクリミネータを返します。"
+msgstr "チームメンバーのユーザ名とディスクリミネータを返します。"
 
 #: discord.team.TeamMember:25 of
-#, fuzzy
 msgid "The team member's username."
-msgstr "更新されたメンバーの更新後情報。"
+msgstr "チームメンバーのユーザ名。"
 
 #: discord.team.TeamMember:31 of
-#, fuzzy
 msgid "The team member's unique ID."
-msgstr "更新されたメンバーの更新後情報。"
+msgstr "チームメンバーの一意のID。"
 
 #: discord.team.TeamMember:37 of
-#, fuzzy
 msgid ""
 "The team member's discriminator. This is given when the username has "
 "conflicts."
-msgstr ":class:`str` -- ユーザーの識別子。これはユーザー名が重複しているときに与えられます。"
+msgstr "チームメンバーの識別子。これはユーザー名が重複しているときに与えられます。"
 
 #: discord.team.TeamMember:43 of
-#, fuzzy
 msgid "The avatar hash the team member has. Could be None."
-msgstr "Optional[:class:`str`] -- ユーザーのアバターハッシュ。 Noneが返る場合もあります。"
+msgstr "チームメンバーのアバターハッシュ。 Noneが返る場合もあります。"
 
 #: discord.team.TeamMember:49 discord.user.ClientUser:41 discord.user.User:41
 #: of
-#, fuzzy
 msgid "Specifies if the user is a bot account."
-msgstr ":class:`bool` -- ユーザーがBotアカウントであるかを表します。"
+msgstr "ユーザーがBotアカウントであるかを表します。"
 
 #: discord.team.TeamMember:55 of
-#, fuzzy
 msgid "The team that the member is from."
-msgstr "メンションが削除されたテキスト。"
+msgstr ""
 
 #: discord.team.TeamMember:57 of
-#, fuzzy
 msgid ":class:`Team`"
-msgstr ":class:`bytes`"
+msgstr ":class:`Team`"
 
 #: discord.team.TeamMember:61 of
 msgid "The membership state of the member (e.g. invited or accepted)"
@@ -3316,39 +3170,32 @@ msgid ""
 msgstr ""
 
 #: discord.voice_client.VoiceClient:15 of
-#, fuzzy
 msgid "The voice connection session ID."
-msgstr ":class:`str` -- 音声接続のセッションID。"
+msgstr "音声接続のセッションID。"
 
 #: discord.voice_client.VoiceClient:21 of
-#, fuzzy
 msgid "The voice connection token."
-msgstr ":class:`str` -- 音声接続のトークン."
+msgstr "音声接続のトークン."
 
 #: discord.voice_client.VoiceClient:27 of
-#, fuzzy
 msgid "The endpoint we are connecting to."
-msgstr ":class:`str` -- 接続先のエンドポイント。"
+msgstr "接続先のエンドポイント。"
 
 #: discord.voice_client.VoiceClient:33 of
-#, fuzzy
 msgid "The voice channel connected to."
-msgstr ":class:`abc.Connectable` -- 接続しているボイスチャンネル。"
+msgstr "接続しているボイスチャンネル。"
 
 #: discord.voice_client.VoiceClient:35 of
-#, fuzzy
 msgid "Union[:class:`VoiceChannel`, :class:`StageChannel`]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgstr "Union[:class:`VoiceChannel`, :class:`StageChannel`]"
 
 #: discord.voice_client.VoiceClient:39 of
-#, fuzzy
 msgid "The event loop that the voice client is running on."
-msgstr ":class:`asyncio.AbstractEventLoop` -- ボイスクライアントが実行されているイベントループ。"
+msgstr "ボイスクライアントが実行されているイベントループ。"
 
 #: discord.VoiceClient.guild:1 of
-#, fuzzy
 msgid "The guild we're connected to."
-msgstr "Optional[:class:`Guild`] -- 存在する場合は、接続しているギルドを返します。"
+msgstr "存在する場合は、接続しているギルドを返します。"
 
 #: discord.Emoji.guild:3 discord.VoiceClient.guild:3
 #: discord.channel.CategoryChannel:33 discord.channel.StageChannel:33
@@ -3358,20 +3205,17 @@ msgstr "Optional[:class:`Guild`] -- 存在する場合は、接続している�
 #: discord.integrations.StreamIntegration:21 discord.member.Member:48
 #: discord.role.Role:53 discord.stage_instance.StageInstance:29
 #: discord.template.Template:52 discord.threads.Thread:33 of
-#, fuzzy
 msgid ":class:`Guild`"
 msgstr ":class:`.Guild`"
 
 #: discord.VoiceClient.user:1 of
-#, fuzzy
 msgid "The user connected to voice (i.e. ourselves)."
-msgstr ":class:`ClientUser` -- ボイスチャンネルに接続しているユーザー。(つまり、自分自身)"
+msgstr "ボイスチャンネルに接続しているユーザー。(つまり、自分自身)"
 
 #: discord.VoiceClient.user:3 discord.channel.DMChannel:33
 #: discord.channel.GroupChannel:31 discord.user.ClientUser.edit:31 of
-#, fuzzy
 msgid ":class:`ClientUser`"
-msgstr ":class:`~discord.ClientUser`"
+msgstr ":class:`ClientUser`"
 
 #: discord.VoiceClient.latency:1 of
 msgid "Latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds."
@@ -3426,7 +3270,6 @@ msgid "The audio source we're reading from."
 msgstr "読み込むオーディオソース。"
 
 #: discord.voice_client.VoiceClient.play:12 of
-#, fuzzy
 msgid ""
 "The finalizer that is called after the stream is exhausted. This function"
 " must have a single parameter, ``error``, that denotes an optional "
@@ -3436,14 +3279,12 @@ msgstr ""
 " ``error`` が必要です。"
 
 #: discord.voice_client.VoiceClient.play:17 of
-#, fuzzy
 msgid "Already playing audio or not connected."
-msgstr ":exc:`ClientException` -- すでにオーディオを再生しているか、VCに接続していない。"
+msgstr "すでにオーディオを再生しているか、VCに接続していない。"
 
 #: discord.voice_client.VoiceClient.play:18 of
-#, fuzzy
 msgid "Source is not a :class:`AudioSource` or after is not a callable."
-msgstr ":exc:`TypeError` -- sourceが :class:`AudioSource` でないか、afterが呼び出し可能でない。"
+msgstr "sourceが :class:`AudioSource` でないか、afterが呼び出し可能でない。"
 
 #: discord.voice_client.VoiceClient.play:19 of
 msgid "Source is not opus encoded and opus is not loaded."
@@ -3470,9 +3311,8 @@ msgid "Resumes the audio playing."
 msgstr "音声の再生を再開します。"
 
 #: discord.VoiceClient.source:1 of
-#, fuzzy
 msgid "The audio source being played, if playing."
-msgstr "Optional[:class:`AudioSource`] -- 再生中の場合、再生しているオーディオソースを返します。"
+msgstr "再生中の場合、再生しているオーディオソースを返します。"
 
 #: discord.VoiceClient.source:3 of
 msgid ""
@@ -3481,9 +3321,8 @@ msgid ""
 msgstr "このプロパティは現在再生しているオーディオソースの変更にも使うことが出来ます。"
 
 #: discord.VoiceClient.source:5 of
-#, fuzzy
 msgid "Optional[:class:`AudioSource`]"
-msgstr ":class:`AudioSource` を再生します。"
+msgstr "Optional[:class:`AudioSource`]"
 
 #: discord.voice_client.VoiceClient.send_audio_packet:1 of
 msgid "Sends an audio packet composed of the data."
@@ -3502,14 +3341,12 @@ msgid "Indicates if ``data`` should be encoded into Opus."
 msgstr "``data`` をOpusにエンコードする必要があるかを表します。"
 
 #: discord.voice_client.VoiceClient.send_audio_packet:10 of
-#, fuzzy
 msgid "You are not connected."
-msgstr ":exc:`ClientException` -- ボイスチャンネルに接続していない。"
+msgstr "ボイスチャンネルに接続していない。"
 
 #: discord.voice_client.VoiceClient.send_audio_packet:11 of
-#, fuzzy
 msgid "Encoding the data failed."
-msgstr ":exc:`opus.OpusError` -- dataのエンコードに失敗した。"
+msgstr "dataのエンコードに失敗した。"
 
 #: ../../api.rst:104
 msgid "VoiceProtocol"
@@ -3544,9 +3381,8 @@ msgid "The client (or its subclasses) that started the connection request."
 msgstr ""
 
 #: discord.voice_client.VoiceProtocol:15 of
-#, fuzzy
 msgid "The voice channel that is being connected to."
-msgstr "ピン留めが更新されたプライベートチャンネル。"
+msgstr ""
 
 #: discord.voice_client.VoiceProtocol.on_voice_state_update:3 of
 msgid ""
@@ -3562,9 +3398,8 @@ msgid ""
 msgstr ""
 
 #: discord.voice_client.VoiceProtocol.on_voice_state_update:6 of
-#, fuzzy
 msgid "The raw `voice state payload`__."
-msgstr "生のイベントペイロードデータ。"
+msgstr "生のボイスステートペイロードデータ。"
 
 #: discord.voice_client.VoiceProtocol.on_voice_server_update:3 of
 msgid ""
@@ -3610,9 +3445,8 @@ msgid "The timeout for the connection."
 msgstr ""
 
 #: discord.voice_client.VoiceProtocol.connect:16 of
-#, fuzzy
 msgid "Whether reconnection is expected."
-msgstr "Discordとの接続を閉じます。"
+msgstr ""
 
 #: discord.voice_client.VoiceProtocol.disconnect:3 of
 msgid "An abstract method called when the client terminates the connection."
@@ -3623,9 +3457,8 @@ msgid "See :meth:`cleanup`."
 msgstr ""
 
 #: discord.voice_client.VoiceProtocol.disconnect:7 of
-#, fuzzy
 msgid "Whether the disconnection was forced."
-msgstr "Discordとの接続を閉じます。"
+msgstr ""
 
 #: discord.voice_client.VoiceProtocol.cleanup:1 of
 msgid ""
@@ -3647,9 +3480,8 @@ msgid ""
 msgstr ""
 
 #: ../../api.rst:112
-#, fuzzy
 msgid "AudioSource"
-msgstr "オーディオストリームを表します。"
+msgstr "AudioSource"
 
 #: discord.player.AudioSource:1 of
 msgid "Represents an audio stream."
@@ -3689,7 +3521,6 @@ msgstr "オーディオの読み取りが終了すると、空の :term:`py:byte
 #: discord.player.AudioSource.read:8 discord.player.FFmpegOpusAudio.read:8
 #: discord.player.FFmpegPCMAudio.read:8 discord.player.PCMAudio.read:8
 #: discord.player.PCMVolumeTransformer.read:8 of
-#, fuzzy
 msgid ""
 "If :meth:`~AudioSource.is_opus` method returns ``True``, then it must "
 "return 20ms worth of Opus encoded audio. Otherwise, it must be 20ms worth"
@@ -3740,9 +3571,8 @@ msgid "Represents raw 16-bit 48KHz stereo PCM audio source."
 msgstr "生の16ビット48KHzステレオPCMオーディオソースを表します。"
 
 #: discord.player.PCMAudio:5 of
-#, fuzzy
 msgid "A file-like object that reads byte data representing raw PCM."
-msgstr ":term:`py:file object` -- 生のPCMを表したバイトデータを読み取るファイルライクオブジェクト。"
+msgstr "生のPCMを表したバイトデータを読み取るファイルライクオブジェクト。"
 
 #: discord.player.PCMAudio:7 of
 msgid ":term:`py:file object`"
@@ -3782,7 +3612,6 @@ msgid ""
 msgstr "環境変数にffmpegまたはavconv実行可能ファイルがなければなりません。"
 
 #: discord.player.FFmpegPCMAudio:10 of
-#, fuzzy
 msgid ""
 "The input that ffmpeg will take and convert to PCM bytes. If ``pipe`` is "
 "``True`` then this is a file-like object that is passed to the stdin of "
@@ -3816,9 +3645,8 @@ msgid "Extra command line arguments to pass to ffmpeg after the ``-i`` flag."
 msgstr "``-i`` フラグのあとにffmepgに渡す追加のコマンドライン引数。"
 
 #: discord.player.FFmpegOpusAudio:52 discord.player.FFmpegPCMAudio:27 of
-#, fuzzy
 msgid "The subprocess failed to be created."
-msgstr ":exc:`ClientException` -- サブプロセスの作成に失敗した。"
+msgstr "サブプロセスの作成に失敗した。"
 
 #: ../../api.rst:144
 msgid "FFmpegOpusAudio"
@@ -3844,13 +3672,12 @@ msgid ""
 msgstr ""
 
 #: discord.player.FFmpegOpusAudio:21 of
-#, fuzzy
 msgid ""
 "The input that ffmpeg will take and convert to Opus bytes. If ``pipe`` is"
 " ``True`` then this is a file-like object that is passed to the stdin of "
 "ffmpeg."
 msgstr ""
-"ffmpegが受け取り、PCMバイトへ変換する入力。 ``pipe`` "
+"ffmpegが受け取り、opusバイトへ変換する入力。 ``pipe`` "
 "がTrueの場合、これはffmpegの標準入力に渡されるファイルライクオブジェクトです。"
 
 #: discord.player.FFmpegOpusAudio:25 of
@@ -3970,9 +3797,8 @@ msgid "A 2-tuple with the codec and bitrate of the input source."
 msgstr ""
 
 #: discord.player.FFmpegOpusAudio.probe:14 of
-#, fuzzy
 msgid "Optional[Tuple[Optional[:class:`str`], :class:`int`]]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]"
+msgstr "Optional[Tuple[Optional[:class:`str`], :class:`int`]]"
 
 #: ../../api.rst:152
 msgid "PCMVolumeTransformer"
@@ -3997,17 +3823,14 @@ msgid "The initial volume to set it to. See :attr:`volume` for more info."
 msgstr "設定する初期ボリューム。詳細は :attr:`volume` を参照してください。"
 
 #: discord.player.PCMVolumeTransformer:12 of
-#, fuzzy
 msgid "Not an audio source."
-msgstr "オーディオストリームを表します。"
+msgstr ""
 
 #: discord.player.PCMVolumeTransformer:13 of
-#, fuzzy
 msgid "The audio source is opus encoded."
-msgstr ":exc:`ClientException` -- オーディオソースがopusエンコード済み。"
+msgstr "オーディオソースがopusエンコード済み。"
 
 #: discord.PCMVolumeTransformer.volume:1 of
-#, fuzzy
 msgid ""
 "Retrieves or sets the volume as a floating point percentage (e.g. ``1.0``"
 " for 100%)."
@@ -4090,7 +3913,6 @@ msgid "Event Reference"
 msgstr "イベントリファレンス"
 
 #: ../../api.rst:171
-#, fuzzy
 msgid ""
 "This section outlines the different types of events listened by "
 ":class:`Client`."
@@ -4137,7 +3959,6 @@ msgid "The warnings on :func:`on_ready` also apply."
 msgstr ":func:`on_ready` での警告も適用されます。"
 
 #: ../../api.rst:206
-#, fuzzy
 msgid ""
 "Similar to :func:`on_connect` except used by :class:`AutoShardedClient` "
 "to denote when a particular shard ID has connected to Discord."
@@ -4146,9 +3967,8 @@ msgstr ""
 ":func:`on_ready` とほとんど同じです。"
 
 #: ../../api.rst:211
-#, fuzzy
 msgid "The shard ID that has connected."
-msgstr "準備が完了したShard ID。"
+msgstr ""
 
 #: ../../api.rst:216
 #, fuzzy
@@ -4157,7 +3977,9 @@ msgid ""
 "attempt to Discord has failed. This could happen either through the "
 "internet being disconnected, explicit calls to close, or Discord "
 "terminating the connection one way or the other."
-msgstr "クライアントがDiscordから切断したときに呼び出されます。これはインターネットが切断された、明示的にログアウトした、またはDiscord側から何らかの方法で切断されたというような場合に呼び出される可能性があります。"
+msgstr "クライアントがDiscordから切断したときに呼び出されます。"
+"これはインターネットが切断された、明示的にログアウトした、"
+"またはDiscord側から何らかの方法で切断されたというような場合に呼び出される可能性があります。"
 
 #: ../../api.rst:220
 #, fuzzy
@@ -4177,9 +3999,8 @@ msgstr ""
 ":func:`on_ready` とほとんど同じです。"
 
 #: ../../api.rst:229
-#, fuzzy
 msgid "The shard ID that has disconnected."
-msgstr "準備が完了したShard ID。"
+msgstr ""
 
 #: ../../api.rst:234
 msgid ""
