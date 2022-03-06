@@ -104,8 +104,7 @@ CommandT = TypeVar('CommandT', bound='Command')
 ContextT = TypeVar('ContextT', bound='Context')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
-HookT = TypeVar('HookT', bound='Hook')
-ErrorT = TypeVar('ErrorT', bound='Error')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -916,7 +915,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: ErrorT) -> ErrorT:
+    def error(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
@@ -947,7 +946,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: HookT) -> HookT:
+    def before_invoke(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -974,7 +973,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: HookT) -> HookT:
+    def after_invoke(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
