@@ -38,6 +38,7 @@ class _BaseGuildScheduledEventOptional(TypedDict, total=False):
     description: str
     creator: User
     user_count: int
+    image: Optional[str]
 
 
 class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
@@ -48,7 +49,6 @@ class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
-    image: Optional[str]
 
 
 class _VoiceChannelScheduledEventOptional(_BaseGuildScheduledEvent, total=False):
