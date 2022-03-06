@@ -3371,8 +3371,7 @@ class Guild(Hashable):
             raise ClientException('Intents.members must be enabled to use this.')
 
         if not self._state.is_guild_evicted(self):
-            await self._state.chunk_guild(self, cache=cache)
-            return
+            return await self._state.chunk_guild(self, cache=cache)
 
     async def query_members(
         self,
