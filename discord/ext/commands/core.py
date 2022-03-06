@@ -1141,12 +1141,12 @@ class GroupMixin(Generic[CogT]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         case_insensitive = kwargs.get('case_insensitive', False)
-        self.all_commands: Dict[str, Command[CogT, Any, Any]] = _CaseInsensitiveDict() if case_insensitive else {}
+        self.all_commands: Dict[str, Command[CogT, ..., Any]] = _CaseInsensitiveDict() if case_insensitive else {}
         self.case_insensitive: bool = case_insensitive
         super().__init__(*args, **kwargs)
 
     @property
-    def commands(self) -> Set[Command[CogT, Any, Any]]:
+    def commands(self) -> Set[Command[CogT, ..., Any]]:
         """Set[:class:`.Command`]: A unique set of commands without aliases that are registered."""
         return set(self.all_commands.values())
 
@@ -1156,7 +1156,7 @@ class GroupMixin(Generic[CogT]):
                 command.recursively_remove_all_commands()
             self.remove_command(command.name)
 
-    def add_command(self, command: Command[CogT, Any, Any], /) -> None:
+    def add_command(self, command: Command[CogT, ..., Any], /) -> None:
         """Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -1198,7 +1198,7 @@ class GroupMixin(Generic[CogT]):
                 raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
-    def remove_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
+    def remove_command(self, name: str, /) -> Optional[Command[CogT, ..., Any]]:
         """Remove a :class:`.Command` from the internal list
         of commands.
 
@@ -1239,7 +1239,7 @@ class GroupMixin(Generic[CogT]):
                 self.all_commands[alias] = cmd
         return command
 
-    def walk_commands(self) -> Generator[Command[CogT, Any, Any], None, None]:
+    def walk_commands(self) -> Generator[Command[CogT, ..., Any], None, None]:
         """An iterator that recursively walks through all commands and subcommands.
 
         .. versionchanged:: 1.4
@@ -1255,7 +1255,7 @@ class GroupMixin(Generic[CogT]):
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
 
-    def get_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
+    def get_command(self, name: str, /) -> Optional[Command[CogT, ..., Any]]:
         """Get a :class:`.Command` from the internal list
         of commands.
 
