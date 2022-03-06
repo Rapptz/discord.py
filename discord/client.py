@@ -1307,7 +1307,7 @@ class Client:
         data = await self.http.get_template(code)
         return Template(data=data, state=self._connection)  # type: ignore
 
-    async def fetch_guild(self, guild_id: int, /, *, with_counts: Optional[bool] = True) -> Guild:
+    async def fetch_guild(self, guild_id: int, /, *, with_counts: bool = True) -> Guild:
         """|coro|
 
         Retrieves a :class:`.Guild` from an ID.
