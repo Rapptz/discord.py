@@ -3,7 +3,7 @@ from discord import app_commands
 
 client = discord.Client()
 
-# intitiate our command tree, with the client
+# initiate our command tree, with the client
 apple_tree = app_commands.CommandTree(client)
 apples_picked = []
 
@@ -13,7 +13,7 @@ async def on_ready():
     # add the commands to our guild
     await apple_tree.sync(guild=discord.Object(id=12345))
 
-# intiate the command on top of our coroutine
+# initiate the command on top of our coroutine
 @apple_tree.command(guild=discord.Object(id=12345))
 @app_commands.describe(apple='The Apple to Pick') # describe what the option is
 async def pick(interaction: discord.Interaction, apple: str):
@@ -27,7 +27,7 @@ async def pick(interaction: discord.Interaction, apple: str):
     apples_picked.append(apple)
     await interaction.response.send_message(f'You picked {apple}!')
 
-# intiate the command on top of our coroutine
+# initiate the command on top of our coroutine
 @apple_tree.command(guild=discord.Object(id=12345))
 @app_commands.describe(apple='The Apple to Plant') # describe what the option is
 async def plant(interaction: discord.Interaction, apple: str):
