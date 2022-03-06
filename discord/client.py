@@ -692,17 +692,10 @@ class Client:
             except NotImplementedError:
                 pass
 
-            async def runner():
-                try:
-                    await self.start(*args, **kwargs)
-                finally:
-                    if not self.is_closed():
-                        await self.close()
-
             def stop_loop_on_completion(f):
                 loop.stop()
 
-            future = asyncio.ensure_future(runner(), loop=loop)
+            future = asyncio.ensure_future(self.start(*args, **kwargs), loop=loop)
             future.add_done_callback(stop_loop_on_completion)
             try:
                 loop.run_forever()
