@@ -3368,6 +3368,7 @@ Connectable
 .. attributetable:: discord.abc.Connectable
 
 .. autoclass:: discord.abc.Connectable()
+    :members:
 
 .. _discord_api_models:
 
