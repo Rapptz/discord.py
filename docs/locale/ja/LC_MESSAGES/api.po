@@ -3593,7 +3593,7 @@ msgstr ""
 
 #: discord.voice_client.VoiceProtocol.on_voice_state_update:6 of
 msgid "The raw `voice state payload`__."
-msgstr "生のボイスステートペイロードデータ。"
+msgstr "生の `voice state payload`__ データ。"
 
 #: discord.voice_client.VoiceProtocol.on_voice_server_update:3 of
 msgid ""
