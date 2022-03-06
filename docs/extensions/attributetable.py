@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import re
-from typing import Any, AsyncIterable, Dict, List, NamedTuple, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple, Sequence, TYPE_CHECKING
 
 from docutils import nodes
 from sphinx import addnodes
@@ -11,19 +11,8 @@ from sphinx.locale import _
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.typing import OptionSpec
 
-
-def returns_async_iterable(obj: Any) -> bool:
-    return_type = obj.__annotations__.get('return')
-    if isinstance(return_type, str):
-        module = importlib.import_module(object.__module__)
-        try:
-            return_type = getattr(module, return_type)
-        except AttributeError:  # not a global, so probably not an async iterable
-            return False
-    try:
-        return issubclass(return_type, AsyncIterable)
-    except TypeError:
-        return False
+if TYPE_CHECKING:
+    from .builder import DPYHTML5Translator
 
 
 class attributetable(nodes.General, nodes.Element):
@@ -50,20 +39,20 @@ class attributetable_item(nodes.Part, nodes.Element):
     pass
 
 
-def visit_attributetable_node(self: nodes.NodeVisitor, node: attributetable) -> None:
+def visit_attributetable_node(self: DPYHTML5Translator, node: attributetable) -> None:
     class_ = node['python-class']
     self.body.append(f'<div class="py-attribute-table" data-move-to-id="{class_}">')
 
 
-def visit_attributetablecolumn_node(self: nodes.NodeVisitor, node: attributetablecolumn) -> None:
+def visit_attributetablecolumn_node(self: DPYHTML5Translator, node: attributetablecolumn) -> None:
     self.body.append(self.starttag(node, 'div', CLASS='py-attribute-table-column'))
 
 
-def visit_attributetabletitle_node(self: nodes.NodeVisitor, node: attributetabletitle) -> None:
+def visit_attributetabletitle_node(self: DPYHTML5Translator, node: attributetabletitle) -> None:
     self.body.append(self.starttag(node, 'span'))
 
 
-def visit_attributetablebadge_node(self: nodes.NodeVisitor, node: attributetablebadge) -> None:
+def visit_attributetablebadge_node(self: DPYHTML5Translator, node: attributetablebadge) -> None:
     attributes = {
         'class': 'py-attribute-table-badge',
         'title': node['badge-type'],
@@ -71,27 +60,27 @@ def visit_attributetablebadge_node(self: nodes.NodeVisitor, node: attributetable
     self.body.append(self.starttag(node, 'span', **attributes))
 
 
-def visit_attributetable_item_node(self: nodes.NodeVisitor, node: attributetable_item) -> None:
+def visit_attributetable_item_node(self: DPYHTML5Translator, node: attributetable_item) -> None:
     self.body.append(self.starttag(node, 'li', CLASS='py-attribute-table-entry'))
 
 
-def depart_attributetable_node(self: nodes.NodeVisitor, node: attributetable) -> None:
+def depart_attributetable_node(self: DPYHTML5Translator, node: attributetable) -> None:
     self.body.append('</div>')
 
 
-def depart_attributetablecolumn_node(self: nodes.NodeVisitor, node: attributetablecolumn) -> None:
+def depart_attributetablecolumn_node(self: DPYHTML5Translator, node: attributetablecolumn) -> None:
     self.body.append('</div>')
 
 
-def depart_attributetabletitle_node(self: nodes.NodeVisitor, node: attributetabletitle) -> None:
+def depart_attributetabletitle_node(self: DPYHTML5Translator, node: attributetabletitle) -> None:
     self.body.append('</span>')
 
 
-def depart_attributetablebadge_node(self: nodes.NodeVisitor, node: attributetablebadge) -> None:
+def depart_attributetablebadge_node(self: DPYHTML5Translator, node: attributetablebadge) -> None:
     self.body.append('</span>')
 
 
-def depart_attributetable_item_node(self: nodes.NodeVisitor, node: attributetable_item) -> None:
+def depart_attributetable_item_node(self: DPYHTML5Translator, node: attributetable_item) -> None:
     self.body.append('</li>')
 
 
@@ -158,7 +147,7 @@ class PyAttributeTable(SphinxDirective):
         return [node]
 
 
-def build_lookup_table(env: BuildEnvironment) -> Dict[str, str]:
+def build_lookup_table(env: BuildEnvironment) -> Dict[str, List[str]]:
     # Given an environment, load up a lookup table of
     # full-class-name: objects
     result = {}
@@ -256,7 +245,7 @@ def get_class_results(
                     key = _('Methods')
                     badge = attributetablebadge('@', '@')
                     badge['badge-type'] = _('decorator')
-                elif returns_async_iterable(value):
+                elif inspect.isasyncgenfunction(value):
                     key = _('Methods')
                     badge = attributetablebadge('async for', 'async for')
                     badge['badge-type'] = _('async iterable')
@@ -270,7 +259,7 @@ def get_class_results(
     return groups
 
 
-def class_results_to_node(key: str, elements: List[nodes.Element]) -> attributetablecolumn:
+def class_results_to_node(key: str, elements: Sequence[TableElement]) -> attributetablecolumn:
     title = attributetabletitle(key, key)
     ul = nodes.bullet_list('')
     for element in elements:
