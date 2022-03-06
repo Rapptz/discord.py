@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,7 +22,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .iterators import ReactionIterator
+from __future__ import annotations
+from typing import Any, TYPE_CHECKING, AsyncIterator, Union, Optional
+
+from .object import Object
+
+# fmt: off
+__all__ = (
+    'Reaction',
+)
+# fmt: on
+
+if TYPE_CHECKING:
+    from .user import User
+    from .member import Member
+    from .types.message import Reaction as ReactionPayload
+    from .message import Message
+    from .partial_emoji import PartialEmoji
+    from .emoji import Emoji
+    from .abc import Snowflake
+
 
 class Reaction:
     """Represents a reaction to a message.
@@ -63,37 +80,38 @@ class Reaction:
     message: :class:`Message`
         Message this reaction is for.
     """
+
     __slots__ = ('message', 'count', 'emoji', 'me')
 
-    def __init__(self, *, message, data, emoji=None):
-        self.message = message
-        self.emoji = emoji or message._state.get_reaction_emoji(data['emoji'])
-        self.count = data.get('count', 1)
-        self.me = data.get('me')
+    def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
+        self.message: Message = message
+        self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
+        self.count: int = data.get('count', 1)
+        self.me: bool = data['me']
 
-    @property
-    def custom_emoji(self):
+    # TODO: typeguard
+    def is_custom_emoji(self) -> bool:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if isinstance(other, self.__class__):
             return other.emoji != self.emoji
         return True
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.emoji)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.emoji)
 
-    def __repr__(self):
-        return '<Reaction emoji={0.emoji!r} me={0.me} count={0.count}>'.format(self)
+    def __repr__(self) -> str:
+        return f'<Reaction emoji={self.emoji!r} me={self.me} count={self.count}>'
 
-    async def remove(self, user):
+    async def remove(self, user: Snowflake) -> None:
         """|coro|
 
         Remove the reaction by the provided :class:`User` from the message.
@@ -121,7 +139,7 @@ class Reaction:
 
         await self.message.remove_reaction(self.emoji, user)
 
-    async def clear(self):
+    async def clear(self) -> None:
         """|coro|
 
         Clears this reaction from the message.
@@ -129,6 +147,10 @@ class Reaction:
         You need the :attr:`~Permissions.manage_messages` permission to use this.
 
         .. versionadded:: 1.3
+
+        .. versionchanged:: 2.0
+            This function no-longer raises ``InvalidArgument`` instead raising
+            :exc:`ValueError`.
 
         Raises
         --------
@@ -138,16 +160,22 @@ class Reaction:
             You do not have the proper permissions to clear the reaction.
         NotFound
             The emoji you specified was not found.
-        InvalidArgument
+        TypeError
             The emoji parameter is invalid.
         """
         await self.message.clear_reaction(self.emoji)
 
-    def users(self, limit=None, after=None):
-        """Returns an :class:`AsyncIterator` representing the users that have reacted to the message.
+    async def users(
+        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
+    ) -> AsyncIterator[Union[Member, User]]:
+        """Returns an :term:`asynchronous iterator` representing the users that have reacted to the message.
 
         The ``after`` parameter must represent a member
         and meet the :class:`abc.Snowflake` abc.
+
+        .. versionchanged:: 2.0
+
+            ``limit`` and ``after`` parameters are now keyword-only.
 
         Examples
         ---------
@@ -156,22 +184,22 @@ class Reaction:
 
             # I do not actually recommend doing this.
             async for user in reaction.users():
-                await channel.send('{0} has reacted with {1.emoji}!'.format(user, reaction))
+                await channel.send(f'{user} has reacted with {reaction.emoji}!')
 
         Flattening into a list: ::
 
-            users = await reaction.users().flatten()
+            users = [user async for user in reaction.users()]
             # users is now a list of User...
             winner = random.choice(users)
-            await channel.send('{} has won the raffle.'.format(winner))
+            await channel.send(f'{winner} has won the raffle.')
 
         Parameters
         ------------
-        limit: :class:`int`
+        limit: Optional[:class:`int`]
             The maximum number of results to return.
             If not provided, returns all the users who
             reacted to the message.
-        after: :class:`abc.Snowflake`
+        after: Optional[:class:`abc.Snowflake`]
             For pagination, reactions are sorted by member.
 
         Raises
@@ -188,12 +216,36 @@ class Reaction:
             if the member has left the guild.
         """
 
-        if self.custom_emoji:
-            emoji = '{0.name}:{0.id}'.format(self.emoji)
+        if not isinstance(self.emoji, str):
+            emoji = f'{self.emoji.name}:{self.emoji.id}'
         else:
             emoji = self.emoji
 
         if limit is None:
             limit = self.count
 
-        return ReactionIterator(self.message, emoji, limit, after)
+        while limit > 0:
+            retrieve = min(limit, 100)
+
+            message = self.message
+            guild = message.guild
+            state = message._state
+            after_id = after.id if after else None
+
+            data = await state.http.get_reaction_users(message.channel.id, message.id, emoji, retrieve, after=after_id)
+
+            if data:
+                limit -= len(data)
+                after = Object(id=int(data[-1]['id']))
+
+            if guild is None or isinstance(guild, Object):
+                for raw_user in reversed(data):
+                    yield User(state=state, data=raw_user)
+
+                continue
+
+            for raw_user in reversed(data):
+                member_id = int(raw_user['id'])
+                member = guild.get_member(member_id)
+
+                yield member or User(state=state, data=raw_user)

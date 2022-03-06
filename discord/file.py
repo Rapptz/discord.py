@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,8 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import os.path
+from __future__ import annotations
+from typing import Any, Dict, Optional, Union
+
+import os
 import io
+
+# fmt: off
+__all__ = (
+    'File',
+)
+# fmt: on
+
 
 class File:
     r"""A parameter object used for :meth:`abc.Messageable.send`
@@ -38,7 +46,7 @@ class File:
 
     Attributes
     -----------
-    fp: Union[:class:`str`, :class:`io.BufferedIOBase`]
+    fp: Union[:class:`os.PathLike`, :class:`io.BufferedIOBase`]
         A file-like object opened in binary mode and read mode
         or a filename representing a file in the hard drive to
         open.
@@ -56,17 +64,26 @@ class File:
         a string then the ``filename`` will default to the string given.
     spoiler: :class:`bool`
         Whether the attachment is a spoiler.
+    description: Optional[:class:`str`]
+        The file description to display, currently only supported for images.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', 'filename', 'spoiler', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', 'filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
 
-    def __init__(self, fp, filename=None, *, spoiler=False):
-        self.fp = fp
-
+    def __init__(
+        self,
+        fp: Union[str, bytes, os.PathLike, io.BufferedIOBase],
+        filename: Optional[str] = None,
+        *,
+        spoiler: bool = False,
+        description: Optional[str] = None,
+    ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
-                raise ValueError('File buffer {!r} must be seekable and readable'.format(fp))
-            self.fp = fp
+                raise ValueError(f'File buffer {fp!r} must be seekable and readable')
+            self.fp: io.BufferedIOBase = fp
             self._original_pos = fp.tell()
             self._owner = False
         else:
@@ -87,14 +104,15 @@ class File:
             else:
                 self.filename = getattr(fp, 'name', None)
         else:
-            self.filename = filename
+            self.filename: Optional[str] = filename
 
         if spoiler and self.filename is not None and not self.filename.startswith('SPOILER_'):
             self.filename = 'SPOILER_' + self.filename
 
-        self.spoiler = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+        self.spoiler: bool = spoiler or (self.filename is not None and self.filename.startswith('SPOILER_'))
+        self.description: Optional[str] = description
 
-    def reset(self, *, seek=True):
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
         # the retry-loop is iterated over multiple times
         # starting from 0, as an implementation quirk
@@ -106,7 +124,18 @@ class File:
         if seek:
             self.fp.seek(self._original_pos)
 
-    def close(self):
+    def close(self) -> None:
         self.fp.close = self._closer
         if self._owner:
             self._closer()
+
+    def to_dict(self, index: int) -> Dict[str, Any]:
+        payload = {
+            'id': index,
+            'filename': self.filename,
+        }
+
+        if self.description is not None:
+            payload['description'] = self.description
+
+        return payload

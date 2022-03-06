@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,21 +22,37 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-import asyncio
+from __future__ import annotations
 
-def _typing_done_callback(fut):
+import asyncio
+from typing import TYPE_CHECKING, Optional, Type
+
+if TYPE_CHECKING:
+    from .abc import Messageable
+
+    from types import TracebackType
+
+# fmt: off
+__all__ = (
+    'Typing',
+)
+# fmt: on
+
+
+def _typing_done_callback(fut: asyncio.Future) -> None:
     # just retrieve any exception and call it a day
     try:
         fut.exception()
     except (asyncio.CancelledError, Exception):
         pass
 
-class Typing:
-    def __init__(self, messageable):
-        self.loop = messageable._state.loop
-        self.messageable = messageable
 
-    async def do_typing(self):
+class Typing:
+    def __init__(self, messageable: Messageable) -> None:
+        self.loop: asyncio.AbstractEventLoop = messageable._state.loop
+        self.messageable: Messageable = messageable
+
+    async def do_typing(self) -> None:
         try:
             channel = self._channel
         except AttributeError:
@@ -50,18 +64,16 @@ class Typing:
             await typing(channel.id)
             await asyncio.sleep(5)
 
-    def __enter__(self):
-        self.task = asyncio.ensure_future(self.do_typing(), loop=self.loop)
-        self.task.add_done_callback(_typing_done_callback)
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        self.task.cancel()
-
-    async def __aenter__(self):
+    async def __aenter__(self) -> None:
         self._channel = channel = await self.messageable._get_channel()
         await channel._state.http.send_typing(channel.id)
-        return self.__enter__()
+        self.task: asyncio.Task = self.loop.create_task(self.do_typing())
+        self.task.add_done_callback(_typing_done_callback)
 
-    async def __aexit__(self, exc_type, exc, tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.task.cancel()

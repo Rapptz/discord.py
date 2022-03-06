@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 The MIT License (MIT)
 
@@ -24,10 +22,28 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING, Optional
+
 from . import utils
-from .user import User
 from .asset import Asset
-from .team import Team
+from .flags import ApplicationFlags
+
+if TYPE_CHECKING:
+    from .guild import Guild
+    from .types.appinfo import (
+        AppInfo as AppInfoPayload,
+        PartialAppInfo as PartialAppInfoPayload,
+        Team as TeamPayload,
+    )
+    from .user import User
+    from .state import ConnectionState
+
+__all__ = (
+    'AppInfo',
+    'PartialAppInfo',
+)
 
 
 class AppInfo:
@@ -47,9 +63,7 @@ class AppInfo:
 
         .. versionadded:: 1.3
 
-    icon: Optional[:class:`str`]
-        The icon hash, if it exists.
-    description: Optional[:class:`str`]
+    description: :class:`str`
         The application description.
     bot_public: :class:`bool`
         Whether the bot can be invited by anyone or if it is locked
@@ -59,157 +73,196 @@ class AppInfo:
         grant flow to join.
     rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
-    summary: :class:`str`
-        If this application is a game sold on Discord,
-        this field will be the summary field for the store page of its primary SKU
-
-        .. versionadded:: 1.3
 
     verify_key: :class:`str`
-        The base64 encoded key for the GameSDK's GetTicket
+        The hex encoded key for verification in interactions and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
 
         .. versionadded:: 1.3
 
     guild_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
-        this field will be the guild to which it has been linked
+        this field will be the guild to which it has been linked to.
 
         .. versionadded:: 1.3
 
     primary_sku_id: Optional[:class:`int`]
         If this application is a game sold on Discord,
-        this field will be the id of the "Game SKU" that is created, if exists
+        this field will be the id of the "Game SKU" that is created,
+        if it exists.
 
         .. versionadded:: 1.3
 
     slug: Optional[:class:`str`]
         If this application is a game sold on Discord,
-        this field will be the URL slug that links to the store page
+        this field will be the URL slug that links to the store page.
 
         .. versionadded:: 1.3
 
-    cover_image: Optional[:class:`str`]
-        If this application is a game sold on Discord,
-        this field will be the hash of the image on store embeds
+    terms_of_service_url: Optional[:class:`str`]
+        The application's terms of service URL, if set.
 
-        .. versionadded:: 1.3
+        .. versionadded:: 2.0
+
+    privacy_policy_url: Optional[:class:`str`]
+        The application's privacy policy URL, if set.
+
+        .. versionadded:: 2.0
     """
-    __slots__ = ('_state', 'description', 'id', 'name', 'rpc_origins',
-                 'bot_public', 'bot_require_code_grant', 'owner', 'icon',
-                 'summary', 'verify_key', 'team', 'guild_id', 'primary_sku_id',
-                  'slug', 'cover_image')
 
-    def __init__(self, state, data):
-        self._state = state
+    __slots__ = (
+        '_state',
+        'description',
+        'id',
+        'name',
+        'rpc_origins',
+        'bot_public',
+        'bot_require_code_grant',
+        'owner',
+        '_icon',
+        'verify_key',
+        'team',
+        'guild_id',
+        'primary_sku_id',
+        'slug',
+        '_cover_image',
+        '_flags',
+        'terms_of_service_url',
+        'privacy_policy_url',
+    )
 
-        self.id = int(data['id'])
-        self.name = data['name']
-        self.description = data['description']
-        self.icon = data['icon']
-        self.rpc_origins = data['rpc_origins']
-        self.bot_public = data['bot_public']
-        self.bot_require_code_grant = data['bot_require_code_grant']
-        self.owner = User(state=self._state, data=data['owner'])
+    def __init__(self, state: ConnectionState, data: AppInfoPayload):
+        from .team import Team
 
-        team = data.get('team')
-        self.team = Team(state, team) if team else None
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.description: str = data['description']
+        self._icon: Optional[str] = data['icon']
+        self.rpc_origins: List[str] = data['rpc_origins']
+        self.bot_public: bool = data['bot_public']
+        self.bot_require_code_grant: bool = data['bot_require_code_grant']
+        self.owner: User = state.create_user(data['owner'])
 
-        self.summary = data['summary']
-        self.verify_key = data['verify_key']
+        team: Optional[TeamPayload] = data.get('team')
+        self.team: Optional[Team] = Team(state, team) if team else None
 
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
+        self.verify_key: str = data['verify_key']
 
-        self.primary_sku_id = utils._get_as_snowflake(data, 'primary_sku_id')
-        self.slug = data.get('slug')
-        self.cover_image = data.get('cover_image')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
 
-    def __repr__(self):
-        return '<{0.__class__.__name__} id={0.id} name={0.name!r} description={0.description!r} public={0.bot_public} ' \
-               'owner={0.owner!r}>'.format(self)
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
+        self.slug: Optional[str] = data.get('slug')
+        self._flags: int = data.get('flags', 0)
+        self._cover_image: Optional[str] = data.get('cover_image')
+        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
+        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
 
-    @property
-    def icon_url(self):
-        """:class:`.Asset`: Retrieves the application's icon asset.
-
-        This is equivalent to calling :meth:`icon_url_as` with
-        the default parameters ('webp' format and a size of 1024).
-
-        .. versionadded:: 1.3
-        """
-        return self.icon_url_as()
-
-    def icon_url_as(self, *, format='webp', size=1024):
-        """Returns an :class:`Asset` for the icon the application has.
-
-        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
-        The size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the icon to. Defaults to 'webp'.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_icon(self._state, self, 'app', format=format, size=size)
-
+    def __repr__(self) -> str:
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
+            f'description={self.description!r} public={self.bot_public} '
+            f'owner={self.owner!r}>'
+        )
 
     @property
-    def cover_image_url(self):
-        """:class:`.Asset`: Retrieves the cover image on a store embed.
-
-        This is equivalent to calling :meth:`cover_image_url_as` with
-        the default parameters ('webp' format and a size of 1024).
-
-        .. versionadded:: 1.3
-        """
-        return self.cover_image_url_as()
-
-    def cover_image_url_as(self, *, format='webp', size=1024):
-        """Returns an :class:`Asset` for the image on store embeds
-        if this application is a game sold on Discord.
-
-        The format must be one of 'webp', 'jpeg', 'jpg' or 'png'.
-        The size must be a power of 2 between 16 and 4096.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        -----------
-        format: :class:`str`
-            The format to attempt to convert the image to. Defaults to 'webp'.
-        size: :class:`int`
-            The size of the image to display.
-
-        Raises
-        ------
-        InvalidArgument
-            Bad image format passed to ``format`` or invalid ``size``.
-
-        Returns
-        --------
-        :class:`Asset`
-            The resulting CDN asset.
-        """
-        return Asset._from_cover_image(self._state, self, format=format, size=size)
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='app')
 
     @property
-    def guild(self):
+    def cover_image(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
+
+        This is only available if the application is a game sold on Discord.
+        """
+        if self._cover_image is None:
+            return None
+        return Asset._from_cover_image(self._state, self.id, self._cover_image)
+
+    @property
+    def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: If this application is a game sold on Discord,
         this field will be the guild to which it has been linked
 
         .. versionadded:: 1.3
         """
-        return self._state._get_guild(int(self.guild_id))
+        return self._state._get_guild(self.guild_id)
+
+    @property
+    def flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The application's flags.
+
+        .. versionadded:: 2.0
+        """
+        return ApplicationFlags._from_value(self._flags)
+
+
+class PartialAppInfo:
+    """Represents a partial AppInfo given by :func:`~discord.abc.GuildChannel.create_invite`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -------------
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    description: :class:`str`
+        The application description.
+    rpc_origins: Optional[List[:class:`str`]]
+        A list of RPC origin URLs, if RPC is enabled.
+    verify_key: :class:`str`
+        The hex encoded key for verification in interactions and the
+        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+    terms_of_service_url: Optional[:class:`str`]
+        The application's terms of service URL, if set.
+    privacy_policy_url: Optional[:class:`str`]
+        The application's privacy policy URL, if set.
+    """
+
+    __slots__ = (
+        '_state',
+        'id',
+        'name',
+        'description',
+        'rpc_origins',
+        'verify_key',
+        'terms_of_service_url',
+        'privacy_policy_url',
+        '_icon',
+        '_flags',
+    )
+
+    def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data.get('icon')
+        self._flags: int = data.get('flags', 0)
+        self.description: str = data['description']
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
+        self.verify_key: str = data['verify_key']
+        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
+        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='app')
+
+    @property
+    def flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The application's flags.
+
+        .. versionadded:: 2.0
+        """
+        return ApplicationFlags._from_value(self._flags)

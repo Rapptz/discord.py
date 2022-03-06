@@ -16,7 +16,6 @@ for Discord.
 
 - Modern Pythonic API using ``async``\/``await`` syntax
 - Sane rate limit handling that prevents 429s
-- Implements the entire Discord API
 - Command extension to aid with bot creation
 - Easy to use with an object oriented design
 - Optimised for both speed and memory
@@ -61,6 +60,7 @@ These pages go into great detail about everything the API can do.
   :maxdepth: 1
 
   api
+  interactions/api
   discord.ext.commands API Reference <ext/commands/api.rst>
   discord.ext.tasks API Reference <ext/tasks/index.rst>
 

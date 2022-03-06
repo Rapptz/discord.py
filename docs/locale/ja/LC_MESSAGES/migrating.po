@@ -904,7 +904,7 @@ msgstr "` ``Client.messages``"
 
 #: ../../migrating.rst:333
 msgid "Use read-only :attr:`Client.cached_messages` instead."
-msgstr "読み込み専用の :attr:`Client.cached_messages`を代わりに使ってください。"
+msgstr "読み込み専用の :attr:`Client.cached_messages` を代わりに使ってください。"
 
 #: ../../migrating.rst:335
 msgid "``Client.wait_for_message`` and ``Client.wait_for_reaction`` are gone."
@@ -1507,7 +1507,7 @@ msgstr "create_ffmpeg_player/create_stream_player/create_ytdl_player はすべ�
 
 #: ../../migrating.rst:605
 msgid "The goal is to create :class:`AudioSource` instead."
-msgstr "代わりに:class:`AudioSource`を作成してください。"
+msgstr "代わりに :class:`AudioSource` を作成してください。"
 
 #: ../../migrating.rst:607
 msgid "Using :meth:`VoiceClient.play` will not return an ``AudioPlayer``."
@@ -1515,11 +1515,11 @@ msgstr ":meth:`VoiceClient.play` を呼び出しても ``AudioPlayer`` は返っ
 
 #: ../../migrating.rst:609
 msgid "Instead, it's \"flattened\" like :class:`User` -> :class:`Member` is."
-msgstr "代わりに、:class:`User`と:class:`Member`のように、「フラット化」されています。"
+msgstr "代わりに、:class:`User` と :class:`Member` のように、「フラット化」されています。"
 
 #: ../../migrating.rst:611
 msgid "The ``after`` parameter now takes a single parameter (the error)."
-msgstr "``after``パラメータの関数は、ひとつ引数 (エラー) を取ります。"
+msgstr "``after`` パラメータの関数は、ひとつ引数 (エラー) を取ります。"
 
 #: ../../migrating.rst:613
 msgid "Basically:"
@@ -1822,7 +1822,7 @@ msgstr ""
 msgid ""
 "Since the :class:`~ext.commands.Context` is now passed by default, "
 "several shortcuts have been added:"
-msgstr ":class:`~ext.commands.Context`がデフォルトで渡されるので、ショートカットが追加されました:"
+msgstr ":class:`~ext.commands.Context` がデフォルトで渡されるので、ショートカットが追加されました:"
 
 #: ../../migrating.rst:808
 msgid "**New Shortcuts**"
@@ -1834,7 +1834,7 @@ msgid ""
 "``ctx.message.author``."
 msgstr ""
 ":attr:`ctx.author <ext.commands.Context.author>` は "
-"``ctx.message.author``のショートカットです。"
+"``ctx.message.author`` のショートカットです。"
 
 #: ../../migrating.rst:811
 msgid ""
@@ -1842,7 +1842,7 @@ msgid ""
 "``ctx.message.guild``."
 msgstr ""
 ":attr:`ctx.guild <ext.commands.Context.guild>` は "
-"``ctx.message.guild``のショートカットです。"
+"``ctx.message.guild`` のショートカットです。"
 
 #: ../../migrating.rst:812
 msgid ""
@@ -1850,7 +1850,7 @@ msgid ""
 "``ctx.message.channel``."
 msgstr ""
 ":attr:`ctx.channel <ext.commands.Context.channel>` は "
-"``ctx.message.channel``のショートカットです。"
+"``ctx.message.channel`` のショートカットです。"
 
 #: ../../migrating.rst:813
 msgid ""
@@ -1858,7 +1858,7 @@ msgid ""
 "``ctx.message.guild.me`` or ``ctx.bot.user``."
 msgstr ""
 ":attr:`ctx.me <ext.commands.Context.me>` は "
-"``ctx.message.guild.me``のショートカットです。"
+"``ctx.message.guild.me`` のショートカットです。"
 
 #: ../../migrating.rst:814
 msgid ""
@@ -1866,7 +1866,7 @@ msgid ""
 "shortcut for ``ctx.message.guild.voice_client``."
 msgstr ""
 ":attr:`ctx.voice_client <ext.commands.Context.voice_client>` は "
-"``ctx.message.guild.voice_client``のショートカットです。"
+"``ctx.message.guild.voice_client`` のショートカットです。"
 
 #: ../../migrating.rst:816
 msgid "**New Functionality**"
@@ -1884,13 +1884,13 @@ msgstr "クールダウンの回避に利用できます。"
 msgid ""
 ":attr:`.Context.valid` to check if a context can be invoked with "
 ":meth:`.Bot.invoke`."
-msgstr ":attr:`.Context.valid`で、:meth:`.Bot.invoke`で呼びだせるか確認します。"
+msgstr ":attr:`.Context.valid` で、:meth:`.Bot.invoke` で呼びだせるか確認します。"
 
 #: ../../migrating.rst:822
 msgid ""
 ":meth:`.Context.send_help` to show the help command for an entity using "
 "the new :class:`~.ext.commands.HelpCommand` system."
-msgstr ":meth:`.Context.send_help`を使うと、新しい:class:`~.ext.commands.HelpCommand`システムである項目のヘルプを出力できます。"
+msgstr ":meth:`.Context.send_help` を使うと、新しい :class:`~.ext.commands.HelpCommand` システムである項目のヘルプを出力できます。"
 
 #: ../../migrating.rst:824
 msgid ""
@@ -2304,7 +2304,7 @@ msgstr "例えば、 :class:`~.commands.HelpCommand` をコグに実装するに
 msgid ""
 "For more information, check out the relevant :ref:`documentation "
 "<ext_commands_help_command>`."
-msgstr "詳しくは、:ref:`こちらの説明 <ext_commands_help_command>`をご覧ください。"
+msgstr "詳しくは、:ref:`こちらの説明 <ext_commands_help_command>` をご覧ください。"
 
 #: ../../migrating.rst:1008
 msgid "Cog Changes"
@@ -2396,7 +2396,7 @@ msgid ""
 "through specifying it in the class definition line. More options can be "
 "found in the metaclass that facilitates all this, "
 ":class:`.commands.CogMeta`."
-msgstr "それによって、コグはクラス定義の行で指定することによって、独自の名前を持てるようになりました。オプションはこれらを容易にするメタクラス、:class:`.commands.CogMeta`で見つかります。"
+msgstr "それによって、コグはクラス定義の行で指定することによって、独自の名前を持てるようになりました。オプションはこれらを容易にするメタクラス、:class:`.commands.CogMeta` で見つかります。"
 
 #: ../../migrating.rst:1031
 msgid ""
@@ -2442,8 +2442,8 @@ msgid ""
 "The special cog method for these is :meth:`.Cog.cog_before_invoke` and "
 ":meth:`.Cog.cog_after_invoke`, e.g.:"
 msgstr ""
-"これらのコグ用の特別なメソッドは:meth:`.Cog.cog_before_invoke` と "
-":meth:`.Cog.cog_after_invoke`です。例:"
+"これらのコグ用の特別なメソッドは :meth:`.Cog.cog_before_invoke` と "
+":meth:`.Cog.cog_after_invoke` です。例:"
 
 #: ../../migrating.rst:1126
 msgid ""

@@ -1,7 +1,6 @@
 name: Bug Report
-about: Report broken or incorrect behaviour
-labels: bug
-issue_body: true
+description: Report broken or incorrect behaviour
+labels: unconfirmed bug
 body:
   - type: markdown
     attributes:
@@ -21,9 +20,14 @@ body:
       label: Reproduction Steps
       description: >
          What you did to make it happen.
-         Ideally there should be a short code snippet in this section to help reproduce the bug.
     validations:
       required: true
+  - type: textarea
+    attributes:
+      label: Minimal Reproducible Code
+      description: >
+        A short snippet of code that showcases the bug.
+      render: python
   - type: textarea
     attributes:
       label: Expected Results
@@ -68,3 +72,7 @@ body:
           required: true
         - label: I have removed my token from display, if visible.
           required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.
