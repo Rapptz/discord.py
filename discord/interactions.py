@@ -27,6 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 import asyncio
+import datetime
 
 from . import utils
 from .enums import try_enum, InteractionType, InteractionResponseType
@@ -123,6 +124,8 @@ class Interaction:
         '_cs_response',
         '_cs_followup',
         '_cs_channel',
+        '_cs_created_at',
+        '_cs_expires_at',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -221,6 +224,20 @@ class Interaction:
             'token': self.token,
         }
         return Webhook.from_state(data=payload, state=self._state)
+
+    @utils.cached_slot_property('_cs_created_at')
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction was created."""
+        return utils.snowflake_time(self.id)
+    
+    @utils.cached_slot_property('_cs_expires_at')
+    def expires_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction expires."""
+        return self.created_at + datetime.timedelta(minutes=15)
+
+    def is_expired(self) -> bool:
+        """bool: Checks if the interaction is expired."""
+        return utils.utcnow() >= self.expires_at
 
     async def original_message(self) -> InteractionMessage:
         """|coro|
