@@ -1183,6 +1183,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1201,6 +1202,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1219,6 +1221,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1237,6 +1240,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1256,6 +1260,7 @@ class Messageable:
         reference=None,
         mention_author=None,
         view=None,
+        suppress_embeds=False,
     ):
         """|coro|
 
@@ -1330,6 +1335,10 @@ class Messageable:
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1372,6 +1381,12 @@ class Messageable:
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__!r}')
 
+        if suppress_embeds:
+            from .message import MessageFlags  # circualr import
+            flags = MessageFlags._from_value(4)
+        else:
+            flags = MISSING
+
         with handle_message_parameters(
             content=content,
             tts=tts,
@@ -1386,6 +1401,7 @@ class Messageable:
             mention_author=mention_author,
             stickers=stickers,
             view=view,
+            flags=flags,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 

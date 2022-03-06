@@ -1310,6 +1310,7 @@ class Webhook(BaseWebhook):
         view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: Literal[True],
+        suppress_embeds: bool = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1330,6 +1331,7 @@ class Webhook(BaseWebhook):
         view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: Literal[False] = ...,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         ...
 
@@ -1349,6 +1351,7 @@ class Webhook(BaseWebhook):
         view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
+        suppress_embeds: bool = False,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1418,6 +1421,10 @@ class Webhook(BaseWebhook):
             The thread to send this webhook to.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1447,8 +1454,10 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
-        if ephemeral:
-            flags = MessageFlags._from_value(64)
+        if ephemeral or suppress_embeds:
+            flags = MessageFlags._from_value(0)
+            flags.ephemeral = ephemeral
+            flags.suppress_embeds = suppress_embeds
         else:
             flags = MISSING
 

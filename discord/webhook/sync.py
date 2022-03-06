@@ -42,7 +42,7 @@ import weakref
 
 from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
-from ..message import Message
+from ..message import Message, MessageFlags
 from ..http import Route, handle_message_parameters
 from ..channel import PartialMessageable
 
@@ -833,6 +833,7 @@ class SyncWebhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[True],
+        suppress_embeds: bool = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -850,6 +851,7 @@ class SyncWebhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[False] = ...,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         ...
 
@@ -867,6 +869,7 @@ class SyncWebhook(BaseWebhook):
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
+        suppress_embeds: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -915,6 +918,10 @@ class SyncWebhook(BaseWebhook):
             The thread to send this message to.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -943,6 +950,11 @@ class SyncWebhook(BaseWebhook):
         if content is None:
             content = MISSING
 
+        if suppress_embeds:
+            flags = MessageFlags._from_value(4)
+        else:
+            flags = MISSING
+
         params = handle_message_parameters(
             content=content,
             username=username,
@@ -954,6 +966,7 @@ class SyncWebhook(BaseWebhook):
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
+            flags=flags,
         )
         adapter: WebhookAdapter = _get_webhook_adapter()
         thread_id: Optional[int] = None
