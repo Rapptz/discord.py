@@ -27,12 +27,11 @@ from __future__ import annotations
 import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
-from discord.state import ConnectionState
-
 from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .partial_emoji import PartialEmoji
+from .state import ConnectionState
 from .utils import _get_as_snowflake
 
 __all__ = (
