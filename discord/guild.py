@@ -247,6 +247,9 @@ class Guild(Hashable):
     preferred_locale: :class:`Locale`
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
+
+        .. versionchanged:: 2.0
+            This field is now an enum instead of a :class:`str`.
     nsfw_level: :class:`NSFWLevel`
         The guild's NSFW level.
 
@@ -1567,6 +1570,9 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
             :exc:`ValueError` or :exc:`TypeError` in various cases.
+
+        .. versionchanged:: 2.0
+            The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
 
         Parameters
         ----------
