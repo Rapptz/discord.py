@@ -504,7 +504,7 @@ class Loop(Generic[LF]):
         return coro
 
     def after_loop(self, coro: FT) -> FT:
-        """A decorator that registers a coroutine to be called after the loop finished running.
+        """A decorator that registers a coroutine to be called after the loop finishes running.
 
         The coroutine must take no arguments (except ``self`` in a class context).
 
