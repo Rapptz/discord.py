@@ -171,7 +171,7 @@ class Attachment(Hashable):
         The attachment's description. Only applicable to images.
 
         .. versionadded:: 2.0
-    ephemeral: bool
+    ephemeral: :class:`bool`
         Whether the attachment is ephemeral.
 
         .. versionadded:: 2.0
