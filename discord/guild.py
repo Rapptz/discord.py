@@ -1776,7 +1776,7 @@ class Guild(Hashable):
             fields['features'] = features
 
         if premium_progress_bar_enabled is not MISSING:
-            fields["premium_progress_bar_enabled"] = premium_progress_bar_enabled
+            fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
