@@ -637,7 +637,7 @@ class DiscordWebSocket:
         payload = {
             'op': self.GUILD_SUBSCRIBE,
             'd': {
-                'guild_id': guild_id,
+                'guild_id': str(guild_id),
             }
         }
 
@@ -655,6 +655,7 @@ class DiscordWebSocket:
         if thread_member_lists is not None:
             data['thread_member_lists'] = thread_member_lists
 
+        _log.debug('Subscribing to guild %s with payload %s', guild_id, payload['d'])
         await self.send_as_json(payload)
 
     async def request_chunks(self, guild_ids, query=None, *, limit=None, user_ids=None, presences=True, nonce=None):

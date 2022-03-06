@@ -261,7 +261,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         '_user',
         '_state',
         '_avatar',
-        '_index',  # Member list index
         '_communication_disabled_until',
     )
 
@@ -360,9 +359,11 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self._user = member._user
         return self
 
-    def _update(self, data: MemberPayload) -> None:
-        # The nickname change is optional
-        # If it isn't in the payload then it didn't change
+    def _update(self, data: MemberPayload) -> Optional[Member]:
+        old = Member._copy(self)
+
+        # Some changes are optional
+        # If they aren't in the payload then they didn't change
         try:
             self.nick = data['nick']
         except KeyError:
@@ -373,10 +374,19 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         except KeyError:
             pass
 
+        try:
+            self._communication_disabled_until = utils.parse_time(data.get('communication_disabled_until'))
+        except KeyError:
+            pass
+
         self.premium_since = utils.parse_time(data.get('premium_since'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
-        self._communication_disabled_until = utils.parse_time(data.get('communication_disabled_until'))
+
+        attrs = {'joined_at', 'premium_since', '_roles', '_avatar', '_communication_disabled_until', 'nick', 'pending'}
+
+        if any(getattr(self, attr) != getattr(old, attr) for attr in attrs):
+            return old
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         if self._self:

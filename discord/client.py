@@ -146,11 +146,6 @@ class Client:
         amounts of guilds. The default is ``True``.
 
         .. versionadded:: 1.5
-    guild_subscription_options: :class:`GuildSubscriptionOptions`
-        Allows for control over the library's auto-subscribing.
-        If not given, defaults to off.
-
-        .. versionadded:: 1.9
     request_guilds: :class:`bool`
         Whether to request guilds at startup (behaves similarly to the old
         guild_subscriptions option). Defaults to True.
@@ -1282,7 +1277,7 @@ class Client:
     async def change_voice_state(
         self,
         *,
-        channel: Optional[PrivateChannel],
+        channel: Optional[Snowflake],
         self_mute: bool = False,
         self_deaf: bool = False,
         self_video: bool = False,
@@ -1296,8 +1291,8 @@ class Client:
 
         Parameters
         -----------
-        channel: Optional[:class:`VoiceChannel`]
-            Channel the client wants to join. Use ``None`` to disconnect.
+        channel: Optional[:class:`abc.Snowflake`]
+            Channel the client wants to join (must be a private channel). Use ``None`` to disconnect.
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
         self_deaf: :class:`bool`

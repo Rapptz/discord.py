@@ -1129,6 +1129,9 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id), params=params)
 
+    def get_guild_preview(self, guild_id: Snowflake) -> Response[guild.GuildPreview]:
+        return self.request(Route('GET', '/guilds/{guild_id}/preview', guild_id=guild_id))
+
     def delete_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}', guild_id=guild_id))
 
