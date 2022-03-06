@@ -31,7 +31,6 @@ from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .partial_emoji import PartialEmoji
-from .state import ConnectionState
 from .utils import _get_as_snowflake
 
 __all__ = (
@@ -99,6 +98,8 @@ if TYPE_CHECKING:
         ActivityAssets,
         ActivityButton,
     )
+
+    from .state import ConnectionState
 
 
 class BaseActivity:
