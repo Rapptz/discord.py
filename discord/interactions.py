@@ -41,6 +41,7 @@ from .message import Message, Attachment
 from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
+from .enums import try_enum, Locale
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 
 __all__ = (
@@ -103,7 +104,7 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
-    locale: Optional[:class:`str`]
+    locale: Optional[:class:`Locale`]
         The locale of the interaction.
     """
 
@@ -145,7 +146,6 @@ class Interaction:
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
-        self.locale: Optional[str] = data.get('locale')
 
         self.message: Optional[Message]
         try:
@@ -156,6 +156,12 @@ class Interaction:
 
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
+
+        self.locale: Optional[Locale]
+        try:
+            self.locale = try_enum(Locale, data['locale'])
+        except KeyError:
+            self.locale = None
 
         # TODO: there's a potential data loss here
         if self.guild_id:
