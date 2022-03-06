@@ -234,7 +234,7 @@ class Interaction:
         return self.created_at + datetime.timedelta(minutes=15)
 
     def is_expired(self) -> bool:
-        """bool: Checks if the interaction is expired."""
+        """:class:`bool`: Returns ``True`` if the interaction is expired."""
         return utils.utcnow() >= self.expires_at
 
     async def original_message(self) -> InteractionMessage:
