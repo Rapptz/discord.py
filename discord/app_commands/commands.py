@@ -50,12 +50,12 @@ from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..message import Message
+from ..user import User
+from ..member import Member
 from ..utils import resolve_annotation, MISSING, is_inside_class
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
-    from ..user import User
-    from ..member import Member
     from .namespace import Namespace
     from .models import ChoiceT
 
