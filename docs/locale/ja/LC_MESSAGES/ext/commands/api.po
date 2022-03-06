@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-27 02:33+0900\n"
+"POT-Creation-Date: 2022-03-06 11:01+0900\n"
 "PO-Revision-Date: 2020-10-24 02:41+0000\n"
 "Last-Translator: \n"
 "Language: ja_JP\n"
@@ -168,6 +168,7 @@ msgstr ""
 #: discord.ext.commands.errors.MissingRequiredArgument
 #: discord.ext.commands.errors.MissingRequiredFlag
 #: discord.ext.commands.errors.MissingRole
+#: discord.ext.commands.errors.NSFWChannelRequired
 #: discord.ext.commands.errors.PartialEmojiConversionFailure
 #: discord.ext.commands.errors.RoleNotFound
 #: discord.ext.commands.errors.ThreadNotFound
@@ -422,7 +423,6 @@ msgstr ""
 #: discord.ext.commands.core.has_any_role
 #: discord.ext.commands.core.has_permissions discord.ext.commands.core.has_role
 #: discord.ext.commands.core.max_concurrency
-#: discord.ext.commands.errors.NSFWChannelRequired
 #: discord.ext.commands.flags.FlagConverter
 #: discord.ext.commands.flags.FlagConverter.convert
 #: discord.ext.commands.flags.flag
@@ -1242,48 +1242,44 @@ msgid ""
 "parameter has been removed."
 msgstr ""
 
-#: discord.client.Client.create_guild:11 of
-msgid "``name`` and ``region``, and ``icon`` parameters are now keyword-only."
-msgstr ""
-
-#: discord.client.Client.create_guild:14 of
+#: discord.client.Client.create_guild:10 of
 msgid ""
 "This function no-longer raises ``InvalidArgument`` instead raising "
 ":exc:`ValueError`."
 msgstr ""
 
-#: discord.client.Client.create_guild:18 of
+#: discord.client.Client.create_guild:14 of
 msgid "The name of the guild."
 msgstr "ギルドの名前。"
 
-#: discord.client.Client.create_guild:20 of
+#: discord.client.Client.create_guild:16 of
 msgid ""
 "The :term:`py:bytes-like object` representing the icon. See "
 ":meth:`.ClientUser.edit` for more details on what is expected."
 msgstr ""
 
-#: discord.client.Client.create_guild:23 of
+#: discord.client.Client.create_guild:19 of
 msgid "The code for a template to create the guild with.  .. versionadded:: 1.4"
 msgstr ""
 
-#: discord.client.Client.create_guild:23 of
+#: discord.client.Client.create_guild:19 of
 msgid "The code for a template to create the guild with."
 msgstr ""
 
-#: discord.client.Client.create_guild:28 of
+#: discord.client.Client.create_guild:24 of
 #, fuzzy
 msgid "Guild creation failed."
 msgstr ":exc:`.HTTPException` -- ギルドの作成に失敗した。"
 
-#: discord.client.Client.create_guild:29 of
+#: discord.client.Client.create_guild:25 of
 msgid "Invalid icon image format given. Must be PNG or JPG."
 msgstr ""
 
-#: discord.client.Client.create_guild:31 of
+#: discord.client.Client.create_guild:27 of
 msgid "The guild created. This is not the same guild that is added to cache."
 msgstr ""
 
-#: discord.client.Client.create_guild:33 discord.client.Client.fetch_guild:25
+#: discord.client.Client.create_guild:29 discord.client.Client.fetch_guild:25
 #: of
 msgid ":class:`.Guild`"
 msgstr ":class:`.Guild`"
@@ -1381,7 +1377,8 @@ msgstr "IDから取得したチャンネル。"
 msgid ""
 "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, "
 ":class:`.Thread`]"
-msgstr "Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, "
+msgstr ""
+"Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`, "
 ":class:`.Thread`]"
 
 #: discord.client.Client.fetch_guild:3 of
@@ -1549,20 +1546,43 @@ msgid ""
 ":attr:`.Invite.expires_at` field."
 msgstr ""
 
-#: discord.client.Client.fetch_invite:23 of
+#: discord.client.Client.fetch_invite:22 of
+msgid ""
+"The ID of the scheduled event this invite is for.  .. note::      It is "
+"not possible to provide a url that contains an ``event_id`` parameter"
+"     when using this parameter.  .. versionadded:: 2.0"
+msgstr ""
+
+#: discord.client.Client.fetch_invite:22 of
+msgid "The ID of the scheduled event this invite is for."
+msgstr ""
+
+#: discord.client.Client.fetch_invite:26 of
+msgid ""
+"It is not possible to provide a url that contains an ``event_id`` "
+"parameter when using this parameter."
+msgstr ""
+
+#: discord.client.Client.fetch_invite:32 of
+msgid ""
+"The url contains an ``event_id``, but ``scheduled_event_id`` has also "
+"been provided."
+msgstr ""
+
+#: discord.client.Client.fetch_invite:33 of
 msgid "The invite has expired or is invalid."
 msgstr ""
 
-#: discord.client.Client.fetch_invite:24 of
+#: discord.client.Client.fetch_invite:34 of
 #, fuzzy
 msgid "Getting the invite failed."
 msgstr ":exc:`.HTTPException` -- 招待の取り消しに失敗した。"
 
-#: discord.client.Client.fetch_invite:26 of
+#: discord.client.Client.fetch_invite:36 of
 msgid "The invite from the URL/ID."
 msgstr ""
 
-#: discord.client.Client.fetch_invite:27 of
+#: discord.client.Client.fetch_invite:37 of
 msgid ":class:`.Invite`"
 msgstr ""
 
@@ -5169,7 +5189,9 @@ msgstr ""
 msgid ""
 "You must have :attr:`~discord.Permissions.read_message_history` "
 "permissions to use this."
-msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.read_message_history` 権限が必要です。"
+msgstr ""
+"これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.read_message_history` "
+"権限が必要です。"
 
 #: discord.abc.Messageable.history:14 of
 msgid "Flattening into a list: ::"
@@ -6609,7 +6631,8 @@ msgstr ":exc:`.Forbidden` -- 指定のチャンネルを取得する権限がな
 msgid "The channel supplied by the caller that was not readable"
 msgstr ""
 
-#: discord.ext.commands.errors.ChannelNotReadable:12 of
+#: discord.ext.commands.errors.ChannelNotReadable:12
+#: discord.ext.commands.errors.NSFWChannelRequired:11 of
 msgid "Union[:class:`.abc.GuildChannel`, :class:`.Thread`]"
 msgstr "Union[:class:`.abc.GuildChannel`, :class:`.Thread`]"
 
@@ -6746,7 +6769,7 @@ msgstr ""
 msgid "Exception raised when a channel does not have the required NSFW setting."
 msgstr ""
 
-#: discord.ext.commands.errors.NSFWChannelRequired:7 of
+#: discord.ext.commands.errors.NSFWChannelRequired:9 of
 msgid "The channel that does not have NSFW enabled."
 msgstr ""
 
@@ -8309,5 +8332,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid ":class:`NoneType`"
+#~ msgstr ""
+
+#~ msgid "``name`` and ``region``, and ``icon`` parameters are now keyword-only."
 #~ msgstr ""
 

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-27 02:33+0900\n"
+"POT-Creation-Date: 2022-03-06 11:01+0900\n"
 "PO-Revision-Date: 2020-10-24 02:41+0000\n"
 "Last-Translator: \n"
 "Language: ja_JP\n"
@@ -118,7 +118,7 @@ msgstr ""
 msgid "Raises"
 msgstr "例外"
 
-#: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
+#: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:14
 #: discord.ext.tasks.Loop.error:13 of
 msgid "The function was not a coroutine."
 msgstr ""
@@ -136,6 +136,12 @@ msgid ""
 msgstr ""
 
 #: discord.ext.tasks.Loop.before_loop:8 of
+msgid ""
+"Calling :meth:`stop` in this coroutine will stop the initial iteration "
+"from running."
+msgstr ""
+
+#: discord.ext.tasks.Loop.before_loop:11 of
 msgid "The coroutine to register before the loop runs."
 msgstr ""
 
@@ -279,6 +285,12 @@ msgstr ""
 msgid ""
 "If this is undesirable, either remove the error handling before stopping "
 "via :meth:`clear_exception_types` or use :meth:`cancel` instead."
+msgstr ""
+
+#: discord.ext.tasks.Loop.stop:16 of
+msgid ""
+"Calling this method in :meth:`before_loop` will stop the first iteration "
+"from running."
 msgstr ""
 
 #: discord.ext.tasks.Loop.cancel:1 of
