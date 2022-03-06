@@ -2,17 +2,17 @@ from discord import app_commands
 
 import discord
 
-my_guild_id = 1234567 #id used for registering slash commands in a specific guild 
-suggestion_channel_id = 1234567 #where to send the suggestion
+my_guild_id = 1234567 # id used for registering slash commands in a specific guild 
+suggestion_channel_id = 1234567 # where to send the suggestion
 
 class SuggestionsBot(discord.Client):
     def __init__(self):
         super().__init__()
-        #Create the CommandTree used for creating slash commands.
+        # Create the CommandTree used for creating slash commands.
         self.tree = app_commands.CommandTree(self)
         self.loop.create_task(self.sync_commands())
         
-    #Task used for syncing slash commands only for a specific guild
+    # Task used for syncing slash commands only for a specific guild
     async def sync_commands(self):
         await self.wait_until_ready()
         await self.tree.sync(guild=discord.Object(id=my_guild_id)) 
