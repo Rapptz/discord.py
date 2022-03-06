@@ -136,7 +136,7 @@ class ScheduledEvent(Hashable):
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
         self.status: EventStatus = try_enum(EventStatus, data['status'])
-        self._cover_image: Optional[str] = data['image']
+        self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
 
         creator = data.get('creator')
