@@ -120,8 +120,6 @@ class TeamMember(BaseUser):
         The team member's unique ID.
     discriminator: :class:`str`
         The team member's discriminator. This is given when the username has conflicts.
-    avatar: Optional[:class:`str`]
-        The avatar hash the team member has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
     team: :class:`Team`

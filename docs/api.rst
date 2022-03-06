@@ -87,6 +87,7 @@ TeamMember
 
 .. autoclass:: TeamMember()
     :members:
+    :inherited-members:
 
 Voice Related
 ---------------
