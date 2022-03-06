@@ -30,7 +30,7 @@ import asyncio
 import datetime
 
 from . import utils
-from .enums import try_enum, InteractionType, InteractionResponseType
+from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
@@ -41,7 +41,6 @@ from .message import Message, Attachment
 from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
-from .enums import try_enum, Locale
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 
 __all__ = (
@@ -104,8 +103,10 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
-    locale: Optional[:class:`Locale`]
-        The locale of the interaction.
+    locale: :class:`Locale`
+        The locale of the user invoking the interaction.
+    guild_locale: Optional[:class:`Locale`]
+        The preferred locale of the guild the interaction was sent from, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -120,6 +121,7 @@ class Interaction:
         'token',
         'version',
         'locale',
+        'guild_locale',
         '_permissions',
         '_state',
         '_client',
@@ -157,12 +159,8 @@ class Interaction:
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
-        self.locale: Optional[Locale]
-        try:
-            # PING interactions don't have a locale
-            self.locale = try_enum(Locale, data['locale'])
-        except KeyError:
-            self.locale = None
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en_US'))
+        self.guild_locale: Optional[Locale]
 
         # TODO: there's a potential data loss here
         if self.guild_id:
@@ -175,11 +173,15 @@ class Interaction:
                 # The fallback to Object for guild causes a type check error but is explicitly allowed here
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
                 self._permissions = self.user._permissions or 0
+
+            self.guild_locale = try_enum(Locale, data.get('guild_locale', 'en_US'))
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
             except KeyError:
                 pass
+
+            self.guild_locale = None
 
     @property
     def client(self) -> Client:
