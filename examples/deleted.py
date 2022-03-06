@@ -17,5 +17,8 @@ class MyClient(discord.Client):
         msg = f'{message.author} has deleted the message: {message.content}'
         await message.channel.send(msg)
 
-client = MyClient()
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = MyClient(intents=intents)
 client.run('token')

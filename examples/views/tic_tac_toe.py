@@ -120,7 +120,10 @@ class TicTacToe(discord.ui.View):
 
 class TicTacToeBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('$'))
+        intents = discord.Intents.default()
+        intents.message_content = True
+        
+        super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
