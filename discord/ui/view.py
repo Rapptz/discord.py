@@ -419,9 +419,9 @@ class View:
                 older = old_state[(component.type.value, component.custom_id)]  # type: ignore
             except (KeyError, AttributeError):
                 item = _component_to_item(component)
-                 if not item.is_dispatchable():
-                     continue
-                 children.append(item)
+                if not item.is_dispatchable():
+                    continue
+                children.append(item)
             else:
                 older.refresh_component(component)
                 children.append(older)
