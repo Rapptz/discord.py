@@ -2579,11 +2579,11 @@ of :class:`enum.Enum`.
 
         The ``pt-BR`` locale.
 
-    .. attribute:: Romanian
+    .. attribute:: romanian
 
         The ``ro`` locale.
 
-    .. attribute:: Russian
+    .. attribute:: russian
 
         The ``ru`` locale.
 

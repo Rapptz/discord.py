@@ -664,7 +664,7 @@ class Thread(Messageable, Hashable):
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-            The user to add to the thread.
+            The user to remove from the thread.
 
         Raises
         -------

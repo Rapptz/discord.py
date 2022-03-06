@@ -68,6 +68,7 @@ from .enums import (
     NotificationLevel,
     NSFWLevel,
     MFALevel,
+    Locale,
 )
 from .mixins import Hashable
 from .user import User
@@ -243,9 +244,12 @@ class Guild(Hashable):
         The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
         The number of "boosts" this guild currently has.
-    preferred_locale: Optional[:class:`str`]
+    preferred_locale: :class:`Locale`
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
+
+        .. versionchanged:: 2.0
+            This field is now an enum instead of a :class:`str`.
     nsfw_level: :class:`NSFWLevel`
         The guild's NSFW level.
 
@@ -471,7 +475,7 @@ class Guild(Hashable):
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
-        self.preferred_locale: Optional[str] = guild.get('preferred_locale')
+        self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
@@ -1540,7 +1544,7 @@ class Guild(Hashable):
         vanity_code: str = MISSING,
         system_channel: Optional[TextChannel] = MISSING,
         system_channel_flags: SystemChannelFlags = MISSING,
-        preferred_locale: str = MISSING,
+        preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
     ) -> Guild:
@@ -1566,6 +1570,9 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
             :exc:`ValueError` or :exc:`TypeError` in various cases.
+
+        .. versionchanged:: 2.0
+            The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
 
         Parameters
         ----------
@@ -1614,9 +1621,8 @@ class Guild(Hashable):
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
             The new system channel settings to use with the new system channel.
-        preferred_locale: :class:`str`
+        preferred_locale: :class:`Locale`
             The new preferred locale for the guild. Used as the primary language in the guild.
-            If set, this must be an ISO 639 code, e.g. ``en-US`` or ``ja`` or ``zh-CN``.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
             guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
@@ -1663,7 +1669,7 @@ class Guild(Hashable):
             fields['description'] = description
 
         if preferred_locale is not MISSING:
-            fields['preferred_locale'] = preferred_locale
+            fields['preferred_locale'] = str(preferred_locale)
 
         if afk_timeout is not MISSING:
             fields['afk_timeout'] = afk_timeout

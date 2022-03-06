@@ -1382,7 +1382,8 @@ class Messageable:
             raise TypeError(f'view parameter must be View not {view.__class__!r}')
 
         if suppress_embeds:
-            from .message import MessageFlags  # circualr import
+            from .message import MessageFlags  # circular import
+
             flags = MessageFlags._from_value(4)
         else:
             flags = MISSING

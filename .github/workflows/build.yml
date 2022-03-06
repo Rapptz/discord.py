@@ -3,7 +3,7 @@ name: build
 on:
   push:
   pull_request:
-    types: [ opened, edited ]
+    types: [ opened, synchronize ]
 
 jobs:
   dists-and-docs:

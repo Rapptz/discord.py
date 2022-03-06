@@ -366,6 +366,7 @@ Modal
 
 .. autoclass:: discord.ui.Modal
     :members:
+    :inherited-members:
 
 Item
 ~~~~~~~
