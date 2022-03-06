@@ -413,12 +413,15 @@ class View:
             if item.is_dispatchable()
         }
         # fmt: on
-        children: List[Item] = []
+        children: List[Item] = [item for item in self.children if not item.is_dispatchable()]
         for component in _walk_all_components(components):
             try:
                 older = old_state[(component.type.value, component.custom_id)]  # type: ignore
             except (KeyError, AttributeError):
-                children.append(_component_to_item(component))
+                item = _component_to_item(component)
+                 if not item.is_dispatchable():
+                     continue
+                 children.append(item)
             else:
                 older.refresh_component(component)
                 children.append(older)
