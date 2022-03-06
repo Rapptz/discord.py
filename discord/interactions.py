@@ -124,8 +124,6 @@ class Interaction:
         '_cs_response',
         '_cs_followup',
         '_cs_channel',
-        '_cs_created_at',
-        '_cs_expires_at',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -225,12 +223,12 @@ class Interaction:
         }
         return Webhook.from_state(data=payload, state=self._state)
 
-    @utils.cached_slot_property('_cs_created_at')
+    @property
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction was created."""
         return utils.snowflake_time(self.id)
 
-    @utils.cached_slot_property('_cs_expires_at')
+    @property
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
         return self.created_at + datetime.timedelta(minutes=15)
