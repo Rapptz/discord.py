@@ -9,11 +9,16 @@ client = discord.Client(intents=intents)
 
 # We need an `discord.app_commands.CommandTree` instance to register slash commands
 tree = app_commands.CommandTree(client)
+
+# The guild in which this slash command will be registered.
+# As global commands can take up to an hour to propagate, it is ideal
+# to test it in a guild.
 test_guild = Object(ID_HERE)
 
 @client.event
 async def on_ready():
     print(f"Connected as {client.user}")
+    # Sync the slash commands with Discord.
     await tree.sync(guild=test_guild)
 
 class Feedback(ui.Modal, title='Feedback'):
@@ -55,6 +60,8 @@ async def feedback(interaction: discord.Interaction):
     
     Usage: /feedback
     """
+
+    # Send the modal with an instance of our `Feedback` class
     await interaction.response.send_modal(Feedback())
 
 client.run("TOKEN")
