@@ -1325,7 +1325,7 @@ class Client:
 
             ``guild_id`` parameter is now positional-only.
 
-        with_counts: Optional[:class:`bool`]
+        with_counts: :class:`bool`
             Whether to include count information in the guild. This fills the
             :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`
             attributes without needing any privileged intents. Defaults to ``True``.
