@@ -494,6 +494,7 @@ class InteractionResponse:
         tts: bool = False,
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
+        suppress_embeds: bool = False,
     ) -> None:
         """|coro|
 
@@ -524,6 +525,10 @@ class InteractionResponse:
         allowed_mentions: :class:`~discord.AllowedMentions`
             Controls the mentions being processed in this message. See :meth:`.abc.Messageable.send` for
             more information.
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -539,8 +544,10 @@ class InteractionResponse:
         if self._responded:
             raise InteractionResponded(self._parent)
 
-        if ephemeral:
-            flags = MessageFlags._from_value(64)
+        if ephemeral or suppress_embeds:
+            flags = MessageFlags._from_value(0)
+            flags.ephemeral = ephemeral
+            flags.suppress_embeds = suppress_embeds
         else:
             flags = MISSING
 
