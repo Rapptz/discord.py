@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
 
 
-from .channel import ChannelType, ChannelTypeWithoutThread, ThreadMetadata
+from .channel import ChannelTypeWithoutThread, ThreadMetadata
 from .threads import ThreadType
 from .member import Member
 from .message import Attachment

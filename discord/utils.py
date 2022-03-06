@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import array
 import asyncio
-import inspect
 from typing import (
     Any,
     AsyncIterable,

@@ -41,7 +41,6 @@ from ..components import (
     Button as ButtonComponent,
     SelectMenu as SelectComponent,
 )
-from ..utils import MISSING
 
 # fmt: off
 __all__ = (

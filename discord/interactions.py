@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 import asyncio
 
 from . import utils

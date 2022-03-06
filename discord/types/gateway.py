@@ -33,7 +33,7 @@ from .channel import ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji
-from .member import Member, MemberWithUser
+from .member import MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker

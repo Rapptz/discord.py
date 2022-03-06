@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
+from .utils import parse_time, _bytes_to_base64_data, MISSING
 from .guild import Guild
 
 # fmt: off

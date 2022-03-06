@@ -32,7 +32,6 @@ import itertools
 import logging
 from typing import (
     Dict,
-    Generic,
     Optional,
     TYPE_CHECKING,
     Union,
