@@ -159,7 +159,7 @@ class Interaction:
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
-        self.locale: Locale = try_enum(Locale, data.get('locale'))
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en_US'))
         self.guild_locale: Optional[Locale]
 
         # TODO: there's a potential data loss here
@@ -174,7 +174,7 @@ class Interaction:
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
                 self._permissions = self.user._permissions or 0
 
-            self.guild_locale = try_enum(Locale, data.get('guild_locale'))
+            self.guild_locale = try_enum(Locale, data.get('guild_locale', 'en_US'))
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
