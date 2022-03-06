@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     import importlib.machinery
 
     from discord.message import Message
+    from discord.abc import User
     from ._types import (
         Check,
         CoroFunc,
@@ -333,7 +334,7 @@ class BotBase(GroupMixin):
         # type-checker doesn't distinguish between functions and methods
         return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
-    async def is_owner(self, user: discord.User) -> bool:
+    async def is_owner(self, user: User) -> bool:
         """|coro|
 
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
