@@ -204,12 +204,7 @@ class Guild(Hashable):
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
     vanity_url_code: Optional[:class:`str`]
-
         The guild's vanity url code, if any
-
-
-        The guild's vanity url code, if any.
-
 
         .. versionadded:: 2.0
     explicit_content_filter: :class:`ContentFilter`
