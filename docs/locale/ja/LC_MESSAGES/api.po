@@ -1943,7 +1943,7 @@ msgid ""
 ":attr:`.Guild.members`, :attr:`.Member.activity` and "
 ":attr:`.Member.voice` per :class:`.Member`."
 msgstr ""
-"これを使用した場合、 :attr:`.Guild.channels`、 :class:`.Guild.members` 、そして各 "
+"これを使用した場合、 :attr:`.Guild.channels`、 :attr:`.Guild.members` 、そして各 "
 ":class:`.Member` ごとの :attr:`.Member.activity` 、 :attr:`.Member.voice` "
 "を取得することは **できません** 。"
 
@@ -3721,7 +3721,7 @@ msgid ""
 " of 16-bit 48KHz stereo PCM, which is about 3,840 bytes per frame (20ms "
 "worth of audio)."
 msgstr ""
-":meth:`is_opus` が ``True`` "
+":meth:`~AudioSource.is_opus` が ``True`` "
 "を返す場合、20ms分のOpusにエンコードされたオーディオを返さなければいけません。それ以外の場合は、フレームあたり約3,840バイトの20ms相当の16ビット48KHzステレオPCM（20ms分のオーディオ）が必要です。"
 
 #: discord.player.AudioSource.read:13 discord.player.FFmpegOpusAudio.read:13
@@ -20327,17 +20327,17 @@ msgstr ""
 #: ../../docstring discord.Intents.members:17 of
 #, fuzzy
 msgid ":attr:`Guild.members`"
-msgstr ":attr:`uses`"
+msgstr ":attr:`Guild.members`"
 
 #: ../../docstring discord.Intents.members:18 of
 #, fuzzy
 msgid ":attr:`Member.roles`"
-msgstr ":attr:`uses`"
+msgstr ":attr:`Member.roles`"
 
 #: ../../docstring discord.Intents.members:19 of
 #, fuzzy
 msgid ":attr:`Member.nick`"
-msgstr ":attr:`temporary`"
+msgstr ":attr:`Member.nick`"
 
 #: ../../docstring discord.Intents.members:20 of
 msgid ":attr:`Member.premium_since`"
