@@ -69,10 +69,7 @@ class Suggestions(discord.ui.Modal, title='Server Suggestions'):
 client = SuggestionsBot()
 
 # We create a slash command that opens the modal
-@client.tree.command(
-    guild=discord.Object(id=my_guild_id),
-    name='suggest'
-)
+@client.tree.command(guild=discord.Object(id=my_guild_id))
 async def suggest(interaction: discord.Interaction):
     """Suggest something for the server!"""
     await interaction.response.send_modal(Suggestions())
