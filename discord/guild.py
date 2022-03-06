@@ -271,6 +271,10 @@ class Guild(Hashable):
         :meth:`Client.fetch_guild` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
+    premium_progress_bar_enabled: :class:`bool`
+        Indicates if the guild has premium AKA server boost level progress bar enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -315,6 +319,7 @@ class Guild(Hashable):
         '_threads',
         'approximate_member_count',
         'approximate_presence_count',
+        'premium_progress_bar_enabled',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -483,6 +488,7 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
+        self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
@@ -1547,6 +1553,7 @@ class Guild(Hashable):
         preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
+        premium_progress_bar_enabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1573,6 +1580,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
+
+        .. versionchanged:: 2.0
+            The `premium_progress_bar_enabled` keyword-only parameter were added.
 
         Parameters
         ----------
@@ -1631,6 +1641,8 @@ class Guild(Hashable):
             The new channel that is used for public updates from Discord. This is only available to
             guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
+        premium_progress_bar_enabled: :class:`bool`
+            Whether the premium AKA server boost level progress bar should be enabled for the guild.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1762,6 +1774,9 @@ class Guild(Hashable):
                     )
 
             fields['features'] = features
+
+        if premium_progress_bar_enabled is not MISSING:
+            fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
