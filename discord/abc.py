@@ -1383,6 +1383,7 @@ class Messageable:
 
         if suppress_embeds:
             from .message import MessageFlags  # circular import
+
             flags = MessageFlags._from_value(4)
         else:
             flags = MISSING
