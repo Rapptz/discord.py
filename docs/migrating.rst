@@ -791,6 +791,9 @@ The return type of the following methods has been changed to an :term:`asynchron
 - :meth:`Guild.fetch_members`
 - :meth:`Reaction.users`
 
+The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an 
+:term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
+
 Removal of ``InvalidArgument`` Exception
 -------------------------------------------
 
@@ -915,6 +918,7 @@ Allowed types for the following parameters have been changed:
 - ``rtc_region`` in :meth:`Guild.create_voice_channel` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`StageChannel.edit` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`VoiceChannel.edit` is now of type Optional[:class:`str`].
+- ``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`. 
 
 Attribute Type Changes
 ------------------------
@@ -948,6 +952,7 @@ The following changes have been made:
 
 - :attr:`AuditLogEntry.target` may now be a :class:`PartialMessageable`.
 - :attr:`PartialMessage.channel` may now be a :class:`PartialMessageable`.
+- :attr:`Guild.preferred_locale` is now of type :class:`Locale`.
 
 Removals
 ----------

@@ -104,8 +104,7 @@ CommandT = TypeVar('CommandT', bound='Command')
 ContextT = TypeVar('ContextT', bound='Context')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
-HookT = TypeVar('HookT', bound='Hook')
-ErrorT = TypeVar('ErrorT', bound='Error')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -124,12 +123,17 @@ def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
             return function
 
 
-def get_signature_parameters(function: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, inspect.Parameter]:
+def get_signature_parameters(
+    function: Callable[..., Any],
+    globalns: Dict[str, Any],
+    *,
+    skip_parameters: Optional[int] = None,
+) -> Dict[str, inspect.Parameter]:
     signature = inspect.signature(function)
     params = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
-    required_params = discord.utils.is_inside_class(function) + 1
+    required_params = discord.utils.is_inside_class(function) + 1 if skip_parameters is None else skip_parameters
     if len(signature.parameters) < required_params:
         raise TypeError(f'Command signature requires at least {required_params - 1} parameter(s)')
 
@@ -911,7 +915,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: ErrorT) -> ErrorT:
+    def error(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
@@ -942,7 +946,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: HookT) -> HookT:
+    def before_invoke(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -969,7 +973,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: HookT) -> HookT:
+    def after_invoke(self, coro: FuncT) -> FuncT:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -1141,12 +1145,12 @@ class GroupMixin(Generic[CogT]):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         case_insensitive = kwargs.get('case_insensitive', False)
-        self.all_commands: Dict[str, Command[CogT, Any, Any]] = _CaseInsensitiveDict() if case_insensitive else {}
+        self.all_commands: Dict[str, Command[CogT, ..., Any]] = _CaseInsensitiveDict() if case_insensitive else {}
         self.case_insensitive: bool = case_insensitive
         super().__init__(*args, **kwargs)
 
     @property
-    def commands(self) -> Set[Command[CogT, Any, Any]]:
+    def commands(self) -> Set[Command[CogT, ..., Any]]:
         """Set[:class:`.Command`]: A unique set of commands without aliases that are registered."""
         return set(self.all_commands.values())
 
@@ -1156,7 +1160,7 @@ class GroupMixin(Generic[CogT]):
                 command.recursively_remove_all_commands()
             self.remove_command(command.name)
 
-    def add_command(self, command: Command[CogT, Any, Any], /) -> None:
+    def add_command(self, command: Command[CogT, ..., Any], /) -> None:
         """Adds a :class:`.Command` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -1198,7 +1202,7 @@ class GroupMixin(Generic[CogT]):
                 raise CommandRegistrationError(alias, alias_conflict=True)
             self.all_commands[alias] = command
 
-    def remove_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
+    def remove_command(self, name: str, /) -> Optional[Command[CogT, ..., Any]]:
         """Remove a :class:`.Command` from the internal list
         of commands.
 
@@ -1239,7 +1243,7 @@ class GroupMixin(Generic[CogT]):
                 self.all_commands[alias] = cmd
         return command
 
-    def walk_commands(self) -> Generator[Command[CogT, Any, Any], None, None]:
+    def walk_commands(self) -> Generator[Command[CogT, ..., Any], None, None]:
         """An iterator that recursively walks through all commands and subcommands.
 
         .. versionchanged:: 1.4
@@ -1255,7 +1259,7 @@ class GroupMixin(Generic[CogT]):
             if isinstance(command, GroupMixin):
                 yield from command.walk_commands()
 
-    def get_command(self, name: str, /) -> Optional[Command[CogT, Any, Any]]:
+    def get_command(self, name: str, /) -> Optional[Command[CogT, ..., Any]]:
         """Get a :class:`.Command` from the internal list
         of commands.
 

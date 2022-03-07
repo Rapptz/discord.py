@@ -224,7 +224,9 @@ def handle_message_parameters(
         try:
             payload['allowed_mentions']['replied_user'] = mention_author
         except KeyError:
-            pass
+            payload['allowed_mentions'] = {
+                'replied_user': mention_author,
+            }
 
     if attachments is MISSING:
         attachments = files  # type: ignore
@@ -1112,6 +1114,7 @@ class HTTPClient:
             'rules_channel_id',
             'public_updates_channel_id',
             'preferred_locale',
+            'premium_progress_bar_enabled',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}
