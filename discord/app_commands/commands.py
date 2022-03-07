@@ -304,8 +304,6 @@ class Command(Generic[GroupT, P, T]):
     ------------
     name: :class:`str`
         The name of the application command.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the command is called.
     description: :class:`str`
         The description of the application command. This shows up in the UI to describe
         the application command.
@@ -328,6 +326,11 @@ class Command(Generic[GroupT, P, T]):
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+
+    @property
+    def callback(self) -> CommandCallback[GroupT, P, T]:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
+        return self._callback
 
     def _copy_with_binding(self, binding: GroupT) -> Command:
         cls = self.__class__
@@ -542,8 +545,6 @@ class ContextMenu:
     ------------
     name: :class:`str`
         The name of the context menu.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the context menu is called.
     type: :class:`.AppCommandType`
         The type of context menu application command.
     """
@@ -563,6 +564,11 @@ class ContextMenu:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
         self._param_name = param
         self._annotation = annotation
+
+    @property
+    def callback(self) -> ContextMenuCallback:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
+        return self._callback
 
     @classmethod
     def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
