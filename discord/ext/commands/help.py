@@ -45,6 +45,8 @@ __all__ = (
     'MinimalHelpCommand',
 )
 
+MISSING = discord.utils.MISSING
+
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
 # help command <subcommand chain> -> same as above
@@ -326,7 +328,7 @@ class HelpCommand:
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
-        self.context: Context = discord.utils.MISSING
+        self.context: Context = MISSING
         self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self):
@@ -406,7 +408,7 @@ class HelpCommand:
         """
         command_name = self._command_impl.name
         ctx = self.context
-        if ctx is discord.utils.MISSING or ctx.command is None or ctx.command.qualified_name != command_name:
+        if ctx is MISSING or ctx.command is None or ctx.command.qualified_name != command_name:
             return command_name
         return ctx.invoked_with
 
