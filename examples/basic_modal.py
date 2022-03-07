@@ -37,7 +37,6 @@ class Suggestions(discord.ui.Modal, title='Server Suggestions'):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-
         suggestion = discord.Embed(
             title='New Suggestion',
             description=f'Suggestion from {interaction.user.mention}',
