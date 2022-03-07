@@ -447,7 +447,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar = data.get('avatar')
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(map(create_activity, data['activities'], itertools.repeat(self._state)))
+        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
         self._client_status._update(data['status'], data['client_status'])
 
         if len(user) > 1:
