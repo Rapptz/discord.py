@@ -23,7 +23,7 @@ async def test_explicit_initial_runs_tomorrow_single():
         await asyncio.sleep(5 * 60)  # sleep for 5 minutes
 
     now = utils.utcnow()
-    
+
     has_run = False
 
     async def inner():
