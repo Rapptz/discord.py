@@ -754,7 +754,7 @@ class Group:
             raise ValueError('maximum number of child commands exceeded')
 
     def remove_command(self, name: str, /) -> Optional[Union[Command, Group]]:
-        """Remove a command or group from the internal list of commands.
+        """Removes a command or group from the internal list of commands.
 
         Parameters
         -----------
