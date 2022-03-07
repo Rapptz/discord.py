@@ -177,8 +177,6 @@ class Interaction:
                 # The fallback to Object for guild causes a type check error but is explicitly allowed here
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
                 self._permissions = self.user._permissions or 0
-
-            self.guild_locale = try_enum(Locale, data.get('guild_locale', 'en-US'))
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
