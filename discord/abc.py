@@ -155,7 +155,7 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
-    avatar: Asset
+    avatar: Optional[Asset]
     bot: bool
 
     @property
