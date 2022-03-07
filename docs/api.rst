@@ -3215,7 +3215,7 @@ AuditLogDiff
 
     .. attribute:: invitable
 
-        Whetheer non-moderators can add users to this private thread.
+        Whether non-moderators can add users to this private thread.
 
         :type: :class:`bool`
 
