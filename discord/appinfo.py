@@ -110,6 +110,8 @@ class AppInfo:
         .. versionadded:: 2.0
     custom_install_url: Optional[:class:`str`]
         The application's custom install URL, if set.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
