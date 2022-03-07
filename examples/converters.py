@@ -1,4 +1,5 @@
 # This example requires the 'members' privileged intent to use the Member converter.
+# This example also requires the 'message_content' privileged intent to function.
 
 import typing
 
@@ -7,6 +8,7 @@ from discord.ext import commands
 
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 
 bot = commands.Bot('!', intents=intents)
 
