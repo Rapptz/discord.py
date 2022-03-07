@@ -164,7 +164,7 @@ def test_resolve_template(url, code):
     assert utils.resolve_template(url) == code
 
 
-@pytest.mark.parametrize('mention', ['@everyone', '@here', '<@!80088516616269824>', '<@&381978264698224660>'])
+@pytest.mark.parametrize('mention', ['@everyone', '@here', '<@80088516616269824>', '<@!80088516616269824>', '<@&381978264698224660>'])
 def test_escape_mentions(mention):
     assert mention not in utils.escape_mentions(mention)
     assert mention not in utils.escape_mentions(f"one {mention} two")
