@@ -1250,7 +1250,7 @@ class Messageable:
         self,
         content=None,
         *,
-        tts=None,
+        tts=False,
         embed=None,
         embeds=None,
         file=None,
@@ -1735,7 +1735,8 @@ class Connectable(Protocol):
         if cls is MISSING:
             cls = VoiceClient
 
-        voice = cls(client, self)
+        # The type checker doesn't understand that VoiceClient *is* T here.
+        voice: T = cls(client, self)  # type: ignore
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class.')
