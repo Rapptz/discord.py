@@ -108,6 +108,8 @@ class AppInfo:
         The application's privacy policy URL, if set.
 
         .. versionadded:: 2.0
+    custom_install_url: Optional[:class:`str`]
+        The application's custom install URL, if set.
     """
 
     __slots__ = (
@@ -129,6 +131,7 @@ class AppInfo:
         '_flags',
         'terms_of_service_url',
         'privacy_policy_url',
+        'custom_install_url',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -157,6 +160,7 @@ class AppInfo:
         self._cover_image: Optional[str] = data.get('cover_image')
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.custom_install_url: Optional[str] = data.get('custom_install_url')
 
     def __repr__(self) -> str:
         return (
@@ -222,6 +226,8 @@ class PartialAppInfo:
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
         The application's privacy policy URL, if set.
+    custom_install_url: Optional[:class:`str`]
+        The application's custom install URL, if set.
     """
 
     __slots__ = (
@@ -233,6 +239,7 @@ class PartialAppInfo:
         'verify_key',
         'terms_of_service_url',
         'privacy_policy_url',
+        'custom_install_url',
         '_icon',
         '_flags',
     )
@@ -248,6 +255,7 @@ class PartialAppInfo:
         self.verify_key: str = data['verify_key']
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.custom_install_url: Optional[str] = data.get('custom_install_url')
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
