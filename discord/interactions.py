@@ -183,8 +183,6 @@ class Interaction:
             except KeyError:
                 pass
 
-            self.guild_locale = None
-
     @property
     def client(self) -> Client:
         """:class:`Client`: The client that is handling this interaction."""
