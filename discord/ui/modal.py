@@ -58,11 +58,12 @@ class Modal(View):
     This object must be inherited to create a modal popup window within discord.
 
     .. versionadded:: 2.0
-    
+
     Examples
     ----------
-    
+
     .. code-block:: python3
+
         from discord import ui
 
         class Questionnaire(ui.Modal, title='Questionnaire Response'):
