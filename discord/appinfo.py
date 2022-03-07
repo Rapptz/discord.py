@@ -112,6 +112,18 @@ class AppInfo:
         The application's custom install URL, if set.
 
         .. versionadded:: 2.0
+    category_ids: Optional[List[:class:`int`]]
+        The application's categories in the App Directory, if any.
+
+        .. versionadded:: 2.0
+    custom_install_url: Optional[:class:`str`]
+        The application's custom install URL, if set.
+
+        .. versionadded:: 2.0
+    tags: Optional[List[:class:`str`]]
+        The application's tags for the App Directory, if any.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -134,6 +146,8 @@ class AppInfo:
         'terms_of_service_url',
         'privacy_policy_url',
         'custom_install_url',
+        'tags',
+        'category_ids',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -163,6 +177,8 @@ class AppInfo:
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
         self.custom_install_url: Optional[str] = data.get('custom_install_url')
+        self.tags: List[str] = data.get("tags", [])
+        self.category_ids: List[int] = data.get("category_ids", [])
 
     def __repr__(self) -> str:
         return (
@@ -228,8 +244,12 @@ class PartialAppInfo:
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
         The application's privacy policy URL, if set.
+    category_ids: Optional[List[:class:`str`]]
+        The application's categories in the App Directory, if any.
     custom_install_url: Optional[:class:`str`]
         The application's custom install URL, if set.
+    tags: Optional[List[:class:`str`]]
+        The application's tags for the App Directory, if any.
     """
 
     __slots__ = (
@@ -242,6 +262,8 @@ class PartialAppInfo:
         'terms_of_service_url',
         'privacy_policy_url',
         'custom_install_url',
+        'tags',
+        'category_ids',
         '_icon',
         '_flags',
     )
@@ -258,6 +280,8 @@ class PartialAppInfo:
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
         self.custom_install_url: Optional[str] = data.get('custom_install_url')
+        self.tags: List[str] = data.get("tags", [])
+        self.category_ids: List[int] = data.get("category_ids", [])
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'

@@ -50,6 +50,8 @@ class _AppInfoOptional(TypedDict, total=False):
     hook: bool
     max_participants: int
     custom_install_url: str
+    tags: List[str]
+    category_ids: List[int]
 
 
 class AppInfo(BaseAppInfo, _AppInfoOptional):
@@ -68,6 +70,8 @@ class _PartialAppInfoOptional(TypedDict, total=False):
     max_participants: int
     flags: int
     custom_install_url: str
+    tags: List[str]
+    category_ids: List[int]
 
 
 class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
