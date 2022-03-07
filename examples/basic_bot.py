@@ -1,4 +1,4 @@
-# This example requires the 'members' privileged intents
+# This example requires the 'members' and 'message_content' privileged intents
 
 import discord
 from discord.ext import commands

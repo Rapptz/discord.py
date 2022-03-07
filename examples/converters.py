@@ -1,4 +1,5 @@
 # This example requires the 'members' privileged intent to use the Member converter.
+# This example also requires the 'message_content' privileged intent to function.
 
 import typing
 

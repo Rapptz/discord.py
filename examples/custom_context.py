@@ -1,3 +1,6 @@
+# This example requires the 'message_content' privileged intent to function.
+
+
 import random
 
 import discord

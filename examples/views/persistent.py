@@ -1,3 +1,5 @@
+# This example requires the 'message_content' privileged intent to function.
+
 from discord.ext import commands
 import discord
 
