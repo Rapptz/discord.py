@@ -322,17 +322,6 @@ class MessageFlags(BaseFlags):
         """
         return 256
 
-    @alias_flag_value
-    def failed_to_mention_roles(self):
-        """:class:`bool`: Returns ``True`` if the source message failed to
-        mention some roles and add their members to the thread.
-
-        This is an alias of :attr:`failed_to_mention_some_roles_in_thread`.
-
-        .. versionadded:: 2.0
-        """
-        return 256
-
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
@@ -682,10 +671,7 @@ class ApplicationFlags(BaseFlags):
 
     @alias_flag_value
     def presence(self):
-        """:class:`bool`: Alias for :attr:`gateway_presence`.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Alias for :attr:`gateway_presence`."""
         return 1 << 12
 
     @flag_value
@@ -697,10 +683,7 @@ class ApplicationFlags(BaseFlags):
 
     @alias_flag_value
     def presence_limited(self):
-        """:class:`bool`: Alias for :attr:`gateway_presence_limited`.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Alias for :attr:`gateway_presence_limited`."""
         return 1 << 13
 
     @flag_value
@@ -712,10 +695,7 @@ class ApplicationFlags(BaseFlags):
 
     @alias_flag_value
     def guild_members(self):
-        """:class:`bool`: Alias for :attr:`gateway_guild_members`.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Alias for :attr:`gateway_guild_members`."""
         return 1 << 14
 
     @flag_value
@@ -724,48 +704,6 @@ class ApplicationFlags(BaseFlags):
         guild member lists but is not whitelisted.
         """
         return 1 << 15
-
-    @alias_flag_value
-    def guild_members_limited(self):
-        """:class:`bool`: Alias for :attr:`gateway_guild_members_limited`.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 15
-
-    @flag_value
-    def gateway_message_content(self):
-        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
-        receive message content.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 18
-
-    @alias_flag_value
-    def message_content(self):
-        """:class:`bool`: Alias for :attr:`gateway_message_content`.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 18
-
-    @flag_value
-    def gateway_message_content_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is allowed to receive
-        message content but is not whitelisted.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 19
-
-    @alias_flag_value
-    def message_content_limited(self):
-        """:class:`bool`: Alias for :attr:`gateway_message_content_limited`.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 19
 
     @flag_value
     def verification_pending_guild_limit(self):
@@ -779,19 +717,40 @@ class ApplicationFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
         return 1 << 17
 
+    @alias_flag_value
+    def guild_members_limited(self):
+        """:class:`bool`: Alias for :attr:`gateway_guild_members_limited`."""
+        return 1 << 15
+
+    @flag_value
+    def gateway_message_content(self):
+        """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
+        receive message content."""
+        return 1 << 18
+
+    @alias_flag_value
+    def message_content(self):
+        """:class:`bool`: Alias for :attr:`gateway_message_content`."""
+        return 1 << 18
+
+    @flag_value
+    def gateway_message_content_limited(self):
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive
+        message content but is not whitelisted."""
+        return 1 << 19
+
+    @alias_flag_value
+    def message_content_limited(self):
+        """:class:`bool`: Alias for :attr:`gateway_message_content_limited`."""
+        return 1 << 19
+
     @flag_value
     def embedded_first_party(self):
-        """:class:`bool`: Returns ``True`` if the embedded application is published by Discord.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Returns ``True`` if the embedded application is published by Discord."""
         return 1 << 20
 
     @flag_value
     def embedded_released(self):
-        """:class:`bool`: Returns ``True`` if the embedded application is released to the public.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Returns ``True`` if the embedded application is released to the public."""
         return 1 << 1
 
