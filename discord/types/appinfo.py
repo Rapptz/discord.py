@@ -49,6 +49,7 @@ class _AppInfoOptional(TypedDict, total=False):
     privacy_policy_url: str
     hook: bool
     max_participants: int
+    custom_install_url: str
 
 
 class AppInfo(BaseAppInfo, _AppInfoOptional):
@@ -66,6 +67,7 @@ class _PartialAppInfoOptional(TypedDict, total=False):
     privacy_policy_url: str
     max_participants: int
     flags: int
+    custom_install_url: str
 
 
 class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
