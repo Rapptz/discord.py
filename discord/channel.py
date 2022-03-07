@@ -713,6 +713,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         type: Optional[ChannelType] = None,
         reason: Optional[str] = None,
         invitable: bool = True,
+        slowmode_delay: Optional[int] = None,
     ) -> Thread:
         """|coro|
 
@@ -743,6 +744,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         invitable: :class:`bool`
             Whether non-modertators can add users to the thread. Only applicable to private threads.
             Defaults to ``True``.
+        slowmode_delay: Optional[:class:`int`]
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            The maximum value possible is `21600`. By default no slowmode rate limit
+            if this is ``None``.
 
         Raises
         -------
@@ -768,6 +773,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 type=type.value,
                 reason=reason,
                 invitable=invitable,
+                rate_limit_per_user=slowmode_delay,
             )
         else:
             data = await self._state.http.start_thread_with_message(
@@ -776,6 +782,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 name=name,
                 auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
                 reason=reason,
+                rate_limit_per_user=slowmode_delay,
             )
 
         return Thread(guild=self.guild, state=self._state, data=data)

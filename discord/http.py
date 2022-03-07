@@ -923,11 +923,13 @@ class HTTPClient:
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
+        rate_limit_per_user: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
+            'rate_limit_per_user': rate_limit_per_user,
         }
 
         route = Route(
@@ -943,6 +945,7 @@ class HTTPClient:
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
         invitable: bool = True,
+        rate_limit_per_user: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
@@ -950,6 +953,7 @@ class HTTPClient:
             'auto_archive_duration': auto_archive_duration,
             'type': type,
             'invitable': invitable,
+            'rate_limit_per_user': rate_limit_per_user,
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
@@ -1393,8 +1397,8 @@ class HTTPClient:
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
-    def edit_widget(self, guild_id: Snowflake, payload) -> Response[widget.WidgetSettings]:
-        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
+    def edit_widget(self, guild_id: Snowflake, payload, reason: Optional[str] = None) -> Response[widget.WidgetSettings]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
 
     # Invite management
 
