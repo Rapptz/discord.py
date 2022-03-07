@@ -1220,7 +1220,7 @@ class Message(Hashable):
             The ``suppress`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            Edits are no longer in-place, the newly edited role is returned instead.
+            Edits are no longer in-place, the newly edited message is returned instead.
 
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
