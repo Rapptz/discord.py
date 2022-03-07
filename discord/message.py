@@ -171,9 +171,25 @@ class Attachment(Hashable):
         The attachment's description. Only applicable to images.
 
         .. versionadded:: 2.0
+    ephemeral: :class:`bool`
+        Whether the attachment is ephemeral.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type', 'description')
+    __slots__ = (
+        'id',
+        'size',
+        'height',
+        'width',
+        'filename',
+        'url',
+        'proxy_url',
+        '_http',
+        'content_type',
+        'description',
+        'ephemeral',
+    )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
@@ -186,6 +202,7 @@ class Attachment(Hashable):
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
         self.description: Optional[str] = data.get('description')
+        self.ephemeral: bool = data.get('ephemeral', False)
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
