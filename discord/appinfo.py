@@ -108,10 +108,6 @@ class AppInfo:
         The application's privacy policy URL, if set.
 
         .. versionadded:: 2.0
-    custom_install_url: Optional[:class:`str`]
-        The application's custom install URL, if set.
-
-        .. versionadded:: 2.0
     category_ids: Optional[List[:class:`int`]]
         The application's categories in the App Directory, if any.
 
