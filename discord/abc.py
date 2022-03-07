@@ -155,7 +155,6 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
-    avatar: Optional[Asset]
     bot: bool
 
     @property
@@ -167,6 +166,10 @@ class User(Snowflake, Protocol):
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given user."""
         raise NotImplementedError
+
+    @property
+    def avatar(self) -> Optional[Asset]:
+        """Optional[:class:`~Asset`]: Returns an Asset that represents the user's avatar, if present."""
 
 
 @runtime_checkable
