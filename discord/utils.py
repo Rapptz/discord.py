@@ -764,9 +764,9 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
         if m:
             url = yarl.URL(invite)
             code = url.parts[-1]
-            event_id = url.query.get('event')
+            event_id = _get_as_snowflake(url.query, 'event')
 
-            return ResolvedInvite(code, int(event_id) if event_id else None)
+            return ResolvedInvite(code, event_id)
     return ResolvedInvite(invite, None)
 
 
