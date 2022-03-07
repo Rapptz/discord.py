@@ -145,8 +145,6 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: :class:`~discord.Asset`
-        The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
     """
@@ -169,7 +167,8 @@ class User(Snowflake, Protocol):
 
     @property
     def avatar(self) -> Optional[Asset]:
-        """Optional[:class:`~Asset`]: Returns an Asset that represents the user's avatar, if present."""
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
+        raise NotImplementedError
 
 
 @runtime_checkable
