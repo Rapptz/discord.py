@@ -1029,7 +1029,7 @@ The following have been removed:
 
     - Consider using the newer documented :func:`on_socket_event_type` event instead.
 
-Miscellanous Changes
+Miscellaneous Changes
 ----------------------
 
 The following changes have been made:
