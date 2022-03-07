@@ -62,18 +62,17 @@ ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
 
 
 class SleepHandle:
-    __slots__ = ('future', 'loop', 'handle')
+    __slots__ = ('future', 'handle')
 
-    def __init__(self, dt: datetime.datetime, *, loop: asyncio.AbstractEventLoop) -> None:
-        self.loop = loop
-        self.future = future = loop.create_future()
+    def __init__(self, dt: datetime.datetime) -> None:
+        self.future = future = asyncio.get_running_loop().create_future()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle = loop.call_later(relative_delta, future.set_result, True)
+        self.handle = asyncio.get_running_loop().call_later(relative_delta, future.set_result, True)
 
     def recalculate(self, dt: datetime.datetime) -> None:
         self.handle.cancel()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle = self.loop.call_later(relative_delta, self.future.set_result, True)
+        self.handle = asyncio.get_running_loop().call_later(relative_delta, self.future.set_result, True)
 
     def wait(self) -> asyncio.Future[Any]:
         return self.future
@@ -101,11 +100,9 @@ class Loop(Generic[LF]):
         time: Union[datetime.time, Sequence[datetime.time]],
         count: Optional[int],
         reconnect: bool,
-        loop: asyncio.AbstractEventLoop,
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
-        self.loop: asyncio.AbstractEventLoop = loop
         self.count: Optional[int] = count
         self._current_loop = 0
         self._handle: SleepHandle = MISSING
@@ -147,7 +144,7 @@ class Loop(Generic[LF]):
             await coro(*args, **kwargs)
 
     def _try_sleep_until(self, dt: datetime.datetime):
-        self._handle = SleepHandle(dt=dt, loop=self.loop)
+        self._handle = SleepHandle(dt=dt)
         return self._handle.wait()
 
     async def _loop(self, *args: Any, **kwargs: Any) -> None:
@@ -218,7 +215,6 @@ class Loop(Generic[LF]):
             time=self._time,
             count=self.count,
             reconnect=self.reconnect,
-            loop=self.loop,
         )
         copy._injected = obj
         copy._before_loop = self._before_loop
@@ -331,10 +327,7 @@ class Loop(Generic[LF]):
         if self._injected is not None:
             args = (self._injected, *args)
 
-        if self.loop is MISSING:
-            self.loop = asyncio.get_running_loop()
-
-        self._task = self.loop.create_task(self._loop(*args, **kwargs))
+        self._task = asyncio.create_task(self._loop(*args, **kwargs))
         return self._task
 
     def stop(self) -> None:
@@ -738,9 +731,6 @@ def loop(
         Whether to handle errors and restart the task
         using an exponential back-off algorithm similar to the
         one used in :meth:`discord.Client.connect`.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The loop to use to register the task, if not given
-        defaults to :func:`asyncio.get_event_loop`.
 
     Raises
     --------
@@ -752,15 +742,6 @@ def loop(
     """
 
     def decorator(func: LF) -> Loop[LF]:
-        return Loop[LF](
-            func,
-            seconds=seconds,
-            minutes=minutes,
-            hours=hours,
-            count=count,
-            time=time,
-            reconnect=reconnect,
-            loop=loop,
-        )
+        return Loop[LF](func, seconds=seconds, minutes=minutes, hours=hours, count=count, time=time, reconnect=reconnect)
 
     return decorator

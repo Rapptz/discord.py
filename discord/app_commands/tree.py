@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import asyncio
 import inspect
 import sys
 import traceback
@@ -591,7 +592,7 @@ class CommandTree(Generic[ClientT]):
             except AppCommandError as e:
                 await self.on_error(interaction, None, e)
 
-        self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
+        asyncio.create_task(wrapper(), name='CommandTree-invoker')
 
     async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int):
         name = data['name']

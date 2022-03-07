@@ -222,8 +222,6 @@ class VoiceClient(VoiceProtocol):
         The endpoint we are connecting to.
     channel: Union[:class:`VoiceChannel`, :class:`StageChannel`]
         The voice channel connected to.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the voice client is running on.
     """
 
     channel: VocalGuildChannel
@@ -241,7 +239,6 @@ class VoiceClient(VoiceProtocol):
         self.token: str = MISSING
         self.server_id: int = MISSING
         self.socket = MISSING
-        self.loop: asyncio.AbstractEventLoop = state.loop
         self._state: ConnectionState = state
         # this will be used in the AudioPlayer thread
         self._connected: threading.Event = threading.Event()
@@ -403,7 +400,7 @@ class VoiceClient(VoiceProtocol):
                     raise
 
         if self._runner is MISSING:
-            self._runner = self.loop.create_task(self.poll_voice_ws(reconnect))
+            self._runner = asyncio.create_task(self.poll_voice_ws(reconnect))
 
     async def potential_reconnect(self) -> bool:
         # Attempt to stop the player thread from playing early
