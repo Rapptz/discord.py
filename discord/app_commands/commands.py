@@ -303,8 +303,6 @@ class Command(Generic[GroupT, P, T]):
     ------------
     name: :class:`str`
         The name of the application command.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the command is called.
     description: :class:`str`
         The description of the application command. This shows up in the UI to describe
         the application command.
@@ -330,6 +328,7 @@ class Command(Generic[GroupT, P, T]):
 
     @property
     def callback(self) -> CommandCallback[GroupT, P, T]:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
     def _copy_with_binding(self, binding: GroupT) -> Command:
@@ -545,8 +544,6 @@ class ContextMenu:
     ------------
     name: :class:`str`
         The name of the context menu.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the context menu is called.
     type: :class:`.AppCommandType`
         The type of context menu application command.
     """
@@ -569,6 +566,7 @@ class ContextMenu:
 
     @property
     def callback(self) -> ContextMenuCallback:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
 
     @classmethod
