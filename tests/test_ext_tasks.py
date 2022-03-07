@@ -30,8 +30,10 @@ async def test_explicit_initial_runs_tomorrow_single():
         nonlocal has_run
         has_run = True
 
+    time = utils.utcnow() - datetime.timedelta(minutes=1)
+
     # a loop that should have an initial run tomorrow
-    loop = tasks.loop(time=datetime.time(hour=now.hour, minute=now.minute - 1))(inner)
+    loop = tasks.loop(time=datetime.time(hour=time.hour, minute=time.minute))(inner)
 
     loop.start()
     await asyncio.sleep(1)
@@ -52,11 +54,10 @@ async def test_explicit_initial_runs_tomorrow_multi():
     now = utils.utcnow()
 
     # multiple times that are in the past for today
-    times = [
-        datetime.time(hour=now.hour, minute=now.minute - 1),
-        datetime.time(hour=now.hour, minute=now.minute - 2),
-        datetime.time(hour=now.hour, minute=now.minute - 3),
-    ]
+    times = []
+    for _ in range(3):
+        now -= datetime.timedelta(minutes=1)
+        times.append(datetime.time(hour=now.hour, minute=now.minute))
 
     has_run = False
 
