@@ -148,7 +148,7 @@ def test_resolve_invite(url, code):
         ('https://discord.gg/dpy?event=727', 727),
     ],
 )
-def test_resolve_invite_event(url, event_id):
+def test_resolve_invite_event(url, event_id: typing.Optional[int]):
     assert utils.resolve_invite(url).event == event_id
 
 
