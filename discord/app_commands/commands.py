@@ -67,6 +67,7 @@ __all__ = (
     'command',
     'describe',
     'choices',
+    'autocomplete',
 )
 
 if TYPE_CHECKING:
