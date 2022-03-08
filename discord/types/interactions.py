@@ -201,6 +201,8 @@ InteractionData = Union[
 class _BaseInteractionOptional(TypedDict, total=False):
     guild_id: Snowflake
     channel_id: Snowflake
+    locale: str
+    guild_locale: str
 
 
 class _BaseInteraction(_BaseInteractionOptional):
