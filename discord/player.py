@@ -729,8 +729,8 @@ class AudioPlayer(threading.Thread):
             self._speak(SpeakingState.none)
 
     def resume(self, *, update_speaking: bool = True) -> None:
-        self.loops = 0
-        self._start = time.perf_counter()
+        self.loops: int = 0
+        self._start: float = time.perf_counter()
         self._resumed.set()
         if update_speaking:
             self._speak(SpeakingState.voice)

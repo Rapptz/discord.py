@@ -1105,7 +1105,7 @@ async def _actual_conversion(ctx: Context[Any], converter, argument: str, param:
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context[Any], converter, argument: str, param: inspect.Parameter) -> Any:
+async def run_converters(ctx: Context[Any], converter: Any, argument: str, param: inspect.Parameter) -> Any:
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.

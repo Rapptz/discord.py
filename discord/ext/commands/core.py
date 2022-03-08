@@ -936,7 +936,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if not asyncio.iscoroutinefunction(coro):
             raise TypeError('The error handler must be a coroutine.')
 
-        self.on_error: Error = coro
+        self.on_error: Error[Any] = coro
         return coro
 
     def has_error_handler(self) -> bool:

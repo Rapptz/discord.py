@@ -40,6 +40,7 @@ from typing import (
     Tuple,
     ClassVar,
     Optional,
+    Type,
     overload,
 )
 
@@ -104,7 +105,7 @@ __all__ = (
 )
 
 
-def convert_emoji_reaction(emoji):
+def convert_emoji_reaction(emoji: Union[EmojiInputType, Reaction]) -> str:
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
 
@@ -510,7 +511,7 @@ class MessageReference:
     to_message_reference_dict = to_dict
 
 
-def flatten_handlers(cls):
+def flatten_handlers(cls: Type[Message]) -> Type[Message]:
     prefix = len('_handle_')
     handlers = [
         (key[prefix:], value)
@@ -1656,7 +1657,7 @@ class Message(Hashable):
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
-    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         """|coro|
 
         A shortcut method to :meth:`.abc.Messageable.send` to reply to the
