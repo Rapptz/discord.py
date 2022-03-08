@@ -535,6 +535,12 @@ input[type=search]:focus ~ button[type=submit] {
   color: var(--search-sidebar-text);
 }
 
+.sidebar-toggle .search-sidebar > input[type=search],
+.sidebar-toggle .search-sidebar > button[type=submit] {
+  background-color: var(--mobile-nav-background);
+  color: var(--mobile-nav-text);
+}
+
 /* main content area */
 
 main {
