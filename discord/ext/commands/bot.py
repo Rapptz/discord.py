@@ -156,7 +156,11 @@ _default: Any = _DefaultRepr()
 
 class BotBase(GroupMixin):
     def __init__(
-        self, command_prefix: PrefixType, help_command: HelpCommand = _default, description: Optional[str] = None, **options: Any
+        self,
+        command_prefix: PrefixType,
+        help_command: HelpCommand = _default,
+        description: Optional[str] = None,
+        **options: Any,
     ) -> None:
         super().__init__(**options)
         self.command_prefix: PrefixType = command_prefix

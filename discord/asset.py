@@ -198,7 +198,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_icon(cls, state: _State, object_id: int, icon_hash: str, path: str)-> Self:
+    def _from_icon(cls, state: _State, object_id: int, icon_hash: str, path: str) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/{path}-icons/{object_id}/{icon_hash}.png?size=1024',
@@ -207,7 +207,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_cover_image(cls, state: _State, object_id: int, cover_image_hash: str)-> Self:
+    def _from_cover_image(cls, state: _State, object_id: int, cover_image_hash: str) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/app-assets/{object_id}/store/{cover_image_hash}.png?size=1024',
@@ -216,7 +216,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_scheduled_event_cover_image(cls, state: _State, scheduled_event_id: int, cover_image_hash: str)-> Self:
+    def _from_scheduled_event_cover_image(cls, state: _State, scheduled_event_id: int, cover_image_hash: str) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/guild-events/{scheduled_event_id}/{cover_image_hash}.png?size=1024',
@@ -225,7 +225,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_guild_image(cls, state: _State, guild_id: int, image: str, path: str)-> Self:
+    def _from_guild_image(cls, state: _State, guild_id: int, image: str, path: str) -> Self:
         animated = image.startswith('a_')
         format = 'gif' if animated else 'png'
         return cls(
@@ -236,7 +236,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_guild_icon(cls, state: _State, guild_id: int, icon_hash: str)-> Self:
+    def _from_guild_icon(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
         animated = icon_hash.startswith('a_')
         format = 'gif' if animated else 'png'
         return cls(
@@ -247,7 +247,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_sticker_banner(cls, state: _State, banner: int)-> Self:
+    def _from_sticker_banner(cls, state: _State, banner: int) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/app-assets/710982414301790216/store/{banner}.png',
@@ -256,7 +256,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_user_banner(cls, state: _State, user_id: int, banner_hash: str)-> Self:
+    def _from_user_banner(cls, state: _State, user_id: int, banner_hash: str) -> Self:
         animated = banner_hash.startswith('a_')
         format = 'gif' if animated else 'png'
         return cls(
@@ -302,7 +302,7 @@ class Asset(AssetMixin):
         size: int = MISSING,
         format: ValidAssetFormatTypes = MISSING,
         static_format: ValidStaticFormatTypes = MISSING,
-    )-> Self:
+    ) -> Self:
         """Returns a new asset with the passed components replaced.
 
         .. versionchanged:: 2.0
@@ -357,7 +357,7 @@ class Asset(AssetMixin):
         url = str(url)
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_size(self, size: int, /)-> Self:
+    def with_size(self, size: int, /) -> Self:
         """Returns a new asset with the specified size.
 
         .. versionchanged:: 2.0
@@ -385,7 +385,7 @@ class Asset(AssetMixin):
         url = str(yarl.URL(self._url).with_query(size=size))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_format(self, format: ValidAssetFormatTypes, /)-> Self:
+    def with_format(self, format: ValidAssetFormatTypes, /) -> Self:
         """Returns a new asset with the specified format.
 
         .. versionchanged:: 2.0
@@ -420,7 +420,7 @@ class Asset(AssetMixin):
         url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_static_format(self, format: ValidStaticFormatTypes, /)-> Self:
+    def with_static_format(self, format: ValidStaticFormatTypes, /) -> Self:
         """Returns a new asset with the specified static format.
 
         This only changes the format if the underlying asset is

@@ -123,7 +123,7 @@ if TYPE_CHECKING:
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
-    from.types.widget import EditWidgetSettings
+    from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]

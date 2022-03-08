@@ -1068,12 +1068,18 @@ class ConnectionState:
         return guild.id not in self._guilds
 
     @overload
-    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[Member]: ...
+    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[Member]:
+        ...
 
     @overload
-    async def chunk_guild(self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...) -> asyncio.Future[List[Member]]: ...
+    async def chunk_guild(
+        self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...
+    ) -> asyncio.Future[List[Member]]:
+        ...
 
-    async def chunk_guild(self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None) -> Union[List[Member], asyncio.Future[List[Member]]]:
+    async def chunk_guild(
+        self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None
+    ) -> Union[List[Member], asyncio.Future[List[Member]]]:
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
         if request is None:

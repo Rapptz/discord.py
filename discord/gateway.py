@@ -870,11 +870,7 @@ class DiscordVoiceWebSocket:
 
     @classmethod
     async def from_client(
-        cls,
-        client: VoiceClient,
-        *,
-        resume: bool = False,
-        hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+        cls, client: VoiceClient, *, resume: bool = False, hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'

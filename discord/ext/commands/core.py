@@ -175,7 +175,9 @@ def wrap_callback(coro: Callable[P, Coro[T]]) -> Callable[P, Coro[Optional[T]]]:
     return wrapped
 
 
-def hooked_wrapped_callback(command: Command[Any, ..., Any], ctx: Context[Any], coro: Callable[P, Coro[T]]) -> Callable[P, Coro[Optional[T]]]:
+def hooked_wrapped_callback(
+    command: Command[Any, ..., Any], ctx: Context[Any], coro: Callable[P, Coro[T]]
+) -> Callable[P, Coro[Optional[T]]]:
     @functools.wraps(coro)
     async def wrapped(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         try:
@@ -610,7 +612,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # type-checker fails to narrow argument
         return await run_converters(ctx, converter, argument, param)  # type: ignore
 
-    async def _transform_greedy_pos(self, ctx: Context[Any], param: inspect.Parameter, required: bool, converter: Any) -> Any:
+    async def _transform_greedy_pos(
+        self, ctx: Context[Any], param: inspect.Parameter, required: bool, converter: Any
+    ) -> Any:
         view = ctx.view
         result = []
         while not view.eof:

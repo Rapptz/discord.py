@@ -116,7 +116,9 @@ class Paginator:
             .. versionadded:: 1.7
     """
 
-    def __init__(self, prefix: Optional[str] = '```', suffix: Optional[str] = '```', max_size: int = 2000, linesep: str = '\n') -> None:
+    def __init__(
+        self, prefix: Optional[str] = '```', suffix: Optional[str] = '```', max_size: int = 2000, linesep: str = '\n'
+    ) -> None:
         self.prefix: Optional[str] = prefix
         self.suffix: Optional[str] = suffix
         self.max_size: int = max_size
@@ -261,7 +263,9 @@ class _HelpCommandImpl(Command):
             return ret
 
         # Ditto here
-        def wrapped_walk_commands(*, _original: Callable[[], Generator[Command[Any, Any, Any], None, None]] = cog.walk_commands):
+        def wrapped_walk_commands(
+            *, _original: Callable[[], Generator[Command[Any, Any, Any], None, None]] = cog.walk_commands
+        ):
             yield from _original()
             yield self
 
@@ -976,11 +980,7 @@ class DefaultHelpCommand(HelpCommand):
         )
 
     def add_indented_commands(
-        self,
-        commands: Sequence[Command[Any, ..., Any]],
-        *,
-        heading: str,
-        max_size: Optional[int] = None
+        self, commands: Sequence[Command[Any, ..., Any]], *, heading: str, max_size: Optional[int] = None
     ) -> None:
         """Indents a list of commands after the specified heading.
 

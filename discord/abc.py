@@ -712,12 +712,7 @@ class GuildChannel:
         ...
 
     async def set_permissions(
-        self,
-        target: Union[Member, Role],
-        *,
-        overwrite: Any = _undefined,
-        reason: Optional[str] = None,
-        **permissions: bool
+        self, target: Union[Member, Role], *, overwrite: Any = _undefined, reason: Optional[str] = None, **permissions: bool
     ) -> None:
         r"""|coro|
 
@@ -1262,7 +1257,7 @@ class Messageable:
         *,
         tts: bool = False,
         embed: Optional[Embed] = None,
-        embeds: Optional[List[Embed]] =None,
+        embeds: Optional[List[Embed]] = None,
         file: Optional[File] = None,
         files: Optional[List[File]] = None,
         stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,

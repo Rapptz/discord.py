@@ -422,7 +422,9 @@ class CommandTree(Generic[ClientT]):
             value = type.value
             return [command for ((_, g, t), command) in self._context_menus.items() if g == guild_id and t == value]
 
-    def _get_all_commands(self, *, guild: Optional[Snowflake] = None) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
+    def _get_all_commands(
+        self, *, guild: Optional[Snowflake] = None
+    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
         if guild is None:
             base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(self._global_commands.values())
             base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None)

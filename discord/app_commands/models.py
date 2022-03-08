@@ -131,7 +131,9 @@ class AppCommand(Hashable):
         self.name: str = data['name']
         self.description: str = data['description']
         self.type: AppCommandType = try_enum(AppCommandType, data.get('type', 1))
-        self.options: List[Union[Argument, AppCommandGroup]] = [app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])]
+        self.options: List[Union[Argument, AppCommandGroup]] = [
+            app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
+        ]
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
@@ -396,7 +398,7 @@ class AppCommandThread(Hashable):
         data: PartialThread,
         guild_id: int,
     ):
-        self._state : ConnectionState= state
+        self._state: ConnectionState = state
         self.guild_id: int = guild_id
         self.id: int = int(data['id'])
         self.parent_id: int = int(data['parent_id'])
@@ -513,7 +515,9 @@ class Argument:
         '_state',
     )
 
-    def __init__(self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None) -> None:
+    def __init__(
+        self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None
+    ) -> None:
         self._state: Optional[ConnectionState] = state
         self.parent: ApplicationCommandParent = parent
         self._from_data(data)
@@ -573,7 +577,9 @@ class AppCommandGroup:
         '_state',
     )
 
-    def __init__(self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None) -> None:
+    def __init__(
+        self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None
+    ) -> None:
         self.parent: ApplicationCommandParent = parent
         self._state: Optional[ConnectionState] = state
         self._from_data(data)

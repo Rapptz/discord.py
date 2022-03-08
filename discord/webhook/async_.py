@@ -848,7 +848,12 @@ class BaseWebhook(Hashable):
         '_state',
     )
 
-    def __init__(self, data: WebhookPayload, token: Optional[str] = None, state: Optional[Union[ConnectionState, _WebhookState]] = None) -> None:
+    def __init__(
+        self,
+        data: WebhookPayload,
+        token: Optional[str] = None,
+        state: Optional[Union[ConnectionState, _WebhookState]] = None,
+    ) -> None:
         self.auth_token: Optional[str] = token
         self._state: Union[ConnectionState, _WebhookState] = state or _WebhookState(self, parent=state)
         self._update(data)
@@ -1033,7 +1038,7 @@ class Webhook(BaseWebhook):
         data: WebhookPayload,
         session: aiohttp.ClientSession,
         token: Optional[str] = None,
-        state: Optional[Union[ConnectionState, _WebhookState]] = None
+        state: Optional[Union[ConnectionState, _WebhookState]] = None,
     ) -> None:
         super().__init__(data, token, state)
         self.session: aiohttp.ClientSession = session
