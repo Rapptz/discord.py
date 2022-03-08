@@ -127,8 +127,8 @@ class ApplicationBot(User):
             payload['bot_require_code_grant'] = require_code_grant
 
         data = await self._state.http.edit_application(self.application.id, payload=payload)
-        self.public = data['bot_public']
-        self.require_code_grant = data['bot_require_code_grant']
+        self.public = data.get('bot_public', True)
+        self.require_code_grant = data.get('bot_require_code_grant', False)
         self.application._update(data)
 
 
@@ -216,8 +216,8 @@ class PartialApplication:
         self.max_participants: Optional[int] = data.get('max_participants')
         self.premium_tier_level: Optional[int] = data.get('embedded_activity_config', {}).get('activity_premium_tier_level')
 
-        self.public: bool = data.get('integration_public', data.get('bot_public'))  # The two seem to be used interchangeably?
-        self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant'))  # Same here
+        self.public: bool = data.get('integration_public', data.get('bot_public', True))  # The two seem to be used interchangeably?
+        self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant', False))  # Same here
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
