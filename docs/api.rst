@@ -2232,6 +2232,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
 
+        .. versionadded:: 2.0
+
     .. attribute:: scheduled_event_update
 
         A scheduled event was created.
@@ -2248,6 +2250,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
 
+        .. versionadded:: 2.0
+
     .. attribute:: scheduled_event_delete
 
         A scheduled event was created.
@@ -2263,6 +2267,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+
+        .. versionadded:: 2.0
 
     .. attribute:: thread_create
 
