@@ -204,6 +204,10 @@ class Guild(Hashable):
         The guild's description.
     verification_level: :class:`VerificationLevel`
         The guild's verification level.
+    vanity_url_code: Optional[:class:`str`]
+        The guild's vanity url code, if any
+
+        .. versionadded:: 2.0
     explicit_content_filter: :class:`ContentFilter`
         The guild's explicit content filter.
     default_notifications: :class:`NotificationLevel`
@@ -271,6 +275,10 @@ class Guild(Hashable):
         :meth:`Client.fetch_guild` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
+    premium_progress_bar_enabled: :class:`bool`
+        Indicates if the guild has premium AKA server boost level progress bar enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -295,6 +303,7 @@ class Guild(Hashable):
         'preferred_locale',
         'nsfw_level',
         'mfa_level',
+        'vanity_url_code',
         '_members',
         '_channels',
         '_icon',
@@ -315,6 +324,7 @@ class Guild(Hashable):
         '_threads',
         'approximate_member_count',
         'approximate_presence_count',
+        'premium_progress_bar_enabled',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -474,6 +484,7 @@ class Guild(Hashable):
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
+        self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
@@ -483,6 +494,7 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
+        self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
 
         self._stage_instances: Dict[int, StageInstance] = {}
         for s in guild.get('stage_instances', []):
@@ -1547,6 +1559,7 @@ class Guild(Hashable):
         preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
+        premium_progress_bar_enabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1573,6 +1586,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
+
+        .. versionchanged:: 2.0
+            The `premium_progress_bar_enabled` keyword-only parameter were added.
 
         Parameters
         ----------
@@ -1631,6 +1647,8 @@ class Guild(Hashable):
             The new channel that is used for public updates from Discord. This is only available to
             guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
+        premium_progress_bar_enabled: :class:`bool`
+            Whether the premium AKA server boost level progress bar should be enabled for the guild.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1762,6 +1780,9 @@ class Guild(Hashable):
                     )
 
             fields['features'] = features
+
+        if premium_progress_bar_enabled is not MISSING:
+            fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
@@ -2384,7 +2405,7 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str,
         emoji: str,
         file: File,
         reason: Optional[str] = None,
@@ -2402,8 +2423,8 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The sticker name. Must be at least 2 characters.
-        description: Optional[:class:`str`]
-            The sticker's description. Can be ``None``.
+        description: :class:`str`
+            The sticker's description.
         emoji: :class:`str`
             The name of a unicode emoji that represents the sticker's expression.
         file: :class:`File`
@@ -2427,8 +2448,7 @@ class Guild(Hashable):
             'name': name,
         }
 
-        if description:
-            payload['description'] = description
+        payload['description'] = description
 
         try:
             emoji = unicodedata.name(emoji)
@@ -3315,7 +3335,13 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    async def edit_widget(self, *, enabled: bool = MISSING, channel: Optional[Snowflake] = MISSING) -> None:
+    async def edit_widget(
+        self,
+        *,
+        enabled: bool = MISSING,
+        channel: Optional[Snowflake] = MISSING,
+        reason: Optional[str] = None,
+    ) -> None:
         """|coro|
 
         Edits the widget of the guild.
@@ -3331,6 +3357,8 @@ class Guild(Hashable):
             Whether to enable the widget for the guild.
         channel: Optional[:class:`~discord.abc.Snowflake`]
             The new widget channel. ``None`` removes the widget channel.
+        reason: Optional[:class:`str`]
+            The reason for editing this widget. Shows up on the audit log.
 
         Raises
         -------
@@ -3345,7 +3373,7 @@ class Guild(Hashable):
         if enabled is not MISSING:
             payload['enabled'] = enabled
 
-        await self._state.http.edit_widget(self.id, payload=payload)
+        await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
 
     async def chunk(self, *, cache: bool = True) -> Optional[List[Member]]:
         """|coro|

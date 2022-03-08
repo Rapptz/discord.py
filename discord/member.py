@@ -40,6 +40,7 @@ from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
+from .errors import ClientException
 from .colour import Colour
 from .object import Object
 
@@ -869,13 +870,15 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Raises
         -------
+        ClientException
+            You are not connected to a voice channel.
         Forbidden
             You do not have the proper permissions to the action requested.
         HTTPException
             The operation failed.
         """
         if self.voice is None or self.voice.channel is None:
-            raise RuntimeError('Cannot request to speak while not connected to a voice channel.')
+            raise ClientException('Cannot request to speak while not connected to a voice channel.')
 
         payload = {
             'channel_id': self.voice.channel.id,

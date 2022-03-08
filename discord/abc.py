@@ -145,8 +145,6 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: :class:`~discord.Asset`
-        The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
     """
@@ -155,7 +153,6 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
-    avatar: Asset
     bot: bool
 
     @property
@@ -166,6 +163,11 @@ class User(Snowflake, Protocol):
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given user."""
+        raise NotImplementedError
+
+    @property
+    def avatar(self) -> Optional[Asset]:
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
         raise NotImplementedError
 
 
@@ -1248,7 +1250,7 @@ class Messageable:
         self,
         content=None,
         *,
-        tts=None,
+        tts=False,
         embed=None,
         embeds=None,
         file=None,
@@ -1686,14 +1688,14 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = VoiceClient,
+        cls: Callable[[Client, Connectable], T] = MISSING,
     ) -> T:
         """|coro|
 
-        Connects to voice and creates a :class:`VoiceClient` to establish
+        Connects to voice and creates a :class:`~discord.VoiceClient` to establish
         your connection to the voice server.
 
-        This requires :attr:`Intents.voice_states`.
+        This requires :attr:`~discord.Intents.voice_states`.
 
         Parameters
         -----------
@@ -1703,7 +1705,7 @@ class Connectable(Protocol):
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.
-        cls: Type[:class:`VoiceProtocol`]
+        cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
 
@@ -1729,7 +1731,12 @@ class Connectable(Protocol):
             raise ClientException('Already connected to a voice channel.')
 
         client = state._get_client()
-        voice = cls(client, self)
+
+        if cls is MISSING:
+            cls = VoiceClient
+
+        # The type checker doesn't understand that VoiceClient *is* T here.
+        voice: T = cls(client, self)  # type: ignore
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class.')

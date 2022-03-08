@@ -5,7 +5,7 @@ Interactions API Reference
 
 The following section outlines the API of interactions, as implemented by the library.
 
-For documentation about the rest of the library, check :doc:`api`.
+For documentation about the rest of the library, check :doc:`/api`.
 
 Models
 --------

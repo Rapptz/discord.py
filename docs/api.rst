@@ -3215,7 +3215,7 @@ AuditLogDiff
 
     .. attribute:: invitable
 
-        Whetheer non-moderators can add users to this private thread.
+        Whether non-moderators can add users to this private thread.
 
         :type: :class:`bool`
 
@@ -3368,6 +3368,7 @@ Connectable
 .. attributetable:: discord.abc.Connectable
 
 .. autoclass:: discord.abc.Connectable()
+    :members:
 
 .. _discord_api_models:
 
@@ -4053,8 +4054,6 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: LoginFailure
 
-.. autoexception:: NoMoreItems
-
 .. autoexception:: HTTPException
     :members:
 
@@ -4091,7 +4090,6 @@ Exception Hierarchy
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
-            - :exc:`NoMoreItems`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`

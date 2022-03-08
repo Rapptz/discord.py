@@ -27,9 +27,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 import asyncio
+import datetime
 
 from . import utils
-from .enums import try_enum, InteractionType, InteractionResponseType
+from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
@@ -102,6 +103,10 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
+    locale: :class:`Locale`
+        The locale of the user invoking the interaction.
+    guild_locale: Optional[:class:`Locale`]
+        The preferred locale of the guild the interaction was sent from, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -115,6 +120,8 @@ class Interaction:
         'user',
         'token',
         'version',
+        'locale',
+        'guild_locale',
         '_permissions',
         '_state',
         '_client',
@@ -141,6 +148,13 @@ class Interaction:
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
+
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self.guild_locale: Optional[Locale]
+        try:
+            self.guild_locale = try_enum(Locale, data['guild_locale'])
+        except KeyError:
+            self.guild_locale = None
 
         self.message: Optional[Message]
         try:
@@ -221,6 +235,20 @@ class Interaction:
             'token': self.token,
         }
         return Webhook.from_state(data=payload, state=self._state)
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction was created."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def expires_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction expires."""
+        return self.created_at + datetime.timedelta(minutes=15)
+
+    def is_expired(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is expired."""
+        return utils.utcnow() >= self.expires_at
 
     async def original_message(self) -> InteractionMessage:
         """|coro|
@@ -595,7 +623,7 @@ class InteractionResponse:
         """|coro|
 
         Responds to this interaction by editing the original message of
-        a component interaction.
+        a component or modal interaction.
 
         Parameters
         -----------
@@ -637,7 +665,7 @@ class InteractionResponse:
         msg = parent.message
         state = parent._state
         message_id = msg.id if msg else None
-        if parent.type is not InteractionType.component:
+        if parent.type not in (InteractionType.component, InteractionType.modal_submit):
             return
 
         if view is not MISSING and message_id is not None:

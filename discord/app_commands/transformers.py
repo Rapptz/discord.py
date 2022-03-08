@@ -384,7 +384,7 @@ else:
         .. code-block:: python3
 
             @app_commands.command()
-            async def range(interaction: discord.Interaction, value: app_commands.Range[10:12]):
+            async def range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
@@ -414,7 +414,11 @@ else:
             else:
                 raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
 
-            transformer = _make_range_transformer(opt_type, min=obj_type(min), max=obj_type(max))
+            transformer = _make_range_transformer(
+                opt_type,
+                min=obj_type(min) if min is not None else None,
+                max=obj_type(max) if max is not None else None,
+            )
             return _TransformMetadata(transformer)
 
 
