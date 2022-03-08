@@ -382,7 +382,7 @@ class View:
                 self.__timeout_task.cancel()
 
             self.__timeout_expiry = time.monotonic() + self.timeout
-            self.__timeout_task = asyncio.get_running_loop().create_task(self.__timeout_task_impl())
+            self.__timeout_task = asyncio.create_task(self.__timeout_task_impl())
 
     def _dispatch_timeout(self):
         if self.__stopped.done():
