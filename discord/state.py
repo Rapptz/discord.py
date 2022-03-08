@@ -226,7 +226,6 @@ class MemberSidebar:
 
     def get_channels(self, amount: int) -> List[Snowflake]:
         guild = self.guild
-        roles = [role for role in guild.roles if not role.permissions.administrator]  # Skip unnecessary processing
         ret = set()
 
         channels = [channel for channel in self.guild.channels if channel.type != ChannelType.stage_voice and channel.permissions_for(guild.me).read_messages]
@@ -235,7 +234,7 @@ class MemberSidebar:
 
         while len(ret) < amount and channels:
             channel = channels.pop()
-            for role in roles:
+            for role in guild.roles:
                 if not channel.permissions_for(role).read_messages:
                     break
             else:
@@ -319,7 +318,6 @@ class MemberSidebar:
             def predicate(data):
                 return int(data['guild_id']) == guild.id and any(op['op'] == 'SYNC' for op in data['ops'])
 
-            _log.debug('Subscribing to %s ranges for guild %s.', requests, guild.id)
             await ws.request_lazy_guild(guild.id, channels=requests)
 
             try:
@@ -1267,7 +1265,6 @@ class ConnectionState:
             self.dispatch('thread_delete', thread)
 
     def parse_thread_list_sync(self, data) -> None:
-        self_id = self.self_id
         guild_id = int(data['guild_id'])
         guild: Optional[Guild] = self._get_guild(guild_id)
         if guild is None:
@@ -1638,7 +1635,6 @@ class ConnectionState:
         def predicate(data):
             return int(data['guild_id']) == guild.id
 
-        _log.debug('Subscribing to %s ranges for guild %s.', requests, guild.id)
         await ws.request_lazy_guild(guild.id, channels=requests)
 
         try:
