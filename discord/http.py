@@ -1881,7 +1881,7 @@ class HTTPClient:
         return self.request(Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload, super_properties_to_track=True)
 
     def get_partial_application(self, app_id: Snowflake) -> Response[appinfo.PartialAppInfo]:
-        return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id), auth=False)
+        return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id))
 
     def create_app(self, name: str):
         payload = {
@@ -1924,7 +1924,7 @@ class HTTPClient:
     def edit_team(self, team_id: Snowflake, payload) -> Response[team.Team]:
         return self.request(Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload, super_properties_to_track=True)
 
-    def delete_application(self, team_id: Snowflake) -> Response[None]:
+    def delete_team(self, team_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/teams/{app_id}/delete', team_id=team_id), super_properties_to_track=True)
 
     def get_team_applications(self, team_id: Snowflake) -> Response[List[appinfo.AppInfo]]:

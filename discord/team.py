@@ -143,10 +143,9 @@ class Team:
                 payload['icon'] = ''
         if owner is not MISSING:
             payload['owner_user_id'] = owner.id
-        await self._state.http.edit_team(self.id, payload)
 
-        await self._state.http.edit_team(self.id, payload)
-        self._update(payload)
+        data = await self._state.http.edit_team(self.id, payload)
+        self._update(data)
 
     async def fetch_members(self) -> List[TeamMember]:
         """|coro|
@@ -179,10 +178,10 @@ class Team:
         ...
 
     @overload
-    async def invite_member(self, username: str, discriminator: Union[int, str]) -> TeamMember:
+    async def invite_member(self, username: str, discriminator: str) -> TeamMember:
         ...
 
-    async def invite_member(self, *args: Union[BaseUser, int, str]) -> TeamMember:
+    async def invite_member(self, *args: Union[BaseUser, str]) -> TeamMember:
         """|coro|
 
         Invites a member to the team.
@@ -224,7 +223,7 @@ class Team:
             The new member.
         """
         username: str
-        discrim: Union[str, int]
+        discrim: str
         if len(args) == 1:
             user = args[0]
             if isinstance(user, BaseUser):
@@ -240,6 +239,20 @@ class Team:
         member = TeamMember(self, state, data)
         self.members.append(member)
         return member
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Deletes the team.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to delete the team.
+        HTTPException
+            Deleting the team failed.
+        """
+        await self._state.http.delete_team(self.id)
 
 
 class TeamMember(BaseUser):

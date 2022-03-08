@@ -54,7 +54,7 @@ from .utils import MISSING
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-from .appinfo import Application
+from .appinfo import Application, PartialApplication
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -2007,10 +2007,10 @@ class Client:
         ...
 
     @overload
-    async def send_friend_request(self, username: str, discriminator: Union[int, str]) -> Relationship:
+    async def send_friend_request(self, username: str, discriminator: str) -> Relationship:
         ...
 
-    async def send_friend_request(self, *args: Union[BaseUser, int, str]) -> Relationship:
+    async def send_friend_request(self, *args: Union[BaseUser, str]) -> Relationship:
         """|coro|
 
         Sends a friend request to another user.
@@ -2052,7 +2052,7 @@ class Client:
             The new relationship.
         """
         username: str
-        discrim: Union[str, int]
+        discrim: str
         if len(args) == 1:
             user = args[0]
             if isinstance(user, BaseUser):
@@ -2066,6 +2066,122 @@ class Client:
         state = self._connection
         data = await state.http.send_friend_request(username, discrim)
         return Relationship(state=state, data=data)
+
+    async def applications(self, *, with_team_applications: bool = True) -> List[Application]:
+        """|coro|
+
+        Retrieves all applications owned by you.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        with_team_applications: :class:`bool`
+            Whether to include applications owned by teams you're a part of.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the applications failed.
+
+        Returns
+        -------
+        List[:class:`.Application`]
+            The applications you own.
+        """
+        state = self._connection
+        data = await state.http.get_my_applications(with_team_applications=with_team_applications)
+        return [Application(state=state, data=d) for d in data]
+
+    async def fetch_application(self, app_id: int, /) -> Application:
+        """|coro|
+
+        Retrieves the application with the given ID.
+
+        The application must be owned by you.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID of the application to fetch.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the application failed.
+
+        Returns
+        -------
+        :class:`.Application`
+            The retrieved application.
+        """
+        state = self._connection
+        data = await state.http.get_my_application(app_id)
+        return Application(state=state, data=data)
+
+    async def fetch_partial_application(self, app_id: int, /) -> PartialApplication:
+        """|coro|
+
+        Retrieves the partial application with the given ID.
+
+        Returns
+        --------
+        :class:`.PartialApplication`
+            The retrieved application.
+        """
+        state = self._connection
+        data = await state.http.get_partial_application(app_id)
+        return PartialApplication(state=state, data=data)
+
+    async def teams(self) -> List[Team]:
+        """|coro|
+
+        Retrieves all the teams you're a part of.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the teams failed.
+
+        Returns
+        -------
+        List[:class:`.Team`]
+            The teams you're a part of.
+        """
+        state = self._connection
+        data = await state.http.get_teams()
+        return [Team(state=state, data=d) for d in data]
+
+    async def fetch_team(self, team_id: int, /) -> Team:
+        """|coro|
+
+        Retrieves the team with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        id: :class:`int`
+            The ID of the team to fetch.
+
+        Raises
+        -------
+        :exc:`.HTTPException`
+            Retrieving the team failed.
+
+        Returns
+        -------
+        :class:`.Team`
+            The retrieved team.
+        """
+        state = self._connection
+        data = await state.http.get_team(team_id)
+        return Team(state=state, data=data)
 
     async def create_application(self, name: str):
         """|coro|
