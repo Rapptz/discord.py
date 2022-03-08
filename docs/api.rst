@@ -2216,6 +2216,54 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: scheduled_event_create
+
+        A scheduled event was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`ScheduledEvent` or :class:`Object` with the ID of the event
+        which was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.privacy_level`
+        - :attr:`~AuditLogDiff.status`
+        - :attr:`~AuditLogDiff.entity_type`
+
+    .. attribute:: scheduled_event_update
+
+        A scheduled event was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`ScheduledEvent` or :class:`Object` with the ID of the event
+        which was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.privacy_level`
+        - :attr:`~AuditLogDiff.status`
+        - :attr:`~AuditLogDiff.entity_type`
+
+    .. attribute:: scheduled_event_delete
+
+        A scheduled event was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        the :class:`ScheduledEvent` or :class:`Object` with the ID of the event
+        which was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.channel`
+        - :attr:`~AuditLogDiff.description`
+        - :attr:`~AuditLogDiff.privacy_level`
+        - :attr:`~AuditLogDiff.status`
+        - :attr:`~AuditLogDiff.entity_type`
+
     .. attribute:: thread_create
 
         A thread was created.
@@ -3263,6 +3311,18 @@ AuditLogDiff
         The number of days after which inactive and role-unassigned members are kicked has been changed.
 
         :type: :class:`int`
+
+    .. attribute:: status
+
+        The status of the scheduled event.
+
+        :type: :class:`EventStatus`
+
+    .. attribute:: entity_type
+
+        The type of entity this scheduled event is for.
+
+        :type: :class:`EntityType`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
