@@ -831,8 +831,8 @@ class ThreadMember(Hashable):
         except KeyError:
             self.thread_id = self.parent.id
 
-        self.joined_at = parse_time(data['join_timestamp'])
-        self.flags = data['flags']
+        self.joined_at: datetime = parse_time(data['join_timestamp'])
+        self.flags: int = data['flags']
 
     @property
     def thread(self) -> Thread:

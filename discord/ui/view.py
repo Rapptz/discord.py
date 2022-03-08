@@ -259,7 +259,7 @@ class View:
             return time.monotonic() + self.timeout
         return None
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Item[Self]) -> None:
         """Adds an item to the view.
 
         Parameters
@@ -287,7 +287,7 @@ class View:
         item._view = self
         self.children.append(item)
 
-    def remove_item(self, item: Item) -> None:
+    def remove_item(self, item: Item[Self]) -> None:
         """Removes an item from the view.
 
         Parameters
@@ -343,7 +343,7 @@ class View:
         """
         pass
 
-    async def on_error(self, error: Exception, item: Item, interaction: Interaction) -> None:
+    async def on_error(self, error: Exception, item: Item[Self], interaction: Interaction) -> None:
         """|coro|
 
         A callback that is called when an item's callback or :meth:`interaction_check`

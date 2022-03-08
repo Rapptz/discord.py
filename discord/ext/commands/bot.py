@@ -154,7 +154,7 @@ class _DefaultRepr:
 _default: Any = _DefaultRepr()
 
 
-class BotBase(GroupMixin):
+class BotBase(GroupMixin[Any]):
     def __init__(
         self,
         command_prefix: PrefixType,
