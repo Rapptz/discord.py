@@ -48,17 +48,6 @@ class _AppInfoOptional(TypedDict, total=False):
     hook: bool
     max_participants: int
 
-class AppInfo(BaseAppInfo, _AppInfoOptional):
-    rpc_origins: List[str]
-    owner: User
-    integration_public: bool
-    integration_require_code_grant: bool
-    secret: str
-    verification_state: int
-    store_application_state: int
-    rpc_application_state: int
-    interactions_endpoint_url: str
-
 class _PartialAppInfoOptional(TypedDict, total=False):
     rpc_origins: List[str]
     cover_image: str
@@ -70,3 +59,13 @@ class _PartialAppInfoOptional(TypedDict, total=False):
 
 class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
     pass
+
+class AppInfo(PartialAppInfo, _AppInfoOptional):
+    owner: User
+    integration_public: bool
+    integration_require_code_grant: bool
+    secret: str
+    verification_state: int
+    store_application_state: int
+    rpc_application_state: int
+    interactions_endpoint_url: str
