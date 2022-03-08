@@ -543,7 +543,7 @@ Guilds
     :param after: A list of stickers after the update.
     :type after: Sequence[:class:`GuildSticker`]
 
-  .. function:: on_invite_create(invite)
+.. function:: on_invite_create(invite)
 
     Called when an :class:`Invite` is created.
     You must have the :attr:`~Permissions.manage_channels` permission to receive this.
