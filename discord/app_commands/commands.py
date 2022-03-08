@@ -56,6 +56,7 @@ from ..utils import resolve_annotation, MISSING, is_inside_class
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
+    from ..abc import Snowflake
     from .namespace import Namespace
     from .models import ChoiceT
 
@@ -68,6 +69,7 @@ __all__ = (
     'describe',
     'choices',
     'autocomplete',
+    'guilds',
 )
 
 if TYPE_CHECKING:
@@ -699,8 +701,13 @@ class Group:
         """Optional[:class:`Group`]: The parent of this group."""
         return self.parent
 
-    def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
+    def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
+
+    @property
+    def commands(self) -> List[Union[Command[Any, ..., Any], Group]]:
+        """List[Union[:class:`Command`, :class:`Group`]]: The commands that this group contains."""
+        return list(self._children.values())
 
     async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
         """|coro|
@@ -1058,6 +1065,52 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
                 inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
+    r"""Associates the given guilds with the command.
+
+    When the command instance is added to a :class:`CommandTree`, the guilds that are
+    specified by this decorator become the default guilds that it's added to rather
+    than being a global command.
+
+    .. note::
+
+        Due to an implementation quirk and Python limitation, if this is used in conjunction
+        with the :meth:`CommandTree.command` or :meth:`CommandTree.context_menu` decorator
+        then this must go below that decorator.
+
+    Example:
+
+    .. code-block:: python3
+
+            MY_GUILD_ID = discord.Object(...)  # Guild ID here
+
+            @app_commands.command()
+            @app_commands.guilds(MY_GUILD_ID)
+            async def bonk(interaction: discord.Interaction):
+                await interaction.response.send_message('Bonk', ephemeral=True)
+
+    Parameters
+    -----------
+    \*guild_ids: Union[:class:`int`, :class:`~discord.abc.Snowflake`]
+        The guilds to associate this command with. The command tree will
+        use this as the default when added rather than adding it as a global
+        command.
+    """
+
+    defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            inner._callback.__discord_app_commands_default_guilds__ = defaults
+        else:
+            # Runtime attribute assignment
+            inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore
 
         return inner
 
