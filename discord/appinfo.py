@@ -171,6 +171,8 @@ class PartialApplication:
         Only available for embedded activities.
     type: :class:`ApplicationType`
         The type of application.
+    tags: List[:class:`str`]
+        A list of tags that describe the application.
     """
 
     __slots__ = (
@@ -191,6 +193,7 @@ class PartialApplication:
         'type',
         'hook',
         'premium_tier_level',
+        'tags',
     )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
@@ -215,6 +218,7 @@ class PartialApplication:
         self.hook: bool = data.get('hook', False)
         self.max_participants: Optional[int] = data.get('max_participants')
         self.premium_tier_level: Optional[int] = data.get('embedded_activity_config', {}).get('activity_premium_tier_level')
+        self.tags: List[str] = data.get('tags', [])
 
         self.public: bool = data.get('integration_public', data.get('bot_public', True))  # The two seem to be used interchangeably?
         self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant', False))  # Same here
@@ -274,8 +278,6 @@ class Application(PartialApplication):
         The application's secret key.
     redirect_uris: List[:class:`str`]
         A list of redirect URIs authorized for this application.
-    tags: List[:class:`str`]
-        A list of tags that describe the application.
     verification_state: :class:`ApplicationVerificationState`
         The verification state of the application.
     store_application_state: :class:`StoreApplicationState`
@@ -293,7 +295,6 @@ class Application(PartialApplication):
         'secret',
         'redirect_uris',
         'bot',
-        'tags',
         'verification_state',
         'store_application_state',
         'rpc_application_state',
@@ -307,7 +308,6 @@ class Application(PartialApplication):
         self.secret: str = data['secret']
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
 
-        self.tags: List[str] = data.get('tags', [])
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
 
         self.verification_state = try_enum(ApplicationVerificationState, data['verification_state'])
