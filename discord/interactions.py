@@ -152,7 +152,7 @@ class Interaction:
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
         try:
-            self.guild_locale = try_enum(Locale, data.get['guild_locale'])
+            self.guild_locale = try_enum(Locale, data['guild_locale'])
         except KeyError:
             self.guild_locale = None
 
