@@ -1073,7 +1073,7 @@ class ConnectionState:
 
         if wait:
             return await request.wait()
-        return await request.get_future()
+        return request.get_future()
 
     async def _chunk_and_dispatch(self, guild, unavailable):
         try:
