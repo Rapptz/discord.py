@@ -30,7 +30,7 @@ import asyncio
 import datetime
 
 from . import utils
-from .enums import try_enum, InteractionType, InteractionResponseType
+from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
@@ -103,6 +103,10 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
+    locale: :class:`Locale`
+        The locale of the user invoking the interaction.
+    guild_locale: Optional[:class:`Locale`]
+        The preferred locale of the guild the interaction was sent from, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -116,6 +120,8 @@ class Interaction:
         'user',
         'token',
         'version',
+        'locale',
+        'guild_locale',
         '_permissions',
         '_state',
         '_client',
@@ -142,6 +148,13 @@ class Interaction:
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
+
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self.guild_locale: Optional[Locale]
+        try:
+            self.guild_locale = try_enum(Locale, data.get['guild_locale'])
+        except KeyError:
+            self.guild_locale = None
 
         self.message: Optional[Message]
         try:
