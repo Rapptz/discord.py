@@ -101,7 +101,7 @@ class Item(Generic[V]):
         return self._row
 
     @row.setter
-    def row(self, value: Optional[int]):
+    def row(self, value: Optional[int]) -> None:
         if value is None:
             self._row = None
         elif 5 > value >= 0:
