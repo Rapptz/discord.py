@@ -1,6 +1,7 @@
-import traceback
 import discord
 from discord import app_commands
+
+import traceback
 
 # Just default intents and a `discord.Client` instance
 # We don't need a `commands.Bot` instance because we are not
@@ -15,7 +16,7 @@ tree = app_commands.CommandTree(client)
 # The guild in which this slash command will be registered.
 # As global commands can take up to an hour to propagate, it is ideal
 # to test it in a guild.
-TEST_GUILD = discord.Object(ID_HERE)
+TEST_GUILD = discord.Object(ID)
 
 @client.event
 async def on_ready():
@@ -26,8 +27,13 @@ async def on_ready():
     await tree.sync(guild=TEST_GUILD)
 
 class Feedback(discord.ui.Modal, title='Feedback'):
+    # Our modal classes MUST subclass `discord.ui.Modal`,
+    # but the title can be whatever you want.
+
     # This will be a short input, where the user can enter their name
-    # It will also be required, denoted by the `required=True` kwarg
+    # It will also have a placeholder, as denoted by the `placeholder` kwarg.
+    # By default, it is required and is a short-style input which is exactly
+    # what we want.
     name = discord.ui.TextInput(
         label='Name', 
         placeholder='Your name here...',
@@ -35,7 +41,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
 
     # This is a longer, paragraph style input, where user can submit feedback
     # Unlike the name, it is not required. If filled out, however, it will
-    # only accept a maximum of 300 characters, denoted by the
+    # only accept a maximum of 300 characters, as denoted by the
     # `max_length=300` kwarg.
     feedback = discord.ui.TextInput(
         label='What do you think of this new feature?',
