@@ -584,7 +584,7 @@ class Client:
         self._connection.clear()
         self.http.recreate()
 
-    async def start(self, token: str, *, reconnect: bool = True, ev: asyncio.Event = MISSING) -> None:
+    async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -600,7 +600,6 @@ class Client:
         finally:
             if not self.is_closed():
                 await self.close()
-            ev.set()
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """A blocking call that abstracts away the event loop
@@ -624,13 +623,7 @@ class Client:
             called after this function call will not execute until it returns.
         """
         try:
-            ev = asyncio.Event()
-
-            async def task():
-                asyncio.ensure_future(self.start(*args, **kwargs, ev=ev))
-                await ev.wait()
-
-            asyncio.run(task())
+            asyncio.run(self.start(*args, **kwargs))
         except KeyboardInterrupt:
             # nothing to do here
             # `asyncio.run` handles the loop cleanup
