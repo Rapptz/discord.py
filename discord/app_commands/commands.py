@@ -619,19 +619,21 @@ class Group:
         The parent group. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
+    __discord_app_commands_group_children__: ClassVar[Dict[str, Union[Command, Group]]] = {}
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
-        cls.__discord_app_commands_group_children__ = children = [
-            member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
-        ]
+        cls.__discord_app_commands_group_children__ = children = {
+            name: member
+            for name, member in cls.__dict__.items()
+            if isinstance(member, (Group, Command)) and member.parent is None
+        }
 
         found = set()
-        for child in children:
+        for child in children.values():
             if child.name in found:
-                raise TypeError(f'Command {child.name} is a duplicate')
+                raise TypeError(f'Command {child.name!r} is a duplicate')
             found.add(child.name)
 
         if name is MISSING:
@@ -666,12 +668,13 @@ class Group:
 
         self.parent: Optional[Group] = parent
 
-        self._children: Dict[str, Union[Command, Group]] = {
-            child.name: child._copy_with_binding(self) for child in self.__discord_app_commands_group_children__
-        }
+        self._children: Dict[str, Union[Command, Group]] = {}
 
-        for child in self._children.values():
+        for attr, child in self.__discord_app_commands_group_children__.items():
+            child = child._copy_with_binding(self)
             child.parent = self
+            self._children[child.name] = child
+            setattr(self, attr, child)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
