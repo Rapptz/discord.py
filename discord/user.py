@@ -444,7 +444,7 @@ class User(BaseUser, discord.abc.Messageable):
     def __repr__(self) -> str:
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
 

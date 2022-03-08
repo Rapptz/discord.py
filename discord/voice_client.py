@@ -262,7 +262,7 @@ class VoiceClient(VoiceProtocol):
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
 
-    warn_nacl = not has_nacl
+    warn_nacl: bool = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
@@ -279,7 +279,7 @@ class VoiceClient(VoiceProtocol):
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
         return self._state.user  # type: ignore - user can't be None after login
 
-    def checked_add(self, attr, value, limit):
+    def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
         if val + value > limit:
             setattr(self, attr, 0)
@@ -323,12 +323,12 @@ class VoiceClient(VoiceProtocol):
         self.endpoint, _, _ = endpoint.rpartition(':')
         if self.endpoint.startswith('wss://'):
             # Just in case, strip it off since we're going to add it later
-            self.endpoint = self.endpoint[6:]
+            self.endpoint: str = self.endpoint[6:]
 
         # This gets set later
         self.endpoint_ip = MISSING
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
 
         if not self._handshaking:

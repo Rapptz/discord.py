@@ -109,7 +109,7 @@ class CogMeta(type):
 
     __cog_name__: str
     __cog_settings__: Dict[str, Any]
-    __cog_commands__: List[Command]
+    __cog_commands__: List[Command[Any, ..., Any]]
     __cog_listeners__: List[Tuple[str, str]]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
@@ -341,7 +341,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context) -> bool:
+    def bot_check_once(self, ctx: Context[Any]) -> bool:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -351,7 +351,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context) -> bool:
+    def bot_check(self, ctx: Context[Any]) -> bool:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -361,7 +361,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context) -> bool:
+    def cog_check(self, ctx: Context[Any]) -> bool:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -371,7 +371,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    async def cog_command_error(self, ctx: Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: Context[Any], error: Exception) -> None:
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
@@ -390,7 +390,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_before_invoke(self, ctx: Context) -> None:
+    async def cog_before_invoke(self, ctx: Context[Any]) -> None:
         """A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
@@ -405,7 +405,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_after_invoke(self, ctx: Context) -> None:
+    async def cog_after_invoke(self, ctx: Context[Any]) -> None:
         """A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.

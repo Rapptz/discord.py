@@ -245,11 +245,11 @@ class Client:
             connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop
         )
 
-        self._handlers: Dict[str, Callable] = {
+        self._handlers: Dict[str, Callable[..., None]] = {
             'ready': self._handle_ready,
         }
 
-        self._hooks: Dict[str, Callable] = {
+        self._hooks: Dict[str, Callable[..., Any]] = {
             'before_identify': self._call_before_identify_hook,
         }
 
@@ -1305,7 +1305,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection)  # type: ignore
+        return Template(data=data, state=self._connection)
 
     async def fetch_guild(self, guild_id: int, /, *, with_counts: bool = True) -> Guild:
         """|coro|

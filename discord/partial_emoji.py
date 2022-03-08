@@ -99,9 +99,9 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         id: Optional[int]
 
     def __init__(self, *, name: str, animated: bool = False, id: Optional[int] = None):
-        self.animated = animated
-        self.name = name
-        self.id = id
+        self.animated: bool = animated
+        self.name: str = name
+        self.id: Optional[int] = id
         self._state: Optional[ConnectionState] = None
 
     @classmethod
@@ -178,7 +178,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             return f'<a:{self.name}:{self.id}>'
         return f'<:{self.name}:{self.id}>'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
     def __eq__(self, other: Any) -> bool:

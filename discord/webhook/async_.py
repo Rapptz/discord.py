@@ -30,7 +30,7 @@ import json
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, TypeVar, Type, overload
 from contextvars import ContextVar
 import weakref
 
@@ -58,24 +58,37 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+    from types import TracebackType
+
     from ..embeds import Embed
     from ..mentions import AllowedMentions
     from ..message import Attachment
     from ..state import ConnectionState
     from ..http import Response
-    from ..types.webhook import (
-        Webhook as WebhookPayload,
-    )
-    from ..types.message import (
-        Message as MessagePayload,
-    )
     from ..guild import Guild
     from ..channel import TextChannel
     from ..abc import Snowflake
     from ..ui.view import View
     import datetime
+    from ..types.webhook import (
+        Webhook as WebhookPayload,
+        SourceGuild as SourceGuildPayload,
+    )
+    from ..types.message import (
+        Message as MessagePayload,
+    )
+    from ..types.user import (
+        User as UserPayload,
+        PartialUser as PartialUserPayload,
+    )
+    from ..types.channel import (
+        PartialChannel as PartialChannelPayload,
+    )
 
-MISSING = utils.MISSING
+    BE = TypeVar('BE', bound=BaseException)
+
+MISSING: Any = utils.MISSING
 
 
 class AsyncDeferredLock:
@@ -83,14 +96,19 @@ class AsyncDeferredLock:
         self.lock = lock
         self.delta: Optional[float] = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         await self.lock.acquire()
         return self
 
     def delay_by(self, delta: float) -> None:
         self.delta = delta
 
-    async def __aexit__(self, type, value, traceback):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
+    ) -> None:
         if self.delta:
             await asyncio.sleep(self.delta)
         self.lock.release()
@@ -545,11 +563,11 @@ class PartialWebhookChannel(Hashable):
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, *, data):
-        self.id = int(data['id'])
-        self.name = data['name']
+    def __init__(self, *, data: PartialChannelPayload) -> None:
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
 
 
@@ -570,13 +588,13 @@ class PartialWebhookGuild(Hashable):
 
     __slots__ = ('id', 'name', '_icon', '_state')
 
-    def __init__(self, *, data, state):
-        self._state = state
-        self.id = int(data['id'])
-        self.name = data['name']
-        self._icon = data['icon']
+    def __init__(self, *, data: SourceGuildPayload, state: Union[ConnectionState, _WebhookState]) -> None:
+        self._state: Union[ConnectionState, _WebhookState] = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self._icon: str = data['icon']
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<PartialWebhookGuild name={self.name!r} id={self.id}>'
 
     @property
@@ -606,18 +624,18 @@ class _WebhookState:
         else:
             self._parent = parent
 
-    def _get_guild(self, guild_id):
+    def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
         if self._parent is not None:
             return self._parent._get_guild(guild_id)
         return None
 
-    def store_user(self, data):
+    def store_user(self, data: Union[UserPayload, PartialUserPayload]) -> BaseUser:
         if self._parent is not None:
             return self._parent.store_user(data)
         # state parameter is artificial
         return BaseUser(state=self, data=data)  # type: ignore
 
-    def create_user(self, data):
+    def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> BaseUser:
         # state parameter is artificial
         return BaseUser(state=self, data=data)  # type: ignore
 
@@ -630,7 +648,7 @@ class _WebhookState:
         # however, using it should result in a late-binding error.
         return _FriendlyHttpAttributeErrorHelper()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         if self._parent is not None:
             return getattr(self._parent, attr)
 
@@ -830,19 +848,19 @@ class BaseWebhook(Hashable):
         '_state',
     )
 
-    def __init__(self, data: WebhookPayload, token: Optional[str] = None, state: Optional[ConnectionState] = None):
+    def __init__(self, data: WebhookPayload, token: Optional[str] = None, state: Optional[Union[ConnectionState, _WebhookState]] = None) -> None:
         self.auth_token: Optional[str] = token
         self._state: Union[ConnectionState, _WebhookState] = state or _WebhookState(self, parent=state)
         self._update(data)
 
-    def _update(self, data: WebhookPayload):
-        self.id = int(data['id'])
-        self.type = try_enum(WebhookType, int(data['type']))
-        self.channel_id = utils._get_as_snowflake(data, 'channel_id')
-        self.guild_id = utils._get_as_snowflake(data, 'guild_id')
-        self.name = data.get('name')
-        self._avatar = data.get('avatar')
-        self.token = data.get('token')
+    def _update(self, data: WebhookPayload) -> None:
+        self.id: int = int(data['id'])
+        self.type: WebhookType = try_enum(WebhookType, int(data['type']))
+        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.name: Optional[str] = data.get('name')
+        self._avatar: Optional[str] = data.get('avatar')
+        self.token: Optional[str] = data.get('token')
 
         user = data.get('user')
         self.user: Optional[Union[BaseUser, User]] = None
@@ -1010,11 +1028,17 @@ class Webhook(BaseWebhook):
 
     __slots__: Tuple[str, ...] = ('session',)
 
-    def __init__(self, data: WebhookPayload, session: aiohttp.ClientSession, token: Optional[str] = None, state=None):
+    def __init__(
+        self,
+        data: WebhookPayload,
+        session: aiohttp.ClientSession,
+        token: Optional[str] = None,
+        state: Optional[Union[ConnectionState, _WebhookState]] = None
+    ) -> None:
         super().__init__(data, token, state)
-        self.session = session
+        self.session: aiohttp.ClientSession = session
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Webhook id={self.id!r}>'
 
     @property
@@ -1023,7 +1047,7 @@ class Webhook(BaseWebhook):
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Webhook:
+    def partial(cls, id: int, token: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Self:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -1059,7 +1083,7 @@ class Webhook(BaseWebhook):
         return cls(data, session, token=bot_token)
 
     @classmethod
-    def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Webhook:
+    def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Self:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         .. versionchanged:: 2.0
@@ -1102,7 +1126,7 @@ class Webhook(BaseWebhook):
         return cls(data, session, token=bot_token)  # type: ignore
 
     @classmethod
-    def _as_follower(cls, data, *, channel, user) -> Webhook:
+    def _as_follower(cls, data, *, channel, user) -> Self:
         name = f"{channel.guild} #{channel}"
         feed: WebhookPayload = {
             'id': data['webhook_id'],
@@ -1118,8 +1142,8 @@ class Webhook(BaseWebhook):
         return cls(feed, session=session, state=state, token=state.http.token)
 
     @classmethod
-    def from_state(cls, data, state) -> Webhook:
-        session = state.http._HTTPClient__session
+    def from_state(cls, data: WebhookPayload, state: ConnectionState) -> Self:
+        session = state.http._HTTPClient__session  # type: ignore
         return cls(data, session=session, state=state, token=state.http.token)
 
     async def fetch(self, *, prefer_auth: bool = True) -> Webhook:
@@ -1168,7 +1192,7 @@ class Webhook(BaseWebhook):
 
         return Webhook(data, self.session, token=self.auth_token, state=self._state)
 
-    async def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True):
+    async def delete(self, *, reason: Optional[str] = None, prefer_auth: bool = True) -> None:
         """|coro|
 
         Deletes this Webhook.

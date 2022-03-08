@@ -50,6 +50,8 @@ __all__ = (
 
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..interactions import Interaction
     from ..message import Message
     from ..types.components import Component as ComponentPayload
@@ -403,16 +405,16 @@ class View:
 
         asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
-    def refresh(self, components: List[Component]):
+    def refresh(self, components: List[Component]) -> None:
         # This is pretty hacky at the moment
         # fmt: off
-        old_state: Dict[Tuple[int, str], Item] = {
+        old_state: Dict[Tuple[int, str], Item[Self]] = {
             (item.type.value, item.custom_id): item  # type: ignore
             for item in self.children
             if item.is_dispatchable()
         }
         # fmt: on
-        children: List[Item] = []
+        children: List[Item[Self]] = []
         for component in _walk_all_components(components):
             try:
                 older = old_state[(component.type.value, component.custom_id)]  # type: ignore
@@ -502,7 +504,7 @@ class ViewStore:
         for k in to_remove:
             del self._views[k]
 
-    def add_view(self, view: View, message_id: Optional[int] = None):
+    def add_view(self, view: View, message_id: Optional[int] = None) -> None:
         view._start_listening_from_store(self)
         if view.__discord_ui_modal__:
             self._modals[view.custom_id] = view  # type: ignore
@@ -517,7 +519,7 @@ class ViewStore:
         if message_id is not None:
             self._synced_message_views[message_id] = view
 
-    def remove_view(self, view: View):
+    def remove_view(self, view: View) -> None:
         if view.__discord_ui_modal__:
             self._modals.pop(view.custom_id, None)  # type: ignore
             return
@@ -531,7 +533,7 @@ class ViewStore:
                 del self._synced_message_views[key]
                 break
 
-    def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction):
+    def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction) -> None:
         self.__verify_integrity()
         message_id: Optional[int] = interaction.message and interaction.message.id
         key = (component_type, message_id, custom_id)
@@ -550,7 +552,7 @@ class ViewStore:
         custom_id: str,
         interaction: Interaction,
         components: List[ModalSubmitComponentInteractionDataPayload],
-    ):
+    ) -> None:
         modal = self._modals.get(custom_id)
         if modal is None:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
@@ -559,13 +561,13 @@ class ViewStore:
         modal.refresh(components)
         modal._dispatch_submit(interaction)
 
-    def is_message_tracked(self, message_id: int):
+    def is_message_tracked(self, message_id: int) -> bool:
         return message_id in self._synced_message_views
 
     def remove_message_tracking(self, message_id: int) -> Optional[View]:
         return self._synced_message_views.pop(message_id, None)
 
-    def update_from_message(self, message_id: int, components: List[ComponentPayload]):
+    def update_from_message(self, message_id: int, components: List[ComponentPayload]) -> None:
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]
         view.refresh([_component_factory(d) for d in components])

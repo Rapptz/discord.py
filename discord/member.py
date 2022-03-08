@@ -27,9 +27,8 @@ from __future__ import annotations
 import datetime
 import inspect
 import itertools
-import sys
 from operator import attrgetter
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -207,7 +206,7 @@ class _ClientStatus:
         return self
 
 
-def flatten_user(cls):
+def flatten_user(cls: Any) -> Type[Member]:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
         if attr.startswith('_'):
@@ -425,7 +424,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user = member._user
         return self
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
 

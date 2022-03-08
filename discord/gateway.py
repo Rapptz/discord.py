@@ -54,6 +54,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .client import Client
     from .state import ConnectionState
     from .voice_client import VoiceClient
@@ -62,10 +64,10 @@ if TYPE_CHECKING:
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
 
-    def __init__(self, shard_id, *, resume=True):
-        self.shard_id = shard_id
-        self.resume = resume
-        self.op = 'RESUME' if resume else 'IDENTIFY'
+    def __init__(self, shard_id: Optional[int], *, resume: bool = True) -> None:
+        self.shard_id: Optional[int] = shard_id
+        self.resume: bool = resume
+        self.op: str = 'RESUME' if resume else 'IDENTIFY'
 
 
 class WebSocketClosure(Exception):
@@ -228,7 +230,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         ack_time = time.perf_counter()
         self._last_ack = ack_time
         self._last_recv = ack_time
-        self.latency = ack_time - self._last_send
+        self.latency: float = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
 
 
@@ -342,7 +344,7 @@ class DiscordWebSocket:
 
     @classmethod
     async def from_client(
-        cls: Type[DWS],
+        cls,
         client: Client,
         *,
         initial: bool = False,
@@ -351,7 +353,7 @@ class DiscordWebSocket:
         session: Optional[str] = None,
         sequence: Optional[int] = None,
         resume: bool = False,
-    ) -> DWS:
+    ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
@@ -867,7 +869,13 @@ class DiscordVoiceWebSocket:
         await self.send_as_json(payload)
 
     @classmethod
-    async def from_client(cls: Type[DVWS], client: VoiceClient, *, resume=False, hook=None) -> DVWS:
+    async def from_client(
+        cls,
+        client: VoiceClient,
+        *,
+        resume: bool = False,
+        hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
@@ -990,6 +998,7 @@ class DiscordVoiceWebSocket:
 
     async def load_secret_key(self, data: Dict[str, Any]) -> None:
         _log.info('received secret key for voice connection')
+        self.secret_key: str
         self.secret_key = self._connection.secret_key = data.get('secret_key')  # type: ignore - type-checker thinks secret_key could be None
         await self.speak()
         await self.speak(SpeakingState.none)

@@ -365,12 +365,11 @@ class FFmpegOpusAudio(FFmpegAudio):
         bitrate: Optional[int] = None,
         codec: Optional[str] = None,
         executable: str = 'ffmpeg',
-        pipe=False,
-        stderr=None,
-        before_options=None,
-        options=None,
+        pipe: bool = False,
+        stderr: Optional[IO[bytes]] = None,
+        before_options: Optional[str] = None,
+        options: Optional[str] = None,
     ) -> None:
-
         args = []
         subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
@@ -523,7 +522,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         codec = bitrate = None
         loop = asyncio.get_event_loop()
         try:
-            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))  # type: ignore
+            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except Exception:
             if not fallback:
                 _log.exception("Probe '%s' using '%s' failed", method, executable)
@@ -531,7 +530,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
             _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
-                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))  # type: ignore
+                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
             except Exception:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
@@ -635,7 +634,13 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
 class AudioPlayer(threading.Thread):
     DELAY: float = OpusEncoder.FRAME_LENGTH / 1000.0
 
-    def __init__(self, source: AudioSource, client: VoiceClient, *, after=None):
+    def __init__(
+        self,
+        source: AudioSource,
+        client: VoiceClient,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
+    ) -> None:
         threading.Thread.__init__(self)
         self.daemon: bool = True
         self.source: AudioSource = source

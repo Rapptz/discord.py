@@ -92,10 +92,10 @@ class AllowedMentions:
         roles: Union[bool, List[Snowflake]] = default,
         replied_user: bool = default,
     ):
-        self.everyone = everyone
-        self.users = users
-        self.roles = roles
-        self.replied_user = replied_user
+        self.everyone: bool = everyone
+        self.users: Union[bool, List[Snowflake]] = users
+        self.roles: Union[bool, List[Snowflake]] = roles
+        self.replied_user: bool = replied_user
 
     @classmethod
     def all(cls) -> Self:

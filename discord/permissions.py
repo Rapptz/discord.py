@@ -276,7 +276,7 @@ class Permissions(BaseFlags):
         # So 0000 OP2 0101 -> 0101
         # The OP is base  & ~denied.
         # The OP2 is base | allowed.
-        self.value = (self.value & ~deny) | allow
+        self.value: int = (self.value & ~deny) | allow
 
     @flag_value
     def create_instant_invite(self) -> int:

@@ -121,7 +121,7 @@ class BaseActivity:
 
     __slots__ = ('_created_at',)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._created_at: Optional[float] = kwargs.pop('created_at', None)
 
     @property
@@ -216,7 +216,7 @@ class Activity(BaseActivity):
         'buttons',
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
@@ -361,7 +361,7 @@ class Game(BaseActivity):
 
     __slots__ = ('name', '_end', '_start')
 
-    def __init__(self, name: str, **extra):
+    def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
 
@@ -561,7 +561,7 @@ class Spotify:
 
     __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id', '_created_at')
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any) -> None:
         self._state: str = data.pop('state', '')
         self._details: str = data.pop('details', '')
         self._timestamps: Dict[str, int] = data.pop('timestamps', {})

@@ -54,6 +54,9 @@ if TYPE_CHECKING:
         Interaction as InteractionPayload,
         InteractionData,
     )
+    from .types.webhook import (
+        Webhook as WebhookPayload,
+    )
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
@@ -229,7 +232,7 @@ class Interaction:
     @utils.cached_slot_property('_cs_followup')
     def followup(self) -> Webhook:
         """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
-        payload = {
+        payload: WebhookPayload = {
             'id': self.application_id,
             'type': 3,
             'token': self.token,
@@ -695,7 +698,7 @@ class InteractionResponse:
 
         self._responded = True
 
-    async def send_modal(self, modal: Modal, /):
+    async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
 
         Responds to this interaction by sending a modal.

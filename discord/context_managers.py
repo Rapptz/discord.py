@@ -67,7 +67,7 @@ class Typing:
     async def __aenter__(self) -> None:
         self._channel = channel = await self.messageable._get_channel()
         await channel._state.http.send_typing(channel.id)
-        self.task: asyncio.Task = self.loop.create_task(self.do_typing())
+        self.task: asyncio.Task[None] = self.loop.create_task(self.do_typing())
         self.task.add_done_callback(_typing_done_callback)
 
     async def __aexit__(

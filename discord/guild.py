@@ -123,6 +123,7 @@ if TYPE_CHECKING:
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
+    from.types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]
@@ -3367,7 +3368,7 @@ class Guild(Hashable):
         HTTPException
             Editing the widget failed.
         """
-        payload = {}
+        payload: EditWidgetSettings = {}
         if channel is not MISSING:
             payload['channel_id'] = None if channel is None else channel.id
         if enabled is not MISSING:
@@ -3485,7 +3486,7 @@ class Guild(Hashable):
 
     async def change_voice_state(
         self, *, channel: Optional[abc.Snowflake], self_mute: bool = False, self_deaf: bool = False
-    ):
+    ) -> None:
         """|coro|
 
         Changes client's voice state in the guild.

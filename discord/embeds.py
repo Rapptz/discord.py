@@ -189,10 +189,10 @@ class Embed:
     ):
 
         self.colour = colour if colour is not EmptyEmbed else color
-        self.title = title
-        self.type = type
-        self.url = url
-        self.description = description
+        self.title: MaybeEmpty[Any] = title
+        self.type: EmbedType = type
+        self.url: MaybeEmpty[Any] = url
+        self.description: MaybeEmpty[Any] = description
 
         if self.title is not EmptyEmbed:
             self.title = str(self.title)
@@ -311,7 +311,7 @@ class Embed:
         return getattr(self, '_colour', EmptyEmbed)
 
     @colour.setter
-    def colour(self, value: Union[int, Colour, _EmptyEmbed]):
+    def colour(self, value: Union[int, Colour, _EmptyEmbed]) -> None:
         if isinstance(value, (Colour, _EmptyEmbed)):
             self._colour = value
         elif isinstance(value, int):
@@ -326,7 +326,7 @@ class Embed:
         return getattr(self, '_timestamp', EmptyEmbed)
 
     @timestamp.setter
-    def timestamp(self, value: MaybeEmpty[datetime.datetime]):
+    def timestamp(self, value: MaybeEmpty[datetime.datetime]) -> None:
         if isinstance(value, datetime.datetime):
             if value.tzinfo is None:
                 value = value.astimezone()

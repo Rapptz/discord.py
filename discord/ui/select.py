@@ -187,7 +187,7 @@ class Select(Item[V]):
         description: Optional[str] = None,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         default: bool = False,
-    ):
+    ) -> None:
         """Adds an option to the select menu.
 
         To append a pre-existing :class:`discord.SelectOption` use the
@@ -226,7 +226,7 @@ class Select(Item[V]):
 
         self.append_option(option)
 
-    def append_option(self, option: SelectOption):
+    def append_option(self, option: SelectOption) -> None:
         """Appends an option to the select menu.
 
         Parameters

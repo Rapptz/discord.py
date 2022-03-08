@@ -64,6 +64,8 @@ T = TypeVar('T')
 NoneType = type(None)
 
 if TYPE_CHECKING:
+    from .models import _ChoiceTypes
+
     from ..interactions import Interaction
 
 
@@ -95,7 +97,7 @@ class CommandParameter:
     description: str = MISSING
     required: bool = MISSING
     default: Any = MISSING
-    choices: List[Choice] = MISSING
+    choices: List[_ChoiceTypes] = MISSING
     type: AppCommandOptionType = MISSING
     channel_types: List[ChannelType] = MISSING
     min_value: Optional[Union[int, float]] = None
@@ -542,7 +544,7 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
 def get_supported_annotation(
     annotation: Any,
     *,
-    _none=NoneType,
+    _none: type = NoneType,
     _mapping: Dict[Any, Type[Transformer]] = BUILT_IN_TRANSFORMERS,
 ) -> Tuple[Any, Any]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.

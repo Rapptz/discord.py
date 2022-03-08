@@ -91,6 +91,9 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.snowflake import (
+        SnowflakeList,
+    )
 
     PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
@@ -708,7 +711,14 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Any = _undefined,
+        reason: Optional[str] = None,
+        **permissions: bool
+    ) -> None:
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -917,7 +927,7 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def move(self, **kwargs) -> None:
+    async def move(self, **kwargs: Any) -> None:
         """|coro|
 
         A rich interface to help move a channel relative to other channels.
@@ -1248,22 +1258,22 @@ class Messageable:
 
     async def send(
         self,
-        content=None,
+        content: Optional[str] = None,
         *,
-        tts=False,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        stickers=None,
-        delete_after=None,
-        nonce=None,
-        allowed_mentions=None,
-        reference=None,
-        mention_author=None,
-        view=None,
-        suppress_embeds=False,
-    ):
+        tts: bool = False,
+        embed: Optional[Embed] = None,
+        embeds: Optional[List[Embed]] =None,
+        file: Optional[File] = None,
+        files: Optional[List[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = None,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        view: Optional[View] = None,
+        suppress_embeds: bool = False,
+    ) -> Message:
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1368,17 +1378,17 @@ class Messageable:
         previous_allowed_mention = state.allowed_mentions
 
         if stickers is not None:
-            stickers = [sticker.id for sticker in stickers]
+            sticker_ids: SnowflakeList = [sticker.id for sticker in stickers]
         else:
-            stickers = MISSING
+            sticker_ids = MISSING
 
         if reference is not None:
             try:
-                reference = reference.to_message_reference_dict()
+                reference_dict = reference.to_message_reference_dict()
             except AttributeError:
                 raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
-            reference = MISSING
+            reference_dict = MISSING
 
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__!r}')
@@ -1399,10 +1409,10 @@ class Messageable:
             embeds=embeds if embeds is not None else MISSING,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
-            message_reference=reference,
+            message_reference=reference_dict,
             previous_allowed_mentions=previous_allowed_mention,
             mention_author=mention_author,
-            stickers=stickers,
+            stickers=sticker_ids,
             view=view,
             flags=flags,
         ) as params:

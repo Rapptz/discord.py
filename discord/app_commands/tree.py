@@ -26,7 +26,20 @@ from __future__ import annotations
 import inspect
 import sys
 import traceback
-from typing import Callable, Dict, Generic, List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, overload
+from typing import (
+    Any,
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
 
 
 from .namespace import Namespace, ResolveKey
@@ -118,12 +131,12 @@ class CommandTree(Generic[ClientT]):
 
     def add_command(
         self,
-        command: Union[Command, ContextMenu, Group],
+        command: Union[Command[Any, ..., Any], ContextMenu, Group],
         /,
         *,
         guild: Optional[Snowflake] = None,
         override: bool = False,
-    ):
+    ) -> None:
         """Adds an application command to the tree.
 
         This only adds the command locally -- in order to sync the commands
@@ -208,7 +221,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
@@ -219,7 +232,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType = ...,
-    ) -> Optional[Union[Command, ContextMenu, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
     def remove_command(
@@ -229,7 +242,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = None,
         type: AppCommandType = AppCommandType.chat_input,
-    ) -> Optional[Union[Command, ContextMenu, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         """Removes an application command from the tree.
 
         This only removes the command locally -- in order to sync the commands
@@ -287,7 +300,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> Optional[Union[Command, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
@@ -298,7 +311,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType = ...,
-    ) -> Optional[Union[Command, ContextMenu, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
     def get_command(
@@ -308,7 +321,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = None,
         type: AppCommandType = AppCommandType.chat_input,
-    ) -> Optional[Union[Command, ContextMenu, Group]]:
+    ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         """Gets a application command from the tree.
 
         Parameters
@@ -359,7 +372,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: Literal[AppCommandType.chat_input] = ...,
-    ) -> List[Union[Command, Group]]:
+    ) -> List[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
@@ -368,7 +381,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType = ...,
-    ) -> Union[List[Union[Command, Group]], List[ContextMenu]]:
+    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         ...
 
     def get_commands(
@@ -376,7 +389,7 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = None,
         type: AppCommandType = AppCommandType.chat_input,
-    ) -> Union[List[Union[Command, Group]], List[ContextMenu]]:
+    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         """Gets all application commands from the tree.
 
         Parameters
@@ -409,9 +422,9 @@ class CommandTree(Generic[ClientT]):
             value = type.value
             return [command for ((_, g, t), command) in self._context_menus.items() if g == guild_id and t == value]
 
-    def _get_all_commands(self, *, guild: Optional[Snowflake] = None) -> List[Union[Command, Group, ContextMenu]]:
+    def _get_all_commands(self, *, guild: Optional[Snowflake] = None) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
         if guild is None:
-            base: List[Union[Command, Group, ContextMenu]] = list(self._global_commands.values())
+            base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(self._global_commands.values())
             base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None)
             return base
         else:
@@ -420,7 +433,7 @@ class CommandTree(Generic[ClientT]):
             except KeyError:
                 return [cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None]
             else:
-                base: List[Union[Command, Group, ContextMenu]] = list(commands.values())
+                base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(commands.values())
                 guild_id = guild.id
                 base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id)
                 return base
@@ -428,7 +441,7 @@ class CommandTree(Generic[ClientT]):
     async def on_error(
         self,
         interaction: Interaction,
-        command: Optional[Union[ContextMenu, Command]],
+        command: Optional[Union[ContextMenu, Command[Any, ..., Any]]],
         error: AppCommandError,
     ) -> None:
         """|coro|
@@ -593,7 +606,7 @@ class CommandTree(Generic[ClientT]):
 
         self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
-    async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int):
+    async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int) -> None:
         name = data['name']
         guild_id = interaction.guild_id
         ctx_menu = self._context_menus.get((name, guild_id, type))
@@ -621,7 +634,7 @@ class CommandTree(Generic[ClientT]):
         except AppCommandError as e:
             await self.on_error(interaction, ctx_menu, e)
 
-    async def call(self, interaction: Interaction):
+    async def call(self, interaction: Interaction) -> None:
         """|coro|
 
         Given an :class:`~discord.Interaction`, calls the matching

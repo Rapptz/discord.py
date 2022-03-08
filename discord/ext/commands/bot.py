@@ -33,7 +33,21 @@ import importlib.util
 import sys
 import traceback
 import types
-from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union, overload
+from typing import (
+    Any,
+    Callable,
+    Mapping,
+    List,
+    Dict,
+    TYPE_CHECKING,
+    Optional,
+    TypeVar,
+    Type,
+    Union,
+    Iterable,
+    Collection,
+    overload,
+)
 
 import discord
 
@@ -54,7 +68,17 @@ if TYPE_CHECKING:
     from ._types import (
         Check,
         CoroFunc,
+        Coro,
+        ContextT,
     )
+
+    _Bot = Union['Bot', 'AutoShardedBot']
+    _Prefix = Union[Iterable[str], str]
+    _PrefixCallable = Union[
+        Callable[[_Bot, Message], _Prefix],
+        Callable[[_Bot, Message], Coro[_Prefix]],
+    ]
+    PrefixType = Union[_Prefix, _PrefixCallable]
 
 __all__ = (
     'when_mentioned',
@@ -127,25 +151,27 @@ class _DefaultRepr:
         return '<default-help-command>'
 
 
-_default = _DefaultRepr()
+_default: Any = _DefaultRepr()
 
 
 class BotBase(GroupMixin):
-    def __init__(self, command_prefix, help_command=_default, description=None, **options):
+    def __init__(
+        self, command_prefix: PrefixType, help_command: HelpCommand = _default, description: Optional[str] = None, **options: Any
+    ) -> None:
         super().__init__(**options)
-        self.command_prefix = command_prefix
+        self.command_prefix: PrefixType = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
         self._checks: List[Check] = []
-        self._check_once = []
-        self._before_invoke = None
-        self._after_invoke = None
-        self._help_command = None
-        self.description = inspect.cleandoc(description) if description else ''
-        self.owner_id = options.get('owner_id')
-        self.owner_ids = options.get('owner_ids', set())
-        self.strip_after_prefix = options.get('strip_after_prefix', False)
+        self._check_once: List[Check] = []
+        self._before_invoke: Optional[CoroFunc] = None
+        self._after_invoke: Optional[CoroFunc] = None
+        self._help_command: Optional[HelpCommand] = None
+        self.description: str = inspect.cleandoc(description) if description else ''
+        self.owner_id: Optional[int] = options.get('owner_id')
+        self.owner_ids: Optional[Collection[int]] = options.get('owner_ids', set())
+        self.strip_after_prefix: bool = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')
@@ -183,7 +209,7 @@ class BotBase(GroupMixin):
 
         await super().close()  # type: ignore
 
-    async def on_command_error(self, context: Context, exception: errors.CommandError) -> None:
+    async def on_command_error(self, context: Context[Any], exception: errors.CommandError) -> None:
         """|coro|
 
         The default command error handler provided by the bot.
@@ -238,7 +264,7 @@ class BotBase(GroupMixin):
         self.add_check(func)  # type: ignore
         return func
 
-    def add_check(self, func: Check, /, *, call_once: bool = False) -> None:
+    def add_check(self, func: Check[ContextT], /, *, call_once: bool = False) -> None:
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
@@ -262,7 +288,7 @@ class BotBase(GroupMixin):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func: Check, /, *, call_once: bool = False) -> None:
+    def remove_check(self, func: Check[ContextT], /, *, call_once: bool = False) -> None:
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
@@ -325,7 +351,7 @@ class BotBase(GroupMixin):
         self.add_check(func, call_once=True)
         return func
 
-    async def can_run(self, ctx: Context, *, call_once: bool = False) -> bool:
+    async def can_run(self, ctx: Context[Any], *, call_once: bool = False) -> bool:
         data = self._check_once if call_once else self._checks
 
         if len(data) == 0:
@@ -861,7 +887,7 @@ class BotBase(GroupMixin):
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
-            lib.setup(self)  # type: ignore
+            lib.setup(self)
             self.__extensions[name] = lib
 
             # revert sys.modules back to normal and raise back to caller
@@ -919,7 +945,7 @@ class BotBase(GroupMixin):
 
         if not isinstance(ret, str):
             try:
-                ret = list(ret)
+                ret = list(ret)  # type: ignore
             except TypeError:
                 # It's possible that a generator raised this exception.  Don't
                 # replace it with our own error if that's the case.
@@ -949,7 +975,7 @@ class BotBase(GroupMixin):
         message: Message,
         *,
         cls: Type[CXT] = ...,
-    ) -> CXT:  # type: ignore
+    ) -> CXT:
         ...
 
     async def get_context(
@@ -1037,7 +1063,7 @@ class BotBase(GroupMixin):
         ctx.command = self.all_commands.get(invoker)
         return ctx
 
-    async def invoke(self, ctx: Context) -> None:
+    async def invoke(self, ctx: Context[Any]) -> None:
         """|coro|
 
         Invokes the command given under the invocation context and
@@ -1091,7 +1117,7 @@ class BotBase(GroupMixin):
         ctx = await self.get_context(message)
         await self.invoke(ctx)
 
-    async def on_message(self, message):
+    async def on_message(self, message: Message) -> None:
         await self.process_commands(message)
 
 
