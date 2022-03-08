@@ -685,7 +685,7 @@ class Loop(Generic[LF]):
                 self._prepare_time_index(now=self._last_iteration)
 
             self._next_iteration = self._get_next_sleep_time()
-            if not self._handle.done():
+            if self._handle is not MISSING and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
                 self._handle.recalculate(self._next_iteration)
 

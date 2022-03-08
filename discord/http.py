@@ -262,6 +262,22 @@ def handle_message_parameters(
     return MultipartParameters(payload=payload, multipart=multipart, files=files)
 
 
+INTERNAL_API_VERSION: int = 10
+
+
+def _set_api_version(value: int):
+    global INTERNAL_API_VERSION
+
+    if not isinstance(value, int):
+        raise TypeError(f'expected int not {value.__class__!r}')
+
+    if value not in (9, 10):
+        raise ValueError(f'expected either 9 or 10 not {value}')
+
+    INTERNAL_API_VERSION = value
+    Route.BASE = f'https://discord.com/api/v{value}'
+
+
 class Route:
     BASE: ClassVar[str] = 'https://discord.com/api/v10'
 
@@ -1988,10 +2004,10 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v=10&compress=zlib-stream'
+            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=10'
-        return value.format(data['url'], encoding)
+            value = '{0}?encoding={1}&v={2}'
+        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
     async def get_bot_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> Tuple[int, str]:
         try:
@@ -2000,10 +2016,10 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v=10&compress=zlib-stream'
+            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=10'
-        return data['shards'], value.format(data['url'], encoding)
+            value = '{0}?encoding={1}&v={2}'
+        return data['shards'], value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

@@ -702,6 +702,11 @@ class Group:
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
         return self._children.get(name)
 
+    @property
+    def commands(self) -> List[Union[Command, Group]]:
+        """List[Union[:class:`Command`, :class:`Group`]]: The commands that this group contains."""
+        return list(self._children.values())
+
     async def on_error(self, interaction: Interaction, command: Command, error: AppCommandError) -> None:
         """|coro|
 
@@ -754,7 +759,7 @@ class Group:
             raise ValueError('maximum number of child commands exceeded')
 
     def remove_command(self, name: str, /) -> Optional[Union[Command, Group]]:
-        """Remove a command or group from the internal list of commands.
+        """Removes a command or group from the internal list of commands.
 
         Parameters
         -----------
