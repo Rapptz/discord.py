@@ -28,7 +28,7 @@ from typing import List, TYPE_CHECKING, Optional
 
 from . import utils
 from .asset import Asset
-from .enums import ApplicationVerificationState, RPCApplicationState, StoreApplicationState, try_enum
+from .enums import ApplicationType, ApplicationVerificationState, RPCApplicationState, StoreApplicationState, try_enum
 from .flags import ApplicationFlags
 from .user import User
 
@@ -52,6 +52,21 @@ MISSING = utils.MISSING
 
 
 class ApplicationBot(User):
+    """Represents a bot attached to an application.
+
+    Attributes
+    -----------
+    application: :class:`Application`
+        The application that the bot is attached to.
+    public: :class:`bool`
+        Whether the bot can be invited by anyone or if it is locked
+        to the application owner.
+    require_code_grant: :class:`bool`
+        Whether the bot requires the completion of the full OAuth2 code
+        grant flow to join.
+    token: Optional[:class:`str`]
+        The bot's token. Only accessible when reset.
+    """
     __slots__ = ('token', 'public', 'require_code_grant')
 
     def __init__(self, *, data, state: ConnectionState, application: Application):
@@ -70,10 +85,16 @@ class ApplicationBot(User):
         ------
         HTTPException
             Resetting the token failed.
+
+        Returns
+        -------
+        :class:`str`
+            The new token.
         """
         data = await self._state.http.reset_token(self.application.id)
-        self.token = data['token']
+        self.token = token = data['token']
         self._update(data)
+        return token
 
     async def edit(
         self,
@@ -148,6 +169,8 @@ class PartialApplication:
     premium_tier_level: Optional[:class:`int`]
         The required premium tier level to launch the activity.
         Only available for embedded activities.
+    type: :class:`ApplicationType`
+        The type of application.
     """
 
     __slots__ = (
@@ -188,7 +211,7 @@ class PartialApplication:
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
         self._flags: int = data.get('flags', 0)
-        self.type: Optional[int] = data.get('type')
+        self.type: ApplicationType = try_enum(ApplicationType, data.get('type'))
         self.hook: bool = data.get('hook', False)
         self.max_participants: Optional[int] = data.get('max_participants')
         self.premium_tier_level: Optional[int] = data.get('embedded_activity_config', {}).get('activity_premium_tier_level')

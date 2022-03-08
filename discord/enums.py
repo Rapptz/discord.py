@@ -74,6 +74,7 @@ __all__ = (
     'InviteType',
     'ScheduledEventStatus',
     'ScheduledEventEntityType',
+    'ApplicationType',
 )
 
 
@@ -802,6 +803,14 @@ class RPCApplicationState(Enum, comparable=True):
     submitted = 2
     approved = 3
     rejected = 4
+
+
+class ApplicationType(Enum):
+    none = None
+    game = 1
+    music = 2
+    ticketed_events = 3
+    guild_role_subscriptions = 4
 
 
 T = TypeVar('T')
