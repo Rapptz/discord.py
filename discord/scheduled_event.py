@@ -464,7 +464,7 @@ class ScheduledEvent(Hashable):
     ) -> AsyncIterator[User]:
         """|coro|
 
-        Retrieves all :class:`User` that are in this thread.
+        Retrieves all :class:`User` that are subscribed to this event.
 
         This requires :attr:`Intents.members` to get information about members
         other than yourself.
