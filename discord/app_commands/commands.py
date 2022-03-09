@@ -75,6 +75,7 @@ __all__ = (
     'command',
     'describe',
     'check',
+    'rename',
     'choices',
     'autocomplete',
     'guilds',
@@ -217,6 +218,25 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
         raise TypeError(f'unknown parameter given: {first}')
 
 
+def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, str]) -> None:
+    old_params = params.copy()
+    for name, param in old_params.items():
+        rename = renames.pop(name, MISSING)
+        if rename is MISSING:
+            continue
+
+        if not isinstance(rename, str):
+            raise TypeError('rename must be a string')
+
+        param._rename = rename
+        params.pop(name)
+        params[rename] = param
+
+    if renames:
+        first = next(iter(renames))
+        raise TypeError(f'unknown parameter given: {first}')
+
+
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
     for name, param in params.items():
         choices = all_choices.pop(name, MISSING)
@@ -297,6 +317,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
                 param.description = '…'
     else:
         _populate_descriptions(result, descriptions)
+
+    try:
+        renames = func.__discord_app_commands_param_rename__
+    except AttributeError:
+        pass
+    else:
+        _populate_renames(result, renames)
 
     try:
         choices = func.__discord_app_commands_param_choices__
@@ -484,6 +511,9 @@ class Command(Generic[GroupT, P, T]):
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
+                if param._rename is not MISSING:
+                    name = param.name
+                    values.pop(param._rename)
                 values[name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
@@ -1274,6 +1304,21 @@ def describe(**parameters: str) -> Callable[[T], T]:
                 inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def rename(**parameters: str) -> Callable[[T], T]:
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_renames(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore - Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore - Runtime attribute assignment
 
         return inner
 
