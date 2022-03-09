@@ -972,6 +972,10 @@ class Guild(Hashable):
             Due to a Discord limitation, in order for this attribute to remain up-to-date and
             accurate, it requires :attr:`Intents.members` to be specified.
 
+        .. versionchanged:: 2.0
+
+            Now returns an ``Optional[int]``.
+
         """
         return self._member_count
 
