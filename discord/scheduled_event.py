@@ -83,8 +83,8 @@ class ScheduledEvent(Hashable):
         The description of the scheduled event.
     entity_type: :class:`EntityType`
         The type of entity this event is for.
-    entity_id: :class:`int`
-        The ID of the entity this event is for.
+    entity_id: Optional[:class:`int`]
+        The ID of the entity this event is for if available.
     start_time: :class:`datetime.datetime`
         The time that the scheduled event will start in UTC.
     end_time: :class:`datetime.datetime`
@@ -132,7 +132,7 @@ class ScheduledEvent(Hashable):
         self.name: str = data['name']
         self.description: str = data.get('description', '')
         self.entity_type = try_enum(EntityType, data['entity_type'])
-        self.entity_id: int = int(data['id'])
+        self.entity_id: Optional[int] = _get_as_snowflake(data['entity_id'])
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
         self.status: EventStatus = try_enum(EventStatus, data['status'])
@@ -173,6 +173,11 @@ class ScheduledEvent(Hashable):
     def channel(self) -> Optional[Union[VoiceChannel, StageChannel]]:
         """Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]: The channel this scheduled event is in."""
         return self.guild.get_channel(self.channel_id)  # type: ignore
+
+    @property
+    def url(self):
+        """:class:`str`: The url for the scheduled event."""
+        return f'https://discord.com/events/{self.guild_id}/{self.id}'
 
     async def start(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
