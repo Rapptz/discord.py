@@ -1120,7 +1120,7 @@ class Message(Hashable):
         )
 
     @utils.cached_slot_property('_cs_system_content')
-    def system_content(self):
+    def system_content(self) -> Optional[str]:
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 

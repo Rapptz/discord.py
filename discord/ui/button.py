@@ -125,7 +125,7 @@ class Button(Item[V]):
             style=style,
             emoji=emoji,
         )
-        self.row = row
+        self.row: Optional[int] = row
 
     @property
     def style(self) -> ButtonStyle:
