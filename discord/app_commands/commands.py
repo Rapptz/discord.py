@@ -624,9 +624,11 @@ class Group:
     __discord_app_commands_group_description__: str = MISSING
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
-        cls.__discord_app_commands_group_children__ = children = [
+        children: List[Union[Command[Any, ..., Any], Group]] = [
             member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
         ]
+
+        cls.__discord_app_commands_group_children__ = children
 
         found = set()
         for child in children:
