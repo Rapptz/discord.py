@@ -430,14 +430,14 @@ class ScheduledEvent(Hashable):
             if end_time is MISSING or end_time is None:
                 raise TypeError('end_time must be set when entity_type is external')
 
-        if end_time is None:
+        if end_time is not MISSING:
+            if end_time is not None:
+                if end_time.tzinfo is None:
+                    raise ValueError(
+                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                end_time = end_time.isoformat()
             payload['scheduled_end_time'] = end_time
-        else:
-            if end_time.tzinfo is None:
-                raise ValueError(
-                    'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                )
-            payload['scheduled_end_time'] = end_time.isoformat()
 
         if metadata:
             payload['entity_metadata'] = metadata
