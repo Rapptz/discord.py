@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, AsyncIterator, Union, Optional
 
+from .user import User
 from .object import Object
 
 # fmt: off
@@ -34,7 +35,6 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
-    from .user import User
     from .member import Member
     from .types.message import Reaction as ReactionPayload
     from .message import Message
