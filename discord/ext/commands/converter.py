@@ -80,6 +80,7 @@ __all__ = (
     'ThreadConverter',
     'GuildChannelConverter',
     'GuildStickerConverter',
+    'ScheduledEventConverter',
     'clean_content',
     'Greedy',
     'run_converters',
@@ -844,7 +845,7 @@ class GuildStickerConverter(IDConverter[discord.GuildSticker]):
     The lookup strategy is as follows (in order):
 
     1. Lookup by ID.
-    3. Lookup by name
+    2. Lookup by name.
 
     .. versionadded:: 2.0
     """
@@ -870,6 +871,65 @@ class GuildStickerConverter(IDConverter[discord.GuildSticker]):
 
         if result is None:
             raise GuildStickerNotFound(argument)
+
+        return result
+
+
+class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
+    """Converts to a :class:`~discord.ScheduledEvent`.
+
+    All lookups are done for the local guild first, if available. If that lookup
+    fails, then it checks the client's global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by url.
+    3. Lookup by name.
+
+    .. versionadded:: 2.0
+    """
+
+    async def convert(self, ctx: Context[_Bot], argument: str) -> discord.ScheduledEvent:
+        guild = ctx.guild
+        match = self._get_id_match(argument)
+        result = None
+
+        if match:
+            # ID match
+            event_id = int(match.group(1))
+            if guild:
+                result = guild.get_scheduled_event(event_id)
+            else:
+                for guild in ctx.bot.guilds:
+                    result = guild.get_scheduled_event(event_id)
+                    if result:
+                        break
+        else:
+            pattern = (
+                r'https?://(?:(ptb|canary|www)\.)?discord\.com/events/'
+                r'(?P<guild_id>[0-9]{15,20})/'
+                r'(?P<event_id>[0-9]{15,20})$'
+            )
+            match = re.match(pattern, argument, flags=re.I)
+            if match:
+                # URL match
+                guild = ctx.bot.get_guild(int(match.group('guild_id')))
+
+                if guild:
+                    event_id = int(match.group('event_id'))
+                    result = guild.get_scheduled_event(event_id)
+            else:
+                # lookup by name
+                if guild:
+                    result = discord.utils.get(guild.scheduled_events, name=argument)
+                else:
+                    for guild in ctx.bot.guilds:
+                        result = discord.utils.get(guild.scheduled_events, name=argument)
+                        if result:
+                            break
+        if result is None:
+            raise ScheduledEventNotFound(argument)
 
         return result
 
@@ -1064,6 +1124,7 @@ CONVERTER_MAPPING: Dict[Type[Any], Any] = {
     discord.Thread: ThreadConverter,
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,
+    discord.ScheduledEvent: ScheduledEventConverter,
 }
 
 
