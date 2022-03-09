@@ -964,17 +964,17 @@ class DiscordVoiceWebSocket:
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
         ip_end = recv.index(0, ip_start)
-        state.endpoint_ip = recv[ip_start:ip_end].decode('ascii')
+        state.ip = recv[ip_start:ip_end].decode('ascii')
 
-        state.voice_port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        _log.debug('detected ip: %s port: %s', state.endpoint_ip, state.voice_port)
+        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
+        _log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         _log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
-        await self.select_protocol(state.endpoint_ip, state.voice_port, mode)
+        await self.select_protocol(state.ip, state.port, mode)
         _log.info('selected the voice protocol for use (%s)', mode)
 
     @property
