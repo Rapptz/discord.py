@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from discord.threads import Thread
     from .bot import Bot, AutoShardedBot
 
-    _Bot = Union[Bot, AutoShardedBot, Any]
+    _Bot = TypeVar('_Bot', bound=Union[Bot, AutoShardedBot])
 
 
 __all__ = (
