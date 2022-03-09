@@ -132,7 +132,7 @@ class ScheduledEvent(Hashable):
         self.name: str = data['name']
         self.description: str = data.get('description', '')
         self.entity_type = try_enum(EntityType, data['entity_type'])
-        self.entity_id: Optional[int] = _get_as_snowflake(data['entity_id'])
+        self.entity_id: Optional[int] = _get_as_snowflake(data, 'entity_id')
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
         self.status: EventStatus = try_enum(EventStatus, data['status'])
