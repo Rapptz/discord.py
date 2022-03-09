@@ -55,7 +55,7 @@ ClientT = TypeVar('ClientT', bound='Client')
 
 
 def _retrieve_guild_ids(
-    callback: Any, guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING
+    command: Any, guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING
 ) -> Optional[Set[int]]:
     if guild is not MISSING and guilds is not MISSING:
         raise TypeError('cannot mix guild and guilds keyword arguments')
@@ -65,7 +65,7 @@ def _retrieve_guild_ids(
         # If no arguments are given then it should default to the ones
         # given to the guilds(...) decorator or None for global.
         if guild is MISSING:
-            return getattr(callback, '__discord_app_commands_default_guilds__', None)
+            return getattr(command, '__discord_app_commands_default_guilds__', None)
 
         # guilds=[] is the same as global
         if len(guilds) == 0:
@@ -185,7 +185,7 @@ class CommandTree(Generic[ClientT]):
             This is currently 100 for slash commands and 5 for context menu commands.
         """
 
-        guild_ids = _retrieve_guild_ids(getattr(command, '_callback', None), guild, guilds)
+        guild_ids = _retrieve_guild_ids(command, guild, guilds)
         if isinstance(command, ContextMenu):
             type = command.type.value
             name = command.name

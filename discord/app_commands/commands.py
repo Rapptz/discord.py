@@ -313,6 +313,8 @@ class Command(Generic[GroupT, P, T]):
         The parent application command. ``None`` if there isn't one.
     """
 
+    __discord_app_commands_default_guilds__: List[int]
+
     def __init__(
         self,
         *,
@@ -620,6 +622,7 @@ class Group:
     """
 
     __discord_app_commands_group_children__: ClassVar[Dict[str, Union[Command, Group]]] = {}
+    __discord_app_commands_default_guilds__: List[int]
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
@@ -1109,8 +1112,8 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            inner._callback.__discord_app_commands_default_guilds__ = defaults
+        if isinstance(inner, (Command, Group)):
+            inner.__discord_app_commands_default_guilds__ = defaults
         else:
             # Runtime attribute assignment
             inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore
