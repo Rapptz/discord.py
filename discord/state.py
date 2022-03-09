@@ -860,10 +860,13 @@ class ConnectionState:
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
+            if thread.archived:
+                guild._remove_thread(thread)
             self.dispatch('thread_update', old, thread)
         else:
             thread = Thread(guild=guild, state=guild._state, data=data)
-            guild._add_thread(thread)
+            if not thread.archived:
+                guild._add_thread(thread)
             self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data: gw.ThreadDeleteEvent) -> None:

@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .role import Role
+    from .scheduled_event import ScheduledEvent
     from .state import ConnectionState
     from .types.audit_log import (
         AuditLogChange as AuditLogChangePayload,
@@ -558,3 +559,6 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
         return self.guild.get_thread(target_id) or Object(id=target_id)
+
+    def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
+        return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
