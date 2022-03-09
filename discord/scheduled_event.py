@@ -321,7 +321,7 @@ class ScheduledEvent(Hashable):
 
             Required if the entity type is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
-        start_time: Optional[:class:`datetime.datetime`]
+        start_time: :class:`datetime.datetime`
             The time that the scheduled event will start. This must be a timezone-aware
             datetime object. Consider using :func:`utils.utcnow`.
         end_time: Optional[:class:`datetime.datetime`]
