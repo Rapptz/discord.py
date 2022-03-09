@@ -499,7 +499,7 @@ class Streaming(BaseActivity):
         return f'<Streaming name={self.name!r}>'
 
     @property
-    def twitch_name(self):
+    def twitch_name(self) -> Optional[str]:
         """Optional[:class:`str`]: If provided, the twitch name of the user streaming.
 
         This corresponds to the ``large_image`` key of the :attr:`Streaming.assets`

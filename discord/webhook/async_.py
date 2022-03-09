@@ -608,7 +608,7 @@ class PartialWebhookGuild(Hashable):
 class _FriendlyHttpAttributeErrorHelper:
     __slots__ = ()
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         raise AttributeError('PartialWebhookState does not support http methods.')
 
 
