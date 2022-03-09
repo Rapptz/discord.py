@@ -37,6 +37,7 @@ from typing import (
     Set,
     TYPE_CHECKING,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -325,11 +326,15 @@ class Command(Generic[GroupT, P, T]):
     ):
         self.name: str = name
         self.description: str = description
+        self._attr: Optional[str] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
 
     @property
     def callback(self) -> CommandCallback[GroupT, P, T]:
@@ -341,6 +346,7 @@ class Command(Generic[GroupT, P, T]):
         copy = cls.__new__(cls)
         copy.name = self.name
         copy.description = self.description
+        copy._attr = self._attr
         copy._callback = self._callback
         copy.parent = self.parent
         copy.on_error = self.on_error
@@ -621,23 +627,27 @@ class Group:
         The parent group. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_group_children__: ClassVar[Dict[str, Union[Command, Group]]] = {}
+    __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
     __discord_app_commands_default_guilds__: List[int]
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
-        cls.__discord_app_commands_group_children__ = children = {
-            name: member
-            for name, member in cls.__dict__.items()
-            if isinstance(member, (Group, Command)) and member.parent is None
-        }
+        if not cls.__discord_app_commands_group_children__:
+            cls.__discord_app_commands_group_children__ = children = [
+                member
+                for name, member in cls.__dict__.items()
+                if isinstance(member, (Group, Command)) and member.parent is None
+            ]
 
-        found = set()
-        for child in children.values():
-            if child.name in found:
-                raise TypeError(f'Command {child.name!r} is a duplicate')
-            found.add(child.name)
+            found = set()
+            for child in children:
+                if child.name in found:
+                    raise TypeError(f'Command {child.name!r} is a duplicate')
+                found.add(child.name)
+
+            if len(children) > 25:
+                raise TypeError('groups cannot have more than 25 commands')
 
         if name is MISSING:
             cls.__discord_app_commands_group_name__ = _to_kebab_case(cls.__name__)
@@ -652,8 +662,6 @@ class Group:
         else:
             cls.__discord_app_commands_group_description__ = description
 
-        if len(children) > 25:
-            raise TypeError('groups cannot have more than 25 commands')
 
     def __init__(
         self,
@@ -665,6 +673,7 @@ class Group:
         cls = self.__class__
         self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
+        self._attr: Optional[str] = None
 
         if not self.description:
             raise TypeError('groups must have a description')
@@ -673,14 +682,18 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
-        for attr, child in self.__discord_app_commands_group_children__.items():
+        for child in self.__discord_app_commands_group_children__:
             child = child._copy_with_binding(self)
             child.parent = self
             self._children[child.name] = child
-            setattr(self, attr, child)
+            if child._attr:
+                setattr(self, child._attr, child)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
+
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
 
     def _copy_with_binding(self, binding: Group) -> Group:
         cls = self.__class__
@@ -688,6 +701,7 @@ class Group:
         copy.name = self.name
         copy.description = self.description
         copy.parent = self.parent
+        copy._attr = self._attr
         copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
         return copy
 
