@@ -41,6 +41,7 @@ from typing import (
     ClassVar,
     Optional,
     Type,
+    Protocol,
     overload,
 )
 
@@ -72,7 +73,6 @@ if TYPE_CHECKING:
         MessageReference as MessageReferencePayload,
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
-        Reaction as ReactionPayload,
     )
 
     from .types.components import Component as ComponentPayload
@@ -88,13 +88,96 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
     from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
+
+    class _EditCallback(Protocol):
+        @overload
+        async def __call__(
+            self,
+            *,
+            content: Optional[str] = ...,
+            embed: Optional[Embed] = ...,
+            attachments: List[Union[Attachment, File]] = ...,
+            suppress: bool = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
+        ) -> Message:
+            ...
+
+        @overload
+        async def __call__(
+            self,
+            *,
+            content: Optional[str] = ...,
+            embeds: List[Embed] = ...,
+            attachments: List[Union[Attachment, File]] = ...,
+            suppress: bool = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
+        ) -> Message:
+            ...
+
+        async def __call__(
+            self,
+            content: Optional[str] = MISSING,
+            embed: Optional[Embed] = MISSING,
+            embeds: List[Embed] = MISSING,
+            attachments: List[Union[Attachment, File]] = MISSING,
+            suppress: bool = MISSING,
+            delete_after: Optional[float] = None,
+            allowed_mentions: Optional[AllowedMentions] = MISSING,
+            view: Optional[View] = MISSING,
+        ) -> Message:
+            ...
+
+    class _AddFilesCallback(Protocol):
+        async def __call__(self, *files: File) -> Message:
+            ...
+
+    class _RemoveAttachmentsCallback(Protocol):
+        async def __call__(self, *attachments: Attachment) -> Message:
+            ...
+
+    class _DeleteCallback(Protocol):
+        async def __call__(self, *, delay: Optional[float] = None) -> None:
+            ...
+
+    class _PinCallback(Protocol):
+        async def __call__(self, *, reason: Optional[str] = None) -> None:
+            ...
+
+    class _UnpinCallback(Protocol):
+        async def __call__(self, *, reason: Optional[str] = None) -> None:
+            ...
+
+    class _AddReactionCallback(Protocol):
+        async def __call__(self, emoji: EmojiInputType, /) -> None:
+            ...
+
+    class _RemoveReactionCallback(Protocol):
+        async def __call__(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
+            ...
+
+    class _ClearReactionCallback(Protocol):
+        async def __call__(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
+            ...
+
+    class _ReplyCallback(Protocol):
+        async def __call__(self, content: Optional[str] = None, **kwargs: Any) -> Message:
+            ...
+
+    class _ToReferenceCallback(Protocol):
+        def __call__(self, *, fail_if_not_exists: bool = True) -> MessageReference:
+            ...
+
 
 __all__ = (
     'Attachment',
@@ -1761,20 +1844,20 @@ class PartialMessage(Hashable):
     __slots__ = ('channel', 'id', '_cs_guild', '_state')
 
     jump_url: str = Message.jump_url  # type: ignore
-    edit = Message.edit
-    add_files = Message.add_files
-    remove_attachments = Message.remove_attachments
-    delete = Message.delete
-    publish = Message.publish
-    pin = Message.pin
-    unpin = Message.unpin
-    add_reaction = Message.add_reaction
-    remove_reaction = Message.remove_reaction
-    clear_reaction = Message.clear_reaction
-    clear_reactions = Message.clear_reactions
-    reply = Message.reply
-    to_reference = Message.to_reference
-    to_message_reference_dict = Message.to_message_reference_dict
+    edit: _EditCallback = Message.edit  # type: ignore
+    add_files: _AddFilesCallback = Message.add_files  # type: ignore
+    remove_attachments: _RemoveAttachmentsCallback = Message.remove_attachments  # type: ignore
+    delete: _DeleteCallback = Message.delete  # type: ignore
+    publish: Callable[[], Coroutine[Any, Any, None]] = Message.publish  # type: ignore
+    pin: _PinCallback = Message.pin  # type: ignore
+    unpin: _UnpinCallback = Message.unpin  # type: ignore
+    add_reaction: _AddReactionCallback = Message.add_reaction  # type: ignore
+    remove_reaction: _RemoveReactionCallback = Message.remove_reaction  # type: ignore
+    clear_reaction: _ClearReactionCallback = Message.clear_reaction  # type: ignore
+    clear_reactions: Callable[[], Coroutine[Any, Any, None]] = Message.clear_reactions  # type: ignore
+    reply: _ReplyCallback = Message.reply  # type: ignore
+    to_reference: _ToReferenceCallback = Message.to_reference  # type: ignore
+    to_message_reference_dict: Callable[[], MessageReferencePayload] = Message.to_message_reference_dict  # type: ignore
 
     def __init__(self, *, channel: PartialMessageableChannel, id: int):
         if not isinstance(channel, PartialMessageable) and channel.type not in (
@@ -1798,7 +1881,7 @@ class PartialMessage(Hashable):
 
     # Also needed for duck typing purposes
     # n.b. not exposed
-    pinned = property(None, lambda x, y: None)
+    pinned: Any = property(None, lambda x, y: None)
 
     def __repr__(self) -> str:
         return f'<PartialMessage id={self.id} channel={self.channel!r}>'
