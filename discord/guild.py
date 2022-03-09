@@ -512,7 +512,7 @@ class Guild(Hashable):
                 self._add_member(member)
 
         self._sync(guild)
-        self._large: Optional[bool] = None if member_count is None else self._member_count >= 250
+        self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
 
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
