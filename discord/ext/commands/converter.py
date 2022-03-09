@@ -114,7 +114,7 @@ class Converter(Protocol[T_co]):
     method to do its conversion logic. This method must be a :ref:`coroutine <coroutine>`.
     """
 
-    async def convert(self, ctx: Context[Any], argument: str) -> T_co:
+    async def convert(self, ctx: Context[_Bot], argument: str) -> T_co:
         """|coro|
 
         The method to override to do conversion logic.
@@ -430,7 +430,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         return self._resolve_channel(ctx, argument, 'channels', discord.abc.GuildChannel)
 
     @staticmethod
-    def _resolve_channel(ctx: Context[Any], argument: str, attribute: str, type: Type[CT]) -> CT:
+    def _resolve_channel(ctx: Context[_Bot], argument: str, attribute: str, type: Type[CT]) -> CT:
         bot = ctx.bot
 
         match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
@@ -447,7 +447,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
                 def check(c):
                     return isinstance(c, type) and c.name == argument
 
-                result = discord.utils.find(check, bot.get_all_channels())
+                result = discord.utils.find(check, bot.get_all_channels())  # type: ignore
         else:
             channel_id = int(match.group(1))
             if guild:
@@ -462,7 +462,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
         return result
 
     @staticmethod
-    def _resolve_thread(ctx: Context[Any], argument: str, attribute: str, type: Type[TT]) -> TT:
+    def _resolve_thread(ctx: Context[_Bot], argument: str, attribute: str, type: Type[TT]) -> TT:
         bot = ctx.bot
 
         match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
@@ -1067,7 +1067,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
 }
 
 
-async def _actual_conversion(ctx: Context[Any], converter, argument: str, param: inspect.Parameter):
+async def _actual_conversion(ctx: Context[_Bot], converter, argument: str, param: inspect.Parameter):
     if converter is bool:
         return _convert_to_bool(argument)
 
@@ -1105,7 +1105,7 @@ async def _actual_conversion(ctx: Context[Any], converter, argument: str, param:
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context[Any], converter: Any, argument: str, param: inspect.Parameter) -> Any:
+async def run_converters(ctx: Context[_Bot], converter: Any, argument: str, param: inspect.Parameter) -> Any:
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.
