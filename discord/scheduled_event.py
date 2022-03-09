@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     )
 
     from .abc import Snowflake
+    from .guild import Guild
     from .channel import VoiceChannel, StageChannel
     from .state import ConnectionState
     from .user import User
@@ -145,12 +146,11 @@ class ScheduledEvent(Hashable):
         self.end_time: Optional[datetime] = parse_time(data.get('scheduled_end_time'))
         self.channel_id: Optional[int] = _get_as_snowflake(data, 'channel_id')
 
-        metadata = data.get('metadata')
-        if metadata:
-            self._unroll_metadata(metadata)
+        metadata = data.get('entity_metadata')
+        self._unroll_metadata(metadata)
 
     def _unroll_metadata(self, data: EntityMetadata):
-        self.location: Optional[str] = data.get('location')
+        self.location: Optional[str] = data.get('location') if data else None
 
     @classmethod
     def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload):
@@ -168,6 +168,11 @@ class ScheduledEvent(Hashable):
         if self._cover_image is None:
             return None
         return Asset._from_scheduled_event_cover_image(self._state, self.id, self._cover_image)
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this scheduled event is in."""
+        return self._state._get_guild(self.guild_id)
 
     @property
     def channel(self) -> Optional[Union[VoiceChannel, StageChannel]]:
@@ -316,12 +321,16 @@ class ScheduledEvent(Hashable):
 
             Required if the entity type is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
-        start_time: :class:`datetime.datetime`
+        start_time: Optional[:class:`datetime.datetime`]
             The time that the scheduled event will start. This must be a timezone-aware
             datetime object. Consider using :func:`utils.utcnow`.
-        end_time: :class:`datetime.datetime`
+        end_time: Optional[:class:`datetime.datetime`]
             The time that the scheduled event will end. This must be a timezone-aware
             datetime object. Consider using :func:`utils.utcnow`.
+
+            If the entity type is either :attr:`EntityType.voice` or
+            :attr:`EntityType.stage_instance`, the end_time can be cleared by
+            passing ``None``.
 
             Required if the entity type is :attr:`EntityType.external`.
         privacy_level: :class:`PrivacyLevel`
@@ -330,8 +339,8 @@ class ScheduledEvent(Hashable):
             The new entity type.
         status: :class:`EventStatus`
             The new status of the scheduled event.
-        image: :class:`bytes`
-            The new image of the scheduled event.
+        image: Optional[:class:`bytes`]
+            The new image of the scheduled event or ``None`` to remove the image.
         location: :class:`str`
             The new location of the scheduled event.
 
@@ -388,7 +397,7 @@ class ScheduledEvent(Hashable):
             payload['status'] = status.value
 
         if image is not MISSING:
-            image_as_str: str = _bytes_to_base64_data(image)
+            image_as_str: Optional[str] = _bytes_to_base64_data(image) if image is not None else image
             payload['image'] = image_as_str
 
         if entity_type is not MISSING:
@@ -405,20 +414,25 @@ class ScheduledEvent(Hashable):
 
             payload['channel_id'] = channel.id
 
-            if location is not MISSING:
+            if location not in (MISSING, None):
                 raise TypeError('location cannot be set when entity_type is voice or stage_instance')
+            payload['entity_metadata'] = None
         else:
-            if channel is not MISSING:
+            if channel not in (MISSING, None):
                 raise TypeError('channel cannot be set when entity_type is external')
+            payload['channel_id'] = None
 
             if location is MISSING or location is None:
                 raise TypeError('location must be set when entity_type is external')
 
             metadata['location'] = location
 
-            if end_time is MISSING:
+            if end_time is MISSING or end_time is None:
                 raise TypeError('end_time must be set when entity_type is external')
 
+        if end_time is None:
+            payload['scheduled_end_time'] = end_time
+        else:
             if end_time.tzinfo is None:
                 raise ValueError(
                     'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
