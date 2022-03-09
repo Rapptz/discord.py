@@ -246,10 +246,10 @@ class _HelpCommandImpl(Command):
         finally:
             self.cog = original_cog
 
-    async def _on_error_cog_implementation(self, dummy, ctx, error):
+    async def _on_error_cog_implementation(self, _, ctx: Context[Any], error: CommandError) -> None:
         await self._injected.on_help_command_error(ctx, error)
 
-    def _inject_into_cog(self, cog):
+    def _inject_into_cog(self, cog: Cog) -> None:
         # Warning: hacky
 
         # Make the cog think that get_commands returns this command
@@ -509,7 +509,7 @@ class HelpCommand:
         return self._command_impl.cog
 
     @cog.setter
-    def cog(self, cog):
+    def cog(self, cog: Optional[Cog]) -> None:
         # Remove whatever cog is currently valid, if any
         self._command_impl._eject_cog()
 

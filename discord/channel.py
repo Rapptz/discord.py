@@ -1773,7 +1773,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[StoreChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StoreChannel]:
         """|coro|
 
         Edits the channel.

@@ -43,7 +43,7 @@ from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
-from ..http import Route, handle_message_parameters, MultipartParameters
+from ..http import Route, handle_message_parameters, MultipartParameters, HTTPClient
 from ..mixins import Hashable
 from ..channel import PartialMessageable
 from ..file import File
@@ -640,7 +640,7 @@ class _WebhookState:
         return BaseUser(state=self, data=data)  # type: ignore
 
     @property
-    def http(self):
+    def http(self) -> Union[HTTPClient, _FriendlyHttpAttributeErrorHelper]:
         if self._parent is not None:
             return self._parent.http
 

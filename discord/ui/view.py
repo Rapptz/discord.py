@@ -165,7 +165,7 @@ class View:
 
         cls.__view_children_items__ = children
 
-    def _init_children(self) -> List[Item]:
+    def _init_children(self) -> List[Item[Any]]:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
@@ -177,7 +177,7 @@ class View:
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
         self.timeout = timeout
-        self.children: List[Item] = self._init_children()
+        self.children: List[Item[Any]] = self._init_children()
         self.__weights = _ViewWeights(self.children)
         loop = asyncio.get_running_loop()
         self.id: str = os.urandom(16).hex()
@@ -259,7 +259,7 @@ class View:
             return time.monotonic() + self.timeout
         return None
 
-    def add_item(self, item: Item[Self]) -> None:
+    def add_item(self, item: Item[Any]) -> None:
         """Adds an item to the view.
 
         Parameters
@@ -287,7 +287,7 @@ class View:
         item._view = self
         self.children.append(item)
 
-    def remove_item(self, item: Item[Self]) -> None:
+    def remove_item(self, item: Item[Any]) -> None:
         """Removes an item from the view.
 
         Parameters
@@ -343,7 +343,7 @@ class View:
         """
         pass
 
-    async def on_error(self, error: Exception, item: Item[Self], interaction: Interaction) -> None:
+    async def on_error(self, error: Exception, item: Item[Any], interaction: Interaction) -> None:
         """|coro|
 
         A callback that is called when an item's callback or :meth:`interaction_check`
@@ -408,13 +408,13 @@ class View:
     def refresh(self, components: List[Component]) -> None:
         # This is pretty hacky at the moment
         # fmt: off
-        old_state: Dict[Tuple[int, str], Item[Self]] = {
+        old_state: Dict[Tuple[int, str], Item[Any]] = {
             (item.type.value, item.custom_id): item  # type: ignore
             for item in self.children
             if item.is_dispatchable()
         }
         # fmt: on
-        children: List[Item[Self]] = []
+        children: List[Item[Any]] = []
         for component in _walk_all_components(components):
             try:
                 older = old_state[(component.type.value, component.custom_id)]  # type: ignore
