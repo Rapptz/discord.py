@@ -900,31 +900,30 @@ class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
             event_id = int(match.group(1))
             if guild:
                 result = guild.get_scheduled_event(event_id)
-
-            if not result:
+            else:
                 for guild in ctx.bot.guilds:
                     result = guild.get_scheduled_event(event_id)
                     if result:
                         break
         else:
             pattern = (
-                r'https?://discord\.com/events/'
+                r'https?://(?:(ptb|canary|www)\.)?discord\.com/events/'
                 r'(?P<guild_id>[0-9]{15,20})/'
-                r'(?P<event_id>[0-9]{15,20})'
+                r'(?P<event_id>[0-9]{15,20})$'
             )
             match = re.match(pattern, argument, flags=re.I)
             if match:
                 # URL match
-                guild = ctx.bot.get_guild(int(match.group(1)))
+                guild = ctx.bot.get_guild(int(match.group('guild_id')))
 
                 if guild:
-                    event_id = int(match.group(2))
+                    event_id = int(match.group('event_id'))
                     result = guild.get_scheduled_event(event_id)
             else:
                 # lookup by name
                 if guild:
                     result = discord.utils.get(guild.scheduled_events, name=argument)
-                if not result:
+                else:
                     for guild in ctx.bot.guilds:
                         result = discord.utils.get(guild.scheduled_events, name=argument)
                         if result:
