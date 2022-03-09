@@ -136,9 +136,11 @@ if TYPE_CHECKING:
         headers: Mapping[str, Any]
 
     P = ParamSpec('P')
+    _SnowflakeListBase = array.array[int]
 
 else:
     cached_property = _cached_property
+    _SnowflakeListBase = array.array
 
 
 T = TypeVar('T')
@@ -684,7 +686,7 @@ def valid_icon_size(size: int) -> bool:
     return not size & (size - 1) and 4096 >= size >= 16
 
 
-class SnowflakeList(array.array):
+class SnowflakeList(_SnowflakeListBase):
     """Internal data storage class to efficiently store a list of snowflakes.
 
     This should have the following characteristics:
