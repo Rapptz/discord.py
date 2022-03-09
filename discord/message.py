@@ -167,7 +167,7 @@ if TYPE_CHECKING:
             ...
 
     class _ClearReactionCallback(Protocol):
-        async def __call__(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
+        async def __call__(self, emoji: Union[EmojiInputType, Reaction], /) -> None:
             ...
 
     class _ReplyCallback(Protocol):
