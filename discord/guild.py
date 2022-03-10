@@ -3117,6 +3117,16 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
+    @property
+    def vanity_url(self) -> Optional[str]:
+        """Optional[:class:`str`]: The Discord vanity invite URL for this guild, if available.
+
+        .. versionadded:: 2.0
+        """
+        if self.vanity_url_code is None:
+            return None
+        return f'{Invite.BASE}/{self.vanity_url_code}'
+
     async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
 
