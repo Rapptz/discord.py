@@ -68,7 +68,6 @@ if TYPE_CHECKING:
     from ..threads import Thread
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
-    _ChoiceTypes = Union['Choice[int]', 'Choice[str]', 'Choice[int]', 'Choice[Union[str, int, float]]']
 
 
 class AppCommand(Hashable):
@@ -530,7 +529,7 @@ class Argument:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[_ChoiceTypes] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -592,7 +591,7 @@ class AppCommandGroup:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[_ChoiceTypes] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
         self.arguments: List[Argument] = [
             Argument(parent=self, state=self._state, data=d)
             for d in data.get('options', [])
