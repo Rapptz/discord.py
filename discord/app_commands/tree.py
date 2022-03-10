@@ -93,6 +93,10 @@ class CommandTree(Generic[ClientT]):
         self.client: ClientT = client
         self._http = client.http
         self._state = client._connection
+
+        if self._state._command_tree is not None:
+            raise ClientException('This client already has an associated command tree.')
+
         self._state._command_tree = self
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
         self._global_commands: Dict[str, Union[Command, Group]] = {}
