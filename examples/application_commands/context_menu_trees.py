@@ -32,7 +32,11 @@ async def add_friend(interaction: discord.Interaction, member: discord.Member):
         # add the user as a friend
         client.friends[member.id].append(interaction.user.id)
     except KeyError:
+        # make the list if the user isn't there
         client.friends[member.id] = [interaction.user.id]
+    except IndexError:
+        await interaction.response.send_message('You are already friends with this person!')
+        return
 
     await interaction.response.send_message(f'{interaction.user.mention} has added {member.mention} as a friend!')
 
@@ -52,9 +56,15 @@ async def remove_friend(interaction: discord.Interaction, member: discord.Member
 @client.tree.context_menu(name='Add bookmark', guild=guild)
 async def bookmark(interaction: discord.Interaction, message: discord.Message):
     try:
+        # add the message to bookmarks
         client.bookmarked_messages[interaction.user.id].append(message)
     except KeyError:
+        # make the list if the user isn't there
         client.bookmarked_messages[interaction.user.id] = [message]
+    except IndexError:
+        # make sure the message isn't already bookmarked
+        await interaction.response.send_message('That message is already bookmarked!')
+        return
 
     await interaction.response.send_message('bookmarked that message!')
 
@@ -62,8 +72,10 @@ async def bookmark(interaction: discord.Interaction, message: discord.Message):
 @client.tree.context_menu(name='Remove bookmark', guild=guild)
 async def remove_bookmark(interaction: discord.Interaction, message: discord.Message):
     try:
+        # remove the bookmark
         client.bookmarked_messages[interaction.user.id].remove(message)
     except (KeyError, ValueError):
+        # make sure the user has this bookmarked
         return await interaction.response.send_message('This message isn\'t bookmarked!')
 
     await interaction.response.send_message('Removed that message as bookmarked')
