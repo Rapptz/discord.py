@@ -218,8 +218,10 @@ class Client:
     message_cache_filter: Optional[Callable[[:class:`.Message`], :class:`bool`]]
         An optional function called on each message event to control whether to add it to cache.
 
-        This can be used for higher control over the message cache, in order to only cache messages with
-        certain attributes filled, for example. This does not bypass max_messages.
+        This gives greater control over the message cache. 
+        
+        .. note:: 
+            This does not bypass ``max_messages``.
 
         .. versionadded:: 2.0
 
