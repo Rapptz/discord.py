@@ -37,6 +37,7 @@ from typing import (
     Set,
     TYPE_CHECKING,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -60,6 +61,11 @@ if TYPE_CHECKING:
     from .namespace import Namespace
     from .models import ChoiceT
 
+    # Generally, these two libraries are supposed to be separate from each other.
+    # However, for type hinting purposes it's unfortunately necessary for one to
+    # reference the other to prevent type checking errors in callbacks
+    from discord.ext.commands import Cog
+
 __all__ = (
     'Command',
     'ContextMenu',
@@ -78,7 +84,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
 Error = Union[
     Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
@@ -323,11 +329,16 @@ class Command(Generic[GroupT, P, T]):
     ):
         self.name: str = name
         self.description: str = description
+        self._attr: Optional[str] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+        self._guild_ids: Optional[List[int]] = getattr(callback, '__discord_app_commands_default_guilds__', None)
+
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
 
     @property
     def callback(self) -> CommandCallback[GroupT, P, T]:
@@ -338,7 +349,9 @@ class Command(Generic[GroupT, P, T]):
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
+        copy._attr = self._attr
         copy._callback = self._callback
         copy.parent = self.parent
         copy.on_error = self.on_error
@@ -620,21 +633,26 @@ class Group:
     """
 
     __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
+    __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
-        children: List[Union[Command[Any, ..., Any], Group]] = [
-            member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
-        ]
+        if not cls.__discord_app_commands_group_children__:
+            children: List[Union[Command[Any, ..., Any], Group]] = [
+                member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
+            ]
 
-        cls.__discord_app_commands_group_children__ = children
+            cls.__discord_app_commands_group_children__ = children
 
-        found = set()
-        for child in children:
-            if child.name in found:
-                raise TypeError(f'Command {child.name} is a duplicate')
-            found.add(child.name)
+            found = set()
+            for child in children:
+                if child.name in found:
+                    raise TypeError(f'Command {child.name!r} is a duplicate')
+                found.add(child.name)
+
+            if len(children) > 25:
+                raise TypeError('groups cannot have more than 25 commands')
 
         if name is MISSING:
             cls.__discord_app_commands_group_name__ = _to_kebab_case(cls.__name__)
@@ -649,9 +667,6 @@ class Group:
         else:
             cls.__discord_app_commands_group_description__ = description
 
-        if len(children) > 25:
-            raise TypeError('groups cannot have more than 25 commands')
-
     def __init__(
         self,
         *,
@@ -662,28 +677,37 @@ class Group:
         cls = self.__class__
         self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
+        self._attr: Optional[str] = None
+        self._guild_ids: Optional[List[int]] = None
 
         if not self.description:
             raise TypeError('groups must have a description')
 
         self.parent: Optional[Group] = parent
 
-        self._children: Dict[str, Union[Command, Group]] = {
-            child.name: child._copy_with_binding(self) for child in self.__discord_app_commands_group_children__
-        }
+        self._children: Dict[str, Union[Command, Group]] = {}
 
-        for child in self._children.values():
+        for child in self.__discord_app_commands_group_children__:
+            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
             child.parent = self
+            self._children[child.name] = child
+            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, child._attr, child)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
 
-    def _copy_with_binding(self, binding: Group) -> Group:
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
+
+    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
         copy.parent = self.parent
+        copy._attr = self._attr
         copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
         return copy
 
@@ -1108,8 +1132,8 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Command):
-            inner._callback.__discord_app_commands_default_guilds__ = defaults
+        if isinstance(inner, (Command, Group)):
+            inner._guild_ids = defaults
         else:
             # Runtime attribute assignment
             inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore

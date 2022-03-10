@@ -393,6 +393,8 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Emoji`
 - :class:`PartialEmoji`
 - :class:`Thread` (since v2.0)
+- :class:`GuildSticker` (since v2.0)
+- :class:`ScheduledEvent` (since v2.0)
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
 specify.
@@ -440,6 +442,10 @@ converter is given below:
 | :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`Thread`          | :class:`~ext.commands.ThreadConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`GuildSticker`    | :class:`~ext.commands.GuildStickerConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`ScheduledEvent`  | :class:`~ext.commands.ScheduledEventConverter`  |
 +--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
