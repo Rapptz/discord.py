@@ -833,7 +833,7 @@ class Client:
         Returns
         --------
         Optional[:class:`.StageInstance`]
-            The returns stage instance or ``None`` if not found.
+            The stage instance or ``None`` if not found.
         """
         from .channel import StageChannel
 
