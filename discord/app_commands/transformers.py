@@ -64,8 +64,6 @@ T = TypeVar('T')
 NoneType = type(None)
 
 if TYPE_CHECKING:
-    from .models import _ChoiceTypes
-
     from ..interactions import Interaction
 
 
@@ -97,7 +95,7 @@ class CommandParameter:
     description: str = MISSING
     required: bool = MISSING
     default: Any = MISSING
-    choices: List[_ChoiceTypes] = MISSING
+    choices: List[Choice[Union[str, int, float]]] = MISSING
     type: AppCommandOptionType = MISSING
     channel_types: List[ChannelType] = MISSING
     min_value: Optional[Union[int, float]] = None
