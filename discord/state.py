@@ -975,7 +975,7 @@ class ConnectionState:
 
         try:
             guild._member_count += 1
-        except AttributeError:
+        except TypeError:
             pass
 
         self.dispatch('member_join', member)
@@ -985,7 +985,7 @@ class ConnectionState:
         if guild is not None:
             try:
                 guild._member_count -= 1
-            except AttributeError:
+            except TypeError:
                 pass
 
             user_id = int(data['user']['id'])
