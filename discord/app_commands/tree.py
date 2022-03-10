@@ -672,7 +672,7 @@ class CommandTree(Generic[ClientT]):
     async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int):
         name = data['name']
         guild_id = interaction.guild_id
-        ctx_menu = self._context_menus.get((name, guild_id, type))
+        ctx_menu = self._context_menus.get((name, guild_id, type)) or self._context_menus.get((name, None, type))
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
