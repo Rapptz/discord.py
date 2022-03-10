@@ -1317,7 +1317,7 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = ScheduledEvent(state=self, data=data)
             guild._scheduled_events[scheduled_event.id] = scheduled_event
-            self.dispatch('scheduled_event_create', guild, scheduled_event)
+            self.dispatch('scheduled_event_create', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1328,7 +1328,7 @@ class ConnectionState:
             if scheduled_event is not None:
                 old_scheduled_event = copy.copy(scheduled_event)
                 scheduled_event._update(data)
-                self.dispatch('scheduled_event_update', guild, old_scheduled_event, scheduled_event)
+                self.dispatch('scheduled_event_update', old_scheduled_event, scheduled_event)
             else:
                 _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown scheduled event ID: %s. Discarding.', data['id'])
         else:
@@ -1342,7 +1342,7 @@ class ConnectionState:
             except KeyError:
                 pass
             else:
-                self.dispatch('scheduled_event_delete', guild, scheduled_event)
+                self.dispatch('scheduled_event_delete', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
