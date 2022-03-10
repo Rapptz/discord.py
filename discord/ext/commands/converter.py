@@ -41,7 +41,6 @@ from typing import (
     Tuple,
     Union,
     runtime_checkable,
-    overload,
 )
 
 import discord
@@ -51,9 +50,8 @@ if TYPE_CHECKING:
     from .context import Context
     from discord.state import Channel
     from discord.threads import Thread
-    from .bot import Bot, AutoShardedBot
 
-    from ._types import BotT
+    from ._types import BotT, _Bot
 
 
 __all__ = (
@@ -87,7 +85,7 @@ __all__ = (
 )
 
 
-def _get_from_guilds(bot, getter, argument):
+def _get_from_guilds(bot: _Bot, getter: str, argument: Any) -> Any:
     result = None
     for guild in bot.guilds:
         result = getattr(guild, getter)(argument)
@@ -206,7 +204,7 @@ class MemberConverter(IDConverter[discord.Member]):
             members = await guild.query_members(argument, limit=100, cache=cache)
             return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
 
-    async def query_member_by_id(self, bot: Union[Bot, AutoShardedBot], guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
+    async def query_member_by_id(self, bot: _Bot, guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
         ws = bot._get_websocket(shard_id=guild.shard_id)
         cache = guild._state.member_cache_flags.joined
         if ws.is_ratelimited():
