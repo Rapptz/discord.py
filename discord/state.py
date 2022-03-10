@@ -236,6 +236,7 @@ class ConnectionState:
 
             cache_flags._verify_intents(intents)
 
+        self.message_cache_filter: Optional[Callable[[Message], bool]] = options.get('message_cache_filter')
         self.member_cache_flags: MemberCacheFlags = cache_flags
         self._activity: Optional[ActivityPayload] = activity
         self._status: Optional[str] = status
@@ -585,7 +586,7 @@ class ConnectionState:
         # channel would be the correct type here
         message = Message(channel=channel, data=data, state=self)  # type: ignore
         self.dispatch('message', message)
-        if self._messages is not None:
+        if self._messages is not None and (self.message_cache_filter is None or self.message_cache_filter(message)):
             self._messages.append(message)
         # we ensure that the channel is either a TextChannel or Thread
         if channel and channel.__class__ in (TextChannel, Thread):

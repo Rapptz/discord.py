@@ -215,6 +215,13 @@ class Client:
         To enable these events, this must be set to ``True``. Defaults to ``False``.
 
         .. versionadded:: 2.0
+    message_cache_filter: Optional[Callable[[:class:`.Message`], :class:`bool`]]
+        Am optional function called on each message event to control whether to add it to cache or discard it.
+
+        This can be used for higher control over the message cache, in order to only cache messages with
+        certain attributes filled, for example. This does not bypass max_messages.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
