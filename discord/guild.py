@@ -392,7 +392,7 @@ class Guild(Hashable):
             ('name', self.name),
             ('shard_id', self.shard_id),
             ('chunked', self.chunked),
-            ('member_count', getattr(self, '_member_count', None)),
+            ('member_count', self._member_count),
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
@@ -567,10 +567,9 @@ class Guild(Hashable):
         members, which for this library is set to the maximum of 250.
         """
         if self._large is None:
-            try:
+            if self._member_count is not None:
                 return self._member_count >= 250
-            except AttributeError:
-                return len(self._members) >= 250
+            return len(self._members) >= 250
         return self._large
 
     @property
@@ -988,7 +987,7 @@ class Guild(Hashable):
         If this value returns ``False``, then you should request for
         offline members.
         """
-        count = getattr(self, '_member_count', None)
+        count = self._member_count
         if count is None:
             return False
         return count == len(self._members)
