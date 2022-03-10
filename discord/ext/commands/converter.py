@@ -878,7 +878,7 @@ class GuildStickerConverter(IDConverter[discord.GuildSticker]):
 class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
     """Converts to a :class:`~discord.ScheduledEvent`.
     
-    Lookups are done for the local guild if available. In a DM context, then the
+    Lookups are done for the local guild if available. Otherwise, for a DM context,
     lookup is done by the global cache.
 
     The lookup strategy is as follows (in order):
