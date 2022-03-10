@@ -523,7 +523,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         codec = bitrate = None
         loop = asyncio.get_running_loop()
         try:
-            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))  # type: ignore
+            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except Exception:
             if not fallback:
                 _log.exception("Probe '%s' using '%s' failed", method, executable)
@@ -531,7 +531,7 @@ class FFmpegOpusAudio(FFmpegAudio):
 
             _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
-                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))  # type: ignore
+                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
             except Exception:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
@@ -744,6 +744,6 @@ class AudioPlayer(threading.Thread):
 
     def _speak(self, speaking: SpeakingState) -> None:
         try:
-            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), asyncio.get_running_loop())
+            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception as e:
             _log.info("Speaking call in player failed: %s", e)

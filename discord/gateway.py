@@ -128,13 +128,11 @@ class KeepAliveHandler(threading.Thread):
         self,
         *args: Any,
         ws: DiscordWebSocket,
-        loop: asyncio.AbstractEventLoop,
         interval: Optional[float] = None,
         shard_id: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.loop = loop
         self.ws: DiscordWebSocket = ws
         self._main_thread_id: int = ws.thread_id
         self.interval: Optional[float] = interval
@@ -155,7 +153,7 @@ class KeepAliveHandler(threading.Thread):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
                 _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
                 coro = self.ws.close(4000)
-                f = asyncio.run_coroutine_threadsafe(coro, self.loop)
+                f = asyncio.run_coroutine_threadsafe(coro, self.ws.loop)
 
                 try:
                     f.result()
@@ -168,7 +166,7 @@ class KeepAliveHandler(threading.Thread):
             data = self.get_payload()
             _log.debug(self.msg, self.shard_id, data['d'])
             coro = self.ws.send_heartbeat(data)
-            f = asyncio.run_coroutine_threadsafe(coro, self.loop)
+            f = asyncio.run_coroutine_threadsafe(coro, self.ws.loop)
             try:
                 # block until sending is complete
                 total = 0
@@ -309,7 +307,8 @@ class DiscordWebSocket:
     GUILD_SYNC         = 12
     # fmt: on
 
-    def __init__(self, socket: aiohttp.ClientWebSocketResponse) -> None:
+    def __init__(self, socket: aiohttp.ClientWebSocketResponse, loop: asyncio.AbstractEventLoop) -> None:
+        self.loop = loop
         self.socket: aiohttp.ClientWebSocketResponse = socket
 
         # an empty dispatcher to prevent crashes
@@ -359,7 +358,7 @@ class DiscordWebSocket:
         """
         gateway = gateway or await client.http.get_gateway()
         socket = await client.http.ws_connect(gateway)
-        ws = cls(socket)
+        ws = cls(socket, client.loop)
 
         # dynamically add attributes needed
         ws.token = client.http.token
@@ -419,7 +418,7 @@ class DiscordWebSocket:
             A future to wait for.
         """
 
-        future = asyncio.get_running_loop().create_future()
+        future = self.loop.create_future()
         entry = EventListener(event=event, predicate=predicate, result=result, future=future)
         self._dispatch_listeners.append(entry)
         return future
@@ -525,9 +524,7 @@ class DiscordWebSocket:
 
             if op == self.HELLO:
                 interval = data['heartbeat_interval'] / 1000.0
-                self._keep_alive = KeepAliveHandler(
-                    ws=self, loop=asyncio.get_running_loop(), interval=interval, shard_id=self.shard_id
-                )
+                self._keep_alive = KeepAliveHandler(ws=self, interval=interval, shard_id=self.shard_id)
                 # send a heartbeat immediately
                 await self.send_as_json(self._keep_alive.get_payload())
                 self._keep_alive.start()
@@ -823,9 +820,11 @@ class DiscordVoiceWebSocket:
     def __init__(
         self,
         socket: aiohttp.ClientWebSocketResponse,
+        loop: asyncio.AbstractEventLoop,
         *,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> None:
+        self.loop = loop
         self.ws = socket
         self._keep_alive = None
         self._close_code = None
@@ -873,7 +872,7 @@ class DiscordVoiceWebSocket:
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
-        ws = cls(socket, hook=hook)
+        ws = cls(socket, client.client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0
@@ -955,7 +954,7 @@ class DiscordVoiceWebSocket:
         struct.pack_into('>H', packet, 2, 70)  # 70 = Length
         struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
-        recv = await asyncio.get_running_loop().sock_recv(state.socket, 70)
+        recv = await self.loop.sock_recv(state.socket, 70)
         _log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 4th byte and ending at the first null

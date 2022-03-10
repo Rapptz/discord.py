@@ -27,6 +27,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
+from re import M
 import signal
 import sys
 import traceback
@@ -44,6 +45,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    cast,
 )
 
 import aiohttp
@@ -111,8 +113,6 @@ class Client:
 
         .. versionchanged:: 1.3
             Allow disabling the message cache and change the default size to ``1000``.
-    connector: Optional[:class:`aiohttp.BaseConnector`]
-        The connector to use for connection pooling.
     proxy: Optional[:class:`str`]
         Proxy URL.
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
@@ -187,6 +187,7 @@ class Client:
         self,
         **options: Any,
     ):
+        self.loop = MISSING
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
@@ -196,7 +197,7 @@ class Client:
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
+        self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
 
         self._handlers: Dict[str, Callable] = {
             'ready': self._handle_ready,
@@ -224,7 +225,9 @@ class Client:
         return self.ws
 
     def _get_state(self, **options: Any) -> ConnectionState:
-        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, **options)
+        return ConnectionState(
+            dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, loop=self.loop, **options
+        )
 
     def _handle_ready(self) -> None:
         self._ready.set()
@@ -350,7 +353,7 @@ class Client:
     ) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
+        return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
@@ -436,7 +439,7 @@ class Client:
 
     # login state management
 
-    async def login(self, token: str) -> None:
+    async def login(self, token: str, *, connector: Optional[aiohttp.BaseConnector] = None) -> None:
         """|coro|
 
         Logs in the client with the specified credentials.
@@ -460,7 +463,7 @@ class Client:
 
         _log.info('logging in using static token')
 
-        data = await self.http.static_login(token.strip())
+        data = await self.http.static_login(token.strip(), connector=connector)
         self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -571,6 +574,9 @@ class Client:
 
         await self.http.close()
         self._ready.clear()
+        self.loop = MISSING
+        self.http.loop = self.loop
+        self._connection.loop = self.loop
 
     def clear(self) -> None:
         """Clears the internal state of the bot.
@@ -584,7 +590,7 @@ class Client:
         self._connection.clear()
         self.http.recreate()
 
-    async def start(self, token: str, *, reconnect: bool = True) -> None:
+    async def start(self, token: str, *, reconnect: bool = True, connector: Optional[aiohttp.BaseConnector] = None) -> None:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -594,8 +600,11 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
+        self.loop = asyncio.get_running_loop()
+        self.http.loop = self.loop
+        self._connection.loop = self.loop
         try:
-            await self.login(token)
+            await self.login(token, connector=connector)
             await self.connect(reconnect=reconnect)
         finally:
             if not self.is_closed():
@@ -978,7 +987,7 @@ class Client:
             :ref:`event reference <discord-api-events>`.
         """
 
-        future = asyncio.get_running_loop().create_future()
+        future = self.loop.create_future()
         if check is None:
 
             def _check(*args):
@@ -1229,7 +1238,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection)  # type: ignore
+        return Template(data=data, state=self._connection)
 
     async def fetch_guild(self, guild_id: int, /, *, with_counts: bool = True) -> Guild:
         """|coro|

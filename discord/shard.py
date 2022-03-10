@@ -114,7 +114,7 @@ class Shard:
         return self.ws.shard_id  # type: ignore
 
     def launch(self) -> None:
-        self._task = asyncio.create_task(self.worker())
+        self._task = self._client.loop.create_task(self.worker())
 
     def _cancel_task(self) -> None:
         if self._task is not None and not self._task.done():
@@ -465,8 +465,7 @@ class AutoShardedClient(Client):
             except Exception:
                 pass
 
-        loop = asyncio.get_running_loop()
-        to_close = [asyncio.ensure_future(shard.close(), loop=loop) for shard in self.__shards.values()]
+        to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
         if to_close:
             await asyncio.wait(to_close)
 

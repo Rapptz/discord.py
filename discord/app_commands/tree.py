@@ -668,7 +668,7 @@ class CommandTree(Generic[ClientT]):
             except AppCommandError as e:
                 await self.on_error(interaction, None, e)
 
-        asyncio.create_task(wrapper(), name='CommandTree-invoker')
+        self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
     async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int):
         name = data['name']

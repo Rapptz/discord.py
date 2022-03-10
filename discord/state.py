@@ -102,12 +102,14 @@ class ChunkRequest:
     def __init__(
         self,
         guild_id: int,
+        loop: asyncio.AbstractEventLoop,
         resolver: Callable[[int], Any],
         *,
         cache: bool = True,
     ) -> None:
         self.guild_id: int = guild_id
         self.resolver: Callable[[int], Any] = resolver
+        self.loop = loop
         self.cache: bool = cache
         self.nonce: str = os.urandom(16).hex()
         self.buffer: List[Member] = []
@@ -126,7 +128,7 @@ class ChunkRequest:
                     guild._add_member(member)
 
     async def wait(self) -> List[Member]:
-        future = asyncio.get_running_loop().create_future()
+        future = self.loop.create_future()
         self.waiters.append(future)
         try:
             return await future
@@ -134,7 +136,7 @@ class ChunkRequest:
             self.waiters.remove(future)
 
     def get_future(self) -> asyncio.Future[List[Member]]:
-        future = asyncio.get_running_loop().create_future()
+        future = self.loop.create_future()
         self.waiters.append(future)
         return future
 
@@ -167,8 +169,10 @@ class ConnectionState:
         handlers: Dict[str, Callable],
         hooks: Dict[str, Callable],
         http: HTTPClient,
+        loop: asyncio.AbstractEventLoop,
         **options: Any,
     ) -> None:
+        self.loop = loop
         self.http: HTTPClient = http
         self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
@@ -489,7 +493,7 @@ class ConnectionState:
         if ws is None:
             raise RuntimeError('Somehow do not have a websocket for this guild_id')
 
-        request = ChunkRequest(guild.id, self._get_guild, cache=cache)
+        request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
         self._chunk_requests[request.nonce] = request
 
         try:
@@ -571,7 +575,7 @@ class ConnectionState:
             self._add_guild_from_data(guild_data)  # type: ignore
 
         self.dispatch('connect')
-        self._ready_task = asyncio.create_task(self._delay_ready())
+        self._ready_task = self.loop.create_task(self._delay_ready())
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
@@ -1104,7 +1108,7 @@ class ConnectionState:
 
         # check if it requires chunking
         if self._guild_needs_chunking(guild):
-            asyncio.create_task(self._chunk_and_dispatch(guild, unavailable))
+            self.loop.create_task(self._chunk_and_dispatch(guild, unavailable))
             return
 
         # Dispatch available if newly available
@@ -1391,7 +1395,7 @@ class ConnectionState:
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
                     coro = voice.on_voice_state_update(data)
-                    asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
+                    self.loop.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
             member, before, after = guild._update_voice_state(data, channel_id)  # type: ignore
             if member is not None:
@@ -1412,7 +1416,7 @@ class ConnectionState:
         vc = self._get_voice_client(key_id)
         if vc is not None:
             coro = vc.on_voice_server_update(data)
-            asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
+            self.loop.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data: gw.TypingStartEvent) -> None:
         channel, guild = self._get_guild_channel(data)
@@ -1541,7 +1545,7 @@ class AutoShardedConnectionState(ConnectionState):
                     future = asyncio.ensure_future(self.chunk_guild(guild))
                     current_bucket.append(future)
                 else:
-                    future = asyncio.get_running_loop().create_future()
+                    future = self.loop.create_future()
                     future.set_result([])
 
                 processed.append((guild, future))
@@ -1607,7 +1611,7 @@ class AutoShardedConnectionState(ConnectionState):
         self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
 
         if self._ready_task is None:
-            self._ready_task = asyncio.create_task(self._delay_ready())
+            self._ready_task = self.loop.create_task(self._delay_ready())
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')

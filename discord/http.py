@@ -332,11 +332,13 @@ class HTTPClient:
 
     def __init__(
         self,
+        loop: asyncio.AbstractEventLoop,
         *,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
     ) -> None:
+        self.loop = loop
         self.connector: aiohttp.BaseConnector = MISSING  # filled in static_login
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
@@ -452,7 +454,7 @@ class HTTPClient:
                             delta = utils._parse_ratelimit_header(response, use_clock=self.use_clock)
                             _log.debug('A rate limit bucket has been exhausted (bucket: %s, retry: %s).', bucket, delta)
                             maybe_lock.defer()
-                            asyncio.get_running_loop().call_later(delta, lock.release)
+                            self.loop.call_later(delta, lock.release)
 
                         # the request was successful so just return the text/json
                         if 300 > response.status >= 200:
@@ -539,11 +541,14 @@ class HTTPClient:
 
     # login management
 
-    async def static_login(self, token: str) -> user.User:
+    async def static_login(self, token: str, *, connector: Optional[aiohttp.BaseConnector] = None) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
-        self.connector = aiohttp.TCPConnector(limit=0, loop=asyncio.get_running_loop())
+        if connector is None:
+            self.connector = aiohttp.TCPConnector(limit=0, loop=self.loop)
+        else:
+            self.connector = connector
         self.__session = aiohttp.ClientSession(
-            connector=self.connector, ws_response_class=DiscordClientWebSocketResponse, loop=asyncio.get_running_loop()
+            connector=self.connector, ws_response_class=DiscordClientWebSocketResponse, loop=self.loop
         )
         old_token = self.token
         self.token = token
