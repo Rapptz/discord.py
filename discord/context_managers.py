@@ -49,7 +49,7 @@ def _typing_done_callback(fut: asyncio.Future) -> None:
 
 class Typing:
     def __init__(self, messageable: Messageable) -> None:
-        self.loop = messageable._state.loop
+        self.loop: asyncio.AbstractEventLoop = messageable._state.loop
         self.messageable: Messageable = messageable
 
     async def do_typing(self) -> None:

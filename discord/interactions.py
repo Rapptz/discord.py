@@ -955,6 +955,6 @@ class InteractionMessage(Message):
                 except HTTPException:
                     pass
 
-            self._state._parent.loop.create_task(inner_call())
+            asyncio.create_task(inner_call())
         else:
             await self._state._interaction.delete_original_message()

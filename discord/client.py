@@ -27,8 +27,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-from re import M
-import signal
 import sys
 import traceback
 from typing import (
@@ -45,7 +43,6 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    cast,
 )
 
 import aiohttp
@@ -197,7 +194,7 @@ class Client:
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
+        self.http: HTTPClient = HTTPClient(proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
 
         self._handlers: Dict[str, Callable] = {
             'ready': self._handle_ready,

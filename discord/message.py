@@ -1184,7 +1184,7 @@ class Message(Hashable):
                 except HTTPException:
                     pass
 
-            self._state.loop.create_task(delete(delay))
+            asyncio.create_task(delete(delay))
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 

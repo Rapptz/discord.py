@@ -307,9 +307,9 @@ class DiscordWebSocket:
     GUILD_SYNC         = 12
     # fmt: on
 
-    def __init__(self, socket: aiohttp.ClientWebSocketResponse, loop: asyncio.AbstractEventLoop) -> None:
-        self.loop = loop
+    def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
         self.socket: aiohttp.ClientWebSocketResponse = socket
+        self.loop: asyncio.AbstractEventLoop = loop
 
         # an empty dispatcher to prevent crashes
         self._dispatch: Callable[..., Any] = lambda *args: None
@@ -358,7 +358,7 @@ class DiscordWebSocket:
         """
         gateway = gateway or await client.http.get_gateway()
         socket = await client.http.ws_connect(gateway)
-        ws = cls(socket, client.loop)
+        ws = cls(socket, loop=client.loop)
 
         # dynamically add attributes needed
         ws.token = client.http.token
@@ -824,8 +824,8 @@ class DiscordVoiceWebSocket:
         *,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> None:
-        self.loop = loop
         self.ws = socket
+        self.loop = loop
         self._keep_alive = None
         self._close_code = None
         self.secret_key = None
@@ -872,7 +872,7 @@ class DiscordVoiceWebSocket:
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
-        ws = cls(socket, client.client.loop, hook=hook)
+        ws = cls(socket, loop=client.client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0

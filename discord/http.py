@@ -332,13 +332,13 @@ class HTTPClient:
 
     def __init__(
         self,
-        loop: asyncio.AbstractEventLoop,
         *,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
+        loop: asyncio.AbstractEventLoop,
         unsync_clock: bool = True,
     ) -> None:
-        self.loop = loop
+        self.loop: asyncio.AbstractEventLoop = loop
         self.connector: aiohttp.BaseConnector = MISSING  # filled in static_login
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
