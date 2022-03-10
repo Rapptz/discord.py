@@ -107,7 +107,7 @@ class StageInstance(Hashable):
         self.topic: str = data['topic']
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['privacy_level'])
         self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
-        self.scheduled_event_id: Optional[int] = _get_as_snowflake(data, "guild_scheduled_event_id")
+        self.scheduled_event_id: Optional[int] = _get_as_snowflake(data, 'guild_scheduled_event_id')
 
     def __repr__(self) -> str:
         return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
