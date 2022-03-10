@@ -314,8 +314,6 @@ class Command(Generic[GroupT, P, T]):
         The parent application command. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_default_guilds__: List[int]
-
     def __init__(
         self,
         *,
@@ -332,6 +330,7 @@ class Command(Generic[GroupT, P, T]):
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+        self._guild_ids: Optional[List[int]] = getattr(callback, '__discord_app_commands_default_guilds__', None)
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
@@ -345,6 +344,7 @@ class Command(Generic[GroupT, P, T]):
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
         copy._attr = self._attr
         copy._callback = self._callback
@@ -628,7 +628,6 @@ class Group:
     """
 
     __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
-    __discord_app_commands_default_guilds__: List[int]
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
@@ -636,7 +635,7 @@ class Group:
         if not cls.__discord_app_commands_group_children__:
             cls.__discord_app_commands_group_children__ = children = [
                 member
-                for name, member in cls.__dict__.items()
+                for member in cls.__dict__.values()
                 if isinstance(member, (Group, Command)) and member.parent is None
             ]
 
@@ -674,6 +673,7 @@ class Group:
         self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
+        self._guild_ids: Optional[List[int]] = None
 
         if not self.description:
             raise TypeError('groups must have a description')
@@ -699,6 +699,7 @@ class Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
         copy.parent = self.parent
         copy._attr = self._attr
@@ -1127,7 +1128,7 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
 
     def decorator(inner: T) -> T:
         if isinstance(inner, (Command, Group)):
-            inner.__discord_app_commands_default_guilds__ = defaults
+            inner._guild_ids = defaults
         else:
             # Runtime attribute assignment
             inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore
