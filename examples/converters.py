@@ -1,4 +1,5 @@
 # This example requires the 'members' privileged intent to use the Member converter.
+# This example also requires the 'message_content' privileged intent to function.
 
 import typing
 
@@ -7,6 +8,7 @@ from discord.ext import commands
 
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 
 bot = commands.Bot('!', intents=intents)
 
@@ -28,7 +30,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
     # and can do the following:
     user_id = user.id
     username = user.name
-    avatar = user.avatar.url
+    avatar = user.display_avatar.url
     await ctx.send(f'User found: {user_id} -- {username}\n{avatar}')
 
 @userinfo.error

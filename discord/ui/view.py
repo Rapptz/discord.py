@@ -503,13 +503,13 @@ class ViewStore:
             del self._views[k]
 
     def add_view(self, view: View, message_id: Optional[int] = None):
+        view._start_listening_from_store(self)
         if view.__discord_ui_modal__:
             self._modals[view.custom_id] = view  # type: ignore
             return
 
         self.__verify_integrity()
 
-        view._start_listening_from_store(self)
         for item in view.children:
             if item.is_dispatchable():
                 self._views[(item.type.value, message_id, item.custom_id)] = (view, item)  # type: ignore

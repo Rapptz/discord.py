@@ -1,3 +1,5 @@
+# This example requires the 'message_content' privileged intent to function.
+
 import discord
 
 class MyClient(discord.Client):
@@ -13,5 +15,8 @@ class MyClient(discord.Client):
         if message.content.startswith('!hello'):
             await message.reply('Hello!', mention_author=True)
 
-client = MyClient()
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = MyClient(intents=intents)
 client.run('token')

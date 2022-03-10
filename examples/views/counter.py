@@ -1,3 +1,5 @@
+# This example requires the 'message_content' privileged intent to function.
+
 from discord.ext import commands
 
 import discord
@@ -5,7 +7,10 @@ import discord
 
 class CounterBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('$'))
+        intents = discord.Intents.default()
+        intents.message_content = True
+        
+        super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')

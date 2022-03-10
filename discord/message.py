@@ -171,9 +171,25 @@ class Attachment(Hashable):
         The attachment's description. Only applicable to images.
 
         .. versionadded:: 2.0
+    ephemeral: :class:`bool`
+        Whether the attachment is ephemeral.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type', 'description')
+    __slots__ = (
+        'id',
+        'size',
+        'height',
+        'width',
+        'filename',
+        'url',
+        'proxy_url',
+        '_http',
+        'content_type',
+        'description',
+        'ephemeral',
+    )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
@@ -186,6 +202,7 @@ class Attachment(Hashable):
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
         self.description: Optional[str] = data.get('description')
+        self.ephemeral: bool = data.get('ephemeral', False)
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
@@ -1220,7 +1237,7 @@ class Message(Hashable):
             The ``suppress`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            Edits are no longer in-place, the newly edited role is returned instead.
+            Edits are no longer in-place, the newly edited message is returned instead.
 
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
@@ -1578,7 +1595,14 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = MISSING) -> Thread:
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        reason: Optional[str] = None,
+    ) -> Thread:
         """|coro|
 
         Creates a public thread from this message.
@@ -1597,6 +1621,12 @@ class Message(Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             If not provided, the channel's default auto archive duration is used.
+        slowmode_delay: Optional[:class:`int`]
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            The maximum value possible is `21600`. By default no slowmode rate limit
+            if this is ``None``.
+        reason: Optional[:class:`str`]
+            The reason for creating a new thread. Shows up on the audit log.
 
         Raises
         -------
@@ -1621,6 +1651,8 @@ class Message(Hashable):
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
+            rate_limit_per_user=slowmode_delay,
+            reason=reason,
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 

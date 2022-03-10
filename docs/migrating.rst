@@ -791,6 +791,9 @@ The return type of the following methods has been changed to an :term:`asynchron
 - :meth:`Guild.fetch_members`
 - :meth:`Reaction.users`
 
+The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an 
+:term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
+
 Removal of ``InvalidArgument`` Exception
 -------------------------------------------
 
@@ -861,7 +864,6 @@ Parameters in the following methods are now all positional-only:
 - :meth:`Guild.get_member`
 - :meth:`Guild.get_member_named`
 - :meth:`Guild.fetch_member`
-- :meth:`Guild.get_stage_instance`
 - :meth:`Client.get_user`
 - :meth:`Client.fetch_user`
 - :meth:`Guild.get_role`
@@ -907,6 +909,7 @@ As a result, these parameters can no longer be ``None``:
 - ``mute``, ``deafen``, ``suppress``, and ``roles`` in :meth:`Member.edit`
 - ``position`` in :meth:`Role.edit`
 - ``icon`` in :meth:`Template.create_guild`
+- ``name`` in :meth:`Template.edit`
 - ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` in :meth:`utils.oauth_url`
 - ``content``, ``username``, ``avatar_url``, ``tts``, ``file``, ``files``, ``embed``, ``embeds``, and ``allowed_mentions`` in :meth:`Webhook.send`
 
@@ -915,6 +918,7 @@ Allowed types for the following parameters have been changed:
 - ``rtc_region`` in :meth:`Guild.create_voice_channel` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`StageChannel.edit` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`VoiceChannel.edit` is now of type Optional[:class:`str`].
+- ``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`. 
 
 Attribute Type Changes
 ------------------------
@@ -948,6 +952,7 @@ The following changes have been made:
 
 - :attr:`AuditLogEntry.target` may now be a :class:`PartialMessageable`.
 - :attr:`PartialMessage.channel` may now be a :class:`PartialMessageable`.
+- :attr:`Guild.preferred_locale` is now of type :class:`Locale`.
 
 Removals
 ----------
@@ -1024,7 +1029,7 @@ The following have been removed:
 
     - Consider using the newer documented :func:`on_socket_event_type` event instead.
 
-Miscellanous Changes
+Miscellaneous Changes
 ----------------------
 
 The following changes have been made:
@@ -1034,6 +1039,7 @@ The following changes have been made:
 - :func:`on_socket_raw_send` is now only called if ``enable_debug_events`` is set on :class:`Client`.
 - The documented return type for :meth:`Guild.fetch_channels` changed to Sequence[:class:`abc.GuildChannel`].
 - :func:`utils.resolve_invite` now returns a :class:`ResolvedInvite` class.
+- :func:`utils.oauth_url` now defaults to ``bot`` and ``applications.commands`` scopes when not given instead of just ``bot``.
 - :meth:`abc.Messageable.typing` can no longer be used as a regular (non-async) context manager.
 - :attr:`Intents.emojis` is now an alias of :attr:`Intents.emojis_and_stickers`.
 

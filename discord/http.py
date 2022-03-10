@@ -224,7 +224,9 @@ def handle_message_parameters(
         try:
             payload['allowed_mentions']['replied_user'] = mention_author
         except KeyError:
-            pass
+            payload['allowed_mentions'] = {
+                'replied_user': mention_author,
+            }
 
     if attachments is MISSING:
         attachments = files  # type: ignore
@@ -258,6 +260,22 @@ def handle_message_parameters(
             )
 
     return MultipartParameters(payload=payload, multipart=multipart, files=files)
+
+
+INTERNAL_API_VERSION: int = 10
+
+
+def _set_api_version(value: int):
+    global INTERNAL_API_VERSION
+
+    if not isinstance(value, int):
+        raise TypeError(f'expected int not {value.__class__!r}')
+
+    if value not in (9, 10):
+        raise ValueError(f'expected either 9 or 10 not {value}')
+
+    INTERNAL_API_VERSION = value
+    Route.BASE = f'https://discord.com/api/v{value}'
 
 
 class Route:
@@ -322,7 +340,7 @@ class HTTPClient:
         unsync_clock: bool = True,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
-        self.connector = connector
+        self.connector: aiohttp.BaseConnector = connector or aiohttp.TCPConnector(limit=0)
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
         self._global_over: asyncio.Event = asyncio.Event()
@@ -921,11 +939,13 @@ class HTTPClient:
         *,
         name: str,
         auto_archive_duration: threads.ThreadArchiveDuration,
+        rate_limit_per_user: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration,
+            'rate_limit_per_user': rate_limit_per_user,
         }
 
         route = Route(
@@ -941,6 +961,7 @@ class HTTPClient:
         auto_archive_duration: threads.ThreadArchiveDuration,
         type: threads.ThreadType,
         invitable: bool = True,
+        rate_limit_per_user: Optional[int] = None,
         reason: Optional[str] = None,
     ) -> Response[threads.Thread]:
         payload = {
@@ -948,6 +969,7 @@ class HTTPClient:
             'auto_archive_duration': auto_archive_duration,
             'type': type,
             'invitable': invitable,
+            'rate_limit_per_user': rate_limit_per_user,
         }
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
@@ -1112,6 +1134,7 @@ class HTTPClient:
             'rules_channel_id',
             'public_updates_channel_id',
             'preferred_locale',
+            'premium_progress_bar_enabled',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}
@@ -1390,8 +1413,8 @@ class HTTPClient:
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
-    def edit_widget(self, guild_id: Snowflake, payload) -> Response[widget.WidgetSettings]:
-        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload)
+    def edit_widget(self, guild_id: Snowflake, payload, reason: Optional[str] = None) -> Response[widget.WidgetSettings]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
 
     # Invite management
 
@@ -1981,10 +2004,10 @@ class HTTPClient:
         except HTTPException as exc:
             raise GatewayNotFound() from exc
         if zlib:
-            value = '{0}?encoding={1}&v=10&compress=zlib-stream'
+            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=10'
-        return value.format(data['url'], encoding)
+            value = '{0}?encoding={1}&v={2}'
+        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
     async def get_bot_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> Tuple[int, str]:
         try:
@@ -1993,10 +2016,10 @@ class HTTPClient:
             raise GatewayNotFound() from exc
 
         if zlib:
-            value = '{0}?encoding={1}&v=10&compress=zlib-stream'
+            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = '{0}?encoding={1}&v=10'
-        return data['shards'], value.format(data['url'], encoding)
+            value = '{0}?encoding={1}&v={2}'
+        return data['shards'], value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

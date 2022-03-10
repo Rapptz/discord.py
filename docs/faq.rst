@@ -326,10 +326,6 @@ Quick example: ::
     embed.set_image(url="attachment://image.png")
     await channel.send(file=file, embed=embed)
 
-.. note ::
-
-    Due to a Discord limitation, filenames may not include underscores.
-
 Is there an event for audit log entries being created?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

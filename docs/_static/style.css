@@ -61,6 +61,8 @@ Historically however, thanks to:
   --search-focus: var(--blue-1);
   --search-button: var(--grey-1);
   --search-button-hover: var(--grey-1-8);
+  --search-sidebar-background: var(--grey-1);
+  --search-sidebar-text: var(--grey-7);
   --footer-text: var(--grey-5);
   --footer-link: var(--grey-6);
   --hr-border: var(--grey-2);
@@ -167,6 +169,8 @@ Historically however, thanks to:
   --attribute-table-entry-hover-text: var(--blue-1);
   --attribute-table-badge: var(--grey-4);
   --highlighted-text: rgba(250, 166, 26, 0.2);
+  --search-sidebar-background: var(--grey-7);
+  --search-sidebar-text: var(--search-text);
 }
 
 img[src$="snake_dark.svg"]  {
@@ -521,6 +525,20 @@ input[type=search]:focus ~ button[type=submit] {
 .search-wrapper > button[type=submit]:hover {
   background-color: var(--search-border);
   color: var(--search-button-hover);
+}
+
+/* search sidebar */
+
+.search-sidebar > input[type=search],
+.search-sidebar > button[type=submit] {
+  background-color: var(--search-sidebar-background);
+  color: var(--search-sidebar-text);
+}
+
+.sidebar-toggle .search-sidebar > input[type=search],
+.sidebar-toggle .search-sidebar > button[type=submit] {
+  background-color: var(--mobile-nav-background);
+  color: var(--mobile-nav-text);
 }
 
 /* main content area */

@@ -138,6 +138,21 @@ def test_resolve_invite(url, code):
 
 
 @pytest.mark.parametrize(
+    ('url', 'event_id'),
+    [
+        ('https://discordapp.com/invite/dpy', None),
+        ('https://discord.com/invite/dpy', None),
+        ('https://discord.gg/dpy', None),
+        ('https://discordapp.com/invite/dpy?event=22222222', 22222222),
+        ('https://discord.com/invite/dpy?event=4098', 4098),
+        ('https://discord.gg/dpy?event=727', 727),
+    ],
+)
+def test_resolve_invite_event(url, event_id: typing.Optional[int]):
+    assert utils.resolve_invite(url).event == event_id
+
+
+@pytest.mark.parametrize(
     ('url', 'code'),
     [
         ('https://discordapp.com/template/foobar', 'foobar'),
@@ -149,7 +164,7 @@ def test_resolve_template(url, code):
     assert utils.resolve_template(url) == code
 
 
-@pytest.mark.parametrize('mention', ['@everyone', '@here'])
+@pytest.mark.parametrize('mention', ['@everyone', '@here', '<@80088516616269824>', '<@!80088516616269824>', '<@&381978264698224660>'])
 def test_escape_mentions(mention):
     assert mention not in utils.escape_mentions(mention)
     assert mention not in utils.escape_mentions(f"one {mention} two")

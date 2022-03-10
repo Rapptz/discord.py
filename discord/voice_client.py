@@ -229,6 +229,8 @@ class VoiceClient(VoiceProtocol):
     channel: VocalGuildChannel
     endpoint_ip: str
     voice_port: int
+    ip: str
+    port: int
     secret_key: List[int]
     ssrc: int
 

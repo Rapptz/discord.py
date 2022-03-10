@@ -72,7 +72,7 @@ New Features
 - Add :attr:`MessageReference.jump_url` (:issue:`6318`)
 - Add :attr:`File.spoiler` (:issue:`6317`)
 - Add support for passing ``roles`` to :meth:`Guild.estimate_pruned_members` (:issue:`6538`)
-- Allow callable class factories to be used in :meth:`abc.Connectable.play` (:issue:`6478`)
+- Allow callable class factories to be used in :meth:`abc.Connectable.connect` (:issue:`6478`)
 - Add a way to get mutual guilds from the client's cache via :attr:`User.mutual_guilds` (:issue:`2539`, :issue:`6444`)
 - :meth:`PartialMessage.edit` now returns a full :class:`Message` upon success (:issue:`6309`)
 - Add :attr:`RawMessageUpdateEvent.guild_id` (:issue:`6489`)
