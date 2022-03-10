@@ -1,4 +1,4 @@
-# This example requires the 'members' privileged intents
+# This example requires the 'members' privileged intent
 
 import discord
 
