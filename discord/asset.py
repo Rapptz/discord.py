@@ -84,7 +84,7 @@ class AssetMixin:
 
         return await self._state.http.get_from_cdn(self.url)
 
-    async def save(self, fp: Union[str, bytes, os.PathLike[bytes], io.BufferedIOBase], *, seek_begin: bool = True) -> int:
+    async def save(self, fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase], *, seek_begin: bool = True) -> int:
         """|coro|
 
         Saves this asset into a file-like object.
