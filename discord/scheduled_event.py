@@ -131,7 +131,7 @@ class ScheduledEvent(Hashable):
         self.id: int = int(data['id'])
         self.guild_id: int = int(data['guild_id'])
         self.name: str = data['name']
-        self.description: Optional[str] = data.get('description', '')
+        self.description: Optional[str] = data.get('description')
         self.entity_type = try_enum(EntityType, data['entity_type'])
         self.entity_id: Optional[int] = _get_as_snowflake(data, 'entity_id')
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
