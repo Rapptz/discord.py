@@ -224,7 +224,9 @@ class _HelpCommandImpl(Command):
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original: HelpCommand = inject
         self._injected: HelpCommand = inject
-        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
+        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
+            inject.command_callback, globals(), skip_parameters=1
+        )
 
     async def prepare(self, ctx: Context[Any]) -> None:
         self._injected = injected = self._original.copy()

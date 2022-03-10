@@ -529,7 +529,9 @@ class Argument:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice[Union[int, float, str]]] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -591,7 +593,9 @@ class AppCommandGroup:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice[Union[int, float, str]]] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
         self.arguments: List[Argument] = [
             Argument(parent=self, state=self._state, data=d)
             for d in data.get('options', [])
