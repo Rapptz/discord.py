@@ -61,6 +61,11 @@ if TYPE_CHECKING:
     from .namespace import Namespace
     from .models import ChoiceT
 
+    # Generally, these two libraries are supposed to be separate from each other.
+    # However, for type hinting purposes it's unfortunately necessary for one to
+    # reference the other to prevent type checking errors in callbacks
+    from discord.ext.commands import Cog
+
 __all__ = (
     'Command',
     'ContextMenu',
@@ -79,7 +84,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
 Error = Union[
     Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
@@ -628,15 +633,14 @@ class Group:
     """
 
     __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
+    __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
         if not cls.__discord_app_commands_group_children__:
             cls.__discord_app_commands_group_children__ = children = [
-                member
-                for member in cls.__dict__.values()
-                if isinstance(member, (Group, Command)) and member.parent is None
+                member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
             ]
 
             found = set()
@@ -661,7 +665,6 @@ class Group:
         else:
             cls.__discord_app_commands_group_description__ = description
 
-
     def __init__(
         self,
         *,
@@ -683,10 +686,10 @@ class Group:
         self._children: Dict[str, Union[Command, Group]] = {}
 
         for child in self.__discord_app_commands_group_children__:
-            child = child._copy_with_binding(self)
+            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
             child.parent = self
             self._children[child.name] = child
-            if child._attr:
+            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
                 setattr(self, child._attr, child)
 
         if parent is not None and parent.parent is not None:
@@ -695,7 +698,7 @@ class Group:
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
 
-    def _copy_with_binding(self, binding: Group) -> Group:
+    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name

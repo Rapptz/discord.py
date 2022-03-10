@@ -24,14 +24,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import inspect
-import discord.utils
+import discord
+from discord import app_commands
 
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Type
+from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, Type
 
 from ._types import _BaseCommand
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeGuard
 
     from .bot import BotBase
     from .context import Context
@@ -110,19 +111,33 @@ class CogMeta(type):
     __cog_name__: str
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command]
+    __cog_is_app_commands_group__: bool
+    __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         name, bases, attrs = args
-        attrs['__cog_name__'] = kwargs.pop('name', name)
+        attrs['__cog_name__'] = kwargs.get('name', name)
         attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
+        attrs['__cog_is_app_commands_group__'] = is_parent = app_commands.Group in bases
 
-        description = kwargs.pop('description', None)
+        description = kwargs.get('description', None)
         if description is None:
             description = inspect.cleandoc(attrs.get('__doc__', ''))
         attrs['__cog_description__'] = description
 
+        if is_parent:
+            attrs['__discord_app_commands_skip_init_binding__'] = True
+            # This is hacky, but it signals the Group not to process this info.
+            # It's overridden later.
+            attrs['__discord_app_commands_group_children__'] = True
+        else:
+            # Remove the extraneous keyword arguments we're using
+            kwargs.pop('name', None)
+            kwargs.pop('description', None)
+
         commands = {}
+        cog_app_commands = {}
         listeners = {}
         no_bot_cog = 'Commands or listeners must not start with cog_ or bot_ (in method {0.__name__}.{1})'
 
@@ -143,6 +158,8 @@ class CogMeta(type):
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
+                elif isinstance(value, (app_commands.Group, app_commands.Command)) and value.parent is None:
+                    cog_app_commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
                         getattr(value, '__cog_listener__')
@@ -154,6 +171,13 @@ class CogMeta(type):
                         listeners[elem] = value
 
         new_cls.__cog_commands__ = list(commands.values())  # this will be copied in Cog.__new__
+        new_cls.__cog_app_commands__ = list(cog_app_commands.values())
+
+        if is_parent:
+            # Prefill the app commands for the Group as well..
+            # The type checker doesn't like runtime attribute modification and this one's
+            # optional so it can't be cheesed.
+            new_cls.__discord_app_commands_group_children__ = cog_app_commands  # type: ignore
 
         listeners_as_list = []
         for listener in listeners.values():
@@ -189,10 +213,11 @@ class Cog(metaclass=CogMeta):
     are equally valid here.
     """
 
-    __cog_name__: ClassVar[str]
-    __cog_settings__: ClassVar[Dict[str, Any]]
-    __cog_commands__: ClassVar[List[Command[Self, ..., Any]]]
-    __cog_listeners__: ClassVar[List[Tuple[str, str]]]
+    __cog_name__: str
+    __cog_settings__: Dict[str, Any]
+    __cog_commands__: List[Command[Self, ..., Any]]
+    __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]]
+    __cog_listeners__: List[Tuple[str, str]]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         # For issue 426, we need to store a copy of the command objects
@@ -218,6 +243,25 @@ class Cog(metaclass=CogMeta):
                 # Update our parent's reference to our self
                 parent.remove_command(command.name)  # type: ignore
                 parent.add_command(command)  # type: ignore
+
+        # Register the application commands
+        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
+        for command in cls.__cog_app_commands__:
+            copy = command._copy_with_binding(self)
+
+            if cls.__cog_is_app_commands_group__:
+                # Type checker doesn't understand this type of narrowing.
+                # Not even with TypeGuard somehow.
+                copy.parent = self  # type: ignore
+
+            children.append(copy)
+            if command._attr:
+                setattr(self, command._attr, copy)
+
+        self.__cog_app_commands__ = children
+        if cls.__cog_is_app_commands_group__:
+            # Dynamic attribute setting
+            self.__discord_app_commands_group_children__ = children  # type: ignore
 
         return self
 
@@ -452,6 +496,12 @@ class Cog(metaclass=CogMeta):
         for name, method_name in self.__cog_listeners__:
             bot.add_listener(getattr(self, method_name), name)
 
+        # Only do this if these are "top level" commands
+        if not cls.__cog_is_app_commands_group__:
+            for command in self.__cog_app_commands__:
+                # This is already atomic
+                bot.tree.add_command(command)
+
         return self
 
     def _eject(self, bot: BotBase) -> None:
@@ -461,6 +511,16 @@ class Cog(metaclass=CogMeta):
             for command in self.__cog_commands__:
                 if command.parent is None:
                     bot.remove_command(command.name)
+
+            if not cls.__cog_is_app_commands_group__:
+                for command in self.__cog_app_commands__:
+                    try:
+                        guild_ids = command.__discord_app_commands_default_guilds__
+                    except AttributeError:
+                        bot.tree.remove_command(command.name)
+                    else:
+                        for guild_id in guild_ids:
+                            bot.tree.remove_command(command.name, guild=discord.Object(id=guild_id))
 
             for name, method_name in self.__cog_listeners__:
                 bot.remove_listener(getattr(self, method_name), name)
