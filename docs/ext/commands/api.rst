@@ -34,7 +34,7 @@ Bot
 
     .. automethod:: Bot.command(*args, **kwargs)
         :decorator:
-    
+
     .. automethod:: Bot.event()
         :decorator:
 
