@@ -49,8 +49,6 @@ from typing import (
     Tuple,
     List,
     Any,
-    Type,
-    TypeVar,
     Union,
 )
 
@@ -69,6 +67,8 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .context import Context
+
+    from ._types import BotT
 
 
 @dataclass
@@ -348,7 +348,7 @@ class FlagsMeta(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-async def tuple_convert_all(ctx: Context[Any], argument: str, flag: Flag, converter: Any) -> Tuple[Any, ...]:
+async def tuple_convert_all(ctx: Context[BotT], argument: str, flag: Flag, converter: Any) -> Tuple[Any, ...]:
     view = StringView(argument)
     results = []
     param: inspect.Parameter = ctx.current_parameter  # type: ignore
@@ -373,7 +373,7 @@ async def tuple_convert_all(ctx: Context[Any], argument: str, flag: Flag, conver
     return tuple(results)
 
 
-async def tuple_convert_flag(ctx: Context[Any], argument: str, flag: Flag, converters: Any) -> Tuple[Any, ...]:
+async def tuple_convert_flag(ctx: Context[BotT], argument: str, flag: Flag, converters: Any) -> Tuple[Any, ...]:
     view = StringView(argument)
     results = []
     param: inspect.Parameter = ctx.current_parameter  # type: ignore
@@ -401,7 +401,7 @@ async def tuple_convert_flag(ctx: Context[Any], argument: str, flag: Flag, conve
     return tuple(results)
 
 
-async def convert_flag(ctx: Context[Any], argument: str, flag: Flag, annotation: Any = None) -> Any:
+async def convert_flag(ctx: Context[BotT], argument: str, flag: Flag, annotation: Any = None) -> Any:
     param: inspect.Parameter = ctx.current_parameter  # type: ignore
     annotation = annotation or flag.annotation
     try:
@@ -480,7 +480,7 @@ class FlagConverter(metaclass=FlagsMeta):
             yield (flag.name, getattr(self, flag.attribute))
 
     @classmethod
-    async def _construct_default(cls, ctx: Context[Any]) -> Self:
+    async def _construct_default(cls, ctx: Context[BotT]) -> Self:
         self = cls.__new__(cls)
         flags = cls.__commands_flags__
         for flag in flags.values():
@@ -546,7 +546,7 @@ class FlagConverter(metaclass=FlagsMeta):
         return result
 
     @classmethod
-    async def convert(cls, ctx: Context[Any], argument: str) -> Self:
+    async def convert(cls, ctx: Context[BotT], argument: str) -> Self:
         """|coro|
 
         The method that actually converters an argument to the flag mapping.

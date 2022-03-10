@@ -27,12 +27,12 @@ import inspect
 import discord
 from discord import app_commands
 
-from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, Type
+from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
-from ._types import _BaseCommand
+from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, TypeGuard
+    from typing_extensions import Self
 
     from .bot import BotBase
     from .context import Context
@@ -385,7 +385,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context[Any]) -> bool:
+    def bot_check_once(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -395,7 +395,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context[Any]) -> bool:
+    def bot_check(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -405,7 +405,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context[Any]) -> bool:
+    def cog_check(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -415,7 +415,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    async def cog_command_error(self, ctx: Context[Any], error: Exception) -> None:
+    async def cog_command_error(self, ctx: Context[BotT], error: Exception) -> None:
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
@@ -434,7 +434,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_before_invoke(self, ctx: Context[Any]) -> None:
+    async def cog_before_invoke(self, ctx: Context[BotT]) -> None:
         """A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
@@ -449,7 +449,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_after_invoke(self, ctx: Context[Any]) -> None:
+    async def cog_after_invoke(self, ctx: Context[BotT]) -> None:
         """A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.

@@ -72,9 +72,10 @@ if TYPE_CHECKING:
         CoroFunc,
         Coro,
         ContextT,
+        BotT,
+        _Bot,
     )
 
-    _Bot = Union['Bot', 'AutoShardedBot']
     _Prefix = Union[Iterable[str], str]
     _PrefixCallable = Union[
         Callable[[_Bot, Message], _Prefix],
@@ -93,11 +94,9 @@ MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
-CXT = TypeVar('CXT', bound='Context')
-BT = TypeVar('BT', bound='Union[Bot, AutoShardedBot]')
 
 
-def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
+def when_mentioned(bot: _Bot, msg: Message) -> List[str]:
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
@@ -106,7 +105,7 @@ def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
 
 
-def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], Message], List[str]]:
+def when_mentioned_or(*prefixes: str) -> Callable[[_Bot, Message], List[str]]:
     """A callable that implements when mentioned or other prefixes provided.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
@@ -217,7 +216,7 @@ class BotBase(GroupMixin[Any]):
 
         await super().close()  # type: ignore
 
-    async def on_command_error(self, context: Context[Any], exception: errors.CommandError) -> None:
+    async def on_command_error(self, context: Context[BotT], exception: errors.CommandError) -> None:
         """|coro|
 
         The default command error handler provided by the bot.
@@ -359,7 +358,7 @@ class BotBase(GroupMixin[Any]):
         self.add_check(func, call_once=True)
         return func
 
-    async def can_run(self, ctx: Context[Any], *, call_once: bool = False) -> bool:
+    async def can_run(self, ctx: Context[BotT], *, call_once: bool = False) -> bool:
         data = self._check_once if call_once else self._checks
 
         if len(data) == 0:
@@ -1051,15 +1050,15 @@ class BotBase(GroupMixin[Any]):
         self,
         message: Message,
         *,
-        cls: Type[CXT] = ...,
-    ) -> CXT:
+        cls: Type[ContextT] = ...,
+    ) -> ContextT:
         ...
 
     async def get_context(
         self,
         message: Message,
         *,
-        cls: Type[CXT] = MISSING,
+        cls: Type[ContextT] = MISSING,
     ) -> Any:
         r"""|coro|
 
@@ -1140,7 +1139,7 @@ class BotBase(GroupMixin[Any]):
         ctx.command = self.all_commands.get(invoker)
         return ctx
 
-    async def invoke(self, ctx: Context[Any]) -> None:
+    async def invoke(self, ctx: Context[BotT]) -> None:
         """|coro|
 
         Invokes the command given under the invocation context and
@@ -1192,7 +1191,7 @@ class BotBase(GroupMixin[Any]):
             return
 
         ctx = await self.get_context(message)
-        await self.invoke(ctx)
+        await self.invoke(ctx)  # type: ignore
 
     async def on_message(self, message: Message) -> None:
         await self.process_commands(message)

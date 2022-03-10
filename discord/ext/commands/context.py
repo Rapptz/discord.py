@@ -28,6 +28,8 @@ import re
 
 from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, TypeVar, Union
 
+from ._types import BotT
+
 import discord.abc
 import discord.utils
 
@@ -59,7 +61,6 @@ MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')
-BotT = TypeVar('BotT', bound="Union[Bot, AutoShardedBot]")
 CogT = TypeVar('CogT', bound="Cog")
 
 if TYPE_CHECKING:
@@ -361,7 +362,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return None
 
         cmd = cmd.copy()
-        cmd.context = self
+        cmd.context = self  # type: ignore
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
             mapping = cmd.get_bot_mapping()
@@ -390,7 +391,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         try:
             if hasattr(entity, '__cog_commands__'):
                 injected = wrap_callback(cmd.send_cog_help)
-                return await injected(entity)
+                return await injected(entity)  # type: ignore
             elif isinstance(entity, Group):
                 injected = wrap_callback(cmd.send_group_help)
                 return await injected(entity)

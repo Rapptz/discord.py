@@ -61,6 +61,8 @@ if TYPE_CHECKING:
     from discord.message import Message
 
     from ._types import (
+        BotT,
+        ContextT,
         Coro,
         CoroFunc,
         Check,
@@ -101,7 +103,6 @@ MISSING: Any = discord.utils.MISSING
 T = TypeVar('T')
 CogT = TypeVar('CogT', bound='Optional[Cog]')
 CommandT = TypeVar('CommandT', bound='Command')
-ContextT = TypeVar('ContextT', bound='Context')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
@@ -176,7 +177,7 @@ def wrap_callback(coro: Callable[P, Coro[T]]) -> Callable[P, Coro[Optional[T]]]:
 
 
 def hooked_wrapped_callback(
-    command: Command[Any, ..., Any], ctx: Context[Any], coro: Callable[P, Coro[T]]
+    command: Command[Any, ..., Any], ctx: Context[BotT], coro: Callable[P, Coro[T]]
 ) -> Callable[P, Coro[Optional[T]]]:
     @functools.wraps(coro)
     async def wrapped(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
@@ -486,7 +487,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
         self.cog = cog
 
-    async def __call__(self, context: Context[Any], *args: P.args, **kwargs: P.kwargs) -> T:
+    async def __call__(self, context: Context[BotT], *args: P.args, **kwargs: P.kwargs) -> T:
         """|coro|
 
         Calls the internal callback that the command holds.
@@ -541,7 +542,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         else:
             return self.copy()
 
-    async def dispatch_error(self, ctx: Context[Any], error: CommandError) -> None:
+    async def dispatch_error(self, ctx: Context[BotT], error: CommandError) -> None:
         ctx.command_failed = True
         cog = self.cog
         try:
@@ -564,7 +565,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context[Any], param: inspect.Parameter) -> Any:
+    async def transform(self, ctx: Context[BotT], param: inspect.Parameter) -> Any:
         required = param.default is param.empty
         converter = get_converter(param)
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
@@ -613,7 +614,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         return await run_converters(ctx, converter, argument, param)  # type: ignore
 
     async def _transform_greedy_pos(
-        self, ctx: Context[Any], param: inspect.Parameter, required: bool, converter: Any
+        self, ctx: Context[BotT], param: inspect.Parameter, required: bool, converter: Any
     ) -> Any:
         view = ctx.view
         result = []
@@ -635,7 +636,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return param.default
         return result
 
-    async def _transform_greedy_var_pos(self, ctx: Context[Any], param: inspect.Parameter, converter: Any) -> Any:
+    async def _transform_greedy_var_pos(self, ctx: Context[BotT], param: inspect.Parameter, converter: Any) -> Any:
         view = ctx.view
         previous = view.index
         try:
@@ -720,7 +721,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     def __str__(self) -> str:
         return self.qualified_name
 
-    async def _parse_arguments(self, ctx: Context[Any]) -> None:
+    async def _parse_arguments(self, ctx: Context[BotT]) -> None:
         ctx.args = [ctx] if self.cog is None else [self.cog, ctx]
         ctx.kwargs = {}
         args = ctx.args
@@ -756,7 +757,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if not self.ignore_extra and not view.eof:
             raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-    async def call_before_hooks(self, ctx: Context[Any]) -> None:
+    async def call_before_hooks(self, ctx: Context[BotT]) -> None:
         # now that we're done preparing we can call the pre-command hooks
         # first, call the command local hook:
         cog = self.cog
@@ -781,7 +782,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if hook is not None:
             await hook(ctx)
 
-    async def call_after_hooks(self, ctx: Context[Any]) -> None:
+    async def call_after_hooks(self, ctx: Context[BotT]) -> None:
         cog = self.cog
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
@@ -800,7 +801,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if hook is not None:
             await hook(ctx)
 
-    def _prepare_cooldowns(self, ctx: Context[Any]) -> None:
+    def _prepare_cooldowns(self, ctx: Context[BotT]) -> None:
         if self._buckets.valid:
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
@@ -810,7 +811,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if retry_after:
                     raise CommandOnCooldown(bucket, retry_after, self._buckets.type)  # type: ignore
 
-    async def prepare(self, ctx: Context[Any]) -> None:
+    async def prepare(self, ctx: Context[BotT]) -> None:
         ctx.command = self
 
         if not await self.can_run(ctx):
@@ -834,7 +835,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 await self._max_concurrency.release(ctx)  # type: ignore
             raise
 
-    def is_on_cooldown(self, ctx: Context[Any]) -> bool:
+    def is_on_cooldown(self, ctx: Context[BotT]) -> bool:
         """Checks whether the command is currently on cooldown.
 
         Parameters
@@ -855,7 +856,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
         return bucket.get_tokens(current) == 0
 
-    def reset_cooldown(self, ctx: Context[Any]) -> None:
+    def reset_cooldown(self, ctx: Context[BotT]) -> None:
         """Resets the cooldown on this command.
 
         Parameters
@@ -867,7 +868,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
-    def get_cooldown_retry_after(self, ctx: Context[Any]) -> float:
+    def get_cooldown_retry_after(self, ctx: Context[BotT]) -> float:
         """Retrieves the amount of seconds before this command can be tried again.
 
         .. versionadded:: 1.4
@@ -891,7 +892,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         return 0.0
 
-    async def invoke(self, ctx: Context[Any]) -> None:
+    async def invoke(self, ctx: Context[BotT]) -> None:
         await self.prepare(ctx)
 
         # terminate the invoked_subcommand chain.
@@ -902,7 +903,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         injected = hooked_wrapped_callback(self, ctx, self.callback)
         await injected(*ctx.args, **ctx.kwargs)  # type: ignore
 
-    async def reinvoke(self, ctx: Context[Any], *, call_hooks: bool = False) -> None:
+    async def reinvoke(self, ctx: Context[BotT], *, call_hooks: bool = False) -> None:
         ctx.command = self
         await self._parse_arguments(ctx)
 
@@ -1079,7 +1080,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         return ' '.join(result)
 
-    async def can_run(self, ctx: Context[Any]) -> bool:
+    async def can_run(self, ctx: Context[BotT]) -> bool:
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
@@ -1467,7 +1468,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
             ret.add_command(cmd.copy())
         return ret
 
-    async def invoke(self, ctx: Context[Any]) -> None:
+    async def invoke(self, ctx: Context[BotT]) -> None:
         ctx.invoked_subcommand = None
         ctx.subcommand_passed = None
         early_invoke = not self.invoke_without_command
@@ -1498,7 +1499,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
             view.previous = previous
             await super().invoke(ctx)
 
-    async def reinvoke(self, ctx: Context[Any], *, call_hooks: bool = False) -> None:
+    async def reinvoke(self, ctx: Context[BotT], *, call_hooks: bool = False) -> None:
         ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
@@ -1831,7 +1832,7 @@ def check_any(*checks: Check[ContextT]) -> Callable[[T], T]:
         else:
             unwrapped.append(pred)
 
-    async def predicate(ctx: Context[Any]) -> bool:
+    async def predicate(ctx: Context[BotT]) -> bool:
         errors = []
         for func in unwrapped:
             try:
@@ -1874,7 +1875,7 @@ def has_role(item: Union[int, str]) -> Callable[[T], T]:
         The name or ID of the role to check.
     """
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         if ctx.guild is None:
             raise NoPrivateMessage()
 
@@ -2026,7 +2027,7 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
     if invalid:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         ch = ctx.channel
         permissions = ch.permissions_for(ctx.author)  # type: ignore
 
@@ -2052,7 +2053,7 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
     if invalid:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         guild = ctx.guild
         me = guild.me if guild is not None else ctx.bot.user
         permissions = ctx.channel.permissions_for(me)  # type: ignore
@@ -2081,7 +2082,7 @@ def has_guild_permissions(**perms: bool) -> Callable[[T], T]:
     if invalid:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
             raise NoPrivateMessage
 
@@ -2107,7 +2108,7 @@ def bot_has_guild_permissions(**perms: bool) -> Callable[[T], T]:
     if invalid:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         if not ctx.guild:
             raise NoPrivateMessage
 
@@ -2133,7 +2134,7 @@ def dm_only() -> Callable[[T], T]:
     .. versionadded:: 1.1
     """
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         if ctx.guild is not None:
             raise PrivateMessageOnly()
         return True
@@ -2150,7 +2151,7 @@ def guild_only() -> Callable[[T], T]:
     that is inherited from :exc:`.CheckFailure`.
     """
 
-    def predicate(ctx: Context[Any]) -> bool:
+    def predicate(ctx: Context[BotT]) -> bool:
         if ctx.guild is None:
             raise NoPrivateMessage()
         return True
@@ -2168,7 +2169,7 @@ def is_owner() -> Callable[[T], T]:
     from :exc:`.CheckFailure`.
     """
 
-    async def predicate(ctx: Context[Any]) -> bool:
+    async def predicate(ctx: Context[BotT]) -> bool:
         if not await ctx.bot.is_owner(ctx.author):
             raise NotOwner('You do not own this bot.')
         return True
@@ -2188,7 +2189,7 @@ def is_nsfw() -> Callable[[T], T]:
         DM channels will also now pass this check.
     """
 
-    def pred(ctx: Context[Any]) -> bool:
+    def pred(ctx: Context[BotT]) -> bool:
         ch = ctx.channel
         if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
             return True

@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
 
+    from ._types import BotT
+
 
 __all__ = (
     'CommandError',
@@ -224,9 +226,9 @@ class CheckAnyFailure(CheckFailure):
         A list of check predicates that failed.
     """
 
-    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context[Any]], bool]]) -> None:
+    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context[BotT]], bool]]) -> None:
         self.checks: List[CheckFailure] = checks
-        self.errors: List[Callable[[Context[Any]], bool]] = errors
+        self.errors: List[Callable[[Context[BotT]], bool]] = errors
         super().__init__('You do not have permission to run this command.')
 
 

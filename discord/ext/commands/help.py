@@ -27,7 +27,6 @@ from __future__ import annotations
 import itertools
 import copy
 import functools
-import inspect
 import re
 
 from typing import (
@@ -52,6 +51,7 @@ from .errors import CommandError
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+    import inspect
 
     import discord.abc
 
@@ -59,7 +59,12 @@ if TYPE_CHECKING:
     from .context import Context
     from .cog import Cog
 
-    from ._types import Check, ContextT
+    from ._types import (
+        Check,
+        ContextT,
+        BotT,
+        _Bot,
+    )
 
 __all__ = (
     'Paginator',
@@ -217,9 +222,9 @@ def _not_overriden(f: FuncT) -> FuncT:
 class _HelpCommandImpl(Command):
     def __init__(self, inject: HelpCommand, *args: Any, **kwargs: Any) -> None:
         super().__init__(inject.command_callback, *args, **kwargs)
-        self._original = inject
-        self._injected = inject
-        self.params = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
+        self._original: HelpCommand = inject
+        self._injected: HelpCommand = inject
+        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
 
     async def prepare(self, ctx: Context[Any]) -> None:
         self._injected = injected = self._original.copy()
@@ -236,7 +241,7 @@ class _HelpCommandImpl(Command):
 
         await super().prepare(ctx)
 
-    async def _parse_arguments(self, ctx: Context[Any]) -> None:
+    async def _parse_arguments(self, ctx: Context[BotT]) -> None:
         # Make the parser think we don't have a cog so it doesn't
         # inject the parameter into `ctx.args`.
         original_cog = self.cog
@@ -246,7 +251,7 @@ class _HelpCommandImpl(Command):
         finally:
             self.cog = original_cog
 
-    async def _on_error_cog_implementation(self, _, ctx: Context[Any], error: CommandError) -> None:
+    async def _on_error_cog_implementation(self, _, ctx: Context[BotT], error: CommandError) -> None:
         await self._injected.on_help_command_error(ctx, error)
 
     def _inject_into_cog(self, cog: Cog) -> None:
@@ -256,15 +261,15 @@ class _HelpCommandImpl(Command):
         # as well if we inject it without modifying __cog_commands__
         # since that's used for the injection and ejection of cogs.
         def wrapped_get_commands(
-            *, _original: Callable[[], List[Command[Any, Any, Any]]] = cog.get_commands
-        ) -> List[Command[Any, Any, Any]]:
+            *, _original: Callable[[], List[Command[Any, ..., Any]]] = cog.get_commands
+        ) -> List[Command[Any, ..., Any]]:
             ret = _original()
             ret.append(self)
             return ret
 
         # Ditto here
         def wrapped_walk_commands(
-            *, _original: Callable[[], Generator[Command[Any, Any, Any], None, None]] = cog.walk_commands
+            *, _original: Callable[[], Generator[Command[Any, ..., Any], None, None]] = cog.walk_commands
         ):
             yield from _original()
             yield self
@@ -356,7 +361,7 @@ class HelpCommand:
         self.command_attrs = attrs = options.pop('command_attrs', {})
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
-        self.context: Context[Any] = MISSING
+        self.context: Context[_Bot] = MISSING
         self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
     def copy(self) -> Self:
@@ -412,10 +417,10 @@ class HelpCommand:
 
         self._command_impl.remove_check(func)
 
-    def get_bot_mapping(self) -> Dict[Optional[Cog], List[Command[Any, Any, Any]]]:
+    def get_bot_mapping(self) -> Dict[Optional[Cog], List[Command[Any, ..., Any]]]:
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
         bot = self.context.bot
-        mapping = {cog: cog.get_commands() for cog in bot.cogs.values()}
+        mapping: Dict[Optional[Cog], List[Command[Any, ..., Any]]] = {cog: cog.get_commands() for cog in bot.cogs.values()}
         mapping[None] = [c for c in bot.commands if c.cog is None]
         return mapping
 
@@ -686,7 +691,7 @@ class HelpCommand:
         await destination.send(error)
 
     @_not_overriden
-    async def on_help_command_error(self, ctx: Context[Any], error: CommandError) -> None:
+    async def on_help_command_error(self, ctx: Context[BotT], error: CommandError) -> None:
         """|coro|
 
         The help command's error handler, as specified by :ref:`ext_commands_error_handler`.
@@ -829,7 +834,7 @@ class HelpCommand:
         """
         return None
 
-    async def prepare_help_command(self, ctx: Context[Any], command: Optional[str] = None) -> None:
+    async def prepare_help_command(self, ctx: Context[BotT], command: Optional[str] = None) -> None:
         """|coro|
 
         A low level method that can be used to prepare the help command
@@ -853,7 +858,7 @@ class HelpCommand:
         """
         pass
 
-    async def command_callback(self, ctx: Context[Any], *, command: Optional[str] = None) -> None:
+    async def command_callback(self, ctx: Context[BotT], *, command: Optional[str] = None) -> None:
         """|coro|
 
         The actual implementation of the help command.
@@ -898,7 +903,7 @@ class HelpCommand:
 
         for key in keys[1:]:
             try:
-                found = cmd.all_commands.get(key)
+                found = cmd.all_commands.get(key)  # type: ignore
             except AttributeError:
                 string = await maybe_coro(self.subcommand_not_found, cmd, self.remove_mentions(key))
                 return await self.send_error_message(string)
@@ -1055,7 +1060,7 @@ class DefaultHelpCommand(HelpCommand):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx: Context[Any], command: str) -> None:
+    async def prepare_help_command(self, ctx: Context[BotT], command: str) -> None:
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 
@@ -1299,7 +1304,7 @@ class MinimalHelpCommand(HelpCommand):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx: Context[Any], command: str) -> None:
+    async def prepare_help_command(self, ctx: Context[BotT], command: str) -> None:
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 

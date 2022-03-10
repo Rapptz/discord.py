@@ -27,6 +27,7 @@ from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union
 
 
 if TYPE_CHECKING:
+    from .bot import Bot, AutoShardedBot
     from .context import Context
     from .cog import Cog
     from .errors import CommandError
@@ -38,6 +39,8 @@ MaybeCoro = Union[T, Coro[T]]
 CoroFunc = Callable[..., Coro[Any]]
 
 ContextT = TypeVar('ContextT', bound='Context')
+_Bot = Union['Bot', 'AutoShardedBot']
+BotT = TypeVar('BotT', bound=_Bot)
 
 Check = Union[Callable[["Cog", "ContextT"], MaybeCoro[bool]], Callable[["ContextT"], MaybeCoro[bool]]]
 Hook = Union[Callable[["Cog", "ContextT"], Coro[Any]], Callable[["ContextT"], Coro[Any]]]
