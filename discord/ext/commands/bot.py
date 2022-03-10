@@ -36,6 +36,8 @@ import types
 from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, TypeVar, Type, Union, overload
 
 import discord
+from discord import app_commands
+from discord.app_commands.tree import _retrieve_guild_ids
 
 from .core import GroupMixin
 from .view import StringView
@@ -50,7 +52,7 @@ if TYPE_CHECKING:
     import importlib.machinery
 
     from discord.message import Message
-    from discord.abc import User
+    from discord.abc import User, Snowflake
     from ._types import (
         Check,
         CoroFunc,
@@ -135,6 +137,8 @@ class BotBase(GroupMixin):
         super().__init__(**options)
         self.command_prefix = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
+        # Self doesn't have the ClientT bound, but since this is a mixin it technically does
+        self.__tree: app_commands.CommandTree[Self] = app_commands.CommandTree(self)  # type: ignore
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
         self._checks: List[Check] = []
@@ -529,10 +533,21 @@ class BotBase(GroupMixin):
 
     # cogs
 
-    def add_cog(self, cog: Cog, /, *, override: bool = False) -> None:
+    def add_cog(
+        self,
+        cog: Cog,
+        /,
+        *,
+        override: bool = False,
+        guild: Optional[Snowflake] = MISSING,
+        guilds: List[Snowflake] = MISSING,
+    ) -> None:
         """Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
+
+        If the cog is a :class:`.app_commands.Group` then it is added to
+        the bot's :class:`~discord.app_commands.CommandTree` as well.
 
         .. versionchanged:: 2.0
 
@@ -550,6 +565,19 @@ class BotBase(GroupMixin):
         override: :class:`bool`
             If a previously loaded cog with the same name should be ejected
             instead of raising an error.
+
+            .. versionadded:: 2.0
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            If the cog is an application command group, then this would be the
+            guild where the cog group would be added to. If not given then
+            it becomes a global command instead.
+
+            .. versionadded:: 2.0
+        guilds: List[:class:`~discord.abc.Snowflake`]
+            If the cog is an application command group, then this would be the
+            guilds where the cog group would be added to. If not given then
+            it becomes a global command instead. Cannot be mixed with
+            ``guild``.
 
             .. versionadded:: 2.0
 
@@ -572,7 +600,10 @@ class BotBase(GroupMixin):
         if existing is not None:
             if not override:
                 raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
-            self.remove_cog(cog_name)
+            self.remove_cog(cog_name, guild=guild, guilds=guilds)
+
+        if isinstance(cog, app_commands.Group):
+            self.__tree.add_command(cog, override=override, guild=guild, guilds=guilds)
 
         cog = cog._inject(self)
         self.__cogs[cog_name] = cog
@@ -600,7 +631,13 @@ class BotBase(GroupMixin):
         """
         return self.__cogs.get(name)
 
-    def remove_cog(self, name: str, /) -> Optional[Cog]:
+    def remove_cog(
+        self,
+        name: str,
+        /,
+        guild: Optional[Snowflake] = MISSING,
+        guilds: List[Snowflake] = MISSING,
+    ) -> Optional[Cog]:
         """Removes a cog from the bot and returns it.
 
         All registered commands and event listeners that the
@@ -616,6 +653,19 @@ class BotBase(GroupMixin):
         -----------
         name: :class:`str`
             The name of the cog to remove.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            If the cog is an application command group, then this would be the
+            guild where the cog group would be removed from. If not given then
+            a global command is removed instead instead.
+
+            .. versionadded:: 2.0
+        guilds: List[:class:`~discord.abc.Snowflake`]
+            If the cog is an application command group, then this would be the
+            guilds where the cog group would be removed from. If not given then
+            a global command is removed instead instead. Cannot be mixed with
+            ``guild``.
+
+            .. versionadded:: 2.0
 
         Returns
         -------
@@ -630,6 +680,15 @@ class BotBase(GroupMixin):
         help_command = self._help_command
         if help_command and help_command.cog is cog:
             help_command.cog = None
+
+        if isinstance(cog, app_commands.Group):
+            guild_ids = _retrieve_guild_ids(cog, guild, guilds)
+            if guild_ids is None:
+                self.__tree.remove_command(name)
+            else:
+                for guild_id in guild_ids:
+                    self.__tree.remove_command(name, guild=discord.Object(guild_id))
+
         cog._eject(self)
 
         return cog
@@ -893,6 +952,20 @@ class BotBase(GroupMixin):
             self._help_command = None
         else:
             self._help_command = None
+
+    # application command interop
+
+    # As mentioned above, this is a mixin so the Self type hint fails here.
+    # However, since the only classes that can use this are subclasses of Client
+    # anyway, then this is sound.
+    @property
+    def tree(self) -> app_commands.CommandTree[Self]:  # type: ignore
+        """:class:`~discord.app_commands.CommandTree`: The command tree responsible for handling the application commands
+        in this bot.
+
+        .. versionadded:: 2.0
+        """
+        return self.__tree
 
     # command processing
 

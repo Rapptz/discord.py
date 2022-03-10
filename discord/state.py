@@ -853,10 +853,13 @@ class ConnectionState:
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
+            if thread.archived:
+                guild._remove_thread(thread)
             self.dispatch('thread_update', old, thread)
         else:
             thread = Thread(guild=guild, state=guild._state, data=data)
-            guild._add_thread(thread)
+            if not thread.archived:
+                guild._add_thread(thread)
             self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data: gw.ThreadDeleteEvent) -> None:
@@ -1310,7 +1313,7 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = ScheduledEvent(state=self, data=data)
             guild._scheduled_events[scheduled_event.id] = scheduled_event
-            self.dispatch('scheduled_event_create', guild, scheduled_event)
+            self.dispatch('scheduled_event_create', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1321,7 +1324,7 @@ class ConnectionState:
             if scheduled_event is not None:
                 old_scheduled_event = copy.copy(scheduled_event)
                 scheduled_event._update(data)
-                self.dispatch('scheduled_event_update', guild, old_scheduled_event, scheduled_event)
+                self.dispatch('scheduled_event_update', old_scheduled_event, scheduled_event)
             else:
                 _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown scheduled event ID: %s. Discarding.', data['id'])
         else:
@@ -1335,7 +1338,7 @@ class ConnectionState:
             except KeyError:
                 pass
             else:
-                self.dispatch('scheduled_event_delete', guild, scheduled_event)
+                self.dispatch('scheduled_event_delete', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1347,10 +1350,9 @@ class ConnectionState:
                 user = self.get_user(int(data['user_id']))
                 if user is not None:
                     scheduled_event._add_user(user)
-                    self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
+                    self.dispatch('scheduled_event_user_add', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_ADD referencing unknown scheduled event ID: %s. Discarding.',
@@ -1370,7 +1372,6 @@ class ConnectionState:
                     self.dispatch('scheduled_event_user_remove', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_remove', scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',

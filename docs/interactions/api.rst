@@ -464,6 +464,12 @@ Decorators
 .. autofunction:: discord.app_commands.choices
     :decorator:
 
+.. autofunction:: discord.app_commands.autocomplete
+    :decorator:
+
+.. autofunction:: discord.app_commands.guilds
+    :decorator:
+
 Namespace
 ~~~~~~~~~~
 

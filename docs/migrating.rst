@@ -791,7 +791,7 @@ The return type of the following methods has been changed to an :term:`asynchron
 - :meth:`Guild.fetch_members`
 - :meth:`Reaction.users`
 
-The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an 
+The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an
 :term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
 
 Removal of ``InvalidArgument`` Exception
@@ -918,7 +918,7 @@ Allowed types for the following parameters have been changed:
 - ``rtc_region`` in :meth:`Guild.create_voice_channel` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`StageChannel.edit` is now of type Optional[:class:`str`].
 - ``rtc_region`` in :meth:`VoiceChannel.edit` is now of type Optional[:class:`str`].
-- ``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`. 
+- ``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`.
 
 Attribute Type Changes
 ------------------------
@@ -929,6 +929,7 @@ The following changes have been made:
 - :meth:`Guild.vanity_invite` may now be ``None``. This has been done to fix an issue with the method returning a broken :class:`Invite` object.
 - :attr:`Guild.shard_id` is now ``0`` instead of ``None`` if :class:`AutoShardedClient` is not used.
 - :attr:`Guild.mfa_level` is now of type :class:`MFALevel`.
+- :attr:`Guild.member_count` is now of type Optional[:class:`int`].
 - :attr:`AuditLogDiff.mfa_level` is now of type :class:`MFALevel`.
 - :attr:`AuditLogDiff.rtc_region` is now of type :class:`str`.
 - :attr:`StageChannel.rtc_region` is now of type :class:`str`.
@@ -1039,7 +1040,7 @@ The following changes have been made:
 - :func:`on_socket_raw_send` is now only called if ``enable_debug_events`` is set on :class:`Client`.
 - The documented return type for :meth:`Guild.fetch_channels` changed to Sequence[:class:`abc.GuildChannel`].
 - :func:`utils.resolve_invite` now returns a :class:`ResolvedInvite` class.
-- :func:`utils.oauth_url` now defaults to ``bot`` and ``application.commands`` scopes when not given instead of just ``bot``.
+- :func:`utils.oauth_url` now defaults to ``bot`` and ``applications.commands`` scopes when not given instead of just ``bot``.
 - :meth:`abc.Messageable.typing` can no longer be used as a regular (non-async) context manager.
 - :attr:`Intents.emojis` is now an alias of :attr:`Intents.emojis_and_stickers`.
 
@@ -1171,7 +1172,7 @@ The following attributes have been removed:
     - Use :attr:`ext.commands.CommandOnCooldown.type` instead.
 
 - ``clean_prefix`` from the :class:`~ext.commands.HelpCommand`
-    
+
     - Use :attr:`ext.commands.Context.clean_prefix` instead.
 
 Miscellanous Changes

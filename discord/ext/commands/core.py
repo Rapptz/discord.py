@@ -476,7 +476,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     def update(self, **kwargs: Any) -> None:
         """Updates :class:`Command` instance with updated attribute.
 
-        This works similarly to the :func:`.command` decorator in terms
+        This works similarly to the :func:`~discord.ext.commands.command` decorator in terms
         of parameters in that they are passed to the :class:`Command` or
         subclass constructors, sans the name and callback.
         """
@@ -1345,7 +1345,7 @@ class GroupMixin(Generic[CogT]):
         *args: Any,
         **kwargs: Any,
     ) -> Any:
-        """A shortcut decorator that invokes :func:`.command` and adds it to
+        """A shortcut decorator that invokes :func:`~discord.ext.commands.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
         Returns
@@ -1667,7 +1667,7 @@ def group(
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Group`.
 
-    This is similar to the :func:`.command` decorator but the ``cls``
+    This is similar to the :func:`~discord.ext.commands.command` decorator but the ``cls``
     parameter is set to :class:`Group` by default.
 
     .. versionchanged:: 1.1

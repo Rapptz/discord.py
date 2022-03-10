@@ -27,7 +27,7 @@ import asyncio
 import inspect
 import sys
 import traceback
-from typing import Callable, Dict, Generic, List, Literal, Optional, TYPE_CHECKING, Set, Tuple, TypeVar, Union, overload
+from typing import Any, Callable, Dict, Generic, List, Literal, Optional, TYPE_CHECKING, Set, Tuple, TypeVar, Union, overload
 
 
 from .namespace import Namespace, ResolveKey
@@ -55,14 +55,23 @@ __all__ = ('CommandTree',)
 ClientT = TypeVar('ClientT', bound='Client')
 
 
-def _retrieve_guild_ids(guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING) -> Optional[Set[int]]:
+def _retrieve_guild_ids(
+    command: Any, guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING
+) -> Optional[Set[int]]:
     if guild is not MISSING and guilds is not MISSING:
         raise TypeError('cannot mix guild and guilds keyword arguments')
 
-    # guilds=[] or guilds=[...] or no args at all
+    # guilds=[] or guilds=[...]
     if guild is MISSING:
-        if not guilds:
+        # If no arguments are given then it should default to the ones
+        # given to the guilds(...) decorator or None for global.
+        if guild is MISSING:
+            return getattr(command, '_guild_ids', None)
+
+        # guilds=[] is the same as global
+        if len(guilds) == 0:
             return None
+
         return {g.id for g in guilds}
 
     # At this point it should be...
@@ -85,6 +94,10 @@ class CommandTree(Generic[ClientT]):
         self.client: ClientT = client
         self._http = client.http
         self._state = client._connection
+
+        if self._state._command_tree is not None:
+            raise ClientException('This client already has an associated command tree.')
+
         self._state._command_tree = self
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
         self._global_commands: Dict[str, Union[Command, Group]] = {}
@@ -177,7 +190,7 @@ class CommandTree(Generic[ClientT]):
             This is currently 100 for slash commands and 5 for context menu commands.
         """
 
-        guild_ids = _retrieve_guild_ids(guild, guilds)
+        guild_ids = _retrieve_guild_ids(command, guild, guilds)
         if isinstance(command, ContextMenu):
             type = command.type.value
             name = command.name

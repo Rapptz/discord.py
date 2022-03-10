@@ -392,7 +392,7 @@ class Guild(Hashable):
             ('name', self.name),
             ('shard_id', self.shard_id),
             ('chunked', self.chunked),
-            ('member_count', getattr(self, '_member_count', None)),
+            ('member_count', self._member_count),
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
@@ -450,9 +450,7 @@ class Guild(Hashable):
     def _from_data(self, guild: GuildPayload) -> None:
         # according to Stan, this is always available even if the guild is unavailable
         # I don't have this guarantee when someone updates the guild.
-        member_count = guild.get('member_count', None)
-        if member_count is not None:
-            self._member_count: int = member_count
+        self._member_count: Optional[int] = guild.get('member_count', None)
 
         self.name: str = guild.get('name', '')
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
@@ -514,7 +512,7 @@ class Guild(Hashable):
                 self._add_member(member)
 
         self._sync(guild)
-        self._large: Optional[bool] = None if member_count is None else self._member_count >= 250
+        self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
 
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
@@ -569,10 +567,9 @@ class Guild(Hashable):
         members, which for this library is set to the maximum of 250.
         """
         if self._large is None:
-            try:
+            if self._member_count is not None:
                 return self._member_count >= 250
-            except AttributeError:
-                return len(self._members) >= 250
+            return len(self._members) >= 250
         return self._large
 
     @property
@@ -966,14 +963,17 @@ class Guild(Hashable):
         return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
 
     @property
-    def member_count(self) -> int:
-        """:class:`int`: Returns the true member count regardless of it being loaded fully or not.
+    def member_count(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the member count if available.
 
         .. warning::
 
             Due to a Discord limitation, in order for this attribute to remain up-to-date and
             accurate, it requires :attr:`Intents.members` to be specified.
 
+        .. versionchanged:: 2.0
+
+            Now returns an ``Optional[int]``.
         """
         return self._member_count
 
@@ -987,7 +987,7 @@ class Guild(Hashable):
         If this value returns ``False``, then you should request for
         offline members.
         """
-        count = getattr(self, '_member_count', None)
+        count = self._member_count
         if count is None:
             return False
         return count == len(self._members)
@@ -3116,6 +3116,16 @@ class Guild(Hashable):
             Unbanning failed.
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
+
+    @property
+    def vanity_url(self) -> Optional[str]:
+        """Optional[:class:`str`]: The Discord vanity invite URL for this guild, if available.
+
+        .. versionadded:: 2.0
+        """
+        if self.vanity_url_code is None:
+            return None
+        return f'{Invite.BASE}/{self.vanity_url_code}'
 
     async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
