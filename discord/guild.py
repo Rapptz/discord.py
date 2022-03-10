@@ -975,7 +975,6 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
 
             Now returns an ``Optional[int]``.
-
         """
         return self._member_count
 
