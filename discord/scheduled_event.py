@@ -492,7 +492,7 @@ class ScheduledEvent(Hashable):
         Returns
         --------
         List[:class:`User`]
-            All thread members in the thread.
+            All subscribed users of this event.
         """
 
         async def _before_strategy(retrieve, before, limit):
