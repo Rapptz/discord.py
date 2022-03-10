@@ -464,10 +464,13 @@ class AuditLogEntry(Hashable):
         self._changes = data.get('changes', [])
 
         user_id = utils._get_as_snowflake(data, 'user_id')
-        self.user: Optional[Union[User, Member]] = user_id and self._get_member(user_id)
+        self.user: Optional[Union[User, Member]] = self._get_member(user_id)
         self._target_id = utils._get_as_snowflake(data, 'target_id')
 
-    def _get_member(self, user_id: int) -> Union[Member, User, None]:
+    def _get_member(self, user_id: Optional[int]) -> Union[Member, User, None]:
+        if user_id is None:
+            return None
+
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self) -> str:

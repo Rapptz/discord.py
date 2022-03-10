@@ -826,11 +826,11 @@ class DiscordVoiceWebSocket:
         *,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> None:
-        self.ws = socket
-        self.loop = loop
-        self._keep_alive = None
-        self._close_code = None
-        self.secret_key = None
+        self.ws: aiohttp.ClientWebSocketResponse = socket
+        self.loop: asyncio.AbstractEventLoop = loop
+        self._keep_alive: Optional[VoiceKeepAliveHandler] = None
+        self._close_code: Optional[int] = None
+        self.secret_key: Optional[str] = None
         if hook:
             self._hook = hook  # type: ignore - type-checker doesn't like overriding methods
 
@@ -994,7 +994,6 @@ class DiscordVoiceWebSocket:
 
     async def load_secret_key(self, data: Dict[str, Any]) -> None:
         _log.info('received secret key for voice connection')
-        self.secret_key: str
         self.secret_key = self._connection.secret_key = data.get('secret_key')  # type: ignore - type-checker thinks secret_key could be None
         await self.speak()
         await self.speak(SpeakingState.none)

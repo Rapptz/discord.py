@@ -180,7 +180,7 @@ class ScheduledEvent(Hashable):
         return self.guild.get_channel(self.channel_id)  # type: ignore
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str`: The url for the scheduled event."""
         return f'https://discord.com/events/{self.guild_id}/{self.id}'
 
