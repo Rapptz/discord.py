@@ -61,6 +61,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from aiohttp import ClientSession
     from .embeds import Embed
+    from .ext.commands import Bot
     from .ui.view import View
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
@@ -134,7 +135,7 @@ class Interaction:
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
-        self._client: Client = state._get_client()
+        self._client: Union[Bot, Client] = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
@@ -184,8 +185,8 @@ class Interaction:
                 pass
 
     @property
-    def client(self) -> Client:
-        """:class:`Client`: The client that is handling this interaction."""
+    def client(self) -> Union[Bot, Client]:
+        """Union[:class:`Bot`, `:class:`Client`]: The client that is handling this interaction."""
         return self._client
 
     @property
