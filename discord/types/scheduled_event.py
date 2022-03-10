@@ -35,7 +35,7 @@ EntityType = Literal[1, 2, 3]
 
 class _BaseGuildScheduledEventOptional(TypedDict, total=False):
     creator_id: Optional[Snowflake]
-    description: str
+    description: Optional[str]
     creator: User
     user_count: int
     image: Optional[str]
