@@ -1,5 +1,4 @@
 import discord
-import logging
 from discord import app_commands
 from typing import Literal
 
@@ -7,8 +6,6 @@ from typing import Literal
 # (global commands can take up to an hour to register)
 # you could also pass a `discord.Guild` and it would work.
 guild = discord.Object(id=GUILD_ID_HERE)
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 class Farm(app_commands.Group):
