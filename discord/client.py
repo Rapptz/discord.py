@@ -44,6 +44,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    overload,
 )
 
 import aiohttp
@@ -1074,13 +1075,36 @@ class Client:
 
     # event registration
 
-    def event(self, coro: Coro) -> Coro:
+    def _add_event(self, event_name: str, coro: Coro) -> Coro:
+        if not asyncio.iscoroutinefunction(coro):
+            raise TypeError('event registered must be a coroutine function')
+            
+        setattr(self, event_name, coro)
+
+        _log.debug('%s has successfully been registered as an event', coro.__name__)
+
+        return coro
+
+    @overload
+    def event(self, coro_or_event_name = None) -> Callable[[Coro], Coro]: ...
+
+    @overload
+    def event(self, coro_or_event_name: str) -> Callable[[Coro], Coro]: ...
+
+    @overload
+    def event(self, coro_or_event_name: Coro) -> Coro: ...
+
+    def event(
+        self,
+        coro_or_event_name: Optional[Union[Coro, str]] = None
+    ) -> Union[Callable[[Coro], Coro], Coro]:
         """A decorator that registers an event to listen to.
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
 
         The events must be a :ref:`coroutine <coroutine>`, if not, :exc:`TypeError` is raised.
-
+        If a string is passed to this function, it is used as the event's name.
+        
         Example
         ---------
 
@@ -1090,18 +1114,24 @@ class Client:
             async def on_ready():
                 print('Ready!')
 
+        Parameters
+        ----------
+        coro_or_event_name: Optional[Union[:ref:`coroutine <coroutine>`, :class:`str`]]
+            The event name or coroutine.
+
         Raises
         --------
         TypeError
             The coroutine passed is not actually a coroutine.
         """
 
-        if not asyncio.iscoroutinefunction(coro):
-            raise TypeError('event registered must be a coroutine function')
+        if coro_or_event_name is None:
+            return lambda func: self._add_event(func.__name__, func)
 
-        setattr(self, coro.__name__, coro)
-        _log.debug('%s has successfully been registered as an event', coro.__name__)
-        return coro
+        if isinstance(coro_or_event_name, str):
+            return lambda func: self._add_event(coro_or_event_name, func)
+
+        return self._add_event(coro_or_event_name.__name__, coro_or_event_name)
 
     async def change_presence(
         self,
