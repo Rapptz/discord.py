@@ -47,7 +47,6 @@ from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
 from .mixins import Hashable
-from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
