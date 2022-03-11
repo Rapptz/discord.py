@@ -370,6 +370,9 @@ class Command(Generic[GroupT, P, T]):
             callback, '__discord_app_commands_default_guilds__', None
         )
 
+        if self._guild_ids is not None and self.parent is not None:
+            raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
+
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
 
@@ -1167,7 +1170,12 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, (Command, Group)):
+        if isinstance(inner, Group):
+            inner._guild_ids = defaults
+        elif isinstance(inner, Command):
+            if inner.parent is not None:
+                raise ValueError('child commands of a group cannot have default guilds set')
+
             inner._guild_ids = defaults
         else:
             # Runtime attribute assignment
