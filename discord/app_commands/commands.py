@@ -136,6 +136,20 @@ def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
 
 
+def _validate_auto_complete_callback(
+    callback: AutocompleteCallback[GroupT, ChoiceT]
+) -> AutocompleteCallback[GroupT, ChoiceT]:
+
+    requires_binding = is_inside_class(callback)
+    required_parameters = 3 + requires_binding
+    callback.requires_binding = requires_binding
+    params = inspect.signature(callback).parameters
+    if len(params) < required_parameters:
+        raise TypeError('autocomplete callback requires either 3 or 4 parameters to be passed')
+
+    return callback
+
+
 def _context_menu_annotation(annotation: Any, *, _none=NoneType) -> AppCommandType:
     if annotation is Message:
         return AppCommandType.message
@@ -215,7 +229,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-        param.autocomplete = callback
+        param.autocomplete = _validate_auto_complete_callback(callback)
 
     if autocomplete:
         first = next(iter(autocomplete))
@@ -434,8 +448,11 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
-        if self.binding is not None:
-            choices = await param.autocomplete(self.binding, interaction, value, namespace)
+        if param.autocomplete.requires_binding:
+            if self.binding is not None:
+                choices = await param.autocomplete(self.binding, interaction, value, namespace)
+            else:
+                raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
             choices = await param.autocomplete(interaction, value, namespace)
 
@@ -539,7 +556,7 @@ class Command(Generic[GroupT, P, T]):
             if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
                 raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-            param.autocomplete = coro
+            param.autocomplete = _validate_auto_complete_callback(coro)
             return coro
 
         return decorator
