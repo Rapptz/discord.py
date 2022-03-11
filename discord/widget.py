@@ -244,6 +244,8 @@ class Widget:
         The approximate number of online members in the guild.
         Offline members are not included in this count.
 
+        .. versionadded:: 2.0
+
     """
 
     __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name', 'presence_count')
