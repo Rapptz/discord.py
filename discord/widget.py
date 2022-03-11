@@ -295,7 +295,7 @@ class Widget:
         return f"https://discord.com/api/guilds/{self.id}/widget.json"
 
     @property
-    def invite_url(self) -> str:
+    def invite_url(self) -> Optional[str]:
         """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
