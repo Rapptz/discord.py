@@ -239,10 +239,10 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
 
 
 def copy_doc(original: Callable) -> Callable[[T], T]:
-    def decorator(overriden: T) -> T:
-        overriden.__doc__ = original.__doc__
-        overriden.__signature__ = _signature(original)  # type: ignore
-        return overriden
+    def decorator(overridden: T) -> T:
+        overridden.__doc__ = original.__doc__
+        overridden.__signature__ = _signature(original)  # type: ignore
+        return overridden
 
     return decorator
 
@@ -1076,7 +1076,7 @@ def is_inside_class(func: Callable[..., Any]) -> bool:
     # denoting which class it belongs to. So, e.g. for A.foo the qualname
     # would be A.foo while a global foo() would just be foo.
     #
-    # Unfortuately, for nested functions this breaks. So inside an outer
+    # Unfortunately, for nested functions this breaks. So inside an outer
     # function named outer, those two would end up having a qualname with
     # outer.<locals>.A.foo and outer.<locals>.foo
 
