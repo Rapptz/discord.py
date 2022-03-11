@@ -1390,6 +1390,7 @@ class Message(Hashable):
         previous_allowed_mentions = self._state.allowed_mentions
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
         else:
             flags = MISSING
 

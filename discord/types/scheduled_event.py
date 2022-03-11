@@ -75,7 +75,7 @@ class EntityMetadata(TypedDict):
 class ExternalScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Literal[None]
     entity_metadata: EntityMetadata
-    scheduled_end_time: Optional[str]
+    scheduled_end_time: str
     entity_type: Literal[3]
 
 

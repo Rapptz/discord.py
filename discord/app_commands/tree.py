@@ -55,7 +55,7 @@ from .errors import (
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING
+from ..utils import MISSING, _get_as_snowflake
 
 if TYPE_CHECKING:
     from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
@@ -688,7 +688,7 @@ class CommandTree(Generic[ClientT]):
 
     async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int) -> None:
         name = data['name']
-        guild_id = interaction.guild_id
+        guild_id = _get_as_snowflake(data, 'guild_id')
         ctx_menu = self._context_menus.get((name, guild_id, type))
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
@@ -746,14 +746,17 @@ class CommandTree(Generic[ClientT]):
 
         parents: List[str] = []
         name = data['name']
-        command = self._global_commands.get(name)
-        if interaction.guild_id:
+
+        command_guild_id = _get_as_snowflake(data, 'guild_id')
+        if command_guild_id:
             try:
-                guild_commands = self._guild_commands[interaction.guild_id]
+                guild_commands = self._guild_commands[command_guild_id]
             except KeyError:
-                pass
+                command = None
             else:
-                command = guild_commands.get(name) or command
+                command = guild_commands.get(name)
+        else:
+            command = self._global_commands.get(name)
 
         # If it's not found at this point then it's not gonna be found at any point
         if command is None:

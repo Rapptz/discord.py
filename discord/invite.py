@@ -29,7 +29,7 @@ from .asset import Asset
 from .utils import parse_time, snowflake_time, _get_as_snowflake
 from .object import Object
 from .mixins import Hashable
-from .enums import ChannelType, VerificationLevel, InviteTarget, try_enum
+from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, try_enum
 from .appinfo import PartialAppInfo
 from .scheduled_event import ScheduledEvent
 
@@ -156,9 +156,34 @@ class PartialInviteGuild:
         A list of features the guild has. See :attr:`Guild.features` for more information.
     description: Optional[:class:`str`]
         The partial guild's description.
+    nsfw_level: :class:`NSFWLevel`
+        The partial guild's NSFW level.
+
+        .. versionadded:: 2.0
+    vanity_url_code: Optional[:class:`str`]
+        The partial guild's vanity URL code, if available.
+
+        .. versionadded:: 2.0
+    premium_subscription_count: :class:`int`
+        The number of "boosts" the partial guild currently has.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('_state', 'features', '_icon', '_banner', 'id', 'name', '_splash', 'verification_level', 'description')
+    __slots__ = (
+        '_state',
+        '_icon',
+        '_banner',
+        '_splash',
+        'features',
+        'id',
+        'name',
+        'verification_level',
+        'description',
+        'vanity_url_code',
+        'nsfw_level',
+        'premium_subscription_count',
+    )
 
     def __init__(self, state: ConnectionState, data: InviteGuildPayload, id: int):
         self._state: ConnectionState = state
@@ -170,6 +195,9 @@ class PartialInviteGuild:
         self._splash: Optional[str] = data.get('splash')
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, data.get('verification_level'))
         self.description: Optional[str] = data.get('description')
+        self.vanity_url_code: Optional[str] = data.get('vanity_url_code')
+        self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, data.get('nsfw_level', 0))
+        self.premium_subscription_count: int = data.get('premium_subscription_count') or 0
 
     def __str__(self) -> str:
         return self.name
@@ -184,6 +212,16 @@ class PartialInviteGuild:
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
+
+    @property
+    def vanity_url(self) -> Optional[str]:
+        """Optional[:class:`str`]: The Discord vanity invite URL for this partial guild, if available.
+
+        .. versionadded:: 2.0
+        """
+        if self.vanity_url_code is None:
+            return None
+        return f'{Invite.BASE}/{self.vanity_url_code}'
 
     @property
     def icon(self) -> Optional[Asset]:

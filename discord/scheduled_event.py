@@ -88,7 +88,7 @@ class ScheduledEvent(Hashable):
         The ID of the entity this event is for if available.
     start_time: :class:`datetime.datetime`
         The time that the scheduled event will start in UTC.
-    end_time: :class:`datetime.datetime`
+    end_time: Optional[:class:`datetime.datetime`]
         The time that the scheduled event will end in UTC.
     privacy_level: :class:`PrivacyLevel`
         The privacy level of the scheduled event.

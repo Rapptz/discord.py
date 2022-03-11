@@ -514,9 +514,8 @@ class Cog(metaclass=CogMeta):
 
             if not cls.__cog_is_app_commands_group__:
                 for command in self.__cog_app_commands__:
-                    try:
-                        guild_ids = command.__discord_app_commands_default_guilds__
-                    except AttributeError:
+                    guild_ids = command._guild_ids
+                    if guild_ids is None:
                         bot.tree.remove_command(command.name)
                     else:
                         for guild_id in guild_ids:
