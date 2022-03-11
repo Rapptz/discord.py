@@ -188,7 +188,7 @@ class WidgetMember(BaseUser):
         except KeyError:
             activity = None
         else:
-            activity = create_activity(game)
+            activity = create_activity(game, state)
 
         self.activity: Optional[Union[BaseActivity, Spotify]] = activity
 
