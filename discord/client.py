@@ -184,7 +184,7 @@ class Client:
         self,
         **options: Any,
     ):
-        self.loop = MISSING
+        self.loop: asyncio.AbstractEventLoop = MISSING
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
@@ -194,7 +194,7 @@ class Client:
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop)
+        self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
 
         self._handlers: Dict[str, Callable] = {
             'ready': self._handle_ready,
@@ -436,7 +436,7 @@ class Client:
 
     # login state management
 
-    async def login(self, token: str, *, connector: Optional[aiohttp.BaseConnector] = None) -> None:
+    async def login(self, token: str) -> None:
         """|coro|
 
         Logs in the client with the specified credentials.
@@ -460,7 +460,7 @@ class Client:
 
         _log.info('logging in using static token')
 
-        data = await self.http.static_login(token.strip(), connector=connector)
+        data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -572,8 +572,6 @@ class Client:
         await self.http.close()
         self._ready.clear()
         self.loop = MISSING
-        self.http.loop = self.loop
-        self._connection.loop = self.loop
 
     def clear(self) -> None:
         """Clears the internal state of the bot.
@@ -587,7 +585,7 @@ class Client:
         self._connection.clear()
         self.http.recreate()
 
-    async def start(self, token: str, *, reconnect: bool = True, connector: Optional[aiohttp.BaseConnector] = None) -> None:
+    async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -601,7 +599,7 @@ class Client:
         self.http.loop = self.loop
         self._connection.loop = self.loop
         try:
-            await self.login(token, connector=connector)
+            await self.login(token)
             await self.connect(reconnect=reconnect)
         finally:
             if not self.is_closed():

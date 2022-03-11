@@ -332,14 +332,15 @@ class HTTPClient:
 
     def __init__(
         self,
+        loop: asyncio.AbstractEventLoop,
+        connector: Optional[aiohttp.BaseConnector] = None,
         *,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
-        loop: asyncio.AbstractEventLoop,
         unsync_clock: bool = True,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
-        self.connector: aiohttp.BaseConnector = MISSING  # filled in static_login
+        self.connector: aiohttp.BaseConnector = connector or MISSING
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
         self._global_over: asyncio.Event = asyncio.Event()
@@ -541,12 +542,10 @@ class HTTPClient:
 
     # login management
 
-    async def static_login(self, token: str, *, connector: Optional[aiohttp.BaseConnector] = None) -> user.User:
+    async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
-        if connector is None:
-            self.connector = aiohttp.TCPConnector(limit=0, loop=self.loop)
-        else:
-            self.connector = connector
+        if self.connector is MISSING:
+            self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
         self.__session = aiohttp.ClientSession(
             connector=self.connector, ws_response_class=DiscordClientWebSocketResponse, loop=self.loop
         )

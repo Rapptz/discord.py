@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import asyncio
 import inspect
 import sys
 import traceback

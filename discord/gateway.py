@@ -153,7 +153,7 @@ class KeepAliveHandler(threading.Thread):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
                 _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
                 coro = self.ws.close(4000)
-                f = asyncio.run_coroutine_threadsafe(coro, self.ws.loop)
+                f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
                 try:
                     f.result()
@@ -166,7 +166,7 @@ class KeepAliveHandler(threading.Thread):
             data = self.get_payload()
             _log.debug(self.msg, self.shard_id, data['d'])
             coro = self.ws.send_heartbeat(data)
-            f = asyncio.run_coroutine_threadsafe(coro, self.ws.loop)
+            f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
             try:
                 # block until sending is complete
                 total = 0
@@ -872,7 +872,7 @@ class DiscordVoiceWebSocket:
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
-        ws = cls(socket, loop=client.client.loop, hook=hook)
+        ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
         ws._max_heartbeat_timeout = 60.0

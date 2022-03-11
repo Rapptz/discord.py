@@ -241,6 +241,7 @@ class VoiceClient(VoiceProtocol):
         self.token: str = MISSING
         self.server_id: int = MISSING
         self.socket = MISSING
+        self.loop: asyncio.AbstractEventLoop = state.loop
         self._state: ConnectionState = state
         # this will be used in the AudioPlayer thread
         self._connected: threading.Event = threading.Event()

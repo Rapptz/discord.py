@@ -974,7 +974,7 @@ class ConnectionState:
             guild._add_member(member)
 
         try:
-            guild._member_count += 1  # type: ignore
+            guild._member_count += 1
         except AttributeError:
             pass
 
@@ -984,7 +984,7 @@ class ConnectionState:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             try:
-                guild._member_count -= 1  # type: ignore
+                guild._member_count -= 1
             except AttributeError:
                 pass
 
