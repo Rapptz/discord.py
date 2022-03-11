@@ -365,6 +365,14 @@ class Command(Generic[GroupT, P, T]):
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
+
+        # Unwrap __self__ for bound methods
+        try:
+            self.binding = callback.__self__
+            self._callback = callback = callback.__func__
+        except AttributeError:
+            pass
+
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
         self._guild_ids: Optional[List[int]] = guild_ids or getattr(
             callback, '__discord_app_commands_default_guilds__', None
