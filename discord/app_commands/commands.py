@@ -223,9 +223,9 @@ def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('choices are only supported for integer, string, or number option types')
 
-        # There's a type safety hole if someone does Choice[float] as an annotation
-        # but the values are actually Choice[int]. Since the input-output is the same this feels
-        # safe enough to ignore.
+        if not all(param.type == choice._option_type for choice in choices):
+            raise TypeError('choices must all have the same inner option type as the parameter choice type')
+
         param.choices = choices
 
     if all_choices:

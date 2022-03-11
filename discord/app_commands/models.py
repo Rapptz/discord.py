@@ -188,6 +188,19 @@ class Choice(Generic[ChoiceT]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
 
+    @property
+    def _option_type(self) -> AppCommandOptionType:
+        if isinstance(self.value, int):
+            return AppCommandOptionType.integer
+        elif isinstance(self.value, float):
+            return AppCommandOptionType.number
+        elif isinstance(self.value, str):
+            return AppCommandOptionType.string
+        else:
+            raise TypeError(
+                f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__!r}'
+            )
+
     def to_dict(self) -> ApplicationCommandOptionChoice:
         return {
             'name': self.name,
