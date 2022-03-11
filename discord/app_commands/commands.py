@@ -121,6 +121,7 @@ else:
 
 
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
+VALID_CONTEXT_MENU_NAME = re.compile(r'^[\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -134,6 +135,21 @@ def _shorten(
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
+
+
+def validate_name(name: str) -> str:
+    match = VALID_SLASH_COMMAND_NAME.match(name)
+    if match is None:
+        raise ValueError('names must be between 1-32 characters')
+    if not name.islower():
+        raise ValueError('names must be all lower case')
+    return name
+
+
+def validate_context_menu_name(name: str) -> str:
+    if VALID_CONTEXT_MENU_NAME.match(name) is None:
+        raise ValueError('context menu names must be between 1-32 characters')
+    return name
 
 
 def _validate_auto_complete_callback(
@@ -342,7 +358,7 @@ class Command(Generic[GroupT, P, T]):
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
     ):
-        self.name: str = name
+        self.name: str = validate_name(name)
         self.description: str = description
         self._attr: Optional[str] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
@@ -591,7 +607,7 @@ class ContextMenu:
         callback: ContextMenuCallback,
         type: AppCommandType,
     ):
-        self.name: str = name
+        self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
         self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
@@ -673,9 +689,9 @@ class Group:
                 raise TypeError('groups cannot have more than 25 commands')
 
         if name is MISSING:
-            cls.__discord_app_commands_group_name__ = _to_kebab_case(cls.__name__)
+            cls.__discord_app_commands_group_name__ = validate_name(_to_kebab_case(cls.__name__))
         else:
-            cls.__discord_app_commands_group_name__ = name
+            cls.__discord_app_commands_group_name__ = validate_name(name)
 
         if description is MISSING:
             if cls.__doc__ is None:
@@ -694,7 +710,7 @@ class Group:
         guild_ids: Optional[List[int]] = None,
     ):
         cls = self.__class__
-        self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
+        self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
         self._guild_ids: Optional[List[int]] = guild_ids
