@@ -411,7 +411,8 @@ class Role(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`ValueError` instead of the now-removed
+           ``InvalidArgument``.
 
         Parameters
         -----------

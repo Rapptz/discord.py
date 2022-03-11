@@ -1240,7 +1240,8 @@ class Message(Hashable):
             Edits are no longer in-place, the newly edited message is returned instead.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`TypeError` instead of the now-removed
+           ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1478,7 +1479,8 @@ class Message(Hashable):
             ``emoji`` parameter is now positional-only.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`TypeError` instead of the now-removed
+           ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1514,7 +1516,8 @@ class Message(Hashable):
         the :class:`abc.Snowflake` abc.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`TypeError` instead of the now-removed
+           ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1554,7 +1557,8 @@ class Message(Hashable):
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`TypeError` instead of the now-removed
+           ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1663,7 +1667,7 @@ class Message(Hashable):
 
         .. versionchanged:: 2.0
             Will raise :exc:`TypeError` or :exc:`ValueError` instead of
-            :class:`~discord.InvalidArgument`.
+            the now-removed ``InvalidArgument``.
 
         Raises
         --------

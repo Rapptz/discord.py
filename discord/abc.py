@@ -752,7 +752,8 @@ class GuildChannel:
             await channel.set_permissions(member, overwrite=overwrite)
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
+            Will raise :exc:`TypeError` instead of the now-removed
+           ``InvalidArgument``.
 
 
         Parameters
@@ -935,7 +936,7 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             Will raise :exc:`TypeError` or :exc:`ValueError` instead of
-            :class:`~discord.InvalidArgument`.
+            the now-removed ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1283,7 +1284,7 @@ class Messageable:
 
         .. versionchanged:: 2.0
             Will raise :exc:`TypeError` or :exc:`ValueError` instead of
-            :class:`~discord.InvalidArgument`.
+            the now-removed ``InvalidArgument``.
 
         Parameters
         ------------
