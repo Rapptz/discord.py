@@ -135,7 +135,7 @@ def _shorten(
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
 
-  
+
 def _validate_auto_complete_callback(
     callback: AutocompleteCallback[GroupT, ChoiceT]
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
