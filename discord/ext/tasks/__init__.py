@@ -200,7 +200,8 @@ class Loop(Generic[LF]):
             raise exc
         finally:
             await self._call_loop_function('after_loop')
-            self._handle.cancel()
+            if self._handle is not MISSING:
+                self._handle.cancel()
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
