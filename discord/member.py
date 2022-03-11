@@ -914,6 +914,42 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
+    async def timeout(self, when: Union[datetime.timedelta, datetime.datetime], /, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Applies a time out to a member until the specified date time or for the
+        given :class:`datetime.timedelta`.
+
+        You must have the :attr:`~Permissions.moderate_members` permission to
+        use this.
+
+        This raises the same exceptions as :meth:`edit`.
+
+        Parameters
+        -----------
+        when: Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]
+            If this is a :class:`datetime.timedelta` then it represents the amount of
+            time the member should be timed out for. If this is a :class:`datetime.datetime`
+            then it's when the member's timeout should expire. Note that the API only allows
+            for timeouts up to 28 days.
+        reason: Optional[:class:`str`]
+            The reason for doing this action. Shows up on the audit log.
+
+        Raises
+        -------
+        TypeError
+            The ``when`` parameter was the wrong type of the datetime was not timezone-aware.
+        """
+
+        if isinstance(when, datetime.timedelta):
+            timed_out_until = utils.utcnow() + when
+        elif isinstance(when, datetime.datetime):
+            timed_out_until = when
+        else:
+            raise TypeError(f'expected datetime.datetime or datetime.timedelta not {when.__class__!r}')
+
+        await self.edit(timed_out_until=timed_out_until, reason=reason)
+
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|
 
