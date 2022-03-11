@@ -217,7 +217,7 @@ class Attachment(Hashable):
 
     async def save(
         self,
-        fp: Union[io.BufferedIOBase, PathLike[bytes]],
+        fp: Union[io.BufferedIOBase, PathLike[Any]],
         *,
         seek_begin: bool = True,
         use_cached: bool = False,
