@@ -232,8 +232,7 @@ class StreamIntegration(Integration):
         do this.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------

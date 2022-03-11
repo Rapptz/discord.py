@@ -1215,7 +1215,7 @@ msgid "Removed the ``afk`` keyword-only parameter."
 msgstr ""
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.change_presence:15
-msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`TypeError`."
+msgid "Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`."
 msgstr ""
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.change_presence:19
@@ -1312,7 +1312,7 @@ msgid "``name`` and ``icon`` parameters are now keyword-only. The `region`` para
 msgstr ""
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_guild:10
-msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`ValueError`."
+msgid "Will raise :exc:`ValueError` instead of :class:`~discord.InvalidArgument`."
 msgstr ""
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_guild:14
@@ -4633,7 +4633,7 @@ msgstr ""
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:8
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.send:19
-msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`ValueError` or :exc:`TypeError` in various cases."
+msgid "Will raise :exc:`TypeError` or :exc:`ValueError` instead of :class:`~discord.InvalidArgument`."
 msgstr ""
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.reply:12

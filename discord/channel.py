@@ -302,8 +302,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            Will raise :exc:`TypeError` or :exc:`ValueError` instead of
+            :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
@@ -620,8 +620,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -1095,8 +1094,7 @@ class VoiceChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
@@ -1380,8 +1378,7 @@ class StageChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
@@ -1538,8 +1535,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            Will raise :exc:`TypeError` or :exc:`ValueError` instead of
+            :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
@@ -1785,8 +1782,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            Will raise :exc:`TypeError` or :exc:`ValueError` instead of
+            :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------

@@ -178,8 +178,7 @@ class Template:
             The ``region`` parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            Will raise :exc:`ValueError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------

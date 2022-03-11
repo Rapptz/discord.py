@@ -1207,8 +1207,7 @@ class Guild(Hashable):
             will be required to update the position of the channel in the channel list.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Examples
         ----------
@@ -1310,8 +1309,7 @@ class Guild(Hashable):
         This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -1400,8 +1398,7 @@ class Guild(Hashable):
         .. versionadded:: 1.7
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -1471,8 +1468,7 @@ class Guild(Hashable):
             cannot have categories.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Raises
         ------
@@ -1581,8 +1577,8 @@ class Guild(Hashable):
             The ``region`` keyword parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            Will raise :exc:`TypeError` or :exc:`ValueError` instead of
+            :class:`~discord.InvalidArgument`.
 
         .. versionchanged:: 2.0
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
@@ -2086,8 +2082,7 @@ class Guild(Hashable):
             The ``roles`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -2191,8 +2186,7 @@ class Guild(Hashable):
             The returned value can be ``None``.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -2889,8 +2883,7 @@ class Guild(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         -----------
@@ -2973,8 +2966,7 @@ class Guild(Hashable):
         .. versionadded:: 1.4
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Example
         ----------

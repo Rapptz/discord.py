@@ -1125,8 +1125,7 @@ class Client:
             Removed the ``afk`` keyword-only parameter.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            Will raise :exc:`TypeError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
@@ -1369,8 +1368,7 @@ class Client:
             ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            Will raise :exc:`ValueError` instead of :class:`~discord.InvalidArgument`.
 
         Parameters
         ----------
