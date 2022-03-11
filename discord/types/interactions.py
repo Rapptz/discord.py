@@ -122,6 +122,7 @@ ApplicationCommandInteractionDataOption = Union[
 
 class _BaseApplicationCommandInteractionDataOptional(TypedDict, total=False):
     resolved: ResolvedData
+    guild_id: Snowflake
 
 
 class _BaseApplicationCommandInteractionData(_BaseApplicationCommandInteractionDataOptional):
