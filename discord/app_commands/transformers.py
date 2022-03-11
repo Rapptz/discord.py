@@ -241,6 +241,11 @@ class _TransformMetadata:
     def __init__(self, metadata: Type[Transformer]):
         self.metadata: Type[Transformer] = metadata
 
+    # This is needed to pass typing's type checks.
+    # e.g. Optional[Transform[discord.Member, MyTransformer]]
+    def __call__(self) -> None:
+        pass
+
 
 async def _identity_transform(cls, interaction: Interaction, value: Any) -> Any:
     return value
