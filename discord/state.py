@@ -805,7 +805,8 @@ class ConnectionState:
         if guild is not None:
             # the factory can't be a DMChannel or GroupChannel here
             channel = factory(guild=guild, state=self, data=data)  # type: ignore
-            guild._add_channel(channel)  # type: ignore
+            if ch_type in (ChannelType.text, ChannelType.news):
+                guild._add_channel(channel)  # type: ignore
             self.dispatch('guild_channel_create', channel)
         else:
             _log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
