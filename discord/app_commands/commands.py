@@ -340,6 +340,7 @@ class Command(Generic[GroupT, P, T]):
         description: str,
         callback: CommandCallback[GroupT, P, T],
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = name
         self.description: str = description
@@ -349,7 +350,9 @@ class Command(Generic[GroupT, P, T]):
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
-        self._guild_ids: Optional[List[int]] = getattr(callback, '__discord_app_commands_default_guilds__', None)
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(
+            callback, '__discord_app_commands_default_guilds__', None
+        )
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
@@ -688,12 +691,13 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
         cls = self.__class__
         self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
-        self._guild_ids: Optional[List[int]] = None
+        self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
             raise TypeError('groups must have a description')
