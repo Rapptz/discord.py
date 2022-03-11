@@ -64,7 +64,7 @@ def _retrieve_guild_ids(
     if guild is MISSING:
         # If no arguments are given then it should default to the ones
         # given to the guilds(...) decorator or None for global.
-        if guild is MISSING:
+        if guilds is MISSING:
             return getattr(command, '_guild_ids', None)
 
         # guilds=[] is the same as global
