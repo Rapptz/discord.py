@@ -121,6 +121,7 @@ else:
 
 
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
+VALID_CONTEXT_MENU_NAME = re.compile(r'^[\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -134,6 +135,35 @@ def _shorten(
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
+
+
+def validate_name(name: str) -> str:
+    match = VALID_SLASH_COMMAND_NAME.match(name)
+    if match is None:
+        raise ValueError('names must be between 1-32 characters')
+    if not name.islower():
+        raise ValueError('names must be all lower case')
+    return name
+
+
+def validate_context_menu_name(name: str) -> str:
+    if VALID_CONTEXT_MENU_NAME.match(name) is None:
+        raise ValueError('context menu names must be between 1-32 characters')
+    return name
+
+
+def _validate_auto_complete_callback(
+    callback: AutocompleteCallback[GroupT, ChoiceT]
+) -> AutocompleteCallback[GroupT, ChoiceT]:
+
+    requires_binding = is_inside_class(callback)
+    required_parameters = 3 + requires_binding
+    callback.requires_binding = requires_binding
+    params = inspect.signature(callback).parameters
+    if len(params) < required_parameters:
+        raise TypeError('autocomplete callback requires either 3 or 4 parameters to be passed')
+
+    return callback
 
 
 def _context_menu_annotation(annotation: Any, *, _none=NoneType) -> AppCommandType:
@@ -215,7 +245,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-        param.autocomplete = callback
+        param.autocomplete = _validate_auto_complete_callback(callback)
 
     if autocomplete:
         first = next(iter(autocomplete))
@@ -326,8 +356,9 @@ class Command(Generic[GroupT, P, T]):
         description: str,
         callback: CommandCallback[GroupT, P, T],
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
-        self.name: str = name
+        self.name: str = validate_name(name)
         self.description: str = description
         self._attr: Optional[str] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
@@ -335,7 +366,9 @@ class Command(Generic[GroupT, P, T]):
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
-        self._guild_ids: Optional[List[int]] = getattr(callback, '__discord_app_commands_default_guilds__', None)
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(
+            callback, '__discord_app_commands_default_guilds__', None
+        )
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
@@ -434,8 +467,11 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
-        if self.binding is not None:
-            choices = await param.autocomplete(self.binding, interaction, value, namespace)
+        if param.autocomplete.requires_binding:
+            if self.binding is not None:
+                choices = await param.autocomplete(self.binding, interaction, value, namespace)
+            else:
+                raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
             choices = await param.autocomplete(interaction, value, namespace)
 
@@ -539,7 +575,7 @@ class Command(Generic[GroupT, P, T]):
             if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
                 raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-            param.autocomplete = coro
+            param.autocomplete = _validate_auto_complete_callback(coro)
             return coro
 
         return decorator
@@ -571,7 +607,7 @@ class ContextMenu:
         callback: ContextMenuCallback,
         type: AppCommandType,
     ):
-        self.name: str = name
+        self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
         self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
@@ -653,9 +689,9 @@ class Group:
                 raise TypeError('groups cannot have more than 25 commands')
 
         if name is MISSING:
-            cls.__discord_app_commands_group_name__ = _to_kebab_case(cls.__name__)
+            cls.__discord_app_commands_group_name__ = validate_name(_to_kebab_case(cls.__name__))
         else:
-            cls.__discord_app_commands_group_name__ = name
+            cls.__discord_app_commands_group_name__ = validate_name(name)
 
         if description is MISSING:
             if cls.__doc__ is None:
@@ -671,12 +707,13 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
         cls = self.__class__
-        self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
+        self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
-        self._guild_ids: Optional[List[int]] = None
+        self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
             raise TypeError('groups must have a description')

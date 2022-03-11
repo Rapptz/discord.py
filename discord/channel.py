@@ -742,7 +742,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
         invitable: :class:`bool`
-            Whether non-modertators can add users to the thread. Only applicable to private threads.
+            Whether non-moderators can add users to the thread. Only applicable to private threads.
             Defaults to ``True``.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.

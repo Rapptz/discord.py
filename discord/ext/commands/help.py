@@ -182,8 +182,8 @@ class Paginator:
         return fmt.format(self)
 
 
-def _not_overriden(f):
-    f.__help_command_not_overriden__ = True
+def _not_overridden(f):
+    f.__help_command_not_overridden__ = True
     return f
 
 
@@ -201,7 +201,7 @@ class _HelpCommandImpl(Command):
         self.params = get_signature_parameters(injected.command_callback, globals(), skip_parameters=1)
 
         on_error = injected.on_help_command_error
-        if not hasattr(on_error, '__help_command_not_overriden__'):
+        if not hasattr(on_error, '__help_command_not_overridden__'):
             if self.cog is not None:
                 self.on_error = self._on_error_cog_implementation
             else:
@@ -643,7 +643,7 @@ class HelpCommand:
         destination = self.get_destination()
         await destination.send(error)
 
-    @_not_overriden
+    @_not_overridden
     async def on_help_command_error(self, ctx, error):
         """|coro|
 
