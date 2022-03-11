@@ -231,7 +231,7 @@ class Widget:
     channels: List[:class:`WidgetChannel`]
         The accessible voice channels in the guild.
     members: List[:class:`Member`]
-        The online members in the server. Offline members
+        The online members in the guild. Offline members
         do not appear in the widget.
 
         .. note::
@@ -240,10 +240,13 @@ class Widget:
             the users will be "anonymized" with linear IDs and discriminator
             information being incorrect. Likewise, the number of members
             retrieved is capped.
+    presence_count: :class:`int`
+        The approximate number of online members in the guild.
+        Offline members are not included in this count.
 
     """
 
-    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
+    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name', 'presence_count')
 
     def __init__(self, *, state: ConnectionState, data: WidgetPayload) -> None:
         self._state = state
@@ -267,6 +270,8 @@ class Widget:
                     connected_channel = WidgetChannel(id=connected_channel, name='', position=0)
 
             self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
+
+        self.presence_count: int = data['presence_count']
 
     def __str__(self) -> str:
         return self.json_url
