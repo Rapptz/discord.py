@@ -165,7 +165,7 @@ class View:
 
         cls.__view_children_items__ = children
 
-    def _init_children(self) -> List[Item[Any]]:
+    def _init_children(self) -> List[Item[Self]]:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
@@ -177,7 +177,7 @@ class View:
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
         self.timeout = timeout
-        self.children: List[Item[Any]] = self._init_children()
+        self.children: List[Item[Self]] = self._init_children()
         self.__weights = _ViewWeights(self.children)
         loop = asyncio.get_running_loop()
         self.id: str = os.urandom(16).hex()
