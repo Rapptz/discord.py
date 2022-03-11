@@ -108,8 +108,8 @@ class Loop(Generic[LF]):
         self.loop: asyncio.AbstractEventLoop = loop
         self.count: Optional[int] = count
         self._current_loop = 0
-        self._handle: SleepHandle = MISSING
-        self._task: asyncio.Task[None] = MISSING
+        self._handle: Optional[SleepHandle] = None
+        self._task: Optional[asyncio.Task[None]] = None
         self._injected = None
         self._valid_exception = (
             OSError,
@@ -200,7 +200,8 @@ class Loop(Generic[LF]):
             raise exc
         finally:
             await self._call_loop_function('after_loop')
-            self._handle.cancel()
+            if self._handle:
+                self._handle.cancel()
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
@@ -325,7 +326,7 @@ class Loop(Generic[LF]):
             The task that has been created.
         """
 
-        if self._task is not MISSING and not self._task.done():
+        if self._task and not self._task.done():
             raise RuntimeError('Task is already launched and is not completed.')
 
         if self._injected is not None:
@@ -358,7 +359,7 @@ class Loop(Generic[LF]):
 
         .. versionadded:: 1.2
         """
-        if self._task is not MISSING and not self._task.done():
+        if self._task and not self._task.done():
             self._stop_next_iteration = True
 
     def _can_be_cancelled(self) -> bool:
@@ -366,7 +367,7 @@ class Loop(Generic[LF]):
 
     def cancel(self) -> None:
         """Cancels the internal task, if it is running."""
-        if self._can_be_cancelled():
+        if self._can_be_cancelled() and self._task:
             self._task.cancel()
 
     def restart(self, *args: Any, **kwargs: Any) -> None:
@@ -386,10 +387,11 @@ class Loop(Generic[LF]):
         """
 
         def restart_when_over(fut: Any, *, args: Any = args, kwargs: Any = kwargs) -> None:
-            self._task.remove_done_callback(restart_when_over)
+            if self._task:
+                self._task.remove_done_callback(restart_when_over)
             self.start(*args, **kwargs)
 
-        if self._can_be_cancelled():
+        if self._can_be_cancelled() and self._task:
             self._task.add_done_callback(restart_when_over)
             self._task.cancel()
 
@@ -468,7 +470,7 @@ class Loop(Generic[LF]):
 
         .. versionadded:: 1.4
         """
-        return not bool(self._task.done()) if self._task is not MISSING else False
+        return not bool(self._task.done()) if self._task else False
 
     async def _error(self, *args: Any) -> None:
         exception: Exception = args[-1]
@@ -692,7 +694,7 @@ class Loop(Generic[LF]):
                 self._prepare_time_index(now=self._last_iteration)
 
             self._next_iteration = self._get_next_sleep_time()
-            if self._handle is not MISSING and not self._handle.done():
+            if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
                 self._handle.recalculate(self._next_iteration)
 
