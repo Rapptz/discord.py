@@ -54,7 +54,7 @@ class _WidgetOptional(TypedDict, total=False):
 class Widget(_WidgetOptional):
     id: Snowflake
     name: str
-    instant_invite: str
+    instant_invite: Optional[str]
     presence_count: int
 
 
