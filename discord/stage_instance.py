@@ -121,6 +121,7 @@ class StageInstance(Hashable):
     @cached_slot_property('_cs_scheduled_event')
     def scheduled_event(self) -> Optional[ScheduledEvent]:
         """Optional[:class:`ScheduledEvent`]: The scheduled event that belongs to the stage instance."""
+        # Guild.get_scheduled_event() expects an int, we are passing Optional[int]
         return self.guild.get_scheduled_event(self.scheduled_event_id)  # type: ignore
 
     async def edit(
