@@ -817,13 +817,11 @@ class ThreadMember(Hashable):
     def __repr__(self) -> str:
         return f'<ThreadMember id={self.id} thread_id={self.thread_id} joined_at={self.joined_at!r}>'
 
-    def _from_data(self, data: ThreadMemberPayload):
-        self.id: int
+    def _from_data(self, data: ThreadMemberPayload) -> None:
         try:
             self.id = int(data['user_id'])
         except KeyError:
-            assert self._state.self_id is not None
-            self.id = self._state.self_id
+            self.id = self._state.self_id  # type: ignore
 
         self.thread_id: int
         try:
