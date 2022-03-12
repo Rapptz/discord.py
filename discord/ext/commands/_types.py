@@ -27,16 +27,26 @@ from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union
 
 
 if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
     from .bot import Bot, AutoShardedBot
     from .context import Context
     from .cog import Cog
     from .errors import CommandError
+
+    P = ParamSpec('P')
+else:
+    P = TypeVar('P')
 
 T = TypeVar('T')
 
 Coro = Coroutine[Any, Any, T]
 MaybeCoro = Union[T, Coro[T]]
 CoroFunc = Callable[..., Coro[Any]]
+MaybeCoroFunc = Union[
+    Callable[P, Coro[T]],
+    Callable[P, T],
+]
 
 ContextT = TypeVar('ContextT', bound='Context')
 _Bot = Union['Bot', 'AutoShardedBot']

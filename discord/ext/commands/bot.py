@@ -68,20 +68,17 @@ if TYPE_CHECKING:
     from discord.message import Message
     from discord.abc import User, Snowflake
     from ._types import (
+        _Bot,
+        BotT,
         Check,
         CoroFunc,
-        Coro,
         ContextT,
-        BotT,
-        _Bot,
+        MaybeCoroFunc,
     )
 
     _Prefix = Union[Iterable[str], str]
-    _PrefixCallable = Union[
-        Callable[[_Bot, Message], _Prefix],
-        Callable[[_Bot, Message], Coro[_Prefix]],
-    ]
-    PrefixType = Union[_Prefix, _PrefixCallable]
+    _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
+    PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
 __all__ = (
     'when_mentioned',
@@ -158,13 +155,13 @@ _default: Any = _DefaultRepr()
 class BotBase(GroupMixin[Any]):
     def __init__(
         self,
-        command_prefix: PrefixType,
+        command_prefix: PrefixType[BotT],
         help_command: HelpCommand = _default,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
         super().__init__(**options)
-        self.command_prefix: PrefixType = command_prefix
+        self.command_prefix: PrefixType[BotT] = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
         self.__tree: app_commands.CommandTree[Self] = app_commands.CommandTree(self)  # type: ignore
