@@ -91,8 +91,6 @@ t.ActivityFlags = {
 """
 
 if TYPE_CHECKING:
-    from typing_extensions import Unpack
-
     from .types.activity import (
         Activity as ActivityPayload,
         ActivityTimestamps,
@@ -125,7 +123,7 @@ class BaseActivity:
 
     __slots__ = ('_created_at',)
 
-    def __init__(self, **kwargs: Unpack[ActivityPayload]) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         self._created_at: Optional[float] = kwargs.pop('created_at', None)
 
     @property
@@ -220,13 +218,13 @@ class Activity(BaseActivity):
         'buttons',
     )
 
-    def __init__(self, **kwargs: Unpack[ActivityPayload]) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
-        self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})  # type: ignore
-        self.assets: ActivityAssets = kwargs.pop('assets', {})  # type: ignore
-        self.party: ActivityParty = kwargs.pop('party', {})  # type: ignore
+        self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
+        self.assets: ActivityAssets = kwargs.pop('assets', {})
+        self.party: ActivityParty = kwargs.pop('party', {})
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
         self.name: Optional[str] = kwargs.pop('name', None)
         self.url: Optional[str] = kwargs.pop('url', None)
@@ -365,7 +363,7 @@ class Game(BaseActivity):
 
     __slots__ = ('name', '_end', '_start')
 
-    def __init__(self, name: str, **extra: Unpack[ActivityPayload]) -> None:
+    def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
 
@@ -479,14 +477,14 @@ class Streaming(BaseActivity):
 
     __slots__ = ('platform', 'name', 'game', 'url', 'details', 'assets')
 
-    def __init__(self, *, name: Optional[str], url: str, **extra: Unpack[ActivityPayload]) -> None:
+    def __init__(self, *, name: Optional[str], url: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.platform: Optional[str] = name
         self.name: Optional[str] = extra.pop('details', name)
         self.game: Optional[str] = extra.pop('state', None)
         self.url: str = url
         self.details: Optional[str] = extra.pop('details', self.name)  # compatibility
-        self.assets: ActivityAssets = extra.pop('assets', {})  # type: ignore
+        self.assets: ActivityAssets = extra.pop('assets', {})
 
     @property
     def type(self) -> ActivityType:
@@ -565,12 +563,12 @@ class Spotify:
 
     __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id', '_created_at')
 
-    def __init__(self, **data: Unpack[ActivityPayload]) -> None:
-        self._state: str = data.pop('state', '')  # type: ignore
-        self._details: str = data.pop('details', '')  # type: ignore
-        self._timestamps: ActivityTimestamps = data.pop('timestamps', {})  # type: ignore
-        self._assets: ActivityAssets = data.pop('assets', {})  # type: ignore
-        self._party: ActivityParty = data.pop('party', {})  # type: ignore
+    def __init__(self, **data: Any) -> None:
+        self._state: str = data.pop('state', '')
+        self._details: str = data.pop('details', '')
+        self._timestamps: ActivityTimestamps = data.pop('timestamps', {})
+        self._assets: ActivityAssets = data.pop('assets', {})
+        self._party: ActivityParty = data.pop('party', {})
         self._sync_id: str = data.pop('sync_id', '')
         self._session_id: Optional[str] = data.pop('session_id')
         self._created_at: Optional[float] = data.pop('created_at', None)
@@ -744,7 +742,7 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Unpack[ActivityPayload]) -> None:
+    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
         self.state: Optional[str] = extra.pop('state', None)
