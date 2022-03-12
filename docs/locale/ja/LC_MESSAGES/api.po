@@ -3135,7 +3135,7 @@ msgstr ""
 #: ../../../discord/message.py:docstring of discord.message.Message.add_reaction:15
 #: ../../../discord/message.py:docstring of discord.message.Message.remove_reaction:13
 #: ../../../discord/message.py:docstring of discord.message.Message.clear_reaction:11
-msgid "Will raise :exc:`TypeError` instead of the now-removed ``InvalidArgument``.."
+msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`TypeError`."
 msgstr ""
 
 #: ../../../discord/client.py:docstring of discord.client.Client.change_presence:19
@@ -3316,7 +3316,7 @@ msgstr ""
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction.clear:9
 #: ../../../discord/role.py:docstring of discord.role.Role.edit:19
 #: ../../../discord/template.py:docstring of discord.template.Template.create_guild:10
-msgid "Will raise :exc:`ValueError` instead of the now-removed ``InvalidArgument``.."
+msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`ValueError`."
 msgstr ""
 
 #: ../../../discord/client.py:docstring of discord.client.Client.create_guild:14
@@ -10462,7 +10462,7 @@ msgstr ""
 #: ../../../discord/channel.py:docstring of discord.abc.Messageable.send:19
 #: ../../../discord/channel.py:docstring of discord.abc.Messageable.send:19
 #: ../../../discord/message.py:docstring of discord.message.Message.reply:8
-msgid "Will raise :exc:`TypeError` or :exc:`ValueError` instead of the now-removed ``InvalidArgument``.."
+msgid "This function no-longer raises ``InvalidArgument`` instead raising :exc:`ValueError` or :exc:`TypeError` in various cases."
 msgstr ""
 
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhookMessage.edit:33
