@@ -333,8 +333,6 @@ class Command(Generic[GroupT, P, T]):
         The parent application command. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_default_guilds__: List[int]
-
     def __init__(
         self,
         *,
@@ -654,7 +652,6 @@ class Group:
         The parent group. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_default_guilds__: List[int]
     __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
