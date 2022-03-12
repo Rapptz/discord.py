@@ -91,6 +91,8 @@ t.ActivityFlags = {
 """
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
+
     from .types.activity import (
         Activity as ActivityPayload,
         ActivityTimestamps,
@@ -123,7 +125,7 @@ class BaseActivity:
 
     __slots__ = ('_created_at',)
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Unpack[ActivityPayload]) -> None:
         self._created_at: Optional[float] = kwargs.pop('created_at', None)
 
     @property
@@ -218,18 +220,18 @@ class Activity(BaseActivity):
         'buttons',
     )
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Unpack[ActivityPayload]) -> None:
         super().__init__(**kwargs)
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
-        self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
-        self.assets: ActivityAssets = kwargs.pop('assets', {})
-        self.party: ActivityParty = kwargs.pop('party', {})
+        self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})  # type: ignore
+        self.assets: ActivityAssets = kwargs.pop('assets', {})  # type: ignore
+        self.party: ActivityParty = kwargs.pop('party', {})  # type: ignore
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
         self.name: Optional[str] = kwargs.pop('name', None)
         self.url: Optional[str] = kwargs.pop('url', None)
         self.flags: int = kwargs.pop('flags', 0)
-        self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
+        self.sync_id: Optional[str] = kwargs.pop('sync_id', None)  # type: ignore
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
         self.buttons: List[ActivityButton] = kwargs.pop('buttons', [])
 
@@ -363,7 +365,7 @@ class Game(BaseActivity):
 
     __slots__ = ('name', '_end', '_start')
 
-    def __init__(self, name: str, **extra: Any) -> None:
+    def __init__(self, name: str, **extra: Unpack[ActivityPayload]) -> None:
         super().__init__(**extra)
         self.name: str = name
 

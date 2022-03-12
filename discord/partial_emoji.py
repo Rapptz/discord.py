@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from datetime import datetime
     from .types.message import PartialEmoji as PartialEmojiPayload
+    from .types.activity import ActivityEmoji
 
 
 class _EmojiTag:
@@ -105,7 +106,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def from_dict(cls, data: Union[PartialEmojiPayload, Dict[str, Any]]) -> Self:
+    def from_dict(cls, data: Union[PartialEmojiPayload, ActivityEmoji, Dict[str, Any]]) -> Self:
         return cls(
             animated=data.get('animated', False),
             id=utils._get_as_snowflake(data, 'id'),
