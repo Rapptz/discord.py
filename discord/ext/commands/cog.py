@@ -27,12 +27,13 @@ import inspect
 import discord
 from discord import app_commands
 
-from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, Type
+from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from ._types import _BaseCommand
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, TypeGuard
+    from typing_extensions import Self
+    from discord.abc import Snowflake
 
     from .bot import BotBase
     from .context import Context
@@ -463,7 +464,7 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    def _inject(self, bot: BotBase) -> Self:
+    def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
         cls = self.__class__
 
         # realistically, the only thing that can cause loading errors
@@ -500,11 +501,11 @@ class Cog(metaclass=CogMeta):
         if not cls.__cog_is_app_commands_group__:
             for command in self.__cog_app_commands__:
                 # This is already atomic
-                bot.tree.add_command(command)
+                bot.tree.add_command(command, override=override, guild=guild, guilds=guilds)
 
         return self
 
-    def _eject(self, bot: BotBase) -> None:
+    def _eject(self, bot: BotBase, guild_ids: Optional[Iterable[int]]) -> None:
         cls = self.__class__
 
         try:
@@ -514,7 +515,7 @@ class Cog(metaclass=CogMeta):
 
             if not cls.__cog_is_app_commands_group__:
                 for command in self.__cog_app_commands__:
-                    guild_ids = command._guild_ids
+                    guild_ids = guild_ids or command._guild_ids
                     if guild_ids is None:
                         bot.tree.remove_command(command.name)
                     else:
