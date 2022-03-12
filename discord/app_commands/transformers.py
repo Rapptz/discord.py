@@ -627,10 +627,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     (inner, default) = get_supported_annotation(annotation)
     type = inner.type()
-    if default is MISSING:
-        default = parameter.default
-        if default is parameter.empty:
-            default = MISSING
+
+    if default is MISSING or default is None:
+        param_default = parameter.default
+        if param_default is not parameter.empty:
+            default = param_default
 
     # Verify validity of the default parameter
     if default is not MISSING:
