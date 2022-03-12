@@ -618,6 +618,7 @@ class ContextMenu:
         name: str,
         callback: ContextMenuCallback,
         type: AppCommandType,
+        guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
@@ -628,6 +629,7 @@ class ContextMenu:
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
+        self._guild_ids = guild_ids
 
     @property
     def callback(self) -> ContextMenuCallback:
@@ -645,6 +647,7 @@ class ContextMenu:
         self._param_name = param
         self._annotation = annotation
         self.module = callback.__module__
+        self._guild_ids = None
         return self
 
     def to_dict(self) -> Dict[str, Any]:
@@ -1196,7 +1199,7 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
 
     def decorator(inner: T) -> T:
-        if isinstance(inner, Group):
+        if isinstance(inner, (Group, ContextMenu)):
             inner._guild_ids = defaults
         elif isinstance(inner, Command):
             if inner.parent is not None:
