@@ -87,6 +87,7 @@ if TYPE_CHECKING:
     )
 
     BE = TypeVar('BE', bound=BaseException)
+    _State = Union[ConnectionState, '_WebhookState']
 
 MISSING: Any = utils.MISSING
 
@@ -588,8 +589,8 @@ class PartialWebhookGuild(Hashable):
 
     __slots__ = ('id', 'name', '_icon', '_state')
 
-    def __init__(self, *, data: SourceGuildPayload, state: Union[ConnectionState, _WebhookState]) -> None:
-        self._state: Union[ConnectionState, _WebhookState] = state
+    def __init__(self, *, data: SourceGuildPayload, state: _State) -> None:
+        self._state: _State = state
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self._icon: str = data['icon']
@@ -615,7 +616,7 @@ class _FriendlyHttpAttributeErrorHelper:
 class _WebhookState:
     __slots__ = ('_parent', '_webhook')
 
-    def __init__(self, webhook: Any, parent: Optional[Union[ConnectionState, _WebhookState]]):
+    def __init__(self, webhook: Any, parent: Optional[_State]):
         self._webhook: Any = webhook
 
         self._parent: Optional[ConnectionState]
@@ -852,10 +853,10 @@ class BaseWebhook(Hashable):
         self,
         data: WebhookPayload,
         token: Optional[str] = None,
-        state: Optional[Union[ConnectionState, _WebhookState]] = None,
+        state: Optional[_State] = None,
     ) -> None:
         self.auth_token: Optional[str] = token
-        self._state: Union[ConnectionState, _WebhookState] = state or _WebhookState(self, parent=state)
+        self._state: _State = state or _WebhookState(self, parent=state)
         self._update(data)
 
     def _update(self, data: WebhookPayload) -> None:
@@ -1038,7 +1039,7 @@ class Webhook(BaseWebhook):
         data: WebhookPayload,
         session: aiohttp.ClientSession,
         token: Optional[str] = None,
-        state: Optional[Union[ConnectionState, _WebhookState]] = None,
+        state: Optional[_State] = None,
     ) -> None:
         super().__init__(data, token, state)
         self.session: aiohttp.ClientSession = session
