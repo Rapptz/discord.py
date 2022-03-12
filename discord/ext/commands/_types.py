@@ -23,8 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 
-from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union
+from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union, Tuple
 
+
+T = TypeVar('T')
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
@@ -35,18 +37,17 @@ if TYPE_CHECKING:
     from .errors import CommandError
 
     P = ParamSpec('P')
+    MaybeCoroFunc = Union[
+        Callable[P, 'Coro[T]'],
+        Callable[P, T],
+    ]
 else:
     P = TypeVar('P')
-
-T = TypeVar('T')
+    MaybeCoroFunc = Tuple[P, T]
 
 Coro = Coroutine[Any, Any, T]
 MaybeCoro = Union[T, Coro[T]]
 CoroFunc = Callable[..., Coro[Any]]
-MaybeCoroFunc = Union[
-    Callable[P, Coro[T]],
-    Callable[P, T],
-]
 
 ContextT = TypeVar('ContextT', bound='Context')
 _Bot = Union['Bot', 'AutoShardedBot']
