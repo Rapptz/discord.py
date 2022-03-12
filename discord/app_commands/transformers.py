@@ -541,6 +541,7 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
     AppCommandOptionType.string: (str, NoneType),
     AppCommandOptionType.integer: (int, NoneType),
     AppCommandOptionType.boolean: (bool, NoneType),
+    AppCommandOptionType.number: (float, NoneType),
 }
 
 
