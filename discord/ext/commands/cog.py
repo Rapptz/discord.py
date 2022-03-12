@@ -177,7 +177,7 @@ class CogMeta(type):
             # Prefill the app commands for the Group as well..
             # The type checker doesn't like runtime attribute modification and this one's
             # optional so it can't be cheesed.
-            new_cls.__discord_app_commands_group_children__ = cog_app_commands  # type: ignore
+            new_cls.__discord_app_commands_group_children__ = new_cls.__cog_app_commands__  # type: ignore
 
         listeners_as_list = []
         for listener in listeners.values():
