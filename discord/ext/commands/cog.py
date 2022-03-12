@@ -263,6 +263,8 @@ class Cog(metaclass=CogMeta):
         if cls.__cog_is_app_commands_group__:
             # Dynamic attribute setting
             self.__discord_app_commands_group_children__ = children  # type: ignore
+            # Enforce this to work even if someone forgets __init__
+            self.module = cls.__module__  # type: ignore
 
         return self
 

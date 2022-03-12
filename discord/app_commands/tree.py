@@ -40,7 +40,7 @@ from .errors import (
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake
+from ..utils import MISSING, _get_as_snowflake, _is_submodule
 
 if TYPE_CHECKING:
     from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
@@ -488,6 +488,32 @@ class CommandTree(Generic[ClientT]):
                 guild_id = guild.id
                 base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id)
                 return base
+
+    def _remove_with_module(self, name: str) -> None:
+        remove: List[Any] = []
+        for key, cmd in self._context_menus.items():
+            if cmd.module is not None and _is_submodule(name, cmd.module):
+                remove.append(key)
+
+        for key in remove:
+            del self._context_menus[key]
+
+        remove = []
+        for key, cmd in self._global_commands.items():
+            if cmd.module is not None and _is_submodule(name, cmd.module):
+                remove.append(key)
+
+        for key in remove:
+            del self._global_commands[key]
+
+        for mapping in self._guild_commands.values():
+            remove = []
+            for key, cmd in mapping.items():
+                if cmd.module is not None and _is_submodule(name, cmd.module):
+                    remove.append(key)
+
+            for key in remove:
+                del mapping[key]
 
     async def on_error(
         self,

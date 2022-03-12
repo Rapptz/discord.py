@@ -38,6 +38,7 @@ from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, 
 import discord
 from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
+from discord.utils import MISSING, _is_submodule
 
 from .core import GroupMixin
 from .view import StringView
@@ -64,8 +65,6 @@ __all__ = (
     'Bot',
     'AutoShardedBot',
 )
-
-MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
@@ -118,10 +117,6 @@ def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], M
         return r
 
     return inner
-
-
-def _is_submodule(parent: str, child: str) -> bool:
-    return parent == child or child.startswith(parent + ".")
 
 
 class _DefaultRepr:
@@ -723,6 +718,9 @@ class BotBase(GroupMixin):
 
             for index in reversed(remove):
                 del event_list[index]
+
+        # remove all relevant application commands from the tree
+        self.__tree._remove_with_module(name)
 
     def _call_module_finalizers(self, lib: types.ModuleType, key: str) -> None:
         try:
