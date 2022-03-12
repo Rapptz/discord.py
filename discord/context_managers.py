@@ -25,12 +25,14 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, Optional, Type, TypeVar
 
 if TYPE_CHECKING:
     from .abc import Messageable
 
     from types import TracebackType
+
+    BE = TypeVar('BE', bound=BaseException)
 
 # fmt: off
 __all__ = (
@@ -72,8 +74,8 @@ class Typing:
 
     async def __aexit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
         traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
