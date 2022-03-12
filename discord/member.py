@@ -332,7 +332,7 @@ class Member(discord.abc.Messageable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
-        create_dm: Callable[[], Coroutine[Any, Any, DMChannel]] = User.create_dm  # type: ignore
+        create_dm: Callable[[], Coroutine[Any, Any, DMChannel]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
