@@ -712,7 +712,12 @@ class GuildChannel:
         ...
 
     async def set_permissions(
-        self, target: Union[Member, Role], *, overwrite: Any = _undefined, reason: Optional[str] = None, **permissions: bool
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Any = _undefined,
+        reason: Optional[str] = None,
+        **permissions: bool,
     ) -> None:
         r"""|coro|
 
