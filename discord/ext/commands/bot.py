@@ -38,6 +38,7 @@ from typing import Any, Callable, Mapping, List, Dict, TYPE_CHECKING, Optional, 
 import discord
 from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
+from discord.utils import MISSING, _is_submodule
 
 from .core import GroupMixin
 from .view import StringView
@@ -64,8 +65,6 @@ __all__ = (
     'Bot',
     'AutoShardedBot',
 )
-
-MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
@@ -118,10 +117,6 @@ def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], M
         return r
 
     return inner
-
-
-def _is_submodule(parent: str, child: str) -> bool:
-    return parent == child or child.startswith(parent + ".")
 
 
 class _DefaultRepr:
@@ -605,7 +600,7 @@ class BotBase(GroupMixin):
         if isinstance(cog, app_commands.Group):
             self.__tree.add_command(cog, override=override, guild=guild, guilds=guilds)
 
-        cog = cog._inject(self)
+        cog = cog._inject(self, override=override, guild=guild, guilds=guilds)
         self.__cogs[cog_name] = cog
 
     def get_cog(self, name: str, /) -> Optional[Cog]:
@@ -681,15 +676,15 @@ class BotBase(GroupMixin):
         if help_command and help_command.cog is cog:
             help_command.cog = None
 
+        guild_ids = _retrieve_guild_ids(cog, guild, guilds)
         if isinstance(cog, app_commands.Group):
-            guild_ids = _retrieve_guild_ids(cog, guild, guilds)
             if guild_ids is None:
                 self.__tree.remove_command(name)
             else:
                 for guild_id in guild_ids:
                     self.__tree.remove_command(name, guild=discord.Object(guild_id))
 
-        cog._eject(self)
+        cog._eject(self, guild_ids=guild_ids)
 
         return cog
 
@@ -723,6 +718,9 @@ class BotBase(GroupMixin):
 
             for index in reversed(remove):
                 del event_list[index]
+
+        # remove all relevant application commands from the tree
+        self.__tree._remove_with_module(name)
 
     def _call_module_finalizers(self, lib: types.ModuleType, key: str) -> None:
         try:

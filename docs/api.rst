@@ -1488,7 +1488,7 @@ of :class:`enum.Enum`.
 
         The user is flagged as a spammer by Discord.
 
-        ..versionadded:: 2.0
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 

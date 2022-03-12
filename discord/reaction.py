@@ -149,8 +149,8 @@ class Reaction:
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Raises
         --------
