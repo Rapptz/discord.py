@@ -488,7 +488,8 @@ class Client:
     async def login(self, token: str) -> None:
         """|coro|
 
-        Logs in the client with the specified credentials.
+        Logs in the client with the specified credentials and
+        calls the :meth:`setup_hook`.
 
 
         Parameters
@@ -511,6 +512,8 @@ class Client:
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
+
+        await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -645,6 +648,22 @@ class Client:
         """
         await self.login(token)
         await self.connect(reconnect=reconnect)
+
+    async def setup_hook(self) -> None:
+        """|coro|
+
+        A coroutine to be called to setup the bot, by default this is blank.
+
+        To perform asynchronous setup after the bot is logged in but before
+        it has connected to the Websocket, overwrite this coroutine.
+
+        This is only called once, in :meth:`login`, and will be called before
+        any events are dispatched, making it a better solution than doing such
+        setup in the :func:`~discord.on_ready` event.
+
+        .. versionadded:: 2.0
+        """
+        pass
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """A blocking call that abstracts away the event loop
