@@ -927,6 +927,7 @@ The following changes have been made:
 
 - :attr:`DMChannel.recipient` may now be ``None``.
 - :meth:`Guild.vanity_invite` may now be ``None``. This has been done to fix an issue with the method returning a broken :class:`Invite` object.
+- :meth:`Widget.fetch_invite` may now be ``None``.
 - :attr:`Guild.shard_id` is now ``0`` instead of ``None`` if :class:`AutoShardedClient` is not used.
 - :attr:`Guild.mfa_level` is now of type :class:`MFALevel`.
 - :attr:`Guild.member_count` is now of type Optional[:class:`int`].
