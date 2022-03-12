@@ -341,6 +341,7 @@ class Guild(Hashable):
         self._voice_states: Dict[int, VoiceState] = {}
         self._threads: Dict[int, Thread] = {}
         self._state: ConnectionState = state
+        self._member_count: Optional[int] = None
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
@@ -448,9 +449,10 @@ class Guild(Hashable):
         return role
 
     def _from_data(self, guild: GuildPayload) -> None:
-        # according to Stan, this is always available even if the guild is unavailable
-        # I don't have this guarantee when someone updates the guild.
-        self._member_count: Optional[int] = guild.get('member_count', None)
+        try:
+            self._member_count = guild['member_count']
+        except KeyError:
+            pass
 
         self.name: str = guild.get('name', '')
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
