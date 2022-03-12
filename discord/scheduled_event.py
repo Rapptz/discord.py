@@ -566,4 +566,4 @@ class ScheduledEvent(Hashable):
         self._users[user.id] = user
 
     def _pop_user(self, user_id: int) -> None:
-        self._users.pop(user_id)
+        self._users.pop(user_id, None)
