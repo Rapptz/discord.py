@@ -32,7 +32,6 @@ from typing import (
     Callable,
     Optional,
     Tuple,
-    Type,
     Union,
 )
 
@@ -265,28 +264,28 @@ class Colour:
         """A factory method that returns a :class:`Colour` with a value of ``0x95a5a6``."""
         return cls(0x95A5A6)
 
-    lighter_gray: Callable[[Type[Self]], Self] = lighter_grey
+    lighter_gray: Callable[[], Self] = lighter_grey  # type: ignore
 
     @classmethod
     def dark_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x607d8b``."""
         return cls(0x607D8B)
 
-    dark_gray: Callable[[Type[Self]], Self] = dark_grey
+    dark_gray: Callable[[], Self] = dark_grey  # type: ignore
 
     @classmethod
     def light_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x979c9f``."""
         return cls(0x979C9F)
 
-    light_gray: Callable[[Type[Self]], Self] = light_grey
+    light_gray: Callable[[], Self] = light_grey  # type: ignore
 
     @classmethod
     def darker_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
         return cls(0x546E7A)
 
-    darker_gray: Callable[[Type[Self]], Self] = darker_grey
+    darker_gray: Callable[[], Self] = darker_grey  # type: ignore
 
     @classmethod
     def og_blurple(cls) -> Self:
