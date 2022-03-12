@@ -44,10 +44,118 @@ Creating a webhook
 In order to create incoming webhooks in a channel, the member needs the
 :attr:`~Permissions.manage_webhooks` permission in the given guild or text channel.
 
-To create the a webhook, Navigate to "Server Settings > Integrations" page and click
-"Create Webhook".
+To create the a webhook, Navigate to "Server Settings > Integrations" page.
 
 .. image:: /images/guide/webhooks/guild_settings_integrations.png
+    :alt: Integrations Settings
 
+Click "Create Webhook" to create a webhook.
 
-Webhooks can be created in a text channel using the :meth:`TextChannel.create_webhook` method.
+.. image:: /images/guide/webhooks/webhook_created.png
+    :alt: Webhook
+
+From here, you can edit the webhook's name and associated channel in which the webhook
+would be sending messages in. We'll be using the URL of webhook later in this guide so make
+sure to copy it too.
+
+The URL of webhook is used for executing the webhook and includes the webhook token
+so do not reveal this URL.
+
+You can also create webhooks through API using the :meth:`TextChannel.create_webhook` method.
+
+Initializing Webhook instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We'll now be initializing a webhook instance in our code.
+
+There are two variants of webhooks provided by the library.
+
+- :class:`Webhook`
+- :class:`SyncWebhook`
+
+The :class:`Webhook` is suitable for most cases as it is an asynchronous counterpart while
+the other is synchronous and is suitable for blocking enivornments. Both have the same
+functionality. The HTTP methods usually return the :class:`Webhook` class instance.
+
+Webhooks are retrieved in two ways. They can be obtained through the :meth:`Guild.webhooks`
+or :meth:`TextChannel.webhooks` methods. These methods requires authentication via a bot user.
+
+The other method is to initialize "partial" webhooks using only webhook ID and token. This
+method does not require authentication via bot user.
+
+To create a partial webhook we would be using the URL that we copied earlier, passing it
+in the :meth:`~Webhook.from_url` method.
+
+.. code-block:: py
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url("webhook-url-here", session=session)
+
+The webhooks retrieved through HTTP methods are automatically bound to library's
+internal HTTP session. However in order to initialize partial webhooks, We must
+create our own HTTP session and pass it through the ``session`` parameter.
+
+It is worth noting that for asynchronous :class:`Webhook`, The ``session`` parameter
+takes in a :class:`aiohttp.ClientSession` instance. However for synchronous variant, The
+``session`` parameter takes the :class:`requests.Session` instance.
+
+:meth:`~Webhook.from_url` is a helper that automatically extracts webhook ID and token
+from the given URL. We also have :meth:`Webhook.partial` method to initialize partial
+webhooks directly using the ID and token.
+
+.. code-block:: py
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.partial(webhook_id, webhook_token, session=session)
+
+Sending messages via webhooks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is where the fun begins, Let's start posting messages through our webhook.
+We use the :meth:`Webhook.send` method to send the messages.
+
+.. code-block:: py
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url("webhook-url", session=session)
+        await webhook.send("Hello World")
+
+This will produce the following output in Discord:
+
+.. image:: /images/guide/webhooks/webhook_message.png
+    :alt: Webhook message
+
+Like normal messages, Webhooks support embeds, file attachments, allowed mentions and
+other message features. An example of sending embeds is given below.
+
+.. code-block:: py
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url("webhook-url", session=session)
+        embed = discord.Embed(title="Hello World", description="I'm a nice embed!")
+        await webhook.send(embed=embed)
+
+.. image:: /images/guide/webhooks/webhook_message_with_embed.png
+    :alt: Webhook message with embed.
+
+There are some features that are exclusive to webhook messages like hyperlinks in
+raw message's content.
+
+Webhooks also allow you to set different avatar and username on each message. This
+is done using by passing in ``avatar_url`` and ``username`` parameters in the
+:meth:`~Webhook.send` method.
+
+.. code-block:: py
+
+    async with aiohttp.ClientSession() as session:
+        webhook = discord.Webhook.from_url("webhook-url", session=session)
+        await webhook.send(
+            "Hello world",
+            username="A different username",
+            avatar_url="https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/1f914.png"
+        )
+
+The message created will have it's author with specified username and avatar set.
+
+.. image:: /images/guide/webhooks/webhook_message_with_username_avatar.png
+    :alt: Webhook message with specified avatar and username
