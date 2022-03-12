@@ -481,7 +481,8 @@ class CommandTree(Generic[ClientT]):
             try:
                 commands = self._guild_commands[guild.id]
             except KeyError:
-                return [cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None]
+                guild_id = guild.id
+                return [cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id]
             else:
                 base: List[Union[Command, Group, ContextMenu]] = list(commands.values())
                 guild_id = guild.id
