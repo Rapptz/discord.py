@@ -169,7 +169,7 @@ class ConnectionState:
         *,
         dispatch: Callable[..., Any],
         handlers: Dict[str, Callable[..., Any]],
-        hooks: Dict[str, Callable[..., Any]],
+        hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
         http: HTTPClient,
         loop: asyncio.AbstractEventLoop,
         **options: Any,
@@ -182,7 +182,7 @@ class ConnectionState:
 
         self.dispatch: Callable[..., Any] = dispatch
         self.handlers: Dict[str, Callable[..., Any]] = handlers
-        self.hooks: Dict[str, Callable[..., Any]] = hooks
+        self.hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = hooks
         self.shard_count: Optional[int] = None
         self._ready_task: Optional[asyncio.Task] = None
         self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')

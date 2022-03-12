@@ -249,7 +249,7 @@ class Client:
             'ready': self._handle_ready,
         }
 
-        self._hooks: Dict[str, Callable[..., Any]] = {
+        self._hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = {
             'before_identify': self._call_before_identify_hook,
         }
 
