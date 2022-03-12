@@ -241,6 +241,11 @@ class _TransformMetadata:
     def __init__(self, metadata: Type[Transformer]):
         self.metadata: Type[Transformer] = metadata
 
+    # This is needed to pass typing's type checks.
+    # e.g. Optional[Transform[discord.Member, MyTransformer]]
+    def __call__(self) -> None:
+        pass
+
 
 async def _identity_transform(cls, interaction: Interaction, value: Any) -> Any:
     return value
@@ -536,6 +541,7 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
     AppCommandOptionType.string: (str, NoneType),
     AppCommandOptionType.integer: (int, NoneType),
     AppCommandOptionType.boolean: (bool, NoneType),
+    AppCommandOptionType.number: (float, NoneType),
 }
 
 
@@ -622,10 +628,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     (inner, default) = get_supported_annotation(annotation)
     type = inner.type()
-    if default is MISSING:
-        default = parameter.default
-        if default is parameter.empty:
-            default = MISSING
+
+    if default is MISSING or default is None:
+        param_default = parameter.default
+        if param_default is not parameter.empty:
+            default = param_default
 
     # Verify validity of the default parameter
     if default is not MISSING:
