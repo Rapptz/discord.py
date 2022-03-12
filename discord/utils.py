@@ -582,6 +582,10 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
+def _is_submodule(parent: str, child: str) -> bool:
+    return parent == child or child.startswith(parent + '.')
+
+
 if HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:

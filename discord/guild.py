@@ -342,6 +342,7 @@ class Guild(Hashable):
         self._voice_states: Dict[int, VoiceState] = {}
         self._threads: Dict[int, Thread] = {}
         self._state: ConnectionState = state
+        self._member_count: Optional[int] = None
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
@@ -449,9 +450,10 @@ class Guild(Hashable):
         return role
 
     def _from_data(self, guild: GuildPayload) -> None:
-        # according to Stan, this is always available even if the guild is unavailable
-        # I don't have this guarantee when someone updates the guild.
-        self._member_count: Optional[int] = guild.get('member_count', None)
+        try:
+            self._member_count = guild['member_count']
+        except KeyError:
+            pass
 
         self.name: str = guild.get('name', '')
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, guild.get('verification_level'))
@@ -1208,8 +1210,8 @@ class Guild(Hashable):
             will be required to update the position of the channel in the channel list.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Examples
         ----------
@@ -1311,8 +1313,8 @@ class Guild(Hashable):
         This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1401,8 +1403,8 @@ class Guild(Hashable):
         .. versionadded:: 1.7
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1472,8 +1474,8 @@ class Guild(Hashable):
             cannot have categories.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Raises
         ------
@@ -1582,8 +1584,8 @@ class Guild(Hashable):
             The ``region`` keyword parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         .. versionchanged:: 2.0
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
@@ -2087,8 +2089,8 @@ class Guild(Hashable):
             The ``roles`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2192,8 +2194,8 @@ class Guild(Hashable):
             The returned value can be ``None``.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2890,8 +2892,8 @@ class Guild(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2974,8 +2976,8 @@ class Guild(Hashable):
         .. versionadded:: 1.4
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Example
         ----------
