@@ -189,10 +189,10 @@ class Embed:
     ):
 
         self.colour = colour if colour is not EmptyEmbed else color
-        self.title: MaybeEmpty[Any] = title
+        self.title: MaybeEmpty[str] = title
         self.type: EmbedType = type
-        self.url: MaybeEmpty[Any] = url
-        self.description: MaybeEmpty[Any] = description
+        self.url: MaybeEmpty[str] = url
+        self.description: MaybeEmpty[str] = description
 
         if self.title is not EmptyEmbed:
             self.title = str(self.title)
