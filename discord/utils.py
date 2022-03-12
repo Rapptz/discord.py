@@ -136,6 +136,12 @@ if TYPE_CHECKING:
         headers: Mapping[str, Any]
 
     P = ParamSpec('P')
+
+    MaybeCoroFunc = Union[
+        Callable[P, Coroutine[Any, Any, 'T']],
+        Callable[P, 'T'],
+    ]
+
     _SnowflakeListBase = array.array[int]
 
 else:
@@ -602,12 +608,12 @@ def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
         return float(reset_after)
 
 
-async def maybe_coroutine(f: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+async def maybe_coroutine(f: MaybeCoroFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
     else:
-        return value
+        return value  # type: ignore
 
 
 async def async_all(gen: Iterable[Awaitable[T]], *, check: Callable[[T], bool] = _isawaitable) -> bool:
