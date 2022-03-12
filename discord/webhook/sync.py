@@ -388,8 +388,8 @@ class SyncWebhookMessage(Message):
         """Edits the message.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` or :exc:`ValueError` instead of
-            the now-removed ``InvalidArgument``.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------

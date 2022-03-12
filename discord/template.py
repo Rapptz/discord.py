@@ -178,8 +178,8 @@ class Template:
             The ``region`` parameter has been removed.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------

@@ -670,8 +670,8 @@ class WebhookMessage(Message):
             The edit is no longer in-place, instead the newly edited message is returned.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1063,8 +1063,8 @@ class Webhook(BaseWebhook):
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1220,7 +1220,7 @@ class Webhook(BaseWebhook):
         Edits this Webhook.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
+            This function will now raise :exc:`ValueError` instead of
             ``~InvalidArgument``.
 
         Parameters
@@ -1367,8 +1367,8 @@ class Webhook(BaseWebhook):
         ``embeds`` parameter, which must be a :class:`list` of :class:`Embed` objects to send.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1579,8 +1579,8 @@ class Webhook(BaseWebhook):
             The edit is no longer in-place, instead the newly edited message is returned.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1677,8 +1677,8 @@ class Webhook(BaseWebhook):
             ``message_id`` parameter is now positional-only.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------

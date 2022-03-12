@@ -299,8 +299,8 @@ class Asset(AssetMixin):
         """Returns a new asset with the passed components replaced.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -354,8 +354,8 @@ class Asset(AssetMixin):
         """Returns a new asset with the specified size.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -382,8 +382,8 @@ class Asset(AssetMixin):
         """Returns a new asset with the specified format.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -420,8 +420,8 @@ class Asset(AssetMixin):
         not animated. Otherwise, the asset is not changed.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`ValueError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------

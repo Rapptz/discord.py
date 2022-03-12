@@ -494,8 +494,8 @@ class AutoShardedClient(Client):
             Removed the ``afk`` keyword-only parameter.
 
         .. versionchanged:: 2.0
-            Will raise :exc:`TypeError` instead of the now-removed
-           ``InvalidArgument``.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
