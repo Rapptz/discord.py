@@ -256,7 +256,7 @@ class Interaction:
         Fetches the original interaction response message associated with the interaction.
 
         If the interaction response was a newly created message (i.e. through :meth:`InteractionResponse.send_message`
-        or :meth:`InteractionResponse.defer`, where `thinking` is `True`) then this returns the message that was sent
+        or :meth:`InteractionResponse.defer`, where ``thinking`` is ``True``) then this returns the message that was sent
         using that response. Otherwise, this returns the message that triggered the interaction (i.e.
         through a component).
 
