@@ -649,7 +649,7 @@ class Client:
         await self.login(token)
         await self.connect(reconnect=reconnect)
 
-    async def setup_hook(self) -> Any:
+    async def setup_hook(self) -> None:
         """|coro|
 
         A coroutine to be called to setup the bot, by default this is blank.
