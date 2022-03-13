@@ -75,3 +75,23 @@ async def test_explicit_initial_runs_tomorrow_multi():
         assert not has_run
     finally:
         loop.cancel()
+
+
+def test_task_regression_issue7659():
+    jst = datetime.timezone(datetime.timedelta(hours=9))
+
+    # 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+    times = [datetime.time(hour=h, tzinfo=jst) for h in range(0, 24, 3)]
+
+    @tasks.loop(time=times)
+    async def loop():
+        pass
+
+    before_midnight = datetime.datetime(2022, 3, 12, 23, 50, 59, tzinfo=jst)
+    after_midnight = before_midnight + datetime.timedelta(minutes=9, seconds=2)
+
+    expected_before_midnight = datetime.datetime(2022, 3, 13, 0, 0, 0, tzinfo=jst)
+    expected_after_midnight = datetime.datetime(2022, 3, 13, 3, 0, 0, tzinfo=jst)
+
+    assert loop._get_next_sleep_time(before_midnight) == expected_before_midnight
+    assert loop._get_next_sleep_time(after_midnight) == expected_after_midnight
