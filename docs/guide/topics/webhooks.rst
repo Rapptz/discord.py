@@ -75,7 +75,8 @@ There are two variants of webhooks provided by the library.
 
 The :class:`Webhook` is suitable for most cases as it is an asynchronous counterpart while
 the other is synchronous and is suitable for blocking enivornments. Both have the same
-functionality. The HTTP methods usually return the :class:`Webhook` class instance.
+functionality with the difference of being sync and async. The HTTP methods usually return
+the :class:`Webhook` class instance.
 
 Webhooks are retrieved in two ways. They can be obtained through the :meth:`Guild.webhooks`
 or :meth:`TextChannel.webhooks` methods. These methods requires authentication via a bot user.
@@ -107,6 +108,24 @@ webhooks directly using the ID and token.
 
     async with aiohttp.ClientSession() as session:
         webhook = discord.Webhook.partial(webhook_id, webhook_token, session=session)
+
+Fetching webhooks
+~~~~~~~~~~~~~~~~~
+
+Partial webhooks only contain the webhook ID and token as these are the only required
+components to perform basic requests. However if you want to retrieve complete webhook
+information, you can fetch them. Use the :meth:`Webhook.fetch` method to do so.
+
+.. code-block:: py
+
+    partial_webhook = discord.Webhook.from_url("url-here", session=session)
+    print(partial_webhook.is_partial()) # True
+    webhook = await partial_webhook.fetch()
+    print(webhook.is_partial()) # False
+
+Fetched webhook will include webhook information like username, avatar etc. Fetching isn't
+necessary when you just want to do HTTP operations and don't need webhook information.
+
 
 Sending messages via webhooks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,3 +178,38 @@ The message created will have it's author with specified username and avatar set
 
 .. image:: /images/guide/webhooks/webhook_message_with_username_avatar.png
     :alt: Webhook message with specified avatar and username
+
+Management of webhook messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Incoming webhooks can also fetch, edit and delete the messages sent by that webhook.
+
+It is worth noting that a webhook can only fetch messages that are sent by it and
+cannot fetch messages from other users or webhooks.
+
+To fetch the message, we use the :meth:`Webhook.fetch_message` method.
+
+Webhook messages are represented by the :class:`WebhookMessage` class. This class inherits
+:class:`Message` and has similar functionality with changes to :meth:`~WebhookMessage.delete`
+and :meth:`~WebhookMessage.edit` methods.
+
+Example of fetching, editing and deleting webhook messages is given below.
+
+.. code-block:: py
+
+    message = await webhook.fetch_message(12345679) # Replace the message ID here.
+    await message.edit(content="Deleting in 5 seconds...")
+    await asyncio.sleep(5)
+    await message.delete()
+
+.. image:: /images/guide/webhooks/webhook_message_management.gif
+
+Sometimes you don't want to make an extra API call for fetching the messages. If
+you have the message ID you can directly edit or delete them using :meth:`Webhook.edit_message`
+and :meth:`Webhook.delete_message` methods. This way, you can avoid unnecessary API calls.
+
+.. code-block:: py
+
+    await webhook.edit_message(12345679, content="Deleting in 5 seconds...")
+    await asyncio.sleep(5)
+    await webhook.delete_message(12345679)
