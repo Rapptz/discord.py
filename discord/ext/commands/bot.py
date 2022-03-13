@@ -546,6 +546,11 @@ class BotBase(GroupMixin):
         If the cog is a :class:`.app_commands.Group` then it is added to
         the bot's :class:`~discord.app_commands.CommandTree` as well.
 
+        .. note::
+
+            Exceptions raised inside a `class`:.Cog:'s :meth:`~.Cog.cog_load` method will be
+            propagated to the caller.
+
         .. versionchanged:: 2.0
 
             :exc:`.ClientException` is raised when a cog with the same name
