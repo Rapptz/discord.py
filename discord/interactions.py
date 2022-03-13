@@ -258,9 +258,10 @@ class Interaction:
 
         Fetches the original interaction response message associated with the interaction.
 
-        If the interaction response was :meth:`InteractionResponse.send_message` then this would
-        return the message that was sent using that response. Otherwise, this would return
-        the message that triggered the interaction.
+        If the interaction response was a newly created message (i.e. through :meth:`InteractionResponse.send_message`
+        or :meth:`InteractionResponse.defer`, where ``thinking`` is ``True``) then this returns the message that was sent
+        using that response. Otherwise, this returns the message that triggered the interaction (i.e.
+        through a component).
 
         Repeated calls to this will return a cached value.
 
@@ -270,6 +271,8 @@ class Interaction:
             Fetching the original response message failed.
         ClientException
             The channel for the message could not be resolved.
+        NotFound
+            The interaction response message does not exist.
 
         Returns
         --------
@@ -345,6 +348,8 @@ class Interaction:
         -------
         HTTPException
             Editing the message failed.
+        NotFound
+            The interaction response message does not exist.
         Forbidden
             Edited a message that is not yours.
         TypeError
@@ -379,7 +384,8 @@ class Interaction:
         )
 
         # The message channel types should always match
-        message = InteractionMessage(state=self._state, channel=self.channel, data=data)  # type: ignore
+        state = _InteractionMessageState(self, self._state)
+        message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
             self._state.store_view(view, message.id)
         return message
@@ -396,6 +402,8 @@ class Interaction:
         -------
         HTTPException
             Deleting the message failed.
+        NotFound
+            The interaction response message does not exist or has already been deleted.
         Forbidden
             Deleted a message that is not yours.
         """
