@@ -27,6 +27,7 @@ import inspect
 import sys
 import traceback
 from typing import Any, Callable, Dict, Generic, List, Literal, Optional, TYPE_CHECKING, Set, Tuple, TypeVar, Union, overload
+from collections import Counter
 
 
 from .namespace import Namespace, ResolveKey
@@ -145,6 +146,51 @@ class CommandTree(Generic[ClientT]):
             commands = await self._http.get_guild_commands(self.client.application_id, guild.id)
 
         return [AppCommand(data=data, state=self._state) for data in commands]
+
+    def copy_global_to(self, *, guild: Snowflake) -> None:
+        """Copies all global commands to the specified guild.
+
+        This method is mainly available for development purposes, as it allows you
+        to copy your global commands over to a testing guild easily and prevent waiting
+        an hour for the propagation.
+
+        Note that this method will *override* pre-existing guild commands that would conflict.
+
+        Parameters
+        -----------
+        guild: :class:`~discord.abc.Snowflake`
+            The guild to copy the commands to.
+
+        Raises
+        --------
+        ValueError
+            The maximum number of commands was reached for that guild.
+            This is currently 100 for slash commands and 5 for context menu commands.
+        """
+
+        try:
+            mapping = self._guild_commands[guild.id].copy()
+        except KeyError:
+            mapping = {}
+
+        mapping.update(self._global_commands)
+        if len(mapping) > 100:
+            raise ValueError('maximum number of slash commands exceeded (100)')
+
+        ctx_menu: Dict[Tuple[str, Optional[int], int], ContextMenu] = {
+            (name, guild.id, cmd_type): cmd
+            for ((name, g, cmd_type), cmd) in self._context_menus.items()
+            if g is None or g == guild.id
+        }
+
+        counter = Counter(cmd_type for _, _, cmd_type in ctx_menu)
+        for cmd_type, count in counter.items():
+            if count > 5:
+                as_enum = AppCommandType(cmd_type)
+                raise ValueError(f'maximum number of context menu commands exceeded (5) for type {as_enum!s}')
+
+        self._context_menus.update(ctx_menu)
+        self._guild_commands[guild.id] = mapping
 
     def add_command(
         self,
