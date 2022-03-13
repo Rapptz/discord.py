@@ -383,7 +383,9 @@ class Cog(metaclass=CogMeta):
 
         This function **can** be a coroutine.
 
-        Subclasses must replace this if they want special loading behaviour.
+        Subclasses must replace this if they want special asynchronous loading behaviour.
+        Note that the ``__init__`` special method does not allow asynchronous code to run
+        inside it, thus this is helpful for setting up code that needs to be asynchronous.
 
         .. versionadded:: 2.0
         """
