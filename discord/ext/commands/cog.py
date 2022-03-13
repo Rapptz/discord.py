@@ -378,10 +378,10 @@ class Cog(metaclass=CogMeta):
         return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
-    def cog_load(self) -> None:
-        """A special method that is called when the cog gets loaded.
-
-        This function **can** be a coroutine.
+    async def cog_load(self) -> None:
+        """|maybecoro|
+        
+        A special method that is called when the cog gets loaded.
 
         Subclasses must replace this if they want special asynchronous loading behaviour.
         Note that the ``__init__`` special method does not allow asynchronous code to run
@@ -392,10 +392,10 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def cog_unload(self) -> None:
-        """A special method that is called when the cog gets removed.
-
-        This function **can** be a coroutine.
+    async def cog_unload(self) -> None:
+        """|maybecoro|
+        
+        A special method that is called when the cog gets removed.
 
         Subclasses must replace this if they want special unloading behaviour.
 
@@ -487,6 +487,10 @@ class Cog(metaclass=CogMeta):
     async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
         cls = self.__class__
 
+        # we'll call this first so that errors can propagate without
+        # having to worry about undoing anything
+        await maybe_coroutine(self.cog_load)
+
         # realistically, the only thing that can cause loading errors
         # is essentially just the command loading, which raises if there are
         # duplicates. When this condition is met, we want to undo all what
@@ -522,11 +526,6 @@ class Cog(metaclass=CogMeta):
             for command in self.__cog_app_commands__:
                 # This is already atomic
                 bot.tree.add_command(command, override=override, guild=guild, guilds=guilds)
-
-        try:
-            await maybe_coroutine(self.cog_load)
-        except Exception:
-            pass
 
         return self
 

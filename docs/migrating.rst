@@ -97,27 +97,17 @@ This method is called after login but before connecting to the discord gateway.
 
 It is intended to be used to setup various bot features in an asynchronous context.
 
-:meth:`~Client.setup_hook` can be defined by either subclassing the :class:`Client` class, or via the :meth:`Client.event` decorator.
+:meth:`~Client.setup_hook` can be defined by subclassing the :class:`Client` class.
 
 Quick example:
 
 .. code-block:: python
 
-    # subclassing Client
     class MyClient(discord.Client):
         async def setup_hook(self):
             print('This is asynchronous!')
 
     client = MyClient()
-    client.run(TOKEN)
-
-    # using the @Client.event decorator
-    client = discord.Client()
-
-    @client.event
-    async def setup_hook(self):
-        print('This is asynchronous!')
-
     client.run(TOKEN)
 
 In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
@@ -1158,7 +1148,7 @@ Command Extension Changes
 Extension and Cog Loading / Unloading is Now Asynchronous
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As an extension to :ref:`migrating_2_0_client_async_setup` changes the loading and unloading of extensions and cogs is now asynchronous.
+As an extension to the :ref:`asyncio changes <migrating_2_0_client_async_setup>` the loading and unloading of extensions and cogs is now asynchronous.
 
 To accommodate this, the following changes have been made:
 
@@ -1189,9 +1179,9 @@ Quick example of loading an extension:
     bot.load_extension('my_extension')
 
     #after using setup_hook
-    @bot.event
-    async def setup_hook():
-        await bot.load_extension('my_extension')
+    class MyBot(commands.Bot):
+        async def setup_hook(self):
+            await self.load_extension('my_extension')
 
     # after using async_with
     async def main():
