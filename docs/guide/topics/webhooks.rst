@@ -179,8 +179,8 @@ The message created will have it's author with specified username and avatar set
 .. image:: /images/guide/webhooks/webhook_message_with_username_avatar.png
     :alt: Webhook message with specified avatar and username
 
-Managing webhook messages
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Managing messages
+~~~~~~~~~~~~~~~~~
 
 Incoming webhooks can also fetch, edit and delete the messages sent by that webhook.
 
