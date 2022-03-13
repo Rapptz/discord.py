@@ -235,9 +235,7 @@ class Client:
         return self.ws
 
     def _get_state(self, **options: Any) -> ConnectionState:
-        return ConnectionState(
-            dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, loop=self.loop, **options
-        )
+        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, **options)
 
     def _handle_ready(self) -> None:
         self._ready.set()
@@ -474,6 +472,11 @@ class Client:
 
         _log.info('logging in using static token')
 
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+        self._connection.loop = loop
+
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
 
@@ -611,9 +614,6 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
-        self.loop = asyncio.get_running_loop()
-        self.http.loop = self.loop
-        self._connection.loop = self.loop
         await self.login(token)
         await self.connect(reconnect=reconnect)
 

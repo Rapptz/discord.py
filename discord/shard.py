@@ -333,7 +333,6 @@ class AutoShardedClient(Client):
         self.__shards = {}
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
-        self.__queue = asyncio.PriorityQueue()
 
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
         if shard_id is None:
@@ -426,6 +425,7 @@ class AutoShardedClient(Client):
         self._connection.shards_launched.set()
 
     async def connect(self, *, reconnect: bool = True) -> None:
+        self.__queue = asyncio.PriorityQueue()
         self._reconnect = reconnect
         await self.launch_shards()
 

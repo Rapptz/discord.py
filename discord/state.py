@@ -169,10 +169,10 @@ class ConnectionState:
         handlers: Dict[str, Callable],
         hooks: Dict[str, Callable],
         http: HTTPClient,
-        loop: asyncio.AbstractEventLoop,
         **options: Any,
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
+        # Set later, after Client.login
+        self.loop: asyncio.AbstractEventLoop = utils.MISSING
         self.http: HTTPClient = http
         self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
