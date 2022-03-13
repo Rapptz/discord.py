@@ -63,8 +63,8 @@ so do not reveal this URL.
 
 You can also create webhooks through API using the :meth:`TextChannel.create_webhook` method.
 
-Initializing Webhook instance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Initializing webhooks
+~~~~~~~~~~~~~~~~~~~~~
 
 We'll now be initializing a webhook instance in our code.
 
@@ -127,8 +127,8 @@ Fetched webhook will include webhook information like username, avatar etc. Fetc
 necessary when you just want to do HTTP operations and don't need webhook information.
 
 
-Sending messages via webhooks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sending messages
+~~~~~~~~~~~~~~~~
 
 This is where the fun begins, Let's start posting messages through our webhook.
 We use the :meth:`Webhook.send` method to send the messages.
@@ -179,8 +179,8 @@ The message created will have it's author with specified username and avatar set
 .. image:: /images/guide/webhooks/webhook_message_with_username_avatar.png
     :alt: Webhook message with specified avatar and username
 
-Management of webhook messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Managing webhook messages
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Incoming webhooks can also fetch, edit and delete the messages sent by that webhook.
 
