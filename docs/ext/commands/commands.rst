@@ -11,6 +11,8 @@ how you can arbitrarily nest groups and commands to have a rich sub-command syst
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
 signature to the Python function.
 
+Note that you must have access to the ``message_content`` intent for the commands extension to function.
+
 For example, in the given command definition:
 
 .. code-block:: python3
