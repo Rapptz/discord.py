@@ -99,10 +99,10 @@ class BaseUser(_UserTag):
     def __str__(self) -> str:
         return f'{self.name}#{self.discriminator}'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:

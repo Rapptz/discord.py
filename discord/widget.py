@@ -278,7 +278,7 @@ class Widget:
     def __str__(self) -> str:
         return self.json_url
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Widget):
             return self.id == other.id
         return False

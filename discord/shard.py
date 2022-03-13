@@ -75,12 +75,12 @@ class EventItem:
         self.shard: Optional['Shard'] = shard
         self.error: Optional[Exception] = error
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type < other.type
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, EventItem):
             return NotImplemented
         return self.type == other.type

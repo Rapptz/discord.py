@@ -276,7 +276,7 @@ class Asset(AssetMixin):
         shorten = self._url.replace(self.BASE, '')
         return f'<Asset url={shorten!r}>'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Asset) and self._url == other._url
 
     def __hash__(self) -> int:

@@ -420,10 +420,10 @@ class Game(BaseActivity):
         }
         # fmt: on
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Game) and other.name == self.name
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -528,10 +528,10 @@ class Streaming(BaseActivity):
             ret['details'] = self.details
         return ret
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Streaming) and other.name == self.name and other.url == self.url
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -622,7 +622,7 @@ class Spotify:
         """:class:`str`: The activity's name. This will always return "Spotify"."""
         return 'Spotify'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, Spotify)
             and other._session_id == self._session_id
@@ -630,7 +630,7 @@ class Spotify:
             and other.start == self.start
         )
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -786,10 +786,10 @@ class CustomActivity(BaseActivity):
             o['emoji'] = self.emoji.to_dict()
         return o
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, CustomActivity) and other.name == self.name and other.emoji == self.emoji
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
