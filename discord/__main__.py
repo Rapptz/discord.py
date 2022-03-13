@@ -36,11 +36,11 @@ def show_version():
 
     entries.append('- Python v{0.major}.{0.minor}.{0.micro}-{0.releaselevel}'.format(sys.version_info))
     version_info = discord.version_info
-    entries.append('- discord.py v{0.major}.{0.minor}.{0.micro}-{0.releaselevel}'.format(version_info))
+    entries.append('- discord.py-self v{0.major}.{0.minor}.{0.micro}-{0.releaselevel}'.format(version_info))
     if version_info.releaselevel != 'final':
-        pkg = pkg_resources.get_distribution('discord.py')
+        pkg = pkg_resources.get_distribution('discord.py-self')
         if pkg:
-            entries.append(f'    - discord.py pkg_resources: v{pkg.version}')
+            entries.append(f'    - discord.py-self pkg_resources: v{pkg.version}')
 
     entries.append(f'- aiohttp v{aiohttp.__version__}')
     uname = platform.uname()
@@ -281,7 +281,7 @@ def add_newcog_args(subparser):
     parser.add_argument('--full', help='add all special methods as well', action='store_true')
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog='discord', description='Tools for helping with discord.py')
+    parser = argparse.ArgumentParser(prog='discord', description='Tools for helping with discord.py-self')
     parser.add_argument('-v', '--version', action='store_true', help='shows the library version')
     parser.set_defaults(func=core)
 
