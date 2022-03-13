@@ -380,7 +380,7 @@ class Cog(metaclass=CogMeta):
     @_cog_special_method
     async def cog_load(self) -> None:
         """|maybecoro|
-        
+
         A special method that is called when the cog gets loaded.
 
         Subclasses must replace this if they want special asynchronous loading behaviour.
@@ -394,7 +394,7 @@ class Cog(metaclass=CogMeta):
     @_cog_special_method
     async def cog_unload(self) -> None:
         """|maybecoro|
-        
+
         A special method that is called when the cog gets removed.
 
         Subclasses must replace this if they want special unloading behaviour.
