@@ -10,8 +10,7 @@ Webhooks are used for posting messages in Discord text channels without relying 
 The focus of this section is to provide a basic understanding of webhooks and
 working with them using discord.py.
 
-For detailed information about webhooks, See the API reference for :class:`Webhook` class.
-
+For detailed information about webhooks, See the documentation for :ref:`webhooks <discord-api-webhooks>`.
 
 Introduction to webhooks
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,4 +217,4 @@ Next Steps
 ~~~~~~~~~~
 
 Webhooks can come in handy in various use cases. Every aspect of webhooks cannot be covered 
-in this short guide. To discover more features, Read the documentation for :class:`Webhook`.
+in this short guide. To discover more features, Read the API reference for :ref:`webhooks <discord-api-webhooks>`.
