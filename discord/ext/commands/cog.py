@@ -120,7 +120,8 @@ class CogMeta(type):
         name, bases, attrs = args
         attrs['__cog_name__'] = kwargs.get('name', name)
         attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
-        attrs['__cog_is_app_commands_group__'] = is_parent = app_commands.Group in bases
+        is_parent = any(issubclass(base, app_commands.Group) for base in bases)
+        attrs['__cog_is_app_commands_group__'] = is_parent
 
         description = kwargs.get('description', None)
         if description is None:
