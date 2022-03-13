@@ -509,13 +509,14 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.store,
         ChannelType.voice,
         ChannelType.text,
+        ChannelType.news,
         ChannelType.category,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
     StoreChannel: [ChannelType.store],
     VoiceChannel: [ChannelType.voice],
-    TextChannel: [ChannelType.text],
+    TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
 }
 

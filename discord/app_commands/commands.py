@@ -401,6 +401,7 @@ class Command(Generic[GroupT, P, T]):
         copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
+        copy.module = self.module
         copy.binding = binding
         return copy
 
@@ -776,6 +777,7 @@ class Group:
         copy._guild_ids = self._guild_ids
         copy.description = self.description
         copy.parent = self.parent
+        copy.module = self.module
         copy._attr = self._attr
         copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
         return copy
