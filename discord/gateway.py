@@ -110,9 +110,6 @@ class GatewayRatelimiter:
             return self.per - (current - self.window)
 
         self.remaining -= 1
-        if self.remaining == 0:
-            self.window = current
-
         return 0.0
 
     async def block(self) -> None:
