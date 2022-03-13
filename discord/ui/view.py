@@ -250,12 +250,6 @@ class View:
             view.add_item(_component_to_item(component))
         return view
 
-    @property
-    def _expires_at(self) -> Optional[float]:
-        if self.timeout:
-            return time.monotonic() + self.timeout
-        return None
-
     def add_item(self, item: Item) -> None:
         """Adds an item to the view.
 
