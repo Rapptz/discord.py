@@ -424,8 +424,11 @@ class AutoShardedClient(Client):
 
         self._connection.shards_launched.set()
 
-    async def connect(self, *, reconnect: bool = True) -> None:
+    async def _async_setup_hook(self) -> None:
+        await super()._async_setup_hook()
         self.__queue = asyncio.PriorityQueue()
+
+    async def connect(self, *, reconnect: bool = True) -> None:
         self._reconnect = reconnect
         await self.launch_shards()
 

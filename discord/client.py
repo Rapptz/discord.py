@@ -208,7 +208,7 @@ class Client:
         self._connection: ConnectionState = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
-        self._ready: asyncio.Event = asyncio.Event()
+        self._ready: asyncio.Event = MISSING
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
@@ -333,7 +333,7 @@ class Client:
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
-        return self._ready.is_set()
+        return self._ready is not MISSING and self._ready.is_set()
 
     async def _run_event(
         self,
@@ -445,6 +445,32 @@ class Client:
         if not initial:
             await asyncio.sleep(5.0)
 
+    async def _async_setup_hook(self) -> None:
+        # Called whenever the client needs to initialise asyncio objects with a running loop
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+        self._connection.loop = loop
+        await self._connection.async_setup()
+
+        self._ready = asyncio.Event()
+
+    async def setup_hook(self) -> None:
+        """|coro|
+
+        A coroutine to be called to setup the bot, by default this is blank.
+
+        To perform asynchronous setup after the bot is logged in but before
+        it has connected to the Websocket, overwrite this coroutine.
+
+        This is only called once, in :meth:`login`, and will be called before
+        any events are dispatched, making it a better solution than doing such
+        setup in the :func:`~discord.on_ready` event.
+
+        .. versionadded:: 2.0
+        """
+        pass
+
     # login state management
 
     async def login(self, token: str) -> None:
@@ -472,10 +498,7 @@ class Client:
 
         _log.info('logging in using static token')
 
-        loop = asyncio.get_running_loop()
-        self.loop = loop
-        self.http.loop = loop
-        self._connection.loop = loop
+        await self._async_setup_hook()
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -616,22 +639,6 @@ class Client:
         """
         await self.login(token)
         await self.connect(reconnect=reconnect)
-
-    async def setup_hook(self) -> None:
-        """|coro|
-
-        A coroutine to be called to setup the bot, by default this is blank.
-
-        To perform asynchronous setup after the bot is logged in but before
-        it has connected to the Websocket, overwrite this coroutine.
-
-        This is only called once, in :meth:`login`, and will be called before
-        any events are dispatched, making it a better solution than doing such
-        setup in the :func:`~discord.on_ready` event.
-
-        .. versionadded:: 2.0
-        """
-        pass
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """A blocking call that abstracts away the event loop
@@ -925,7 +932,8 @@ class Client:
 
         Waits until the client's internal cache is all ready.
         """
-        await self._ready.wait()
+        if self._ready is not MISSING:
+            await self._ready.wait()
 
     def wait_for(
         self,

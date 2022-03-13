@@ -343,8 +343,7 @@ class HTTPClient:
         self.connector: aiohttp.BaseConnector = connector or MISSING
         self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
-        self._global_over: asyncio.Event = asyncio.Event()
-        self._global_over.set()
+        self._global_over: asyncio.Event = MISSING
         self.token: Optional[str] = None
         self.bot_token: bool = False
         self.proxy: Optional[str] = proxy
@@ -550,6 +549,9 @@ class HTTPClient:
         self.__session = aiohttp.ClientSession(
             connector=self.connector, ws_response_class=DiscordClientWebSocketResponse, loop=self.loop
         )
+        self._global_over = asyncio.Event()
+        self._global_over.set()
+
         old_token = self.token
         self.token = token
 

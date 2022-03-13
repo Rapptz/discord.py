@@ -300,6 +300,9 @@ class ConnectionState:
         else:
             await coro(*args, **kwargs)
 
+    async def async_setup(self) -> None:
+        pass
+
     @property
     def self_id(self) -> Optional[int]:
         u = self.user
@@ -1485,7 +1488,6 @@ class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.shard_ids: Union[List[int], range] = []
-        self.shards_launched: asyncio.Event = asyncio.Event()
 
     def _update_message_references(self) -> None:
         # self._messages won't be None when this is called
@@ -1499,6 +1501,9 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
                 # channel will either be a TextChannel, Thread or Object
                 msg._rebind_cached_references(new_guild, channel)  # type: ignore
+
+    async def async_setup(self) -> None:
+        self.shards_launched: asyncio.Event = asyncio.Event()
 
     async def chunker(
         self,
