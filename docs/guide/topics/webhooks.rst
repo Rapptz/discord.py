@@ -213,3 +213,9 @@ and :meth:`Webhook.delete_message` methods. This way, you can avoid unnecessary 
     await webhook.edit_message(12345679, content="Deleting in 5 seconds...")
     await asyncio.sleep(5)
     await webhook.delete_message(12345679)
+
+Next Steps
+~~~~~~~~~~
+
+Webhooks can come in handy in various use cases. Every aspect of webhooks cannot be covered 
+in this short guide. To discover more features, Read the documentation for :class:`Webhook`.
