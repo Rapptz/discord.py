@@ -538,7 +538,7 @@ class BotBase(GroupMixin):
         guilds: List[Snowflake] = MISSING,
     ) -> None:
         """|coro|
-        
+
         Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
@@ -640,7 +640,7 @@ class BotBase(GroupMixin):
         guilds: List[Snowflake] = MISSING,
     ) -> Optional[Cog]:
         """|coro|
-        
+
         Removes a cog from the bot and returns it.
 
         All registered commands and event listeners that the
@@ -786,7 +786,7 @@ class BotBase(GroupMixin):
 
     async def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """|coro|
-        
+
         Loads an extension.
 
         An extension is a python module that contains commands, cogs, or
