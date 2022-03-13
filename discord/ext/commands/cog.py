@@ -26,6 +26,7 @@ from __future__ import annotations
 import inspect
 import discord
 from discord import app_commands
+from discord.utils import maybe_coroutine
 
 from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
@@ -377,13 +378,28 @@ class Cog(metaclass=CogMeta):
         return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
+    def cog_load(self) -> None:
+        """A special method that is called when the cog gets loaded.
+
+        This function **can** be a coroutine.
+
+        Subclasses must replace this if they want special loading behaviour.
+
+        .. versionadded:: 2.0
+        """
+        pass
+
+    @_cog_special_method
     def cog_unload(self) -> None:
         """A special method that is called when the cog gets removed.
 
-        This function **cannot** be a coroutine. It must be a regular
-        function.
+        This function **can** be a coroutine.
 
         Subclasses must replace this if they want special unloading behaviour.
+
+        .. versionchanged:: 2.0
+
+            This method can now be a :term:`coroutine`.
         """
         pass
 
@@ -466,7 +482,7 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
+    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
         cls = self.__class__
 
         # realistically, the only thing that can cause loading errors
@@ -505,9 +521,14 @@ class Cog(metaclass=CogMeta):
                 # This is already atomic
                 bot.tree.add_command(command, override=override, guild=guild, guilds=guilds)
 
+        try:
+            await maybe_coroutine(self.cog_load)
+        except Exception:
+            pass
+
         return self
 
-    def _eject(self, bot: BotBase, guild_ids: Optional[Iterable[int]]) -> None:
+    async def _eject(self, bot: BotBase, guild_ids: Optional[Iterable[int]]) -> None:
         cls = self.__class__
 
         try:
@@ -534,6 +555,6 @@ class Cog(metaclass=CogMeta):
                 bot.remove_check(self.bot_check_once, call_once=True)
         finally:
             try:
-                self.cog_unload()
+                await maybe_coroutine(self.cog_unload)
             except Exception:
                 pass
