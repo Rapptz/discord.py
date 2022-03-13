@@ -11,6 +11,13 @@ how you can arbitrarily nest groups and commands to have a rich sub-command syst
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
 signature to the Python function.
 
+.. warning::
+
+    You must have access to the :attr:`~discord.Intents.message_content` intent for the commands extension
+    to function. This must be set both in the developer portal and within your code.
+
+    Failure to do this will result in your bot not responding to any of your commands.
+
 For example, in the given command definition:
 
 .. code-block:: python3

@@ -27,7 +27,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import signal
 import sys
 import traceback
 from typing import (
@@ -42,6 +41,7 @@ from typing import (
     Sequence,
     TYPE_CHECKING,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -77,6 +77,8 @@ from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+    from types import TracebackType
     from .types.guild import Guild as GuildPayload
     from .abc import SnowflakeTime, Snowflake, PrivateChannel
     from .guild import GuildChannel
@@ -97,41 +99,6 @@ Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 _log = logging.getLogger(__name__)
 
 
-def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
-    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
-
-    if not tasks:
-        return
-
-    _log.info('Cleaning up after %d tasks.', len(tasks))
-    for task in tasks:
-        task.cancel()
-
-    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    _log.info('All tasks finished cancelling.')
-
-    for task in tasks:
-        if task.cancelled():
-            continue
-        if task.exception() is not None:
-            loop.call_exception_handler(
-                {
-                    'message': 'Unhandled exception during Client.run shutdown.',
-                    'exception': task.exception(),
-                    'task': task,
-                }
-            )
-
-
-def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
-    try:
-        _cancel_tasks(loop)
-        loop.run_until_complete(loop.shutdown_asyncgens())
-    finally:
-        _log.info('Closing the event loop.')
-        loop.close()
-
-
 class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
@@ -146,12 +113,6 @@ class Client:
 
         .. versionchanged:: 1.3
             Allow disabling the message cache and change the default size to ``1000``.
-    loop: Optional[:class:`asyncio.AbstractEventLoop`]
-        The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
-        Defaults to ``None``, in which case the default event loop is used via
-        :func:`asyncio.get_event_loop()`.
-    connector: Optional[:class:`aiohttp.BaseConnector`]
-        The connector to use for connection pooling.
     proxy: Optional[:class:`str`]
         Proxy URL.
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
@@ -220,30 +181,20 @@ class Client:
     -----------
     ws
         The websocket gateway the client is currently connected to. Could be ``None``.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the client uses for asynchronous operations.
     """
 
-    def __init__(
-        self,
-        *,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        **options: Any,
-    ):
+    def __init__(self, **options: Any) -> None:
+        self.loop: asyncio.AbstractEventLoop = MISSING
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.shard_id: Optional[int] = options.get('shard_id')
         self.shard_count: Optional[int] = options.get('shard_count')
 
-        connector: Optional[aiohttp.BaseConnector] = options.pop('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(
-            connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop
-        )
+        self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
 
         self._handlers: Dict[str, Callable[..., None]] = {
             'ready': self._handle_ready,
@@ -257,7 +208,7 @@ class Client:
         self._connection: ConnectionState = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
-        self._ready: asyncio.Event = asyncio.Event()
+        self._ready: asyncio.Event = MISSING
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
@@ -265,15 +216,26 @@ class Client:
             VoiceClient.warn_nacl = False
             _log.warning("PyNaCl is not installed, voice will NOT be supported")
 
+    async def __aenter__(self) -> Self:
+        self.loop = asyncio.get_running_loop()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        if not self.is_closed():
+            await self.close()
+
     # internals
 
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
         return self.ws
 
     def _get_state(self, **options: Any) -> ConnectionState:
-        return ConnectionState(
-            dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, loop=self.loop, **options
-        )
+        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers, hooks=self._hooks, http=self.http, **options)
 
     def _handle_ready(self) -> None:
         self._ready.set()
@@ -371,7 +333,7 @@ class Client:
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
-        return self._ready.is_set()
+        return self._ready is not MISSING and self._ready.is_set()
 
     async def _run_event(
         self,
@@ -399,7 +361,7 @@ class Client:
     ) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
+        return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
 
     def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
@@ -483,6 +445,32 @@ class Client:
         if not initial:
             await asyncio.sleep(5.0)
 
+    async def _async_setup_hook(self) -> None:
+        # Called whenever the client needs to initialise asyncio objects with a running loop
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+        self._connection.loop = loop
+        await self._connection.async_setup()
+
+        self._ready = asyncio.Event()
+
+    async def setup_hook(self) -> None:
+        """|coro|
+
+        A coroutine to be called to setup the bot, by default this is blank.
+
+        To perform asynchronous setup after the bot is logged in but before
+        it has connected to the Websocket, overwrite this coroutine.
+
+        This is only called once, in :meth:`login`, and will be called before
+        any events are dispatched, making it a better solution than doing such
+        setup in the :func:`~discord.on_ready` event.
+
+        .. versionadded:: 2.0
+        """
+        pass
+
     # login state management
 
     async def login(self, token: str) -> None:
@@ -509,6 +497,8 @@ class Client:
         """
 
         _log.info('logging in using static token')
+
+        await self._async_setup_hook()
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
@@ -623,6 +613,7 @@ class Client:
 
         await self.http.close()
         self._ready.clear()
+        self.loop = MISSING
 
     def clear(self) -> None:
         """Clears the internal state of the bot.
@@ -649,22 +640,6 @@ class Client:
         await self.login(token)
         await self.connect(reconnect=reconnect)
 
-    async def setup_hook(self) -> None:
-        """|coro|
-
-        A coroutine to be called to setup the bot, by default this is blank.
-
-        To perform asynchronous setup after the bot is logged in but before
-        it has connected to the Websocket, overwrite this coroutine.
-
-        This is only called once, in :meth:`login`, and will be called before
-        any events are dispatched, making it a better solution than doing such
-        setup in the :func:`~discord.on_ready` event.
-
-        .. versionadded:: 2.0
-        """
-        pass
-
     def run(self, *args: Any, **kwargs: Any) -> None:
         """A blocking call that abstracts away the event loop
         initialisation from you.
@@ -676,12 +651,9 @@ class Client:
         Roughly Equivalent to: ::
 
             try:
-                loop.run_until_complete(start(*args, **kwargs))
+                asyncio.run(self.start(*args, **kwargs))
             except KeyboardInterrupt:
-                loop.run_until_complete(close())
-                # cancel all tasks lingering
-            finally:
-                loop.close()
+                return
 
         .. warning::
 
@@ -689,41 +661,18 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
-        loop = self.loop
-
-        try:
-            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
-            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
-        except NotImplementedError:
-            pass
 
         async def runner():
-            try:
+            async with self:
                 await self.start(*args, **kwargs)
-            finally:
-                if not self.is_closed():
-                    await self.close()
 
-        def stop_loop_on_completion(f):
-            loop.stop()
-
-        future = asyncio.ensure_future(runner(), loop=loop)
-        future.add_done_callback(stop_loop_on_completion)
         try:
-            loop.run_forever()
+            asyncio.run(runner())
         except KeyboardInterrupt:
-            _log.info('Received signal to terminate bot and event loop.')
-        finally:
-            future.remove_done_callback(stop_loop_on_completion)
-            _log.info('Cleaning up tasks.')
-            _cleanup_loop(loop)
-
-        if not future.cancelled():
-            try:
-                return future.result()
-            except KeyboardInterrupt:
-                # I am unsure why this gets raised here but suppress it anyway
-                return None
+            # nothing to do here
+            # `asyncio.run` handles the loop cleanup
+            # and `self.start` closes all sockets and the HTTPClient instance.
+            return
 
     # properties
 
@@ -983,7 +932,8 @@ class Client:
 
         Waits until the client's internal cache is all ready.
         """
-        await self._ready.wait()
+        if self._ready is not MISSING:
+            await self._ready.wait()
 
     def wait_for(
         self,

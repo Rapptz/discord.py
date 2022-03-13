@@ -520,7 +520,7 @@ class FFmpegOpusAudio(FFmpegAudio):
             raise TypeError(f"Expected str or callable for parameter 'probe', not '{method.__class__.__name__}'")
 
         codec = bitrate = None
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         try:
             codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except Exception:
@@ -749,6 +749,6 @@ class AudioPlayer(threading.Thread):
 
     def _speak(self, speaking: SpeakingState) -> None:
         try:
-            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
+            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception as e:
             _log.info("Speaking call in player failed: %s", e)

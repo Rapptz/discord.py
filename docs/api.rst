@@ -2220,7 +2220,7 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`GuildSticker` or :class:`Object` with the ID of the sticker
-        which was updated.
+        which was created.
 
         Possible attributes for :class:`AuditLogDiff`:
 

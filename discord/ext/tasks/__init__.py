@@ -101,11 +101,9 @@ class Loop(Generic[LF]):
         time: Union[datetime.time, Sequence[datetime.time]],
         count: Optional[int],
         reconnect: bool,
-        loop: asyncio.AbstractEventLoop,
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
-        self.loop: asyncio.AbstractEventLoop = loop
         self.count: Optional[int] = count
         self._current_loop = 0
         self._handle: Optional[SleepHandle] = None
@@ -147,16 +145,20 @@ class Loop(Generic[LF]):
             await coro(*args, **kwargs)
 
     def _try_sleep_until(self, dt: datetime.datetime):
-        self._handle = SleepHandle(dt=dt, loop=self.loop)
+        self._handle = SleepHandle(dt=dt, loop=asyncio.get_running_loop())
         return self._handle.wait()
+
+    def _is_relative_time(self) -> bool:
+        return self._time is MISSING
+
+    def _is_explicit_time(self) -> bool:
+        return self._time is not MISSING
 
     async def _loop(self, *args: Any, **kwargs: Any) -> None:
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
         self._last_iteration_failed = False
-        if self._time is not MISSING:
-            # the time index should be prepared every time the internal loop is started
-            self._prepare_time_index()
+        if self._is_explicit_time():
             self._next_iteration = self._get_next_sleep_time()
         else:
             self._next_iteration = datetime.datetime.now(datetime.timezone.utc)
@@ -166,7 +168,7 @@ class Loop(Generic[LF]):
                 return
             while True:
                 # sleep before the body of the task for explicit time intervals
-                if self._time is not MISSING:
+                if self._is_explicit_time():
                     await self._try_sleep_until(self._next_iteration)
                 if not self._last_iteration_failed:
                     self._last_iteration = self._next_iteration
@@ -184,7 +186,7 @@ class Loop(Generic[LF]):
                         return
 
                     # sleep after the body of the task for relative time intervals
-                    if self._time is MISSING:
+                    if self._is_relative_time():
                         await self._try_sleep_until(self._next_iteration)
 
                     self._current_loop += 1
@@ -219,7 +221,6 @@ class Loop(Generic[LF]):
             time=self._time,
             count=self.count,
             reconnect=self.reconnect,
-            loop=self.loop,
         )
         copy._injected = obj
         copy._before_loop = self._before_loop
@@ -332,10 +333,7 @@ class Loop(Generic[LF]):
         if self._injected is not None:
             args = (self._injected, *args)
 
-        if self.loop is MISSING:
-            self.loop = asyncio.get_event_loop()
-
-        self._task = self.loop.create_task(self._loop(*args, **kwargs))
+        self._task = asyncio.create_task(self._loop(*args, **kwargs))
         return self._task
 
     def stop(self) -> None:
@@ -559,47 +557,36 @@ class Loop(Generic[LF]):
         self._error = coro  # type: ignore
         return coro
 
-    def _get_next_sleep_time(self) -> datetime.datetime:
+    def _get_next_sleep_time(self, now: datetime.datetime = MISSING) -> datetime.datetime:
         if self._sleep is not MISSING:
             return self._last_iteration + datetime.timedelta(seconds=self._sleep)
 
-        if self._time_index >= len(self._time):
-            self._time_index = 0
-            if self._current_loop == 0:
-                # if we're at the last index on the first iteration, we need to sleep until tomorrow
-                return datetime.datetime.combine(
-                    datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1), self._time[0]
-                )
+        if now is MISSING:
+            now = datetime.datetime.now(datetime.timezone.utc)
 
-        next_time = self._time[self._time_index]
+        index = self._start_time_relative_to(now)
 
-        if self._current_loop == 0:
-            self._time_index += 1
-            return datetime.datetime.combine(datetime.datetime.now(datetime.timezone.utc), next_time)
+        if index is None:
+            time = self._time[0]
+            tomorrow = now + datetime.timedelta(days=1)
+            date = tomorrow.date()
+        else:
+            date = now.date()
+            time = self._time[index]
 
-        next_date = self._last_iteration
-        if self._time_index == 0:
-            # we can assume that the earliest time should be scheduled for "tomorrow"
-            next_date += datetime.timedelta(days=1)
+        return datetime.datetime.combine(date, time, tzinfo=time.tzinfo or datetime.timezone.utc)
 
-        self._time_index += 1
-        return datetime.datetime.combine(next_date, next_time)
-
-    def _prepare_time_index(self, now: datetime.datetime = MISSING) -> None:
+    def _start_time_relative_to(self, now: datetime.datetime) -> Optional[int]:
         # now kwarg should be a datetime.datetime representing the time "now"
         # to calculate the next time index from
 
         # pre-condition: self._time is set
-        time_now = (
-            now if now is not MISSING else datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-        ).timetz()
-        idx = -1
+        time_now = now.timetz()
         for idx, time in enumerate(self._time):
             if time >= time_now:
-                self._time_index = idx
-                break
+                return idx
         else:
-            self._time_index = idx + 1
+            return None
 
     def _get_time_parameter(
         self,
@@ -689,10 +676,6 @@ class Loop(Generic[LF]):
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
         if self.is_running():
-            if self._time is not MISSING:
-                # prepare the next time index starting from after the last iteration
-                self._prepare_time_index(now=self._last_iteration)
-
             self._next_iteration = self._get_next_sleep_time()
             if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
@@ -707,7 +690,6 @@ def loop(
     time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     count: Optional[int] = None,
     reconnect: bool = True,
-    loop: asyncio.AbstractEventLoop = MISSING,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -740,9 +722,6 @@ def loop(
         Whether to handle errors and restart the task
         using an exponential back-off algorithm similar to the
         one used in :meth:`discord.Client.connect`.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The loop to use to register the task, if not given
-        defaults to :func:`asyncio.get_event_loop`.
 
     Raises
     --------
@@ -762,7 +741,6 @@ def loop(
             count=count,
             time=time,
             reconnect=reconnect,
-            loop=loop,
         )
 
     return decorator
