@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import logging
 from typing import (
     Any,
     Awaitable,
@@ -47,6 +48,8 @@ import traceback
 from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
+
+_log = logging.getLogger(__name__)
 
 # fmt: off
 __all__ = (
@@ -173,6 +176,25 @@ class Loop(Generic[LF]):
                 if not self._last_iteration_failed:
                     self._last_iteration = self._next_iteration
                     self._next_iteration = self._get_next_sleep_time()
+
+                    # In order to account for clock drift, we need to ensure that
+                    # the next iteration always follows the last iteration.
+                    # Sometimes asyncio is cheeky and wakes up a few microseconds before our target
+                    # time, causing it to repeat a run.
+                    while self._next_iteration <= self._last_iteration:
+                        _log.warn(
+                            (
+                                'Clock drift detected for task %s. Woke up at %s but needed to sleep until %s. '
+                                'Sleeping until %s again to correct clock'
+                            ),
+                            self.coro.__qualname__,
+                            discord.utils.utcnow(),
+                            self._next_iteration,
+                            self._next_iteration,
+                        )
+                        await self._try_sleep_until(self._next_iteration)
+                        self._next_iteration = self._get_next_sleep_time()
+
                 try:
                     await self.coro(*args, **kwargs)
                     self._last_iteration_failed = False
