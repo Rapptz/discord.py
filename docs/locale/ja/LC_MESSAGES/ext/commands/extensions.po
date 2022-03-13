@@ -42,7 +42,7 @@ msgid "hello.py"
 msgstr "hello.py"
 
 #: ../../ext/commands/extensions.rst:30
-msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``."
+msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``await bot.load_extension('hello')``."
 msgstr ""
 
 #: ../../ext/commands/extensions.rst:32

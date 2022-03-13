@@ -2350,7 +2350,6 @@ def before_invoke(coro) -> Callable[[T], T]:
             async def why(self, ctx): # Output: <Nothing>
                 await ctx.send('because someone made me')
 
-        bot.add_cog(What())
     """
 
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
