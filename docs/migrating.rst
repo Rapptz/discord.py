@@ -842,6 +842,25 @@ The return type of the following methods has been changed to an :term:`asynchron
 The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an
 :term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
 
+Removal of ``Embed.Empty``
+---------------------------
+
+Originally, embeds used a special sentinel to denote emptiness or remove an attribute from display. The ``Embed.Empty`` sentinel was made when Discord's embed design was in a nebulous state of flux. Since then, the embed design has stabilised and thus the sentinel is seen as legacy.
+
+Therefore, ``Embed.Empty`` has been removed in favour of ``None``.
+
+.. code-block:: python
+
+    # Before
+
+    embed = discord.Embed(title='foo')
+    embed.title = discord.Embed.Empty
+
+    # After
+    embed = discord.Embed(title='foo')
+    embed.title = None
+
+
 Removal of ``InvalidArgument`` Exception
 -------------------------------------------
 
