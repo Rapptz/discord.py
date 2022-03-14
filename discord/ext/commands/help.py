@@ -1214,7 +1214,7 @@ class MinimalHelpCommand(HelpCommand):
         :class:`str`
             The help command ending note.
         """
-        return None  # type: ignore
+        return ''
 
     def add_bot_commands_formatting(self, commands: Sequence[Command[Any, ..., Any]], heading: str) -> None:
         """Adds the minified bot heading with commands to the output.
