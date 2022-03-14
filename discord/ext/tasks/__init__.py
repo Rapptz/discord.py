@@ -603,9 +603,16 @@ class Loop(Generic[LF]):
         # to calculate the next time index from
 
         # pre-condition: self._time is set
-        time_now = now.timetz()
+
+        # Sole time comparisons are apparently broken, therefore, attach today's date
+        # to it in order to make the comparisons make sense.
+        # For example, if given a list of times [0, 3, 18]
+        # If it's 04:00 today then we know we have to wait until 18:00 today
+        # If it's 19:00 today then we know we we have to wait until 00:00 tomorrow
+        date = now.date()
         for idx, time in enumerate(self._time):
-            if time >= time_now:
+            start_time = datetime.datetime.combine(date, time, tzinfo=time.tzinfo)
+            if start_time >= now:
                 return idx
         else:
             return None
