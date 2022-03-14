@@ -97,6 +97,13 @@ def test_task_regression_issue7659():
     assert loop._get_next_sleep_time(before_midnight) == expected_before_midnight
     assert loop._get_next_sleep_time(after_midnight) == expected_after_midnight
 
+    today = datetime.date.today()
+    minute_before = [datetime.datetime.combine(today, time, tzinfo=jst) - datetime.timedelta(minutes=1) for time in times]
+
+    for before, expected_time in zip(minute_before, times):
+        expected = datetime.datetime.combine(today, expected_time, tzinfo=jst)
+        assert loop._get_next_sleep_time(before) == expected
+
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
 def test_task_is_imaginary():
