@@ -174,7 +174,7 @@ class Modal(View):
     def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
-                self.refresh(component['components'])
+                self._refresh(component['components'])
             else:
                 item = find(lambda i: i.custom_id == component['custom_id'], self.children)  # type: ignore
                 if item is None:
