@@ -973,7 +973,7 @@ class BotBase(GroupMixin[None]):
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
             # so let's load it from our old compiled library.
-            await lib.setup(self)  # type: ignore
+            await lib.setup(self)
             self.__extensions[name] = lib
 
             # revert sys.modules back to normal and raise back to caller
