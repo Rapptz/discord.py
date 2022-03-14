@@ -18,6 +18,7 @@ Let's make a bot that responds to a specific message and walk you through it.
 It looks something like this:
 
 .. code-block:: python3
+
     # This example requires the 'message_content' intent.
 
     import discord
