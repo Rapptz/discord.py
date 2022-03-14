@@ -365,12 +365,11 @@ class FFmpegOpusAudio(FFmpegAudio):
         bitrate: Optional[int] = None,
         codec: Optional[str] = None,
         executable: str = 'ffmpeg',
-        pipe=False,
-        stderr=None,
-        before_options=None,
-        options=None,
+        pipe: bool = False,
+        stderr: Optional[IO[bytes]] = None,
+        before_options: Optional[str] = None,
+        options: Optional[str] = None,
     ) -> None:
-
         args = []
         subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
@@ -635,7 +634,13 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
 class AudioPlayer(threading.Thread):
     DELAY: float = OpusEncoder.FRAME_LENGTH / 1000.0
 
-    def __init__(self, source: AudioSource, client: VoiceClient, *, after=None):
+    def __init__(
+        self,
+        source: AudioSource,
+        client: VoiceClient,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
+    ) -> None:
         threading.Thread.__init__(self)
         self.daemon: bool = True
         self.source: AudioSource = source
@@ -724,8 +729,8 @@ class AudioPlayer(threading.Thread):
             self._speak(SpeakingState.none)
 
     def resume(self, *, update_speaking: bool = True) -> None:
-        self.loops = 0
-        self._start = time.perf_counter()
+        self.loops: int = 0
+        self._start: float = time.perf_counter()
         self._resumed.set()
         if update_speaking:
             self._speak(SpeakingState.voice)

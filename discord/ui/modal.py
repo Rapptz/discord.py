@@ -38,6 +38,8 @@ from .item import Item
 from .view import View
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ..interactions import Interaction
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
 
@@ -101,7 +103,7 @@ class Modal(View):
         title: str
 
     __discord_ui_modal__ = True
-    __modal_children_items__: ClassVar[Dict[str, Item]] = {}
+    __modal_children_items__: ClassVar[Dict[str, Item[Self]]] = {}
 
     def __init_subclass__(cls, *, title: str = MISSING) -> None:
         if title is not MISSING:
@@ -139,7 +141,7 @@ class Modal(View):
 
         super().__init__(timeout=timeout)
 
-    async def on_submit(self, interaction: Interaction):
+    async def on_submit(self, interaction: Interaction) -> None:
         """|coro|
 
         Called when the modal is submitted.
@@ -169,7 +171,7 @@ class Modal(View):
         print(f'Ignoring exception in modal {self}:', file=sys.stderr)
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    def refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]):
+    def refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
                 self.refresh(component['components'])

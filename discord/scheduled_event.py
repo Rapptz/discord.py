@@ -132,7 +132,7 @@ class ScheduledEvent(Hashable):
         self.guild_id: int = int(data['guild_id'])
         self.name: str = data['name']
         self.description: Optional[str] = data.get('description')
-        self.entity_type = try_enum(EntityType, data['entity_type'])
+        self.entity_type: EntityType = try_enum(EntityType, data['entity_type'])
         self.entity_id: Optional[int] = _get_as_snowflake(data, 'entity_id')
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
@@ -153,7 +153,7 @@ class ScheduledEvent(Hashable):
         self.location: Optional[str] = data.get('location') if data else None
 
     @classmethod
-    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload):
+    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
         creator_id = data.get('creator_id')
         self = cls(state=state, data=data)
         if creator_id:
@@ -180,7 +180,7 @@ class ScheduledEvent(Hashable):
         return self.guild.get_channel(self.channel_id)  # type: ignore
 
     @property
-    def url(self):
+    def url(self) -> str:
         """:class:`str`: The url for the scheduled event."""
         return f'https://discord.com/events/{self.guild_id}/{self.id}'
 

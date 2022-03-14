@@ -166,7 +166,7 @@ def _validate_auto_complete_callback(
     return callback
 
 
-def _context_menu_annotation(annotation: Any, *, _none=NoneType) -> AppCommandType:
+def _context_menu_annotation(annotation: Any, *, _none: type = NoneType) -> AppCommandType:
     if annotation is Message:
         return AppCommandType.message
 
@@ -686,7 +686,7 @@ class Group:
         The parent group. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
+    __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
@@ -694,9 +694,11 @@ class Group:
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
         if not cls.__discord_app_commands_group_children__:
-            cls.__discord_app_commands_group_children__ = children = [
+            children: List[Union[Command[Any, ..., Any], Group]] = [
                 member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
             ]
+
+            cls.__discord_app_commands_group_children__ = children
 
             found = set()
             for child in children:
@@ -796,15 +798,15 @@ class Group:
         """Optional[:class:`Group`]: The parent of this group."""
         return self.parent
 
-    def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
+    def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
 
     @property
-    def commands(self) -> List[Union[Command, Group]]:
+    def commands(self) -> List[Union[Command[Any, ..., Any], Group]]:
         """List[Union[:class:`Command`, :class:`Group`]]: The commands that this group contains."""
         return list(self._children.values())
 
-    async def on_error(self, interaction: Interaction, command: Command, error: AppCommandError) -> None:
+    async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
@@ -823,7 +825,7 @@ class Group:
 
         pass
 
-    def add_command(self, command: Union[Command, Group], /, *, override: bool = False):
+    def add_command(self, command: Union[Command[Any, ..., Any], Group], /, *, override: bool = False) -> None:
         """Adds a command or group to this group's internal list of commands.
 
         Parameters
@@ -855,7 +857,7 @@ class Group:
         if len(self._children) > 25:
             raise ValueError('maximum number of child commands exceeded')
 
-    def remove_command(self, name: str, /) -> Optional[Union[Command, Group]]:
+    def remove_command(self, name: str, /) -> Optional[Union[Command[Any, ..., Any], Group]]:
         """Removes a command or group from the internal list of commands.
 
         Parameters
@@ -872,7 +874,7 @@ class Group:
 
         self._children.pop(name, None)
 
-    def get_command(self, name: str, /) -> Optional[Union[Command, Group]]:
+    def get_command(self, name: str, /) -> Optional[Union[Command[Any, ..., Any], Group]]:
         """Retrieves a command or group from its name.
 
         Parameters
@@ -1046,7 +1048,7 @@ def describe(**parameters: str) -> Callable[[T], T]:
     return decorator
 
 
-def choices(**parameters: List[Choice]) -> Callable[[T], T]:
+def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
     r"""Instructs the given parameters by their name to use the given choices for their choices.
 
     Example:

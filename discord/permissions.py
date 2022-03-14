@@ -276,7 +276,7 @@ class Permissions(BaseFlags):
         # So 0000 OP2 0101 -> 0101
         # The OP is base  & ~denied.
         # The OP2 is base | allowed.
-        self.value = (self.value & ~deny) | allow
+        self.value: int = (self.value & ~deny) | allow
 
     @flag_value
     def create_instant_invite(self) -> int:
@@ -691,7 +691,7 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, PermissionOverwrite) and self._values == other._values
 
     def _set(self, key: str, value: Optional[bool]) -> None:

@@ -196,11 +196,11 @@ class Client:
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
         self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
 
-        self._handlers: Dict[str, Callable] = {
+        self._handlers: Dict[str, Callable[..., None]] = {
             'ready': self._handle_ready,
         }
 
-        self._hooks: Dict[str, Callable] = {
+        self._hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = {
             'before_identify': self._call_before_identify_hook,
         }
 
@@ -698,7 +698,7 @@ class Client:
             raise TypeError('activity must derive from BaseActivity.')
 
     @property
-    def status(self):
+    def status(self) -> Status:
         """:class:`.Status`:
         The status being used upon logging on to Discord.
 
@@ -709,7 +709,7 @@ class Client:
         return Status.online
 
     @status.setter
-    def status(self, value):
+    def status(self, value: Status) -> None:
         if value is Status.offline:
             self._connection._status = 'invisible'
         elif isinstance(value, Status):
@@ -1077,7 +1077,7 @@ class Client:
         *,
         activity: Optional[BaseActivity] = None,
         status: Optional[Status] = None,
-    ):
+    ) -> None:
         """|coro|
 
         Changes the client's presence.

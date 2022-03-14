@@ -76,12 +76,9 @@ if TYPE_CHECKING:
         audit_log,
         channel,
         command,
-        components,
         emoji,
-        embed,
         guild,
         integration,
-        interactions,
         invite,
         member,
         message,
@@ -92,7 +89,6 @@ if TYPE_CHECKING:
         channel,
         widget,
         threads,
-        voice,
         scheduled_event,
         sticker,
     )
@@ -122,7 +118,7 @@ class MultipartParameters(NamedTuple):
     multipart: Optional[List[Dict[str, Any]]]
     files: Optional[List[File]]
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
@@ -577,7 +573,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/{user_id}/channels', user_id=user_id), json=payload)
 
-    def leave_group(self, channel_id) -> Response[None]:
+    def leave_group(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id))
 
     # Message management
@@ -1160,7 +1156,7 @@ class HTTPClient:
     def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def edit_template(self, guild_id: Snowflake, code: str, payload) -> Response[template.Template]:
+    def edit_template(self, guild_id: Snowflake, code: str, payload: Dict[str, Any]) -> Response[template.Template]:
         valid_keys = (
             'name',
             'description',
@@ -1420,7 +1416,9 @@ class HTTPClient:
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
-    def edit_widget(self, guild_id: Snowflake, payload, reason: Optional[str] = None) -> Response[widget.WidgetSettings]:
+    def edit_widget(
+        self, guild_id: Snowflake, payload: widget.EditWidgetSettings, reason: Optional[str] = None
+    ) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
 
     # Invite management
@@ -1812,7 +1810,9 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def upsert_global_command(self, application_id: Snowflake, payload) -> Response[command.ApplicationCommand]:
+    def upsert_global_command(
+        self, application_id: Snowflake, payload: command.ApplicationCommand
+    ) -> Response[command.ApplicationCommand]:
         r = Route('POST', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 
@@ -1845,7 +1845,9 @@ class HTTPClient:
         )
         return self.request(r)
 
-    def bulk_upsert_global_commands(self, application_id: Snowflake, payload) -> Response[List[command.ApplicationCommand]]:
+    def bulk_upsert_global_commands(
+        self, application_id: Snowflake, payload: List[Dict[str, Any]]
+    ) -> Response[List[command.ApplicationCommand]]:
         r = Route('PUT', '/applications/{application_id}/commands', application_id=application_id)
         return self.request(r, json=payload)
 

@@ -32,7 +32,6 @@ from typing import (
     Callable,
     Optional,
     Tuple,
-    Type,
     Union,
 )
 
@@ -90,10 +89,10 @@ class Colour:
     def _get_byte(self, byte: int) -> int:
         return (self.value >> (8 * byte)) & 0xFF
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Colour) and self.value == other.value
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __str__(self) -> str:
@@ -265,28 +264,28 @@ class Colour:
         """A factory method that returns a :class:`Colour` with a value of ``0x95a5a6``."""
         return cls(0x95A5A6)
 
-    lighter_gray: Callable[[Type[Self]], Self] = lighter_grey
+    lighter_gray = lighter_grey
 
     @classmethod
     def dark_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x607d8b``."""
         return cls(0x607D8B)
 
-    dark_gray: Callable[[Type[Self]], Self] = dark_grey
+    dark_gray = dark_grey
 
     @classmethod
     def light_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x979c9f``."""
         return cls(0x979C9F)
 
-    light_gray: Callable[[Type[Self]], Self] = light_grey
+    light_gray = light_grey
 
     @classmethod
     def darker_grey(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
         return cls(0x546E7A)
 
-    darker_gray: Callable[[Type[Self]], Self] = darker_grey
+    darker_gray = darker_grey
 
     @classmethod
     def og_blurple(cls) -> Self:

@@ -37,7 +37,7 @@ import time
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, TypeVar, Type, overload
 import weakref
 
 from .. import utils
@@ -56,36 +56,50 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+    from types import TracebackType
+
     from ..file import File
     from ..embeds import Embed
     from ..mentions import AllowedMentions
     from ..message import Attachment
+    from ..abc import Snowflake
+    from ..state import ConnectionState
     from ..types.webhook import (
         Webhook as WebhookPayload,
     )
-    from ..abc import Snowflake
+    from ..types.message import (
+        Message as MessagePayload,
+    )
+
+    BE = TypeVar('BE', bound=BaseException)
 
     try:
         from requests import Session, Response
     except ModuleNotFoundError:
         pass
 
-MISSING = utils.MISSING
+MISSING: Any = utils.MISSING
 
 
 class DeferredLock:
-    def __init__(self, lock: threading.Lock):
-        self.lock = lock
+    def __init__(self, lock: threading.Lock) -> None:
+        self.lock: threading.Lock = lock
         self.delta: Optional[float] = None
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.lock.acquire()
         return self
 
     def delay_by(self, delta: float) -> None:
         self.delta = delta
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
+    ) -> None:
         if self.delta:
             time.sleep(self.delta)
         self.lock.release()
@@ -218,7 +232,7 @@ class WebhookAdapter:
         token: Optional[str] = None,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, auth_token=token)
 
@@ -229,7 +243,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason)
 
@@ -241,7 +255,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, payload=payload, auth_token=token)
 
@@ -253,7 +267,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason, payload=payload)
 
@@ -268,7 +282,7 @@ class WebhookAdapter:
         files: Optional[List[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
-    ):
+    ) -> MessagePayload:
         params = {'wait': int(wait)}
         if thread_id:
             params['thread_id'] = thread_id
@@ -282,7 +296,7 @@ class WebhookAdapter:
         message_id: int,
         *,
         session: Session,
-    ):
+    ) -> MessagePayload:
         route = Route(
             'GET',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -302,7 +316,7 @@ class WebhookAdapter:
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[List[File]] = None,
-    ):
+    ) -> MessagePayload:
         route = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -319,7 +333,7 @@ class WebhookAdapter:
         message_id: int,
         *,
         session: Session,
-    ):
+    ) -> None:
         route = Route(
             'DELETE',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -335,7 +349,7 @@ class WebhookAdapter:
         token: str,
         *,
         session: Session,
-    ):
+    ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session=session, auth_token=token)
 
@@ -345,7 +359,7 @@ class WebhookAdapter:
         token: str,
         *,
         session: Session,
-    ):
+    ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
@@ -569,11 +583,17 @@ class SyncWebhook(BaseWebhook):
 
     __slots__: Tuple[str, ...] = ('session',)
 
-    def __init__(self, data: WebhookPayload, session: Session, token: Optional[str] = None, state=None):
+    def __init__(
+        self,
+        data: WebhookPayload,
+        session: Session,
+        token: Optional[str] = None,
+        state: Optional[Union[ConnectionState, _WebhookState]] = None,
+    ) -> None:
         super().__init__(data, token, state)
-        self.session = session
+        self.session: Session = session
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Webhook id={self.id!r}>'
 
     @property
@@ -812,7 +832,7 @@ class SyncWebhook(BaseWebhook):
 
         return SyncWebhook(data=data, session=self.session, token=self.auth_token, state=self._state)
 
-    def _create_message(self, data):
+    def _create_message(self, data: MessagePayload) -> SyncWebhookMessage:
         state = _WebhookState(self, parent=self._state)
         # state may be artificial (unlikely at this point...)
         channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore

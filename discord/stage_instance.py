@@ -97,11 +97,11 @@ class StageInstance(Hashable):
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: StageInstancePayload) -> None:
-        self._state = state
-        self.guild = guild
+        self._state: ConnectionState = state
+        self.guild: Guild = guild
         self._update(data)
 
-    def _update(self, data: StageInstancePayload):
+    def _update(self, data: StageInstancePayload) -> None:
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
