@@ -178,9 +178,9 @@ As seen earlier, every command must take at least a single parameter, called the
 This parameter gives you access to something called the "invocation context". Essentially all the information you need to
 know how the command was executed. It contains a lot of useful information:
 
-- :attr:`.Context.guild` to fetch the :class:`Guild` of the command, if any.
-- :attr:`.Context.message` to fetch the :class:`Message` of the command.
-- :attr:`.Context.author` to fetch the :class:`Member` or :class:`User` that called the command.
+- :attr:`.Context.guild` returns the :class:`Guild` of the command, if any.
+- :attr:`.Context.message` returns the :class:`Message` of the command.
+- :attr:`.Context.author` returns the :class:`Member` or :class:`User` that called the command.
 - :meth:`.Context.send` to send a message to the channel the command was used in.
 
 The context implements the :class:`abc.Messageable` interface, so anything you can do on a :class:`abc.Messageable` you
