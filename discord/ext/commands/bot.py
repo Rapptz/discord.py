@@ -574,7 +574,7 @@ class BotBase(GroupMixin[None]):
 
         .. note::
 
-            Exceptions raised inside a `class`:.Cog:'s :meth:`~.Cog.cog_load` method will be
+            Exceptions raised inside a :class:`.Cog`'s :meth:`~.Cog.cog_load` method will be
             propagated to the caller.
 
         .. versionchanged:: 2.0
