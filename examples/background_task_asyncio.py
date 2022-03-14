@@ -5,6 +5,7 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    async def setup_hook(self) -> None:
         # create the background task and run it in the background
         self.bg_task = self.loop.create_task(self.my_background_task())
 
