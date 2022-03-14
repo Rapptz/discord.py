@@ -1041,7 +1041,8 @@ class BotBase(GroupMixin[None]):
         """
         prefix = ret = self.command_prefix
         if callable(prefix):
-            ret = await discord.utils.maybe_coroutine(prefix, self, message)
+            # self will be a Bot or AutoShardedBot
+            ret = await discord.utils.maybe_coroutine(prefix, self, message)  # type: ignore
 
         if not isinstance(ret, str):
             try:
@@ -1215,6 +1216,7 @@ class BotBase(GroupMixin[None]):
             return
 
         ctx = await self.get_context(message)
+        # the type of the invocation context's bot attribute will be correct
         await self.invoke(ctx)  # type: ignore
 
     async def on_message(self, message: Message) -> None:
