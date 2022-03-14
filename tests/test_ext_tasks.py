@@ -10,6 +10,7 @@ import asyncio
 import datetime
 
 import pytest
+import sys
 
 from discord import utils
 from discord.ext import tasks
@@ -95,3 +96,53 @@ def test_task_regression_issue7659():
 
     assert loop._get_next_sleep_time(before_midnight) == expected_before_midnight
     assert loop._get_next_sleep_time(after_midnight) == expected_after_midnight
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
+def test_task_is_imaginary():
+    import zoneinfo
+
+    tz = zoneinfo.ZoneInfo('America/New_York')
+
+    # 2:30 AM was skipped
+    dt = datetime.datetime(2022, 3, 13, 2, 30, tzinfo=tz)
+    assert tasks.is_imaginary(dt)
+
+    now = utils.utcnow()
+    # UTC time is never imaginary or ambiguous
+    assert not tasks.is_imaginary(now)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
+def test_task_is_ambiguous():
+    import zoneinfo
+
+    tz = zoneinfo.ZoneInfo('America/New_York')
+
+    # 1:30 AM happened twice
+    dt = datetime.datetime(2022, 11, 6, 1, 30, tzinfo=tz)
+    assert tasks.is_ambiguous(dt)
+
+    now = utils.utcnow()
+    # UTC time is never imaginary or ambiguous
+    assert not tasks.is_imaginary(now)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
+@pytest.mark.parametrize(
+    ('dt', 'key', 'expected'),
+    [
+        (datetime.datetime(2022, 11, 6, 1, 30), 'America/New_York', datetime.datetime(2022, 11, 6, 1, 30, fold=1)),
+        (datetime.datetime(2022, 3, 13, 2, 30), 'America/New_York', datetime.datetime(2022, 3, 13, 3, 30)),
+        (datetime.datetime(2022, 4, 8, 2, 30), 'America/New_York', datetime.datetime(2022, 4, 8, 2, 30)),
+        (datetime.datetime(2023, 1, 7, 12, 30), 'UTC', datetime.datetime(2023, 1, 7, 12, 30)),
+    ],
+)
+def test_task_date_resolve(dt, key, expected):
+    import zoneinfo
+
+    tz = zoneinfo.ZoneInfo(key)
+
+    actual = tasks.resolve_datetime(dt.replace(tzinfo=tz))
+    expected = expected.replace(tzinfo=tz)
+    assert actual == expected

@@ -64,6 +64,48 @@ FT = TypeVar('FT', bound=_func)
 ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
 
 
+def is_ambiguous(dt: datetime.datetime) -> bool:
+    if dt.tzinfo is None or isinstance(dt.tzinfo, datetime.timezone):
+        # Naive or fixed timezones are never ambiguous
+        return False
+
+    before = dt.replace(fold=0)
+    after = dt.replace(fold=1)
+
+    same_offset = before.utcoffset() == after.utcoffset()
+    same_dst = before.dst() == after.dst()
+    return not (same_offset and same_dst)
+
+
+def is_imaginary(dt: datetime.datetime) -> bool:
+    if dt.tzinfo is None or isinstance(dt.tzinfo, datetime.timezone):
+        # Naive or fixed timezones are never imaginary
+        return False
+
+    tz = dt.tzinfo
+    dt = dt.replace(tzinfo=None)
+    roundtrip = dt.replace(tzinfo=tz).astimezone(datetime.timezone.utc).astimezone(tz).replace(tzinfo=None)
+    return dt != roundtrip
+
+
+def resolve_datetime(dt: datetime.datetime) -> datetime.datetime:
+    if dt.tzinfo is None or isinstance(dt.tzinfo, datetime.timezone):
+        # Naive or fixed requires no resolution
+        return dt
+
+    if is_imaginary(dt):
+        # Largest gap is probably 24 hours
+        tomorrow = dt + datetime.timedelta(days=1)
+        yesterday = dt - datetime.timedelta(days=1)
+        # utcoffset shouldn't return None since these are aware instances
+        # If it returns None then the timezone implementation was broken from the get go
+        return dt + (tomorrow.utcoffset() - yesterday.utcoffset())  # type: ignore
+    elif is_ambiguous(dt):
+        return dt.replace(fold=1)
+    else:
+        return dt
+
+
 class SleepHandle:
     __slots__ = ('future', 'loop', 'handle')
 
@@ -596,7 +638,7 @@ class Loop(Generic[LF]):
             date = now.date()
             time = self._time[index]
 
-        return datetime.datetime.combine(date, time, tzinfo=time.tzinfo or datetime.timezone.utc)
+        return resolve_datetime(datetime.datetime.combine(date, time, tzinfo=time.tzinfo or datetime.timezone.utc))
 
     def _start_time_relative_to(self, now: datetime.datetime) -> Optional[int]:
         # now kwarg should be a datetime.datetime representing the time "now"
