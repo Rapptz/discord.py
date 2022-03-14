@@ -632,13 +632,14 @@ class Loop(Generic[LF]):
 
         if index is None:
             time = self._time[0]
-            tomorrow = now + datetime.timedelta(days=1)
+            tomorrow = now.astimezone(time.tzinfo) + datetime.timedelta(days=1)
             date = tomorrow.date()
         else:
-            date = now.date()
             time = self._time[index]
+            date = now.astimezone(time.tzinfo).date()
 
-        return resolve_datetime(datetime.datetime.combine(date, time, tzinfo=time.tzinfo or datetime.timezone.utc))
+        dt = datetime.datetime.combine(date, time, tzinfo=time.tzinfo)
+        return resolve_datetime(dt)
 
     def _start_time_relative_to(self, now: datetime.datetime) -> Optional[int]:
         # now kwarg should be a datetime.datetime representing the time "now"
@@ -651,10 +652,16 @@ class Loop(Generic[LF]):
         # For example, if given a list of times [0, 3, 18]
         # If it's 04:00 today then we know we have to wait until 18:00 today
         # If it's 19:00 today then we know we we have to wait until 00:00 tomorrow
-        date = now.date()
+        # Note that timezones need to be taken into consideration for this to work.
+        # If the timezone is set to UTC+9 and the now timezone is UTC
+        # A conversion needs to be done.
+        # i.e. 03:00 UTC+9 -> 18:00 UTC the previous day
         for idx, time in enumerate(self._time):
-            start_time = datetime.datetime.combine(date, time, tzinfo=time.tzinfo)
-            if start_time >= now:
+            # Convert the current time to the target timezone
+            # e.g. 18:00 UTC -> 03:00 UTC+9
+            # Then compare the time instances to see if they're the same
+            start = now.astimezone(time.tzinfo)
+            if time >= start.timetz():
                 return idx
         else:
             return None

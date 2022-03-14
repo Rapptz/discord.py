@@ -102,7 +102,32 @@ def test_task_regression_issue7659():
 
     for before, expected_time in zip(minute_before, times):
         expected = datetime.datetime.combine(today, expected_time, tzinfo=jst)
-        assert loop._get_next_sleep_time(before) == expected
+        actual = loop._get_next_sleep_time(before)
+        assert actual == expected
+
+
+def test_task_regression_issue7676():
+    jst = datetime.timezone(datetime.timedelta(hours=9))
+
+    # 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00
+    times = [datetime.time(hour=h, tzinfo=jst) for h in range(0, 24, 3)]
+
+    @tasks.loop(time=times)
+    async def loop():
+        pass
+
+    # Create pseudo UTC times
+    now = utils.utcnow()
+    today = now.date()
+    times_before_in_utc = [
+        datetime.datetime.combine(today, time, tzinfo=jst).astimezone(datetime.timezone.utc) - datetime.timedelta(minutes=1)
+        for time in times
+    ]
+
+    for before, expected_time in zip(times_before_in_utc, times):
+        actual = loop._get_next_sleep_time(before)
+        actual_time = actual.timetz()
+        assert actual_time == expected_time
 
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
