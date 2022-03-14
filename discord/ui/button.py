@@ -224,7 +224,7 @@ class Button(Item[V]):
             return self.url is not None
         return super().is_persistent()
 
-    def refresh_component(self, button: ButtonComponent) -> None:
+    def _refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
 

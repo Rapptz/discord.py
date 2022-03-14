@@ -171,7 +171,7 @@ class Modal(View):
         print(f'Ignoring exception in modal {self}:', file=sys.stderr)
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    def refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
                 self.refresh(component['components'])
@@ -180,7 +180,7 @@ class Modal(View):
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue
-                item.refresh_state(component)  # type: ignore
+                item._refresh_state(component)  # type: ignore
 
     async def _scheduled_task(self, interaction: Interaction):
         try:

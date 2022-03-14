@@ -266,10 +266,10 @@ class Select(Item[V]):
     def to_component_dict(self) -> SelectMenuPayload:
         return self._underlying.to_dict()
 
-    def refresh_component(self, component: SelectMenu) -> None:
+    def _refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def refresh_state(self, data: MessageComponentInteractionData) -> None:
+    def _refresh_state(self, data: MessageComponentInteractionData) -> None:
         self._selected_values = data.get('values', [])
 
     @classmethod

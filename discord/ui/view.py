@@ -397,7 +397,7 @@ class View:
 
         asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
-    def refresh(self, components: List[Component]) -> None:
+    def _refresh(self, components: List[Component]) -> None:
         # This is pretty hacky at the moment
         # fmt: off
         old_state: Dict[Tuple[int, str], Item[Any]] = {
@@ -413,7 +413,7 @@ class View:
             except (KeyError, AttributeError):
                 children.append(_component_to_item(component))
             else:
-                older.refresh_component(component)
+                older._refresh_component(component)
                 children.append(older)
 
         self.children = children
@@ -536,7 +536,7 @@ class ViewStore:
             return
 
         view, item = value
-        item.refresh_state(interaction.data)  # type: ignore
+        item._refresh_state(interaction.data)  # type: ignore
         view._dispatch_item(item, interaction)
 
     def dispatch_modal(
@@ -550,7 +550,7 @@ class ViewStore:
             _log.debug("Modal interaction referencing unknown custom_id %s. Discarding", custom_id)
             return
 
-        modal.refresh(components)
+        modal._refresh(components)
         modal._dispatch_submit(interaction)
 
     def is_message_tracked(self, message_id: int) -> bool:
@@ -562,4 +562,4 @@ class ViewStore:
     def update_from_message(self, message_id: int, components: List[ComponentPayload]) -> None:
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]
-        view.refresh([_component_factory(d) for d in components])
+        view._refresh([_component_factory(d) for d in components])
