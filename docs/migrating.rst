@@ -65,6 +65,54 @@ The following have been removed:
 - ``User.mutual_friends`` attribute
 - ``User.relationship`` attribute
 
+.. _migrating_2_0_client_async_setup:
+
+asyncio Event Loop Changes
+---------------------------
+
+Python 3.7 introduced a new helper function :func:`asyncio.run` which automatically creates and destroys the asynchronous event loop.
+
+In order to support this, the way discord.py handles the :mod:`asyncio` event loop has changed.
+
+This allows you to rather than using :meth:`Client.run` create your own asynchronous loop to setup other asynchronous code as needed.
+
+Quick example:
+
+.. code-block:: python
+
+    client = discord.Client()
+
+    async def main():
+        # do other async things
+        await my_async_function()
+
+        # start the client
+        async with client:
+            await client.start(TOKEN)
+
+    asyncio.run(main())
+
+A new :meth:`~Client.setup_hook` method has also been added to the :class:`Client` class.
+This method is called after login but before connecting to the discord gateway.
+
+It is intended to be used to setup various bot features in an asynchronous context.
+
+:meth:`~Client.setup_hook` can be defined by subclassing the :class:`Client` class.
+
+Quick example:
+
+.. code-block:: python
+
+    class MyClient(discord.Client):
+        async def setup_hook(self):
+            print('This is asynchronous!')
+
+    client = MyClient()
+    client.run(TOKEN)
+
+In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
+see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
+
 Abstract Base Classes Changes
 -------------------------------
 
@@ -1095,6 +1143,55 @@ The following changes have been made:
 Command Extension Changes
 ---------------------------
 
+.. _migrating_2_0_commands_extension_cog_async:
+
+Extension and Cog Loading / Unloading is Now Asynchronous
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As an extension to the :ref:`asyncio changes <migrating_2_0_client_async_setup>` the loading and unloading of extensions and cogs is now asynchronous.
+
+To accommodate this, the following changes have been made:
+
+- the ``setup`` and ``teardown`` functions in extensions must now be coroutines.
+- :meth:`ext.commands.Bot.load_extension` must now be awaited.
+- :meth:`ext.commands.Bot.unload_extension` must now be awaited.
+- :meth:`ext.commands.Bot.reload_extension` must now be awaited.
+- :meth:`ext.commands.Bot.add_cog` must now be awaited.
+- :meth:`ext.commands.Bot.remove_cog` must now be awaited.
+
+Quick example of an extension setup function:
+
+.. code:: python
+
+    # before
+    def setup(bot):
+        bot.add_cog(MyCog(bot))
+
+    #after
+    async def setup(bot):
+        await bot.add_cog(MyCog(bot))
+
+Quick example of loading an extension:
+
+.. code:: python
+
+    #before
+    bot.load_extension('my_extension')
+
+    #after using setup_hook
+    class MyBot(commands.Bot):
+        async def setup_hook(self):
+            await self.load_extension('my_extension')
+
+    # after using async_with
+    async def main():
+        async with bot:
+            await bot.load_extension('my_extension')
+            await bot.start(TOKEN)
+    
+    asyncio.run(main())
+
+
 Converters Are Now Generic Runtime Protocols
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1192,6 +1289,8 @@ Miscellanous Changes
 - :attr:`ext.commands.Context.channel` may now be a :class:`PartialMessageable`.
 - ``MissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.MissingPermissions.missing_permissions`.
 - ``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`.
+- :meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes.
+- :meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 
 .. _migrating_2_0_tasks:
 

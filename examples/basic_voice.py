@@ -137,5 +137,9 @@ async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
 
-bot.add_cog(Music(bot))
-bot.run('token')
+async def main():
+    async with bot:
+        await bot.add_cog(Music(bot))
+        await bot.start('token')
+
+asyncio.run(main())
