@@ -223,7 +223,7 @@ class Loop(Generic[LF]):
                     # the next iteration always follows the last iteration.
                     # Sometimes asyncio is cheeky and wakes up a few microseconds before our target
                     # time, causing it to repeat a run.
-                    while self._next_iteration <= self._last_iteration:
+                    while self._is_explicit_time() and self._next_iteration <= self._last_iteration:
                         _log.warn(
                             (
                                 'Clock drift detected for task %s. Woke up at %s but needed to sleep until %s. '
