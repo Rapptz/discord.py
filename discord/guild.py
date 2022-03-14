@@ -3282,7 +3282,7 @@ class Guild(Hashable):
             after = Object(id=utils.time_snowflake(after, high=True))
 
         if oldest_first is MISSING:
-            reverse = after is not None
+            reverse = after is not MISSING
         else:
             reverse = oldest_first
 
