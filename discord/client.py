@@ -99,6 +99,21 @@ Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 _log = logging.getLogger(__name__)
 
 
+class _LoopSentinel:
+    __slots__ = ()
+
+    def __getattr__(self, attr: str) -> None:
+        msg = (
+            'loop attribute cannot be accessed in non-async contexts. ',
+            'Consider using either an asynchronous main function and passing it to asyncio.run or ',
+            'using asynchronous initialisation hooks such as Client.setup_hook',
+        )
+        raise AttributeError(msg)
+
+
+_loop: Any = _LoopSentinel()
+
+
 class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
@@ -184,7 +199,7 @@ class Client:
     """
 
     def __init__(self, **options: Any) -> None:
-        self.loop: asyncio.AbstractEventLoop = MISSING
+        self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
