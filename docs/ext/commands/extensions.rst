@@ -24,10 +24,10 @@ An example extension looks like this:
     async def hello(ctx):
         await ctx.send(f'Hello {ctx.author.display_name}.')
 
-    def setup(bot):
+    async def setup(bot):
         bot.add_command(hello)
 
-In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``.
+In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``await bot.load_extension('hello')``.
 
 .. admonition:: Cogs
     :class: helpful
@@ -45,7 +45,7 @@ When you make a change to the extension and want to reload the references, the l
 
 .. code-block:: python3
 
-    >>> bot.reload_extension('hello')
+    >>> await bot.reload_extension('hello')
 
 Once the extension reloads, any changes that we did will be applied. This is useful if we want to add or remove functionality without restarting our bot. If an error occurred during the reloading process, the bot will pretend as if the reload never happened.
 
@@ -57,8 +57,8 @@ Although rare, sometimes an extension needs to clean-up or know when it's being 
 .. code-block:: python3
     :caption: basic_ext.py
 
-    def setup(bot):
+    async def setup(bot):
         print('I am being loaded!')
 
-    def teardown(bot):
+    async def teardown(bot):
         print('I am being unloaded!')
