@@ -267,9 +267,6 @@ def _make_range_transformer(
 
 
 def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
-    if len(values) < 2:
-        raise TypeError(f'typing.Literal requires at least two values.')
-
     first = type(values[0])
     if first is int:
         opt_type = AppCommandOptionType.integer
