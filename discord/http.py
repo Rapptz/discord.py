@@ -116,7 +116,7 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
 class MultipartParameters(NamedTuple):
     payload: Optional[Dict[str, Any]]
     multipart: Optional[List[Dict[str, Any]]]
-    files: Optional[List[File]]
+    files: Optional[Sequence[File]]
 
     def __enter__(self) -> Self:
         return self
