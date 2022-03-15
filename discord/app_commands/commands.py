@@ -246,6 +246,11 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
+        if param.is_choice_annotation():
+            raise TypeError(
+                'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
+            )
+
         param.autocomplete = _validate_auto_complete_callback(callback)
 
     if autocomplete:
@@ -588,6 +593,11 @@ class Command(Generic[GroupT, P, T]):
 
             if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
                 raise TypeError('autocomplete is only supported for integer, string, or number option types')
+
+            if param.is_choice_annotation():
+                raise TypeError(
+                    'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
+                )
 
             param.autocomplete = _validate_auto_complete_callback(coro)
             return coro

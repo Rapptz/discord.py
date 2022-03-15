@@ -124,6 +124,9 @@ class CommandParameter:
 
         return base
 
+    def is_choice_annotation(self) -> bool:
+        return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
+
     async def transform(self, interaction: Interaction, value: Any) -> Any:
         if hasattr(self._annotation, '__discord_app_commands_transformer__'):
             # This one needs special handling for type safety reasons
