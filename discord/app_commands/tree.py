@@ -321,7 +321,7 @@ class CommandTree(Generic[ClientT]):
         /,
         *,
         guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user] = ...,
+        type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Optional[ContextMenu]:
         ...
 
@@ -343,7 +343,7 @@ class CommandTree(Generic[ClientT]):
         /,
         *,
         guild: Optional[Snowflake] = ...,
-        type: AppCommandType = ...,
+        type: AppCommandType,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
@@ -400,7 +400,7 @@ class CommandTree(Generic[ClientT]):
         /,
         *,
         guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user] = ...,
+        type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Optional[ContextMenu]:
         ...
 
@@ -422,7 +422,7 @@ class CommandTree(Generic[ClientT]):
         /,
         *,
         guild: Optional[Snowflake] = ...,
-        type: AppCommandType = ...,
+        type: AppCommandType,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
@@ -474,7 +474,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user] = ...,
+        type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> List[ContextMenu]:
         ...
 
@@ -492,7 +492,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         guild: Optional[Snowflake] = ...,
-        type: AppCommandType = ...,
+        type: AppCommandType,
     ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         ...
 
@@ -539,7 +539,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user] = ...,
+        type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Generator[ContextMenu, None, None]:
         ...
 
@@ -557,7 +557,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         guild: Optional[Snowflake] = ...,
-        type: AppCommandType = ...,
+        type: AppCommandType,
     ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
         ...
 
