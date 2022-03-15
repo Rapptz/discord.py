@@ -126,7 +126,7 @@ class AsyncWebhookAdapter:
         *,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         reason: Optional[str] = None,
         auth_token: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -279,7 +279,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
     ) -> Response[Optional[MessagePayload]]:
@@ -315,7 +315,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
     ) -> Response[Message]:
         route = Route(
             'PATCH',
@@ -508,7 +508,7 @@ def interaction_message_response_params(
         data['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
     if attachments is MISSING:
-        attachments = files  # type: ignore
+        attachments = files
     else:
         files = [a for a in attachments if isinstance(a, File)]
 

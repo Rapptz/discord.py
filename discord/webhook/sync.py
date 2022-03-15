@@ -116,7 +116,7 @@ class WebhookAdapter:
         *,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         reason: Optional[str] = None,
         auth_token: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -279,7 +279,7 @@ class WebhookAdapter:
         session: Session,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
     ) -> MessagePayload:
@@ -315,7 +315,7 @@ class WebhookAdapter:
         session: Session,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
     ) -> MessagePayload:
         route = Route(
             'PATCH',
