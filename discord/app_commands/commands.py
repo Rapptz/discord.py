@@ -31,6 +31,7 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
+    Generator,
     Generic,
     List,
     Optional,
@@ -805,6 +806,20 @@ class Group:
     def commands(self) -> List[Union[Command[Any, ..., Any], Group]]:
         """List[Union[:class:`Command`, :class:`Group`]]: The commands that this group contains."""
         return list(self._children.values())
+
+    def walk_commands(self) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
+        """An iterator that recursively walks through all commands that this group contains.
+
+        Yields
+        ---------
+        Union[:class:`Command`, :class:`Group`]
+            The commands in this group.
+        """
+
+        for command in self._children.values():
+            yield command
+            if isinstance(command, Group):
+                yield from command.walk_commands()
 
     async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
         """|coro|

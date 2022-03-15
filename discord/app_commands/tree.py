@@ -32,6 +32,7 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     Dict,
+    Generator,
     Generic,
     List,
     Literal,
@@ -532,6 +533,79 @@ class CommandTree(Generic[ClientT]):
             guild_id = None if guild is None else guild.id
             value = type.value
             return [command for ((_, g, t), command) in self._context_menus.items() if g == guild_id and t == value]
+
+    @overload
+    def walk_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: Literal[AppCommandType.message, AppCommandType.user] = ...,
+    ) -> Generator[ContextMenu, None, None]:
+        ...
+
+    @overload
+    def walk_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: Literal[AppCommandType.chat_input] = ...,
+    ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
+        ...
+
+    @overload
+    def walk_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: AppCommandType = ...,
+    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
+        ...
+
+    def walk_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = None,
+        type: AppCommandType = AppCommandType.chat_input,
+    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
+        """An iterator that recursively walks through all application commands and child commands from the tree.
+
+        Parameters
+        -----------
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to iterate the commands from. If not given then it
+            iterates all global commands instead.
+        type: :class:`~discord.AppCommandType`
+            The type of commands to iterate over. Defaults to :attr:`~discord.AppCommandType.chat_input`,
+            i.e. slash commands.
+
+        Yields
+        ---------
+        Union[:class:`ContextMenu`, :class:`Command`, :class:`Group`]
+            The application commands from the tree.
+        """
+
+        if type is AppCommandType.chat_input:
+            if guild is None:
+                for cmd in self._global_commands.values():
+                    yield cmd
+                    if isinstance(cmd, Group):
+                        yield from cmd.walk_commands()
+            else:
+                try:
+                    commands = self._guild_commands[guild.id]
+                except KeyError:
+                    return
+                else:
+                    for cmd in commands.values():
+                        yield cmd
+                        if isinstance(cmd, Group):
+                            yield from cmd.walk_commands()
+        else:
+            guild_id = None if guild is None else guild.id
+            value = type.value
+            for ((_, g, t), command) in self._context_menus.items():
+                if g == guild_id and t == value:
+                    yield command
 
     def _get_all_commands(
         self, *, guild: Optional[Snowflake] = None
