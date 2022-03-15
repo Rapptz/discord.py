@@ -1467,7 +1467,7 @@ class Message(Hashable):
     async def add_reaction(self, emoji: EmojiInputType, /) -> None:
         """|coro|
 
-        Add a reaction to the message.
+        Adds a reaction to the message.
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
