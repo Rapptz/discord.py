@@ -80,6 +80,11 @@ __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
 
+APP_ID_NOT_FOUND = (
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
+)
+
 
 def _retrieve_guild_ids(
     command: Any, guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING
@@ -164,7 +169,7 @@ class CommandTree(Generic[ClientT]):
             The application's commands.
         """
         if self.client.application_id is None:
-            raise ClientException('Client does not have an application ID set')
+            raise ClientException(APP_ID_NOT_FOUND)
 
         if guild is None:
             commands = await self._http.get_global_commands(self.client.application_id)
@@ -853,7 +858,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         if self.client.application_id is None:
-            raise ClientException('Client does not have an application ID set')
+            raise ClientException(APP_ID_NOT_FOUND)
 
         commands = self._get_all_commands(guild=guild)
         payload = [command.to_dict() for command in commands]
