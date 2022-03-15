@@ -757,8 +757,8 @@ class Group:
         self._children: Dict[str, Union[Command, Group]] = {}
 
         for child in self.__discord_app_commands_group_children__:
-            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
             child.parent = self
+            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
             self._children[child.name] = child
             if child._attr and not cls.__discord_app_commands_skip_init_binding__:
                 setattr(self, child._attr, child)

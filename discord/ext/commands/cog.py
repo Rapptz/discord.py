@@ -249,12 +249,12 @@ class Cog(metaclass=CogMeta):
         # Register the application commands
         children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
         for command in cls.__cog_app_commands__:
-            copy = command._copy_with_binding(self)
-
             if cls.__cog_is_app_commands_group__:
                 # Type checker doesn't understand this type of narrowing.
                 # Not even with TypeGuard somehow.
-                copy.parent = self  # type: ignore
+                command.parent = self  # type: ignore
+
+            copy = command._copy_with_binding(self)
 
             children.append(copy)
             if command._attr:
