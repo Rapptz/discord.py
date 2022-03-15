@@ -627,7 +627,10 @@ class Client:
             await self.ws.close(code=1000)
 
         await self.http.close()
-        self._ready.clear()
+
+        if self._ready is not MISSING:
+            self._ready.clear()
+
         self.loop = MISSING
 
     def clear(self) -> None:
