@@ -37,7 +37,7 @@ import time
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, TypeVar, Type, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Sequence, Tuple, Union, TypeVar, Type, overload
 import weakref
 
 from .. import utils
@@ -394,9 +394,9 @@ class SyncWebhookMessage(Message):
     def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> SyncWebhookMessage:
         """Edits the message.
@@ -848,9 +848,9 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
@@ -866,9 +866,9 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
@@ -883,9 +883,9 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = False,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
@@ -1050,9 +1050,9 @@ class SyncWebhook(BaseWebhook):
         message_id: int,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> SyncWebhookMessage:
         """Edits a message owned by this webhook.

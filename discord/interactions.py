@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
 
@@ -304,9 +304,9 @@ class Interaction:
         self,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:
@@ -526,9 +526,9 @@ class InteractionResponse:
         content: Optional[Any] = None,
         *,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
@@ -626,8 +626,8 @@ class InteractionResponse:
         *,
         content: Optional[Any] = MISSING,
         embed: Optional[Embed] = MISSING,
-        embeds: List[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> None:
@@ -741,7 +741,7 @@ class InteractionResponse:
         self._parent._state.store_view(modal)
         self._responded = True
 
-    async def autocomplete(self, choices: List[Choice[ChoiceT]]) -> None:
+    async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
 
         Responds to this interaction by giving the user the choices they can use.
@@ -825,9 +825,9 @@ class InteractionMessage(Message):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:

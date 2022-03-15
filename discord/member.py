@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Callable, Collection, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -720,7 +720,7 @@ class Member(discord.abc.Messageable, _UserTag):
         mute: bool = MISSING,
         deafen: bool = MISSING,
         suppress: bool = MISSING,
-        roles: List[discord.abc.Snowflake] = MISSING,
+        roles: Collection[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
         reason: Optional[str] = None,
