@@ -151,7 +151,7 @@ class BotBase(GroupMixin[None]):
     def __init__(
         self,
         command_prefix: PrefixType[BotT],
-        help_command: HelpCommand = _default,
+        help_command: Optional[HelpCommand] = _default,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
