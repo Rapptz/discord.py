@@ -851,12 +851,11 @@ Therefore, ``Embed.Empty`` has been removed in favour of ``None``.
 
 .. code-block:: python
 
-    # Before
-
+    # before
     embed = discord.Embed(title='foo')
     embed.title = discord.Embed.Empty
 
-    # After
+    # after
     embed = discord.Embed(title='foo')
     embed.title = None
 
@@ -1186,7 +1185,7 @@ Quick example of an extension setup function:
     def setup(bot):
         bot.add_cog(MyCog(bot))
 
-    #after
+    # after
     async def setup(bot):
         await bot.add_cog(MyCog(bot))
 
@@ -1194,10 +1193,10 @@ Quick example of loading an extension:
 
 .. code:: python
 
-    #before
+    # before
     bot.load_extension('my_extension')
 
-    #after using setup_hook
+    # after using setup_hook
     class MyBot(commands.Bot):
         async def setup_hook(self):
             await self.load_extension('my_extension')
