@@ -366,8 +366,6 @@ class View:
                 return
 
             await item.callback(interaction)
-            if not interaction.response._responded:
-                await interaction.response.defer()
         except Exception as e:
             return await self.on_error(e, item, interaction)
 

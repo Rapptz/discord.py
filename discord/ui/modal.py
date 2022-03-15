@@ -192,8 +192,6 @@ class Modal(View):
                 return
 
             await self.on_submit(interaction)
-            if not interaction.response._responded:
-                await interaction.response.defer()
         except Exception as e:
             return await self.on_error(e, interaction)
         else:
