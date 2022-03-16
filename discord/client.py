@@ -104,9 +104,9 @@ class _LoopSentinel:
 
     def __getattr__(self, attr: str) -> None:
         msg = (
-            'loop attribute cannot be accessed in non-async contexts. ',
-            'Consider using either an asynchronous main function and passing it to asyncio.run or ',
-            'using asynchronous initialisation hooks such as Client.setup_hook',
+            'loop attribute cannot be accessed in non-async contexts. '
+            'Consider using either an asynchronous main function and passing it to asyncio.run or '
+            'using asynchronous initialisation hooks such as Client.setup_hook'
         )
         raise AttributeError(msg)
 
