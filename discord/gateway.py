@@ -925,20 +925,20 @@ class DiscordVoiceWebSocket:
     async def received_message(self, msg: Dict[str, Any]) -> None:
         _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
-        data = msg.get('d')
+        data = msg['d']  # According to Discord this key is always given
 
         if op == self.READY:
-            await self.initial_connection(data)  # type: ignore - type-checker thinks data could be None
+            await self.initial_connection(data)
         elif op == self.HEARTBEAT_ACK:
-            self._keep_alive.ack()  # type: ignore - _keep_alive can't be None at this point
+            if self._keep_alive:
+                self._keep_alive.ack()
         elif op == self.RESUMED:
             _log.info('Voice RESUME succeeded.')
         elif op == self.SESSION_DESCRIPTION:
-            # type-checker thinks data could be None
-            self._connection.mode = data['mode']  # type: ignore
-            await self.load_secret_key(data)  # type: ignore
+            self._connection.mode = data['mode']
+            await self.load_secret_key(data)
         elif op == self.HELLO:
-            interval = data['heartbeat_interval'] / 1000.0  # type: ignore - type-checker thinks data could be None
+            interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
 
@@ -991,7 +991,7 @@ class DiscordVoiceWebSocket:
 
     async def load_secret_key(self, data: Dict[str, Any]) -> None:
         _log.info('received secret key for voice connection')
-        self.secret_key = self._connection.secret_key = data.get('secret_key')  # type: ignore - type-checker thinks secret_key could be None
+        self.secret_key = self._connection.secret_key = data['secret_key']
         await self.speak()
         await self.speak(SpeakingState.none)
 
