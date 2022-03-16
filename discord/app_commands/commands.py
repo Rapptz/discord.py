@@ -872,7 +872,8 @@ class Group:
             The command or group is already registered. Note that the :attr:`CommandAlreadyRegistered.guild_id`
             attribute will always be ``None`` in this case.
         ValueError
-            There are too many commands already registered.
+            There are too many commands already registered or the group is too
+            deeply nested.
         TypeError
             The wrong command type was passed.
         """
@@ -880,10 +881,19 @@ class Group:
         if not isinstance(command, (Command, Group)):
             raise TypeError(f'expected Command or Group not {command.__class__!r}')
 
+        if isinstance(command, Group) and self.parent is not None:
+            # In a tree like so:
+            # <group>
+            #   <self>
+            #     <group>
+            # this needs to be forbidden
+            raise ValueError('groups can only be nested at most one level')
+
         if not override and command.name in self._children:
             raise CommandAlreadyRegistered(command.name, guild_id=None)
 
         self._children[command.name] = command
+        command.parent = self
         if len(self._children) > 25:
             raise ValueError('maximum number of child commands exceeded')
 
