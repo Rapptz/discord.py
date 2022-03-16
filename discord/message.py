@@ -363,8 +363,8 @@ class Attachment(Hashable):
 
 
 class DeletedReferencedMessage:
-    """A special sentinel type that denotes whether the
-    resolved message referenced message had since been deleted.
+    """A special sentinel type given when the resolved message reference
+    points to a deleted message.
 
     The purpose of this class is to separate referenced messages that could not be
     fetched and those that were previously fetched but have since been deleted.
