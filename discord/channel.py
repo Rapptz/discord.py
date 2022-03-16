@@ -1762,9 +1762,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         position: int = ...,
         nsfw: bool = ...,
         sync_permissions: bool = ...,
-        category: Optional[CategoryChannel],
-        reason: Optional[str],
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite],
+        category: Optional[CategoryChannel] = ...,
+        reason: Optional[str] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
     ) -> Optional[StoreChannel]:
         ...
 
