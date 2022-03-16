@@ -1,13 +1,7 @@
 name: crowdin upload
 
 on:
-  push:
-    branches:
-      - master
-
-concurrency:
-  group: crowdin-upload
-  cancel-in-progress: true
+  workflow_dispatch:
 
 jobs:
   upload:
