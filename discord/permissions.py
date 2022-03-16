@@ -231,12 +231,19 @@ class Permissions(BaseFlags):
 
     @classmethod
     def stage_moderator(cls) -> Self:
-        """A factory method that creates a :class:`Permissions` with all
-        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+        """A factory method that creates a :class:`Permissions` with all permissions
+        for stage moderators set to ``True``. These permissions are currently:
+
+        - :attr:`manage_channels`
+        - :attr:`mute_members`
+        - :attr:`move_members`
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+            Added :attr:`manage_channels` permission and removed :attr:`request_to_speak` permission.
         """
-        return cls(0b100000001010000000000000000000000)
+        return cls(0b1010000000000000000010000)
 
     @classmethod
     def advanced(cls) -> Self:
