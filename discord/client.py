@@ -29,6 +29,7 @@ import datetime
 import logging
 import sys
 import traceback
+from contextvars import ContextVar
 from typing import (
     Any,
     AsyncIterator,
@@ -94,6 +95,8 @@ __all__ = (
 # fmt: on
 
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
+
+_inside_setup_hook: ContextVar[bool] = ContextVar('_inside_setup_hook', default=False)
 
 
 _log = logging.getLogger(__name__)
@@ -482,6 +485,11 @@ class Client:
         any events are dispatched, making it a better solution than doing such
         setup in the :func:`~discord.on_ready` event.
 
+        .. warning::
+
+            Calling :meth:`wait_until_ready` inside this coroutine raises
+            an exception to prevent a deadlock.
+
         .. versionadded:: 2.0
         """
         pass
@@ -518,7 +526,11 @@ class Client:
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
 
-        await self.setup_hook()
+        try:
+            ctx_token = _inside_setup_hook.set(True)
+            await self.setup_hook()
+        finally:
+            _inside_setup_hook.reset(ctx_token)
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -949,7 +961,14 @@ class Client:
         """|coro|
 
         Waits until the client's internal cache is all ready.
+
+        Raises
+        -------
+        ClientException
+            If this coroutine was called inside :meth:`setup_hook`.
         """
+        if _inside_setup_hook.get():
+            raise ClientException('wait_until_ready cannot be called inside setup_hook.')
         if self._ready is not MISSING:
             await self._ready.wait()
 
