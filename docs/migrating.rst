@@ -1156,6 +1156,8 @@ The following changes have been made:
 - :meth:`Message.edit` now merges object passed in ``allowed_mentions`` parameter with :attr:`Client.allowed_mentions`.
   If the parameter isn't provided, the defaults given by :attr:`Client.allowed_mentions` are used instead.
 
+- :meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included.
+
 .. _migrating_2_0_commands:
 
 Command Extension Changes
