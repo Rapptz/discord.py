@@ -232,7 +232,7 @@ class Client:
             _log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     async def __aenter__(self) -> Self:
-        self.loop = asyncio.get_running_loop()
+        await self._async_setup_hook()
         return self
 
     async def __aexit__(
