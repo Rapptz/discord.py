@@ -713,13 +713,15 @@ class ConnectionState:
             self._command_tree._from_interaction(interaction)
         elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            component_type = interaction.data['component_type']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            component_type = inner_data['component_type']
             self._view_store.dispatch_view(component_type, custom_id, interaction)
         elif data['type'] == 5:  # modal submit
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            components = interaction.data['components']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            components = inner_data['components']
             self._view_store.dispatch_modal(custom_id, interaction, components)  # type: ignore
         self.dispatch('interaction', interaction)
 

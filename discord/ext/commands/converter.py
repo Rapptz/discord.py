@@ -401,7 +401,7 @@ class MessageConverter(IDConverter[discord.Message]):
             return message
         channel = PartialMessageConverter._resolve_channel(ctx, guild_id, channel_id)
         if not channel or not isinstance(channel, discord.abc.Messageable):
-            raise ChannelNotFound(channel_id)  # type: ignore - channel_id won't be None here
+            raise ChannelNotFound(channel_id)
         try:
             return await channel.fetch_message(message_id)
         except discord.NotFound:

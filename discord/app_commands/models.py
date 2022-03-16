@@ -210,7 +210,7 @@ class Choice(Generic[ChoiceT]):
         return {
             'name': self.name,
             'value': self.value,
-        }  # type: ignore -- Type checker does not understand this literal.
+        }
 
 
 class AppCommandChannel(Hashable):

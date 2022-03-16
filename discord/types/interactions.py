@@ -159,7 +159,7 @@ class _BaseMessageComponentInteractionData(TypedDict):
 
 
 class ButtonMessageComponentInteractionData(_BaseMessageComponentInteractionData):
-    type: Literal[2]
+    component_type: Literal[2]
 
 
 class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData):

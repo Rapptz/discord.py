@@ -485,7 +485,8 @@ class FlagConverter(metaclass=FlagsMeta):
         flags = cls.__commands_flags__
         for flag in flags.values():
             if callable(flag.default):
-                default = await maybe_coroutine(flag.default, ctx)
+                # Type checker does not understand that flag.default is a Callable
+                default = await maybe_coroutine(flag.default, ctx)  # type: ignore
                 setattr(self, flag.attribute, default)
             else:
                 setattr(self, flag.attribute, flag.default)
@@ -584,7 +585,8 @@ class FlagConverter(metaclass=FlagsMeta):
                     raise MissingRequiredFlag(flag)
                 else:
                     if callable(flag.default):
-                        default = await maybe_coroutine(flag.default, ctx)
+                        # Type checker does not understand flag.default is a Callable
+                        default = await maybe_coroutine(flag.default, ctx)  # type: ignore
                         setattr(self, flag.attribute, default)
                     else:
                         setattr(self, flag.attribute, flag.default)

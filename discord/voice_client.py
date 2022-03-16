@@ -75,6 +75,7 @@ has_nacl: bool
 
 try:
     import nacl.secret  # type: ignore
+    import nacl.utils  # type: ignore
 
     has_nacl = True
 except ImportError:
