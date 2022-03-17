@@ -25,13 +25,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
 
 from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException
+from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
 
@@ -42,6 +42,7 @@ from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
+from .app_commands.namespace import Namespace
 
 __all__ = (
     'Interaction',
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
     from .types.interactions import (
         Interaction as InteractionPayload,
         InteractionData,
+        ApplicationCommandInteractionData,
     )
     from .types.webhook import (
         Webhook as WebhookPayload,
@@ -69,6 +71,7 @@ if TYPE_CHECKING:
     from .ui.modal import Modal
     from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
+    from .app_commands.commands import Command, ContextMenu
 
     InteractionChannel = Union[
         VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread, PartialMessageable
@@ -133,6 +136,8 @@ class Interaction:
         '_cs_response',
         '_cs_followup',
         '_cs_channel',
+        '_cs_namespace',
+        '_cs_command',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
@@ -219,6 +224,58 @@ class Interaction:
         In a non-guild context where this doesn't apply, an empty permissions object is returned.
         """
         return Permissions(self._permissions)
+
+    @utils.cached_slot_property('_cs_namespace')
+    def namespace(self) -> Namespace:
+        """:class:`app_commands.Namespace`: The resolved namespace for this interaction.
+
+        If the interaction is not an application command related interaction or the client does not have a
+        tree attached to it then this returns an empty namespace.
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return Namespace(self, {}, [])
+
+        tree = self._state._command_tree
+        if tree is None:
+            return Namespace(self, {}, [])
+
+        # The type checker does not understand this narrowing
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+
+        try:
+            _, options = tree._get_app_command_options(data)
+        except DiscordException:
+            options = []
+
+        return Namespace(self, data.get('resolved', {}), options)
+
+    @utils.cached_slot_property('_cs_command')
+    def command(self) -> Optional[Union[Command[Any, ..., Any], ContextMenu]]:
+        """Optional[Union[:class:`app_commands.Command`, :class:`app_commands.ContextMenu`]]: The command being called from
+        this interaction.
+
+        If the interaction is not an application command related interaction or the command is not found in the client's
+        attached tree then ``None`` is returned.
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return None
+
+        tree = self._state._command_tree
+        if tree is None:
+            return None
+
+        # The type checker does not understand this narrowing
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+        cmd_type = data.get('type', 1)
+        if cmd_type == 1:
+            try:
+                command, _ = tree._get_app_command_options(data)
+            except DiscordException:
+                return None
+            else:
+                return command
+        else:
+            return tree._get_context_menu(data)
 
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse:

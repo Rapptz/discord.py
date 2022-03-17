@@ -47,7 +47,6 @@ from textwrap import TextWrapper
 import re
 
 from ..enums import AppCommandOptionType, AppCommandType
-from ..interactions import Interaction
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -58,6 +57,7 @@ from ..utils import resolve_annotation, MISSING, is_inside_class
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
+    from ..interactions import Interaction
     from ..abc import Snowflake
     from .namespace import Namespace
     from .models import ChoiceT
@@ -88,32 +88,32 @@ T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
 Error = Union[
-    Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
-    Callable[[Interaction, AppCommandError], Coro[Any]],
+    Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
+    Callable[['Interaction', AppCommandError], Coro[Any]],
 ]
 
 
 if TYPE_CHECKING:
     CommandCallback = Union[
-        Callable[Concatenate[GroupT, Interaction, P], Coro[T]],
-        Callable[Concatenate[Interaction, P], Coro[T]],
+        Callable[Concatenate[GroupT, 'Interaction', P], Coro[T]],
+        Callable[Concatenate['Interaction', P], Coro[T]],
     ]
 
     ContextMenuCallback = Union[
         # If groups end up support context menus these would be uncommented
-        # Callable[[GroupT, Interaction, Member], Coro[Any]],
-        # Callable[[GroupT, Interaction, User], Coro[Any]],
-        # Callable[[GroupT, Interaction, Message], Coro[Any]],
-        # Callable[[GroupT, Interaction, Union[Member, User]], Coro[Any]],
-        Callable[[Interaction, Member], Coro[Any]],
-        Callable[[Interaction, User], Coro[Any]],
-        Callable[[Interaction, Message], Coro[Any]],
-        Callable[[Interaction, Union[Member, User]], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Member], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', User], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Message], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Union[Member, User]], Coro[Any]],
+        Callable[['Interaction', Member], Coro[Any]],
+        Callable[['Interaction', User], Coro[Any]],
+        Callable[['Interaction', Message], Coro[Any]],
+        Callable[['Interaction', Union[Member, User]], Coro[Any]],
     ]
 
     AutocompleteCallback = Union[
-        Callable[[GroupT, Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
-        Callable[[Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
+        Callable[[GroupT, 'Interaction', ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
+        Callable[['Interaction', ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
     ]
 else:
     CommandCallback = Callable[..., Coro[T]]

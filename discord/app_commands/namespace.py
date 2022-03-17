@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
-from ..interactions import Interaction
 from ..member import Member
 from ..object import Object
 from ..role import Role
@@ -35,6 +34,7 @@ from ..enums import AppCommandOptionType
 from .models import AppCommandChannel, AppCommandThread
 
 if TYPE_CHECKING:
+    from ..interactions import Interaction
     from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
 
 __all__ = ('Namespace',)
