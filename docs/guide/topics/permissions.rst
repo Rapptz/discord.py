@@ -138,7 +138,7 @@ We will be using the :meth:`~TextChannel.set_permissions` method:
     overwrite.manage_messages = True
 
     # we can now set those permissions on the channel:
-    await channel.set_permissions(moderator_role, overwrite=overwrites)
+    await channel.set_permissions(moderator_role, overwrite=overwrite)
 
 This short example briefly goes over PermissionOverwrite objects, let's look more into those now:
 
