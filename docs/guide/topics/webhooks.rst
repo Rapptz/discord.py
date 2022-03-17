@@ -15,9 +15,8 @@ For detailed information about webhooks, See the documentation for :ref:`webhook
 Introduction to webhooks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The difference between sending messages with webhooks and bots is that latter requires
-proper authentication and a bot user while the former neither requires bot user nor
-authentication.
+The difference between sending messages with webhooks and bots is that bots require proper authentication and a bot user
+whereas webhooks don't need either.
 
 There are currently three types of webhooks:
 
@@ -43,7 +42,7 @@ Creating a webhook
 In order to create incoming webhooks in a channel, the member needs the
 :attr:`~Permissions.manage_webhooks` permission in the given guild or text channel.
 
-To create the a webhook, Navigate to "Server Settings > Integrations" page.
+To create a webhook, Navigate to "Server Settings > Integrations" page.
 
 .. image:: /images/guide/webhooks/guild_settings_integrations.png
     :alt: Integrations Settings
@@ -53,12 +52,12 @@ Click "Create Webhook" to create a webhook.
 .. image:: /images/guide/webhooks/webhook_created.png
     :alt: Webhook
 
-From here, you can edit the webhook's name and associated channel in which the webhook
-would be sending messages in. We'll be using the URL of webhook later in this guide so make
+From here, you can edit the webhook's name and the associated channel the webhook
+will send messages in. We'll be using the URL of webhook later in this guide so make
 sure to copy it too.
 
 The URL of webhook is used for executing the webhook and includes the webhook token
-so do not reveal this URL.
+so don't store it in a public place.
 
 You can also create webhooks through API using the :meth:`TextChannel.create_webhook` method.
 
@@ -72,8 +71,8 @@ There are two variants of webhooks provided by the library.
 - :class:`Webhook`
 - :class:`SyncWebhook`
 
-The :class:`Webhook` is suitable for most cases as it is an asynchronous counterpart while
-the other is synchronous and is suitable for blocking enivornments. Both have the same
+The :class:`Webhook` is suitable for most cases as it is asynchronous while
+:class:`SyncWebhook` is synchronous and is suitable for blocking environments. Both have the same
 functionality with the difference of being sync and async. The HTTP methods usually return
 the :class:`Webhook` class instance.
 
