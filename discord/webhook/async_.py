@@ -30,7 +30,7 @@ import json
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, TypeVar, Type, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Sequence, Tuple, Union, TypeVar, Type, overload
 from contextvars import ContextVar
 import weakref
 
@@ -126,7 +126,7 @@ class AsyncWebhookAdapter:
         *,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         reason: Optional[str] = None,
         auth_token: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -279,7 +279,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
     ) -> Response[Optional[MessagePayload]]:
@@ -315,7 +315,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
     ) -> Response[Message]:
         route = Route(
             'PATCH',
@@ -450,10 +450,10 @@ def interaction_message_response_params(
     tts: bool = False,
     flags: MessageFlags = MISSING,
     file: File = MISSING,
-    files: List[File] = MISSING,
+    files: Sequence[File] = MISSING,
     embed: Optional[Embed] = MISSING,
-    embeds: List[Embed] = MISSING,
-    attachments: List[Union[Attachment, File]] = MISSING,
+    embeds: Sequence[Embed] = MISSING,
+    attachments: Sequence[Union[Attachment, File]] = MISSING,
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
@@ -508,7 +508,7 @@ def interaction_message_response_params(
         data['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
     if attachments is MISSING:
-        attachments = files  # type: ignore
+        attachments = files
     else:
         files = [a for a in attachments if isinstance(a, File)]
 
@@ -673,9 +673,9 @@ class WebhookMessage(Message):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
@@ -1333,9 +1333,9 @@ class Webhook(BaseWebhook):
         tts: bool = MISSING,
         ephemeral: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
         thread: Snowflake = MISSING,
@@ -1354,9 +1354,9 @@ class Webhook(BaseWebhook):
         tts: bool = MISSING,
         ephemeral: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
         thread: Snowflake = MISSING,
@@ -1374,9 +1374,9 @@ class Webhook(BaseWebhook):
         tts: bool = False,
         ephemeral: bool = False,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         view: View = MISSING,
         thread: Snowflake = MISSING,
@@ -1594,9 +1594,9 @@ class Webhook(BaseWebhook):
         message_id: int,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
