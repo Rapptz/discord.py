@@ -116,7 +116,7 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
 class MultipartParameters(NamedTuple):
     payload: Optional[Dict[str, Any]]
     multipart: Optional[List[Dict[str, Any]]]
-    files: Optional[List[File]]
+    files: Optional[Sequence[File]]
 
     def __enter__(self) -> Self:
         return self
@@ -141,10 +141,10 @@ def handle_message_parameters(
     nonce: Optional[Union[int, str]] = None,
     flags: MessageFlags = MISSING,
     file: File = MISSING,
-    files: List[File] = MISSING,
+    files: Sequence[File] = MISSING,
     embed: Optional[Embed] = MISSING,
-    embeds: List[Embed] = MISSING,
-    attachments: List[Union[Attachment, File]] = MISSING,
+    embeds: Sequence[Embed] = MISSING,
+    attachments: Sequence[Union[Attachment, File]] = MISSING,
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
@@ -225,7 +225,7 @@ def handle_message_parameters(
             }
 
     if attachments is MISSING:
-        attachments = files  # type: ignore
+        attachments = files
     else:
         files = [a for a in attachments if isinstance(a, File)]
 
@@ -1213,7 +1213,7 @@ class HTTPClient:
         guild_id: Snowflake,
         days: int,
         compute_prune_count: bool,
-        roles: List[str],
+        roles: Iterable[str],
         *,
         reason: Optional[str] = None,
     ) -> Response[guild.GuildPrune]:
@@ -1230,7 +1230,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         days: int,
-        roles: List[str],
+        roles: Iterable[str],
     ) -> Response[guild.GuildPrune]:
         params: Dict[str, Any] = {
             'days': days,

@@ -818,6 +818,7 @@ class ThreadMember(Hashable):
         return f'<ThreadMember id={self.id} thread_id={self.thread_id} joined_at={self.joined_at!r}>'
 
     def _from_data(self, data: ThreadMemberPayload) -> None:
+        self.id: int
         try:
             self.id = int(data['user_id'])
         except KeyError:

@@ -95,7 +95,6 @@ __all__ = (
 
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -482,6 +481,12 @@ class Client:
         any events are dispatched, making it a better solution than doing such
         setup in the :func:`~discord.on_ready` event.
 
+        .. warning::
+
+            Since this is called *before* the websocket connection is made therefore
+            anything that waits for the websocket will deadlock, this includes things
+            like :meth:`wait_for` and :meth:`wait_until_ready`.
+
         .. versionadded:: 2.0
         """
         pass
@@ -517,7 +522,6 @@ class Client:
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
-
         await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -949,6 +953,10 @@ class Client:
         """|coro|
 
         Waits until the client's internal cache is all ready.
+
+        .. warning::
+
+            Calling this inside :meth:`setup_hook` can lead to a deadlock.
         """
         if self._ready is not MISSING:
             await self._ready.wait()

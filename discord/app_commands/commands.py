@@ -47,7 +47,6 @@ from textwrap import TextWrapper
 import re
 
 from ..enums import AppCommandOptionType, AppCommandType
-from ..interactions import Interaction
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -58,6 +57,7 @@ from ..utils import resolve_annotation, MISSING, is_inside_class
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
+    from ..interactions import Interaction
     from ..abc import Snowflake
     from .namespace import Namespace
     from .models import ChoiceT
@@ -88,32 +88,32 @@ T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
 Error = Union[
-    Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
-    Callable[[Interaction, AppCommandError], Coro[Any]],
+    Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
+    Callable[['Interaction', AppCommandError], Coro[Any]],
 ]
 
 
 if TYPE_CHECKING:
     CommandCallback = Union[
-        Callable[Concatenate[GroupT, Interaction, P], Coro[T]],
-        Callable[Concatenate[Interaction, P], Coro[T]],
+        Callable[Concatenate[GroupT, 'Interaction', P], Coro[T]],
+        Callable[Concatenate['Interaction', P], Coro[T]],
     ]
 
     ContextMenuCallback = Union[
         # If groups end up support context menus these would be uncommented
-        # Callable[[GroupT, Interaction, Member], Coro[Any]],
-        # Callable[[GroupT, Interaction, User], Coro[Any]],
-        # Callable[[GroupT, Interaction, Message], Coro[Any]],
-        # Callable[[GroupT, Interaction, Union[Member, User]], Coro[Any]],
-        Callable[[Interaction, Member], Coro[Any]],
-        Callable[[Interaction, User], Coro[Any]],
-        Callable[[Interaction, Message], Coro[Any]],
-        Callable[[Interaction, Union[Member, User]], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Member], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', User], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Message], Coro[Any]],
+        # Callable[[GroupT, 'Interaction', Union[Member, User]], Coro[Any]],
+        Callable[['Interaction', Member], Coro[Any]],
+        Callable[['Interaction', User], Coro[Any]],
+        Callable[['Interaction', Message], Coro[Any]],
+        Callable[['Interaction', Union[Member, User]], Coro[Any]],
     ]
 
     AutocompleteCallback = Union[
-        Callable[[GroupT, Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
-        Callable[[Interaction, ChoiceT, Namespace], Coro[List[Choice[ChoiceT]]]],
+        Callable[[GroupT, 'Interaction', ChoiceT], Coro[List[Choice[ChoiceT]]]],
+        Callable[['Interaction', ChoiceT], Coro[List[Choice[ChoiceT]]]],
     ]
 else:
     CommandCallback = Callable[..., Coro[T]]
@@ -129,7 +129,7 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 def _shorten(
     input: str,
     *,
-    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='...'),
+    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
 ) -> str:
     return _wrapper.fill(' '.join(input.strip().split()))
 
@@ -163,11 +163,11 @@ def _validate_auto_complete_callback(
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
 
     requires_binding = is_inside_class(callback)
-    required_parameters = 3 + requires_binding
+    required_parameters = 2 + requires_binding
     callback.requires_binding = requires_binding
     params = inspect.signature(callback).parameters
-    if len(params) < required_parameters:
-        raise TypeError('autocomplete callback requires either 3 or 4 parameters to be passed')
+    if len(params) != required_parameters:
+        raise TypeError('autocomplete callback requires either 2 or 3 parameters to be passed')
 
     return callback
 
@@ -201,7 +201,7 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
     for name, param in params.items():
         description = descriptions.pop(name, MISSING)
         if description is MISSING:
-            param.description = '...'
+            param.description = '…'
             continue
 
         if not isinstance(description, str):
@@ -291,7 +291,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     except AttributeError:
         for param in values:
             if param.description is MISSING:
-                param.description = '...'
+                param.description = '…'
     else:
         _populate_descriptions(result, descriptions)
 
@@ -493,11 +493,11 @@ class Command(Generic[GroupT, P, T]):
 
         if param.autocomplete.requires_binding:
             if self.binding is not None:
-                choices = await param.autocomplete(self.binding, interaction, value, namespace)
+                choices = await param.autocomplete(self.binding, interaction, value)
             else:
                 raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
-            choices = await param.autocomplete(interaction, value, namespace)
+            choices = await param.autocomplete(interaction, value)
 
         if interaction.response.is_done():
             return
@@ -546,10 +546,13 @@ class Command(Generic[GroupT, P, T]):
     ) -> Callable[[AutocompleteCallback[GroupT, ChoiceT]], AutocompleteCallback[GroupT, ChoiceT]]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
-        The coroutine callback must have 3 parameters, the :class:`~discord.Interaction`,
-        the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`,
-        depending on the type of the parameter being marked as autocomplete), and then the
-        :class:`Namespace` that represents possible values are partially filled in.
+        The coroutine callback must have 2 parameters, the :class:`~discord.Interaction`,
+        and the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`,
+        depending on the type of the parameter being marked as autocomplete).
+
+        To get the values from other parameters that may be filled in, accessing
+        :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those
+        values.
 
         The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
         Only up to 25 objects are supported.
@@ -566,7 +569,6 @@ class Command(Generic[GroupT, P, T]):
             async def fruits_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
-                namespace: app_commands.Namespace
             ) -> List[app_commands.Choice[str]]:
                 fruits = ['Banana', 'Pineapple', 'Apple', 'Watermelon', 'Melon', 'Cherry']
                 return [
@@ -732,7 +734,7 @@ class Group:
 
         if description is MISSING:
             if cls.__doc__ is None:
-                cls.__discord_app_commands_group_description__ = '...'
+                cls.__discord_app_commands_group_description__ = '…'
             else:
                 cls.__discord_app_commands_group_description__ = _shorten(cls.__doc__)
         else:
@@ -955,7 +957,7 @@ class Group:
 
             if description is MISSING:
                 if func.__doc__ is None:
-                    desc = '...'
+                    desc = '…'
                 else:
                     desc = _shorten(func.__doc__)
             else:
@@ -997,7 +999,7 @@ def command(
 
         if description is MISSING:
             if func.__doc__ is None:
-                desc = '...'
+                desc = '…'
             else:
                 desc = _shorten(func.__doc__)
         else:
@@ -1163,6 +1165,8 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     Autocomplete is only supported on types that have :class:`str`, :class:`int`, or :class:`float`
     values.
 
+    For more information, see the :meth:`Command.autocomplete` documentation.
+
     Example:
 
     .. code-block:: python3
@@ -1175,7 +1179,6 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             async def fruits_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
-                namespace: app_commands.Namespace
             ) -> List[app_commands.Choice[str]]:
                 fruits = ['Banana', 'Pineapple', 'Apple', 'Watermelon', 'Melon', 'Cherry']
                 return [

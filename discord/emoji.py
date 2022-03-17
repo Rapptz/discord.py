@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Iterator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Collection, Iterator, List, Optional, TYPE_CHECKING, Tuple
 
 from .asset import Asset, AssetMixin
 from .utils import SnowflakeList, snowflake_time, MISSING
@@ -214,7 +214,9 @@ class Emoji(_EmojiTag, AssetMixin):
 
         await self._state.http.delete_custom_emoji(self.guild_id, self.id, reason=reason)
 
-    async def edit(self, *, name: str = MISSING, roles: List[Snowflake] = MISSING, reason: Optional[str] = None) -> Emoji:
+    async def edit(
+        self, *, name: str = MISSING, roles: Collection[Snowflake] = MISSING, reason: Optional[str] = None
+    ) -> Emoji:
         r"""|coro|
 
         Edits the custom emoji.

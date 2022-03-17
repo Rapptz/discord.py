@@ -760,7 +760,7 @@ class CommandTree(Generic[ClientT]):
 
             if description is MISSING:
                 if func.__doc__ is None:
-                    desc = '...'
+                    desc = '…'
                 else:
                     desc = _shorten(func.__doc__)
             else:
@@ -878,10 +878,69 @@ class CommandTree(Generic[ClientT]):
 
         self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
+    def _get_context_menu(self, data: ApplicationCommandInteractionData) -> Optional[ContextMenu]:
+        name = data['name']
+        guild_id = _get_as_snowflake(data, 'guild_id')
+        return self._context_menus.get((name, guild_id, data.get('type', 1)))
+
+    def _get_app_command_options(
+        self, data: ApplicationCommandInteractionData
+    ) -> Tuple[Command[Any, ..., Any], List[ApplicationCommandInteractionDataOption]]:
+        parents: List[str] = []
+        name = data['name']
+
+        command_guild_id = _get_as_snowflake(data, 'guild_id')
+        if command_guild_id:
+            try:
+                guild_commands = self._guild_commands[command_guild_id]
+            except KeyError:
+                command = None
+            else:
+                command = guild_commands.get(name)
+        else:
+            command = self._global_commands.get(name)
+
+        # If it's not found at this point then it's not gonna be found at any point
+        if command is None:
+            raise CommandNotFound(name, parents)
+
+        # This could be done recursively but it'd be a bother due to the state needed
+        # to be tracked above like the parents, the actual command type, and the
+        # resulting options we care about
+        searching = True
+        options: List[ApplicationCommandInteractionDataOption] = data.get('options', [])
+        while searching:
+            for option in options:
+                # Find subcommands
+                if option.get('type', 0) in (1, 2):
+                    parents.append(name)
+                    name = option['name']
+                    command = command._get_internal_command(name)
+                    if command is None:
+                        raise CommandNotFound(name, parents)
+                    options = option.get('options', [])
+                    break
+                else:
+                    searching = False
+                    break
+            else:
+                break
+
+        if isinstance(command, Group):
+            # Right now, groups can't be invoked. This is a Discord limitation in how they
+            # do slash commands. So if we're here and we have a Group rather than a Command instance
+            # then something in the code is out of date from the data that Discord has.
+            raise CommandSignatureMismatch(command)
+
+        return (command, options)
+
     async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int) -> None:
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')
         ctx_menu = self._context_menus.get((name, guild_id, type))
+        # Pre-fill the cached slot to prevent re-computation
+        interaction._cs_command = ctx_menu
+
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
@@ -936,55 +995,17 @@ class CommandTree(Generic[ClientT]):
             await self._call_context_menu(interaction, data, type)
             return
 
-        parents: List[str] = []
-        name = data['name']
+        command, options = self._get_app_command_options(data)
 
-        command_guild_id = _get_as_snowflake(data, 'guild_id')
-        if command_guild_id:
-            try:
-                guild_commands = self._guild_commands[command_guild_id]
-            except KeyError:
-                command = None
-            else:
-                command = guild_commands.get(name)
-        else:
-            command = self._global_commands.get(name)
-
-        # If it's not found at this point then it's not gonna be found at any point
-        if command is None:
-            raise CommandNotFound(name, parents)
-
-        # This could be done recursively but it'd be a bother due to the state needed
-        # to be tracked above like the parents, the actual command type, and the
-        # resulting options we care about
-        searching = True
-        options: List[ApplicationCommandInteractionDataOption] = data.get('options', [])
-        while searching:
-            for option in options:
-                # Find subcommands
-                if option.get('type', 0) in (1, 2):
-                    parents.append(name)
-                    name = option['name']
-                    command = command._get_internal_command(name)
-                    if command is None:
-                        raise CommandNotFound(name, parents)
-                    options = option.get('options', [])
-                    break
-                else:
-                    searching = False
-                    break
-            else:
-                break
-
-        if isinstance(command, Group):
-            # Right now, groups can't be invoked. This is a Discord limitation in how they
-            # do slash commands. So if we're here and we have a Group rather than a Command instance
-            # then something in the code is out of date from the data that Discord has.
-            raise CommandSignatureMismatch(command)
+        # Pre-fill the cached slot to prevent re-computation
+        interaction._cs_command = command
 
         # At this point options refers to the arguments of the command
         # and command refers to the class type we care about
         namespace = Namespace(interaction, data.get('resolved', {}), options)
+
+        # Same pre-fill as above
+        interaction._cs_namespace = namespace
 
         # Auto complete handles the namespace differently... so at this point this is where we decide where that is.
         if interaction.type is InteractionType.autocomplete:
