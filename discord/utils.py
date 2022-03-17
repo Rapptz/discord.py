@@ -1160,12 +1160,12 @@ def format_timestamp(timestamp: str, /, tz: datetime.timezone = MISSING) -> Opti
     timestamp: :class:`str`
         The Discord timestamp to format.
     tz: :class:`datetime.timezone`
-        The style to format the datetime with. Defaults to UTC.
+        The timezone to convert the timestamp to. Defaults to UTC.
 
     Returns
     --------
     Optional[:class:`datetime.datetime`]
-        The converted datetime object or ``None`` if the paramater ``ts`` is invalid.
+        The converted datetime object or ``None`` if the paramater ``timestamp`` is invalid.
     """
     ts = timestamp.strip('<:tTdDfFR>')
     try:
