@@ -1149,3 +1149,26 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
     if style is None:
         return f'<t:{int(dt.timestamp())}>'
     return f'<t:{int(dt.timestamp())}:{style}>'
+    
+def format_timestamp(timestamp: str, /, tz: datetime.timezone = MISSING) -> Optional[datetime.datetime]:
+    """A helper function to convert a Discord timestamp to a :class:`datetime.datetime` object.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    timestamp: :class:`str`
+        The Discord timestamp to format.
+    tz: :class:`datetime.timezone`
+        The style to format the datetime with. Defaults to UTC.
+
+    Returns
+    --------
+    Optional[:class:`datetime.datetime`]
+        The converted datetime object or ``None`` if the paramater ``ts`` is invalid.
+    """
+    ts = timestamp.strip('<:tTdDfFR>')
+    try:
+        return datetime.datetime.fromtimestamp(int(ts), tz=tz if tz is not MISSING else datetime.timezone.utc)
+    except ValueError:
+        return None
