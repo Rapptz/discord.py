@@ -406,7 +406,7 @@ class AsyncWebhookAdapter:
         session: aiohttp.ClientSession,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
     ) -> Response[MessagePayload]:
         r = Route(
             'PATCH',
