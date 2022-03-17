@@ -1150,7 +1150,7 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
         return f'<t:{int(dt.timestamp())}>'
     return f'<t:{int(dt.timestamp())}:{style}>'
     
-def format_timestamp(timestamp: str, /, tz: datetime.timezone = MISSING) -> Optional[datetime.datetime]:
+def convert_timestamp(timestamp: str, /, tz: datetime.timezone = MISSING) -> Optional[datetime.datetime]:
     """A helper function to convert a Discord timestamp to a :class:`datetime.datetime` object.
 
     .. versionadded:: 2.0
