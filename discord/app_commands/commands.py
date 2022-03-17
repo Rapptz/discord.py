@@ -129,7 +129,7 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 def _shorten(
     input: str,
     *,
-    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='...'),
+    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
 ) -> str:
     return _wrapper.fill(' '.join(input.strip().split()))
 
@@ -201,7 +201,7 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
     for name, param in params.items():
         description = descriptions.pop(name, MISSING)
         if description is MISSING:
-            param.description = '...'
+            param.description = '…'
             continue
 
         if not isinstance(description, str):
@@ -291,7 +291,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     except AttributeError:
         for param in values:
             if param.description is MISSING:
-                param.description = '...'
+                param.description = '…'
     else:
         _populate_descriptions(result, descriptions)
 
@@ -732,7 +732,7 @@ class Group:
 
         if description is MISSING:
             if cls.__doc__ is None:
-                cls.__discord_app_commands_group_description__ = '...'
+                cls.__discord_app_commands_group_description__ = '…'
             else:
                 cls.__discord_app_commands_group_description__ = _shorten(cls.__doc__)
         else:
@@ -955,7 +955,7 @@ class Group:
 
             if description is MISSING:
                 if func.__doc__ is None:
-                    desc = '...'
+                    desc = '…'
                 else:
                     desc = _shorten(func.__doc__)
             else:
@@ -997,7 +997,7 @@ def command(
 
         if description is MISSING:
             if func.__doc__ is None:
-                desc = '...'
+                desc = '…'
             else:
                 desc = _shorten(func.__doc__)
         else:

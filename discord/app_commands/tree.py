@@ -760,7 +760,7 @@ class CommandTree(Generic[ClientT]):
 
             if description is MISSING:
                 if func.__doc__ is None:
-                    desc = '...'
+                    desc = '…'
                 else:
                     desc = _shorten(func.__doc__)
             else:
