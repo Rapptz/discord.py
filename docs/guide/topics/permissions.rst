@@ -26,7 +26,7 @@ If you have a role list, like so:
 This means that Administrator role (someone who has it) can kick, ban and timeout Manager.
 Manager **cannot** kick, ban or timeout Administrator.
 
-discord.py is aware of this and has implemented the :meth:`~Role.__gt__` and similar methods on :class:`~Role` that allows you to perform the following:
+discord.py is aware of this and has implemented the ``__gt__`` and other methods on :class:`Role`, which allows you to do the following:
 
 .. code-block:: python3
 
@@ -37,9 +37,9 @@ One small caveat to note with the discord permissions system, is that in the cas
 
 In clearer terms, imagine this:
 
-Take a scenario where you have a text channel, that gives the ``@everyone`` role the ``send_messages`` overwrite set to ``True`` (or a green check-mark in the UI).
-If you then have a Muted role, that is supposed to disallow members from sending messages, but that role has the ``send_messages`` overwrite set to ``False`` (or a red cross in the UI)
-then members with that Muted role **can** still send  messages within this channel.
+Take a scenario where you have a text channel, that gives the ``@Chatters`` role the ``send_messages`` overwrite set to ``True`` (or a green check-mark in the UI).
+If you then have a ``@Muted`` role, that is supposed to disallow members from sending messages, but that role has the ``send_messages`` overwrite set to ``False`` (or a red cross in the UI)
+then members with that muted role **can** still send  messages within this channel.
 
 A small example to show this:
 
