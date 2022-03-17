@@ -704,7 +704,7 @@ class PartialMessage(Hashable):
         embed: Optional[Embed] = MISSING,
         embeds: List[Embed] = MISSING,
         attachments: List[Union[Attachment, File]] = MISSING,
-        suppress: bool = MISSING,
+        suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         view: Optional[View] = MISSING,
@@ -786,15 +786,8 @@ class PartialMessage(Hashable):
         """
 
         previous_allowed_mentions = self._state.allowed_mentions
-        if suppress is not MISSING:
-            try:
-                flag_value = self.flags.value  # type: ignore
-            except AttributeError:
-                # in the case of a PartialMessage
-                flag_value = 0
-
-            flags = MessageFlags._from_value(flag_value)
-            flags.suppress_embeds = suppress
+        if suppress:
+            flags = MessageFlags._from_value(4)
         else:
             flags = MISSING
 
