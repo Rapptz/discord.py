@@ -29,7 +29,6 @@ import datetime
 import logging
 import sys
 import traceback
-from contextvars import ContextVar
 from typing import (
     Any,
     AsyncIterator,
@@ -95,9 +94,6 @@ __all__ = (
 # fmt: on
 
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
-
-_inside_setup_hook: ContextVar[bool] = ContextVar('_inside_setup_hook', default=False)
-
 
 _log = logging.getLogger(__name__)
 
@@ -487,8 +483,9 @@ class Client:
 
         .. warning::
 
-            Calling :meth:`wait_until_ready` inside this coroutine raises
-            an exception to prevent a deadlock.
+            Since this is called *before* the websocket connection is made therefore
+            anything that waits for the websocket will deadlock, this includes things
+            like :meth:`wait_for` and :meth:`wait_until_ready`.
 
         .. versionadded:: 2.0
         """
@@ -525,12 +522,7 @@ class Client:
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
-
-        try:
-            ctx_token = _inside_setup_hook.set(True)
-            await self.setup_hook()
-        finally:
-            _inside_setup_hook.reset(ctx_token)
+        await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -962,13 +954,10 @@ class Client:
 
         Waits until the client's internal cache is all ready.
 
-        Raises
-        -------
-        ClientException
-            If this coroutine was called inside :meth:`setup_hook`.
+        .. warning::
+
+            Calling this inside :meth:`setup_hook` can lead to a deadlock.
         """
-        if _inside_setup_hook.get():
-            raise ClientException('wait_until_ready cannot be called inside setup_hook.')
         if self._ready is not MISSING:
             await self._ready.wait()
 
