@@ -25,11 +25,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
+import datetime
 
 from . import utils
-from .enums import try_enum, InteractionType, InteractionResponseType
+from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
@@ -52,6 +53,9 @@ if TYPE_CHECKING:
     from .types.interactions import (
         Interaction as InteractionPayload,
         InteractionData,
+    )
+    from .types.webhook import (
+        Webhook as WebhookPayload,
     )
     from .client import Client
     from .guild import Guild
@@ -102,6 +106,10 @@ class Interaction:
         for 15 minutes.
     data: :class:`dict`
         The raw interaction data.
+    locale: :class:`Locale`
+        The locale of the user invoking the interaction.
+    guild_locale: Optional[:class:`Locale`]
+        The preferred locale of the guild the interaction was sent from, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -115,6 +123,8 @@ class Interaction:
         'user',
         'token',
         'version',
+        'locale',
+        'guild_locale',
         '_permissions',
         '_state',
         '_client',
@@ -141,6 +151,13 @@ class Interaction:
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
+
+        self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self.guild_locale: Optional[Locale]
+        try:
+            self.guild_locale = try_enum(Locale, data['guild_locale'])
+        except KeyError:
+            self.guild_locale = None
 
         self.message: Optional[Message]
         try:
@@ -215,21 +232,36 @@ class Interaction:
     @utils.cached_slot_property('_cs_followup')
     def followup(self) -> Webhook:
         """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
-        payload = {
+        payload: WebhookPayload = {
             'id': self.application_id,
             'type': 3,
             'token': self.token,
         }
         return Webhook.from_state(data=payload, state=self._state)
 
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction was created."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def expires_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction expires."""
+        return self.created_at + datetime.timedelta(minutes=15)
+
+    def is_expired(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is expired."""
+        return utils.utcnow() >= self.expires_at
+
     async def original_message(self) -> InteractionMessage:
         """|coro|
 
         Fetches the original interaction response message associated with the interaction.
 
-        If the interaction response was :meth:`InteractionResponse.send_message` then this would
-        return the message that was sent using that response. Otherwise, this would return
-        the message that triggered the interaction.
+        If the interaction response was a newly created message (i.e. through :meth:`InteractionResponse.send_message`
+        or :meth:`InteractionResponse.defer`, where ``thinking`` is ``True``) then this returns the message that was sent
+        using that response. Otherwise, this returns the message that triggered the interaction (i.e.
+        through a component).
 
         Repeated calls to this will return a cached value.
 
@@ -239,6 +271,8 @@ class Interaction:
             Fetching the original response message failed.
         ClientException
             The channel for the message could not be resolved.
+        NotFound
+            The interaction response message does not exist.
 
         Returns
         --------
@@ -270,9 +304,9 @@ class Interaction:
         self,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:
@@ -314,6 +348,8 @@ class Interaction:
         -------
         HTTPException
             Editing the message failed.
+        NotFound
+            The interaction response message does not exist.
         Forbidden
             Edited a message that is not yours.
         TypeError
@@ -348,7 +384,8 @@ class Interaction:
         )
 
         # The message channel types should always match
-        message = InteractionMessage(state=self._state, channel=self.channel, data=data)  # type: ignore
+        state = _InteractionMessageState(self, self._state)
+        message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
             self._state.store_view(view, message.id)
         return message
@@ -365,6 +402,8 @@ class Interaction:
         -------
         HTTPException
             Deleting the message failed.
+        NotFound
+            The interaction response message does not exist or has already been deleted.
         Forbidden
             Deleted a message that is not yours.
         """
@@ -487,13 +526,14 @@ class InteractionResponse:
         content: Optional[Any] = None,
         *,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
+        suppress_embeds: bool = False,
     ) -> None:
         """|coro|
 
@@ -524,6 +564,10 @@ class InteractionResponse:
         allowed_mentions: :class:`~discord.AllowedMentions`
             Controls the mentions being processed in this message. See :meth:`.abc.Messageable.send` for
             more information.
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -539,8 +583,10 @@ class InteractionResponse:
         if self._responded:
             raise InteractionResponded(self._parent)
 
-        if ephemeral:
-            flags = MessageFlags._from_value(64)
+        if ephemeral or suppress_embeds:
+            flags = MessageFlags._from_value(0)
+            flags.ephemeral = ephemeral
+            flags.suppress_embeds = suppress_embeds
         else:
             flags = MISSING
 
@@ -580,15 +626,15 @@ class InteractionResponse:
         *,
         content: Optional[Any] = MISSING,
         embed: Optional[Embed] = MISSING,
-        embeds: List[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> None:
         """|coro|
 
         Responds to this interaction by editing the original message of
-        a component interaction.
+        a component or modal interaction.
 
         Parameters
         -----------
@@ -630,7 +676,7 @@ class InteractionResponse:
         msg = parent.message
         state = parent._state
         message_id = msg.id if msg else None
-        if parent.type is not InteractionType.component:
+        if parent.type not in (InteractionType.component, InteractionType.modal_submit):
             return
 
         if view is not MISSING and message_id is not None:
@@ -660,7 +706,7 @@ class InteractionResponse:
 
         self._responded = True
 
-    async def send_modal(self, modal: Modal, /):
+    async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
 
         Responds to this interaction by sending a modal.
@@ -695,7 +741,7 @@ class InteractionResponse:
         self._parent._state.store_view(modal)
         self._responded = True
 
-    async def autocomplete(self, choices: List[Choice[ChoiceT]]) -> None:
+    async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
 
         Responds to this interaction by giving the user the choices they can use.
@@ -779,9 +825,9 @@ class InteractionMessage(Message):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:

@@ -5,7 +5,7 @@ Interactions API Reference
 
 The following section outlines the API of interactions, as implemented by the library.
 
-For documentation about the rest of the library, check :doc:`api`.
+For documentation about the rest of the library, check :doc:`/api`.
 
 Models
 --------
@@ -35,6 +35,7 @@ InteractionMessage
 
 .. autoclass:: InteractionMessage()
     :members:
+    :inherited-members:
 
 Component
 ~~~~~~~~~~
@@ -366,6 +367,7 @@ Modal
 
 .. autoclass:: discord.ui.Modal
     :members:
+    :inherited-members:
 
 Item
 ~~~~~~~
@@ -461,6 +463,12 @@ Decorators
     :decorator:
 
 .. autofunction:: discord.app_commands.choices
+    :decorator:
+
+.. autofunction:: discord.app_commands.autocomplete
+    :decorator:
+
+.. autofunction:: discord.app_commands.guilds
     :decorator:
 
 Namespace

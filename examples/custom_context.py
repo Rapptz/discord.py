@@ -1,3 +1,6 @@
+# This example requires the 'message_content' privileged intent to function.
+
+
 import random
 
 import discord
@@ -28,8 +31,10 @@ class MyBot(commands.Bot):
         # use the new MyContext class
         return await super().get_context(message, cls=cls)
         
+intents = discord.Intents.default()
+intents.message_content = True
 
-bot = MyBot(command_prefix='!')
+bot = MyBot(command_prefix='!', intents=intents)
 
 @bot.command()
 async def guess(ctx, number: int):

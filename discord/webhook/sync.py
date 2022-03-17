@@ -37,12 +37,12 @@ import time
 import re
 
 from urllib.parse import quote as urlquote
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Sequence, Tuple, Union, TypeVar, Type, overload
 import weakref
 
 from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
-from ..message import Message
+from ..message import Message, MessageFlags
 from ..http import Route, handle_message_parameters
 from ..channel import PartialMessageable
 
@@ -56,36 +56,50 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+    from types import TracebackType
+
     from ..file import File
     from ..embeds import Embed
     from ..mentions import AllowedMentions
     from ..message import Attachment
+    from ..abc import Snowflake
+    from ..state import ConnectionState
     from ..types.webhook import (
         Webhook as WebhookPayload,
     )
-    from ..abc import Snowflake
+    from ..types.message import (
+        Message as MessagePayload,
+    )
+
+    BE = TypeVar('BE', bound=BaseException)
 
     try:
         from requests import Session, Response
     except ModuleNotFoundError:
         pass
 
-MISSING = utils.MISSING
+MISSING: Any = utils.MISSING
 
 
 class DeferredLock:
-    def __init__(self, lock: threading.Lock):
-        self.lock = lock
+    def __init__(self, lock: threading.Lock) -> None:
+        self.lock: threading.Lock = lock
         self.delta: Optional[float] = None
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.lock.acquire()
         return self
 
     def delay_by(self, delta: float) -> None:
         self.delta = delta
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
+    ) -> None:
         if self.delta:
             time.sleep(self.delta)
         self.lock.release()
@@ -102,7 +116,7 @@ class WebhookAdapter:
         *,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         reason: Optional[str] = None,
         auth_token: Optional[str] = None,
         params: Optional[Dict[str, Any]] = None,
@@ -218,7 +232,7 @@ class WebhookAdapter:
         token: Optional[str] = None,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, auth_token=token)
 
@@ -229,7 +243,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason)
 
@@ -241,7 +255,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, payload=payload, auth_token=token)
 
@@ -253,7 +267,7 @@ class WebhookAdapter:
         *,
         session: Session,
         reason: Optional[str] = None,
-    ):
+    ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason, payload=payload)
 
@@ -265,10 +279,10 @@ class WebhookAdapter:
         session: Session,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
+        files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
-    ):
+    ) -> MessagePayload:
         params = {'wait': int(wait)}
         if thread_id:
             params['thread_id'] = thread_id
@@ -282,7 +296,7 @@ class WebhookAdapter:
         message_id: int,
         *,
         session: Session,
-    ):
+    ) -> MessagePayload:
         route = Route(
             'GET',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -301,8 +315,8 @@ class WebhookAdapter:
         session: Session,
         payload: Optional[Dict[str, Any]] = None,
         multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
-    ):
+        files: Optional[Sequence[File]] = None,
+    ) -> MessagePayload:
         route = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -319,7 +333,7 @@ class WebhookAdapter:
         message_id: int,
         *,
         session: Session,
-    ):
+    ) -> None:
         route = Route(
             'DELETE',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -335,7 +349,7 @@ class WebhookAdapter:
         token: str,
         *,
         session: Session,
-    ):
+    ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session=session, auth_token=token)
 
@@ -345,7 +359,7 @@ class WebhookAdapter:
         token: str,
         *,
         session: Session,
-    ):
+    ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
@@ -380,16 +394,16 @@ class SyncWebhookMessage(Message):
     def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> SyncWebhookMessage:
         """Edits the message.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------
@@ -569,11 +583,17 @@ class SyncWebhook(BaseWebhook):
 
     __slots__: Tuple[str, ...] = ('session',)
 
-    def __init__(self, data: WebhookPayload, session: Session, token: Optional[str] = None, state=None):
+    def __init__(
+        self,
+        data: WebhookPayload,
+        session: Session,
+        token: Optional[str] = None,
+        state: Optional[Union[ConnectionState, _WebhookState]] = None,
+    ) -> None:
         super().__init__(data, token, state)
-        self.session = session
+        self.session: Session = session
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<Webhook id={self.id!r}>'
 
     @property
@@ -812,7 +832,7 @@ class SyncWebhook(BaseWebhook):
 
         return SyncWebhook(data=data, session=self.session, token=self.auth_token, state=self._state)
 
-    def _create_message(self, data):
+    def _create_message(self, data: MessagePayload) -> SyncWebhookMessage:
         state = _WebhookState(self, parent=self._state)
         # state may be artificial (unlikely at this point...)
         channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
@@ -828,11 +848,12 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[True],
+        suppress_embeds: bool = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -845,11 +866,12 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         wait: Literal[False] = ...,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         ...
 
@@ -861,12 +883,13 @@ class SyncWebhook(BaseWebhook):
         avatar_url: Any = MISSING,
         tts: bool = False,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
+        suppress_embeds: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -915,6 +938,10 @@ class SyncWebhook(BaseWebhook):
             The thread to send this message to.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -943,6 +970,11 @@ class SyncWebhook(BaseWebhook):
         if content is None:
             content = MISSING
 
+        if suppress_embeds:
+            flags = MessageFlags._from_value(4)
+        else:
+            flags = MISSING
+
         params = handle_message_parameters(
             content=content,
             username=username,
@@ -954,6 +986,7 @@ class SyncWebhook(BaseWebhook):
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
+            flags=flags,
         )
         adapter: WebhookAdapter = _get_webhook_adapter()
         thread_id: Optional[int] = None
@@ -1017,9 +1050,9 @@ class SyncWebhook(BaseWebhook):
         message_id: int,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> SyncWebhookMessage:
         """Edits a message owned by this webhook.

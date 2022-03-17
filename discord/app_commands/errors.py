@@ -79,9 +79,9 @@ class CommandInvokeError(AppCommandError):
         The command that failed.
     """
 
-    def __init__(self, command: Union[Command, ContextMenu], e: Exception) -> None:
+    def __init__(self, command: Union[Command[Any, ..., Any], ContextMenu], e: Exception) -> None:
         self.original: Exception = e
-        self.command: Union[Command, ContextMenu] = command
+        self.command: Union[Command[Any, ..., Any], ContextMenu] = command
         super().__init__(f'Command {command.name!r} raised an exception: {e.__class__.__name__}: {e}')
 
 
@@ -191,8 +191,8 @@ class CommandSignatureMismatch(AppCommandError):
         The command that had the signature mismatch.
     """
 
-    def __init__(self, command: Union[Command, ContextMenu, Group]):
-        self.command: Union[Command, ContextMenu, Group] = command
+    def __init__(self, command: Union[Command[Any, ..., Any], ContextMenu, Group]):
+        self.command: Union[Command[Any, ..., Any], ContextMenu, Group] = command
         msg = (
             f'The signature for command {command.name!r} is different from the one provided by Discord. '
             'This can happen because either your code is out of date or you have not synced the '

@@ -207,10 +207,10 @@ class TextInput(Item[V]):
     def to_component_dict(self) -> TextInputPayload:
         return self._underlying.to_dict()
 
-    def refresh_component(self, component: TextInputComponent) -> None:
+    def _refresh_component(self, component: TextInputComponent) -> None:
         self._underlying = component
 
-    def refresh_state(self, data: ModalSubmitTextInputInteractionDataPayload) -> None:
+    def _refresh_state(self, data: ModalSubmitTextInputInteractionDataPayload) -> None:
         self._value = data.get('value', None)
 
     @classmethod

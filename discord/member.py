@@ -27,9 +27,8 @@ from __future__ import annotations
 import datetime
 import inspect
 import itertools
-import sys
 from operator import attrgetter
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Callable, Collection, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -40,6 +39,7 @@ from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
+from .errors import ClientException
 from .colour import Colour
 from .object import Object
 
@@ -55,7 +55,10 @@ if TYPE_CHECKING:
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
-    from .types.activity import PartialPresenceUpdate
+    from .types.activity import (
+        ClientStatus as ClientStatusPayload,
+        PartialPresenceUpdate,
+    )
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
@@ -163,7 +166,47 @@ class VoiceState:
         return f'<{self.__class__.__name__} {inner}>'
 
 
-def flatten_user(cls):
+class _ClientStatus:
+    __slots__ = ('_status', 'desktop', 'mobile', 'web')
+
+    def __init__(self):
+        self._status: str = 'offline'
+
+        self.desktop: Optional[str] = None
+        self.mobile: Optional[str] = None
+        self.web: Optional[str] = None
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('_status', self._status),
+            ('desktop', self.desktop),
+            ('mobile', self.mobile),
+            ('web', self.web),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {inner}>'
+
+    def _update(self, status: str, data: ClientStatusPayload, /) -> None:
+        self._status = status
+
+        self.desktop = data.get('desktop')
+        self.mobile = data.get('mobile')
+        self.web = data.get('web')
+
+    @classmethod
+    def _copy(cls, client_status: Self, /) -> Self:
+        self = cls.__new__(cls)  # bypass __init__
+
+        self._status = client_status._status
+
+        self.desktop = client_status.desktop
+        self.mobile = client_status.mobile
+        self.web = client_status.web
+
+        return self
+
+
+def flatten_user(cls: Any) -> Type[Member]:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
         if attr.startswith('_'):
@@ -289,7 +332,7 @@ class Member(discord.abc.Messageable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
-        create_dm = User.create_dm
+        create_dm: Callable[[], Coroutine[Any, Any, DMChannel]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
@@ -303,7 +346,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
-        self._client_status: Dict[Optional[str], str] = {None: 'offline'}
+        self._client_status: _ClientStatus = _ClientStatus()
         self.activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
@@ -325,10 +368,10 @@ class Member(discord.abc.Messageable, _UserTag):
             f' bot={self._user.bot} nick={self.nick!r} guild={self.guild!r}>'
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -366,7 +409,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self._client_status = member._client_status.copy()
+        self._client_status = _ClientStatus._copy(member._client_status)
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
@@ -381,7 +424,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user = member._user
         return self
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
 
@@ -404,11 +447,8 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar = data.get('avatar')
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(map(create_activity, data['activities']))
-        self._client_status = {
-            sys.intern(key): sys.intern(value) for key, value in data.get('client_status', {}).items()  # type: ignore
-        }
-        self._client_status[None] = sys.intern(data['status'])
+        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
+        self._client_status._update(data['status'], data['client_status'])
 
         if len(user) > 1:
             return self._update_inner_user(user)
@@ -428,7 +468,7 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status[None])
+        return try_enum(Status, self._client_status._status)
 
     @property
     def raw_status(self) -> str:
@@ -436,31 +476,31 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status[None]
+        return self._client_status._status
 
     @status.setter
     def status(self, value: Status) -> None:
         # internal use only
-        self._client_status[None] = str(value)
+        self._client_status._status = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.get('mobile', 'offline'))
+        return try_enum(Status, self._client_status.mobile or 'offline')
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.get('desktop', 'offline'))
+        return try_enum(Status, self._client_status.desktop or 'offline')
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.get('web', 'offline'))
+        return try_enum(Status, self._client_status.web or 'offline')
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        return 'mobile' in self._client_status
+        return self._client_status.mobile is not None
 
     @property
     def colour(self) -> Colour:
@@ -680,7 +720,7 @@ class Member(discord.abc.Messageable, _UserTag):
         mute: bool = MISSING,
         deafen: bool = MISSING,
         suppress: bool = MISSING,
-        roles: List[discord.abc.Snowflake] = MISSING,
+        roles: Collection[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
         reason: Optional[str] = None,
@@ -730,7 +770,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         roles: List[:class:`Role`]
             The member's new list of roles. This *replaces* the roles.
-        voice_channel: Optional[:class:`VoiceChannel`]
+        voice_channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
             The voice channel to move the member to.
             Pass ``None`` to kick them from voice.
         timed_out_until: Optional[:class:`datetime.datetime`]
@@ -829,13 +869,15 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Raises
         -------
+        ClientException
+            You are not connected to a voice channel.
         Forbidden
             You do not have the proper permissions to the action requested.
         HTTPException
             The operation failed.
         """
         if self.voice is None or self.voice.channel is None:
-            raise RuntimeError('Cannot request to speak while not connected to a voice channel.')
+            raise ClientException('Cannot request to speak while not connected to a voice channel.')
 
         payload = {
             'channel_id': self.voice.channel.id,
@@ -848,7 +890,7 @@ class Member(discord.abc.Messageable, _UserTag):
         else:
             await self._state.http.edit_my_voice_state(self.guild.id, payload)
 
-    async def move_to(self, channel: VocalGuildChannel, *, reason: Optional[str] = None) -> None:
+    async def move_to(self, channel: Optional[VocalGuildChannel], *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Moves a member to a new voice channel (they must be connected first).
@@ -863,13 +905,49 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Parameters
         -----------
-        channel: Optional[:class:`VoiceChannel`]
+        channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
             The new voice channel to move the member to.
             Pass ``None`` to kick them from voice.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
         """
         await self.edit(voice_channel=channel, reason=reason)
+
+    async def timeout(self, when: Union[datetime.timedelta, datetime.datetime], /, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Applies a time out to a member until the specified date time or for the
+        given :class:`datetime.timedelta`.
+
+        You must have the :attr:`~Permissions.moderate_members` permission to
+        use this.
+
+        This raises the same exceptions as :meth:`edit`.
+
+        Parameters
+        -----------
+        when: Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]
+            If this is a :class:`datetime.timedelta` then it represents the amount of
+            time the member should be timed out for. If this is a :class:`datetime.datetime`
+            then it's when the member's timeout should expire. Note that the API only allows
+            for timeouts up to 28 days.
+        reason: Optional[:class:`str`]
+            The reason for doing this action. Shows up on the audit log.
+
+        Raises
+        -------
+        TypeError
+            The ``when`` parameter was the wrong type of the datetime was not timezone-aware.
+        """
+
+        if isinstance(when, datetime.timedelta):
+            timed_out_until = utils.utcnow() + when
+        elif isinstance(when, datetime.datetime):
+            timed_out_until = when
+        else:
+            raise TypeError(f'expected datetime.datetime or datetime.timedelta not {when.__class__!r}')
+
+        await self.edit(timed_out_until=timed_out_until, reason=reason)
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|

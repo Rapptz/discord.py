@@ -95,7 +95,7 @@ class CommandParameter:
     description: str = MISSING
     required: bool = MISSING
     default: Any = MISSING
-    choices: List[Choice] = MISSING
+    choices: List[Choice[Union[str, int, float]]] = MISSING
     type: AppCommandOptionType = MISSING
     channel_types: List[ChannelType] = MISSING
     min_value: Optional[Union[int, float]] = None
@@ -123,6 +123,9 @@ class CommandParameter:
             base['max_value'] = self.max_value
 
         return base
+
+    def is_choice_annotation(self) -> bool:
+        return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
 
     async def transform(self, interaction: Interaction, value: Any) -> Any:
         if hasattr(self._annotation, '__discord_app_commands_transformer__'):
@@ -241,6 +244,11 @@ class _TransformMetadata:
     def __init__(self, metadata: Type[Transformer]):
         self.metadata: Type[Transformer] = metadata
 
+    # This is needed to pass typing's type checks.
+    # e.g. Optional[Transform[discord.Member, MyTransformer]]
+    def __call__(self) -> None:
+        pass
+
 
 async def _identity_transform(cls, interaction: Interaction, value: Any) -> Any:
     return value
@@ -262,9 +270,6 @@ def _make_range_transformer(
 
 
 def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
-    if len(values) < 2:
-        raise TypeError(f'typing.Literal requires at least two values.')
-
     first = type(values[0])
     if first is int:
         opt_type = AppCommandOptionType.integer
@@ -384,7 +389,7 @@ else:
         .. code-block:: python3
 
             @app_commands.command()
-            async def range(interaction: discord.Interaction, value: app_commands.Range[10:12]):
+            async def range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
@@ -414,7 +419,11 @@ else:
             else:
                 raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
 
-            transformer = _make_range_transformer(opt_type, min=obj_type(min), max=obj_type(max))
+            transformer = _make_range_transformer(
+                opt_type,
+                min=obj_type(min) if min is not None else None,
+                max=obj_type(max) if max is not None else None,
+            )
             return _TransformMetadata(transformer)
 
 
@@ -500,13 +509,14 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.store,
         ChannelType.voice,
         ChannelType.text,
+        ChannelType.news,
         ChannelType.category,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
     StoreChannel: [ChannelType.store],
     VoiceChannel: [ChannelType.voice],
-    TextChannel: [ChannelType.text],
+    TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
 }
 
@@ -532,13 +542,14 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
     AppCommandOptionType.string: (str, NoneType),
     AppCommandOptionType.integer: (int, NoneType),
     AppCommandOptionType.boolean: (bool, NoneType),
+    AppCommandOptionType.number: (float, NoneType),
 }
 
 
 def get_supported_annotation(
     annotation: Any,
     *,
-    _none=NoneType,
+    _none: type = NoneType,
     _mapping: Dict[Any, Type[Transformer]] = BUILT_IN_TRANSFORMERS,
 ) -> Tuple[Any, Any]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.
@@ -618,10 +629,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     (inner, default) = get_supported_annotation(annotation)
     type = inner.type()
-    if default is MISSING:
-        default = parameter.default
-        if default is parameter.empty:
-            default = MISSING
+
+    if default is MISSING or default is None:
+        param_default = parameter.default
+        if param_default is not parameter.empty:
+            default = param_default
 
     # Verify validity of the default parameter
     if default is not MISSING:

@@ -99,10 +99,10 @@ class BaseUser(_UserTag):
     def __str__(self) -> str:
         return f'{self.name}#{self.discriminator}'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -367,8 +367,8 @@ class ClientUser(BaseUser):
             The edit is no longer in-place, instead the newly edited client user is returned.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -444,7 +444,7 @@ class User(BaseUser, discord.abc.Messageable):
     def __repr__(self) -> str:
         return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
 

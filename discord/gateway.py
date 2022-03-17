@@ -54,6 +54,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .client import Client
     from .state import ConnectionState
     from .voice_client import VoiceClient
@@ -62,10 +64,10 @@ if TYPE_CHECKING:
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
 
-    def __init__(self, shard_id, *, resume=True):
-        self.shard_id = shard_id
-        self.resume = resume
-        self.op = 'RESUME' if resume else 'IDENTIFY'
+    def __init__(self, shard_id: Optional[int], *, resume: bool = True) -> None:
+        self.shard_id: Optional[int] = shard_id
+        self.resume: bool = resume
+        self.op: str = 'RESUME' if resume else 'IDENTIFY'
 
 
 class WebSocketClosure(Exception):
@@ -110,9 +112,6 @@ class GatewayRatelimiter:
             return self.per - (current - self.window)
 
         self.remaining -= 1
-        if self.remaining == 0:
-            self.window = current
-
         return 0.0
 
     async def block(self) -> None:
@@ -228,7 +227,7 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
         ack_time = time.perf_counter()
         self._last_ack = ack_time
         self._last_recv = ack_time
-        self.latency = ack_time - self._last_send
+        self.latency: float = ack_time - self._last_send
         self.recent_ack_latencies.append(self.latency)
 
 
@@ -342,7 +341,7 @@ class DiscordWebSocket:
 
     @classmethod
     async def from_client(
-        cls: Type[DWS],
+        cls,
         client: Client,
         *,
         initial: bool = False,
@@ -351,7 +350,7 @@ class DiscordWebSocket:
         session: Optional[str] = None,
         sequence: Optional[int] = None,
         resume: bool = False,
-    ) -> DWS:
+    ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
@@ -824,11 +823,11 @@ class DiscordVoiceWebSocket:
         *,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> None:
-        self.ws = socket
-        self.loop = loop
-        self._keep_alive = None
-        self._close_code = None
-        self.secret_key = None
+        self.ws: aiohttp.ClientWebSocketResponse = socket
+        self.loop: asyncio.AbstractEventLoop = loop
+        self._keep_alive: Optional[VoiceKeepAliveHandler] = None
+        self._close_code: Optional[int] = None
+        self.secret_key: Optional[str] = None
         if hook:
             self._hook = hook  # type: ignore - type-checker doesn't like overriding methods
 
@@ -867,7 +866,9 @@ class DiscordVoiceWebSocket:
         await self.send_as_json(payload)
 
     @classmethod
-    async def from_client(cls: Type[DVWS], client: VoiceClient, *, resume=False, hook=None) -> DVWS:
+    async def from_client(
+        cls, client: VoiceClient, *, resume: bool = False, hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
@@ -924,20 +925,20 @@ class DiscordVoiceWebSocket:
     async def received_message(self, msg: Dict[str, Any]) -> None:
         _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
-        data = msg.get('d')
+        data = msg['d']  # According to Discord this key is always given
 
         if op == self.READY:
-            await self.initial_connection(data)  # type: ignore - type-checker thinks data could be None
+            await self.initial_connection(data)
         elif op == self.HEARTBEAT_ACK:
-            self._keep_alive.ack()  # type: ignore - _keep_alive can't be None at this point
+            if self._keep_alive:
+                self._keep_alive.ack()
         elif op == self.RESUMED:
             _log.info('Voice RESUME succeeded.')
         elif op == self.SESSION_DESCRIPTION:
-            # type-checker thinks data could be None
-            self._connection.mode = data['mode']  # type: ignore
-            await self.load_secret_key(data)  # type: ignore
+            self._connection.mode = data['mode']
+            await self.load_secret_key(data)
         elif op == self.HELLO:
-            interval = data['heartbeat_interval'] / 1000.0  # type: ignore - type-checker thinks data could be None
+            interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
 
@@ -960,17 +961,17 @@ class DiscordVoiceWebSocket:
         # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
         ip_end = recv.index(0, ip_start)
-        state.endpoint_ip = recv[ip_start:ip_end].decode('ascii')
+        state.ip = recv[ip_start:ip_end].decode('ascii')
 
-        state.voice_port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        _log.debug('detected ip: %s port: %s', state.endpoint_ip, state.voice_port)
+        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
+        _log.debug('detected ip: %s port: %s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         _log.debug('received supported encryption modes: %s', ", ".join(modes))
 
         mode = modes[0]
-        await self.select_protocol(state.endpoint_ip, state.voice_port, mode)
+        await self.select_protocol(state.ip, state.port, mode)
         _log.info('selected the voice protocol for use (%s)', mode)
 
     @property
@@ -990,7 +991,7 @@ class DiscordVoiceWebSocket:
 
     async def load_secret_key(self, data: Dict[str, Any]) -> None:
         _log.info('received secret key for voice connection')
-        self.secret_key = self._connection.secret_key = data.get('secret_key')  # type: ignore - type-checker thinks secret_key could be None
+        self.secret_key = self._connection.secret_key = data['secret_key']
         await self.speak()
         await self.speak(SpeakingState.none)
 

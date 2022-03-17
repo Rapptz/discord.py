@@ -32,7 +32,6 @@ import itertools
 import logging
 from typing import (
     Dict,
-    Generic,
     Optional,
     TYPE_CHECKING,
     Union,
@@ -44,6 +43,8 @@ from typing import (
     Sequence,
     Tuple,
     Deque,
+    Literal,
+    overload,
 )
 import weakref
 import inspect
@@ -89,7 +90,7 @@ if TYPE_CHECKING:
     from .types.activity import Activity as ActivityPayload
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import User as UserPayload, PartialUser as PartialUserPayload
-    from .types.emoji import Emoji as EmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
@@ -166,22 +167,22 @@ class ConnectionState:
     def __init__(
         self,
         *,
-        dispatch: Callable,
-        handlers: Dict[str, Callable],
-        hooks: Dict[str, Callable],
+        dispatch: Callable[..., Any],
+        handlers: Dict[str, Callable[..., Any]],
+        hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
         http: HTTPClient,
-        loop: asyncio.AbstractEventLoop,
         **options: Any,
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
+        # Set later, after Client.login
+        self.loop: asyncio.AbstractEventLoop = utils.MISSING
         self.http: HTTPClient = http
         self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
             self.max_messages = 1000
 
-        self.dispatch: Callable = dispatch
-        self.handlers: Dict[str, Callable] = handlers
-        self.hooks: Dict[str, Callable] = hooks
+        self.dispatch: Callable[..., Any] = dispatch
+        self.handlers: Dict[str, Callable[..., Any]] = handlers
+        self.hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = hooks
         self.shard_count: Optional[int] = None
         self._ready_task: Optional[asyncio.Task] = None
         self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
@@ -246,6 +247,7 @@ class ConnectionState:
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
 
+        self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
@@ -301,6 +303,9 @@ class ConnectionState:
         else:
             await coro(*args, **kwargs)
 
+    async def async_setup(self) -> None:
+        pass
+
     @property
     def self_id(self) -> Optional[int]:
         u = self.user
@@ -341,13 +346,13 @@ class ConnectionState:
                 self._users[user_id] = user
             return user
 
-    def store_user_no_intents(self, data):
+    def store_user_no_intents(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         return User(state=self, data=data)
 
     def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         return User(state=self, data=data)
 
-    def get_user(self, id):
+    def get_user(self, id: int) -> Optional[User]:
         return self._users.get(id)
 
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
@@ -569,8 +574,7 @@ class ConnectionState:
                 pass
             else:
                 self.application_id = utils._get_as_snowflake(application, 'id')
-                # flags will always be present here
-                self.application_flags = ApplicationFlags._from_value(application['flags'])  # type: ignore
+                self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)  # type: ignore
@@ -709,13 +713,15 @@ class ConnectionState:
             self._command_tree._from_interaction(interaction)
         elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            component_type = interaction.data['component_type']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            component_type = inner_data['component_type']
             self._view_store.dispatch_view(component_type, custom_id, interaction)
         elif data['type'] == 5:  # modal submit
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            components = interaction.data['components']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            components = inner_data['components']
             self._view_store.dispatch_modal(custom_id, interaction, components)  # type: ignore
         self.dispatch('interaction', interaction)
 
@@ -741,7 +747,7 @@ class ConnectionState:
 
         self.dispatch('presence_update', old_member, member)
 
-    def parse_user_update(self, data: gw.UserUpdateEvent):
+    def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
             self.user._update(data)
 
@@ -858,10 +864,13 @@ class ConnectionState:
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
+            if thread.archived:
+                guild._remove_thread(thread)
             self.dispatch('thread_update', old, thread)
         else:
             thread = Thread(guild=guild, state=guild._state, data=data)
-            guild._add_thread(thread)
+            if not thread.archived:
+                guild._add_thread(thread)
             self.dispatch('thread_join', thread)
 
     def parse_thread_delete(self, data: gw.ThreadDeleteEvent) -> None:
@@ -971,20 +980,16 @@ class ConnectionState:
         if self.member_cache_flags.joined:
             guild._add_member(member)
 
-        try:
+        if guild._member_count is not None:
             guild._member_count += 1
-        except AttributeError:
-            pass
 
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data: gw.GuildMemberRemoveEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            try:
+            if guild._member_count is not None:
                 guild._member_count -= 1
-            except AttributeError:
-                pass
 
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
@@ -1049,7 +1054,7 @@ class ConnectionState:
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
-    def _get_create_guild(self, data):
+    def _get_create_guild(self, data: gw.GuildCreateEvent) -> Guild:
         if data.get('unavailable') is False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the guild has become available
@@ -1062,10 +1067,22 @@ class ConnectionState:
 
         return self._add_guild_from_data(data)
 
-    def is_guild_evicted(self, guild) -> bool:
+    def is_guild_evicted(self, guild: Guild) -> bool:
         return guild.id not in self._guilds
 
-    async def chunk_guild(self, guild, *, wait=True, cache=None):
+    @overload
+    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[Member]:
+        ...
+
+    @overload
+    async def chunk_guild(
+        self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...
+    ) -> asyncio.Future[List[Member]]:
+        ...
+
+    async def chunk_guild(
+        self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None
+    ) -> Union[List[Member], asyncio.Future[List[Member]]]:
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
         if request is None:
@@ -1315,7 +1332,7 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = ScheduledEvent(state=self, data=data)
             guild._scheduled_events[scheduled_event.id] = scheduled_event
-            self.dispatch('scheduled_event_create', guild, scheduled_event)
+            self.dispatch('scheduled_event_create', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1326,7 +1343,7 @@ class ConnectionState:
             if scheduled_event is not None:
                 old_scheduled_event = copy.copy(scheduled_event)
                 scheduled_event._update(data)
-                self.dispatch('scheduled_event_update', guild, old_scheduled_event, scheduled_event)
+                self.dispatch('scheduled_event_update', old_scheduled_event, scheduled_event)
             else:
                 _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown scheduled event ID: %s. Discarding.', data['id'])
         else:
@@ -1340,7 +1357,7 @@ class ConnectionState:
             except KeyError:
                 pass
             else:
-                self.dispatch('scheduled_event_delete', guild, scheduled_event)
+                self.dispatch('scheduled_event_delete', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1352,10 +1369,9 @@ class ConnectionState:
                 user = self.get_user(int(data['user_id']))
                 if user is not None:
                     scheduled_event._add_user(user)
-                    self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
+                    self.dispatch('scheduled_event_user_add', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_ADD referencing unknown scheduled event ID: %s. Discarding.',
@@ -1375,7 +1391,6 @@ class ConnectionState:
                     self.dispatch('scheduled_event_user_remove', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_remove', scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',
@@ -1446,16 +1461,19 @@ class ConnectionState:
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
-    def get_reaction_emoji(self, data) -> Union[Emoji, PartialEmoji]:
+    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
-            return data['name']
+            # the name key will be a str
+            return data['name']  # type: ignore
 
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
+            return PartialEmoji.with_state(
+                self, animated=data.get('animated', False), id=emoji_id, name=data['name']  # type: ignore
+            )
 
     def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = emoji.id
@@ -1489,7 +1507,6 @@ class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.shard_ids: Union[List[int], range] = []
-        self.shards_launched: asyncio.Event = asyncio.Event()
 
     def _update_message_references(self) -> None:
         # self._messages won't be None when this is called
@@ -1503,6 +1520,9 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
                 # channel will either be a TextChannel, Thread or Object
                 msg._rebind_cached_references(new_guild, channel)  # type: ignore
+
+    async def async_setup(self) -> None:
+        self.shards_launched: asyncio.Event = asyncio.Event()
 
     async def chunker(
         self,
@@ -1588,6 +1608,7 @@ class AutoShardedConnectionState(ConnectionState):
         if not hasattr(self, '_ready_state'):
             self._ready_state = asyncio.Queue()
 
+        self.user: Optional[ClientUser]
         self.user = user = ClientUser(state=self, data=data['user'])
         # self._users is a list of Users, we're setting a ClientUser
         self._users[user.id] = user  # type: ignore
@@ -1598,8 +1619,8 @@ class AutoShardedConnectionState(ConnectionState):
             except KeyError:
                 pass
             else:
-                self.application_id = utils._get_as_snowflake(application, 'id')
-                self.application_flags = ApplicationFlags._from_value(application['flags'])
+                self.application_id: Optional[int] = utils._get_as_snowflake(application, 'id')
+                self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)  # type: ignore - _add_guild_from_data requires a complete Guild payload

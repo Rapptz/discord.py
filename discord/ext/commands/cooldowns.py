@@ -220,7 +220,7 @@ class CooldownMapping:
         return self._type
 
     @classmethod
-    def from_cooldown(cls, rate, per, type) -> Self:
+    def from_cooldown(cls, rate: float, per: float, type: Callable[[Message], Any]) -> Self:
         return cls(Cooldown(rate, per), type)
 
     def _bucket_key(self, msg: Message) -> Any:
@@ -297,7 +297,7 @@ class _Semaphore:
 
     def __init__(self, number: int) -> None:
         self.value: int = number
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+        self.loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         self._waiters: Deque[asyncio.Future] = deque()
 
     def __repr__(self) -> str:

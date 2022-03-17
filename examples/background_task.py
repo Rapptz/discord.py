@@ -9,6 +9,7 @@ class MyClient(discord.Client):
         # an attribute we can access from our task
         self.counter = 0
 
+    async def setup_hook(self) -> None:
         # start the task to run in the background
         self.my_background_task.start()
 

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Iterator, Mapping
 
 __all__ = (
     'Enum',
@@ -131,38 +131,38 @@ class EnumMeta(type):
         value_cls._actual_enum_cls_ = actual_cls  # type: ignore - Runtime attribute isn't understood
         return actual_cls
 
-    def __iter__(cls):
+    def __iter__(cls) -> Iterator[Any]:
         return (cls._enum_member_map_[name] for name in cls._enum_member_names_)
 
-    def __reversed__(cls):
+    def __reversed__(cls) -> Iterator[Any]:
         return (cls._enum_member_map_[name] for name in reversed(cls._enum_member_names_))
 
-    def __len__(cls):
+    def __len__(cls) -> int:
         return len(cls._enum_member_names_)
 
-    def __repr__(cls):
+    def __repr__(cls) -> str:
         return f'<enum {cls.__name__}>'
 
     @property
-    def __members__(cls):
+    def __members__(cls) -> Mapping[str, Any]:
         return types.MappingProxyType(cls._enum_member_map_)
 
-    def __call__(cls, value):
+    def __call__(cls, value: str) -> Any:
         try:
             return cls._enum_value_map_[value]
         except (KeyError, TypeError):
             raise ValueError(f"{value!r} is not a valid {cls.__name__}")
 
-    def __getitem__(cls, key):
+    def __getitem__(cls, key: str) -> Any:
         return cls._enum_member_map_[key]
 
-    def __setattr__(cls, name, value):
+    def __setattr__(cls, name: str, value: Any) -> None:
         raise TypeError('Enums are immutable.')
 
-    def __delattr__(cls, attr):
+    def __delattr__(cls, attr: str) -> None:
         raise TypeError('Enums are immutable')
 
-    def __instancecheck__(self, instance):
+    def __instancecheck__(self, instance: Any) -> bool:
         # isinstance(x, Y)
         # -> __instancecheck__(Y, x)
         try:
@@ -197,7 +197,7 @@ class ChannelType(Enum):
     private_thread = 12
     stage_voice = 13
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -233,10 +233,10 @@ class SpeakingState(Enum):
     soundshare = 2
     priority = 4
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value
 
 
@@ -247,7 +247,7 @@ class VerificationLevel(Enum, comparable=True):
     high = 3
     highest = 4
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -256,7 +256,7 @@ class ContentFilter(Enum, comparable=True):
     no_role = 1
     all_members = 2
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -268,7 +268,7 @@ class Status(Enum):
     do_not_disturb = 'dnd'
     invisible = 'invisible'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
@@ -280,7 +280,7 @@ class DefaultAvatar(Enum):
     orange = 3
     red = 4
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -467,7 +467,7 @@ class ActivityType(Enum):
     custom = 4
     competing = 5
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value
 
 
@@ -542,7 +542,7 @@ class VideoQualityMode(Enum):
     auto = 1
     full = 2
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value
 
 
@@ -552,7 +552,7 @@ class ComponentType(Enum):
     select = 3
     text_input = 4
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value
 
 
@@ -571,7 +571,7 @@ class ButtonStyle(Enum):
     red = 4
     url = 5
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value
 
 
@@ -625,8 +625,8 @@ class Locale(Enum):
     norwegian = 'no'
     polish = 'pl'
     brazil_portuguese = 'pt-BR'
-    Romanian = 'ro'
-    Russian = 'ru'
+    romanian = 'ro'
+    russian = 'ru'
     spain_spanish = 'es-ES'
     swedish = 'sv-SE'
     thai = 'th'

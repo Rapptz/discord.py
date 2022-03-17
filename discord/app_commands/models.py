@@ -58,7 +58,10 @@ if TYPE_CHECKING:
         PartialChannel,
         PartialThread,
     )
-    from ..types.threads import ThreadMetadata
+    from ..types.threads import (
+        ThreadMetadata,
+        ThreadArchiveDuration,
+    )
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
@@ -117,17 +120,19 @@ class AppCommand(Hashable):
         '_state',
     )
 
-    def __init__(self, *, data: ApplicationCommandPayload, state=None):
-        self._state = state
+    def __init__(self, *, data: ApplicationCommandPayload, state: Optional[ConnectionState] = None) -> None:
+        self._state: Optional[ConnectionState] = state
         self._from_data(data)
 
-    def _from_data(self, data: ApplicationCommandPayload):
+    def _from_data(self, data: ApplicationCommandPayload) -> None:
         self.id: int = int(data['id'])
         self.application_id: int = int(data['application_id'])
         self.name: str = data['name']
         self.description: str = data['description']
         self.type: AppCommandType = try_enum(AppCommandType, data.get('type', 1))
-        self.options = [app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])]
+        self.options: List[Union[Argument, AppCommandGroup]] = [
+            app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
+        ]
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
@@ -188,11 +193,24 @@ class Choice(Generic[ChoiceT]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
 
+    @property
+    def _option_type(self) -> AppCommandOptionType:
+        if isinstance(self.value, int):
+            return AppCommandOptionType.integer
+        elif isinstance(self.value, float):
+            return AppCommandOptionType.number
+        elif isinstance(self.value, str):
+            return AppCommandOptionType.string
+        else:
+            raise TypeError(
+                f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__!r}'
+            )
+
     def to_dict(self) -> ApplicationCommandOptionChoice:
         return {
             'name': self.name,
             'value': self.value,
-        }  # type: ignore -- Type checker does not understand this literal.
+        }
 
 
 class AppCommandChannel(Hashable):
@@ -249,12 +267,12 @@ class AppCommandChannel(Hashable):
         data: PartialChannel,
         guild_id: int,
     ):
-        self._state = state
-        self.guild_id = guild_id
-        self.id = int(data['id'])
-        self.type = try_enum(ChannelType, data['type'])
-        self.name = data['name']
-        self.permissions = Permissions(int(data['permissions']))
+        self._state: ConnectionState = state
+        self.guild_id: int = guild_id
+        self.id: int = int(data['id'])
+        self.type: ChannelType = try_enum(ChannelType, data['type'])
+        self.name: str = data['name']
+        self.permissions: Permissions = Permissions(int(data['permissions']))
 
     def __str__(self) -> str:
         return self.name
@@ -392,13 +410,13 @@ class AppCommandThread(Hashable):
         data: PartialThread,
         guild_id: int,
     ):
-        self._state = state
-        self.guild_id = guild_id
-        self.id = int(data['id'])
-        self.parent_id = int(data['parent_id'])
-        self.type = try_enum(ChannelType, data['type'])
-        self.name = data['name']
-        self.permissions = Permissions(int(data['permissions']))
+        self._state: ConnectionState = state
+        self.guild_id: int = guild_id
+        self.id: int = int(data['id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.type: ChannelType = try_enum(ChannelType, data['type'])
+        self.name: str = data['name']
+        self.permissions: Permissions = Permissions(int(data['permissions']))
         self._unroll_metadata(data['thread_metadata'])
 
     def __str__(self) -> str:
@@ -412,14 +430,14 @@ class AppCommandThread(Hashable):
         """Optional[:class:`~discord.Guild`]: The channel's guild, from cache, if found."""
         return self._state._get_guild(self.guild_id)
 
-    def _unroll_metadata(self, data: ThreadMetadata):
-        self.archived = data['archived']
-        self.archiver_id = _get_as_snowflake(data, 'archiver_id')
-        self.auto_archive_duration = data['auto_archive_duration']
-        self.archive_timestamp = parse_time(data['archive_timestamp'])
-        self.locked = data.get('locked', False)
-        self.invitable = data.get('invitable', True)
-        self._created_at = parse_time(data.get('create_timestamp'))
+    def _unroll_metadata(self, data: ThreadMetadata) -> None:
+        self.archived: bool = data['archived']
+        self.archiver_id: Optional[int] = _get_as_snowflake(data, 'archiver_id')
+        self.auto_archive_duration: ThreadArchiveDuration = data['auto_archive_duration']
+        self.archive_timestamp: datetime = parse_time(data['archive_timestamp'])
+        self.locked: bool = data.get('locked', False)
+        self.invitable: bool = data.get('invitable', True)
+        self._created_at: Optional[datetime] = parse_time(data.get('create_timestamp'))
 
     @property
     def parent(self) -> Optional[TextChannel]:
@@ -509,20 +527,24 @@ class Argument:
         '_state',
     )
 
-    def __init__(self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state=None):
-        self._state = state
-        self.parent = parent
+    def __init__(
+        self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None
+    ) -> None:
+        self._state: Optional[ConnectionState] = state
+        self.parent: ApplicationCommandParent = parent
         self._from_data(data)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} name={self.name!r} type={self.type!r} required={self.required}>'
 
-    def _from_data(self, data: ApplicationCommandOption):
+    def _from_data(self, data: ApplicationCommandOption) -> None:
         self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -569,20 +591,24 @@ class AppCommandGroup:
         '_state',
     )
 
-    def __init__(self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state=None):
-        self.parent = parent
-        self._state = state
+    def __init__(
+        self, *, parent: ApplicationCommandParent, data: ApplicationCommandOption, state: Optional[ConnectionState] = None
+    ) -> None:
+        self.parent: ApplicationCommandParent = parent
+        self._state: Optional[ConnectionState] = state
         self._from_data(data)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} name={self.name!r} type={self.type!r} required={self.required}>'
 
-    def _from_data(self, data: ApplicationCommandOption):
+    def _from_data(self, data: ApplicationCommandOption) -> None:
         self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice] = [Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
         self.arguments: List[Argument] = [
             Argument(parent=self, state=self._state, data=d)
             for d in data.get('options', [])
@@ -601,7 +627,7 @@ class AppCommandGroup:
 
 
 def app_command_option_factory(
-    parent: ApplicationCommandParent, data: ApplicationCommandOption, *, state=None
+    parent: ApplicationCommandParent, data: ApplicationCommandOption, *, state: Optional[ConnectionState] = None
 ) -> Union[Argument, AppCommandGroup]:
     if is_app_command_argument_type(data['type']):
         return Argument(parent=parent, data=data, state=state)

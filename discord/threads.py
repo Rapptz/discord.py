@@ -41,6 +41,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.threads import (
         Thread as ThreadPayload,
         ThreadMember as ThreadMemberPayload,
@@ -147,13 +149,13 @@ class Thread(Messageable, Hashable):
         '_created_at',
     )
 
-    def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload):
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload) -> None:
         self._state: ConnectionState = state
-        self.guild = guild
+        self.guild: Guild = guild
         self._members: Dict[int, ThreadMember] = {}
         self._from_data(data)
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         return self
 
     def __repr__(self) -> str:
@@ -166,17 +168,18 @@ class Thread(Messageable, Hashable):
         return self.name
 
     def _from_data(self, data: ThreadPayload):
-        self.id = int(data['id'])
-        self.parent_id = int(data['parent_id'])
-        self.owner_id = int(data['owner_id'])
-        self.name = data['name']
-        self._type = try_enum(ChannelType, data['type'])
-        self.last_message_id = _get_as_snowflake(data, 'last_message_id')
-        self.slowmode_delay = data.get('rate_limit_per_user', 0)
-        self.message_count = data['message_count']
-        self.member_count = data['member_count']
+        self.id: int = int(data['id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.owner_id: int = int(data['owner_id'])
+        self.name: str = data['name']
+        self._type: ChannelType = try_enum(ChannelType, data['type'])
+        self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
+        self.message_count: int = data['message_count']
+        self.member_count: int = data['member_count']
         self._unroll_metadata(data['thread_metadata'])
 
+        self.me: Optional[ThreadMember]
         try:
             member = data['member']
         except KeyError:
@@ -185,15 +188,15 @@ class Thread(Messageable, Hashable):
             self.me = ThreadMember(self, member)
 
     def _unroll_metadata(self, data: ThreadMetadata):
-        self.archived = data['archived']
-        self.archiver_id = _get_as_snowflake(data, 'archiver_id')
-        self.auto_archive_duration = data['auto_archive_duration']
-        self.archive_timestamp = parse_time(data['archive_timestamp'])
-        self.locked = data.get('locked', False)
-        self.invitable = data.get('invitable', True)
-        self._created_at = parse_time(data.get('create_timestamp'))
+        self.archived: bool = data['archived']
+        self.archiver_id: Optional[int] = _get_as_snowflake(data, 'archiver_id')
+        self.auto_archive_duration: int = data['auto_archive_duration']
+        self.archive_timestamp: datetime = parse_time(data['archive_timestamp'])
+        self.locked: bool = data.get('locked', False)
+        self.invitable: bool = data.get('invitable', True)
+        self._created_at: Optional[datetime] = parse_time(data.get('create_timestamp'))
 
-    def _update(self, data):
+    def _update(self, data: ThreadPayload) -> None:
         try:
             self.name = data['name']
         except KeyError:
@@ -602,7 +605,7 @@ class Thread(Messageable, Hashable):
         # The data payload will always be a Thread payload
         return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
 
-    async def join(self):
+    async def join(self) -> None:
         """|coro|
 
         Joins this thread.
@@ -619,7 +622,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.join_thread(self.id)
 
-    async def leave(self):
+    async def leave(self) -> None:
         """|coro|
 
         Leaves this thread.
@@ -631,7 +634,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.leave_thread(self.id)
 
-    async def add_user(self, user: Snowflake, /):
+    async def add_user(self, user: Snowflake, /) -> None:
         """|coro|
 
         Adds a user to this thread.
@@ -654,7 +657,7 @@ class Thread(Messageable, Hashable):
         """
         await self._state.http.add_user_to_thread(self.id, user.id)
 
-    async def remove_user(self, user: Snowflake, /):
+    async def remove_user(self, user: Snowflake, /) -> None:
         """|coro|
 
         Removes a user from this thread.
@@ -664,7 +667,7 @@ class Thread(Messageable, Hashable):
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-            The user to add to the thread.
+            The user to remove from the thread.
 
         Raises
         -------
@@ -718,7 +721,7 @@ class Thread(Messageable, Hashable):
         members = await self._state.http.get_thread_members(self.id)
         return [ThreadMember(parent=self, data=data) for data in members]
 
-    async def delete(self):
+    async def delete(self) -> None:
         """|coro|
 
         Deletes this thread.
@@ -806,28 +809,29 @@ class ThreadMember(Hashable):
         'parent',
     )
 
-    def __init__(self, parent: Thread, data: ThreadMemberPayload):
-        self.parent = parent
-        self._state = parent._state
+    def __init__(self, parent: Thread, data: ThreadMemberPayload) -> None:
+        self.parent: Thread = parent
+        self._state: ConnectionState = parent._state
         self._from_data(data)
 
     def __repr__(self) -> str:
         return f'<ThreadMember id={self.id} thread_id={self.thread_id} joined_at={self.joined_at!r}>'
 
-    def _from_data(self, data: ThreadMemberPayload):
+    def _from_data(self, data: ThreadMemberPayload) -> None:
+        self.id: int
         try:
             self.id = int(data['user_id'])
         except KeyError:
-            assert self._state.self_id is not None
-            self.id = self._state.self_id
+            self.id = self._state.self_id  # type: ignore
 
+        self.thread_id: int
         try:
             self.thread_id = int(data['id'])
         except KeyError:
             self.thread_id = self.parent.id
 
-        self.joined_at = parse_time(data['join_timestamp'])
-        self.flags = data['flags']
+        self.joined_at: datetime = parse_time(data['join_timestamp'])
+        self.flags: int = data['flags']
 
     @property
     def thread(self) -> Thread:

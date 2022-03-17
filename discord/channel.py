@@ -47,7 +47,6 @@ from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
 from .mixins import Hashable
-from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
@@ -199,7 +198,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         return self
 
     @property
@@ -284,7 +283,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[TextChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
         """|coro|
 
         Edits the channel.
@@ -302,8 +301,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -620,8 +619,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -713,6 +712,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         type: Optional[ChannelType] = None,
         reason: Optional[str] = None,
         invitable: bool = True,
+        slowmode_delay: Optional[int] = None,
     ) -> Thread:
         """|coro|
 
@@ -741,8 +741,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         reason: :class:`str`
             The reason for creating a new thread. Shows up on the audit log.
         invitable: :class:`bool`
-            Whether non-modertators can add users to the thread. Only applicable to private threads.
+            Whether non-moderators can add users to the thread. Only applicable to private threads.
             Defaults to ``True``.
+        slowmode_delay: Optional[:class:`int`]
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            The maximum value possible is `21600`. By default no slowmode rate limit
+            if this is ``None``.
 
         Raises
         -------
@@ -768,6 +772,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 type=type.value,
                 reason=reason,
                 invitable=invitable,
+                rate_limit_per_user=slowmode_delay,
             )
         else:
             data = await self._state.http.start_thread_with_message(
@@ -776,6 +781,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 name=name,
                 auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
                 reason=reason,
+                rate_limit_per_user=slowmode_delay,
             )
 
         return Thread(guild=self.guild, state=self._state, data=data)
@@ -902,7 +908,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return self.guild.id, self.id
 
     def _update(self, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]) -> None:
-        self.guild = guild
+        self.guild: Guild = guild
         self.name: str = data['name']
         self.rtc_region: Optional[str] = data.get('rtc_region')
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
@@ -1070,7 +1076,7 @@ class VoiceChannel(VocalGuildChannel):
     async def edit(self) -> Optional[VoiceChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
         """|coro|
 
         Edits the channel.
@@ -1088,8 +1094,8 @@ class VoiceChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1214,7 +1220,7 @@ class StageChannel(VocalGuildChannel):
 
     def _update(self, guild: Guild, data: StageChannelPayload) -> None:
         super()._update(guild, data)
-        self.topic = data.get('topic')
+        self.topic: Optional[str] = data.get('topic')
 
     @property
     def requesting_to_speak(self) -> List[Member]:
@@ -1355,7 +1361,7 @@ class StageChannel(VocalGuildChannel):
     async def edit(self) -> Optional[StageChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
         """|coro|
 
         Edits the channel.
@@ -1373,8 +1379,8 @@ class StageChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1516,7 +1522,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[CategoryChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
         """|coro|
 
         Edits the channel.
@@ -1531,8 +1537,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1572,7 +1578,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
     @utils.copy_doc(discord.abc.GuildChannel.move)
-    async def move(self, **kwargs):
+    async def move(self, **kwargs: Any) -> None:
         kwargs.pop('category', None)
         await super().move(**kwargs)
 
@@ -1756,9 +1762,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         position: int = ...,
         nsfw: bool = ...,
         sync_permissions: bool = ...,
-        category: Optional[CategoryChannel],
-        reason: Optional[str],
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite],
+        category: Optional[CategoryChannel] = ...,
+        reason: Optional[str] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
     ) -> Optional[StoreChannel]:
         ...
 
@@ -1766,7 +1772,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[StoreChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StoreChannel]:
         """|coro|
 
         Edits the channel.
@@ -1778,8 +1784,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1868,7 +1874,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         return self
 
     def __str__(self) -> str:
@@ -2020,7 +2026,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == self.owner_id, self.recipients)
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         return self
 
     def __str__(self) -> str:
@@ -2142,12 +2148,11 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     def __init__(self, state: ConnectionState, id: int, type: Optional[ChannelType] = None):
         self._state: ConnectionState = state
-        self._channel: Object = Object(id=id)
         self.id: int = id
         self.type: Optional[ChannelType] = type
 
-    async def _get_channel(self) -> Object:
-        return self._channel
+    async def _get_channel(self) -> PartialMessageable:
+        return self
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.

@@ -31,12 +31,14 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
+    Generator,
     Generic,
     List,
     Optional,
     Set,
     TYPE_CHECKING,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -50,14 +52,20 @@ from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..message import Message
+from ..user import User
+from ..member import Member
 from ..utils import resolve_annotation, MISSING, is_inside_class
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
-    from ..user import User
-    from ..member import Member
+    from ..abc import Snowflake
     from .namespace import Namespace
     from .models import ChoiceT
+
+    # Generally, these two libraries are supposed to be separate from each other.
+    # However, for type hinting purposes it's unfortunately necessary for one to
+    # reference the other to prevent type checking errors in callbacks
+    from discord.ext.commands import Cog
 
 __all__ = (
     'Command',
@@ -67,6 +75,8 @@ __all__ = (
     'command',
     'describe',
     'choices',
+    'autocomplete',
+    'guilds',
 )
 
 if TYPE_CHECKING:
@@ -75,7 +85,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
 Error = Union[
     Callable[[GroupT, Interaction, AppCommandError], Coro[Any]],
@@ -112,6 +122,7 @@ else:
 
 
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
+VALID_CONTEXT_MENU_NAME = re.compile(r'^[\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -127,7 +138,41 @@ def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
 
 
-def _context_menu_annotation(annotation: Any, *, _none=NoneType) -> AppCommandType:
+def validate_name(name: str) -> str:
+    match = VALID_SLASH_COMMAND_NAME.match(name)
+    if match is None:
+        raise ValueError('names must be between 1-32 characters')
+
+    # Ideally, name.islower() would work instead but since certain characters
+    # are Lo (e.g. CJK) those don't pass the test. I'd use `casefold` instead as
+    # well, but chances are the server-side check is probably something similar to
+    # this code anyway.
+    if name.lower() != name:
+        raise ValueError('names must be all lower case')
+    return name
+
+
+def validate_context_menu_name(name: str) -> str:
+    if VALID_CONTEXT_MENU_NAME.match(name) is None:
+        raise ValueError('context menu names must be between 1-32 characters')
+    return name
+
+
+def _validate_auto_complete_callback(
+    callback: AutocompleteCallback[GroupT, ChoiceT]
+) -> AutocompleteCallback[GroupT, ChoiceT]:
+
+    requires_binding = is_inside_class(callback)
+    required_parameters = 3 + requires_binding
+    callback.requires_binding = requires_binding
+    params = inspect.signature(callback).parameters
+    if len(params) < required_parameters:
+        raise TypeError('autocomplete callback requires either 3 or 4 parameters to be passed')
+
+    return callback
+
+
+def _context_menu_annotation(annotation: Any, *, _none: type = NoneType) -> AppCommandType:
     if annotation is Message:
         return AppCommandType.message
 
@@ -184,9 +229,9 @@ def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('choices are only supported for integer, string, or number option types')
 
-        # There's a type safety hole if someone does Choice[float] as an annotation
-        # but the values are actually Choice[int]. Since the input-output is the same this feels
-        # safe enough to ignore.
+        if not all(param.type == choice._option_type for choice in choices):
+            raise TypeError('choices must all have the same inner option type as the parameter choice type')
+
         param.choices = choices
 
     if all_choices:
@@ -206,7 +251,12 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
             raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-        param.autocomplete = callback
+        if param.is_choice_annotation():
+            raise TypeError(
+                'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
+            )
+
+        param.autocomplete = _validate_auto_complete_callback(callback)
 
     if autocomplete:
         first = next(iter(autocomplete))
@@ -303,8 +353,6 @@ class Command(Generic[GroupT, P, T]):
     ------------
     name: :class:`str`
         The name of the application command.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the command is called.
     description: :class:`str`
         The description of the application command. This shows up in the UI to describe
         the application command.
@@ -319,24 +367,52 @@ class Command(Generic[GroupT, P, T]):
         description: str,
         callback: CommandCallback[GroupT, P, T],
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
-        self.name: str = name
+        self.name: str = validate_name(name)
         self.description: str = description
+        self._attr: Optional[str] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
         self.on_error: Optional[Error[GroupT]] = None
+        self.module: Optional[str] = callback.__module__
+
+        # Unwrap __self__ for bound methods
+        try:
+            self.binding = callback.__self__
+            self._callback = callback = callback.__func__
+        except AttributeError:
+            pass
+
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(
+            callback, '__discord_app_commands_default_guilds__', None
+        )
+
+        if self._guild_ids is not None and self.parent is not None:
+            raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
+
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
+
+    @property
+    def callback(self) -> CommandCallback[GroupT, P, T]:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
+        return self._callback
 
     def _copy_with_binding(self, binding: GroupT) -> Command:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
+        copy._attr = self._attr
         copy._callback = self._callback
         copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
+        copy.module = self.module
         copy.binding = binding
         return copy
 
@@ -415,8 +491,11 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
-        if self.binding is not None:
-            choices = await param.autocomplete(self.binding, interaction, value, namespace)
+        if param.autocomplete.requires_binding:
+            if self.binding is not None:
+                choices = await param.autocomplete(self.binding, interaction, value, namespace)
+            else:
+                raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
             choices = await param.autocomplete(interaction, value, namespace)
 
@@ -520,7 +599,12 @@ class Command(Generic[GroupT, P, T]):
             if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
                 raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
-            param.autocomplete = coro
+            if param.is_choice_annotation():
+                raise TypeError(
+                    'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
+                )
+
+            param.autocomplete = _validate_auto_complete_callback(coro)
             return coro
 
         return decorator
@@ -541,8 +625,6 @@ class ContextMenu:
     ------------
     name: :class:`str`
         The name of the context menu.
-    callback: :ref:`coroutine <coroutine>`
-        The coroutine that is executed when the context menu is called.
     type: :class:`.AppCommandType`
         The type of context menu application command.
     """
@@ -553,8 +635,9 @@ class ContextMenu:
         name: str,
         callback: ContextMenuCallback,
         type: AppCommandType,
+        guild_ids: Optional[List[int]] = None,
     ):
-        self.name: str = name
+        self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
         self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
@@ -562,6 +645,13 @@ class ContextMenu:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
         self._param_name = param
         self._annotation = annotation
+        self.module: Optional[str] = callback.__module__
+        self._guild_ids = guild_ids
+
+    @property
+    def callback(self) -> ContextMenuCallback:
+        """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
+        return self._callback
 
     @classmethod
     def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
@@ -573,6 +663,8 @@ class ContextMenu:
         self.type = type
         self._param_name = param
         self._annotation = annotation
+        self.module = callback.__module__
+        self._guild_ids = None
         return self
 
     def to_dict(self) -> Dict[str, Any]:
@@ -610,25 +702,33 @@ class Group:
         The parent group. ``None`` if there isn't one.
     """
 
-    __discord_app_commands_group_children__: ClassVar[List[Union[Command, Group]]] = []
+    __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
+    __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
+    __discord_app_commands_has_module__: bool = False
 
     def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
-        cls.__discord_app_commands_group_children__ = children = [
-            member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
-        ]
+        if not cls.__discord_app_commands_group_children__:
+            children: List[Union[Command[Any, ..., Any], Group]] = [
+                member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
+            ]
 
-        found = set()
-        for child in children:
-            if child.name in found:
-                raise TypeError(f'Command {child.name} is a duplicate')
-            found.add(child.name)
+            cls.__discord_app_commands_group_children__ = children
+
+            found = set()
+            for child in children:
+                if child.name in found:
+                    raise TypeError(f'Command {child.name!r} is a duplicate')
+                found.add(child.name)
+
+            if len(children) > 25:
+                raise TypeError('groups cannot have more than 25 commands')
 
         if name is MISSING:
-            cls.__discord_app_commands_group_name__ = _to_kebab_case(cls.__name__)
+            cls.__discord_app_commands_group_name__ = validate_name(_to_kebab_case(cls.__name__))
         else:
-            cls.__discord_app_commands_group_name__ = name
+            cls.__discord_app_commands_group_name__ = validate_name(name)
 
         if description is MISSING:
             if cls.__doc__ is None:
@@ -638,8 +738,8 @@ class Group:
         else:
             cls.__discord_app_commands_group_description__ = description
 
-        if len(children) > 25:
-            raise TypeError('groups cannot have more than 25 commands')
+        if cls.__module__ != __name__:
+            cls.__discord_app_commands_has_module__ = True
 
     def __init__(
         self,
@@ -647,32 +747,54 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
     ):
         cls = self.__class__
-        self.name: str = name if name is not MISSING else cls.__discord_app_commands_group_name__
+        self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
+        self._attr: Optional[str] = None
+        self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
             raise TypeError('groups must have a description')
 
         self.parent: Optional[Group] = parent
+        self.module: Optional[str]
+        if cls.__discord_app_commands_has_module__:
+            self.module = cls.__module__
+        else:
+            try:
+                # This is pretty hacky
+                # It allows the module to be fetched if someone just constructs a bare Group object though.
+                self.module = inspect.currentframe().f_back.f_globals['__name__']  # type: ignore
+            except (AttributeError, IndexError):
+                self.module = None
 
-        self._children: Dict[str, Union[Command, Group]] = {
-            child.name: child._copy_with_binding(self) for child in self.__discord_app_commands_group_children__
-        }
+        self._children: Dict[str, Union[Command, Group]] = {}
 
-        for child in self._children.values():
+        for child in self.__discord_app_commands_group_children__:
             child.parent = self
+            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
+            self._children[child.name] = child
+            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, child._attr, child)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
 
-    def _copy_with_binding(self, binding: Group) -> Group:
+    def __set_name__(self, owner: Type[Any], name: str) -> None:
+        self._attr = name
+        self.module = owner.__module__
+
+    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
+        copy._guild_ids = self._guild_ids
         copy.description = self.description
         copy.parent = self.parent
+        copy.module = self.module
+        copy._attr = self._attr
         copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
         return copy
 
@@ -692,10 +814,29 @@ class Group:
         """Optional[:class:`Group`]: The parent of this group."""
         return self.parent
 
-    def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
+    def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
 
-    async def on_error(self, interaction: Interaction, command: Command, error: AppCommandError) -> None:
+    @property
+    def commands(self) -> List[Union[Command[Any, ..., Any], Group]]:
+        """List[Union[:class:`Command`, :class:`Group`]]: The commands that this group contains."""
+        return list(self._children.values())
+
+    def walk_commands(self) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
+        """An iterator that recursively walks through all commands that this group contains.
+
+        Yields
+        ---------
+        Union[:class:`Command`, :class:`Group`]
+            The commands in this group.
+        """
+
+        for command in self._children.values():
+            yield command
+            if isinstance(command, Group):
+                yield from command.walk_commands()
+
+    async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
@@ -714,7 +855,7 @@ class Group:
 
         pass
 
-    def add_command(self, command: Union[Command, Group], /, *, override: bool = False):
+    def add_command(self, command: Union[Command[Any, ..., Any], Group], /, *, override: bool = False) -> None:
         """Adds a command or group to this group's internal list of commands.
 
         Parameters
@@ -731,7 +872,8 @@ class Group:
             The command or group is already registered. Note that the :attr:`CommandAlreadyRegistered.guild_id`
             attribute will always be ``None`` in this case.
         ValueError
-            There are too many commands already registered.
+            There are too many commands already registered or the group is too
+            deeply nested.
         TypeError
             The wrong command type was passed.
         """
@@ -739,15 +881,24 @@ class Group:
         if not isinstance(command, (Command, Group)):
             raise TypeError(f'expected Command or Group not {command.__class__!r}')
 
+        if isinstance(command, Group) and self.parent is not None:
+            # In a tree like so:
+            # <group>
+            #   <self>
+            #     <group>
+            # this needs to be forbidden
+            raise ValueError('groups can only be nested at most one level')
+
         if not override and command.name in self._children:
             raise CommandAlreadyRegistered(command.name, guild_id=None)
 
         self._children[command.name] = command
+        command.parent = self
         if len(self._children) > 25:
             raise ValueError('maximum number of child commands exceeded')
 
-    def remove_command(self, name: str, /) -> Optional[Union[Command, Group]]:
-        """Remove a command or group from the internal list of commands.
+    def remove_command(self, name: str, /) -> Optional[Union[Command[Any, ..., Any], Group]]:
+        """Removes a command or group from the internal list of commands.
 
         Parameters
         -----------
@@ -763,7 +914,7 @@ class Group:
 
         self._children.pop(name, None)
 
-    def get_command(self, name: str, /) -> Optional[Union[Command, Group]]:
+    def get_command(self, name: str, /) -> Optional[Union[Command[Any, ..., Any], Group]]:
         """Retrieves a command or group from its name.
 
         Parameters
@@ -937,7 +1088,7 @@ def describe(**parameters: str) -> Callable[[T], T]:
     return decorator
 
 
-def choices(**parameters: List[Choice]) -> Callable[[T], T]:
+def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
     r"""Instructs the given parameters by their name to use the given choices for their choices.
 
     Example:
@@ -1051,6 +1202,57 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
                 inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
+    r"""Associates the given guilds with the command.
+
+    When the command instance is added to a :class:`CommandTree`, the guilds that are
+    specified by this decorator become the default guilds that it's added to rather
+    than being a global command.
+
+    .. note::
+
+        Due to an implementation quirk and Python limitation, if this is used in conjunction
+        with the :meth:`CommandTree.command` or :meth:`CommandTree.context_menu` decorator
+        then this must go below that decorator.
+
+    Example:
+
+    .. code-block:: python3
+
+            MY_GUILD_ID = discord.Object(...)  # Guild ID here
+
+            @app_commands.command()
+            @app_commands.guilds(MY_GUILD_ID)
+            async def bonk(interaction: discord.Interaction):
+                await interaction.response.send_message('Bonk', ephemeral=True)
+
+    Parameters
+    -----------
+    \*guild_ids: Union[:class:`int`, :class:`~discord.abc.Snowflake`]
+        The guilds to associate this command with. The command tree will
+        use this as the default when added rather than adding it as a global
+        command.
+    """
+
+    defaults: List[int] = [g if isinstance(g, int) else g.id for g in guild_ids]
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, (Group, ContextMenu)):
+            inner._guild_ids = defaults
+        elif isinstance(inner, Command):
+            if inner.parent is not None:
+                raise ValueError('child commands of a group cannot have default guilds set')
+
+            inner._guild_ids = defaults
+        else:
+            # Runtime attribute assignment
+            inner.__discord_app_commands_default_guilds__ = defaults  # type: ignore
 
         return inner
 

@@ -91,6 +91,9 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.snowflake import (
+        SnowflakeList,
+    )
 
     PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
@@ -145,8 +148,6 @@ class User(Snowflake, Protocol):
         The user's username.
     discriminator: :class:`str`
         The user's discriminator.
-    avatar: :class:`~discord.Asset`
-        The avatar asset the user has.
     bot: :class:`bool`
         If the user is a bot account.
     """
@@ -155,7 +156,6 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
-    avatar: Asset
     bot: bool
 
     @property
@@ -166,6 +166,11 @@ class User(Snowflake, Protocol):
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given user."""
+        raise NotImplementedError
+
+    @property
+    def avatar(self) -> Optional[Asset]:
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
         raise NotImplementedError
 
 
@@ -706,7 +711,14 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Any = _undefined,
+        reason: Optional[str] = None,
+        **permissions: bool,
+    ) -> None:
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -750,8 +762,8 @@ class GuildChannel:
             await channel.set_permissions(member, overwrite=overwrite)
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
 
         Parameters
@@ -915,7 +927,7 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def move(self, **kwargs) -> None:
+    async def move(self, **kwargs: Any) -> None:
         """|coro|
 
         A rich interface to help move a channel relative to other channels.
@@ -933,8 +945,8 @@ class GuildChannel:
         .. versionadded:: 1.7
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1183,6 +1195,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1193,7 +1206,7 @@ class Messageable:
         *,
         tts: bool = ...,
         embed: Embed = ...,
-        files: List[File] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1201,6 +1214,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1210,7 +1224,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
+        embeds: Sequence[Embed] = ...,
         file: File = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1219,6 +1233,7 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
@@ -1228,8 +1243,8 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
-        files: List[File] = ...,
+        embeds: Sequence[Embed] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1237,26 +1252,28 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
+        suppress_embeds: bool = ...,
     ) -> Message:
         ...
 
     async def send(
         self,
-        content=None,
+        content: Optional[str] = None,
         *,
-        tts=None,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        stickers=None,
-        delete_after=None,
-        nonce=None,
-        allowed_mentions=None,
-        reference=None,
-        mention_author=None,
-        view=None,
-    ):
+        tts: bool = False,
+        embed: Optional[Embed] = None,
+        embeds: Optional[Sequence[Embed]] = None,
+        file: Optional[File] = None,
+        files: Optional[Sequence[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = None,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        view: Optional[View] = None,
+        suppress_embeds: bool = False,
+    ) -> Message:
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1276,8 +1293,8 @@ class Messageable:
         **Specifying both parameters will lead to an exception**.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1330,6 +1347,10 @@ class Messageable:
             A list of stickers to upload. Must be a maximum of 3.
 
             .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -1357,20 +1378,27 @@ class Messageable:
         previous_allowed_mention = state.allowed_mentions
 
         if stickers is not None:
-            stickers = [sticker.id for sticker in stickers]
+            sticker_ids: SnowflakeList = [sticker.id for sticker in stickers]
         else:
-            stickers = MISSING
+            sticker_ids = MISSING
 
         if reference is not None:
             try:
-                reference = reference.to_message_reference_dict()
+                reference_dict = reference.to_message_reference_dict()
             except AttributeError:
                 raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
-            reference = MISSING
+            reference_dict = MISSING
 
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__!r}')
+
+        if suppress_embeds:
+            from .message import MessageFlags  # circular import
+
+            flags = MessageFlags._from_value(4)
+        else:
+            flags = MISSING
 
         with handle_message_parameters(
             content=content,
@@ -1381,11 +1409,12 @@ class Messageable:
             embeds=embeds if embeds is not None else MISSING,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
-            message_reference=reference,
+            message_reference=reference_dict,
             previous_allowed_mentions=previous_allowed_mention,
             mention_author=mention_author,
-            stickers=stickers,
+            stickers=sticker_ids,
             view=view,
+            flags=flags,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
@@ -1669,14 +1698,14 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = VoiceClient,
+        cls: Callable[[Client, Connectable], T] = MISSING,
     ) -> T:
         """|coro|
 
-        Connects to voice and creates a :class:`VoiceClient` to establish
+        Connects to voice and creates a :class:`~discord.VoiceClient` to establish
         your connection to the voice server.
 
-        This requires :attr:`Intents.voice_states`.
+        This requires :attr:`~discord.Intents.voice_states`.
 
         Parameters
         -----------
@@ -1686,7 +1715,7 @@ class Connectable(Protocol):
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
             or the gateway goes down.
-        cls: Type[:class:`VoiceProtocol`]
+        cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
 
@@ -1712,7 +1741,12 @@ class Connectable(Protocol):
             raise ClientException('Already connected to a voice channel.')
 
         client = state._get_client()
-        voice = cls(client, self)
+
+        if cls is MISSING:
+            cls = VoiceClient
+
+        # The type checker doesn't understand that VoiceClient *is* T here.
+        voice: T = cls(client, self)  # type: ignore
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class.')

@@ -211,7 +211,7 @@ class Role(Hashable):
     def __repr__(self) -> str:
         return f'<Role id={self.id} name={self.name!r}>'
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Role) or not isinstance(self, Role):
             return NotImplemented
 
@@ -241,7 +241,7 @@ class Role(Hashable):
     def __gt__(self, other: Any) -> bool:
         return Role.__lt__(other, self)
 
-    def __ge__(self, other: Any) -> bool:
+    def __ge__(self, other: object) -> bool:
         r = Role.__lt__(self, other)
         if r is NotImplemented:
             return NotImplemented
@@ -411,8 +411,8 @@ class Role(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------

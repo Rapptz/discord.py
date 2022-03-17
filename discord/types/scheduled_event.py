@@ -35,9 +35,10 @@ EntityType = Literal[1, 2, 3]
 
 class _BaseGuildScheduledEventOptional(TypedDict, total=False):
     creator_id: Optional[Snowflake]
-    description: str
+    description: Optional[str]
     creator: User
     user_count: int
+    image: Optional[str]
 
 
 class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
@@ -48,7 +49,6 @@ class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
-    image: Optional[str]
 
 
 class _VoiceChannelScheduledEventOptional(_BaseGuildScheduledEvent, total=False):
@@ -75,7 +75,7 @@ class EntityMetadata(TypedDict):
 class ExternalScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Literal[None]
     entity_metadata: EntityMetadata
-    scheduled_end_time: Optional[str]
+    scheduled_end_time: str
     entity_type: Literal[3]
 
 

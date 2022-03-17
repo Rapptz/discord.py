@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
 
 
-from .channel import ChannelType, ChannelTypeWithoutThread, ThreadMetadata
+from .channel import ChannelTypeWithoutThread, ThreadMetadata
 from .threads import ThreadType
 from .member import Member
 from .message import Attachment
@@ -122,6 +122,7 @@ ApplicationCommandInteractionDataOption = Union[
 
 class _BaseApplicationCommandInteractionDataOptional(TypedDict, total=False):
     resolved: ResolvedData
+    guild_id: Snowflake
 
 
 class _BaseApplicationCommandInteractionData(_BaseApplicationCommandInteractionDataOptional):
@@ -158,7 +159,7 @@ class _BaseMessageComponentInteractionData(TypedDict):
 
 
 class ButtonMessageComponentInteractionData(_BaseMessageComponentInteractionData):
-    type: Literal[2]
+    component_type: Literal[2]
 
 
 class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData):
@@ -201,6 +202,8 @@ InteractionData = Union[
 class _BaseInteractionOptional(TypedDict, total=False):
     guild_id: Snowflake
     channel_id: Snowflake
+    locale: str
+    guild_locale: str
 
 
 class _BaseInteraction(_BaseInteractionOptional):

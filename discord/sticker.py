@@ -228,7 +228,7 @@ class StickerItem(_StickerTag):
             The retrieved sticker.
         """
         data: StickerPayload = await self._state.http.get_sticker(self.id)
-        cls, _ = _sticker_factory(data['type'])  # type: ignore
+        cls, _ = _sticker_factory(data['type'])
         return cls(state=self._state, data=data)
 
 

@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
     from .view import View
     from ..emoji import Emoji
+    from ..types.components import ButtonComponent as ButtonComponentPayload
 
 V = TypeVar('V', bound='View', covariant=True)
 
@@ -124,7 +125,7 @@ class Button(Item[V]):
             style=style,
             emoji=emoji,
         )
-        self.row = row
+        self.row: Optional[int] = row
 
     @property
     def style(self) -> ButtonStyle:
@@ -132,7 +133,7 @@ class Button(Item[V]):
         return self._underlying.style
 
     @style.setter
-    def style(self, value: ButtonStyle):
+    def style(self, value: ButtonStyle) -> None:
         self._underlying.style = value
 
     @property
@@ -144,7 +145,7 @@ class Button(Item[V]):
         return self._underlying.custom_id
 
     @custom_id.setter
-    def custom_id(self, value: Optional[str]):
+    def custom_id(self, value: Optional[str]) -> None:
         if value is not None and not isinstance(value, str):
             raise TypeError('custom_id must be None or str')
 
@@ -156,7 +157,7 @@ class Button(Item[V]):
         return self._underlying.url
 
     @url.setter
-    def url(self, value: Optional[str]):
+    def url(self, value: Optional[str]) -> None:
         if value is not None and not isinstance(value, str):
             raise TypeError('url must be None or str')
         self._underlying.url = value
@@ -167,7 +168,7 @@ class Button(Item[V]):
         return self._underlying.disabled
 
     @disabled.setter
-    def disabled(self, value: bool):
+    def disabled(self, value: bool) -> None:
         self._underlying.disabled = bool(value)
 
     @property
@@ -176,7 +177,7 @@ class Button(Item[V]):
         return self._underlying.label
 
     @label.setter
-    def label(self, value: Optional[str]):
+    def label(self, value: Optional[str]) -> None:
         self._underlying.label = str(value) if value is not None else value
 
     @property
@@ -185,7 +186,7 @@ class Button(Item[V]):
         return self._underlying.emoji
 
     @emoji.setter
-    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]):  # type: ignore
+    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]) -> None:
         if value is not None:
             if isinstance(value, str):
                 self._underlying.emoji = PartialEmoji.from_str(value)
@@ -212,7 +213,7 @@ class Button(Item[V]):
     def type(self) -> ComponentType:
         return self._underlying.type
 
-    def to_component_dict(self):
+    def to_component_dict(self) -> ButtonComponentPayload:
         return self._underlying.to_dict()
 
     def is_dispatchable(self) -> bool:
@@ -223,7 +224,7 @@ class Button(Item[V]):
             return self.url is not None
         return super().is_persistent()
 
-    def refresh_component(self, button: ButtonComponent) -> None:
+    def _refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
 
 

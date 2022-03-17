@@ -1,3 +1,5 @@
+# This example requires the 'message_content' privileged intent to function.
+
 from discord.ext import commands
 import discord
 
@@ -29,19 +31,20 @@ class PersistentView(discord.ui.View):
 
 class PersistentViewBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('$'))
-        self.persistent_views_added = False
+        intents = discord.Intents.default()
+        intents.message_content = True
+
+        super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
+
+    async def setup_hook(self) -> None:
+        # Register the persistent view for listening here.
+        # Note that this does not send the view to any message.
+        # In order to do this you need to first send a message with the View, which is shown below.
+        # If you have the message_id you can also pass it as a keyword argument, but for this example
+        # we don't have one.
+        self.add_view(PersistentView())
 
     async def on_ready(self):
-        if not self.persistent_views_added:
-            # Register the persistent view for listening here.
-            # Note that this does not send the view to any message.
-            # In order to do this you need to first send a message with the View, which is shown below.
-            # If you have the message_id you can also pass it as a keyword argument, but for this example
-            # we don't have one.
-            self.add_view(PersistentView())
-            self.persistent_views_added = True
-
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 

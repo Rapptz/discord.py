@@ -41,9 +41,9 @@ class PartialPresenceUpdate(TypedDict):
 
 
 class ClientStatus(TypedDict, total=False):
-    desktop: str
-    mobile: str
-    web: str
+    desktop: StatusType
+    mobile: StatusType
+    web: StatusType
 
 
 class ActivityTimestamps(TypedDict, total=False):
@@ -112,3 +112,4 @@ class Activity(_BaseActivity, total=False):
     session_id: Optional[str]
     instance: bool
     buttons: List[ActivityButton]
+    sync_id: str

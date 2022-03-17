@@ -32,6 +32,7 @@ from os import PathLike
 from typing import (
     Dict,
     TYPE_CHECKING,
+    Sequence,
     Union,
     List,
     Optional,
@@ -40,6 +41,7 @@ from typing import (
     Tuple,
     ClassVar,
     Optional,
+    Type,
     overload,
 )
 
@@ -71,7 +73,6 @@ if TYPE_CHECKING:
         MessageReference as MessageReferencePayload,
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
-        Reaction as ReactionPayload,
     )
 
     from .types.components import Component as ComponentPayload
@@ -87,13 +88,14 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
     from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
+
 
 __all__ = (
     'Attachment',
@@ -104,7 +106,7 @@ __all__ = (
 )
 
 
-def convert_emoji_reaction(emoji):
+def convert_emoji_reaction(emoji: Union[EmojiInputType, Reaction]) -> str:
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
 
@@ -171,9 +173,25 @@ class Attachment(Hashable):
         The attachment's description. Only applicable to images.
 
         .. versionadded:: 2.0
+    ephemeral: :class:`bool`
+        Whether the attachment is ephemeral.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('id', 'size', 'height', 'width', 'filename', 'url', 'proxy_url', '_http', 'content_type', 'description')
+    __slots__ = (
+        'id',
+        'size',
+        'height',
+        'width',
+        'filename',
+        'url',
+        'proxy_url',
+        '_http',
+        'content_type',
+        'description',
+        'ephemeral',
+    )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
@@ -186,6 +204,7 @@ class Attachment(Hashable):
         self._http = state.http
         self.content_type: Optional[str] = data.get('content_type')
         self.description: Optional[str] = data.get('description')
+        self.ephemeral: bool = data.get('ephemeral', False)
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
@@ -199,7 +218,7 @@ class Attachment(Hashable):
 
     async def save(
         self,
-        fp: Union[io.BufferedIOBase, PathLike],
+        fp: Union[io.BufferedIOBase, PathLike[Any]],
         *,
         seek_begin: bool = True,
         use_cached: bool = False,
@@ -345,8 +364,8 @@ class Attachment(Hashable):
 
 
 class DeletedReferencedMessage:
-    """A special sentinel type that denotes whether the
-    resolved message referenced message had since been deleted.
+    """A special sentinel type given when the resolved message reference
+    points to a deleted message.
 
     The purpose of this class is to separate referenced messages that could not be
     fetched and those that were previously fetched but have since been deleted.
@@ -493,7 +512,7 @@ class MessageReference:
     to_message_reference_dict = to_dict
 
 
-def flatten_handlers(cls):
+def flatten_handlers(cls: Type[Message]) -> Type[Message]:
     prefix = len('_handle_')
     handlers = [
         (key[prefix:], value)
@@ -1019,7 +1038,7 @@ class Message(Hashable):
         )
 
     @utils.cached_slot_property('_cs_system_content')
-    def system_content(self):
+    def system_content(self) -> Optional[str]:
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
@@ -1177,7 +1196,7 @@ class Message(Hashable):
         *,
         content: Optional[str] = ...,
         embed: Optional[Embed] = ...,
-        attachments: List[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1190,8 +1209,8 @@ class Message(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        embeds: List[Embed] = ...,
-        attachments: List[Union[Attachment, File]] = ...,
+        embeds: Sequence[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1203,8 +1222,8 @@ class Message(Hashable):
         self,
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
-        embeds: List[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         suppress: bool = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
@@ -1220,11 +1239,11 @@ class Message(Hashable):
             The ``suppress`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            Edits are no longer in-place, the newly edited role is returned instead.
+            Edits are no longer in-place, the newly edited message is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1289,6 +1308,7 @@ class Message(Hashable):
         previous_allowed_mentions = self._state.allowed_mentions
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
         else:
             flags = MISSING
 
@@ -1448,7 +1468,7 @@ class Message(Hashable):
     async def add_reaction(self, emoji: EmojiInputType, /) -> None:
         """|coro|
 
-        Add a reaction to the message.
+        Adds a reaction to the message.
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
@@ -1461,8 +1481,8 @@ class Message(Hashable):
             ``emoji`` parameter is now positional-only.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1498,8 +1518,8 @@ class Message(Hashable):
         the :class:`abc.Snowflake` abc.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1539,8 +1559,8 @@ class Message(Hashable):
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1578,7 +1598,14 @@ class Message(Hashable):
         """
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
-    async def create_thread(self, *, name: str, auto_archive_duration: ThreadArchiveDuration = MISSING) -> Thread:
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        reason: Optional[str] = None,
+    ) -> Thread:
         """|coro|
 
         Creates a public thread from this message.
@@ -1597,6 +1624,12 @@ class Message(Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             If not provided, the channel's default auto archive duration is used.
+        slowmode_delay: Optional[:class:`int`]
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            The maximum value possible is `21600`. By default no slowmode rate limit
+            if this is ``None``.
+        reason: Optional[:class:`str`]
+            The reason for creating a new thread. Shows up on the audit log.
 
         Raises
         -------
@@ -1621,10 +1654,12 @@ class Message(Hashable):
             self.id,
             name=name,
             auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
+            rate_limit_per_user=slowmode_delay,
+            reason=reason,
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
-    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         """|coro|
 
         A shortcut method to :meth:`.abc.Messageable.send` to reply to the
@@ -1633,8 +1668,8 @@ class Message(Hashable):
         .. versionadded:: 1.6
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Raises
         --------
@@ -1765,7 +1800,7 @@ class PartialMessage(Hashable):
 
     # Also needed for duck typing purposes
     # n.b. not exposed
-    pinned = property(None, lambda x, y: None)
+    pinned: Any = property(None, lambda x, y: None)
 
     def __repr__(self) -> str:
         return f'<PartialMessage id={self.id} channel={self.channel!r}>'
