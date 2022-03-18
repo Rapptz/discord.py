@@ -990,7 +990,7 @@ class clean_content(Converter[str]):
         if self.fix_channel_mentions and ctx.guild:
 
             def resolve_channel(id: int) -> str:
-                c = ctx.guild.get_channel(id)  # type: ignore
+                c = ctx.guild._resolve_channel(id)  # type: ignore
                 return f'#{c.name}' if c else '#deleted-channel'
 
         else:
