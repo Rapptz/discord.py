@@ -193,7 +193,7 @@ class Client:
     http_trace: :class:`aiohttp.TraceConfig`
         The trace configuration to use for tracking HTTP requests the library does using ``aiohttp``.
         This allows you to check requests the library is using. For more information, check the
-        `aiottp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
+        `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
 
         .. versionadded:: 2.0
 
