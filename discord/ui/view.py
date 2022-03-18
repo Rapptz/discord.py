@@ -254,7 +254,10 @@ class View:
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
-
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        
         Parameters
         -----------
         item: :class:`Item`
@@ -283,6 +286,9 @@ class View:
 
     def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from the view.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
 
         Parameters
         -----------
@@ -299,7 +305,11 @@ class View:
         return self
 
     def clear_items(self) -> Self:
-        """Removes all items from the view."""
+        """Removes all items from the view.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
         self.children.clear()
         self.__weights.clear()
         return self
