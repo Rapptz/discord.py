@@ -53,6 +53,7 @@ import aiohttp
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
 from .file import File
+from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
 
@@ -63,7 +64,6 @@ if TYPE_CHECKING:
 
     from .ui.view import View
     from .embeds import Embed
-    from .mentions import AllowedMentions
     from .message import Attachment
     from .flags import MessageFlags
     from .enums import (
@@ -217,12 +217,9 @@ def handle_message_parameters(
         payload['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
     if mention_author is not None:
-        try:
-            payload['allowed_mentions']['replied_user'] = mention_author
-        except KeyError:
-            payload['allowed_mentions'] = {
-                'replied_user': mention_author,
-            }
+        if 'allowed_mentions' not in payload:
+            payload['allowed_mentions'] = AllowedMentions().to_dict()
+        payload['allowed_mentions']['replied_user'] = mention_author
 
     if attachments is MISSING:
         attachments = files

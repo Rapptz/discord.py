@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, TYPE_CHECKING, Any, Union
+from typing import Union, List, TYPE_CHECKING, Any
 
 # fmt: off
 __all__ = (
