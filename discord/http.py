@@ -331,6 +331,7 @@ class HTTPClient:
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
+        http_trace: Optional[aiohttp.TraceConfig] = None,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self.connector: aiohttp.BaseConnector = connector or MISSING
@@ -341,6 +342,7 @@ class HTTPClient:
         self.bot_token: bool = False
         self.proxy: Optional[str] = proxy
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
+        self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
         self.use_clock: bool = not unsync_clock
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -540,7 +542,10 @@ class HTTPClient:
             self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
 
         self.__session = aiohttp.ClientSession(
-            connector=self.connector, ws_response_class=DiscordClientWebSocketResponse, loop=self.loop
+            connector=self.connector,
+            ws_response_class=DiscordClientWebSocketResponse,
+            loop=self.loop,
+            trace_configs=None if self.http_trace is None else [self.http_trace],
         )
         self._global_over = asyncio.Event()
         self._global_over.set()
