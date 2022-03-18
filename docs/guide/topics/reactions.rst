@@ -34,7 +34,7 @@ Which would add a reaction to the message like so:
     Additionally, if no one else has reacted to the message using this emoji, you will also need the
     :attr:`~Permissions.add_reactions` permission.
 
-:meth:`~Message.add_reaction` can also take many types, not just :class:`str`. This includes :class:`~Emoji` or :class:`~PartialEmoji`.
+In addition to :class:`str`, you can also pass :class:`~Emoji`, :class:`~PartialEmoji`, or :class:`~Reaction` to :meth:`~Message.add_reaction`.
 For example, the following shows an alternative way to add a custom emoji reaction:
 
 .. code-block:: python3
@@ -48,12 +48,12 @@ Because of this, to add 😄 / ``:smile:`` you would do either of the following:
 
 .. code-block:: python3
 
-    # pass the unicode emoji via the hexadecimal value
+    # Pass the emoji codepoint via 32-bit hexadecimal escape.
+    # For more information, see: https://docs.python.org/3/howto/unicode.html#the-string-type
     await message.add_reaction("\U0001f604")
     
-    # or
-
-    # get the unicode emoji via the name (obtained via the unicode database)
+    # Alternatively, use the codepoint's name.
+    # See: https://docs.python.org/3/library/unicodedata.html
     await message.add_reaction("\N{SMILING FACE WITH OPEN MOUTH AND SMILING EYES}")
 
 This would then result in:
@@ -85,13 +85,13 @@ This removes a custom emoji reaction with the id ``819046807370989599`` added by
 .. image:: /images/guide/topics/reactions/remove_reaction_after.png
     :scale: 50%
 
-Removing all reactions of a single emoji from a message is also possible: 
+Removing all reactions of a given emoji from a message is also possible: 
 
 .. code-block:: python3
 
     await message.clear_reaction("<:amogus:819046807370989599>")
 
-It is also possible to remove all reactions from a message, not just a singular member or emoji:
+And we can also remove all reactions entirely:
 
 .. code-block:: python3
 
