@@ -9,7 +9,7 @@ When creating commands or handling events, you often find yourself wanting to wa
 
 What is ``wait_for``?
 ~~~~~~~~~~~~~~~~~~~~~
-:meth:`Client.wait_for` for is similar to client.event/listen, however instead of calling a function, it instead holds execution of your code until the event has been dispatched, and returns the data that was in the event. 
+:meth:`Client.wait_for` is similar to client.event/listen, however instead of calling a function, it instead holds execution of your code until the event has been dispatched, and returns the data that was in the event. 
 
 
 Here is a quick example
