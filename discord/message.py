@@ -592,9 +592,9 @@ class Message(Hashable):
 
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a Discord limitation, not one with the library.
-    channel_mentions: List[:class:`abc.GuildChannel`]
-        A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
-        then the list is always empty.
+    channel_mentions: List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]
+        A list of :class:`abc.GuildChannel` or :class:`Thread` that were mentioned. If the message is
+        in a private message then the list is always empty.
     role_mentions: List[:class:`Role`]
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
