@@ -58,8 +58,6 @@ if TYPE_CHECKING:
     from .context import Context
     from .cog import Cog
 
-    from ._types import ContextT
-
 __all__ = (
     'Paginator',
     'HelpCommand',
@@ -73,8 +71,8 @@ if TYPE_CHECKING:
     P = ParamSpec('P')
 else:
     P = TypeVar('P')
-    ContextT = TypeVar('ContextT', bound='Context')
 
+ContextT = TypeVar('ContextT', bound='Context')
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
