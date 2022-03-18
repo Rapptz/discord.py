@@ -51,7 +51,7 @@ CoroFunc = Callable[..., Coro[Any]]
 
 ContextT = TypeVar('ContextT', bound='Context')
 _Bot = Union['Bot', 'AutoShardedBot']
-BotT = TypeVar('BotT', bound=_Bot)
+BotT = TypeVar('BotT', bound=_Bot, covariant=True)
 
 Check = Union[Callable[["Cog", "ContextT"], MaybeCoro[bool]], Callable[["ContextT"], MaybeCoro[bool]]]
 Hook = Union[Callable[["Cog", "ContextT"], Coro[Any]], Callable[["ContextT"], Coro[Any]]]
