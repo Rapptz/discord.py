@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
+from typing_extensions import Self
 from functools import partial
 from itertools import groupby
 
@@ -252,7 +253,7 @@ class View:
             view.add_item(_component_to_item(component))
         return view
 
-    def add_item(self, item: Item[Any]) -> View:
+    def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
 
         Parameters
@@ -281,7 +282,7 @@ class View:
         self.children.append(item)
         return self
 
-    def remove_item(self, item: Item[Any]) -> View:
+    def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from the view.
 
         Parameters
@@ -298,7 +299,7 @@ class View:
             self.__weights.remove_item(item)
         return self
 
-    def clear_items(self) -> View:
+    def clear_items(self) -> Self:
         """Removes all items from the view."""
         self.children.clear()
         self.__weights.clear()
