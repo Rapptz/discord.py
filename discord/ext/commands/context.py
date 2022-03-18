@@ -354,6 +354,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         from .core import Group, Command, wrap_callback
         from .errors import CommandError
+        from .help import _context
 
         bot = self.bot
         cmd = bot.help_command
@@ -361,45 +362,39 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if cmd is None:
             return None
 
-        cmd = cmd.copy()
-        cmd.context = self  # type: ignore
+        _context.set(self)
+
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
-            mapping = cmd.get_bot_mapping()
+            entity = cmd.get_bot_mapping()
             injected = wrap_callback(cmd.send_bot_help)
-            try:
-                return await injected(mapping)
-            except CommandError as e:
-                await cmd.on_help_command_error(self, e)
+        else:
+            entity = args[0]
+            if isinstance(entity, str):
+                entity = bot.get_cog(entity) or bot.get_command(entity)
+
+            if entity is None:
                 return None
 
-        entity = args[0]
-        if isinstance(entity, str):
-            entity = bot.get_cog(entity) or bot.get_command(entity)
+            try:
+                entity.qualified_name
+            except AttributeError:
+                # if we're here then it's not a cog, group, or command.
+                return None
 
-        if entity is None:
-            return None
+            await cmd.prepare_help_command(self, entity.qualified_name)
 
-        try:
-            entity.qualified_name
-        except AttributeError:
-            # if we're here then it's not a cog, group, or command.
-            return None
-
-        await cmd.prepare_help_command(self, entity.qualified_name)
-
-        try:
             if hasattr(entity, '__cog_commands__'):
                 injected = wrap_callback(cmd.send_cog_help)
-                return await injected(entity)
             elif isinstance(entity, Group):
                 injected = wrap_callback(cmd.send_group_help)
-                return await injected(entity)
             elif isinstance(entity, Command):
                 injected = wrap_callback(cmd.send_command_help)
-                return await injected(entity)
             else:
                 return None
+
+        try:
+            await injected(entity)
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
 
