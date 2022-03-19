@@ -1160,6 +1160,24 @@ main img.align-right {
   text-align: left !important;
 }
 
+.markdown-example {
+  display: block;
+  text-align: center;
+}
+
+.markdown-example::after {
+  content: "is displayed as";
+  display: block;
+  margin-top: .25em;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Necessary because of specificity quirks */
+table.docutils tbody tr td p.markdown-example {
+  margin-bottom: .25em;
+}
+
 /* hide the welcome text */
 section#welcome-to-discord-py > h1 {
   display: none;
