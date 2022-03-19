@@ -99,7 +99,7 @@ class Object(Hashable):
         self.type: Type[abc.Snowflake] = type or self.__class__
 
     def __repr__(self) -> str:
-        return f'<Object id={self.id!r}>'
+        return f'<Object id={self.id!r} type={self.type!r}>'
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.type):
