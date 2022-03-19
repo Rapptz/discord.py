@@ -982,7 +982,7 @@ class clean_content(Converter[str]):
 
             def resolve_member(id: int) -> str:
                 m = _utils_get(msg.mentions, id=id) or ctx.bot.get_user(id)
-                return f'@{m.name}' if m else '@deleted-user'
+                return f'@{m.display_name}' if m else '@deleted-user'
 
             def resolve_role(id: int) -> str:
                 return '@deleted-role'
@@ -990,7 +990,7 @@ class clean_content(Converter[str]):
         if self.fix_channel_mentions and ctx.guild:
 
             def resolve_channel(id: int) -> str:
-                c = ctx.guild.get_channel(id)  # type: ignore
+                c = ctx.guild._resolve_channel(id)  # type: ignore
                 return f'#{c.name}' if c else '#deleted-channel'
 
         else:
