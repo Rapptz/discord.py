@@ -30,11 +30,14 @@ from .utils import snowflake_time
 from typing import (
     SupportsInt,
     TYPE_CHECKING,
+    Type,
+    Optional,
     Union,
 )
 
 if TYPE_CHECKING:
     import datetime
+    from . import abc
 
     SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
 
@@ -77,18 +80,26 @@ class Object(Hashable):
     -----------
     id: :class:`int`
         The ID of the object.
+    type: Optional[Type[:class:`abc.Snowflake`]]
+        The type of the object, if specified.
+
+        .. versionadded:: 2.0
     """
 
-    def __init__(self, id: SupportsIntCast):
+    def __init__(self, id: SupportsIntCast, *, type: Optional[Type[abc.Snowflake]] = None):
         try:
             id = int(id)
         except ValueError:
             raise TypeError(f'id parameter must be convertable to int not {id.__class__!r}') from None
-        else:
-            self.id = id
+        self.id: int = id
+        self.type: Optional[Type[abc.Snowflake]] = type
 
     def __repr__(self) -> str:
         return f'<Object id={self.id!r}>'
+
+    @property
+    def __class__(self) -> Type:
+        return self.type or type(self)
 
     @property
     def created_at(self) -> datetime.datetime:
