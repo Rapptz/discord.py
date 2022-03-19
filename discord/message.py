@@ -678,7 +678,6 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         embed: Optional[Embed] = ...,
         attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
         view: Optional[View] = ...,
@@ -692,7 +691,6 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         embeds: Sequence[Embed] = ...,
         attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
         view: Optional[View] = ...,
@@ -705,7 +703,6 @@ class PartialMessage(Hashable):
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         view: Optional[View] = MISSING,
@@ -715,9 +712,6 @@ class PartialMessage(Hashable):
         Edits the message.
 
         The content must be able to be transformed into a string via ``str(content)``.
-
-        .. versionchanged:: 1.3
-            The ``suppress`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
             Edits are no longer in-place, the newly edited message is returned instead.
@@ -748,11 +742,6 @@ class PartialMessage(Hashable):
                 New files will always appear after current attachments.
 
             .. versionadded:: 2.0
-        suppress: :class:`bool`
-            Whether to suppress embeds for the message. This removes
-            all the embeds if set to ``True``. If set to ``False``
-            this brings the embeds back if they were suppressed.
-            Using this parameter requires :attr:`~.Permissions.manage_messages`.
         delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just edited. If the deletion fails,
@@ -787,17 +776,12 @@ class PartialMessage(Hashable):
         """
 
         previous_allowed_mentions = self._state.allowed_mentions
-        if suppress:
-            flags = MessageFlags._from_value(4)
-        else:
-            flags = MISSING
 
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
         params = handle_message_parameters(
             content=content,
-            flags=flags,
             embed=embed,
             embeds=embeds,
             attachments=attachments,
@@ -864,7 +848,7 @@ class PartialMessage(Hashable):
 
         await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
         # pinned exists on PartialMessage for duck typing purposes
-        self.pinned = True  # type: ignore
+        self.pinned = True
 
     async def unpin(self, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -893,7 +877,7 @@ class PartialMessage(Hashable):
 
         await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
         # pinned exists on PartialMessage for duck typing purposes
-        self.pinned = False  # type: ignore
+        self.pinned = False
 
     async def add_reaction(self, emoji: EmojiInputType, /) -> None:
         """|coro|
@@ -1767,6 +1751,152 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        embeds: Sequence[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        suppress: bool = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        view: Optional[View] = ...,
+    ) -> Message:
+        ...
+
+    async def edit(
+        self,
+        content: Optional[str] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        suppress: bool = False,
+        delete_after: Optional[float] = None,
+        allowed_mentions: Optional[AllowedMentions] = MISSING,
+        view: Optional[View] = MISSING,
+    ) -> Message:
+        """|coro|
+
+        Edits the message.
+
+        The content must be able to be transformed into a string via ``str(content)``.
+
+        .. versionchanged:: 1.3
+            The ``suppress`` keyword-only parameter was added.
+
+        .. versionchanged:: 2.0
+            Edits are no longer in-place, the newly edited message is returned instead.
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The new content to replace the message with.
+            Could be ``None`` to remove the content.
+        embed: Optional[:class:`Embed`]
+            The new embed to replace the original with.
+            Could be ``None`` to remove the embed.
+        embeds: List[:class:`Embed`]
+            The new embeds to replace the original with. Must be a maximum of 10.
+            To remove all embeds ``[]`` should be passed.
+
+            .. versionadded:: 2.0
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
+
+            .. note::
+
+                New files will always appear after current attachments.
+
+            .. versionadded:: 2.0
+        suppress: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
+
+            .. versionadded:: 1.4
+        view: Optional[:class:`~discord.ui.View`]
+            The updated view to update this message with. If ``None`` is passed then
+            the view is removed.
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions or
+            edited a message's content or embed that isn't yours.
+        TypeError
+            You specified both ``embed`` and ``embeds``
+
+        Returns
+        --------
+        :class:`Message`
+            The newly edited message.
+        """
+
+        previous_allowed_mentions = self._state.allowed_mentions
+        if suppress is not MISSING:
+            flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
+        else:
+            flags = MISSING
+
+        if view is not MISSING:
+            self._state.prevent_view_updates_for(self.id)
+
+        params = handle_message_parameters(
+            content=content,
+            flags=flags,
+            embed=embed,
+            embeds=embeds,
+            attachments=attachments,
+            view=view,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_allowed_mentions,
+        )
+        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+        message = Message(state=self._state, channel=self.channel, data=data)
+
+        if view and not view.is_finished():
+            self._state.store_view(view, self.id)
+
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+
+        return message
 
     async def add_files(self, *files: File) -> Message:
         r"""|coro|
