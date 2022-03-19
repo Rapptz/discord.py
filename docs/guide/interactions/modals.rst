@@ -14,14 +14,13 @@ This section will detail how to create and use these modals in your code.
 Defining a Modal
 ------------------
 
-Modals share structural similarities with :ref:`Views <guide_interactions_views>`, both are used to design component based UIs 
-and share 
+Modals share structural similarities with :ref:`Views <guide_interactions_views>`, both are used to design component based UIs.
 
 Modals are created by subclassing the :class:`~discord.ui.Modal` class.
 
-For example, the following class definition:
+For example:
 
-.. code-block:: python3
+.. code-block:: python
 
     class FeedbackForm(discord.ui.Modal, title="Feedback"):
         name = discord.ui.TextInput(label="Name")
@@ -35,7 +34,7 @@ For example, the following class definition:
 
             await interaction.response.send_message(f'Thank you {self.name.value}, your submission was recorded.')
 
-produces a modal which appears on Discord as:
+This produces a modal which appears on Discord as:
 
 .. image:: /images/guide/interactions/modals1.png
 
@@ -47,7 +46,7 @@ Title
 
 When defining the class a ``title`` keyword argument can be passed which sets the default title of the modal.
 Instances of the modal class can override this title by setting the ``title`` attribute or passing a ``title`` keyword argument to
-the constructor. Titles are required and are displayed at the top of the modal.
+the constructor. The title is required and is displayed at the top of the modal.
 
 
 Fields
@@ -60,20 +59,21 @@ Discord requires a modal contain between 1 and 5 fields.
 
 .. note:: 
 
-    Each modal fields is displayed in definition order. Our example from above defines ``name`` before it defines ``feedback``, 
+    Each modal field is displayed in definition order. Our example from above defines ``name`` before it defines ``feedback``, 
     that order is preserved when the FeedbackForm modal is displayed on Discord.
 
-Fields can also be added or removed from a modal instance using the :meth:`~discord.ui.View.add_item` and :meth:`~discord.ui.View.remove_item` methods.
+Fields can also be added to or removed from a modal instance using the :meth:`~discord.ui.Modal.add_item` and :meth:`~discord.ui.Modal.remove_item` methods.
 
 .. warning:: 
 
-    Ensure that class-attribute defined fields do not conflict with attributes or methods defined in the class, as this
-    will cause unexpected behavior.
+    Ensure that class-attribute defined fields do not conflict with attributes or methods defined in the :class:`parent class <discord.ui.Modal>`, 
+    as this will cause unexpected behaviour.
 
 
-You can customize individual modal instances with normal attribute access and assignment, For example, to change the label of the ``name`` field to ``"Your Name"``:
+You can customize individual modal instances with normal attribute access and assignment, 
+For example, to change the label of the ``name`` field to ``"Your Name"`` you can do the following:
 
-.. code-block:: python3
+.. code-block:: python
 
     form = FeedbackForm()
     form.name.label = "Your Name"
@@ -98,7 +98,7 @@ This method is passed the exception raised, and the :class:`~discord.Interaction
 send a response to the user.
 
 
-.. code-block:: python3
+.. code-block:: python
     :emphasize-lines: 13-15
 
     class FeedbackForm(discord.ui.Modal, title="Feedback"):
@@ -126,7 +126,7 @@ A modal can be sent by calling the :meth:`InteractionResponse.send_modal` method
 For example, you can respond with a modal when somebody uses a slash command:
 
 
-.. code-block:: python3
+.. code-block:: python
 
     @discord.app_commands.command()
     async def feedback(interaction: discord.Interaction) -> None:

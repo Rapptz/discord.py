@@ -23,7 +23,7 @@ For example, a ban command:
 
 The first step is to create a :class:`~discord.ui.View` subclass. Let's call it ``Confirm``
 
-.. code-block:: python3
+.. code-block:: python
 
     class Confirm(discord.ui.View):
         
@@ -57,7 +57,7 @@ Firstly we can create a component by subclassing the related component class, fo
 
 Our code might look like this:
 
-.. code-block:: python3
+.. code-block:: python
 
     class YesButton(discord.ui.Button[Confirm]):
         def __init__(self) -> None:
@@ -81,7 +81,7 @@ Now we've made our first component, we should add it to the view.
 The :class:`~discord.ui.View` class has a :meth:`~discord.ui.View.add_item` method, which takes a component as a parameter.
 so in our ``__init__`` method we can add:
 
-.. code-block:: python3
+.. code-block:: python
     :emphasize-lines: 7
 
     class Confirm(discord.ui.View):
@@ -104,8 +104,8 @@ In reality, our components are relatively simple, so we can use a helper functio
 
 In this case, we're creating a button we can use the :func:`~discord.ui.button` decorator inside our ``View`` like so:
 
-.. code-block:: python3
-    :emphasize-lines: 12-15
+.. code-block:: python
+    :emphasize-lines: 12-19
 
     class Confirm(discord.ui.View):
 
@@ -146,14 +146,14 @@ In our case we're creating a confirmation prompt for our ban command, so we'll w
 
 Our command might look like this:
 
-.. code-block:: python3
+.. code-block:: python
 
     @discord.app_commands.command()
     @discord.app_commands.describe(member="The member to ban.")
     async def ban(interaction: discord.Interaction, member: discord.Member) -> None:
         """Ban a member from the server."""
         confirmation = Confirm(interaction.user)
-        await confirmation.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
+        await interaction.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
         await confirmation.wait()
         if confirmation.result:
             await member.ban()
@@ -190,7 +190,7 @@ a user can select to `1`.
 
 To start out our code might look like this:
 
-.. code-block:: python3
+.. code-block:: python
 
     class RoleSelector(discord.ui.View):
         def __init__(self) -> None:
@@ -219,7 +219,7 @@ Since we could have multiple role selectors, we'll use the ID of the message the
 
 After adding these details our code will look something like this:
 
-.. code-block:: python3
+.. code-block:: python
     :emphasize-lines: 2,5-9
 
     class RoleSelector(discord.ui.View):
@@ -252,14 +252,14 @@ override the members roles.
 
 Our function body might look like this:
 
-.. code-block:: python3
+.. code-block:: python
     :emphasize-lines: 21-24
 
     class RoleSelector(discord.ui.View):
-        def __init__(self, guild: discord.Guild, roles: List[discord.Role]) -> None:
+        def __init__(self, message_id: int, roles: List[discord.Role]) -> None:
             super().__init__(timeout=None)
 
-            self.selector.custom_id = f'role_selector_{guild.id}'
+            self.selector.custom_id = f'role_selector_{message_id}'
 
             self.roles: List[discord.Role] = roles
             for role in roles:
@@ -276,9 +276,9 @@ Our function body might look like this:
             interaction: discord.Interaction,
         ) -> None:
             role_id = int(component.values[0])
-            role = discord.utils.get(self.roles, id=role_id)
-            new_roles = set(interaction.user.roles) - set(self.roles) | {role}
-            await interaction.user.edit(roles=new_roles)
+            role = discord.Object(id=role_id)
+            await interaction.user.remove_roles(*self.roles)
+            await interaction.user.add_roles(role)
 
 
 Making a View Persist
@@ -288,33 +288,33 @@ Now our view class is complete we can manually attach an instance to a message t
 When we're doing this the ``custom_id`` can be set to anything since the view handling will be done 
 when we mark the view as persistent.
 
-.. code-block:: python3
+.. code-block:: python
 
-    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031]
+    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031, 673195396834656257]
     roles = [guild.get_role(id) for id in ROLE_IDS]
-    await channel.send('Choose your house', view=RoleSelector(0, roles))
+    await channel.send('Choose your house', view=RoleSelector(0, roles)) # we don't know the message ID yet.
 
 Once we have a message ID we just need to create an instance of our view and attach it to the :class:`~discord.Client`
 with the :meth:`~discord.Client.add_view` method.
 
-.. code-block:: python3
+.. code-block:: python
 
     GUILD_ID = 336642139381301249
     SELECTOR_MESSAGE_ID = 881049369850306610
-    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031]
+    ROLE_IDS = [490320652230852629, 714516281293799438, 859169678966784031, 673195396834656257]
 
-    client = discord.Client()
-    client.views_set = False
+    class MyClient(discord.Client):
 
-    @client.event
-    async def on_ready():
-        if not client.views_set:
-            guild = client.get_guild(GUILD_ID)
-            roles = [guild.get_role(id) for id in ROLE_IDS]
-            client.add_view(RoleSelector(SELECTOR_MESSAGE_ID, roles))
-            client.views_set = True
+        async def setup_role_selector(self) -> None:
+            await self.wait_until_ready()
+            guild = self.get_guild(GUILD_ID)
+            roles = [guild.get_role() for id in ROLE_IDS]
+            client.add_view(RoleSelector(SELECTOR_MESSAGE_ID, roles), message_id=SELECTOR_MESSAGE_ID)
 
+        async def setup_hook(self) -> None:
+            asyncio.create_task(self.setup_role_selector())
 
+    client = MyClient()
     client.run(...)
 
 If we did everything correctly, the user should be able to select a role and the role should be assigned to the user.
