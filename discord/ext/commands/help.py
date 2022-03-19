@@ -222,6 +222,7 @@ def _not_overridden(f: FuncT) -> FuncT:
 
 _context: ContextVar[Optional[Context]] = ContextVar('context', default=None)
 
+
 class HelpCommand(HelpCommandCommand, Generic[ContextT]):
     r"""The base implementation for help command formatting.
 
