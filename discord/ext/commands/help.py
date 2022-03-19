@@ -46,11 +46,11 @@ from typing import (
 
 import discord.utils
 
-from .core import Group, Command
+from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, Self
+    import inspect
 
     import discord.abc
 
@@ -66,11 +66,6 @@ __all__ = (
 )
 
 T = TypeVar('T')
-
-if TYPE_CHECKING:
-    P = ParamSpec('P')
-else:
-    P = TypeVar('P')
 
 ContextT = TypeVar('ContextT', bound='Context')
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
@@ -257,13 +252,6 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
     MENTION_PATTERN = re.compile('|'.join(MENTION_TRANSFORMS.keys()))
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
-        # we need to wrap the command callback to ensure context is correctly set.
-        functools.update_wrapper(cls._set_context, cls.command_callback)
-        cls._set_context.__qualname__ = 'command_callback'
-        self = super().__new__(cls)
-        return self
-
     def __init__(
         self,
         *,
@@ -278,6 +266,9 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         attrs.setdefault('help', 'Shows this message')
         self._cog: Optional[Cog] = None
         super().__init__(self._set_context, **attrs)
+        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
+            self.command_callback, globals(), skip_parameters=1
+        )
 
     async def __call__(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
         return await self.command_callback(context, *args, **kwargs)

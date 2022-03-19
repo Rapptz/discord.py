@@ -127,12 +127,14 @@ def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
 def get_signature_parameters(
     function: Callable[..., Any],
     globalns: Dict[str, Any],
+    *,
+    skip_parameters: Optional[int] = None,
 ) -> Dict[str, inspect.Parameter]:
     signature = inspect.signature(function)
     params = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
-    required_params = discord.utils.is_inside_class(function) + 1
+    required_params = discord.utils.is_inside_class(function) + 1 if skip_parameters is None else skip_parameters
     if len(signature.parameters) < required_params:
         raise TypeError(f'Command signature requires at least {required_params - 1} parameter(s)')
 
