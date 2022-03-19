@@ -98,7 +98,7 @@ class Object(Hashable):
         return f'<Object id={self.id!r}>'
 
     @property
-    def __class__(self) -> Type:
+    def __class__(self) -> type:
         return self.type or type(self)
 
     @property
