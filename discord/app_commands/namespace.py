@@ -113,6 +113,14 @@ class Namespace:
     +-------------------------------------------+-------------------------------------------------------------------------------+
     | :attr:`.AppCommandOptionType.attachment`  | :class:`~discord.Attachment`                                                  |
     +-------------------------------------------+-------------------------------------------------------------------------------+
+
+    .. note::
+
+        In autocomplete interactions, the namespace might not be validated or filled in. Discord does not
+        send the resolved data as well, so this means that certain fields end up just as IDs rather than
+        the resolved data. In these cases, a :class:`discord.Object` is returned instead.
+
+        This is a Discord limitation.
     """
 
     def __init__(
@@ -147,7 +155,7 @@ class Namespace:
                     # servers will still have them so this needs to be handled.
                     key = ResolveKey(id=snowflake, type=opt_type)
 
-                value = completed.get(key)
+                value = completed.get(key) or Object(id=int(snowflake))
                 self.__dict__[name] = value
 
     @classmethod
