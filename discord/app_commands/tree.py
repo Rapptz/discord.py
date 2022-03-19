@@ -138,6 +138,11 @@ class CommandTree(Generic[ClientT]):
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
 
+    @property
+    def active_guild_ids(self) -> Set[int]:
+        """Set[:class:`int`]: A :class:`set` of the guild IDs that have commands added."""
+        return self._guild_commands.keys() | {g for _, g, _ in self._context_menus if g is not None}
+
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
         """|coro|
 
