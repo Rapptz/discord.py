@@ -271,7 +271,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         )
 
     async def __call__(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
-        return await self.command_callback(context, *args, **kwargs)
+        return await self._set_context(context, *args, **kwargs)
 
     async def _set_context(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
         _context.set(context)
