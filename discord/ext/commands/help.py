@@ -74,6 +74,7 @@ else:
 
 ContextT = TypeVar('ContextT', bound='Context')
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+HelpCommandCommand = Command[Optional['Cog'], ... if TYPE_CHECKING else Any, Any]
 
 MISSING: Any = discord.utils.MISSING
 
@@ -221,8 +222,7 @@ def _not_overridden(f: FuncT) -> FuncT:
 
 _context: ContextVar[Optional[Context]] = ContextVar('context', default=None)
 
-
-class HelpCommand(Command[Optional['Cog'], ... if TYPE_CHECKING else Any, Any], Generic[ContextT]):
+class HelpCommand(HelpCommandCommand, Generic[ContextT]):
     r"""The base implementation for help command formatting.
 
     Attributes
