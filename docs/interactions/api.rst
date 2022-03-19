@@ -465,6 +465,9 @@ Decorators
 .. autofunction:: discord.app_commands.choices
     :decorator:
 
+.. autofunction:: discord.app_commands.check
+    :decorator:
+
 .. autofunction:: discord.app_commands.autocomplete
     :decorator:
 
@@ -518,6 +521,9 @@ Exceptions
 .. autoexception:: discord.app_commands.TransformerError
     :members:
 
+.. autoexception:: discord.app_commands.CheckFailure
+    :members:
+
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
     :members:
 
@@ -536,6 +542,7 @@ Exception Hierarchy
         - :exc:`~discord.app_commands.AppCommandError`
             - :exc:`~discord.app_commands.CommandInvokeError`
             - :exc:`~discord.app_commands.TransformerError`
+            - :exc:`~discord.app_commands.CheckFailure`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
