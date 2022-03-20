@@ -2151,6 +2151,9 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         self.id: int = id
         self.type: Optional[ChannelType] = type
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} type={self.type!r}>'
+
     async def _get_channel(self) -> PartialMessageable:
         return self
 
