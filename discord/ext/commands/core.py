@@ -284,9 +284,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         requirements are met (e.g. ``?foo a b c`` when only expecting ``a``
         and ``b``). Otherwise :func:`.on_command_error` and local error handlers
         are called with :exc:`.TooManyArguments`. Defaults to ``True``.
-    cooldown: Optional[:class:`Cooldown`]
-        The cooldown of a command when invoked or ``None`` if the command
-        doesn't have a registered cooldown.
     cooldown_after_parsing: :class:`bool`
         If ``True``\, cooldown processing is done after argument parsing,
         which calls converters. If ``False`` then cooldown processing is done
@@ -662,6 +659,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     @property
     def cooldown(self) -> Optional[Cooldown]:
+        """Optional[:class:`Cooldown`]:
+        The cooldown of a command when invoked or ``None`` if the command
+        doesn't have a registered cooldown.
+        
+        .. versionadded:: 2.0
+        """
         return self._buckets._cooldown
     
     @property
