@@ -256,6 +256,7 @@ class View:
         """Adds an item to the view.
         This function returns the class instance to allow for fluent-style
         chaining.
+
         Parameters
         -----------
         item: :class:`Item`
