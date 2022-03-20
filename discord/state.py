@@ -847,9 +847,11 @@ class ConnectionState:
             return
 
         thread = Thread(guild=guild, state=guild._state, data=data)
-        has_thread = guild.get_thread(thread.id)
         guild._add_thread(thread)
-        if not has_thread:
+        
+        if thread.newly_created:
+            self.dispatch('thread_create', thread)
+        else:
             self.dispatch('thread_join', thread)
 
     def parse_thread_update(self, data: gw.ThreadUpdateEvent) -> None:

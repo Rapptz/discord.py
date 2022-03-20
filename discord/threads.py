@@ -124,6 +124,9 @@ class Thread(Messageable, Hashable):
         Usually a value of 60, 1440, 4320 and 10080.
     archive_timestamp: :class:`datetime.datetime`
         An aware timestamp of when the thread's archived status was last updated in UTC.
+    newly_created: :class:`bool`
+        Denotes if this :class:`Thread` is newly created. This will be ``True`` when the thread
+        was created, but will be ``False`` if the client has joined the thread.
     """
 
     __slots__ = (
@@ -138,6 +141,7 @@ class Thread(Messageable, Hashable):
         'last_message_id',
         'message_count',
         'member_count',
+        'newly_created',
         'slowmode_delay',
         'me',
         'locked',
@@ -177,6 +181,7 @@ class Thread(Messageable, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
+        self.newly_created: bool = data.get('newly_created', False)
         self._unroll_metadata(data['thread_metadata'])
 
         self.me: Optional[ThreadMember]
