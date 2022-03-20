@@ -1315,7 +1315,7 @@ class Message(Hashable):
         if content is not MISSING:
             previous_allowed_mentions = self._state.allowed_mentions
         else:
-            previous_allowed_mentions = MISSING
+            previous_allowed_mentions = None
 
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
