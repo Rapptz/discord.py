@@ -125,8 +125,8 @@ class Thread(Messageable, Hashable):
     archive_timestamp: :class:`datetime.datetime`
         An aware timestamp of when the thread's archived status was last updated in UTC.
     newly_created: :class:`bool`
-        Denotes if this :class:`Thread` is newly created. This will be ``True`` when the thread
-        was created, but will be ``False`` if the client has joined the thread.
+        This will be ``True`` when the thread is first created, otherwise ``False``. This allows
+        the client to distinguish between joining a thread and when a thread is created.
     """
 
     __slots__ = (
