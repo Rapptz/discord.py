@@ -1446,7 +1446,7 @@ def check(predicate: Check) -> Callable[[T], T]:
         def is_me():
             def predicate(interaction: discord.Interaction) -> bool:
                 return interaction.user.id == 85309593344815104
-            return commands.check(predicate)
+            return app_commands.check(predicate)
 
         @tree.command()
         @is_me()
