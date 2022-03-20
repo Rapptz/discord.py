@@ -190,6 +190,12 @@ class Client:
         To enable these events, this must be set to ``True``. Defaults to ``False``.
 
         .. versionadded:: 2.0
+    http_trace: :class:`aiohttp.TraceConfig`
+        The trace configuration to use for tracking HTTP requests the library does using ``aiohttp``.
+        This allows you to check requests the library is using. For more information, check the
+        `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -208,7 +214,14 @@ class Client:
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
-        self.http: HTTPClient = HTTPClient(self.loop, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock)
+        http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
+        self.http: HTTPClient = HTTPClient(
+            self.loop,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            unsync_clock=unsync_clock,
+            http_trace=http_trace,
+        )
 
         self._handlers: Dict[str, Callable[..., None]] = {
             'ready': self._handle_ready,

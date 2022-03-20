@@ -3066,7 +3066,7 @@ class Guild(Hashable):
         user: Snowflake,
         *,
         reason: Optional[str] = None,
-        delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1,
+        delete_message_days: int = 1,
     ) -> None:
         """|coro|
 
@@ -3390,7 +3390,7 @@ class Guild(Hashable):
 
         await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
 
-    async def chunk(self, *, cache: bool = True) -> None:
+    async def chunk(self, *, cache: bool = True) -> List[Member]:
         """|coro|
 
         Requests all members that belong to this guild. In order to use this,
@@ -3409,13 +3409,20 @@ class Guild(Hashable):
         -------
         ClientException
             The members intent is not enabled.
+
+        Returns
+        --------
+        List[:class:`Member`]
+            The list of members in the guild.
         """
 
         if not self._state._intents.members:
             raise ClientException('Intents.members must be enabled to use this.')
 
         if not self._state.is_guild_evicted(self):
-            await self._state.chunk_guild(self, cache=cache)
+            return await self._state.chunk_guild(self, cache=cache)
+
+        return []
 
     async def query_members(
         self,

@@ -252,9 +252,10 @@ class View:
             view.add_item(_component_to_item(component))
         return view
 
-    def add_item(self, item: Item[Any]) -> None:
+    def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
-
+        This function returns the class instance to allow for fluent-style
+        chaining.
         Parameters
         -----------
         item: :class:`Item`
@@ -279,9 +280,12 @@ class View:
 
         item._view = self
         self.children.append(item)
+        return self
 
-    def remove_item(self, item: Item[Any]) -> None:
+    def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from the view.
+        This function returns the class instance to allow for fluent-style
+        chaining.
 
         Parameters
         -----------
@@ -295,11 +299,16 @@ class View:
             pass
         else:
             self.__weights.remove_item(item)
+        return self
 
-    def clear_items(self) -> None:
-        """Removes all items from the view."""
+    def clear_items(self) -> Self:
+        """Removes all items from the view.
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
         self.children.clear()
         self.__weights.clear()
+        return self
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|

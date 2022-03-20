@@ -34,6 +34,7 @@ __all__ = (
     'AppCommandError',
     'CommandInvokeError',
     'TransformerError',
+    'CheckFailure',
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
@@ -126,6 +127,17 @@ class TransformerError(AppCommandError):
                 result_type = result_type.__name__
 
         super().__init__(f'Failed to convert {value} to {result_type!s}')
+
+
+class CheckFailure(AppCommandError):
+    """An exception raised when check predicates in a command have failed.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+    """
+
+    pass
 
 
 class CommandAlreadyRegistered(AppCommandError):
