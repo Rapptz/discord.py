@@ -775,7 +775,10 @@ class PartialMessage(Hashable):
             The newly edited message.
         """
 
-        previous_allowed_mentions = self._state.allowed_mentions
+        if content is not MISSING:
+            previous_allowed_mentions = self._state.allowed_mentions
+        else:
+            previous_allowed_mentions = None
 
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
@@ -1874,7 +1877,11 @@ class Message(PartialMessage, Hashable):
             The newly edited message.
         """
 
-        previous_allowed_mentions = self._state.allowed_mentions
+        if content is not MISSING:
+            previous_allowed_mentions = self._state.allowed_mentions
+        else:
+            previous_allowed_mentions = None
+
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
             flags.suppress_embeds = suppress
