@@ -2116,7 +2116,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
 class PartialMessageable(discord.abc.Messageable, Hashable):
     """Represents a partial messageable to aid with working messageable channels when
-    only a channel ID are present.
+    only a channel ID is present.
 
     The only way to construct this class is through :meth:`Client.get_partial_messageable`.
 
