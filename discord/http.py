@@ -208,13 +208,14 @@ def handle_message_parameters(
     if flags is not MISSING:
         payload['flags'] = flags.value
 
-    if allowed_mentions:
-        if previous_allowed_mentions is not None:
-            payload['allowed_mentions'] = previous_allowed_mentions.merge(allowed_mentions).to_dict()
-        else:
-            payload['allowed_mentions'] = allowed_mentions.to_dict()
-    elif previous_allowed_mentions is not None:
-        payload['allowed_mentions'] = previous_allowed_mentions.to_dict()
+    if content is not MISSING:
+        if allowed_mentions:
+            if previous_allowed_mentions is not None:
+                payload['allowed_mentions'] = previous_allowed_mentions.merge(allowed_mentions).to_dict()
+            else:
+                payload['allowed_mentions'] = allowed_mentions.to_dict()
+        elif previous_allowed_mentions is not None:
+            payload['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
     if mention_author is not None:
         if 'allowed_mentions' not in payload:
