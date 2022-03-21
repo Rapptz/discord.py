@@ -963,6 +963,8 @@ class CommandTree(Generic[ClientT]):
         try:
             await ctx_menu._invoke(interaction, value)
         except AppCommandError as e:
+            if ctx_menu.on_error is not None:
+                await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, ctx_menu, e)
 
     async def call(self, interaction: Interaction) -> None:

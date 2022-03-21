@@ -88,9 +88,10 @@ else:
 T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
+UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
     Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
-    Callable[['Interaction', AppCommandError], Coro[Any]],
+    UnboundError,
 ]
 Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
 
@@ -727,6 +728,7 @@ class ContextMenu:
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
         self._guild_ids = guild_ids
+        self.on_error: Optional[UnboundError] = None
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
     @property
@@ -746,6 +748,7 @@ class ContextMenu:
         self._annotation = annotation
         self.module = callback.__module__
         self._guild_ids = None
+        self.on_error = None
         self.checks = getattr(callback, '__discord_app_commands_checks__', [])
         return self
 
@@ -773,6 +776,32 @@ class ContextMenu:
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
+
+    def error(self, coro: UnboundError) -> UnboundError:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in the body
+        of the command or during handling of the command. The error handler must take
+        2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
 
     def add_check(self, func: Check, /) -> None:
         """Adds a check to the command.
