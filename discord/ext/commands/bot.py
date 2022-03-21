@@ -667,6 +667,7 @@ class BotBase(GroupMixin[None]):
         self,
         name: str,
         /,
+        *,
         guild: Optional[Snowflake] = MISSING,
         guilds: List[Snowflake] = MISSING,
     ) -> Optional[Cog]:

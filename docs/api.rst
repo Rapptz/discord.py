@@ -3564,6 +3564,7 @@ Message
 
 .. autoclass:: Message()
     :members:
+    :inherited-members:
 
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
