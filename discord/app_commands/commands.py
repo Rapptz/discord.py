@@ -454,6 +454,23 @@ class Command(Generic[GroupT, P, T]):
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, self, error)
 
+    def _has_any_error_handlers(self) -> bool:
+        if self.on_error is not None:
+            return True
+
+        parent = self.parent
+        if parent is not None:
+            # Check if the on_error is overridden
+            if parent.__class__.on_error is not Group.on_error:
+                return True
+
+            if parent.parent is not None:
+                parent_cls = parent.parent.__class__
+                if parent_cls.on_error is not Group.on_error:
+                    return True
+
+        return False
+
     async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
         if not await self._check_can_run(interaction):
             raise CheckFailure(f'The check functions for command {self.name!r} failed.')
@@ -765,6 +782,9 @@ class ContextMenu:
 
         # Type checker does not understand negative narrowing cases like this function
         return await async_all(f(interaction) for f in predicates)  # type: ignore
+
+    def _has_any_error_handlers(self) -> bool:
+        return self.on_error is not None
 
     async def _invoke(self, interaction: Interaction, arg: Any):
         try:

@@ -677,7 +677,8 @@ class CommandTree(Generic[ClientT]):
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation prints the traceback to stderr if the command does
+        not have any error handlers attached to it.
 
         Parameters
         -----------
@@ -690,6 +691,9 @@ class CommandTree(Generic[ClientT]):
         """
 
         if command is not None:
+            if command._has_any_error_handlers():
+                return
+
             print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
         else:
             print(f'Ignoring exception in command tree:', file=sys.stderr)
