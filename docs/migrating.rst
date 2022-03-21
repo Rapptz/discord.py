@@ -110,6 +110,8 @@ Quick example:
     client = MyClient()
     client.run(TOKEN)
 
+With this change, constructor of :class:`Client` no longer accepts ``connector`` and ``loop`` parameters.
+
 In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
 see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
 
