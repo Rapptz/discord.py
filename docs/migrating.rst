@@ -110,6 +110,8 @@ Quick example:
     client = MyClient()
     client.run(TOKEN)
 
+With this change, constructor of :class:`Client` no longer accepts ``connector`` and ``loop`` parameters.
+
 In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
 see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
 
@@ -569,6 +571,7 @@ For convenience, :class:`Thread` has a set of properties and methods that return
 The following changes have been made:
 
 - :attr:`Message.channel` may now be a :class:`Thread`.
+- :attr:`Message.channel_mentions` list may now contain a :class:`Thread`.
 - :attr:`AuditLogEntry.target` may now be a :class:`Thread`.
 - :attr:`PartialMessage.channel` may now be a :class:`Thread`.
 - :attr:`Guild.get_channel` does not return :class:`Thread`\s.
