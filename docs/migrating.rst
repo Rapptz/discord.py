@@ -569,6 +569,7 @@ For convenience, :class:`Thread` has a set of properties and methods that return
 The following changes have been made:
 
 - :attr:`Message.channel` may now be a :class:`Thread`.
+- :attr:`Message.channel_mentions` list may now contain a :class:`Thread`.
 - :attr:`AuditLogEntry.target` may now be a :class:`Thread`.
 - :attr:`PartialMessage.channel` may now be a :class:`Thread`.
 - :attr:`Guild.get_channel` does not return :class:`Thread`\s.
