@@ -261,6 +261,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
     ) -> None:
         self.show_hidden: bool = show_hidden
         self.verify_checks: bool = verify_checks
+        self.command_attrs: Dict[str, Any]
         self.command_attrs = attrs = command_attrs if command_attrs is not MISSING else {}
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
