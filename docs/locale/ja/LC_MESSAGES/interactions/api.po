@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 03:48+0900\n"
-"PO-Revision-Date: 2022-03-09 13:28\n"
+"POT-Creation-Date: 2022-03-21 10:41+0000\n"
+"PO-Revision-Date: 2022-03-21 14:51\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -23,11 +23,11 @@ msgstr "インタラクションAPIリファレンス"
 
 #: ../../interactions/api.rst:6
 msgid "The following section outlines the API of interactions, as implemented by the library."
-msgstr ""
+msgstr "次のセクションでは、ライブラリによって実装されたインタラクションの API について概説します。"
 
 #: ../../interactions/api.rst:8
 msgid "For documentation about the rest of the library, check :doc:`/api`."
-msgstr ""
+msgstr "ライブラリの残りの部分のドキュメントについては、 :doc:`/api` を参照してください。"
 
 #: ../../interactions/api.rst:11
 msgid "Models"
@@ -35,7 +35,7 @@ msgstr "モデル"
 
 #: ../../interactions/api.rst:13
 msgid "Similar to :ref:`discord_api_models`, these are not meant to be constructed by the user."
-msgstr ""
+msgstr ":ref:`discord_api_models` と同様に、これらはユーザーが構築するものではありません。"
 
 #: ../../interactions/api.rst:16
 msgid "Interaction"
@@ -47,7 +47,7 @@ msgstr "Discordのインタラクションを表します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:3
 msgid "An interaction happens when a user does an action that needs to be notified. Current examples are slash commands and components."
-msgstr ""
+msgstr "インタラクションは、ユーザーに返信をする必要のあるアクションが行われた際に発生します。現在の例はスラッシュコマンドとコンポーネントです。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:10
 msgid "The interaction's ID."
@@ -68,10 +68,20 @@ msgstr "インタラクションのID。"
 #: ../../../discord/interactions.py:docstring of discord.Interaction.guild:0
 #: ../../docstring of discord.Interaction.channel:0
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:0
+#: ../../docstring of discord.Interaction.namespace:0
+#: ../../docstring of discord.Interaction.command:0
 #: ../../docstring of discord.Interaction.response:0
 #: ../../docstring of discord.Interaction.followup:0
 #: ../../../discord/interactions.py:docstring of discord.Interaction.created_at:0
 #: ../../../discord/interactions.py:docstring of discord.Interaction.expires_at:0
+#: ../../docstring of discord.InteractionMessage.clean_content:0
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.created_at:0
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.edited_at:0
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.jump_url:0
+#: ../../docstring of discord.InteractionMessage.raw_channel_mentions:0
+#: ../../docstring of discord.InteractionMessage.raw_mentions:0
+#: ../../docstring of discord.InteractionMessage.raw_role_mentions:0
+#: ../../docstring of discord.InteractionMessage.system_content:0
 #: ../../../discord/components.py:docstring of discord.components.Component:0
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:0
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:0
@@ -217,7 +227,7 @@ msgstr "型"
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.max_values:3
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.min_length:3
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.max_length:3
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:26
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
 msgid ":class:`int`"
 msgstr ":class:`int`"
 
@@ -231,7 +241,7 @@ msgstr ":class:`InteractionType`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:22
 msgid "The guild ID the interaction was sent from."
-msgstr ""
+msgstr "インタラクションが送信されたギルドのID。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:24
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:30
@@ -244,15 +254,15 @@ msgstr "Optional[:class:`int`]"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:28
 msgid "The channel ID the interaction was sent from."
-msgstr ""
+msgstr "インタラクションが送信されたチャンネルのID。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:34
 msgid "The application ID that the interaction was for."
-msgstr ""
+msgstr "インタラクションの対象となったアプリケーションのID。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:40
 msgid "The user or member that sent the interaction."
-msgstr ""
+msgstr "インタラクションを送信したユーザーまたはメンバー。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:42
 msgid "Union[:class:`User`, :class:`Member`]"
@@ -268,9 +278,12 @@ msgstr "Optional[:class:`Message`]"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:52
 msgid "The token to continue the interaction. These are valid for 15 minutes."
-msgstr ""
+msgstr "インタラクションを続行するのに使うトークン。有効期限は15分です。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:55
+#: ../../docstring of discord.InteractionMessage.clean_content:15
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.jump_url:3
+#: ../../docstring of discord.InteractionMessage.system_content:8
 #: ../../../discord/components.py:docstring of discord.components.TextInput:19
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:48
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:54
@@ -296,7 +309,7 @@ msgstr ""
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:15
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:12
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:20
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:24
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:32
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandAlreadyRegistered:11
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:11
 msgid ":class:`str`"
@@ -312,7 +325,7 @@ msgstr ":class:`dict`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:65
 msgid "The locale of the user invoking the interaction."
-msgstr ""
+msgstr "インタラクションを呼び出したユーザーのロケール。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:67
 msgid ":class:`Locale`"
@@ -320,15 +333,15 @@ msgstr ":class:`Locale`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:71
 msgid "The preferred locale of the guild the interaction was sent from, if any."
-msgstr ""
+msgstr "インタラクションの送信元のギルドの優先ロケール。もし無ければ ``None`` となります。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:73
 msgid "Optional[:class:`Locale`]"
-msgstr ""
+msgstr "Optional[:class:`Locale`]"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.client:1
 msgid "The client that is handling this interaction."
-msgstr ""
+msgstr "このインタラクションを処理するクライアント。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.client:3
 msgid ":class:`Client`"
@@ -336,43 +349,67 @@ msgstr ":class:`Client`"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.guild:1
 msgid "The guild the interaction was sent from."
-msgstr ""
+msgstr "インタラクションが送信されたギルド。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.guild:3
 msgid "Optional[:class:`Guild`]"
-msgstr ""
+msgstr "Optional[:class:`Guild`]"
 
 #: ../../docstring of discord.Interaction.channel:1
 msgid "The channel the interaction was sent from."
-msgstr ""
+msgstr "インタラクションが送信されたチャンネル。"
 
 #: ../../docstring of discord.Interaction.channel:3
 msgid "Note that due to a Discord limitation, DM channels are not resolved since there is no data to complete them. These are :class:`PartialMessageable` instead."
-msgstr ""
+msgstr "Discordの制限により、DMチャンネルは入れるデータがないため解決されないことに注意してください。代わりに :class:`PartialMessageable` があります。"
 
 #: ../../docstring of discord.Interaction.channel:6
 msgid "Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]"
-msgstr ""
+msgstr "Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:1
 msgid "The resolved permissions of the member in the channel, including overwrites."
-msgstr ""
+msgstr "権限の上書きを含むチャンネルでのメンバーの権限。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:3
 msgid "In a non-guild context where this doesn't apply, an empty permissions object is returned."
-msgstr ""
+msgstr "権限がないギルドではない場所の場合は、空のパーミッションオブジェクトが返されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:5
 msgid ":class:`Permissions`"
 msgstr ":class:`Permissions`"
 
+#: ../../docstring of discord.Interaction.namespace:1
+msgid "The resolved namespace for this interaction."
+msgstr ""
+
+#: ../../docstring of discord.Interaction.namespace:3
+msgid "If the interaction is not an application command related interaction or the client does not have a tree attached to it then this returns an empty namespace."
+msgstr ""
+
+#: ../../docstring of discord.Interaction.namespace:6
+msgid ":class:`app_commands.Namespace`"
+msgstr ""
+
+#: ../../docstring of discord.Interaction.command:1
+msgid "The command being called from this interaction."
+msgstr ""
+
+#: ../../docstring of discord.Interaction.command:4
+msgid "If the interaction is not an application command related interaction or the command is not found in the client's attached tree then ``None`` is returned."
+msgstr ""
+
+#: ../../docstring of discord.Interaction.command:7
+msgid "Optional[Union[:class:`app_commands.Command`, :class:`app_commands.ContextMenu`]]"
+msgstr ""
+
 #: ../../docstring of discord.Interaction.response:1
 msgid "Returns an object responsible for handling responding to the interaction."
-msgstr ""
+msgstr "インタラクションへの応答をするためのオブジェクトを返します。"
 
 #: ../../docstring of discord.Interaction.response:3
 msgid "A response can only be done once. If secondary messages need to be sent, consider using :attr:`followup` instead."
-msgstr ""
+msgstr "応答は一度だけ行うことができます。複数回にわたってメッセージを送信する必要がある場合は、代わりに :attr:`followup` を使用することを検討してください。"
 
 #: ../../docstring of discord.Interaction.response:6
 msgid ":class:`InteractionResponse`"
@@ -380,7 +417,7 @@ msgstr ":class:`InteractionResponse`"
 
 #: ../../docstring of discord.Interaction.followup:1
 msgid "Returns the follow up webhook for follow up interactions."
-msgstr ""
+msgstr "フォローアップのインタラクションのためのフォローアップウェブフックを返します。"
 
 #: ../../docstring of discord.Interaction.followup:3
 msgid ":class:`Webhook`"
@@ -388,22 +425,23 @@ msgstr ":class:`Webhook`"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.created_at:1
 msgid "When the interaction was created."
-msgstr ""
+msgstr "インタラクションが作成された時間を示します。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.created_at:3
 #: ../../../discord/interactions.py:docstring of discord.Interaction.expires_at:3
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.created_at:3
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandChannel.created_at:3
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:96
 msgid ":class:`datetime.datetime`"
-msgstr ""
+msgstr ":class:`datetime.datetime`"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.expires_at:1
 msgid "When the interaction expires."
-msgstr ""
+msgstr "インタラクションが期限切れになった時の時間を示します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.is_expired:1
 msgid ":class:`bool`: Returns ``True`` if the interaction is expired."
-msgstr ""
+msgstr ":class:`bool`：インタラクションが期限切れした場合には ``True`` を返します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:1
@@ -417,7 +455,17 @@ msgstr ""
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:1
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:1
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:1
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:1
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.interaction_check:1
@@ -436,21 +484,22 @@ msgstr ""
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:1
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.call:1
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:1
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.transform:1
 msgid "|coro|"
 msgstr "|coro|"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:3
 msgid "Fetches the original interaction response message associated with the interaction."
-msgstr ""
+msgstr "インタラクションに関連付けられた元のメッセージを取得します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:5
-msgid "If the interaction response was :meth:`InteractionResponse.send_message` then this would return the message that was sent using that response. Otherwise, this would return the message that triggered the interaction."
-msgstr ""
+msgid "If the interaction response was a newly created message (i.e. through :meth:`InteractionResponse.send_message` or :meth:`InteractionResponse.defer`, where ``thinking`` is ``True``) then this returns the message that was sent using that response. Otherwise, this returns the message that triggered the interaction (i.e. through a component)."
+msgstr "もしインタラクションの応答が新しく作成されたメッセージである場合（ :meth:`InteractionResponse.send_message` や ``thinking`` が ``True`` の :meth:`InteractionResponse.defer` 等）はそのメッセージを返します。それ以外の場合は、インタラクションが作成されたメッセージを返します。（コンポーネント 等）"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:9
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:10
 msgid "Repeated calls to this will return a cached value."
-msgstr ""
+msgstr "これを繰り返し呼び出すと、キャッシュされた値が返されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:0
@@ -464,7 +513,17 @@ msgstr ""
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:0
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:0
@@ -472,11 +531,14 @@ msgstr ""
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:0
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.append_option:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:0
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:0
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.call:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.add_command:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:0
@@ -484,19 +546,28 @@ msgstr ""
 msgid "Raises"
 msgstr "例外"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:11
-msgid "Fetching the original response message failed."
-msgstr ""
-
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:12
+msgid "Fetching the original response message failed."
+msgstr "元のインタラクションのメッセージの取得に失敗した際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:13
 msgid "The channel for the message could not be resolved."
-msgstr ""
+msgstr "メッセージのチャンネルの解決ができなかった際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:14
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:33
+msgid "The interaction response message does not exist."
+msgstr "インタラクションの応答のメッセージが存在しなかった場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.resolve:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.resolve:0
@@ -512,20 +583,25 @@ msgstr ""
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_commands:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.remove_command:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.get_command:0
 msgid "Returns"
 msgstr "戻り値"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:14
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:16
 msgid "The original interaction response message."
-msgstr ""
+msgstr "元のインタラクションのレスポンスのメッセージ。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.resolve:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.resolve:0
@@ -541,6 +617,7 @@ msgstr ""
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_commands:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.remove_command:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.get_command:0
 msgid "Return type"
@@ -548,15 +625,15 @@ msgstr "戻り値の型"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:3
 msgid "Edits the original interaction response message."
-msgstr ""
+msgstr "元のインタラクションのレスポンスのメッセージを編集します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:5
 msgid "This is a lower level interface to :meth:`InteractionMessage.edit` in case you do not want to fetch the message and save an HTTP request."
-msgstr ""
+msgstr "これは :meth:`InteractionMessage.edit` の下位互換のインターフェースで、メッセージを取得及び、HTTPリクエストを保存することが必要でない場合に使用します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:8
 msgid "This method is also the only way to edit the original message if the message sent was ephemeral."
-msgstr ""
+msgstr "また、メッセージがephemeralで送られた場合、この方法でのみメッセージを編集することができます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:0
@@ -567,7 +644,14 @@ msgstr ""
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:0
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:0
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:0
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:0
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.from_message:0
@@ -595,18 +679,27 @@ msgstr ""
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.item.Item.callback:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:0
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.remove_command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.get_commands:0
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:0
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:0
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.call:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.add_check:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.remove_check:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.add_check:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.remove_check:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.add_command:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.remove_command:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.get_command:0
@@ -615,6 +708,7 @@ msgstr ""
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:0
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.guilds:0
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.transform:0
@@ -624,49 +718,51 @@ msgstr "パラメータ"
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:11
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:5
 msgid "The content to edit the message with or ``None`` to clear it."
-msgstr ""
+msgstr "メッセージの内容を編集する場合はそのメッセージを、内容を削除する際は、``None`` を指定します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:13
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:8
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:7
 msgid "A list of embeds to edit the message with."
-msgstr ""
+msgstr "メッセージを編集するための埋め込みのリスト。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:15
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:10
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:9
 msgid "The embed to edit the message with. ``None`` suppresses the embeds. This should not be mixed with the ``embeds`` parameter."
-msgstr ""
+msgstr "メッセージを編集するための埋め込み。 ``None`` を渡すと埋め込みが除去されます。 ``embeds`` パラメータと同時に使用できません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:18
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:13
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:12
 msgid "A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed then all attachments are removed.  .. note::      New files will always appear after current attachments."
-msgstr ""
+msgstr "メッセージに保持される添付ファイル、及びアップロードする新しいファイルのリスト。 ``[]`` が渡された場合、全ての添付ファイルが削除されます。\n"
+".. note::\n"
+"    新しいファイルは常に現在の添付ファイルのあとに表示されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:18
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:13
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:12
 msgid "A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed then all attachments are removed."
-msgstr ""
+msgstr "メッセージ内で残す添付ファイルと、新規にアップロードする添付ファイルのリスト。 ``[]`` が渡された場合すべての添付ファイルが除去されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:23
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:18
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:17
 msgid "New files will always appear after current attachments."
-msgstr ""
+msgstr "新しいファイルは常に現在の添付ファイルのあとに表示されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:25
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:25
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:19
 msgid "Controls the mentions being processed in this message. See :meth:`.abc.Messageable.send` for more information."
-msgstr ""
+msgstr "このメッセージで処理されるメンションを制御します。詳細は :meth:`.abc.Messageable.send` を参照してください。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:28
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:20
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:22
 msgid "The updated view to update this message with. If ``None`` is passed then the view is removed."
-msgstr ""
+msgstr "このメッセージを更新するために更新されたビュー。 ``None`` が渡された場合、ビューは削除されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:32
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:27
@@ -676,30 +772,30 @@ msgstr ""
 msgid "Editing the message failed."
 msgstr "メッセージの編集に失敗した場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:33
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:34
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:27
 msgid "Edited a message that is not yours."
 msgstr "自分以外のメッセージを編集しようとした場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:34
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:28
 msgid "You specified both ``embed`` and ``embeds``"
 msgstr "``embed`` と ``embeds`` の両方を指定した場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:35
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:36
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:29
 msgid "The length of ``embeds`` was invalid."
 msgstr "``embeds`` の長さが無効だった場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:37
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:38
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:31
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:13
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:13
 msgid "The newly edited message."
 msgstr "編集された新しいメッセージ。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:38
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_message:39
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:32
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:14
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:14
@@ -712,7 +808,7 @@ msgstr "元のインタラクション応答メッセージを削除します。
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_message:5
 msgid "This is a lower level interface to :meth:`InteractionMessage.delete` in case you do not want to fetch the message and save an HTTP request."
-msgstr ""
+msgstr "これは :meth:`InteractionMessage.delete` の下位互換のインターフェースで、メッセージを取得及び、HTTPリクエストを保存することが必要でない場合に使用します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_message:8
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:11
@@ -720,6 +816,10 @@ msgid "Deleting the message failed."
 msgstr "メッセージの削除に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_message:9
+msgid "The interaction response message does not exist or has already been deleted."
+msgstr "インタラクションの応答のメッセージが存在しなかった場合、または既に削除されていた場合。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_message:10
 msgid "Deleted a message that is not yours."
 msgstr "自分以外のメッセージを削除しようとした場合。"
 
@@ -737,47 +837,47 @@ msgstr "この型は :attr:`Interaction.response` からアクセスできます
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.is_done:1
 msgid ":class:`bool`: Indicates whether an interaction response has been done before."
-msgstr ""
+msgstr ":class:`bool`: インタラクションに既に応答したか。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.is_done:3
 msgid "An interaction can only be responded to once."
-msgstr ""
+msgstr "インタラクションは一度だけ応答できます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:3
 msgid "Defers the interaction response."
-msgstr ""
+msgstr "インタラクションの応答を遅らせます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:5
 msgid "This is typically used when the interaction is acknowledged and a secondary action will be done later."
-msgstr ""
+msgstr "これは通常、インタラクションを認識した後、後で他のことを実行する場合に使われます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:8
 msgid "This is only supported with the following interaction types:"
-msgstr ""
+msgstr "以下のインタラクションでのみサポートされています："
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:10
 msgid ":attr:`InteractionType.application_command`"
-msgstr ""
+msgstr ":attr:`InteractionType.application_command`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:11
 msgid ":attr:`InteractionType.component`"
-msgstr ""
+msgstr ":attr:`InteractionType.component`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:12
 msgid ":attr:`InteractionType.modal_submit`"
-msgstr ""
+msgstr ":attr:`InteractionType.modal_submit`"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:14
 msgid "Indicates whether the deferred message will eventually be ephemeral. This only applies to :attr:`InteractionType.application_command` interactions, or if ``thinking`` is ``True``."
-msgstr ""
+msgstr "遅延メッセージがephemeralになるかどうか。 :attr:`InteractionType.application_command` のインタラクション、または ``thinking`` が ``True`` の場合にのみ適用されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:17
 msgid "Indicates whether the deferred type should be :attr:`InteractionResponseType.deferred_channel_message` instead of the default :attr:`InteractionResponseType.deferred_message_update` if both are valid. In UI terms, this is represented as if the bot is thinking of a response. It is your responsibility to eventually send a followup message via :attr:`Interaction.followup` to make this thinking state go away. Application commands (AKA Slash commands) cannot use :attr:`InteractionResponseType.deferred_message_update`."
-msgstr ""
+msgstr "遅延の種類を両方が有効の場合にデフォルトの :attr:`InteractionResponseType.deferred_message_update` ではなく  :attr:`InteractionResponseType.deferred_channel_message` にするか。Discordのアプリ上では考え中として表示されます。 :attr:`Interaction.followup` で考え中の表示を解除できます。アプリケーションコマンド（スラッシュコマンド）は :attr:`InteractionResponseType.deferred_message_update` を使えません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:24
 msgid "Deferring the interaction failed."
-msgstr ""
+msgstr "インタラクションの遅延に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:25
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:8
@@ -786,218 +886,588 @@ msgstr ""
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:9
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.autocomplete:10
 msgid "This interaction has already been responded to before."
-msgstr ""
+msgstr "既にインタラクションに応答していた場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:3
 msgid "Pongs the ping interaction."
-msgstr ""
+msgstr "Pingのインタラクションに応答します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:5
 msgid "This should rarely be used."
-msgstr ""
+msgstr "ほとんどの場合使われません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:7
 msgid "Ponging the interaction failed."
-msgstr ""
+msgstr "インタラクションの応答に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:3
 msgid "Responds to this interaction by sending a message."
-msgstr ""
+msgstr "インタラクションにメッセージで応答します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:5
 msgid "The content of the message to send."
-msgstr ""
+msgstr "送信するメッセージの内容。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:7
 msgid "A list of embeds to send with the content. Maximum of 10. This cannot be mixed with the ``embed`` parameter."
-msgstr ""
+msgstr "送信するリッチな埋め込みのリスト。最大10個です。 ``embed`` パラメータと同時に使用できません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:10
 msgid "The rich embed for the content to send. This cannot be mixed with ``embeds`` parameter."
-msgstr ""
+msgstr "送信するリッチな埋め込み。 ``embeds`` パラメータと同時に使用できません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:13
 msgid "The file to upload."
-msgstr ""
+msgstr "アップロードするファイル。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:15
 msgid "A list of files to upload. Must be a maximum of 10."
-msgstr ""
+msgstr "アップロードするファイルのリスト。ファイル数は最大で10個まででなくてはいけません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:17
 msgid "Indicates if the message should be sent using text-to-speech."
-msgstr ""
+msgstr "メッセージが音声合成で送信されるべきかどうかを示します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:19
 msgid "The view to send with the message."
-msgstr ""
+msgstr "送信するビュー。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:21
 msgid "Indicates if the message should only be visible to the user who started the interaction. If a view is sent with an ephemeral message and it has no timeout set then the timeout is set to 15 minutes."
-msgstr ""
+msgstr "メッセージがインタラクションを開始したユーザーだけに表示されるかどうか。もしビューがephemeralなメッセージで送信されている、かつタイムアウトが設定されていない場合、タイムアウトは15分に設定されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:28
 msgid "Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.  .. versionadded:: 2.0"
-msgstr ""
+msgstr "メッセージのembedを抑制するかどうか。これに ``True`` が設定されている場合、embedなしでメッセージを送信します。 .. versionadded:: 2.0"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:28
 msgid "Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``."
-msgstr ""
+msgstr "メッセージのembedを抑制するかどうか。これが ``True`` に設定されている場合、embedなしでメッセージを送信します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:33
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:12
 msgid "Sending the message failed."
-msgstr ""
+msgstr "メッセージの送信に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:34
 msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``."
-msgstr ""
+msgstr "``embed`` と ``embeds`` または ``file`` と ``files`` の両方を指定した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:3
 msgid "Responds to this interaction by editing the original message of a component or modal interaction."
-msgstr ""
+msgstr "コンポーネントまたはモーダルのインタラクションに編集で応答します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:6
 msgid "The new content to replace the message with. ``None`` removes the content."
-msgstr ""
+msgstr "現在のメッセージと置き換える新しい内容。``None`` を指定すると内容が削除されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:23
 msgid "Controls the mentions being processed in this message. See :meth:`.Message.edit` for more information."
-msgstr ""
+msgstr "このメッセージで処理されるメンションを制御します。詳細は :meth:`.Message.edit` を参照してください。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:28
 msgid "You specified both ``embed`` and ``embeds``."
-msgstr ""
+msgstr "``embed`` と ``embeds`` の両方を指定した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:3
 msgid "Responds to this interaction by sending a modal."
-msgstr ""
+msgstr "インタラクションにモーダルで応答します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:5
 msgid "The modal to send."
-msgstr ""
+msgstr "送信するモーダル。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:8
 msgid "Sending the modal failed."
-msgstr ""
+msgstr "モーダルの送信に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.autocomplete:3
 msgid "Responds to this interaction by giving the user the choices they can use."
-msgstr ""
+msgstr "インタラクションに補完の選択肢で応答します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.autocomplete:5
 msgid "The list of new choices as the user is typing."
-msgstr ""
+msgstr "応答する補完の選択肢。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.autocomplete:8
 msgid "Sending the choices failed."
-msgstr ""
+msgstr "選択肢の送信に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.autocomplete:9
 msgid "This interaction cannot respond with autocomplete."
-msgstr ""
+msgstr "このインタラクションに選択肢で応答できない場合。"
 
 #: ../../interactions/api.rst:32
 msgid "InteractionMessage"
-msgstr ""
+msgstr "InteractionMessage"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage:1
 msgid "Represents the original interaction response message."
-msgstr ""
+msgstr "元のインタラクション応答メッセージを表します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage:3
 msgid "This allows you to edit or delete the message associated with the interaction response. To retrieve this object see :meth:`Interaction.original_message`."
-msgstr ""
+msgstr "このオブジェクトでインタラクションの応答のメッセージを編集、または削除できます。このオブジェクトを生成するには  :meth:`Interaction.original_message` を参照して下さい。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage:6
 msgid "This inherits from :class:`discord.Message` with changes to :meth:`edit` and :meth:`delete` to work."
-msgstr ""
+msgstr "これは :meth:`edit` と :meth:`delete` が機能するように変更された上で :class:`discord.Message` を継承しています。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:3
 msgid "Edits the message."
-msgstr ""
+msgstr "メッセージを編集します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:3
 msgid "Adds new files to the end of the message attachments."
-msgstr ""
+msgstr "メッセージの添付ファイルの末尾に新しいファイルを追加します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:7
 msgid "New files to add to the message."
-msgstr ""
+msgstr "メッセージに追加する新しいファイル。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:11
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:11
 msgid "Tried to edit a message that isn't yours."
-msgstr ""
+msgstr "自分以外のメッセージを編集しようとした場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:3
 msgid "Removes attachments from the message."
-msgstr ""
+msgstr "メッセージの添付ファイルを削除します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:7
 msgid "Attachments to remove from the message."
-msgstr ""
+msgstr "メッセージから削除する添付ファイル。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:3
+msgid "Adds a reaction to the message."
+msgstr "メッセージにリアクションを追加します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:5
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:5
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:5
+msgid "The emoji may be a unicode emoji or a custom guild :class:`Emoji`."
+msgstr "絵文字はユニコード絵文字かカスタムギルド絵文字の :class:`Emoji` である可能性があります。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:7
+msgid "You must have the :attr:`~Permissions.read_message_history` permission to use this. If nobody else has reacted to the message using this emoji, the :attr:`~Permissions.add_reactions` permission is required."
+msgstr "これを行うためには、そのチャンネルの :attr:`~Permissions.read_message_history` 権限が必要です。 もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` 権限が必要です。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:13
+msgid "``emoji`` parameter is now positional-only."
+msgstr "``emoji`` 引数は位置限定引数になりました。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:15
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:11
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:13
+msgid "This function will now raise :exc:`TypeError` instead of ``InvalidArgument``."
+msgstr "この関数は ``InvalidArgument`` の代わりに :exc:`TypeError` を送出します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:19
+msgid "The emoji to react with."
+msgstr "リアクションとして追加する絵文字。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:22
+msgid "Adding the reaction failed."
+msgstr "リアクションの追加に失敗した際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:23
+msgid "You do not have the proper permissions to react to the message."
+msgstr "リアクションをメッセージを付けるのに必要な権限がない際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:24
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:20
+msgid "The emoji you specified was not found."
+msgstr "指定された絵文字が見つからなかった際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:25
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:21
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:25
+msgid "The emoji parameter is invalid."
+msgstr "絵文字のパラメータが無効の場合発生します。"
+
+#: ../../docstring of discord.InteractionMessage.clean_content:1
+msgid "A property that returns the content in a \"cleaned up\" manner. This basically means that mentions are transformed into the way the client shows it. e.g. ``<#id>`` will transform into ``#name``."
+msgstr "クリーンアップされたメッセージ内容を返すプロパティ。基本的に、これはメンションをクライアントが表示できるようにする、という意味です。例えば、 ``<#id>`` は ``#name`` に変換されます。"
+
+#: ../../docstring of discord.InteractionMessage.clean_content:6
+msgid "This will also transform @everyone and @here mentions into non-mentions."
+msgstr "また、これは @everyone メンション や @here メンションを、メンション機能の無いメッセージに変換します。"
+
+#: ../../docstring of discord.InteractionMessage.clean_content:11
+msgid "This *does not* affect markdown. If you want to escape or remove markdown then use :func:`utils.escape_markdown` or :func:`utils.remove_markdown` respectively, along with this function."
+msgstr "これはマークダウンには影響*しません*。マークダウンをエスケープまたは削除したい場合は、この関数とともに :func:`utils.escape_markdown` か :func:`utils.remove_markdown` を使用してください。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:3
+msgid "Clears a specific reaction from the message."
+msgstr "メッセージから特定のリアクションを消去します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:7
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:5
+msgid "You need the :attr:`~Permissions.manage_messages` permission to use this."
+msgstr "これを行うには、 :attr:`~Permissions.manage_messages` 権限が必要です。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:15
+msgid "The emoji to clear."
+msgstr "消去された絵文字です。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:18
+msgid "Clearing the reaction failed."
+msgstr "リアクションの消去に失敗した際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:19
+msgid "You do not have the proper permissions to clear the reaction."
+msgstr "リアクションを消去するのに必要な権限がない場合に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:3
+msgid "Removes all the reactions from the message."
+msgstr "全てのリアクションをメッセージから消去します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:7
+msgid "Removing the reactions failed."
+msgstr "リアクションの消去に失敗した際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:8
+msgid "You do not have the proper permissions to remove all the reactions."
+msgstr "全てのリアクションを消去するのに必要な権限を持っていない場合に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:3
+msgid "Creates a public thread from this message."
+msgstr "メッセージからパブリックスレッドを作成します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:5
+msgid "You must have :attr:`~discord.Permissions.create_public_threads` in order to create a public thread from a message."
+msgstr "メッセージから公開スレッドを作成するには、 :attr:`~discord.Permissions.create_public_threads` 権限が必要です。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:8
+msgid "The channel this message belongs in must be a :class:`TextChannel`."
+msgstr "このメッセージが属するチャンネルは、 :class:`TextChannel` でなければなりません。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:12
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:37
+msgid "The name of the thread."
+msgstr "スレッドの名前。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:14
+msgid "The duration in minutes before a thread is automatically archived for inactivity. If not provided, the channel's default auto archive duration is used."
+msgstr "スレッドが非アクティブ時に、自動的にアーカイブされるまでの分単位の長さ。指定しない場合は、チャンネルのデフォルトの自動アーカイブ期間が使用されます。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:17
+msgid "Specifies the slowmode rate limit for user in this channel, in seconds. The maximum value possible is `21600`. By default no slowmode rate limit if this is ``None``."
+msgstr "このチャンネルの秒単位でのスローモードレート制限。 最大値は `21600` です。デフォルトは ``None`` でこの場合はスローモードレート制限が無しとなります。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:21
+msgid "The reason for creating a new thread. Shows up on the audit log."
+msgstr "スレッドを作成する理由。監査ログに表示されます。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:24
+msgid "You do not have permissions to create a thread."
+msgstr "スレッドを作成する権限を持っていない場合発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:25
+msgid "Creating the thread failed."
+msgstr "スレッドの作成に失敗した場合発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:26
+msgid "This message does not have guild info attached."
+msgstr "メッセージがギルド情報を持っていない際に発生します。"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:28
+msgid "The created thread."
+msgstr "作成されたスレッド"
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:29
+msgid ":class:`.Thread`"
+msgstr ":class:`Thread`"
+
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.created_at:1
+msgid "The message's creation time in UTC."
+msgstr "UTCの、メッセージが作成された時刻。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:3
 msgid "Deletes the message."
-msgstr ""
+msgstr "メッセージを削除します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:5
 msgid "If provided, the number of seconds to wait before deleting the message. The waiting is done in the background and deletion failures are ignored."
-msgstr ""
+msgstr "指定された場合、メッセージを削除するまでの待機秒数。待機はバックグラウンドで行われ、削除の失敗は無視されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:9
 msgid "You do not have proper permissions to delete the message."
-msgstr ""
+msgstr "メッセージを削除するための適切な権限がない場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.delete:10
 msgid "The message was deleted already."
+msgstr "メッセージがすでに削除されている場合。"
+
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.edited_at:1
+msgid "An aware UTC datetime object containing the edited time of the message."
 msgstr ""
 
-#: ../../interactions/api.rst:40
-msgid "Component"
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.edited_at:3
+msgid "Optional[:class:`datetime.datetime`]"
 msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:3
+msgid "Fetches the partial message to a full :class:`Message`."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:5
+msgid "The message was not found."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:6
+msgid "You do not have the permissions required to get a message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:7
+msgid "Retrieving the message failed."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:9
+msgid "The full message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.fetch:10
+msgid ":class:`Message`"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.Message.is_system:1
+msgid ":class:`bool`: Whether the message is a system message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.Message.is_system:3
+msgid "A system message is a message that is constructed entirely by the Discord API in response to something."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.InteractionMessage.jump_url:1
+msgid "Returns a URL that allows the client to jump to this message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:3
+msgid "Pins the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:5
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:5
+msgid "You must have the :attr:`~Permissions.manage_messages` permission to do this in a non-private channel context."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:8
+msgid "The reason for pinning the message. Shows up on the audit log.  .. versionadded:: 1.4"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:8
+msgid "The reason for pinning the message. Shows up on the audit log."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:13
+msgid "You do not have permissions to pin the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:14
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:14
+msgid "The message or channel was not found or deleted."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:15
+msgid "Pinning the message failed, probably due to the channel     having more than 50 pinned messages."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:3
+msgid "Publishes this message to your announcement channel."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:5
+msgid "You must have the :attr:`~Permissions.send_messages` permission to do this."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:7
+msgid "If the message is not your own then the :attr:`~Permissions.manage_messages` permission is also needed."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:10
+msgid "You do not have the proper permissions to publish this message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:11
+msgid "Publishing the message failed."
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.raw_channel_mentions:1
+msgid "A property that returns an array of channel IDs matched with the syntax of ``<#channel_id>`` in the message content."
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.raw_channel_mentions:4
+#: ../../docstring of discord.InteractionMessage.raw_mentions:7
+#: ../../docstring of discord.InteractionMessage.raw_role_mentions:4
+msgid "List[:class:`int`]"
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.raw_mentions:1
+msgid "A property that returns an array of user IDs matched with the syntax of ``<@user_id>`` in the message content."
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.raw_mentions:4
+msgid "This allows you to receive the user IDs of mentioned users even in a private message context."
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.raw_role_mentions:1
+msgid "A property that returns an array of role IDs matched with the syntax of ``<@&role_id>`` in the message content."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:3
+msgid "Remove a reaction by the member from the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:7
+msgid "If the reaction is not your own (i.e. ``member`` parameter is not you) then the :attr:`~Permissions.manage_messages` permission is needed."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:10
+msgid "The ``member`` parameter must represent a member and meet the :class:`abc.Snowflake` abc."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:17
+msgid "The emoji to remove."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:19
+msgid "The member for which to remove the reaction."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:22
+msgid "Removing the reaction failed."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:23
+msgid "You do not have the proper permissions to remove the reaction."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:24
+msgid "The member or emoji you specified was not found."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:3
+msgid "A shortcut method to :meth:`.abc.Messageable.send` to reply to the :class:`.Message`."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:8
+msgid "This function will now raise :exc:`TypeError` or :exc:`ValueError` instead of ``InvalidArgument``."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:13
+msgid "You do not have the proper permissions to send the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:14
+msgid "The ``files`` list is not of the appropriate size"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:15
+msgid "You specified both ``file`` and ``files``."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:17
+msgid "The message that was sent."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:18
+msgid ":class:`.Message`"
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.system_content:1
+msgid "A property that returns the content that is rendered regardless of the :attr:`Message.type`."
+msgstr ""
+
+#: ../../docstring of discord.InteractionMessage.system_content:4
+msgid "In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\\, this just returns the regular :attr:`Message.content`. Otherwise this returns an English message denoting the contents of the system message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:1
+msgid "Creates a :class:`~discord.MessageReference` from the current message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:5
+msgid "Whether replying using the message reference should raise :class:`HTTPException` if the message no longer exists or Discord could not fetch the message.  .. versionadded:: 1.7"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:5
+msgid "Whether replying using the message reference should raise :class:`HTTPException` if the message no longer exists or Discord could not fetch the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:11
+msgid "The reference to this message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.to_reference:12
+msgid ":class:`~discord.MessageReference`"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:3
+msgid "Unpins the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:8
+msgid "The reason for unpinning the message. Shows up on the audit log.  .. versionadded:: 1.4"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:8
+msgid "The reason for unpinning the message. Shows up on the audit log."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:13
+msgid "You do not have permissions to unpin the message."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:15
+msgid "Unpinning the message failed."
+msgstr ""
+
+#: ../../interactions/api.rst:41
+msgid "Component"
+msgstr "Component"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:1
 msgid "Represents a Discord Bot UI Kit Component."
-msgstr ""
+msgstr "Discord Bot UI Kitのコンポーネント。"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:3
 msgid "Currently, the only components supported by Discord are:"
-msgstr ""
+msgstr "現在、Discordでサポートされているコンポーネントは次のとおりです："
 
 #: ../../../discord/components.py:docstring of discord.components.Component:5
 msgid ":class:`ActionRow`"
-msgstr ""
+msgstr ":class:`ActionRow`"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:6
 msgid ":class:`Button`"
-msgstr ""
+msgstr ":class:`Button`"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:7
 msgid ":class:`SelectMenu`"
-msgstr ""
+msgstr ":class:`SelectMenu`"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:9
 msgid "This class is abstract and cannot be instantiated."
-msgstr ""
+msgstr "このクラスはabstractでインスタンス化できません。"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:15
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:11
 msgid "The type of component."
-msgstr ""
+msgstr "コンポーネントの種類。"
 
 #: ../../../discord/components.py:docstring of discord.components.Component:17
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:13
 msgid ":class:`ComponentType`"
-msgstr ""
+msgstr ":class:`ComponentType`"
 
-#: ../../interactions/api.rst:48
+#: ../../interactions/api.rst:49
 msgid "ActionRow"
-msgstr ""
+msgstr "ActionRow"
 
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:1
 msgid "Represents a Discord Bot UI Kit Action Row."
-msgstr ""
+msgstr "Discord Bot UI KitのAction Row。"
 
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:3
 msgid "This is a component that holds up to 5 children components in a row."
@@ -1014,12 +1484,12 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.ActionRow:19
 msgid "List[:class:`Component`]"
-msgstr ""
+msgstr "List[:class:`Component`]"
 
-#: ../../interactions/api.rst:56
-#: ../../interactions/api.rst:380
+#: ../../interactions/api.rst:57
+#: ../../interactions/api.rst:381
 msgid "Button"
-msgstr ""
+msgstr "Button"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:1
 msgid "Represents a button from the Discord Bot UI Kit."
@@ -1037,7 +1507,7 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.Button:16
 msgid ":class:`.ButtonStyle`"
-msgstr ""
+msgstr ":class:`.ButtonStyle`"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:20
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.Button:7
@@ -1060,7 +1530,7 @@ msgstr ""
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.placeholder:3
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.value:3
 msgid "Optional[:class:`str`]"
-msgstr ""
+msgstr "Optional[:class:`str`]"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:27
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.Button:10
@@ -1090,9 +1560,10 @@ msgstr ""
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.disabled:3
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.disabled:3
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.required:3
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:28
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:22
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:36
 msgid ":class:`bool`"
-msgstr ""
+msgstr ":class:`bool`"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:39
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.Button:14
@@ -1108,11 +1579,11 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.Button:47
 msgid "Optional[:class:`PartialEmoji`]"
-msgstr ""
+msgstr "Optional[:class:`PartialEmoji`]"
 
-#: ../../interactions/api.rst:65
+#: ../../interactions/api.rst:66
 msgid "SelectMenu"
-msgstr ""
+msgstr "SelectMenu"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:1
 msgid "Represents a select menu from the Discord Bot UI Kit."
@@ -1160,7 +1631,7 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:43
 msgid "List[:class:`SelectOption`]"
-msgstr ""
+msgstr "List[:class:`SelectOption`]"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:47
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:22
@@ -1168,10 +1639,10 @@ msgstr ""
 msgid "Whether the select is disabled or not."
 msgstr ""
 
-#: ../../interactions/api.rst:75
-#: ../../interactions/api.rst:402
+#: ../../interactions/api.rst:76
+#: ../../interactions/api.rst:403
 msgid "TextInput"
-msgstr ""
+msgstr "TextInput"
 
 #: ../../../discord/components.py:docstring of discord.components.TextInput:1
 msgid "Represents a text input from the Discord Bot UI Kit."
@@ -1198,7 +1669,7 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.TextInput:25
 msgid ":class:`TextStyle`"
-msgstr ""
+msgstr ":class:`TextStyle`"
 
 #: ../../../discord/components.py:docstring of discord.components.TextInput:29
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.text_input.TextInput:12
@@ -1223,29 +1694,29 @@ msgstr ""
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.text_input.TextInput:18
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.min_length:1
 msgid "The minimum length of the text input."
-msgstr ""
+msgstr "テキスト入力の最小の長さ。"
 
 #: ../../../discord/components.py:docstring of discord.components.TextInput:53
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.text_input.TextInput:20
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.max_length:1
 msgid "The maximum length of the text input."
-msgstr ""
+msgstr "テキスト入力の最大の長さ。"
 
 #: ../../../discord/components.py:docstring of discord.TextInput.default:3
 msgid "This is an alias to :attr:`value`."
-msgstr ""
+msgstr "これは :attr:`value` のエイリアスです。"
 
-#: ../../interactions/api.rst:84
+#: ../../interactions/api.rst:85
 msgid "AppCommand"
-msgstr ""
+msgstr "AppCommand"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:1
 msgid "Represents a application command."
-msgstr ""
+msgstr "アプリケーションコマンドを表します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:3
 msgid "In common parlance this is referred to as a \"Slash Command\" or a \"Context Menu Command\"."
-msgstr ""
+msgstr "一般的な用語では、これは「スラッシュコマンド」または「コンテキストメニューコマンド」と呼ばれます。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:12
 msgid "Checks if two application commands are equal."
@@ -1257,40 +1728,40 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:20
 msgid "Returns the application command's hash."
-msgstr ""
+msgstr "アプリケーションコマンドのハッシュを返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:24
 msgid "Returns the application command's name."
-msgstr ""
+msgstr "アプリケーションコマンドの名前を返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:28
 msgid "The application command's ID."
-msgstr ""
+msgstr "アプリケーションコマンドのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:34
 msgid "The application command's application's ID."
-msgstr ""
+msgstr "アプリケーションコマンドのアプリケーションのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:40
 msgid "The application command's type."
-msgstr ""
+msgstr "アプリケーションコマンドのタイプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:42
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:24
 msgid ":class:`~discord.AppCommandType`"
-msgstr ""
+msgstr ":class:`~discord.AppCommandType`"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:46
 msgid "The application command's name."
-msgstr ""
+msgstr "アプリケーションコマンドの名前。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:52
 msgid "The application command's description."
-msgstr ""
+msgstr "アプリケーションコマンドの説明。"
 
-#: ../../interactions/api.rst:92
+#: ../../interactions/api.rst:93
 msgid "AppCommandGroup"
-msgstr ""
+msgstr "AppCommandGroup"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:1
 msgid "Represents a application command subcommand."
@@ -1298,25 +1769,25 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:7
 msgid "The type of subcommand."
-msgstr ""
+msgstr "サブコマンドのタイプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:9
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:9
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:23
 msgid ":class:`~discord.AppCommandOptionType`"
-msgstr ""
+msgstr ":class:`~discord.AppCommandOptionType`"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:13
 msgid "The name of the subcommand."
-msgstr ""
+msgstr "サブコマンドの名前。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:19
 msgid "The description of the subcommand."
-msgstr ""
+msgstr "サブコマンドの説明。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:25
 msgid "Whether the subcommand is required."
-msgstr ""
+msgstr "サブコマンドが必要かどうか。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:31
 msgid "A list of choices for the command to choose from for this subcommand."
@@ -1325,15 +1796,15 @@ msgstr ""
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:33
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:33
 msgid "List[:class:`Choice`]"
-msgstr ""
+msgstr "List[:class:`Choice`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:37
 msgid "A list of arguments."
-msgstr ""
+msgstr "引数のリスト。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:39
 msgid "List[:class:`Argument`]"
-msgstr ""
+msgstr "List[:class:`Argument`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:43
 msgid "The parent application command."
@@ -1342,11 +1813,11 @@ msgstr ""
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:45
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:39
 msgid "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
-msgstr ""
+msgstr "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
 
-#: ../../interactions/api.rst:100
+#: ../../interactions/api.rst:101
 msgid "AppCommandChannel"
-msgstr ""
+msgstr "AppCommandChannel"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:1
 msgid "Represents an application command partially resolved channel object."
@@ -1362,28 +1833,28 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:17
 msgid "Returns the channel's hash."
-msgstr ""
+msgstr "チャンネルのハッシュ値を返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:21
 msgid "Returns the channel's name."
-msgstr ""
+msgstr "チャンネルの名前を返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:25
 msgid "The ID of the channel."
-msgstr ""
+msgstr "チャンネルのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:31
 msgid "The type of channel."
-msgstr ""
+msgstr "チャンネルの種類。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:33
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:33
 msgid ":class:`~discord.ChannelType`"
-msgstr ""
+msgstr ":class:`~discord.ChannelType`"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:37
 msgid "The name of the channel."
-msgstr ""
+msgstr "チャンネルの名前。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:43
 msgid "The resolved permissions of the user who invoked the application command in that channel."
@@ -1392,11 +1863,11 @@ msgstr ""
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:46
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:52
 msgid ":class:`~discord.Permissions`"
-msgstr ""
+msgstr ":class:`~discord.Permissions`"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel:50
 msgid "The guild ID this channel belongs to."
-msgstr ""
+msgstr "このチャンネルが存在するギルドのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandChannel.guild:1
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.guild:1
@@ -1406,7 +1877,7 @@ msgstr ""
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandChannel.guild:3
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.guild:3
 msgid "Optional[:class:`~discord.Guild`]"
-msgstr ""
+msgstr "Optional[:class:`~discord.Guild`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.resolve:1
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.resolve:1
@@ -1421,7 +1892,7 @@ msgstr ""
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.resolve:5
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.resolve:5
 msgid "Optional[:class:`.abc.GuildChannel`]"
-msgstr ""
+msgstr "Optional[:class:`.abc.GuildChannel`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:3
 msgid "Fetches the partial channel to a full :class:`.abc.GuildChannel`."
@@ -1429,15 +1900,15 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:5
 msgid "The channel was not found."
-msgstr ""
+msgstr "チャンネルが見つかりませんでした。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:6
 msgid "You do not have the permissions required to get a channel."
-msgstr ""
+msgstr "チャンネルを取得するために必要な権限がない場合。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:7
 msgid "Retrieving the channel failed."
-msgstr ""
+msgstr "チャンネルの取得に失敗した時。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:9
 msgid "The full channel."
@@ -1445,19 +1916,19 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandChannel.fetch:10
 msgid ":class:`.abc.GuildChannel`"
-msgstr ""
+msgstr ":class:`.abc.GuildChannel`"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandChannel.mention:1
 msgid "The string that allows you to mention the channel."
-msgstr ""
+msgstr "チャンネルにメンションできる文字列。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandChannel.created_at:1
 msgid "An aware timestamp of when this channel was created in UTC."
 msgstr ""
 
-#: ../../interactions/api.rst:108
+#: ../../interactions/api.rst:109
 msgid "AppCommandThread"
-msgstr ""
+msgstr "アプリコマンドスレッド"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:1
 msgid "Represents an application command partially resolved thread object."
@@ -1473,27 +1944,23 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:17
 msgid "Returns the thread's hash."
-msgstr ""
+msgstr "スレッドのハッシュを返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:21
 msgid "Returns the thread's name."
-msgstr ""
+msgstr "スレッドの名前を返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:25
 msgid "The ID of the thread."
-msgstr ""
+msgstr "スレッドのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:31
 msgid "The type of thread."
-msgstr ""
-
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:37
-msgid "The name of the thread."
-msgstr ""
+msgstr "スレッドの種類。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:43
 msgid "The parent text channel ID this thread belongs to."
-msgstr ""
+msgstr "このスレッドが属する親テキストチャンネルのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:49
 msgid "The resolved permissions of the user who invoked the application command in that thread."
@@ -1501,15 +1968,15 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:56
 msgid "The guild ID this thread belongs to."
-msgstr ""
+msgstr "このスレッドが属するギルドのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:62
 msgid "Whether the thread is archived."
-msgstr ""
+msgstr "スレッドがアーカイブされているかどうか。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:68
 msgid "Whether the thread is locked."
-msgstr ""
+msgstr "スレッドがロックされているかどうか。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:74
 msgid "Whether non-moderators can add other non-moderators to this thread. This is always ``True`` for public threads."
@@ -1517,31 +1984,31 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:81
 msgid "The user's ID that archived this thread."
-msgstr ""
+msgstr "このスレッドをアーカイブしたユーザーのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:87
 msgid "The duration in minutes until the thread is automatically archived due to inactivity. Usually a value of 60, 1440, 4320 and 10080."
-msgstr ""
+msgstr "非アクティブのスレッドが自動的にアーカイブされるまでの分数です。通常は60、1440、4320、10080の値を設定します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:94
 msgid "An aware timestamp of when the thread's archived status was last updated in UTC."
-msgstr ""
+msgstr "スレッドのアーカイブ状態が最後に更新されたときのawareなタイムスタンプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.parent:1
 msgid "The parent channel this thread belongs to."
-msgstr ""
+msgstr "このスレッドが属する親チャンネル。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.parent:3
 msgid "Optional[:class:`~discord.TextChannel`]"
-msgstr ""
+msgstr "Optional[:class:`~discord.TextChannel`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.mention:1
 msgid "The string that allows you to mention the thread."
-msgstr ""
+msgstr "スレッドに言及できるようにするための文字列。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.created_at:1
 msgid "An aware timestamp of when the thread was created in UTC."
-msgstr ""
+msgstr "UTCで表されたスレッドが作成されたときのタイムスタンプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandThread.created_at:5
 msgid "This timestamp only exists for threads created after 9 January 2022, otherwise returns ``None``."
@@ -1553,15 +2020,15 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:5
 msgid "The thread was not found."
-msgstr ""
+msgstr "スレッドが見つかりませんでした。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:6
 msgid "You do not have the permissions required to get a thread."
-msgstr ""
+msgstr "スレッドを取得するために必要な権限がありません。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:7
 msgid "Retrieving the thread failed."
-msgstr ""
+msgstr "スレッドの取得に失敗しました。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:9
 msgid "The full thread."
@@ -1569,31 +2036,31 @@ msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread.fetch:10
 msgid ":class:`~discord.Thread`"
-msgstr ""
+msgstr ":class:`~discord.Thread`"
 
-#: ../../interactions/api.rst:116
+#: ../../interactions/api.rst:117
 msgid "Argument"
-msgstr ""
+msgstr "Argument"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:1
 msgid "Represents a application command argument."
-msgstr ""
+msgstr "アプリケーションコマンドの引数を表します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:7
 msgid "The type of argument."
-msgstr ""
+msgstr "引数のタイプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:13
 msgid "The name of the argument."
-msgstr ""
+msgstr "引数の名前。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:19
 msgid "The description of the argument."
-msgstr ""
+msgstr "引数の説明。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:25
 msgid "Whether the argument is required."
-msgstr ""
+msgstr "引数が入力必須かどうか。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:31
 msgid "A list of choices for the command to choose from for this argument."
@@ -1603,25 +2070,25 @@ msgstr ""
 msgid "The parent application command that has this argument."
 msgstr ""
 
-#: ../../interactions/api.rst:124
+#: ../../interactions/api.rst:125
 msgid "Data Classes"
-msgstr ""
+msgstr "データクラス"
 
-#: ../../interactions/api.rst:126
+#: ../../interactions/api.rst:127
 msgid "Similar to :ref:`discord_api_data`, these can be received and constructed by users."
 msgstr ""
 
-#: ../../interactions/api.rst:129
+#: ../../interactions/api.rst:130
 msgid "SelectOption"
-msgstr ""
+msgstr "SelectOption"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:1
 msgid "Represents a select menu's option."
-msgstr ""
+msgstr "セレクトメニューのオプションを表します。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:3
 msgid "These can be created by users."
-msgstr ""
+msgstr "これらはユーザーによって作成することができます。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:9
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:6
@@ -1643,14 +2110,14 @@ msgstr ""
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:33
 msgid "Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]"
-msgstr ""
+msgstr "Optional[Union[:class:`str`, :class:`Emoji`, :class:`PartialEmoji`]]"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:37
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:18
 msgid "Whether this option is selected by default."
 msgstr ""
 
-#: ../../interactions/api.rst:137
+#: ../../interactions/api.rst:138
 msgid "Choice"
 msgstr ""
 
@@ -1678,251 +2145,251 @@ msgstr ""
 msgid "The value of the choice."
 msgstr ""
 
-#: ../../interactions/api.rst:146
+#: ../../interactions/api.rst:147
 msgid "Enumerations"
 msgstr ""
 
-#: ../../interactions/api.rst:150
+#: ../../interactions/api.rst:151
 msgid "Specifies the type of :class:`Interaction`."
 msgstr ""
 
-#: ../../interactions/api.rst:156
+#: ../../interactions/api.rst:157
 msgid "Represents Discord pinging to see if the interaction response server is alive."
 msgstr ""
 
-#: ../../interactions/api.rst:159
+#: ../../interactions/api.rst:160
 msgid "Represents a slash command interaction."
 msgstr ""
 
-#: ../../interactions/api.rst:162
+#: ../../interactions/api.rst:163
 msgid "Represents a component based interaction, i.e. using the Discord Bot UI Kit."
 msgstr ""
 
-#: ../../interactions/api.rst:165
+#: ../../interactions/api.rst:166
 msgid "Represents an auto complete interaction."
 msgstr ""
 
-#: ../../interactions/api.rst:168
+#: ../../interactions/api.rst:169
 msgid "Represents submission of a modal interaction."
 msgstr ""
 
-#: ../../interactions/api.rst:172
+#: ../../interactions/api.rst:173
 msgid "Specifies the response type for the interaction."
 msgstr ""
 
-#: ../../interactions/api.rst:178
+#: ../../interactions/api.rst:179
 msgid "Pongs the interaction when given a ping."
 msgstr ""
 
-#: ../../interactions/api.rst:180
+#: ../../interactions/api.rst:181
 msgid "See also :meth:`InteractionResponse.pong`"
 msgstr ""
 
-#: ../../interactions/api.rst:183
+#: ../../interactions/api.rst:184
 msgid "Respond to the interaction with a message."
 msgstr ""
 
-#: ../../interactions/api.rst:185
+#: ../../interactions/api.rst:186
 msgid "See also :meth:`InteractionResponse.send_message`"
 msgstr ""
 
-#: ../../interactions/api.rst:188
+#: ../../interactions/api.rst:189
 msgid "Responds to the interaction with a message at a later time."
 msgstr ""
 
-#: ../../interactions/api.rst:190
-#: ../../interactions/api.rst:196
+#: ../../interactions/api.rst:191
+#: ../../interactions/api.rst:197
 msgid "See also :meth:`InteractionResponse.defer`"
 msgstr ""
 
-#: ../../interactions/api.rst:193
+#: ../../interactions/api.rst:194
 msgid "Acknowledges the component interaction with a promise that the message will update later (though there is no need to actually update the message)."
 msgstr ""
 
-#: ../../interactions/api.rst:199
+#: ../../interactions/api.rst:200
 msgid "Responds to the interaction by editing the message."
 msgstr ""
 
-#: ../../interactions/api.rst:201
+#: ../../interactions/api.rst:202
 msgid "See also :meth:`InteractionResponse.edit_message`"
 msgstr ""
 
-#: ../../interactions/api.rst:204
+#: ../../interactions/api.rst:205
 msgid "Responds to the autocomplete interaction with suggested choices."
 msgstr ""
 
-#: ../../interactions/api.rst:206
+#: ../../interactions/api.rst:207
 msgid "See also :meth:`InteractionResponse.autocomplete`"
 msgstr ""
 
-#: ../../interactions/api.rst:209
+#: ../../interactions/api.rst:210
 msgid "Responds to the interaction with a modal."
 msgstr ""
 
-#: ../../interactions/api.rst:211
+#: ../../interactions/api.rst:212
 msgid "See also :meth:`InteractionResponse.send_modal`"
 msgstr ""
 
-#: ../../interactions/api.rst:215
+#: ../../interactions/api.rst:216
 msgid "Represents the component type of a component."
-msgstr ""
+msgstr "コンポーネントのコンポーネントタイプを表します。"
 
-#: ../../interactions/api.rst:221
+#: ../../interactions/api.rst:222
 msgid "Represents the group component which holds different components in a row."
 msgstr ""
 
-#: ../../interactions/api.rst:224
+#: ../../interactions/api.rst:225
 msgid "Represents a button component."
-msgstr ""
+msgstr "ボタンコンポーネントを表します。"
 
-#: ../../interactions/api.rst:227
+#: ../../interactions/api.rst:228
 msgid "Represents a select component."
-msgstr ""
+msgstr "セレクトコンポーネントを表します。"
 
-#: ../../interactions/api.rst:231
+#: ../../interactions/api.rst:232
 msgid "Represents a text box component."
-msgstr ""
+msgstr "テキストボックスコンポーネントを表します。"
 
-#: ../../interactions/api.rst:235
+#: ../../interactions/api.rst:236
 msgid "Represents the style of the button component."
-msgstr ""
+msgstr "ボタンコンポーネントのスタイルを表します。"
 
-#: ../../interactions/api.rst:241
+#: ../../interactions/api.rst:242
 msgid "Represents a blurple button for the primary action."
 msgstr ""
 
-#: ../../interactions/api.rst:244
+#: ../../interactions/api.rst:245
 msgid "Represents a grey button for the secondary action."
-msgstr ""
+msgstr "2回目のアクションを意味する灰色のボタンを表します。"
 
-#: ../../interactions/api.rst:247
+#: ../../interactions/api.rst:248
 msgid "Represents a green button for a successful action."
-msgstr ""
+msgstr "成功したアクションを意味する緑色のボタンを表します。"
 
-#: ../../interactions/api.rst:250
+#: ../../interactions/api.rst:251
 msgid "Represents a red button for a dangerous action."
-msgstr ""
+msgstr "危険な操作を意味する赤いボタンを表します。"
 
-#: ../../interactions/api.rst:253
+#: ../../interactions/api.rst:254
 msgid "Represents a link button."
-msgstr ""
+msgstr "リンクボタンを表します。"
 
-#: ../../interactions/api.rst:257
+#: ../../interactions/api.rst:258
 msgid "An alias for :attr:`primary`."
-msgstr ""
+msgstr ":attr:`primary` のエイリアス。"
 
-#: ../../interactions/api.rst:260
-#: ../../interactions/api.rst:263
+#: ../../interactions/api.rst:261
+#: ../../interactions/api.rst:264
 msgid "An alias for :attr:`secondary`."
-msgstr ""
+msgstr ":attr:`secondary` のエイリアス。"
 
-#: ../../interactions/api.rst:266
+#: ../../interactions/api.rst:267
 msgid "An alias for :attr:`success`."
-msgstr ""
+msgstr ":attr:`success` のエイリアス。"
 
-#: ../../interactions/api.rst:269
+#: ../../interactions/api.rst:270
 msgid "An alias for :attr:`danger`."
-msgstr ""
+msgstr ":attr:`danger` のエイリアス。"
 
-#: ../../interactions/api.rst:272
+#: ../../interactions/api.rst:273
 msgid "An alias for :attr:`link`."
-msgstr ""
+msgstr ":attr:`link` のエイリアス。"
 
-#: ../../interactions/api.rst:276
+#: ../../interactions/api.rst:277
 msgid "Represents the style of the text box component."
 msgstr ""
 
-#: ../../interactions/api.rst:282
+#: ../../interactions/api.rst:283
 msgid "Represents a short text box."
 msgstr ""
 
-#: ../../interactions/api.rst:285
+#: ../../interactions/api.rst:286
 msgid "Represents a long form text box."
 msgstr ""
 
-#: ../../interactions/api.rst:288
+#: ../../interactions/api.rst:289
 msgid "An alias for :attr:`paragraph`."
-msgstr ""
+msgstr ":attr:`paragraph` のエイリアス。"
 
-#: ../../interactions/api.rst:292
+#: ../../interactions/api.rst:293
 msgid "The application command's option type. This is usually the type of parameter an application command takes."
 msgstr ""
 
-#: ../../interactions/api.rst:298
+#: ../../interactions/api.rst:299
 msgid "A subcommand."
-msgstr ""
+msgstr "サブコマンドです。"
 
-#: ../../interactions/api.rst:301
+#: ../../interactions/api.rst:302
 msgid "A subcommand group."
-msgstr ""
+msgstr "サブコマンドグループです。"
 
-#: ../../interactions/api.rst:304
+#: ../../interactions/api.rst:305
 msgid "A string parameter."
-msgstr ""
+msgstr "文字列パラメータです。"
 
-#: ../../interactions/api.rst:307
+#: ../../interactions/api.rst:308
 msgid "A integer parameter."
-msgstr ""
+msgstr "整数パラメータです。"
 
-#: ../../interactions/api.rst:310
+#: ../../interactions/api.rst:311
 msgid "A boolean parameter."
-msgstr ""
+msgstr "真偽値パラメータです。"
 
-#: ../../interactions/api.rst:313
+#: ../../interactions/api.rst:314
 msgid "A user parameter."
-msgstr ""
+msgstr "ユーザーパラメータです。"
 
-#: ../../interactions/api.rst:316
+#: ../../interactions/api.rst:317
 msgid "A channel parameter."
-msgstr ""
+msgstr "チャンネルパラメータです。"
 
-#: ../../interactions/api.rst:319
+#: ../../interactions/api.rst:320
 msgid "A role parameter."
-msgstr ""
+msgstr "ロールパラメータです。"
 
-#: ../../interactions/api.rst:322
+#: ../../interactions/api.rst:323
 msgid "A mentionable parameter."
-msgstr ""
+msgstr "言及可能なパラメータです。"
 
-#: ../../interactions/api.rst:325
+#: ../../interactions/api.rst:326
 msgid "A number parameter."
-msgstr ""
+msgstr "番号のパラメータです。"
 
-#: ../../interactions/api.rst:328
+#: ../../interactions/api.rst:329
 msgid "An attachment parameter."
-msgstr ""
+msgstr "添付ファイルのパラメータです。"
 
-#: ../../interactions/api.rst:332
+#: ../../interactions/api.rst:333
 msgid "The type of application command."
-msgstr ""
+msgstr "アプリケーションコマンドの種類です。"
 
-#: ../../interactions/api.rst:338
+#: ../../interactions/api.rst:339
 msgid "A slash command."
-msgstr ""
+msgstr "スラッシュコマンドです。"
 
-#: ../../interactions/api.rst:341
+#: ../../interactions/api.rst:342
 msgid "A user context menu command."
-msgstr ""
+msgstr "ユーザーコンテキストメニューコマンドです。"
 
-#: ../../interactions/api.rst:344
+#: ../../interactions/api.rst:345
 msgid "A message context menu command."
-msgstr ""
+msgstr "メッセージコンテキストメニューコマンドです。"
 
-#: ../../interactions/api.rst:349
+#: ../../interactions/api.rst:350
 msgid "Bot UI Kit"
-msgstr ""
+msgstr "Bot UIキット"
 
-#: ../../interactions/api.rst:351
+#: ../../interactions/api.rst:352
 msgid "The library has helpers to aid create component-based UIs. These are all in the ``discord.ui`` package."
 msgstr ""
 
-#: ../../interactions/api.rst:355
+#: ../../interactions/api.rst:356
 msgid "View"
-msgstr ""
+msgstr "View"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:1
 msgid "Represents a UI view."
-msgstr ""
+msgstr "UIビューを表します。"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:3
 msgid "This object must be inherited to create a UI within Discord."
@@ -1941,22 +2408,22 @@ msgstr ""
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:16
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:34
 msgid "Optional[:class:`float`]"
-msgstr ""
+msgstr "Optional[:class:`float`]"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:20
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:44
 msgid "The list of children attached to this view."
-msgstr ""
+msgstr "このビューに添付された子のリスト。"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:22
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:46
 msgid "List[:class:`Item`]"
-msgstr ""
+msgstr "List[:class:`Item`]"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.from_message:1
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.from_message:1
 msgid "Converts a message's components into a :class:`View`."
-msgstr ""
+msgstr "メッセージのコンポーネントを :class:`View` に変換します。"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.from_message:3
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.from_message:3
@@ -1981,7 +2448,7 @@ msgstr ""
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.from_message:15
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.from_message:15
 msgid ":class:`View`"
-msgstr ""
+msgstr ":class:`View`"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:1
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:1
@@ -1989,17 +2456,26 @@ msgid "Adds an item to the view."
 msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:3
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.remove_item:3
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.clear_items:3
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:3
-msgid "The item to add to the view."
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.clear_items:3
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.remove_item:3
+msgid "This function returns the class instance to allow for fluent-style chaining."
 msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:6
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:6
+msgid "The item to add to the view."
+msgstr ""
+
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:9
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:9
 msgid "An :class:`Item` was not passed."
 msgstr ""
 
-#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:7
-#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:7
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.add_item:10
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.add_item:10
 msgid "Maximum number of children has been exceeded (25)     or the row the item is trying to be added to is full."
 msgstr ""
 
@@ -2008,8 +2484,8 @@ msgstr ""
 msgid "Removes an item from the view."
 msgstr ""
 
-#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.remove_item:3
-#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.remove_item:3
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.remove_item:6
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.remove_item:6
 msgid "The item to remove from the view."
 msgstr ""
 
@@ -2025,11 +2501,13 @@ msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.interaction_check:6
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.interaction_check:6
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:6
 msgid "This is useful to override if, for example, you want to ensure that the interaction author is a given user."
 msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.interaction_check:9
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.interaction_check:9
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:9
 msgid "The default implementation of this returns ``True``."
 msgstr ""
 
@@ -2040,11 +2518,13 @@ msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.interaction_check:16
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.interaction_check:16
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:18
 msgid "The interaction that occurred."
 msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.interaction_check:19
 #: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.interaction_check:19
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:21
 msgid "Whether the view children's callbacks should be called."
 msgstr ""
 
@@ -2059,13 +2539,12 @@ msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.on_error:6
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal.on_error:6
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:5
 msgid "The default implementation prints the traceback to stderr."
 msgstr ""
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.on_error:8
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal.on_error:8
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:11
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:12
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:11
 msgid "The exception that was raised."
 msgstr ""
@@ -2124,9 +2603,9 @@ msgstr ""
 msgid "If ``True``, then the view timed out. If ``False`` then the view finished normally."
 msgstr ""
 
-#: ../../interactions/api.rst:363
+#: ../../interactions/api.rst:364
 msgid "Modal"
-msgstr ""
+msgstr "Modal"
 
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:1
 msgid "Represents a UI modal."
@@ -2139,6 +2618,7 @@ msgstr ""
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:8
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:8
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:8
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:11
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Range:16
 msgid "Examples"
 msgstr ""
@@ -2168,7 +2648,7 @@ msgstr ""
 msgid "A callback that is called when :meth:`on_submit` fails with an error."
 msgstr ""
 
-#: ../../interactions/api.rst:372
+#: ../../interactions/api.rst:373
 msgid "Item"
 msgstr ""
 
@@ -2182,11 +2662,11 @@ msgstr ""
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item:5
 msgid ":class:`discord.ui.Button`"
-msgstr ""
+msgstr ":class:`discord.ui.Button`"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item:6
 msgid ":class:`discord.ui.Select`"
-msgstr ""
+msgstr ":class:`discord.ui.Select`"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.Item.view:1
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.view:1
@@ -2200,7 +2680,7 @@ msgstr ""
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.view:3
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.view:3
 msgid "Optional[:class:`View`]"
-msgstr ""
+msgstr "Optional[:class:`View`]"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item.callback:3
 #: ../../../discord/ui/button.py:docstring of discord.ui.item.Item.callback:3
@@ -2213,7 +2693,7 @@ msgstr ""
 #: ../../../discord/ui/button.py:docstring of discord.ui.item.Item.callback:5
 #: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:5
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.item.Item.callback:5
-msgid "This can be overriden by subclasses."
+msgid "This can be overridden by subclasses."
 msgstr ""
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item.callback:7
@@ -2234,7 +2714,7 @@ msgstr ""
 
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.style:3
 msgid ":class:`discord.ButtonStyle`"
-msgstr ""
+msgstr ":class:`discord.ButtonStyle`"
 
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.custom_id:1
 msgid "The ID of the button that gets received during an interaction."
@@ -2250,7 +2730,7 @@ msgstr ""
 
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.emoji:3
 msgid "Optional[:class:`.PartialEmoji`]"
-msgstr ""
+msgstr "Optional[:class:`.PartialEmoji`]"
 
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.button:1
 msgid "A decorator that attaches a button to a component."
@@ -2280,9 +2760,9 @@ msgstr ""
 msgid "The emoji of the button. This can be in string form or a :class:`.PartialEmoji` or a full :class:`.Emoji`."
 msgstr ""
 
-#: ../../interactions/api.rst:391
+#: ../../interactions/api.rst:392
 msgid "Select"
-msgstr ""
+msgstr "Select"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:1
 msgid "Represents a UI select menu."
@@ -2315,7 +2795,7 @@ msgstr ""
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.options:3
 msgid "List[:class:`discord.SelectOption`]"
-msgstr ""
+msgstr "List[:class:`discord.SelectOption`]"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:1
 msgid "Adds an option to the select menu."
@@ -2353,7 +2833,7 @@ msgstr ""
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.values:3
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:18
 msgid "List[:class:`str`]"
-msgstr ""
+msgstr "List[:class:`str`]"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.select:1
 msgid "A decorator that attaches a select menu to a component."
@@ -2397,19 +2877,19 @@ msgstr ""
 
 #: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.style:3
 msgid ":class:`discord.TextStyle`"
-msgstr ""
+msgstr ":class:`discord.TextStyle`"
 
-#: ../../interactions/api.rst:413
+#: ../../interactions/api.rst:414
 msgid "Application Commands"
 msgstr ""
 
-#: ../../interactions/api.rst:415
+#: ../../interactions/api.rst:416
 msgid "The library has helpers to aid in creation of application commands. These are all in the ``discord.app_commands`` package."
 msgstr ""
 
-#: ../../interactions/api.rst:418
+#: ../../interactions/api.rst:419
 msgid "CommandTree"
-msgstr ""
+msgstr "CommandTree"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree:1
 msgid "Represents a container that holds application command information."
@@ -2449,6 +2929,26 @@ msgstr ""
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:20
 msgid "List[:class:`~discord.app_commands.AppCommand`]"
+msgstr "List[:class:`~discord.app_commands.AppCommand`]"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:1
+msgid "Copies all global commands to the specified guild."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:3
+msgid "This method is mainly available for development purposes, as it allows you to copy your global commands over to a testing guild easily and prevent waiting an hour for the propagation."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:7
+msgid "Note that this method will *override* pre-existing guild commands that would conflict."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:9
+msgid "The guild to copy the commands to."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:12
+msgid "The maximum number of commands was reached for that guild.     This is currently 100 for slash commands and 5 for context menu commands."
 msgstr ""
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:1
@@ -2564,17 +3064,68 @@ msgstr ""
 msgid "Union[List[:class:`ContextMenu`], List[Union[:class:`Command`, :class:`Group`]]"
 msgstr ""
 
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:1
+msgid "An iterator that recursively walks through all application commands and child commands from the tree."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:3
+msgid "The guild to iterate the commands from. If not given then it iterates all global commands instead."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:6
+msgid "The type of commands to iterate over. Defaults to :attr:`~discord.AppCommandType.chat_input`, i.e. slash commands."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:0
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.walk_commands:0
+msgid "Yields"
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.walk_commands:10
+msgid "Union[:class:`ContextMenu`, :class:`Command`, :class:`Group`] -- The application commands from the tree."
+msgstr ""
+
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:3
 msgid "A callback that is called when any command raises an :exc:`AppCommandError`."
 msgstr ""
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:7
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:5
+msgid "The default implementation prints the traceback to stderr if the command does not have any error handlers attached to it."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:8
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:7
 msgid "The interaction that is being handled."
 msgstr ""
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:9
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:10
 msgid "The command that failed, if any."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:1
+msgid "A decorator that registers a coroutine as a local error handler."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:3
+msgid "This must match the signature of the :meth:`on_error` callback."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:5
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:7
+msgid "The error passed will be derived from :exc:`AppCommandError`."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:9
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:9
+msgid "The coroutine to register as the local error handler."
+msgstr ""
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:10
+msgid "The coroutine passed is not actually a coroutine or does     not match the signature."
 msgstr ""
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:1
@@ -2637,7 +3188,7 @@ msgstr ""
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:18
 msgid "List[:class:`AppCommand`]"
-msgstr ""
+msgstr "List[:class:`AppCommand`]"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.call:3
 msgid "Given an :class:`~discord.Interaction`, calls the matching application command that's being invoked."
@@ -2663,11 +3214,11 @@ msgstr ""
 msgid "An error occurred while calling the command."
 msgstr ""
 
-#: ../../interactions/api.rst:426
+#: ../../interactions/api.rst:427
 msgid "Commands"
 msgstr ""
 
-#: ../../interactions/api.rst:429
+#: ../../interactions/api.rst:430
 msgid "Command"
 msgstr ""
 
@@ -2701,10 +3252,15 @@ msgid "The description of the application command. This shows up in the UI to de
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:27
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:25
+msgid "A list of predicates that take a :class:`~discord.Interaction` parameter to indicate whether the command callback should be executed. If an exception is necessary to be thrown to signal failure, then one inherited from :exc:`AppCommandError` should be used. If all the checks fail without propagating an exception, :exc:`CheckFailure` is raised."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:35
 msgid "The parent application command. ``None`` if there isn't one."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:29
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:37
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.root_parent:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:26
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Group.root_parent:3
@@ -2724,23 +3280,13 @@ msgstr ""
 msgid "The root parent of this command."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:1
-msgid "A decorator that registers a coroutine as a local error handler."
-msgstr ""
-
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:3
 msgid "The local error handler is called whenever an exception is raised in the body of the command or during handling of the command. The error handler must take 2 parameters, the interaction and the error."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:7
-msgid "The error passed will be derived from :exc:`AppCommandError`."
-msgstr ""
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:9
-msgid "The coroutine to register as the local error handler."
-msgstr ""
-
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:12
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:12
 msgid "The coroutine passed is not actually a coroutine."
 msgstr ""
 
@@ -2749,30 +3295,64 @@ msgid "A decorator that registers a coroutine as an autocomplete prompt for a pa
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:3
-msgid "The coroutine callback must have 3 parameters, the :class:`~discord.Interaction`, the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`, depending on the type of the parameter being marked as autocomplete), and then the :class:`Namespace` that represents possible values are partially filled in."
+msgid "The coroutine callback must have 2 parameters, the :class:`~discord.Interaction`, and the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`, depending on the type of the parameter being marked as autocomplete)."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:8
-msgid "The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects. Only up to 25 objects are supported."
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:7
+msgid "To get the values from other parameters that may be filled in, accessing :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those values."
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:11
+msgid "The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects. Only up to 25 objects are supported."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:14
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:6
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:8
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.guilds:13
 msgid "Example:"
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:32
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:34
 msgid "The parameter name to register as autocomplete."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:35
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:37
 msgid "The coroutine passed is not actually a coroutine or     the parameter is not found or of an invalid type."
 msgstr ""
 
-#: ../../interactions/api.rst:437
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.add_check:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.add_check:1
+msgid "Adds a check to the command."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.add_check:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.add_check:3
+msgid "This is the non-decorator interface to :func:`check`."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.add_check:5
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.add_check:5
+msgid "The function that will be used as a check."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.remove_check:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.remove_check:1
+msgid "Removes a check from the command."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.remove_check:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.remove_check:3
+msgid "This function is idempotent and will not raise an exception if the function is not in the command's checks."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.remove_check:6
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.remove_check:6
+msgid "The function to remove from the checks."
+msgstr ""
+
+#: ../../interactions/api.rst:438
 msgid "ContextMenu"
 msgstr ""
 
@@ -2804,7 +3384,7 @@ msgstr ""
 msgid "The coroutine that is executed when the context menu is called."
 msgstr ""
 
-#: ../../interactions/api.rst:445
+#: ../../interactions/api.rst:446
 msgid "Group"
 msgstr ""
 
@@ -2840,6 +3420,14 @@ msgstr ""
 msgid "List[Union[:class:`Command`, :class:`Group`]]"
 msgstr ""
 
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.walk_commands:1
+msgid "An iterator that recursively walks through all commands that this group contains."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.walk_commands:3
+msgid "Union[:class:`Command`, :class:`Group`] -- The commands in this group."
+msgstr ""
+
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:3
 msgid "A callback that is called when a child's command raises an :exc:`AppCommandError`."
 msgstr ""
@@ -2851,6 +3439,14 @@ msgstr ""
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:9
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandInvokeError:16
 msgid "The command that failed."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:3
+msgid "A callback that is called when an interaction happens within the group that checks whether a command inside the group should be executed."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:13
+msgid "If an exception occurs within the body then the check is considered a failure and error handlers such as :meth:`on_error` is called. See :exc:`AppCommandError` for more information."
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.add_command:1
@@ -2870,7 +3466,7 @@ msgid "The command or group is already registered. Note that the :attr:`CommandA
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.add_command:10
-msgid "There are too many commands already registered."
+msgid "There are too many commands already registered or the group is too     deeply nested."
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.add_command:11
@@ -2910,7 +3506,7 @@ msgstr ""
 msgid "Creates an application command under this group."
 msgstr ""
 
-#: ../../interactions/api.rst:453
+#: ../../interactions/api.rst:454
 msgid "Decorators"
 msgstr ""
 
@@ -2951,8 +3547,32 @@ msgid "The choices of the parameters."
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:46
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:28
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:29
 msgid "The parameter name is not found or the parameter type was incorrect."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:1
+msgid "A decorator that adds a check to an application command."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:3
+msgid "These checks should be predicates that take in a single parameter taking a :class:`~discord.Interaction`. If the check returns a ``False``\\-like value then during invocation a :exc:`CheckFailure` exception is raised and sent to the appropriate error handlers."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:8
+msgid "These checks can be either a coroutine or not."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:12
+msgid "Creating a basic check to see if the command invoker is you."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:24
+msgid "Transforming common checks into its own decorator:"
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.check:38
+msgid "The predicate to check if the command should be invoked."
 msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:1
@@ -2963,7 +3583,11 @@ msgstr ""
 msgid "Autocomplete is only supported on types that have :class:`str`, :class:`int`, or :class:`float` values."
 msgstr ""
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:26
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:6
+msgid "For more information, see the :meth:`Command.autocomplete` documentation."
+msgstr ""
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:27
 msgid "The parameters to mark as autocomplete."
 msgstr ""
 
@@ -2983,7 +3607,7 @@ msgstr ""
 msgid "The guilds to associate this command with. The command tree will use this as the default when added rather than adding it as a global command."
 msgstr ""
 
-#: ../../interactions/api.rst:474
+#: ../../interactions/api.rst:478
 msgid "Namespace"
 msgstr ""
 
@@ -2992,94 +3616,110 @@ msgid "An object that holds the parameters being passed to a command in a mostly
 msgstr ""
 
 #: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:3
-msgid "This class is deliberately simple and just holds the option name and resolved value as a simple key-pair mapping. These attributes can be accessed using dot notation. For example, an option with the name of ``example`` can be accessed using ``ns.example``."
+msgid "This class is deliberately simple and just holds the option name and resolved value as a simple key-pair mapping. These attributes can be accessed using dot notation. For example, an option with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found, then ``None`` is returned rather than an attribute error."
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:13
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:14
 msgid "Checks if two namespaces are equal by checking if all attributes are equal."
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:16
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:17
 msgid "Checks if two namespaces are not equal."
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:18
-msgid "This namespace object converts resolved objects into their appropriate form depending on their type. Consult the table below for conversion information."
-msgstr ""
-
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:22
-msgid "Option Type"
-msgstr ""
-
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:22
-msgid "Resolved Type"
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:20
+msgid "Returns an attribute if it is found, otherwise raises a :exc:`KeyError`."
 msgstr ""
 
 #: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:24
-msgid ":attr:`.AppCommandOptionType.string`"
+msgid "Checks if the attribute is in the namespace."
 msgstr ""
 
 #: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:26
+msgid "This namespace object converts resolved objects into their appropriate form depending on their type. Consult the table below for conversion information."
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:30
+msgid "Option Type"
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:30
+msgid "Resolved Type"
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:32
+msgid ":attr:`.AppCommandOptionType.string`"
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
 msgid ":attr:`.AppCommandOptionType.integer`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:28
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:36
 msgid ":attr:`.AppCommandOptionType.boolean`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:30
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:38
 msgid ":attr:`.AppCommandOptionType.number`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:30
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:38
 msgid ":class:`float`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:32
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:40
 msgid ":attr:`.AppCommandOptionType.user`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:32
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:40
 msgid ":class:`~discord.User` or :class:`~discord.Member`"
-msgstr ""
+msgstr ":class:`~discord.User` または :class:`~discord.Member`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:42
 msgid ":attr:`.AppCommandOptionType.channel`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:42
 msgid ":class:`.AppCommandChannel` or :class:`.AppCommandThread`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:36
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:44
 msgid ":attr:`.AppCommandOptionType.role`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:36
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:44
 msgid ":class:`~discord.Role`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:38
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:46
 msgid ":attr:`.AppCommandOptionType.mentionable`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:38
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:46
 msgid ":class:`~discord.User` or :class:`~discord.Member`, or :class:`~discord.Role`"
-msgstr ""
+msgstr ":class:`~discord.User` または :class:`~discord.Member` または :class:`~discord.Role`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:40
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:48
 msgid ":attr:`.AppCommandOptionType.attachment`"
 msgstr ""
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:40
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:48
 msgid ":class:`~discord.Attachment`"
 msgstr ""
 
-#: ../../interactions/api.rst:482
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:53
+msgid "In autocomplete interactions, the namespace might not be validated or filled in. Discord does not send the resolved data as well, so this means that certain fields end up just as IDs rather than the resolved data. In these cases, a :class:`discord.Object` is returned instead."
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:57
+msgid "This is a Discord limitation."
+msgstr ""
+
+#: ../../interactions/api.rst:486
 msgid "Transformers"
 msgstr ""
 
-#: ../../interactions/api.rst:485
+#: ../../interactions/api.rst:489
 msgid "Transformer"
 msgstr ""
 
@@ -3149,7 +3789,7 @@ msgstr ""
 msgid "The value of the given argument after being resolved. See the :class:`conversion table <discord.app_commands.Namespace>` for how certain option types correspond to certain values."
 msgstr ""
 
-#: ../../interactions/api.rst:493
+#: ../../interactions/api.rst:497
 msgid "Transform"
 msgstr ""
 
@@ -3166,7 +3806,7 @@ msgstr ""
 msgid "For example usage, check :class:`Transformer`."
 msgstr ""
 
-#: ../../interactions/api.rst:501
+#: ../../interactions/api.rst:505
 msgid "Range"
 msgstr ""
 
@@ -3190,7 +3830,7 @@ msgstr ""
 msgid "``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10."
 msgstr ""
 
-#: ../../interactions/api.rst:509
+#: ../../interactions/api.rst:513
 msgid "Exceptions"
 msgstr ""
 
@@ -3224,6 +3864,7 @@ msgstr ""
 
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandInvokeError:3
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:4
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CheckFailure:3
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandAlreadyRegistered:3
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandSignatureMismatch:6
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:3
@@ -3270,6 +3911,10 @@ msgstr ""
 msgid "Type[:class:`Transformer`]"
 msgstr ""
 
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CheckFailure:1
+msgid "An exception raised when check predicates in a command have failed."
+msgstr ""
+
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandAlreadyRegistered:1
 msgid "An exception raised when a command is already registered."
 msgstr ""
@@ -3310,35 +3955,39 @@ msgstr ""
 msgid "The type of command that was not found."
 msgstr ""
 
-#: ../../interactions/api.rst:530
+#: ../../interactions/api.rst:537
 msgid "Exception Hierarchy"
 msgstr ""
 
-#: ../../interactions/api.rst:539
+#: ../../interactions/api.rst:547
 msgid ":exc:`~discord.DiscordException`"
 msgstr ""
 
-#: ../../interactions/api.rst:539
+#: ../../interactions/api.rst:547
 msgid ":exc:`~discord.app_commands.AppCommandError`"
 msgstr ""
 
-#: ../../interactions/api.rst:536
+#: ../../interactions/api.rst:543
 msgid ":exc:`~discord.app_commands.CommandInvokeError`"
 msgstr ""
 
-#: ../../interactions/api.rst:537
+#: ../../interactions/api.rst:544
 msgid ":exc:`~discord.app_commands.TransformerError`"
 msgstr ""
 
-#: ../../interactions/api.rst:538
+#: ../../interactions/api.rst:545
+msgid ":exc:`~discord.app_commands.CheckFailure`"
+msgstr ""
+
+#: ../../interactions/api.rst:546
 msgid ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 msgstr ""
 
-#: ../../interactions/api.rst:539
+#: ../../interactions/api.rst:547
 msgid ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 msgstr ""
 
-#: ../../interactions/api.rst:540
+#: ../../interactions/api.rst:548
 msgid ":exc:`~discord.app_commands.CommandNotFound`"
 msgstr ""
 
