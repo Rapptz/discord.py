@@ -2320,7 +2320,7 @@ def max_concurrency(number: int, per: BucketType = BucketType.default, *, wait: 
     return decorator  # type: ignore
 
 
-def before_invoke(coro: Hook[Any]) -> Callable[[T], T]:
+def before_invoke(coro: Hook[ContextT]) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
@@ -2368,7 +2368,7 @@ def before_invoke(coro: Hook[Any]) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def after_invoke(coro: Hook[Any]) -> Callable[[T], T]:
+def after_invoke(coro: Hook[ContextT]) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
