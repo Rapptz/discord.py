@@ -390,7 +390,7 @@ class Client:
         # Schedules the task
         return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
 
-    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
+    def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 
@@ -430,7 +430,7 @@ class Client:
         else:
             self._schedule_event(coro, method, *args, **kwargs)
 
-    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
         """|coro|
 
         The default error handler provided by the client.
@@ -438,6 +438,10 @@ class Client:
         By default this prints to :data:`sys.stderr` however it could be
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
+
+        .. versionchanged:: 2.0
+
+            ``event_method`` parameter is now positional-only.
         """
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
@@ -977,6 +981,7 @@ class Client:
     def wait_for(
         self,
         event: str,
+        /,
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
@@ -1036,6 +1041,10 @@ class Client:
                     else:
                         await channel.send('\N{THUMBS UP SIGN}')
 
+        .. versionchanged:: 2.0
+
+            ``event`` parameter is now positional-only.
+
 
         Parameters
         ------------
@@ -1082,7 +1091,7 @@ class Client:
 
     # event registration
 
-    def event(self, coro: Coro) -> Coro:
+    def event(self, coro: Coro, /) -> Coro:
         """A decorator that registers an event to listen to.
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
@@ -1097,6 +1106,10 @@ class Client:
             @client.event
             async def on_ready():
                 print('Ready!')
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Raises
         --------

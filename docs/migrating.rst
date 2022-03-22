@@ -939,6 +939,7 @@ Parameters in the following methods are now all positional-only:
 - :meth:`Client.fetch_webhook`
 - :meth:`Client.fetch_widget`
 - :meth:`Message.add_reaction`
+- :meth:`Client.error`
 - :meth:`abc.Messageable.fetch_message`
 - :meth:`abc.GuildChannel.permissions_for`
 - :meth:`DMChannel.get_partial_message`
@@ -950,6 +951,9 @@ Parameters in the following methods are now all positional-only:
 The following parameters are now positional-only:
 
 - ``iterable`` in :meth:`utils.get`
+- ``event`` in :meth:`Client.dispatch`
+- ``event_method`` in :meth:`Client.on_error`
+- ``event`` in :meth:`Client.wait_for`
 
 The following are now keyword-only:
 
@@ -1247,14 +1251,97 @@ define their type hints more accurately.
 Function Signature Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Parameters in the following methods are now all positional-only:
+
+- :meth:`ext.commands.when_mentioned`
+- :meth:`ext.commands.Bot.on_command_error`
+- :meth:`ext.commands.Bot.check`
+- :meth:`ext.commands.Bot.check_once`
+- :meth:`ext.commands.Bot.is_owner`
+- :meth:`ext.commands.Bot.before_invoke`
+- :meth:`ext.commands.Bot.after_invoke`
+- :meth:`ext.commands.Bot.listen`
+- :meth:`ext.commands.Bot.get_prefix`
+- :meth:`ext.commands.Bot.invoke`
+- :meth:`ext.commands.Bot.process_commands`
+- :meth:`ext.commands.Bot.on_message`
+- :meth:`ext.commands.Command.dispatch_error`
+- :meth:`ext.commands.Command.transform`
+- :meth:`ext.commands.Command.call_before_hooks`
+- :meth:`ext.commands.Command.call_after_hooks`
+- :meth:`ext.commands.Command.prepare`
+- :meth:`ext.commands.Command.is_on_cooldown`
+- :meth:`ext.commands.Command.reset_cooldown`
+- :meth:`ext.commands.Command.get_cooldown_retry_after`
+- :meth:`ext.commands.Command.invoke`
+- :meth:`ext.commands.Command.error`
+- :meth:`ext.commands.Command.before_invoke`
+- :meth:`ext.commands.Command.after_invoke`
+- :meth:`ext.commands.Command.can_run`
+- :meth:`ext.commands.Group.invoke`
+- :meth:`ext.commands.check`
+- :meth:`ext.commands.has_role`
+- :meth:`ext.commands.bot_has_role`
+- :meth:`ext.commands.before_invoke`
+- :meth:`ext.commands.after_invoke`
+- :meth:`ext.commands.HelpCommand.call_before_hooks`
+- :meth:`ext.commands.HelpCommand.call_after_hooks`
+- :meth:`ext.commands.HelpCommand.can_run`
+- :meth:`ext.commands.HelpCommand.get_command_signature`
+- :meth:`ext.commands.HelpCommand.remove_mentions`
+- :meth:`ext.commands.HelpCommand.command_not_found`
+- :meth:`ext.commands.HelpCommand.subcommand_not_found`
+- :meth:`ext.commands.HelpCommand.get_max_size`
+- :meth:`ext.commands.HelpCommand.send_error_message`
+- :meth:`ext.commands.HelpCommand.on_help_command_error`
+- :meth:`ext.commands.HelpCommand.send_bot_help`
+- :meth:`ext.commands.HelpCommand.send_cog_help`
+- :meth:`ext.commands.HelpCommand.send_group_help`
+- :meth:`ext.commands.HelpCommand.send_command_help`
+- :meth:`ext.commands.HelpCommand.prepare_help_command`
+- :meth:`ext.commands.DefaultHelpCommand.shorten_text`
+- :meth:`ext.commands.DefaultHelpCommand.add_command_formatting`
+- :meth:`ext.commands.DefaultHelpCommand.prepare_help_command`
+- :meth:`ext.commands.DefaultHelpCommand.send_bot_help`
+- :meth:`ext.commands.DefaultHelpCommand.send_command_help`
+- :meth:`ext.commands.DefaultHelpCommand.send_group_help`
+- :meth:`ext.commands.DefaultHelpCommand.send_cog_help`
+- :meth:`ext.commands.MinimalHelpCommand.get_command_signature`
+- :meth:`ext.commands.MinimalHelpCommand.add_bot_commands_formatting`
+- :meth:`ext.commands.MinimalHelpCommand.add_subcommand_formatting`
+- :meth:`ext.commands.MinimalHelpCommand.add_aliases_formatting`
+- :meth:`ext.commands.MinimalHelpCommand.add_command_formatting`
+- :meth:`ext.commands.MinimalHelpCommand.prepare_help_command`
+- :meth:`ext.commands.MinimalHelpCommand.send_bot_help`
+- :meth:`ext.commands.MinimalHelpCommand.send_cog_help`
+- :meth:`ext.commands.MinimalHelpCommand.send_group_help`
+- :meth:`ext.commands.MinimalHelpCommand.send_command_help`
+
 The following parameters are now positional-only:
 
+- ``event_name`` in :meth:`ext.commands.Bot.dispatch`
+- ``func`` in :meth:`ext.commands.Bot.check`
 - ``func`` in :meth:`ext.commands.Bot.add_check`
 - ``func`` in :meth:`ext.commands.Bot.remove_check`
+- ``func`` in :meth:`ext.commands.Bot.check_once`
+- ``ctx`` in :meth:`ext.commands.Bot.can_run`
+- ``func`` in :meth:`ext.commands.Bot.add_listener`
+- ``func`` in :meth:`ext.commands.Bot.remove_listener`
+- ``name`` in :meth:`ext.commands.Bot.load_extension`
+- ``name`` in :meth:`ext.commands.Bot.unload_extension`
+- ``name`` in :meth:`ext.commands.Bot.reload_extension`
+- ``message`` in :meth:`ext.commands.Bot.get_context`
 - ``func`` in :meth:`ext.commands.Command.add_check`
 - ``func`` in :meth:`ext.commands.Command.remove_check`
+- ``context`` in :meth:`ext.commands.Command.__call__`
+- ``ctx`` in :meth:`ext.commands.Command.reinvoke`
+- ``ctx`` in :meth:`ext.commands.Group.reinvoke`
+- ``context`` in :meth:`ext.commands.HelpCommand.__call__`
+- ``commands`` in :meth:`ext.commands.HelpCommand.filter_commands`
+- ``ctx`` in :meth:`ext.commands.HelpCommand.command_callback`
 - ``func`` in :meth:`ext.commands.HelpCommand.add_check`
 - ``func`` in :meth:`ext.commands.HelpCommand.remove_check`
+- ``commands`` in :meth:`ext.commands.DefaultHelpCommand.add_indented_commands`
 - ``cog`` in :meth:`ext.commands.Bot.add_cog`
 - ``name`` in :meth:`ext.commands.Bot.get_cog`
 - ``name`` in :meth:`ext.commands.Bot.remove_cog`
