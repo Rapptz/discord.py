@@ -1,5 +1,7 @@
 .. currentmodule:: discord
 
+.. _interactions_api:
+
 Interactions API Reference
 ============================
 
