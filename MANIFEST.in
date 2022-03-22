@@ -3,8 +3,5 @@ include LICENSE
 include requirements.txt
 include discord/bin/*.dll
 include discord/py.typed
-include discord/app_commands/py.typed
 include discord/ext/commands/py.typed
 include discord/ext/tasks/py.typed
-include discord/ui/py.typed
-include discord/webhook/py.typed
