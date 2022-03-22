@@ -1,5 +1,5 @@
-discord.py
-==========
+Discord.py
+============
 
 .. image:: https://discord.com/api/guilds/336642139381301249/embed.png
    :target: https://discord.gg/r3sSKJJ
@@ -13,14 +13,14 @@ discord.py
 
 A modern, easy to use, feature-rich, and async ready API wrapper for Discord written in Python.
 
-Key Features
+Key Features:
 -------------
 
 - Modern Pythonic API using ``async`` and ``await``.
 - Proper rate limit handling.
 - Optimised in both speed and memory.
 
-Installing
+Installing:
 ----------
 
 **Python 3.8 or higher is required**
@@ -55,7 +55,7 @@ To install the development version, do the following:
     $ python3 -m pip install -U .[voice]
 
 
-Optional Packages
+Optional Packages:
 ~~~~~~~~~~~~~~~~~~
 
 * `PyNaCl <https://pypi.org/project/PyNaCl/>`__ (for voice support)
@@ -65,7 +65,7 @@ Please note that on Linux installing voice you must install the following packag
 * libffi-dev (or ``libffi-devel`` on some systems)
 * python-dev (e.g. ``python3.6-dev`` for Python 3.6)
 
-Quick Example
+Quick Example:
 --------------
 
 .. code:: py
@@ -87,7 +87,7 @@ Quick Example
     client = MyClient()
     client.run('token')
 
-Bot Example
+Bot Example:
 ~~~~~~~~~~~~~
 
 .. code:: py
@@ -105,7 +105,7 @@ Bot Example
 
 You can find more examples in the examples directory.
 
-Links
+Links:
 ------
 
 - `Documentation <https://discordpy.readthedocs.io/en/latest/index.html>`_
