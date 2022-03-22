@@ -44,7 +44,7 @@ from typing import (
     Union,
 )
 
-from .errors import TransformerError
+from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..enums import AppCommandOptionType, ChannelType
@@ -136,7 +136,13 @@ class CommandParameter:
                     raise TransformerError(value, self.type, self._annotation)
                 return choice
 
-            return await self._annotation.transform(interaction, value)
+            try:
+                return await self._annotation.transform(interaction, value)
+            except AppCommandError:
+                raise
+            except Exception as e:
+                raise TransformerError(value, self.type, self._annotation) from e
+
         return value
 
 
