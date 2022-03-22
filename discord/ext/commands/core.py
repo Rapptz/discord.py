@@ -68,6 +68,8 @@ if TYPE_CHECKING:
         Check,
         Hook,
         Error,
+        ErrorT,
+        HookT,
     )
 
 
@@ -105,7 +107,6 @@ CogT = TypeVar('CogT', bound='Optional[Cog]')
 CommandT = TypeVar('CommandT', bound='Command')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -920,7 +921,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: FuncT) -> FuncT:
+    def error(self, coro: ErrorT) -> ErrorT:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
@@ -951,7 +952,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: FuncT) -> FuncT:
+    def before_invoke(self, coro: HookT) -> HookT:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -978,7 +979,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: FuncT) -> FuncT:
+    def after_invoke(self, coro: HookT) -> HookT:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -2319,7 +2320,7 @@ def max_concurrency(number: int, per: BucketType = BucketType.default, *, wait: 
     return decorator  # type: ignore
 
 
-def before_invoke(coro) -> Callable[[T], T]:
+def before_invoke(coro: Hook[ContextT]) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
@@ -2367,7 +2368,7 @@ def before_invoke(coro) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def after_invoke(coro) -> Callable[[T], T]:
+def after_invoke(coro: Hook[ContextT]) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
