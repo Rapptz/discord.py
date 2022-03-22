@@ -99,11 +99,7 @@ def when_mentioned(bot: _Bot, msg: Message, /) -> List[str]:
 
         .. versionchanged:: 2.0
 
-            ``bot`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``msg`` parameter is now positional-only.
+            ``bot`` and ``msg`` parameters are now positional-only.
     """
     # bot.user will never be None when this is called
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
@@ -228,11 +224,7 @@ class BotBase(GroupMixin[None]):
 
         .. versionchanged:: 2.0
 
-            ``context`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``exception`` parameter is now positional-only.
+            ``context`` and ``exception`` parameters are now positional-only.
         """
         if self.extra_events.get('on_command_error', None):
             return
@@ -559,7 +551,7 @@ class BotBase(GroupMixin[None]):
             except ValueError:
                 pass
 
-    def listen(self, name: str = MISSING, /) -> Callable[[CFT], CFT]:
+    def listen(self, name: str = MISSING) -> Callable[[CFT], CFT]:
         """A decorator that registers another function as an external
         event listener. Basically this allows you to listen to multiple
         events from different places e.g. such as :func:`.on_ready`
@@ -582,10 +574,6 @@ class BotBase(GroupMixin[None]):
                 print('two')
 
         Would print one and two in an unspecified order.
-
-        .. versionchanged:: 2.0
-
-            ``name`` parameter is now positional-only.
 
         Raises
         -------
@@ -863,7 +851,7 @@ class BotBase(GroupMixin[None]):
         except ImportError:
             raise errors.ExtensionNotFound(name)
 
-    async def load_extension(self, name: str, /, *, package: Optional[str] = None) -> None:
+    async def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """|coro|
 
         Loads an extension.
@@ -878,10 +866,6 @@ class BotBase(GroupMixin[None]):
         .. versionchanged:: 2.0
 
             This method is now a :term:`coroutine`.
-
-        .. versionchanged:: 2.0
-
-            ``name`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -920,7 +904,7 @@ class BotBase(GroupMixin[None]):
 
         await self._load_from_module_spec(spec, name)
 
-    async def unload_extension(self, name: str, /, *, package: Optional[str] = None) -> None:
+    async def unload_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """|coro|
 
         Unloads an extension.
@@ -936,10 +920,6 @@ class BotBase(GroupMixin[None]):
         .. versionchanged:: 2.0
 
             This method is now a :term:`coroutine`.
-
-        .. versionchanged:: 2.0
-
-            ``name`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -971,17 +951,13 @@ class BotBase(GroupMixin[None]):
         await self._remove_module_references(lib.__name__)
         await self._call_module_finalizers(lib, name)
 
-    async def reload_extension(self, name: str, /, *, package: Optional[str] = None) -> None:
+    async def reload_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
         equivalent to a :meth:`unload_extension` followed by a :meth:`load_extension`
         except done in an atomic way. That is, if an operation fails mid-reload then
         the bot will roll-back to the prior working state.
-
-        .. versionchanged:: 2.0
-
-            ``name`` parameter is now positional-only.
 
         Parameters
         ------------

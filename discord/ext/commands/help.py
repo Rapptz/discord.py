@@ -498,11 +498,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         .. versionchanged:: 2.0
 
-            ``command`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``string`` parameter is now positional-only.
+            ``command`` and ``string`` parameters are now positional-only.
 
         Parameters
         ------------
@@ -665,11 +661,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         .. versionchanged:: 2.0
 
-            ``ctx`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``error`` parameter is now positional-only.
+            ``ctx`` and ``error`` parameters are now positional-only.
 
         Parameters
         ------------
@@ -836,11 +828,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         .. versionchanged:: 2.0
 
-            ``ctx`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``command`` parameter is now positional-only.
+            ``ctx`` and ``command`` parameters are now positional-only.
 
         Parameters
         -----------
@@ -1235,11 +1223,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
 
         .. versionchanged:: 2.0
 
-            ``commands`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-
-            ``heading`` parameter is now positional-only.
+            ``commands`` and ``heading`` parameters are now positional-only.
 
         Parameters
         -----------

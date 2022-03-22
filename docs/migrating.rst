@@ -1260,7 +1260,6 @@ Parameters in the following methods are now all positional-only:
 - :meth:`ext.commands.Bot.is_owner`
 - :meth:`ext.commands.Bot.before_invoke`
 - :meth:`ext.commands.Bot.after_invoke`
-- :meth:`ext.commands.Bot.listen`
 - :meth:`ext.commands.Bot.get_prefix`
 - :meth:`ext.commands.Bot.invoke`
 - :meth:`ext.commands.Bot.process_commands`
@@ -1327,9 +1326,6 @@ The following parameters are now positional-only:
 - ``ctx`` in :meth:`ext.commands.Bot.can_run`
 - ``func`` in :meth:`ext.commands.Bot.add_listener`
 - ``func`` in :meth:`ext.commands.Bot.remove_listener`
-- ``name`` in :meth:`ext.commands.Bot.load_extension`
-- ``name`` in :meth:`ext.commands.Bot.unload_extension`
-- ``name`` in :meth:`ext.commands.Bot.reload_extension`
 - ``message`` in :meth:`ext.commands.Bot.get_context`
 - ``func`` in :meth:`ext.commands.Command.add_check`
 - ``func`` in :meth:`ext.commands.Command.remove_check`
