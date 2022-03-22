@@ -483,12 +483,14 @@ class AuditLogEntry(Hashable):
 
     @utils.cached_property
     def target(self) -> TargetType:
-        if self._target_id is None or self.action.target_type is None:
+        if self.action.target_type is None:
             return None
 
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
+            if self._target_id is None:
+                return None
             return Object(id=self._target_id)
         else:
             return converter(self._target_id)
@@ -527,7 +529,7 @@ class AuditLogEntry(Hashable):
     def _convert_target_role(self, target_id: int) -> Union[Role, Object]:
         return self.guild.get_role(target_id) or Object(id=target_id)
 
-    def _convert_target_invite(self, target_id: int) -> Invite:
+    def _convert_target_invite(self, target_id: None) -> Invite:
         # invites have target_id set to null
         # so figure out which change has the full invite data
         changeset = self.before if self.action is enums.AuditLogAction.invite_delete else self.after
