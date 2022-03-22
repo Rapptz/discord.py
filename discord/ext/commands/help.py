@@ -270,7 +270,8 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
             self.command_callback, globals(), skip_parameters=1
         )
-        self.on_error = self.on_help_command_error
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self.on_help_command_error
 
     async def __call__(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
         return await self._set_context(context, *args, **kwargs)
@@ -419,7 +420,8 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         functools.update_wrapper(wrapped_walk_commands, cog.walk_commands)
         cog.get_commands = wrapped_get_commands
         cog.walk_commands = wrapped_walk_commands
-        self.on_error = self._on_error_cog_implementation
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self._on_error_cog_implementation
         self._cog = cog
 
     def _eject_cog(self) -> None:
@@ -427,7 +429,8 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             return
 
         # revert back into their original methods
-        self.on_error = self.on_help_command_error
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self.on_help_command_error
         cog = self._cog
         cog.get_commands = cog.get_commands.__wrapped__
         cog.walk_commands = cog.walk_commands.__wrapped__
