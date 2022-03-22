@@ -54,9 +54,10 @@ if TYPE_CHECKING:
 
     import discord.abc
 
+    from ._types import Coro
     from .bot import BotBase
-    from .context import Context
     from .cog import Cog
+    from .context import Context
 
 __all__ = (
     'Paginator',
@@ -269,6 +270,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
             self.command_callback, globals(), skip_parameters=1
         )
+        self.on_error = self.on_help_command_error
 
     async def __call__(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
         return await self._set_context(context, *args, **kwargs)
@@ -291,14 +293,25 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         bot.remove_command(self.name)
         self._eject_cog()
 
-    async def invoke(self, ctx: ContextT) -> None:
-        # we need to temporarily set the cog to None to prevent the cog
-        # from being passed into the command callback.
+    async def _call_without_cog(self, callback: Callable[[ContextT], Coro[T]], ctx: ContextT) -> T:
         cog = self._cog
-        self._cog = None
-        await self.prepare(ctx)
-        self._cog = cog
-        await self.callback(*ctx.args, **ctx.kwargs)
+        self.cog = None
+        try:
+            return await callback(ctx)
+        finally:
+            self.cog = cog
+
+    async def _parse_arguments(self, ctx: ContextT) -> None:
+        return await self._call_without_cog(super()._parse_arguments, ctx)
+
+    async def call_before_hooks(self, ctx: ContextT) -> None:
+        return await self._call_without_cog(super().call_before_hooks, ctx)
+
+    async def call_after_hooks(self, ctx: ContextT) -> None:
+        return await self._call_without_cog(super().call_after_hooks, ctx)
+
+    async def can_run(self, ctx: ContextT) -> bool:
+        return await self._call_without_cog(super().can_run, ctx)
 
     def get_bot_mapping(self) -> Dict[Optional[Cog], List[Command[Any, ..., Any]]]:
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
@@ -379,6 +392,9 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         return self.MENTION_PATTERN.sub(replace, string)
 
+    async def _on_error_cog_implementation(self, _, ctx: ContextT, error: CommandError) -> None:
+        await self.on_help_command_error(ctx, error)
+
     def _inject_into_cog(self, cog: Cog) -> None:
         # Warning: hacky
 
@@ -403,6 +419,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         functools.update_wrapper(wrapped_walk_commands, cog.walk_commands)
         cog.get_commands = wrapped_get_commands
         cog.walk_commands = wrapped_walk_commands
+        self.on_error = self._on_error_cog_implementation
         self._cog = cog
 
     def _eject_cog(self) -> None:
@@ -410,6 +427,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             return
 
         # revert back into their original methods
+        self.on_error = self.on_help_command_error
         cog = self._cog
         cog.get_commands = cog.get_commands.__wrapped__
         cog.walk_commands = cog.walk_commands.__wrapped__
