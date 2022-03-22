@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-09 23:46+0900\n"
-"PO-Revision-Date: 2022-03-21 14:51\n"
+"PO-Revision-Date: 2022-03-09 14:57\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -45,7 +45,7 @@ msgstr "「New Application」ボタンをクリックします。"
 
 #: ../../discord.rst:0
 msgid "The new application button."
-msgstr "「New Application」ボタン"
+msgstr ""
 
 #: ../../discord.rst:19
 msgid "Give the application a name and click \"Create\"."
@@ -53,7 +53,7 @@ msgstr "アプリケーションの名前を決めて、「Create」をクリッ
 
 #: ../../discord.rst:0
 msgid "The new application form filled in."
-msgstr "記入された新しいアプリケーションフォーム"
+msgstr ""
 
 #: ../../discord.rst:24
 msgid "Create a Bot User by navigating to the \"Bot\" tab and clicking \"Add Bot\"."
@@ -65,7 +65,7 @@ msgstr "「Yes, do it!」をクリックして続行します。"
 
 #: ../../discord.rst:0
 msgid "The Add Bot button."
-msgstr "「Add Bot」ボタン"
+msgstr ""
 
 #: ../../discord.rst:30
 msgid "Make sure that **Public Bot** is ticked if you want others to invite your bot."
@@ -77,7 +77,7 @@ msgstr "また、必要なサービスを開発している場合を除いて、
 
 #: ../../discord.rst:0
 msgid "How the Bot User options should look like for most people."
-msgstr "Botユーザーの設定がほとんどの人にとってどのように見えるか"
+msgstr ""
 
 #: ../../discord.rst:38
 msgid "Copy the token using the \"Copy\" button."
@@ -125,7 +125,7 @@ msgstr "「OAuth2」タブへ移動します。"
 
 #: ../../discord.rst:0
 msgid "How the OAuth2 page should look like."
-msgstr "OAuth2ページがどのように見えるか"
+msgstr ""
 
 #: ../../discord.rst:74
 msgid "Tick the \"bot\" checkbox under \"scopes\"."
@@ -133,7 +133,7 @@ msgstr "「scopes」下にある「bot」チェックボックスを選択して
 
 #: ../../discord.rst:0
 msgid "The scopes checkbox with \"bot\" ticked."
-msgstr "「bot」がチェックされたスコープのチェックボックス"
+msgstr ""
 
 #: ../../discord.rst:79
 msgid "Tick the permissions required for your bot to function under \"Bot Permissions\"."
@@ -149,7 +149,7 @@ msgstr "二段階認証が有効になっているサーバーにボットを追
 
 #: ../../discord.rst:0
 msgid "The permission checkboxes with some permissions checked."
-msgstr "いくつかの権限にチェックが入った権限のチェックボックス"
+msgstr ""
 
 #: ../../discord.rst:88
 msgid "Now the resulting URL can be used to add your bot to a server. Copy and paste the URL into your browser, choose a server to invite the bot to, and click \"Authorize\"."
