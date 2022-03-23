@@ -20,6 +20,7 @@ This has been moved `here <https://dolfies.github.io/discord.py-self/changes/>`_
 
 | **Credits:**
 | - `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for Discord API help.
+|
 
 | **Note:**
 | Automating user accounts is against the Discord ToS. This library is a proof of concept and I do not recommend using it. Do so at your own risk.
