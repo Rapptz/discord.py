@@ -48,7 +48,7 @@ from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..enums import AppCommandOptionType, ChannelType
-from ..utils import MISSING, maybe_coroutine
+from ..utils import MISSING, MaybeCoro, maybe_coroutine
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -224,7 +224,7 @@ class Transformer:
         return None
 
     @classmethod
-    async def transform(cls, interaction: Interaction, value: Any) -> Any:
+    def transform(cls, interaction: Interaction, value: Any, /) -> MaybeCoro[Any]:
         """|maybecoro|
 
         Transforms the converted option value into another value.
@@ -453,7 +453,7 @@ class MemberTransformer(Transformer):
         return AppCommandOptionType.user
 
     @classmethod
-    async def transform(cls, interaction: Interaction, value: Any) -> Member:
+    async def transform(cls, interaction: Interaction, value: Any, /) -> Member:
         if not isinstance(value, Member):
             raise TransformerError(value, cls.type(), cls)
         return value

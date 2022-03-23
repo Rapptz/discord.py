@@ -37,10 +37,7 @@ if TYPE_CHECKING:
     from .errors import CommandError
 
     P = ParamSpec('P')
-    MaybeCoroFunc = Union[
-        Callable[P, 'Coro[T]'],
-        Callable[P, T],
-    ]
+    MaybeCoroFunc = Callable[P, 'MaybeCoro[T]']
 else:
     P = TypeVar('P')
     MaybeCoroFunc = Tuple[P, T]

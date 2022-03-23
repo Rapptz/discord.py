@@ -140,10 +140,7 @@ if TYPE_CHECKING:
 
     P = ParamSpec('P')
 
-    MaybeCoroFunc = Union[
-        Callable[P, Coroutine[Any, Any, 'T']],
-        Callable[P, 'T'],
-    ]
+    MaybeCoroFunc = Callable[P, 'MaybeCoro[T]']
 
     _SnowflakeListBase = array.array[int]
 
@@ -156,6 +153,7 @@ T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
+MaybeCoro = Union[T, Coro[T]]
 
 
 class CachedSlotProperty(Generic[T, T_co]):

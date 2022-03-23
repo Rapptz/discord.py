@@ -30,7 +30,7 @@ from discord.utils import maybe_coroutine
 
 from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
-from ._types import _BaseCommand, BotT
+from ._types import _BaseCommand, BotT, MaybeCoro
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -379,7 +379,7 @@ class Cog(metaclass=CogMeta):
         return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
-    async def cog_load(self) -> None:
+    def cog_load(self) -> MaybeCoro[None]:
         """|maybecoro|
 
         A special method that is called when the cog gets loaded.
@@ -393,7 +393,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_unload(self) -> None:
+    def cog_unload(self) -> MaybeCoro[None]:
         """|maybecoro|
 
         A special method that is called when the cog gets removed.
@@ -407,37 +407,55 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context[BotT]) -> bool:
-        """A special method that registers as a :meth:`.Bot.check_once`
+    def bot_check_once(self, ctx: Context[BotT], /) -> MaybeCoro[bool]:
+        """|maybecoro|
+
+        A special method that registers as a :meth:`.Bot.check_once`
         check.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
         """
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context[BotT]) -> bool:
-        """A special method that registers as a :meth:`.Bot.check`
+    def bot_check(self, ctx: Context[BotT], /) -> MaybeCoro[bool]:
+        """|maybecoro|
+
+        A special method that registers as a :meth:`.Bot.check`
         check.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
         """
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context[BotT]) -> bool:
-        """A special method that registers as a :func:`~discord.ext.commands.check`
+    def cog_check(self, ctx: Context[BotT], /) -> MaybeCoro[bool]:
+        """|maybecoro|
+
+        A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
         """
         return True
 
     @_cog_special_method
-    async def cog_command_error(self, ctx: Context[BotT], error: Exception) -> None:
+    async def cog_command_error(self, ctx: Context[BotT], error: Exception, /) -> None:
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
@@ -445,6 +463,10 @@ class Cog(metaclass=CogMeta):
         to the commands inside this cog.
 
         This **must** be a coroutine.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` and ``error`` parameters are now positional-only.
 
         Parameters
         -----------
@@ -456,12 +478,16 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_before_invoke(self, ctx: Context[BotT]) -> None:
+    async def cog_before_invoke(self, ctx: Context[BotT], /) -> None:
         """A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
 
         This **must** be a coroutine.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -471,12 +497,16 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_after_invoke(self, ctx: Context[BotT]) -> None:
+    async def cog_after_invoke(self, ctx: Context[BotT], /) -> None:
         """A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.
 
         This **must** be a coroutine.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------

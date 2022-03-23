@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 
     import discord.abc
 
-    from ._types import Coro
+    from ._types import Coro, MaybeCoro
     from .bot import BotBase
     from .cog import Cog
     from .context import Context
@@ -458,7 +458,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         if cog is not None:
             self._inject_into_cog(cog)
 
-    def command_not_found(self, string: str, /) -> str:
+    def command_not_found(self, string: str, /) -> MaybeCoro[str]:
         """|maybecoro|
 
         A method called when a command is not found in the help command.
@@ -483,7 +483,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return f'No command called "{string}" found.'
 
-    def subcommand_not_found(self, command: Command[Any, ..., Any], string: str, /) -> str:
+    def subcommand_not_found(self, command: Command[Any, ..., Any], string: str, /) -> MaybeCoro[str]:
         """|maybecoro|
 
         A method called when a command did not have a subcommand requested in the help command.

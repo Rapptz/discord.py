@@ -1315,6 +1315,12 @@ Parameters in the following methods are now all positional-only:
 - :meth:`ext.commands.MinimalHelpCommand.send_cog_help`
 - :meth:`ext.commands.MinimalHelpCommand.send_group_help`
 - :meth:`ext.commands.MinimalHelpCommand.send_command_help`
+- :meth:`ext.commands.Cog.bot_check_once`
+- :meth:`ext.commands.Cog.bot_check`
+- :meth:`ext.commands.Cog.cog_check`
+- :meth:`ext.commands.Cog.cog_command_error`
+- :meth:`ext.commands.Cog.cog_before_invoke`
+- :meth:`ext.commands.Cog.cog_after_invoke`
 
 The following parameters are now positional-only:
 
