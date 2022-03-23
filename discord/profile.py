@@ -99,9 +99,7 @@ class Profile:
 
         self.premium_since: Optional[datetime] = utils.parse_time(data['premium_since'])
         self.boosting_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
-        self.connections: List[PartialConnection] = [
-            PartialConnection(d) for d in data['connected_accounts']
-        ] 
+        self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]
 
         self.mutual_guilds: Optional[List[Guild]] = self._parse_mutual_guilds(data.get('mutual_guilds'))
         self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))
