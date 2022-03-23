@@ -32,7 +32,7 @@ from .voice import GuildVoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
 from .role import Role
-from .member import Member
+from .member import Member, MemberWithUser
 from .emoji import Emoji
 from .user import User
 from .sticker import GuildSticker
@@ -62,7 +62,7 @@ class _GuildOptional(TypedDict, total=False):
     large: bool
     member_count: int
     voice_states: List[GuildVoiceState]
-    members: List[Member]
+    members: List[MemberWithUser]
     channels: List[GuildChannel]
     presences: List[PartialPresenceUpdate]
     threads: List[Thread]
@@ -175,3 +175,8 @@ class _RolePositionRequired(TypedDict):
 
 class RolePositionUpdate(_RolePositionRequired, total=False):
     position: Optional[Snowflake]
+
+
+class SupplementalGuild(UnavailableGuild):
+    embedded_activities: list
+    voice_states: List[GuildVoiceState]

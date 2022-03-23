@@ -50,7 +50,7 @@ autodoc_typehints = 'none'
 # napoleon_attr_annotations = False
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+    'issue': ('https://github.com/dolfies/discord.py-self/issues/%s', 'GH-'),
 }
 
 # Links used for cross-referencing stuff in other documentation
@@ -80,8 +80,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'discord.py'
-copyright = '2015-present, Rapptz'
+project = 'discord.py-self'
+#copyright = ''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -106,7 +106,6 @@ branch = 'master' if version.endswith('a') else 'v' + version
 # Usually you set "language" from the command line for these cases.
 language = None
 
-locale_dirs = ['locale/']
 gettext_compact = False
 
 # There are two options for replacing |today|: either, you set today to some
@@ -146,7 +145,6 @@ pygments_style = 'friendly'
 
 # Nitpicky mode options
 nitpick_ignore_files = [
-  "migrating_to_async",
   "migrating",
   "whats_new",
 ]
@@ -175,7 +173,6 @@ html_experimental_html5_writer = True
 html_theme = 'basic'
 
 html_context = {
-  'discord_invite': 'https://discord.gg/r3sSKJJ',
   'discord_extensions': [
     ('discord.ext.commands', 'ext/commands'),
     ('discord.ext.tasks', 'ext/tasks'),
@@ -183,10 +180,9 @@ html_context = {
 }
 
 resource_links = {
-  'discord': 'https://discord.gg/r3sSKJJ',
-  'issues': 'https://github.com/Rapptz/discord.py/issues',
-  'discussions': 'https://github.com/Rapptz/discord.py/discussions',
-  'examples': f'https://github.com/Rapptz/discord.py/tree/{branch}/examples',
+  'issues': 'https://github.com/dolfies/discord.py-self/issues',
+  'discussions': 'https://github.com/dolfies/discord.py-self/discussions',
+  'examples': f'https://github.com/dolfies/discord.py-self/tree/{branch}/examples',
 }
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -252,10 +248,10 @@ html_static_path = ['_static']
 #html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = False
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -309,8 +305,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'discord.py.tex', 'discord.py Documentation',
-   'Rapptz', 'manual'),
+  ('index', 'discord.py-self.tex', 'discord.py-self Documentation',
+   'Dolfies', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -339,8 +335,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'discord.py', 'discord.py Documentation',
-     ['Rapptz'], 1)
+    ('index', 'discord.py-self', 'discord.py-self Documentation',
+     ['Dolfies'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -353,8 +349,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'discord.py', 'discord.py Documentation',
-   'Rapptz', 'discord.py', 'One line description of project.',
+  ('index', 'discord.py=self', 'discord.py-self Documentation',
+   'Dolfies', 'discord.py-self', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -371,7 +367,4 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 def setup(app):
-  if app.config.language == 'ja':
-    app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
-    app.config.html_context['discord_invite'] = 'https://discord.gg/nXzj3dg'
-    app.config.resource_links['discord'] = 'https://discord.gg/nXzj3dg'
+    pass

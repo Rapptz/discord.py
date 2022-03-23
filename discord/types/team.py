@@ -26,12 +26,12 @@ from __future__ import annotations
 
 from typing import TypedDict, List, Optional
 
-from .user import PartialUser
+from .user import User
 from .snowflake import Snowflake
 
 
 class TeamMember(TypedDict):
-    user: PartialUser
+    user: User
     membership_state: int
     permissions: List[str]
     team_id: Snowflake
@@ -40,6 +40,6 @@ class TeamMember(TypedDict):
 class Team(TypedDict):
     id: Snowflake
     name: str
-    owner_id: Snowflake
+    owner_user_id: Snowflake
     members: List[TeamMember]
     icon: Optional[str]

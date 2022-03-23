@@ -27,7 +27,6 @@ from __future__ import annotations
 import datetime
 import inspect
 import itertools
-import sys
 from operator import attrgetter
 from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
 
@@ -39,10 +38,11 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import AppCommandType, RelationshipAction, Status, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
+from .iterators import CommandIterator
 
 __all__ = (
     'VoiceState',
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .asset import Asset
-    from .channel import DMChannel, VoiceChannel, StageChannel
+    from .channel import DMChannel, VoiceChannel, StageChannel, GroupChannel
     from .flags import PublicUserFlags
     from .guild import Guild
     from .types.activity import (
@@ -77,6 +77,7 @@ if TYPE_CHECKING:
     )
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
+    ConnectableChannel = Union[VocalGuildChannel, DMChannel, GroupChannel]
 
 
 class VoiceState:
@@ -86,8 +87,12 @@ class VoiceState:
     ------------
     deaf: :class:`bool`
         Indicates if the user is currently deafened by the guild.
+
+        Doesn't apply to private channels.
     mute: :class:`bool`
         Indicates if the user is currently muted by the guild.
+
+        Doesn't apply to private channels.
     self_mute: :class:`bool`
         Indicates if the user is currently muted by their own accord.
     self_deaf: :class:`bool`
@@ -117,7 +122,7 @@ class VoiceState:
 
     afk: :class:`bool`
         Indicates if the user is currently in the AFK channel in the guild.
-    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]
+    channel: Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`, :class:`DMChannel`, :class:`GroupChannel`]]
         The voice channel that the user is currently connected to. ``None`` if the user
         is not currently in a voice channel.
     """
@@ -152,7 +157,7 @@ class VoiceState:
         self.deaf: bool = data.get('deaf', False)
         self.suppress: bool = data.get('suppress', False)
         self.requested_to_speak_at: Optional[datetime.datetime] = utils.parse_time(data.get('request_to_speak_timestamp'))
-        self.channel: Optional[VocalGuildChannel] = channel
+        self.channel: Optional[ConnectableChannel] = channel
 
     def __repr__(self) -> str:
         attrs = [
@@ -168,10 +173,11 @@ class VoiceState:
 
 
 class _ClientStatus:
-    __slots__ = ('_status', 'desktop', 'mobile', 'web')
+    __slots__ = ('_status', '_this', 'desktop', 'mobile', 'web')
 
     def __init__(self):
         self._status: str = 'offline'
+        self._this: str = 'offline'
 
         self.desktop: Optional[str] = None
         self.mobile: Optional[str] = None
@@ -199,6 +205,7 @@ class _ClientStatus:
         self = cls.__new__(cls)  # bypass __init__
 
         self._status = client_status._status
+        self._this = client_status._this
 
         self.desktop = client_status.desktop
         self.mobile = client_status.mobile
@@ -209,26 +216,26 @@ class _ClientStatus:
 
 def flatten_user(cls):
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
-        # ignore private/special methods
-        if attr.startswith('_'):
-            continue
+        # Ignore private/special methods (or not)
+        # if attr.startswith('_'):
+        #     continue
 
-        # don't override what we already have
+        # Don't override what we already have
         if attr in cls.__dict__:
             continue
 
-        # if it's a slotted attribute or a property, redirect it
-        # slotted members are implemented as member_descriptors in Type.__dict__
+        # If it's a slotted attribute or a property, redirect it
+        # Slotted members are implemented as member_descriptors in Type.__dict__
         if not hasattr(value, '__annotations__'):
             getter = attrgetter('_user.' + attr)
             setattr(cls, attr, property(getter, doc=f'Equivalent to :attr:`User.{attr}`'))
         else:
-            # Technically, this can also use attrgetter
-            # However I'm not sure how I feel about "functions" returning properties
-            # It probably breaks something in Sphinx.
-            # probably a member function by now
+            # Technically, this can also use attrgetter,
+            # however I'm not sure how I feel about "functions" returning properties
+            # It probably breaks something in Sphinx
+            # Probably a member function by now
             def generate_function(x):
-                # We want sphinx to properly show coroutine functions as coroutines
+                # We want Sphinx to properly show coroutine functions as coroutines
                 if inspect.iscoroutinefunction(value):
 
                     async def general(self, *args, **kwargs):  # type: ignore
@@ -250,7 +257,7 @@ def flatten_user(cls):
 
 
 @flatten_user
-class Member(discord.abc.Messageable, _UserTag):
+class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
 
     This implements a lot of the functionality of :class:`User`.
@@ -280,15 +287,6 @@ class Member(discord.abc.Messageable, _UserTag):
     joined_at: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member joined the guild.
         If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``.
-    activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
-        The activities that the user is currently doing.
-
-        .. note::
-
-            Due to a Discord API limitation, a user's Spotify activity may not appear
-            if they are listening to a song with a title longer
-            than 128 characters. See :issue:`1738` for more information.
-
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
@@ -311,16 +309,16 @@ class Member(discord.abc.Messageable, _UserTag):
         '_roles',
         'joined_at',
         'premium_since',
-        'activities',
+        '_activities',
         'guild',
         'pending',
         'nick',
         'timed_out_until',
-        '_permissions',
         '_client_status',
         '_user',
         '_state',
         '_avatar',
+        '_communication_disabled_until',
     )
 
     if TYPE_CHECKING:
@@ -348,16 +346,10 @@ class Member(discord.abc.Messageable, _UserTag):
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
         self._client_status: _ClientStatus = _ClientStatus()
-        self.activities: Tuple[ActivityTypes, ...] = tuple()
+        self._activities: Tuple[ActivityTypes, ...] = tuple()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
-        self._permissions: Optional[int]
-        try:
-            self._permissions = int(data['permissions'])
-        except KeyError:
-            self._permissions = None
-
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
 
     def __str__(self) -> str:
@@ -410,13 +402,12 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
+        self._activities = member._activities
         self._client_status = _ClientStatus._copy(member._client_status)
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
-        self.activities = member.activities
         self.timed_out_until = member.timed_out_until
-        self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
 
@@ -425,13 +416,11 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user = member._user
         return self
 
-    async def _get_channel(self):
-        ch = await self.create_dm()
-        return ch
+    def _update(self, data: GuildMemberUpdateEvent) -> Optional[Member]:
+        old = Member._copy(self)
 
-    def _update(self, data: GuildMemberUpdateEvent) -> None:
-        # the nickname change is optional,
-        # if it isn't in the payload then it didn't change
+        # Some changes are optional
+        # If they aren't in the payload then they didn't change
         try:
             self.nick = data['nick']
         except KeyError:
@@ -447,13 +436,20 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
 
+        attrs = {'joined_at', 'premium_since', '_roles', '_avatar', 'timed_out_until', 'nick', 'pending'}
+
+        if any(getattr(self, attr) != getattr(old, attr) for attr in attrs):
+            return old
+
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(map(create_activity, data['activities']))
+        if self._self:
+            return
+
+        self._activities = tuple(map(create_activity, data['activities']))
         self._client_status._update(data['status'], data['client_status'])
 
         if len(user) > 1:
             return self._update_inner_user(user)
-        return None
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
@@ -463,13 +459,14 @@ class Member(discord.abc.Messageable, _UserTag):
         if original != modified:
             to_return = User._copy(self._user)
             u.name, u._avatar, u.discriminator, u._public_flags = modified
-            # Signal to dispatch on_user_update
+            # Signal to dispatch user_update
             return to_return, u
 
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status._status)
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status._status)
 
     @property
     def raw_status(self) -> str:
@@ -477,31 +474,37 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status._status
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return client_status._status
 
     @status.setter
     def status(self, value: Status) -> None:
-        # internal use only
-        self._client_status._status = str(value)
+        # Internal use only
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        client_status._status = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.mobile or 'offline')
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.mobile or 'offline')
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.desktop or 'offline')
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.desktop or 'offline')
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.web or 'offline')
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return try_enum(Status, client_status.web or 'offline')
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        return self._client_status.mobile is not None
+        client_status = self._client_status if not self._self else self._state.client._client_status
+        return client_status.mobile is not None
 
     @property
     def colour(self) -> Colour:
@@ -512,11 +515,9 @@ class Member(discord.abc.Messageable, _UserTag):
         There is an alias for this named :attr:`color`.
         """
 
-        roles = self.roles[1:]  # remove @everyone
+        roles = self.roles[1:]  # Remove @everyone
 
-        # highest order of the colour is the one that gets rendered.
-        # if the highest is the default colour then the next one with a colour
-        # is chosen instead
+        # Highest role with a colour is the one that's rendered
         for role in reversed(roles):
             if role.colour.value:
                 return role.colour
@@ -589,6 +590,22 @@ class Member(discord.abc.Messageable, _UserTag):
         if self._avatar is None:
             return None
         return Asset._from_guild_avatar(self._state, self.guild.id, self.id, self._avatar)
+
+    @property
+    def activities(self) -> Tuple[ActivityTypes, ...]:
+        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities that
+        the user is currently doing.
+
+        .. note::
+
+            Due to a Discord API limitation, a user's Spotify activity may not appear
+            if they are listening to a song with a title longer
+            than 128 characters. See :issue:`1738` for more information.
+
+        """
+        if self._self:
+            return self._state.client.activities
+        return self._activities
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -668,25 +685,13 @@ class Member(discord.abc.Messageable, _UserTag):
         return base
 
     @property
-    def resolved_permissions(self) -> Optional[Permissions]:
-        """Optional[:class:`Permissions`]: Returns the member's resolved permissions
-        from an interaction.
-
-        This is only available in interaction contexts and represents the resolved
-        permissions of the member in the channel the interaction was executed in.
-        This is more or less equivalent to calling :meth:`abc.GuildChannel.permissions_for`
-        but stored and returned as an attribute by the Discord API rather than computed.
-
-        .. versionadded:: 2.0
-        """
-        if self._permissions is None:
-            return None
-        return Permissions(self._permissions)
-
-    @property
     def voice(self) -> Optional[VoiceState]:
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
+
+    @property
+    def _self(self) -> bool:
+        return self._user.id == self._state.self_id
 
     async def ban(
         self,
@@ -724,6 +729,7 @@ class Member(discord.abc.Messageable, _UserTag):
         roles: List[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
+        avatar: Optional[bytes] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
@@ -750,6 +756,13 @@ class Member(discord.abc.Messageable, _UserTag):
 
         All parameters are optional.
 
+        .. note::
+
+            To upload an avatar, a :term:`py:bytes-like object` must be passed in that
+            represents the image being uploaded. If this is done through a file
+            then the file must be opened via ``open('some_filename', 'rb')`` and
+            the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
+
         .. versionchanged:: 1.1
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
@@ -768,7 +781,6 @@ class Member(discord.abc.Messageable, _UserTag):
             Indicates if the member should be suppressed in stage channels.
 
             .. versionadded:: 1.7
-
         roles: List[:class:`Role`]
             The member's new list of roles. This *replaces* the roles.
         voice_channel: Optional[:class:`VoiceChannel`]
@@ -779,7 +791,11 @@ class Member(discord.abc.Messageable, _UserTag):
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.0
+        avatar: Optional[:class:`bytes`]
+            The member's new guild avatar. Pass ``None`` to remove the avatar.
+            You can only change your own guild avatar.
 
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -802,13 +818,17 @@ class Member(discord.abc.Messageable, _UserTag):
         guild_id = self.guild.id
         me = self._state.self_id == self.id
         payload: Dict[str, Any] = {}
+        data = None
 
         if nick is not MISSING:
-            nick = nick or ''
-            if me:
-                await http.change_my_nickname(guild_id, nick, reason=reason)
-            else:
-                payload['nick'] = nick
+            payload['nick'] = nick
+
+        if avatar is not MISSING:
+            payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
+
+        if me and payload:
+            data = await http.edit_me(**payload)
+            payload = {}
 
         if deafen is not MISSING:
             payload['deaf'] = deafen
@@ -852,7 +872,9 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if payload:
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
-            return Member(data=data, guild=self.guild, state=self._state)
+
+        if data:
+            return Member(data=data, guild=self.guild, state=self._state)  # type: ignore
 
     async def request_to_speak(self) -> None:
         """|coro|
@@ -1028,3 +1050,82 @@ class Member(discord.abc.Messageable, _UserTag):
         if self.timed_out_until is not None:
             return utils.utcnow() < self.timed_out_until
         return False
+
+    async def send_friend_request(self) -> None:  # TODO: check if the req returns a relationship obj
+        """|coro|
+
+        Sends the member a friend request.
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to send a friend request to the member.
+        HTTPException
+            Sending the friend request failed.
+        """
+        await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
+
+    def user_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = None,
+        applications: bool = True,
+        application: Optional[Snowflake] = None,
+    ):
+        """Returns an iterator that allows you to see what user commands are available to use.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for command in member.user_commands():
+                print(command.name)
+
+        Flattening into a list ::
+
+            commands = await member.user_commands().flatten()
+            # commands is now a list of UserCommand...
+
+        All parameters are optional.
+
+        Parameters
+        ----------
+        query: Optional[:class:`str`]
+            The query to search for.
+        limit: Optional[:class:`int`]
+            The maximum number of commands to send back.
+        cache: :class:`bool`
+            Whether to cache the commands internally.
+        command_ids: Optional[List[:class:`int`]]
+            List of command IDs to search for. If the command doesn't exist it won't be returned.
+        applications: :class:`bool`
+            Whether to include applications in the response. This defaults to ``False``.
+        application: Optional[:class:`Snowflake`]
+            Query commands only for this application.
+
+        Raises
+        ------
+        TypeError
+            The limit was not > 0.
+            Both query and command_ids were passed.
+        HTTPException
+            Getting the commands failed.
+
+        Yields
+        -------
+        :class:`.UserCommand`
+            A user command.
+        """
+        iterator = CommandIterator(
+            self,
+            AppCommandType.user,
+            query,
+            limit,
+            command_ids,
+            applications=applications,
+            application=application,
+        )
+        return iterator.iterate()

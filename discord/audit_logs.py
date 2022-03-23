@@ -247,7 +247,7 @@ class AuditLogChanges:
         for elem in data:
             attr = elem['key']
 
-            # special cases for role add/remove
+            # Special cases for role add/remove
             if attr == '$add':
                 self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore - new_value is a list of roles in this case
                 continue
@@ -285,7 +285,7 @@ class AuditLogChanges:
 
             setattr(self.after, attr, after)
 
-        # add an alias
+        # Add aliases
         if hasattr(self.after, 'colour'):
             self.after.color = self.after.colour
             self.before.color = self.before.colour
@@ -398,7 +398,6 @@ class AuditLogEntry(Hashable):
         self.action = enums.try_enum(enums.AuditLogAction, data['action_type'])
         self.id = int(data['id'])
 
-        # this key is technically not usually present
         self.reason = data.get('reason')
         extra = data.get('options')
 
@@ -524,8 +523,8 @@ class AuditLogEntry(Hashable):
         return self.guild.get_role(target_id) or Object(id=target_id)
 
     def _convert_target_invite(self, target_id: int) -> Invite:
-        # invites have target_id set to null
-        # so figure out which change has the full invite data
+        # Invites have target_id set to null
+        # So figure out which change has the full invite data
         changeset = self.before if self.action is enums.AuditLogAction.invite_delete else self.after
 
         fake_payload: InvitePayload = {

@@ -54,10 +54,6 @@ class _PartialTemplateState:
         self.http = _FriendlyHttpAttributeErrorHelper()
 
     @property
-    def shard_count(self):
-        return self.__state.shard_count
-
-    @property
     def user(self):
         return self.__state.user
 

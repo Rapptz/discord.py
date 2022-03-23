@@ -196,6 +196,9 @@ class Permissions(BaseFlags):
         "Membership" permissions from the official Discord UI set to ``True``.
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+           Added :attr:`moderate_members` permission.
         """
         return cls(0b10000000000001100000000000000000000000111)
 
@@ -574,7 +577,7 @@ def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
     aliases = set()
 
-    # make descriptors for all the valid names and aliases
+    # Make descriptors for all the valid names and aliases
     for name, value in Permissions.__dict__.items():
         if isinstance(value, permission_alias):
             key = value.alias
@@ -584,7 +587,7 @@ def _augment_from_permissions(cls):
         else:
             continue
 
-        # god bless Python
+        # God bless Python
         def getter(self, x=key):
             return self._values.get(x)
 
@@ -681,6 +684,9 @@ class PermissionOverwrite:
         send_messages_in_threads: Optional[bool]
         external_stickers: Optional[bool]
         use_external_stickers: Optional[bool]
+        start_embedded_activities: Optional[bool]
+        moderate_members: Optional[bool]
+        timeout_members: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}

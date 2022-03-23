@@ -22,8 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, Optional, TypedDict
-
+from typing import List, Literal, Optional, TypedDict, Union
 
 from .activity import PartialPresenceUpdate
 from .voice import GuildVoiceState
@@ -37,27 +36,19 @@ from .member import MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker
-from .appinfo import GatewayAppInfo, PartialAppInfo
-from .guild import Guild, UnavailableGuild
+from .appinfo import PartialAppInfo
+from .guild import Guild, UnavailableGuild, SupplementalGuild
 from .user import User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
+from .channel import DMChannel, GroupDMChannel
 
 
-class SessionStartLimit(TypedDict):
-    total: int
-    remaining: int
-    reset_after: int
-    max_concurrency: int
+PresenceUpdateEvent = PartialPresenceUpdate
 
 
 class Gateway(TypedDict):
     url: str
-
-
-class GatewayBot(Gateway):
-    shards: int
-    session_start_limit: SessionStartLimit
 
 
 class ShardInfo(TypedDict):
@@ -66,12 +57,34 @@ class ShardInfo(TypedDict):
 
 
 class ReadyEvent(TypedDict):
-    v: int
-    user: User
-    guilds: List[UnavailableGuild]
+    analytics_token: str
+    connected_accounts: List[dict]
+    country_code: str
+    friend_suggestion_count: int
+    geo_ordered_rtc_regions: List[str]
+    guilds: List[Guild]
+    merged_members: List[List[MemberWithUser]]
+    private_channels: List[Union[DMChannel, GroupDMChannel]]
+    relationships: List[dict]
+    sessions: List[dict]
     session_id: str
-    shard: ShardInfo
-    application: GatewayAppInfo
+    user: User
+    user_guild_settings: dict
+    user_settings: dict
+    user_settings_proto: str
+    users: List[User]
+    v: int
+
+
+class MergedPresences(TypedDict):
+    friends: List[PresenceUpdateEvent]
+    guilds: List[List[PresenceUpdateEvent]]
+
+
+class ReadySupplementalEvent(TypedDict):
+    guilds: List[SupplementalGuild]
+    merged_members: List[List[MemberWithUser]]
+    merged_presences: MergedPresences
 
 
 ResumedEvent = Literal[None]
@@ -144,9 +157,6 @@ class MessageReactionRemoveEmojiEvent(_MessageReactionRemoveEmojiEventOptional):
 
 
 InteractionCreateEvent = Interaction
-
-
-PresenceUpdateEvent = PartialPresenceUpdate
 
 
 UserUpdateEvent = User

@@ -24,9 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from asyncio import TimeoutError
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
-from .utils import get_slots, MISSING
+
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, InteractionType
+from .errors import InvalidData
+from .utils import get_slots, MISSING, time_snowflake, utcnow
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
@@ -41,6 +44,8 @@ if TYPE_CHECKING:
         TextInput as TextInputPayload,
     )
     from .emoji import Emoji
+    from .interactions import Interaction
+    from .message import Message
 
 
 __all__ = (
@@ -72,10 +77,11 @@ class Component:
         The type of component.
     """
 
-    __slots__: Tuple[str, ...] = ('type',)
+    __slots__: Tuple[str, ...] = ('type', 'message')
 
     __repr_info__: ClassVar[Tuple[str, ...]]
     type: ComponentType
+    message: Message
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
@@ -112,15 +118,18 @@ class ActionRow(Component):
         The type of component.
     children: List[:class:`Component`]
         The children components that this holds, if any.
+    message: :class:`Message`
+        The originating message.
     """
 
     __slots__: Tuple[str, ...] = ('children',)
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ComponentPayload):
+    def __init__(self, data: ComponentPayload, message: Message):
+        self.message = message
         self.type: ComponentType = try_enum(ComponentType, data['type'])
-        self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+        self.children: List[Component] = [_component_factory(d, message) for d in data.get('components', [])]
 
     def to_dict(self) -> ActionRowPayload:
         return {
@@ -133,11 +142,6 @@ class Button(Component):
     """Represents a button from the Discord Bot UI Kit.
 
     This inherits from :class:`Component`.
-
-    .. note::
-
-        The user constructible and usable type to create a button is :class:`discord.ui.Button`
-        not this one.
 
     .. versionadded:: 2.0
 
@@ -156,6 +160,8 @@ class Button(Component):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    message: :class:`Message`
+        The originating message, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -169,7 +175,8 @@ class Button(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ButtonComponentPayload):
+    def __init__(self, data: ButtonComponentPayload, message: Message):
+        self.message = message
         self.type: ComponentType = try_enum(ComponentType, data['type'])
         self.style: ButtonStyle = try_enum(ButtonStyle, data['style'])
         self.custom_id: Optional[str] = data.get('custom_id')
@@ -182,23 +189,53 @@ class Button(Component):
         except KeyError:
             self.emoji = None
 
-    def to_dict(self) -> ButtonComponentPayload:
-        payload = {
-            'type': 2,
-            'style': int(self.style),
-            'label': self.label,
-            'disabled': self.disabled,
+    def to_dict(self) -> dict:
+        return {
+            'component_type': self.type.value,
+            'custom_id': self.custom_id,
         }
-        if self.custom_id:
-            payload['custom_id'] = self.custom_id
 
+    async def click(self) -> Union[str, Interaction]:
+        """|coro|
+
+        Clicks the button.
+
+        Raises
+        -------
+        InvalidData
+            Didn't receive a response from Discord
+            (doesn't mean the interaction failed).
+        NotFound
+            The originating message was not found.
+        HTTPException
+            Clicking the button failed.
+
+        Returns
+        --------
+        Union[:class:`str`, :class:`Interaction`]
+            The button's URL or the interaction that was created.
+        """
         if self.url:
-            payload['url'] = self.url
+            return self.url
 
-        if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()
+        message = self.message
+        state = message._state
+        nonce = str(time_snowflake(utcnow()))
+        type = InteractionType.component
 
-        return payload  # type: ignore - Type checker does not understand these are the same
+        state._interaction_cache[nonce] = (int(type), None, message.channel)
+        try:
+            await state.http.interact(type, self.to_dict(), message.channel, message, nonce=nonce)
+            i = await state.client.wait_for(
+                'interaction_finish',
+                check=lambda d: d.nonce == nonce,
+                timeout=7,
+            )
+        except TimeoutError as exc:
+            raise InvalidData('Did not receive a response from Discord') from exc
+        finally:  # Cleanup even if we failed
+            state._interaction_cache.pop(nonce, None)
+        return i
 
 
 class SelectMenu(Component):
@@ -206,11 +243,6 @@ class SelectMenu(Component):
 
     A select menu is functionally the same as a dropdown, however
     on mobile it renders a bit differently.
-
-    .. note::
-
-        The user constructible and usable type to create a select menu is
-        :class:`discord.ui.Select` not this one.
 
     .. versionadded:: 2.0
 
@@ -222,14 +254,16 @@ class SelectMenu(Component):
         The placeholder text that is shown if nothing is selected, if any.
     min_values: :class:`int`
         The minimum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
     max_values: :class:`int`
         The maximum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
     options: List[:class:`SelectOption`]
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    hash: :class:`str`
+        Unknown.
+    message: :class:`Message`
+        The originating message, if any.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -239,11 +273,13 @@ class SelectMenu(Component):
         'max_values',
         'options',
         'disabled',
+        'hash',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: SelectMenuPayload):
+    def __init__(self, data: SelectMenuPayload, message: Message):
+        self.message = message
         self.type = ComponentType.select
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
@@ -251,27 +287,55 @@ class SelectMenu(Component):
         self.max_values: int = data.get('max_values', 1)
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
+        self.hash: str = data.get('hash', '')
 
-    def to_dict(self) -> SelectMenuPayload:
-        payload: SelectMenuPayload = {
-            'type': self.type.value,
+    def to_dict(self, options: Tuple[SelectOption]) -> dict:
+        return {
+            'compontent_type': self.type.value,
             'custom_id': self.custom_id,
-            'min_values': self.min_values,
-            'max_values': self.max_values,
-            'options': [op.to_dict() for op in self.options],
-            'disabled': self.disabled,
+            'values': [option.value for option in options]
         }
 
-        if self.placeholder:
-            payload['placeholder'] = self.placeholder
+    async def choose(self, *options: SelectOption) -> Interaction:
+        """|coro|
 
-        return payload
+        Chooses the given options from the select menu.
+
+        Raises
+        -------
+        InvalidData
+            Didn't receive a response from Discord
+            (doesn't mean the interaction failed).
+        NotFound
+            The originating message was not found.
+        HTTPException
+            Choosing the options failed.
+
+        Returns
+        --------
+        :class:`Interaction`
+            The interaction that was created.
+        """
+        message = self.message
+        state = message._state
+        nonce = str(time_snowflake(utcnow()))
+        type = InteractionType.component
+
+        state._interaction_cache[nonce] = (int(type), None, message.channel)
+        await state.http.interact(type, self.to_dict(options), message.channel, message, nonce=nonce)
+        try:
+            i = await state.client.wait_for(
+                'interaction_finish',
+                check=lambda d: d.nonce == nonce,
+                timeout=7,
+            )
+        except TimeoutError as exc:
+            raise InvalidData('Did not receive a response from Discord') from exc
+        return i
 
 
 class SelectOption:
     """Represents a select menu's option.
-
-    These can be created by users.
 
     .. versionadded:: 2.0
 
@@ -356,28 +420,9 @@ class SelectOption:
             default=data.get('default', False),
         )
 
-    def to_dict(self) -> SelectOptionPayload:
-        payload: SelectOptionPayload = {
-            'label': self.label,
-            'value': self.value,
-            'default': self.default,
-        }
-
-        if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore - This Dict[str, Any] is compatible with PartialEmoji
-
-        if self.description:
-            payload['description'] = self.description
-
-        return payload
-
 
 class TextInput(Component):
     """Represents a text input from the Discord Bot UI Kit.
-
-    .. note::
-        The user constructible and usable type to create a text input is
-        :class:`discord.ui.TextInput` not this one.
 
     .. versionadded:: 2.0
 
@@ -406,7 +451,8 @@ class TextInput(Component):
         'label',
         'custom_id',
         'placeholder',
-        'value',
+        '_value',
+        '_answer',
         'required',
         'min_length',
         'max_length',
@@ -414,62 +460,72 @@ class TextInput(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: TextInputPayload) -> None:
+    def __init__(self, data: TextInputPayload, _ = MISSING) -> None:
         self.type: ComponentType = ComponentType.text_input
         self.style: TextStyle = try_enum(TextStyle, data['style'])
         self.label: str = data['label']
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
-        self.value: Optional[str] = data.get('value')
+        self._value: Optional[str] = data.get('value')
         self.required: bool = data.get('required', True)
         self.min_length: Optional[int] = data.get('min_length')
         self.max_length: Optional[int] = data.get('max_length')
 
-    def to_dict(self) -> TextInputPayload:
-        payload: TextInputPayload = {
+    def to_dict(self) -> dict:
+        return {
             'type': self.type.value,
-            'style': self.style.value,
-            'label': self.label,
             'custom_id': self.custom_id,
-            'required': self.required,
+            'value': self.value,
         }
 
-        if self.placeholder:
-            payload['placeholder'] = self.placeholder
+    @property
+    def value(self) -> Optional[str]:
+        """Optional[:class:`str]`: The current value of the text input. Defaults to :attr:`default`.
 
-        if self.value:
-            payload['value'] = self.value
+        This can be set to change the answer to the text input.
+        """
+        return getattr(self, '_answer', self._value)
 
-        if self.min_length:
-            payload['min_length'] = self.min_length
+    @value.setter
+    def value(self, value: Optional[str]) -> None:
+        length = len(value) if value is not None else 0
+        if (self.required or value is not None) and ((self.min_length is not None and length < self.min_length) or (self.max_length is not None and length > self.max_length)):
+            raise ValueError(f'value cannot be shorter than {self.min_length or 0} or longer than {self.max_length or "infinity"}')
 
-        if self.max_length:
-            payload['max_length'] = self.max_length
-
-        return payload
+        self._answer = value
 
     @property
     def default(self) -> Optional[str]:
-        """Optional[:class:`str`]: The default value of the text input.
+        """Optional[:class:`str`]: The default value of the text input."""
+        return self._value
 
-        This is an alias to :attr:`value`.
+    def answer(self, value: Optional[str], /) -> None:
+        """A shorthand method to answer the text input.
+
+        Parameters
+        ----------
+        value: Optional[:class:`str`]
+            The value to set the answer to.
+
+        Raises
+        ------
+        ValueError
+            The answer is shorter than :attr:`min_length` or longer than :attr:`max_length`.
         """
-        return self.value
+        self.value = value
 
 
-def _component_factory(data: ComponentPayload) -> Component:
+def _component_factory(data: ComponentPayload, message: Message = MISSING) -> Component:
+    # The type checker does not properly do narrowing here
     component_type = data['type']
     if component_type == 1:
-        return ActionRow(data)
+        return ActionRow(data, message)
     elif component_type == 2:
-        # The type checker does not properly do narrowing here.
-        return Button(data)  # type: ignore
+        return Button(data, message)  # type: ignore
     elif component_type == 3:
-        # The type checker does not properly do narrowing here.
-        return SelectMenu(data)  # type: ignore
+        return SelectMenu(data, message)  # type: ignore
     elif component_type == 4:
-        # The type checker does not properly do narrowing here.
-        return TextInput(data)  # type: ignore
+        return TextInput(data, message)  # type: ignore
     else:
         as_enum = try_enum(ComponentType, component_type)
         return Component._raw_construct(type=as_enum)

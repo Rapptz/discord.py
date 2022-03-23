@@ -54,7 +54,6 @@ __all__ = (
     'TextStyle',
     'PrivacyLevel',
     'InteractionType',
-    'InteractionResponseType',
     'NSFWLevel',
     'MFALevel',
     'Locale',
@@ -62,6 +61,25 @@ __all__ = (
     'EventStatus',
     'AppCommandType',
     'AppCommandOptionType',
+    'RelationshipType',
+    'HypeSquadHouse',
+    'PremiumType',
+    'UserContentFilter',
+    'FriendFlags',
+    'Theme',
+    'StickerAnimationOptions',
+    'RelationshipAction',
+    'UnavailableGuildType',
+    'RequiredActionType',
+    'ReportType',
+    'BrowserEnum',
+    'ApplicationVerificationState',
+    'StoreApplicationState',
+    'RPCApplicationState',
+    'InviteType',
+    'ScheduledEventStatus',
+    'ScheduledEventEntityType',
+    'ApplicationType',
 )
 
 if TYPE_CHECKING:
@@ -157,7 +175,7 @@ class EnumMeta(type):
         return cls._enum_member_map_[key]
 
     def __setattr__(cls, name, value):
-        raise TypeError('Enums are immutable.')
+        raise TypeError('Enums are immutable')
 
     def __delattr__(cls, attr):
         raise TypeError('Enums are immutable')
@@ -200,6 +218,9 @@ class ChannelType(Enum):
     def __str__(self):
         return self.name
 
+    def __int__(self):
+        return self.value
+
 
 class MessageType(Enum):
     default = 0
@@ -208,7 +229,10 @@ class MessageType(Enum):
     call = 3
     channel_name_change = 4
     channel_icon_change = 5
+    channel_pinned_message = 6
     pins_add = 6
+    member_join = 7
+    user_join = 7
     new_member = 7
     premium_guild_subscription = 8
     premium_guild_tier_1 = 9
@@ -222,9 +246,10 @@ class MessageType(Enum):
     guild_discovery_grace_period_final_warning = 17
     thread_created = 18
     reply = 19
-    application_command = 20
+    chat_input_command = 20
     thread_starter_message = 21
     guild_invite_reminder = 22
+    context_menu_command = 23
 
 
 class SpeakingState(Enum):
@@ -260,6 +285,60 @@ class ContentFilter(Enum, comparable=True):
         return self.name
 
 
+class UserContentFilter(Enum):
+    always         = 0
+    on_interaction = 1
+    never          = 2
+
+
+class StickerAnimationOptions(Enum):
+    disabled     = 2
+    friends      = 1
+    all_messages = 0
+
+
+class FriendFlags(Enum):
+    noone             = 0
+    mutual_guilds     = 1
+    mutual_friends    = 2
+    guild_and_friends = 3
+    everyone          = 4
+
+    def to_dict(self):
+        if self.value == 0:
+            return {'all': False, 'mutual_friends': False, 'mutual_guilds': False}
+        if self.value == 1:
+            return {'all': False, 'mutual_friends': False, 'mutual_guilds': True}
+        if self.value == 2:
+            return {'all': False, 'mutual_friends': True, 'mutual_guilds': False}
+        if self.value == 3:
+            return {'all': False, 'mutual_friends': True, 'mutual_guilds': True}
+        if self.value == 4:
+            return {'all': True, 'mutual_friends': True, 'mutual_guilds': True}
+
+    @classmethod
+    def _from_dict(cls, data):
+        all = data.get('all')
+        mutual_guilds = data.get('mutual_guilds')
+        mutual_friends = data.get('mutual_friends')
+
+        if all:
+            return cls.everyone
+        elif mutual_guilds and mutual_friends:
+            return cls.guild_and_friends
+        elif mutual_guilds:
+            return cls.mutual_guilds
+        elif mutual_friends:
+            return cls.mutual_friends
+        else:
+            return cls.noone
+
+
+class Theme(Enum):
+    light = 'light'
+    dark = 'dark'
+
+
 class Status(Enum):
     online = 'online'
     offline = 'offline'
@@ -279,14 +358,30 @@ class DefaultAvatar(Enum):
     green = 2
     orange = 3
     red = 4
+    pink = 5
 
     def __str__(self):
         return self.name
 
 
+class RelationshipType(Enum, comparable=True):
+    friend           = 1
+    blocked          = 2
+    incoming_request = 3
+    outgoing_request = 4
+
+
 class NotificationLevel(Enum, comparable=True):
     all_messages = 0
+    all = 0
     only_mentions = 1
+    nothing = 2
+    none = 2
+    server_default = 3
+    default = 3
+
+    def __int__(self):
+        return self.value
 
 
 class AuditLogActionCategory(Enum):
@@ -441,6 +536,7 @@ class UserFlags(Enum):
     partner = 2
     hypesquad = 4
     bug_hunter = 8
+    bug_hunter_level_1 = 8
     mfa_sms = 16
     premium_promo_dismissed = 32
     hypesquad_bravery = 64
@@ -448,9 +544,11 @@ class UserFlags(Enum):
     hypesquad_balance = 256
     early_supporter = 512
     team_user = 1024
+    partner_or_verification_application = 2048
     system = 4096
     has_unread_urgent_messages = 8192
     bug_hunter_level_2 = 16384
+    underage_deleted = 32768
     verified_bot = 65536
     verified_bot_developer = 131072
     discord_certified_moderator = 262144
@@ -469,6 +567,17 @@ class ActivityType(Enum):
 
     def __int__(self):
         return self.value
+
+
+class HypeSquadHouse(Enum):
+    bravery    = 1
+    brilliance = 2
+    balance    = 3
+
+
+class PremiumType(Enum, comparable=True):
+    nitro_classic = 1
+    nitro         = 2
 
 
 class TeamMembershipState(Enum):
@@ -512,10 +621,58 @@ class StickerFormatType(Enum):
         return lookup[self]
 
 
+class ReportType(Enum):
+    illegal_content = 1
+    harassment      = 2
+    phishing        = 3
+    self_harm       = 4
+    nsfw_content    = 5
+
+    def __int__(self):
+        return self.value
+
+
+class RelationshipAction(Enum):
+    send_friend_request    = 'request'
+    unfriend               = 'unfriend'
+    accept_request         = 'accept'
+    deny_request           = 'deny'
+    block                  = 'block'
+    unblock                = 'unblock'
+    remove_pending_request = 'remove'
+
+
+class UnavailableGuildType(Enum):
+    existing = 'ready'
+    joined   = 'joined'
+
+
+class RequiredActionType(Enum):
+    verify_phone     = 'REQUIRE_VERIFIED_PHONE'
+    verify_email     = 'REQUIRE_VERIFIED_EMAIL'
+    complete_captcha = 'REQUIRE_CAPTCHA'
+    accept_terms     = 'AGREEMENTS'
+
+
+class BrowserEnum(Enum):
+    google_chrome = 'chrome'
+    chrome = 'chrome'
+    chromium = 'chromium'
+    microsoft_edge = 'microsoft-edge'
+    edge = 'microsoft-edge'
+    opera = 'opera'
+
+
 class InviteTarget(Enum):
     unknown = 0
     stream = 1
     embedded_application = 2
+
+
+class InviteType(Enum):
+    guild = 0
+    group_dm = 1
+    friend = 2
 
 
 class InteractionType(Enum):
@@ -525,17 +682,8 @@ class InteractionType(Enum):
     autocomplete = 4
     modal_submit = 5
 
-
-class InteractionResponseType(Enum):
-    pong = 1
-    # ack = 2 (deprecated)
-    # channel_message = 3 (deprecated)
-    channel_message = 4  # (with source)
-    deferred_channel_message = 5  # (with source)
-    deferred_message_update = 6  # for components
-    message_update = 7  # for components
-    autocomplete_result = 8
-    modal = 9  # for modals
+    def __int__(self) -> int:
+        return self.value
 
 
 class VideoQualityMode(Enum):
@@ -587,7 +735,22 @@ class TextStyle(Enum):
 
 
 class PrivacyLevel(Enum):
+    public = 1
+    closed = 2
     guild_only = 2
+
+
+class ScheduledEventEntityType(Enum):
+    stage_instance = 1
+    voice = 2
+    external = 3
+
+
+class ScheduledEventStatus(Enum):
+    scheduled = 1
+    active = 2
+    completed = 3
+    canceled = 4
 
 
 class NSFWLevel(Enum, comparable=True):
@@ -600,6 +763,42 @@ class NSFWLevel(Enum, comparable=True):
 class MFALevel(Enum, comparable=True):
     disabled = 0
     require_2fa = 1
+
+
+class ApplicationVerificationState(Enum, comparable=True):
+    ineligible = 1
+    unsubmitted = 2
+    submitted = 3
+    succeeded = 4
+
+
+class StoreApplicationState(Enum, comparable=True):
+    none = 1
+    paid = 2
+    submitted = 3
+    approved = 4
+    rejected = 5
+    blocked = 6
+
+
+class RPCApplicationState(Enum, comparable=True):
+    disabled = 0
+    none = 0
+    unsubmitted = 1
+    submitted = 2
+    approved = 3
+    rejected = 4
+
+
+class ApplicationType(Enum):
+    none = None
+    game = 1
+    music = 2
+    ticketed_events = 3
+    guild_role_subscriptions = 4
+
+
+T = TypeVar('T')
 
 
 class Locale(Enum):
@@ -659,7 +858,9 @@ class EventStatus(Enum):
 
 class AppCommandOptionType(Enum):
     subcommand = 1
+    sub_command = 1
     subcommand_group = 2
+    sub_command_group = 2
     string = 3
     integer = 4
     boolean = 5
@@ -675,6 +876,9 @@ class AppCommandType(Enum):
     chat_input = 1
     user = 2
     message = 3
+
+    def __int__(self) -> int:
+        return self.value
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

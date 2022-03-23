@@ -253,7 +253,7 @@ this together we can do the following: ::
 How do I run something in the background?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Check the background_task.py example. <https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py>`_
+`Check the background_task.py example. <https://github.com/dolfies/discord.py-self/blob/master/examples/background_task.py>`_
 
 How do I get a specific model?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

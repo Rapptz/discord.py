@@ -43,10 +43,9 @@ if TYPE_CHECKING:
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
-    from .bot import Bot, AutoShardedBot
+    from .bot import Bot
     from .cog import Cog
     from .core import Command
-    from .help import HelpCommand
     from .view import StringView
 
 # fmt: off
@@ -59,7 +58,7 @@ MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')
-BotT = TypeVar('BotT', bound="Union[Bot, AutoShardedBot]")
+BotT = TypeVar('BotT', bound="Bot")
 CogT = TypeVar('CogT', bound="Cog")
 
 if TYPE_CHECKING:
@@ -405,3 +404,15 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     @discord.utils.copy_doc(Message.reply)
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         return await self.message.reply(content, **kwargs)
+
+    @discord.utils.copy_doc(Message.message_commands)
+    def message_commands(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: Optional[int] = None,
+        command_ids: Optional[List[int]] = None,
+        applications: bool = True,
+        application: Optional[discord.abc.Snowflake] = None,
+    ):
+        return self.message.message_commands(query, limit=limit, command_ids=command_ids, applications=applications, application=application)

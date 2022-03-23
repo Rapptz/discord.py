@@ -60,7 +60,6 @@ __all__ = (
     'when_mentioned',
     'when_mentioned_or',
     'Bot',
-    'AutoShardedBot',
 )
 
 MISSING: Any = discord.utils.MISSING
@@ -68,10 +67,10 @@ MISSING: Any = discord.utils.MISSING
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
 CXT = TypeVar('CXT', bound='Context')
-BT = TypeVar('BT', bound='Union[Bot, AutoShardedBot]')
+BT = TypeVar('BT', bound='Bot')
 
 
-def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
+def when_mentioned(bot: Bot, msg: Message) -> List[str]:
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
@@ -80,7 +79,7 @@ def when_mentioned(bot: Union[Bot, AutoShardedBot], msg: Message) -> List[str]:
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
 
 
-def when_mentioned_or(*prefixes: str) -> Callable[[Union[Bot, AutoShardedBot], Message], List[str]]:
+def when_mentioned_or(*prefixes: str) -> Callable[[Bot, Message], List[str]]:
     """A callable that implements when mentioned or other prefixes provided.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
@@ -148,10 +147,23 @@ class BotBase(GroupMixin):
         self.strip_after_prefix = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
-            raise TypeError('Both owner_id and owner_ids are set.')
+            raise TypeError('Both owner_id and owner_ids are set')
 
         if self.owner_ids and not isinstance(self.owner_ids, collections.abc.Collection):
             raise TypeError(f'owner_ids must be a collection not {self.owner_ids.__class__!r}')
+
+        self_bot = options.get('self_bot', False)
+        user_bot = options.get('user_bot', False)
+
+        if self_bot and user_bot:
+            raise TypeError('Both self_bot and user_bot are set')
+
+        if self_bot:
+            self._skip_check = lambda x, y: x != y
+        elif user_bot:
+            self._skip_check = lambda *_: False
+        else:
+            self._skip_check = lambda x, y: x == y
 
         if help_command is _default:
             self.help_command = DefaultHelpCommand()
@@ -340,37 +352,27 @@ class BotBase(GroupMixin):
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
         this bot.
 
-        If an :attr:`owner_id` is not set, it is fetched automatically
-        through the use of :meth:`~.Bot.application_info`.
-
-        .. versionchanged:: 1.3
-            The function also checks if the application is team-owned if
-            :attr:`owner_ids` is not set.
-
         Parameters
         -----------
         user: :class:`.abc.User`
             The user to check for.
+
+        Raises
+        -------
+        AttributeError
+            Owners aren't set.
 
         Returns
         --------
         :class:`bool`
             Whether the user is the owner.
         """
-
         if self.owner_id:
             return user.id == self.owner_id
         elif self.owner_ids:
             return user.id in self.owner_ids
         else:
-
-            app = await self.application_info()  # type: ignore
-            if app.team:
-                self.owner_ids = ids = {m.id for m in app.team.members}
-                return user.id in ids
-            else:
-                self.owner_id = owner_id = app.owner.id
-                return user.id == owner_id
+            raise AttributeError('Owners aren\'t set.')
 
     def before_invoke(self, coro: CFT) -> CFT:
         """A decorator that registers a coroutine as a pre-invoke hook.
@@ -992,7 +994,7 @@ class BotBase(GroupMixin):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if message.author.id == self.user.id:  # type: ignore
+        if self._skip_check(message.author.id, self.user.id):  # type: ignore
             return ctx
 
         prefix = await self.get_prefix(message)
@@ -1148,8 +1150,7 @@ class Bot(BotBase, discord.Client):
         information on implementing a help command, see :ref:`ext_commands_help_command`.
     owner_id: Optional[:class:`int`]
         The user ID that owns the bot. If this is not set and is then queried via
-        :meth:`.is_owner` then it is fetched automatically using
-        :meth:`~.Bot.application_info`.
+        :meth:`.is_owner` then it will error.
     owner_ids: Optional[Collection[:class:`int`]]
         The user IDs that owns the bot. This is similar to :attr:`owner_id`.
         If this is not set and the application is team based, then it is
@@ -1164,14 +1165,6 @@ class Bot(BotBase, discord.Client):
         the ``command_prefix`` is set to ``!``. Defaults to ``False``.
 
         .. versionadded:: 1.7
-    """
-
-    pass
-
-
-class AutoShardedBot(BotBase, discord.AutoShardedClient):
-    """This is similar to :class:`.Bot` except that it is inherited from
-    :class:`discord.AutoShardedClient` instead.
     """
 
     pass

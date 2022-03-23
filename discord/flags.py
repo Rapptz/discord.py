@@ -36,7 +36,6 @@ __all__ = (
     'SystemChannelFlags',
     'MessageFlags',
     'PublicUserFlags',
-    'Intents',
     'MemberCacheFlags',
     'ApplicationFlags',
 )
@@ -94,7 +93,7 @@ def fill_with_flags(*, inverted: bool = False):
     return decorator
 
 
-# n.b. flags must inherit from this and use the decorator above
+# Flags must inherit from this and use the decorator above
 class BaseFlags:
     VALID_FLAGS: ClassVar[Dict[str, int]]
     DEFAULT_VALUE: ClassVar[int]
@@ -186,7 +185,7 @@ class SystemChannelFlags(BaseFlags):
     __slots__ = ()
 
     # For some reason the flags for system channels are "inverted"
-    # ergo, if they're set then it means "suppress" (off in the GUI toggle)
+    # Ergo, if they're set then it means "suppress" (off in the GUI toggle)
     # Since this is counter-intuitive from an API perspective and annoying
     # these will be inverted automatically
 
@@ -199,7 +198,7 @@ class SystemChannelFlags(BaseFlags):
         elif toggle is False:
             self.value |= o
         else:
-            raise TypeError('Value to set for SystemChannelFlags must be a bool.')
+            raise TypeError('Value to set for SystemChannelFlags must be a bool')
 
     @flag_value
     def join_notifications(self):
@@ -285,7 +284,7 @@ class MessageFlags(BaseFlags):
 
     @flag_value
     def urgent(self):
-        """:class:`bool`: Returns ``True`` if the source message is an urgent message.
+        """:class:`bool`: Returns ``True`` if the message is an urgent message.
 
         An urgent message is one sent by Discord Trust and Safety.
         """
@@ -293,7 +292,7 @@ class MessageFlags(BaseFlags):
 
     @flag_value
     def has_thread(self):
-        """:class:`bool`: Returns ``True`` if the source message is associated with a thread.
+        """:class:`bool`: Returns ``True`` if the message is associated with a thread.
 
         .. versionadded:: 2.0
         """
@@ -301,7 +300,7 @@ class MessageFlags(BaseFlags):
 
     @flag_value
     def ephemeral(self):
-        """:class:`bool`: Returns ``True`` if the source message is ephemeral.
+        """:class:`bool`: Returns ``True`` if the message is ephemeral.
 
         .. versionadded:: 2.0
         """
@@ -376,8 +375,19 @@ class PublicUserFlags(BaseFlags):
 
     @flag_value
     def bug_hunter(self):
-        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter"""
+        """:class:`bool`: Returns ``True`` if the user is a level 1 Bug Hunter
+
+        There is an alias for this called :attr:`bug_hunter_level_1`.
+        """
         return UserFlags.bug_hunter.value
+
+    @alias_flag_value
+    def bug_hunter_level_1(self):
+        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter
+
+        This is an alias of :attr:`bug_hunter`.
+        """
+        return UserFlags.bug_hunter_level_1.value
 
     @flag_value
     def hypesquad_bravery(self):
@@ -411,7 +421,7 @@ class PublicUserFlags(BaseFlags):
 
     @flag_value
     def bug_hunter_level_2(self):
-        """:class:`bool`: Returns ``True`` if the user is a Bug Hunter Level 2"""
+        """:class:`bool`: Returns ``True`` if the user is a level 2 Bug Hunter"""
         return UserFlags.bug_hunter_level_2.value
 
     @flag_value
@@ -458,504 +468,70 @@ class PublicUserFlags(BaseFlags):
         return UserFlags.spammer.value
 
     def all(self) -> List[UserFlags]:
-        """List[:class:`UserFlags`]: Returns all public flags the user has."""
+        """List[:class:`UserFlags`]: Returns all flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
 
 
 @fill_with_flags()
-class Intents(BaseFlags):
-    r"""Wraps up a Discord gateway intent flag.
+class PrivateUserFlags(PublicUserFlags):
+    r"""Wraps up the Discord User flags.
 
-    Similar to :class:`Permissions`\, the properties provided are two way.
-    You can set and retrieve individual bits using the properties as if they
-    were regular bools.
+        .. note::
+            These are only available on your own user flags.
 
-    To construct an object you can pass keyword arguments denoting the flags
-    to enable or disable.
+        .. container:: operations
 
-    This is used to disable certain gateway features that are unnecessary to
-    run your bot. To make use of this, it is passed to the ``intents`` keyword
-    argument of :class:`Client`.
+            .. describe:: x == y
 
-    .. versionadded:: 1.5
+                Checks if two UserFlags are equal.
+            .. describe:: x != y
 
-    .. container:: operations
+                Checks if two UserFlags are not equal.
+            .. describe:: hash(x)
 
-        .. describe:: x == y
+                Return the flag's hash.
+            .. describe:: iter(x)
 
-            Checks if two flags are equal.
-        .. describe:: x != y
+                Returns an iterator of ``(name, value)`` pairs. This allows it
+                to be, for example, constructed as a dict or a list of pairs.
+                Note that aliases are not shown.
 
-            Checks if two flags are not equal.
-        .. describe:: hash(x)
+        .. versionadded:: 2.0
 
-               Return the flag's hash.
-        .. describe:: iter(x)
-
-               Returns an iterator of ``(name, value)`` pairs. This allows it
-               to be, for example, constructed as a dict or a list of pairs.
-
-    Attributes
-    -----------
-    value: :class:`int`
-        The raw value. You should query flags via the properties
-        rather than using this raw value.
-    """
+        Attributes
+        -----------
+        value: :class:`int`
+            The raw value. This value is a bit array field of a 53-bit integer
+            representing the currently available flags. You should query
+            flags via the properties rather than using this raw value.
+        """
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool):
-        self.value = self.DEFAULT_VALUE
-        for key, value in kwargs.items():
-            if key not in self.VALID_FLAGS:
-                raise TypeError(f'{key!r} is not a valid flag name.')
-            setattr(self, key, value)
-
-    @classmethod
-    def all(cls: Type[Intents]) -> Intents:
-        """A factory method that creates a :class:`Intents` with everything enabled."""
-        bits = max(cls.VALID_FLAGS.values()).bit_length()
-        value = (1 << bits) - 1
-        self = cls.__new__(cls)
-        self.value = value
-        return self
-
-    @classmethod
-    def none(cls: Type[Intents]) -> Intents:
-        """A factory method that creates a :class:`Intents` with everything disabled."""
-        self = cls.__new__(cls)
-        self.value = self.DEFAULT_VALUE
-        return self
-
-    @classmethod
-    def default(cls: Type[Intents]) -> Intents:
-        """A factory method that creates a :class:`Intents` with everything enabled
-        except :attr:`presences`, :attr:`members`, and :attr:`message_content`.
-        """
-        self = cls.all()
-        self.presences = False
-        self.members = False
-        self.message_content = False
-        return self
+    @flag_value
+    def premium_promo_dismissed(self):
+        """:class:`bool`: Returns ``True`` if the user has dismissed the premium promo."""
+        return UserFlags.premium_promo_dismissed.value
 
     @flag_value
-    def guilds(self):
-        """:class:`bool`: Whether guild related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_guild_join`
-        - :func:`on_guild_remove`
-        - :func:`on_guild_available`
-        - :func:`on_guild_unavailable`
-        - :func:`on_guild_channel_update`
-        - :func:`on_guild_channel_create`
-        - :func:`on_guild_channel_delete`
-        - :func:`on_guild_channel_pins_update`
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`Client.guilds`
-        - :class:`Guild` and all its attributes.
-        - :meth:`Client.get_channel`
-        - :meth:`Client.get_all_channels`
-
-        It is highly advisable to leave this intent enabled for your bot to function.
-        """
-        return 1 << 0
+    def has_unread_urgent_messages(self):
+        """:class:`bool`: Returns ``True`` if the user has unread urgent system messages."""
+        return UserFlags.has_unread_urgent_messages.value
 
     @flag_value
-    def members(self):
-        """:class:`bool`: Whether guild member related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_member_join`
-        - :func:`on_member_remove`
-        - :func:`on_member_update`
-        - :func:`on_user_update`
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :meth:`Client.get_all_members`
-        - :meth:`Client.get_user`
-        - :meth:`Guild.chunk`
-        - :meth:`Guild.fetch_members`
-        - :meth:`Guild.get_member`
-        - :attr:`Guild.members`
-        - :attr:`Member.roles`
-        - :attr:`Member.nick`
-        - :attr:`Member.premium_since`
-        - :attr:`User.name`
-        - :attr:`User.avatar`
-        - :attr:`User.discriminator`
-
-        For more information go to the :ref:`member intent documentation <need_members_intent>`.
-
-        .. note::
-
-            Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
-        """
-        return 1 << 1
+    def mfa_sms(self):
+        """:class:`bool`: Returns ``True`` if the user has SMS recovery for MFA enabled."""
+        return UserFlags.mfa_sms.value
 
     @flag_value
-    def bans(self):
-        """:class:`bool`: Whether guild ban related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_member_ban`
-        - :func:`on_member_unban`
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 2
+    def underage_deleted(self):
+        """:class:`bool`: Returns ``True`` if the user has been flagged for deletion for being underage."""
+        return UserFlags.underage_deleted.value
 
     @flag_value
-    def emojis(self):
-        """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
-
-        .. versionchanged:: 2.0
-            Changed to an alias.
-        """
-        return 1 << 3
-
-    @alias_flag_value
-    def emojis_and_stickers(self):
-        """:class:`bool`: Whether guild emoji and sticker related events are enabled.
-
-        .. versionadded:: 2.0
-
-        This corresponds to the following events:
-
-        - :func:`on_guild_emojis_update`
-        - :func:`on_guild_stickers_update`
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :class:`Emoji`
-        - :class:`GuildSticker`
-        - :meth:`Client.get_emoji`
-        - :meth:`Client.get_sticker`
-        - :meth:`Client.emojis`
-        - :meth:`Client.stickers`
-        - :attr:`Guild.emojis`
-        - :attr:`Guild.stickers`
-        """
-        return 1 << 3
-
-    @flag_value
-    def integrations(self):
-        """:class:`bool`: Whether guild integration related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_guild_integrations_update`
-        - :func:`on_integration_create`
-        - :func:`on_integration_update`
-        - :func:`on_raw_integration_delete`
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 4
-
-    @flag_value
-    def webhooks(self):
-        """:class:`bool`: Whether guild webhook related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_webhooks_update`
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 5
-
-    @flag_value
-    def invites(self):
-        """:class:`bool`: Whether guild invite related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_invite_create`
-        - :func:`on_invite_delete`
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 6
-
-    @flag_value
-    def voice_states(self):
-        """:class:`bool`: Whether guild voice state related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_voice_state_update`
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`VoiceChannel.members`
-        - :attr:`VoiceChannel.voice_states`
-        - :attr:`Member.voice`
-
-        .. note::
-
-            This intent is required to connect to voice.
-        """
-        return 1 << 7
-
-    @flag_value
-    def presences(self):
-        """:class:`bool`: Whether guild presence related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_presence_update`
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`Member.activities`
-        - :attr:`Member.status`
-        - :attr:`Member.raw_status`
-
-        For more information go to the :ref:`presence intent documentation <need_presence_intent>`.
-
-        .. note::
-
-            Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
-        """
-        return 1 << 8
-
-    @alias_flag_value
-    def messages(self):
-        """:class:`bool`: Whether guild and direct message related events are enabled.
-
-        This is a shortcut to set or get both :attr:`guild_messages` and :attr:`dm_messages`.
-
-        This corresponds to the following events:
-
-        - :func:`on_message` (both guilds and DMs)
-        - :func:`on_message_edit` (both guilds and DMs)
-        - :func:`on_message_delete` (both guilds and DMs)
-        - :func:`on_raw_message_delete` (both guilds and DMs)
-        - :func:`on_raw_message_edit` (both guilds and DMs)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :class:`Message`
-        - :attr:`Client.cached_messages`
-
-        Note that due to an implicit relationship this also corresponds to the following events:
-
-        - :func:`on_reaction_add` (both guilds and DMs)
-        - :func:`on_reaction_remove` (both guilds and DMs)
-        - :func:`on_reaction_clear` (both guilds and DMs)
-        """
-        return (1 << 9) | (1 << 12)
-
-    @flag_value
-    def guild_messages(self):
-        """:class:`bool`: Whether guild message related events are enabled.
-
-        See also :attr:`dm_messages` for DMs or :attr:`messages` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_message` (only for guilds)
-        - :func:`on_message_edit` (only for guilds)
-        - :func:`on_message_delete` (only for guilds)
-        - :func:`on_raw_message_delete` (only for guilds)
-        - :func:`on_raw_message_edit` (only for guilds)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :class:`Message`
-        - :attr:`Client.cached_messages` (only for guilds)
-
-        Note that due to an implicit relationship this also corresponds to the following events:
-
-        - :func:`on_reaction_add` (only for guilds)
-        - :func:`on_reaction_remove` (only for guilds)
-        - :func:`on_reaction_clear` (only for guilds)
-        """
-        return 1 << 9
-
-    @flag_value
-    def dm_messages(self):
-        """:class:`bool`: Whether direct message related events are enabled.
-
-        See also :attr:`guild_messages` for guilds or :attr:`messages` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_message` (only for DMs)
-        - :func:`on_message_edit` (only for DMs)
-        - :func:`on_message_delete` (only for DMs)
-        - :func:`on_raw_message_delete` (only for DMs)
-        - :func:`on_raw_message_edit` (only for DMs)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :class:`Message`
-        - :attr:`Client.cached_messages` (only for DMs)
-
-        Note that due to an implicit relationship this also corresponds to the following events:
-
-        - :func:`on_reaction_add` (only for DMs)
-        - :func:`on_reaction_remove` (only for DMs)
-        - :func:`on_reaction_clear` (only for DMs)
-        """
-        return 1 << 12
-
-    @alias_flag_value
-    def reactions(self):
-        """:class:`bool`: Whether guild and direct message reaction related events are enabled.
-
-        This is a shortcut to set or get both :attr:`guild_reactions` and :attr:`dm_reactions`.
-
-        This corresponds to the following events:
-
-        - :func:`on_reaction_add` (both guilds and DMs)
-        - :func:`on_reaction_remove` (both guilds and DMs)
-        - :func:`on_reaction_clear` (both guilds and DMs)
-        - :func:`on_raw_reaction_add` (both guilds and DMs)
-        - :func:`on_raw_reaction_remove` (both guilds and DMs)
-        - :func:`on_raw_reaction_clear` (both guilds and DMs)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`Message.reactions` (both guild and DM messages)
-        """
-        return (1 << 10) | (1 << 13)
-
-    @flag_value
-    def guild_reactions(self):
-        """:class:`bool`: Whether guild message reaction related events are enabled.
-
-        See also :attr:`dm_reactions` for DMs or :attr:`reactions` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_reaction_add` (only for guilds)
-        - :func:`on_reaction_remove` (only for guilds)
-        - :func:`on_reaction_clear` (only for guilds)
-        - :func:`on_raw_reaction_add` (only for guilds)
-        - :func:`on_raw_reaction_remove` (only for guilds)
-        - :func:`on_raw_reaction_clear` (only for guilds)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`Message.reactions` (only for guild messages)
-        """
-        return 1 << 10
-
-    @flag_value
-    def dm_reactions(self):
-        """:class:`bool`: Whether direct message reaction related events are enabled.
-
-        See also :attr:`guild_reactions` for guilds or :attr:`reactions` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_reaction_add` (only for DMs)
-        - :func:`on_reaction_remove` (only for DMs)
-        - :func:`on_reaction_clear` (only for DMs)
-        - :func:`on_raw_reaction_add` (only for DMs)
-        - :func:`on_raw_reaction_remove` (only for DMs)
-        - :func:`on_raw_reaction_clear` (only for DMs)
-
-        This also corresponds to the following attributes and classes in terms of cache:
-
-        - :attr:`Message.reactions` (only for DM messages)
-        """
-        return 1 << 13
-
-    @alias_flag_value
-    def typing(self):
-        """:class:`bool`: Whether guild and direct message typing related events are enabled.
-
-        This is a shortcut to set or get both :attr:`guild_typing` and :attr:`dm_typing`.
-
-        This corresponds to the following events:
-
-        - :func:`on_typing` (both guilds and DMs)
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return (1 << 11) | (1 << 14)
-
-    @flag_value
-    def guild_typing(self):
-        """:class:`bool`: Whether guild and direct message typing related events are enabled.
-
-        See also :attr:`dm_typing` for DMs or :attr:`typing` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_typing` (only for guilds)
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 11
-
-    @flag_value
-    def dm_typing(self):
-        """:class:`bool`: Whether guild and direct message typing related events are enabled.
-
-        See also :attr:`guild_typing` for guilds or :attr:`typing` for both.
-
-        This corresponds to the following events:
-
-        - :func:`on_typing` (only for DMs)
-
-        This does not correspond to any attributes or classes in the library in terms of cache.
-        """
-        return 1 << 14
-
-    @flag_value
-    def message_content(self):
-        """:class:`bool`: Whether message content, attachments, embeds and components will be available in messages
-        which do not meet the following criteria:
-
-        - The message was sent by the client
-        - The message was sent in direct messages
-        - The message mentions the client
-
-        This applies to the following events:
-
-        - :func:`on_message`
-        - :func:`on_message_edit`
-        - :func:`on_message_delete`
-        - :func:`on_raw_message_edit`
-
-        For more information go to the :ref:`message content intent documentation <need_message_content_intent>`.
-
-        .. note::
-
-            Currently, this requires opting in explicitly via the developer portal as well.
-            Bots in over 100 guilds will need to apply to Discord for verification.
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 15
-
-    @flag_value
-    def guild_scheduled_events(self):
-        """:class:`bool`: Whether guild scheduled event related events are enabled.
-
-        This corresponds to the following events:
-
-        - :func:`on_scheduled_event_create`
-        - :func:`on_scheduled_event_update`
-        - :func:`on_scheduled_event_delete`
-        - :func:`on_scheduled_event_user_add`
-        - :func:`on_scheduled_event_user_remove`
-
-        .. versionadded:: 2.0
-        """
-        return 1 << 16
+    def partner_or_verification_application(self):
+        """:class:`bool`: Returns ``True`` if the user has a partner or a verification application."""
+        return UserFlags.partner_or_verification_application.value
 
 
 @fill_with_flags()
@@ -965,11 +541,6 @@ class MemberCacheFlags(BaseFlags):
     This allows for finer grained control over what members are cached.
     Note that the bot's own member is always cached. This class is passed
     to the ``member_cache_flags`` parameter in :class:`Client`.
-
-    Due to a quirk in how Discord works, in order to ensure proper cleanup
-    of cache resources it is recommended to have :attr:`Intents.members`
-    enabled. Otherwise the library cannot know when a member leaves a guild and
-    is thus unable to cleanup after itself.
 
     To construct an object you can pass keyword arguments denoting the flags
     to enable or disable.
@@ -1035,53 +606,29 @@ class MemberCacheFlags(BaseFlags):
     def voice(self):
         """:class:`bool`: Whether to cache members that are in voice.
 
-        This requires :attr:`Intents.voice_states`.
-
         Members that leave voice are no longer cached.
         """
         return 1
 
     @flag_value
-    def joined(self):
-        """:class:`bool`: Whether to cache members that joined the guild
-        or are chunked as part of the initial log in flow.
+    def other(self):
+        """:class:`bool`: Whether to cache members that are collected from other means.
 
-        This requires :attr:`Intents.members`.
+        This does not apply to members explicitly cached (e.g. :attr:`Guild.chunk`, :attr:`Guild.fetch_members`).
 
-        Members that leave the guild are no longer cached.
+        There is an alias for this called :attr:`joined`.
         """
         return 2
 
-    @classmethod
-    def from_intents(cls: Type[MemberCacheFlags], intents: Intents) -> MemberCacheFlags:
-        """A factory method that creates a :class:`MemberCacheFlags` based on
-        the currently selected :class:`Intents`.
+    @alias_flag_value
+    def joined(self):
+        """:class:`bool`: Whether to cache members that are collected from other means.
 
-        Parameters
-        ------------
-        intents: :class:`Intents`
-            The intents to select from.
+        This does not apply to members explicitly cached (e.g. :attr:`Guild.chunk`, :attr:`Guild.fetch_members`).
 
-        Returns
-        ---------
-        :class:`MemberCacheFlags`
-            The resulting member cache flags.
+        This is an alias for :attr:`other`.
         """
-
-        self = cls.none()
-        if intents.members:
-            self.joined = True
-        if intents.voice_states:
-            self.voice = True
-
-        return self
-
-    def _verify_intents(self, intents: Intents):
-        if self.voice and not intents.voice_states:
-            raise ValueError('MemberCacheFlags.voice requires Intents.voice_states')
-
-        if self.joined and not intents.members:
-            raise ValueError('MemberCacheFlags.joined requires Intents.members')
+        return 2
 
     @property
     def _voice_only(self):
@@ -1125,25 +672,45 @@ class ApplicationFlags(BaseFlags):
         """
         return 1 << 12
 
+    @alias_flag_value
+    def presence(self):
+        """:class:`bool`: Alias for :attr:`gateway_presence`."""
+        return 1 << 12
+
     @flag_value
     def gateway_presence_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive
         presence information over the gateway.
         """
+        return 1 << 13
+
+    @alias_flag_value
+    def presence_limited(self):
+        """:class:`bool`: Alias for :attr:`gateway_presence_limited`."""
         return 1 << 13
 
     @flag_value
     def gateway_guild_members(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
-        receive guild members information over the gateway.
+        receive full guild member lists.
         """
+        return 1 << 14
+
+    @alias_flag_value
+    def guild_members(self):
+        """:class:`bool`: Alias for :attr:`gateway_guild_members`."""
         return 1 << 14
 
     @flag_value
     def gateway_guild_members_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is allowed to receive limited
-        guild members information over the gateway.
+        """:class:`bool`: Returns ``True`` if the application is allowed to receive full
+        guild member lists.
         """
+        return 1 << 15
+
+    @alias_flag_value
+    def guild_members_limited(self):
+        """:class:`bool`: Alias for :attr:`gateway_guild_members_limited`."""
         return 1 << 15
 
     @flag_value
@@ -1161,11 +728,31 @@ class ApplicationFlags(BaseFlags):
     @flag_value
     def gateway_message_content(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
-        read message content in guilds."""
+        receive message content."""
+        return 1 << 18
+
+    @alias_flag_value
+    def message_content(self):
+        """:class:`bool`: Alias for :attr:`gateway_message_content`."""
         return 1 << 18
 
     @flag_value
     def gateway_message_content_limited(self):
-        """:class:`bool`: Returns ``True`` if the application is unverified and is allowed to
+        """:class:`bool`: Returns ``True`` if the application is allowed to
         read message content in guilds."""
         return 1 << 19
+
+    @alias_flag_value
+    def message_content_limited(self):
+        """:class:`bool`: Alias for :attr:`gateway_message_content_limited`."""
+        return 1 << 19
+
+    @flag_value
+    def embedded_first_party(self):
+        """:class:`bool`: Returns ``True`` if the embedded application is published by Discord."""
+        return 1 << 20
+
+    @flag_value
+    def embedded_released(self):
+        """:class:`bool`: Returns ``True`` if the embedded application is released to the public."""
+        return 1 << 1

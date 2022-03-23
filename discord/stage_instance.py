@@ -104,10 +104,15 @@ class StageInstance(Hashable):
     def __repr__(self) -> str:
         return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
 
+    @property
+    def discoverable(self) -> bool:
+        """Whether the stage instance is discoverable."""
+        return not self.discoverable_disabled
+
     @cached_slot_property('_cs_channel')
     def channel(self) -> Optional[StageChannel]:
         """Optional[:class:`StageChannel`]: The channel that stage instance is running in."""
-        # the returned channel will always be a StageChannel or None
+        # The returned channel will always be a StageChannel or None
         return self._state.get_channel(self.channel_id)  # type: ignore
 
     async def edit(
@@ -142,7 +147,6 @@ class StageInstance(Hashable):
         HTTPException
             Editing a stage instance failed.
         """
-
         payload = {}
 
         if topic is not MISSING:

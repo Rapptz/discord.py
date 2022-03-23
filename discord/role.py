@@ -29,7 +29,8 @@ from .asset import Asset
 from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
-from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
+from .utils import snowflake_time, _get_as_snowflake, MISSING, _bytes_to_base64_data
+from .partial_emoji import PartialEmoji
 
 __all__ = (
     'RoleTags',
@@ -344,6 +345,8 @@ class Role(Hashable):
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention a role."""
+        if self.id == self.guild.id:
+            return '@everyone'
         return f'<@&{self.id}>'
 
     @property
@@ -364,7 +367,7 @@ class Role(Hashable):
             raise ValueError("Cannot move default role")
 
         if self.position == position:
-            return  # Save discord the extra request.
+            return  # Save Discord the extra request
 
         http = self._state.http
 
@@ -388,6 +391,8 @@ class Role(Hashable):
         color: Union[Colour, int] = MISSING,
         hoist: bool = MISSING,
         display_icon: Optional[Union[bytes, str]] = MISSING,
+        icon: Optional[bytes] = MISSING,
+        unicode_emoji: Optional[str] = MISSING,
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
@@ -408,7 +413,7 @@ class Role(Hashable):
             Edits are no longer in-place, the newly edited role is returned instead.
 
         .. versionadded:: 2.0
-            The ``display_icon`` keyword-only parameter was added.
+            The ``display_icon``, ``icon``, and ``unicode_emoji`` keyword-only parameters were added.
 
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
@@ -430,6 +435,15 @@ class Role(Hashable):
             Could be ``None`` to denote removal of the icon.
             Only PNG/JPEG is supported.
             This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`Guild.features`.
+        icon: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the icon that should be used as a role icon.
+            Could be ``None`` to denote removal of the icon.
+            Only PNG/JPEG is supported.
+            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`Guild.features`.
+        unicode_emoji: Optional[:class:`str`]
+            A unicode emoji that should be used as a role icon.
+            :attr:`icon` takes precedence over this, but both can be set.
+            This is only available to guilds that contain ``ROLE_ICONS`` in :attr:`Guild.features`.
         mentionable: :class:`bool`
             Indicates if the role should be mentionable by others.
         position: :class:`int`
@@ -445,14 +459,18 @@ class Role(Hashable):
         HTTPException
             Editing the role failed.
         ValueError
-            An invalid position was given or the default
-            role was asked to be moved.
+            An invalid position was given, the default
+            role was asked to be moved, or both ``display_icon``
+            and ``icon``/``unicode_emoji`` were set.
 
         Returns
         --------
         :class:`Role`
             The newly edited role.
         """
+        if display_icon and (icon or unicode_emoji):
+            raise ValueError('Cannot set both icon/unicode_emoji and display_icon')
+
         if position is not MISSING:
             await self._move(position, reason=reason)
 
@@ -476,12 +494,25 @@ class Role(Hashable):
             payload['hoist'] = hoist
 
         if display_icon is not MISSING:
-            payload['icon'] = None
-            payload['unicode_emoji'] = None
             if isinstance(display_icon, bytes):
                 payload['icon'] = _bytes_to_base64_data(display_icon)
-            else:
+            elif display_icon:
                 payload['unicode_emoji'] = display_icon
+            else:
+                payload['icon'] = None
+                payload['unicode_emoji'] = None
+
+        if icon is not MISSING:
+            if icon is None:
+                payload['icon'] = icon
+            else:
+                payload['icon'] = _bytes_to_base64_data(icon)
+
+        if unicode_emoji is not MISSING:
+            if unicode_emoji is None:
+                payload['unicode_emoji'] = None
+            else:
+                payload['unicode_emoji'] = unicode_emoji
 
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable

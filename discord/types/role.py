@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, Optional
+from typing import Optional, TypedDict
 from .snowflake import Snowflake
 
 
@@ -32,6 +32,8 @@ class _RoleOptional(TypedDict, total=False):
     icon: Optional[str]
     unicode_emoji: Optional[str]
     tags: RoleTags
+    icon: Optional[str]
+    unicode_emoji: Optional[str]
 
 
 class Role(_RoleOptional):

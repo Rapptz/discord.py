@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from .emoji import PartialEmoji
 
 ComponentType = Literal[1, 2, 3, 4]
@@ -76,7 +76,7 @@ class SelectMenu(_SelectMenuOptional):
 
 class _TextInputOptional(TypedDict, total=False):
     placeholder: str
-    value: str
+    value: Optional[str]
     required: bool
     min_length: int
     max_length: int

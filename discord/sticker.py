@@ -162,7 +162,7 @@ class _StickerTag(Hashable, AssetMixin):
             The content of the asset.
         """
         if self.format is StickerFormatType.lottie:
-            raise TypeError('Cannot read stickers of format "lottie".')
+            raise TypeError('Cannot read stickers of format "lottie"')
         return await super().read()
 
 

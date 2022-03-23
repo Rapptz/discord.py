@@ -205,7 +205,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was started.
         """
         if self.status is not EventStatus.scheduled:
-            raise ValueError('This scheduled event is already running.')
+            raise ValueError('This scheduled event is already running')
 
         return await self.edit(status=EventStatus.active, reason=reason)
 
@@ -240,7 +240,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was ended.
         """
         if self.status is not EventStatus.active:
-            raise ValueError('This scheduled event is not active.')
+            raise ValueError('This scheduled event is not active')
 
         return await self.edit(status=EventStatus.ended, reason=reason)
 
@@ -275,7 +275,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was cancelled.
         """
         if self.status is not EventStatus.scheduled:
-            raise ValueError('This scheduled event is already running.')
+            raise ValueError('This scheduled event is already running')
 
         return await self.edit(status=EventStatus.cancelled, reason=reason)
 
@@ -363,7 +363,7 @@ class ScheduledEvent(Hashable):
         if start_time is not MISSING:
             if start_time.tzinfo is None:
                 raise ValueError(
-                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time'
                 )
             payload['scheduled_start_time'] = start_time.isoformat()
 
@@ -372,7 +372,7 @@ class ScheduledEvent(Hashable):
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level must be of type PrivacyLevel.')
+                raise TypeError('privacy_level must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
 
@@ -480,12 +480,13 @@ class ScheduledEvent(Hashable):
             users = await self._state.http.get_scheduled_event_users(
                 self.guild_id, self.id, limit=retrieve, with_member=False, before=before_id
             )
+            users = users['users']
 
             if users:
                 if limit is not None:
                     limit -= len(users)
 
-                before = Object(id=users[-1]['user']['id'])
+                before = Object(id=users[-1]['id'])
 
             return users, before, limit
 
@@ -494,12 +495,13 @@ class ScheduledEvent(Hashable):
             users = await self._state.http.get_scheduled_event_users(
                 self.guild_id, self.id, limit=retrieve, with_member=False, after=after_id
             )
+            users = users['users']
 
             if users:
                 if limit is not None:
                     limit -= len(users)
 
-                after = Object(id=users[0]['user']['id'])
+                after = Object(id=users[0]['id'])
 
             return users, after, limit
 
@@ -537,7 +539,7 @@ class ScheduledEvent(Hashable):
             if predicate:
                 data = filter(predicate, data)
 
-            users = (self._state.store_user(raw_user['user']) for raw_user in data)
+            users = (self._state.store_user(raw_user) for raw_user in data)
 
             for user in users:
                 yield user

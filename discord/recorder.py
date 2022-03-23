@@ -1,7 +1,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-present Rapptz
+Copyright (c) 2015-present Who do I put here???
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -22,32 +22,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
+from __future__ import annotations
+
+import struct
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .voice_client import VoiceClient
+
+unpacker = struct.Struct('>xxHII')
 
 
-class PartialUser(TypedDict):
-    id: Snowflake
-    username: str
-    discriminator: str
-    avatar: Optional[str]
+class SSRC:
+    def __init__(self, ssrc: int, speaking: bool) -> None:
+        self._ssrc = ssrc
+        self.speaking = speaking
+
+    def __repr__(self) -> str:
+        return str(self._ssrc)
 
 
-PremiumType = Literal[0, 1, 2]
+class VoicePacket:  # IN-PROGRESS
+    def __init__(self, client: VoiceClient, data: bytes):
+        self.client = client
+        _data = bytearray(data)
 
-
-class User(PartialUser, total=False):
-    bot: bool
-    system: bool
-    mfa_enabled: bool
-    locale: str
-    verified: bool
-    email: Optional[str]
-    flags: int
-    premium_type: PremiumType
-    public_flags: int
-    banner: Optional[str]
-    accent_color: Optional[int]
-    bio: str
-    analytics_token: str
-    phone: Optional[str]
+        self.data: bytearray = data[12:]
+        self.header: bytearray = data[:12]

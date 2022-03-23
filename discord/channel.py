@@ -24,8 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import time
-import asyncio
 from typing import (
     Any,
     AsyncIterator,
@@ -46,6 +44,7 @@ import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
+from .calls import PrivateCall, GroupCall
 from .mixins import Hashable
 from .object import Object
 from . import utils
@@ -54,6 +53,7 @@ from .asset import Asset
 from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
+from .invite import Invite
 
 __all__ = (
     'TextChannel',
@@ -70,9 +70,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .types.threads import ThreadArchiveDuration
+    from .client import Client
     from .role import Role
     from .member import Member, VoiceState
-    from .abc import Snowflake, SnowflakeTime
+    from .abc import Snowflake, SnowflakeTime, T as ConnectReturn
     from .message import Message, PartialMessage
     from .webhook import Webhook
     from .state import ConnectionState
@@ -87,12 +88,6 @@ if TYPE_CHECKING:
         StoreChannel as StoreChannelPayload,
         GroupDMChannel as GroupChannelPayload,
     )
-    from .types.snowflake import SnowflakeList
-
-
-async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
-    for m in messages:
-        await m.delete()
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -372,15 +367,13 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
-        As a special case, if the number of messages is 0, then nothing
-        is done. If the number of messages is 1 then single message
-        delete is done. If it's more than two, then bulk delete is used.
-
-        You cannot bulk delete more than 100 messages or messages that
-        are older than 14 days old.
-
         You must have the :attr:`~Permissions.manage_messages` permission to
-        use this.
+        use this (unless they're your own).
+
+        .. note::
+            Users do not have access to the message bulk-delete endpoint.
+            Since messages are just iterated over and deleted one-by-one,
+            it's easy to get ratelimited using this method.
 
         .. versionchanged:: 2.0
 
@@ -397,12 +390,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Raises
         ------
-        ClientException
-            The number of messages to delete was more than 100.
         Forbidden
             You do not have proper permissions to delete the messages.
-        NotFound
-            If single delete, then the message was already deleted.
         HTTPException
             Deleting the messages failed.
         """
@@ -410,18 +399,9 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             messages = list(messages)
 
         if len(messages) == 0:
-            return  # do nothing
+            return  # Do nothing
 
-        if len(messages) == 1:
-            message_id: int = messages[0].id
-            await self._state.http.delete_message(self.id, message_id)
-            return
-
-        if len(messages) > 100:
-            raise ClientException('Can only bulk delete messages up to 100 messages')
-
-        message_ids: SnowflakeList = [m.id for m in messages]
-        await self._state.http.delete_messages(self.id, message_ids, reason=reason)
+        await self._state._delete_messages(self.id, messages, reason=reason)
 
     async def purge(
         self,
@@ -432,7 +412,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = False,
-        bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
@@ -441,10 +420,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own.
-        The :attr:`~Permissions.read_message_history` permission is
-        also needed to retrieve message history.
+        The :attr:`~Permissions.read_message_history` permission is needed to
+        retrieve message history.
 
         .. versionchanged:: 2.0
 
@@ -477,10 +454,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Same as ``around`` in :meth:`history`.
         oldest_first: Optional[:class:`bool`]
             Same as ``oldest_first`` in :meth:`history`.
-        bulk: :class:`bool`
-            If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
-            a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
-            fall back to single delete if messages are older than two weeks.
         reason: Optional[:class:`str`]
             The reason for purging the messages. Shows up on the audit log.
 
@@ -496,49 +469,30 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         List[:class:`.Message`]
             The list of messages that were deleted.
         """
-
         if check is MISSING:
             check = lambda m: True
 
+        state = self._state
+        channel_id = self.id
         iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
         ret: List[Message] = []
         count = 0
 
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-        strategy = self.delete_messages if bulk else _single_delete_strategy
-
         async for message in iterator:
-            if count == 100:
-                to_delete = ret[-100:]
-                await strategy(to_delete, reason=reason)
+            if count == 50:
+                to_delete = ret[-50:]
+                await state._delete_messages(channel_id, to_delete)
                 count = 0
-                await asyncio.sleep(1)
 
             if not check(message):
                 continue
-
-            if message.id < minimum_time:
-                # older than 14 days old
-                if count == 1:
-                    await ret[-1].delete()
-                elif count >= 2:
-                    to_delete = ret[-count:]
-                    await strategy(to_delete, reason=reason)
-
-                count = 0
-                strategy = _single_delete_strategy
 
             count += 1
             ret.append(message)
 
         # Some messages remaining to poll
-        if count >= 2:
-            # more than 2 messages -> bulk delete
-            to_delete = ret[-count:]
-            await strategy(to_delete, reason=reason)
-        elif count == 1:
-            # delete a single message
-            await ret[-1].delete()
+        to_delete = ret[-count:]
+        await state._delete_messages(channel_id, to_delete, reason=reason)
 
         return ret
 
@@ -739,7 +693,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The type of thread to create. If a ``message`` is passed then this parameter
             is ignored, as a thread created with a message is always a public thread.
             By default this creates a private thread if this is ``None``.
-        reason: :class:`str`
+        reason: Optional[:class:`str`]
             The reason for creating a new thread. Shows up on the audit log.
         invitable: :class:`bool`
             Whether non-modertators can add users to the thread. Only applicable to private threads.
@@ -1292,7 +1246,7 @@ class StageChannel(VocalGuildChannel):
             The stage instance's topic.
         privacy_level: :class:`PrivacyLevel`
             The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
-        reason: :class:`str`
+        reason: Optional[:class:`str`]
             The reason the stage instance was created. Shows up on the audit log.
 
         Raises
@@ -1834,7 +1788,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
 
-class DMChannel(discord.abc.Messageable, Hashable):
+class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     """Represents a Discord direct message channel.
 
     .. container:: operations
@@ -1857,6 +1811,11 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.0
     recipient: Optional[:class:`User`]
         The user you are participating with in the direct message channel.
         If this channel is received through the gateway, the recipient information
@@ -1867,16 +1826,30 @@ class DMChannel(discord.abc.Messageable, Hashable):
         The direct message channel ID.
     """
 
-    __slots__ = ('id', 'recipient', 'me', '_state')
+    __slots__ = ('id', 'recipient', 'me', 'last_message_id', '_state')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.recipient: User = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
+    def _get_voice_client_key(self) -> Tuple[int, str]:
+        return self.me.id, 'self_id'
+
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
+        return self.me.id, self.id
+
+    def _add_call(self, **kwargs) -> PrivateCall:
+        return PrivateCall(**kwargs)
+
     async def _get_channel(self):
+        await self._state.access_private_channel(self.id)
         return self
+
+    def _initial_ring(self):
+        return self._state.http.ring(self.id)
 
     def __str__(self) -> str:
         if self.recipient:
@@ -1886,15 +1859,10 @@ class DMChannel(discord.abc.Messageable, Hashable):
     def __repr__(self) -> str:
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
-    @classmethod
-    def _from_message(cls, state: ConnectionState, channel_id: int) -> Self:
-        self = cls.__new__(cls)
-        self._state = state
-        self.id = channel_id
-        self.recipient = None
-        # state.user won't be None here
-        self.me = state.user  # type: ignore
-        return self
+    @property
+    def call(self) -> Optional[PrivateCall]:
+        """Optional[:class:`PrivateCall`]: The channel's currently active call."""
+        return self._state._calls.get(self.id)
 
     @property
     def type(self) -> ChannelType:
@@ -1905,6 +1873,35 @@ class DMChannel(discord.abc.Messageable, Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
+
+    @property
+    def last_message(self) -> Optional[Message]:
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     def permissions_for(self, obj: Any = None, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
@@ -1967,8 +1964,38 @@ class DMChannel(discord.abc.Messageable, Hashable):
 
         return PartialMessage(channel=self, id=message_id)
 
+    async def close(self):
+        """|coro|
 
-class GroupChannel(discord.abc.Messageable, Hashable):
+        "Deletes" the channel.
+
+        In reality, if you recreate a DM with the same user,
+        all your message history will be there.
+
+        Raises
+        -------
+        HTTPException
+            Closing the channel failed.
+        """
+        await self._state.http.delete_channel(self.id)
+
+    @utils.copy_doc(discord.abc.Connectable.connect)
+    async def connect(
+        self,
+        *,
+        timeout: float = 60.0,
+        reconnect: bool = True,
+        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        ring: bool = True,
+    ) -> ConnectReturn:
+        await self._get_channel()
+        call = self.call
+        if call is None and ring:
+            await self._initial_ring()
+        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+
+
+class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     """Represents a Discord group channel.
 
     .. container:: operations
@@ -1991,6 +2018,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     Attributes
     ----------
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+
+        .. versionadded:: 2.0
     recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
@@ -2007,7 +2039,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         The group channel's name if provided.
     """
 
-    __slots__ = ('id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
+    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -2020,6 +2052,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         self._icon: Optional[str] = data.get('icon')
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
 
         self.owner: Optional[BaseUser]
         if self.owner_id == self.me.id:
@@ -2027,8 +2060,21 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         else:
             self.owner = utils.find(lambda u: u.id == self.owner_id, self.recipients)
 
+    def _get_voice_client_key(self) -> Tuple[int, str]:
+        return self.me.id, 'self_id'
+
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
+        return self.me.id, self.id
+
     async def _get_channel(self):
+        await self._state.access_private_channel(self.id)
         return self
+
+    def _initial_ring(self):
+        return self._state.http.ring(self.id)
+
+    def _add_call(self, **kwargs) -> GroupCall:
+        return GroupCall(**kwargs)
 
     def __str__(self) -> str:
         if self.name:
@@ -2041,6 +2087,11 @@ class GroupChannel(discord.abc.Messageable, Hashable):
 
     def __repr__(self) -> str:
         return f'<GroupChannel id={self.id} name={self.name!r}>'
+
+    @property
+    def call(self) -> Optional[PrivateCall]:
+        """Optional[:class:`PrivateCall`]: The channel's currently active call."""
+        return self._state._calls.get(self.id)
 
     @property
     def type(self) -> ChannelType:
@@ -2058,6 +2109,35 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
+
+    @property
+    def last_message(self) -> Optional[Message]:
+        """Fetches the last message from this channel in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`last_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last message in this channel or ``None`` if not found.
+        """
+        return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
@@ -2087,7 +2167,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         :class:`Permissions`
             The resolved permissions for the user.
         """
-
         base = Permissions.text()
         base.read_messages = True
         base.send_tts_messages = False
@@ -2098,6 +2177,100 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             base.kick_members = True
 
         return base
+
+    async def add_recipients(self, *recipients) -> None:
+        r"""|coro|
+
+        Adds recipients to this group.
+
+        A group can only have a maximum of 10 members.
+        Attempting to add more ends up in an exception. To
+        add a recipient to the group, you must have a relationship
+        with the user of type :attr:`RelationshipType.friend`.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to add to this group.
+
+        Raises
+        -------
+        HTTPException
+            Adding a recipient to this group failed.
+        """
+        # TODO: wait for the corresponding WS event
+        await self._get_channel()
+        req = self._state.http.add_group_recipient
+        for recipient in recipients:
+            await req(self.id, recipient.id)
+
+    async def remove_recipients(self, *recipients) -> None:
+        r"""|coro|
+
+        Removes recipients from this group.
+
+        Parameters
+        -----------
+        \*recipients: :class:`User`
+            An argument list of users to remove from this group.
+
+        Raises
+        -------
+        HTTPException
+            Removing a recipient from this group failed.
+        """
+        # TODO: wait for the corresponding WS event
+        await self._get_channel()
+        req = self._state.http.remove_group_recipient
+        for recipient in recipients:
+            await req(self.id, recipient.id)
+
+    @overload
+    async def edit(
+        self, *, name: Optional[str] = ..., icon: Optional[bytes] = ...,
+    ) -> Optional[GroupChannel]:
+        ...
+
+    @overload
+    async def edit(self) -> Optional[GroupChannel]:
+        ...
+
+    async def edit(self, **fields) -> Optional[GroupChannel]:
+        """|coro|
+
+        Edits the group.
+
+        .. versionchanged:: 2.0
+            Edits are no longer in-place, the newly edited channel is returned instead.
+
+        Parameters
+        -----------
+        name: Optional[:class:`str`]
+            The new name to change the group to.
+            Could be ``None`` to remove the name.
+        icon: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the new icon.
+            Could be ``None`` to remove the icon.
+
+        Raises
+        -------
+        HTTPException
+            Editing the group failed.
+        """
+        await self._get_channel()
+
+        try:
+            icon_bytes = fields['icon']
+        except KeyError:
+            pass
+        else:
+            if icon_bytes is not None:
+                fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
+
+        data = await self._state.http.edit_group(self.id, **fields)
+        if data is not None:
+            # The payload will always be the proper channel payload
+            return self.__class__(me=self.me, state=self._state, data=payload)  # type: ignore
 
     async def leave(self) -> None:
         """|coro|
@@ -2111,8 +2284,47 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         HTTPException
             Leaving the group failed.
         """
+        await self._state.http.delete_channel(self.id)
 
-        await self._state.http.leave_group(self.id)
+    async def create_invite(self, *, max_age: int = 86400) -> Invite:
+        """|coro|
+
+        Creates an instant invite from a group channel.
+
+        Parameters
+        ------------
+        max_age: :class:`int`
+            How long the invite should last in seconds.
+            Defaults to 86400. Does not support 0.
+
+        Raises
+        -------
+        ~discord.HTTPException
+            Invite creation failed.
+
+        Returns
+        --------
+        :class:`~discord.Invite`
+            The invite that was created.
+        """
+        data = await self._state.http.create_group_invite(self.id, max_age=max_age)
+        return Invite.from_incomplete(data=data, state=self._state)
+
+    @utils.copy_doc(discord.abc.Connectable.connect)
+    async def connect(
+        self,
+        *,
+        timeout: float = 60.0,
+        reconnect: bool = True,
+        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        ring: bool = True,
+    ) -> ConnectReturn:
+        await self._get_channel()
+        call = self.call
+        if call is None and ring:
+            await self._initial_ring()
+        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+
 
 
 class PartialMessageable(discord.abc.Messageable, Hashable):
@@ -2151,6 +2363,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         self._state: ConnectionState = state
         self.id: int = id
         self.type: Optional[ChannelType] = type
+        self.last_message_id: Optional[int] = None
 
     async def _get_channel(self) -> PartialMessageable:
         return self
@@ -2195,14 +2408,21 @@ def _guild_channel_factory(channel_type: int):
         return None, value
 
 
-def _channel_factory(channel_type: int):
-    cls, value = _guild_channel_factory(channel_type)
+def _private_channel_factory(channel_type: int):
+    value = try_enum(ChannelType, channel_type)
     if value is ChannelType.private:
         return DMChannel, value
     elif value is ChannelType.group:
         return GroupChannel, value
     else:
-        return cls, value
+        return None, value
+
+
+def _channel_factory(channel_type: int):
+    cls, value = _guild_channel_factory(channel_type)
+    if cls is None:
+        cls, value = _private_channel_factory(channel_type)
+    return cls, value
 
 
 def _threaded_channel_factory(channel_type: int):

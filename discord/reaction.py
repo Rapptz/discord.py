@@ -182,7 +182,7 @@ class Reaction:
 
         Usage ::
 
-            # I do not actually recommend doing this.
+            # I do not actually recommend doing this
             async for user in reaction.users():
                 await channel.send(f'{user} has reacted with {reaction.emoji}!')
 

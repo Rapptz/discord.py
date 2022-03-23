@@ -35,8 +35,6 @@ if TYPE_CHECKING:
     except ModuleNotFoundError:
         _ResponseType = ClientResponse
 
-    from .interactions import Interaction
-
 __all__ = (
     'DiscordException',
     'ClientException',
@@ -46,10 +44,9 @@ __all__ = (
     'NotFound',
     'DiscordServerError',
     'InvalidData',
+    'AuthFailure',
     'LoginFailure',
     'ConnectionClosed',
-    'PrivilegedIntentsRequired',
-    'InteractionResponded',
 )
 
 
@@ -58,7 +55,6 @@ class DiscordException(Exception):
 
     Ideally speaking, this could be caught to handle any exceptions raised from this library.
     """
-
     pass
 
 
@@ -67,15 +63,13 @@ class ClientException(DiscordException):
 
     These are usually for exceptions that happened due to user input.
     """
-
     pass
 
 
 class GatewayNotFound(DiscordException):
     """An exception that is raised when the gateway for Discord could not be found"""
-
     def __init__(self):
-        message = 'The gateway to connect to discord was not found.'
+        message = 'The gateway to connect to Discord was not found.'
         super().__init__(message)
 
 
@@ -106,21 +100,22 @@ class HTTPException(DiscordException):
         The response of the failed HTTP request. This is an
         instance of :class:`aiohttp.ClientResponse`. In some cases
         this could also be a :class:`requests.Response`.
-
     text: :class:`str`
         The text of the error. Could be an empty string.
     status: :class:`int`
         The status code of the HTTP request.
     code: :class:`int`
         The Discord specific error code for the failure.
+    json: :class:`dict`
+        The raw error JSON.
     """
-
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
         self.status: int = response.status  # type: ignore - This attribute is filled by the library even if using requests
         self.code: int
         self.text: str
         if isinstance(message, dict):
+            self.json = message
             self.code = message.get('code', 0)
             base = message.get('message', '')
             errors = message.get('errors')
@@ -146,7 +141,6 @@ class Forbidden(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
-
     pass
 
 
@@ -155,7 +149,6 @@ class NotFound(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
-
     pass
 
 
@@ -166,7 +159,6 @@ class DiscordServerError(HTTPException):
 
     .. versionadded:: 1.5
     """
-
     pass
 
 
@@ -174,17 +166,18 @@ class InvalidData(ClientException):
     """Exception that's raised when the library encounters unknown
     or invalid data from Discord.
     """
-
     pass
 
 
-class LoginFailure(ClientException):
+class AuthFailure(ClientException):
     """Exception that's raised when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
     """
-
     pass
+
+
+LoginFailure = AuthFailure
 
 
 class ConnectionClosed(ClientException):
@@ -197,61 +190,11 @@ class ConnectionClosed(ClientException):
         The close code of the websocket.
     reason: :class:`str`
         The reason provided for the closure.
-    shard_id: Optional[:class:`int`]
-        The shard ID that got closed if applicable.
     """
-
-    def __init__(self, socket: ClientWebSocketResponse, *, shard_id: Optional[int], code: Optional[int] = None):
+    def __init__(self, socket: ClientWebSocketResponse, *, code: Optional[int] = None):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users
         self.code: int = code or socket.close_code or -1
         # aiohttp doesn't seem to consistently provide close reason
         self.reason: str = ''
-        self.shard_id: Optional[int] = shard_id
-        super().__init__(f'Shard ID {self.shard_id} WebSocket closed with {self.code}')
-
-
-class PrivilegedIntentsRequired(ClientException):
-    """Exception that's raised when the gateway is requesting privileged intents
-    but they're not ticked in the developer page yet.
-
-    Go to https://discord.com/developers/applications/ and enable the intents
-    that are required. Currently these are as follows:
-
-    - :attr:`Intents.members`
-    - :attr:`Intents.presences`
-
-    Attributes
-    -----------
-    shard_id: Optional[:class:`int`]
-        The shard ID that got closed if applicable.
-    """
-
-    def __init__(self, shard_id: Optional[int]):
-        self.shard_id: Optional[int] = shard_id
-        msg = (
-            'Shard ID %s is requesting privileged intents that have not been explicitly enabled in the '
-            'developer portal. It is recommended to go to https://discord.com/developers/applications/ '
-            'and explicitly enable the privileged intents within your application\'s page. If this is not '
-            'possible, then consider disabling the privileged intents instead.'
-        )
-        super().__init__(msg % shard_id)
-
-
-class InteractionResponded(ClientException):
-    """Exception that's raised when sending another interaction response using
-    :class:`InteractionResponse` when one has already been done before.
-
-    An interaction can only respond once.
-
-    .. versionadded:: 2.0
-
-    Attributes
-    -----------
-    interaction: :class:`Interaction`
-        The interaction that's already been responded to.
-    """
-
-    def __init__(self, interaction: Interaction):
-        self.interaction: Interaction = interaction
-        super().__init__('This interaction has already been responded to before')
+        super().__init__(f'WebSocket closed with {self.code}')

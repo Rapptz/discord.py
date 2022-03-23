@@ -252,6 +252,22 @@ class Activity(BaseActivity):
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Activity {inner}>'
 
+    def __eq__(self, other):
+        return (
+            isinstance(other, Activity) and
+            other.type == self.type and
+            other.name == self.name and
+            other.url == self.url and
+            other.emoji == self.emoji and
+            other.state == self.state and
+            other.session_id == self.session_id and
+            other.sync_id == self.sync_id and
+            other.start == self.start
+        )
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def to_dict(self) -> Dict[str, Any]:
         ret: Dict[str, Any] = {}
         for attr in self.__slots__:
@@ -730,31 +746,45 @@ class CustomActivity(BaseActivity):
 
     .. versionadded:: 1.3
 
+    .. note::
+        Technically, the name of custom activities is hardcoded to "Custom Status",
+        and the state parameter has the actual custom text.
+        This is confusing, so here, the name represents the actual custom text.
+        However, the "correct" way still works.
+
     Attributes
     -----------
     name: Optional[:class:`str`]
         The custom activity's name.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji to pass to the activity, if any.
+    expires_at: Optional[:class:`datetime.datetime`]
+        When the custom activity will expire. This is only available from :attr:`discord.Settings.custom_activity`
     """
 
-    __slots__ = ('name', 'emoji', 'state')
+    __slots__ = ('name', 'emoji', 'expires_at')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any):
-        super().__init__(**extra)
+    def __init__(
+        self,
+        name: Optional[str],
+        *,
+        emoji: Optional[PartialEmoji] = None,
+        state: Optional[str] = None,
+        expires_at: Optional[datetime.datetime] = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if name == 'Custom Status':
+            name = state
         self.name: Optional[str] = name
-        self.state: Optional[str] = extra.pop('state', None)
-        if self.name == 'Custom Status':
-            self.name = self.state
+        self.expires_at = expires_at
 
         self.emoji: Optional[PartialEmoji]
-        if emoji is None:
-            self.emoji = emoji
-        elif isinstance(emoji, dict):
+        if isinstance(emoji, dict):
             self.emoji = PartialEmoji.from_dict(emoji)
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji(name=emoji)
-        elif isinstance(emoji, PartialEmoji):
+        elif isinstance(emoji, PartialEmoji) or emoji is None:
             self.emoji = emoji
         else:
             raise TypeError(f'Expected str, PartialEmoji, or None, received {type(emoji)!r} instead.')
@@ -767,21 +797,27 @@ class CustomActivity(BaseActivity):
         """
         return ActivityType.custom
 
-    def to_dict(self) -> Dict[str, Any]:
-        if self.name == self.state:
-            o = {
-                'type': ActivityType.custom.value,
-                'state': self.name,
-                'name': 'Custom Status',
-            }
-        else:
-            o = {
-                'type': ActivityType.custom.value,
-                'name': self.name,
-            }
-
+    def to_dict(self) -> Dict[str, Union[str, int]]:
+        o = {
+            'type': ActivityType.custom.value,
+            'state': self.name,
+            'name': 'Custom Status',  # Not a confusing API at all
+        }
         if self.emoji:
             o['emoji'] = self.emoji.to_dict()
+        return o
+
+    def to_settings_dict(self) -> Dict[str, Any]:
+        o: Dict[str, Optional[Union[str, int]]] = {}
+
+        if (text := self.name):
+            o['text'] = text
+        if (emoji := self.emoji):
+            o['emoji_name'] = emoji.name
+            if emoji.id:
+                o['emoji_id'] = emoji.id
+        if (expiry := self.expires_at) is not None:
+            o['expires_at'] = expiry.isoformat()
         return o
 
     def __eq__(self, other: Any) -> bool:
@@ -833,13 +869,26 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
         except KeyError:
             return Activity(**data)
         else:
-            # we removed the name key from data already
+            # We removed the name key from data already
             return CustomActivity(name=name, **data)  # type: ignore
     elif game_type is ActivityType.streaming:
         if 'url' in data:
-            # the url won't be None here
+            # The url won't be None here
             return Streaming(**data)  # type: ignore
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
     return Activity(**data)
+
+def create_settings_activity(*, data, state):
+    if not data:
+        return
+
+    emoji = None
+    if (emoji_id := _get_as_snowflake(data, 'emoji_id')) is not None:
+        emoji = state.get_emoji(emoji_id)
+        emoji = emoji and emoji._to_partial()
+    elif (emoji_name := data.get('emoji_name')) is not None:
+        emoji = PartialEmoji(name=emoji_name)
+
+    return CustomActivity(name=data.get('text'), emoji=emoji, expires_at=data.get('expires_at'))

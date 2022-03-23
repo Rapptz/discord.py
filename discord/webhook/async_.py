@@ -72,7 +72,6 @@ if TYPE_CHECKING:
     from ..guild import Guild
     from ..channel import TextChannel
     from ..abc import Snowflake
-    from ..ui.view import View
     import datetime
 
 MISSING = utils.MISSING
@@ -126,11 +125,11 @@ class AsyncWebhookAdapter:
             headers['Content-Type'] = 'application/json'
             to_send = utils._to_json(payload)
 
-        if auth_token is not None:
-            headers['Authorization'] = f'Bot {auth_token}'
+        if auth_token is not None:  # TODO: same as sync.py
+            headers['Authorization'] = f'{auth_token}'
 
         if reason is not None:
-            headers['X-Audit-Log-Reason'] = urlquote(reason, safe='/ ')
+            headers['X-Audit-Log-Reason'] = urlquote(reason)
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
@@ -152,7 +151,7 @@ class AsyncWebhookAdapter:
                 try:
                     async with session.request(method, url, data=to_send, headers=headers, params=params) as response:
                         _log.debug(
-                            'Webhook ID %s with %s %s has returned status code %s',
+                            'Webhook ID %s with %s %s has returned status code %s.',
                             webhook_id,
                             method,
                             url,
@@ -166,7 +165,7 @@ class AsyncWebhookAdapter:
                         if remaining == '0' and response.status != 429:
                             delta = utils._parse_ratelimit_header(response)
                             _log.debug(
-                                'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds', webhook_id, delta
+                                'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds.', webhook_id, delta
                             )
                             lock.delay_by(delta)
 
@@ -178,7 +177,7 @@ class AsyncWebhookAdapter:
                                 raise HTTPException(response, data)
 
                             retry_after: float = data['retry_after']  # type: ignore
-                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds', webhook_id, retry_after)
+                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds.', webhook_id, retry_after)
                             await asyncio.sleep(retry_after)
                             continue
 
@@ -344,74 +343,6 @@ class AsyncWebhookAdapter:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
 
-    def create_interaction_response(
-        self,
-        interaction_id: int,
-        token: str,
-        *,
-        session: aiohttp.ClientSession,
-        params: MultipartParameters,
-    ) -> Response[None]:
-        route = Route(
-            'POST',
-            '/interactions/{webhook_id}/{webhook_token}/callback',
-            webhook_id=interaction_id,
-            webhook_token=token,
-        )
-
-        if params.files:
-            return self.request(route, session=session, files=params.files, multipart=params.multipart)
-        else:
-            return self.request(route, session=session, payload=params.payload)
-
-    def get_original_interaction_response(
-        self,
-        application_id: int,
-        token: str,
-        *,
-        session: aiohttp.ClientSession,
-    ) -> Response[MessagePayload]:
-        r = Route(
-            'GET',
-            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
-            webhook_id=application_id,
-            webhook_token=token,
-        )
-        return self.request(r, session=session)
-
-    def edit_original_interaction_response(
-        self,
-        application_id: int,
-        token: str,
-        *,
-        session: aiohttp.ClientSession,
-        payload: Optional[Dict[str, Any]] = None,
-        multipart: Optional[List[Dict[str, Any]]] = None,
-        files: Optional[List[File]] = None,
-    ) -> Response[MessagePayload]:
-        r = Route(
-            'PATCH',
-            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
-            webhook_id=application_id,
-            webhook_token=token,
-        )
-        return self.request(r, session, payload=payload, multipart=multipart, files=files)
-
-    def delete_original_interaction_response(
-        self,
-        application_id: int,
-        token: str,
-        *,
-        session: aiohttp.ClientSession,
-    ) -> Response[None]:
-        r = Route(
-            'DELETE',
-            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
-            webhook_id=application_id,
-            webhook_token=token,
-        )
-        return self.request(r, session=session)
-
 
 def interaction_response_params(type: int, data: Optional[Dict[str, Any]] = None) -> MultipartParameters:
     payload: Dict[str, Any] = {
@@ -435,7 +366,6 @@ def interaction_message_response_params(
     embed: Optional[Embed] = MISSING,
     embeds: List[Embed] = MISSING,
     attachments: List[Union[Attachment, File]] = MISSING,
-    view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
 ) -> MultipartParameters:
@@ -470,12 +400,6 @@ def interaction_message_response_params(
             data['content'] = str(content)
         else:
             data['content'] = None
-
-    if view is not MISSING:
-        if view is not None:
-            data['components'] = view.to_components()
-        else:
-            data['components'] = []
 
     if flags is not MISSING:
         data['flags'] = flags.value
@@ -627,14 +551,14 @@ class _WebhookState:
             return self._parent.http
 
         # Some data classes assign state.http and that should be kosher
-        # however, using it should result in a late-binding error.
+        # However, using it should result in a late-binding error
         return _FriendlyHttpAttributeErrorHelper()
 
     def __getattr__(self, attr):
         if self._parent is not None:
             return getattr(self._parent, attr)
 
-        raise AttributeError(f'PartialWebhookState does not support {attr!r}.')
+        raise AttributeError(f'PartialWebhookState does not support {attr!r}')
 
 
 class WebhookMessage(Message):
@@ -657,7 +581,6 @@ class WebhookMessage(Message):
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: List[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
         """|coro|
@@ -694,11 +617,6 @@ class WebhookMessage(Message):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
-            The updated view to update this message with. If ``None`` is passed then
-            the view is removed.
-
-            .. versionadded:: 2.0
 
         Raises
         -------
@@ -723,7 +641,6 @@ class WebhookMessage(Message):
             embeds=embeds,
             embed=embed,
             attachments=attachments,
-            view=view,
             allowed_mentions=allowed_mentions,
         )
 
@@ -1095,7 +1012,7 @@ class Webhook(BaseWebhook):
         """
         m = re.search(r'discord(?:app)?.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
-            raise ValueError('Invalid webhook URL given.')
+            raise ValueError('Invalid webhook URL given')
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
@@ -1301,13 +1218,11 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
-        ephemeral: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
@@ -1322,13 +1237,11 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: Any = MISSING,
         tts: bool = MISSING,
-        ephemeral: bool = MISSING,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
@@ -1342,13 +1255,11 @@ class Webhook(BaseWebhook):
         username: str = MISSING,
         avatar_url: Any = MISSING,
         tts: bool = False,
-        ephemeral: bool = False,
         file: File = MISSING,
         files: List[File] = MISSING,
         embed: Embed = MISSING,
         embeds: List[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
         thread: Snowflake = MISSING,
         wait: bool = False,
         suppress_embeds: bool = False,
@@ -1388,13 +1299,6 @@ class Webhook(BaseWebhook):
             string then it is explicitly cast using ``str``.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        ephemeral: :class:`bool`
-            Indicates if the message should only be visible to the user.
-            This is only available to :attr:`WebhookType.application` webhooks.
-            If a view is sent with an ephemeral message and it has no timeout set
-            then the timeout is set to 15 minutes.
-
-            .. versionadded:: 2.0
         file: :class:`File`
             The file to upload. This cannot be mixed with ``files`` parameter.
         files: List[:class:`File`]
@@ -1410,13 +1314,6 @@ class Webhook(BaseWebhook):
             Controls the mentions being processed in this message.
 
             .. versionadded:: 1.4
-        view: :class:`discord.ui.View`
-            The view to send with the message. You can only send a view
-            if this webhook is not partial and has state attached. A
-            webhook has state attached if the webhook is managed by the
-            library.
-
-            .. versionadded:: 2.0
         thread: :class:`~discord.abc.Snowflake`
             The thread to send this webhook to.
 
@@ -1437,10 +1334,8 @@ class Webhook(BaseWebhook):
         TypeError
             You specified both ``embed`` and ``embeds`` or ``file`` and ``files``.
         ValueError
-            The length of ``embeds`` was invalid, there was no token
-            associated with this webhook or ``ephemeral`` was passed
-            with the improper webhook type or there was no state
-            attached with this webhook when giving it a view.
+            The length of ``embeds`` was invalid, or there was no token
+            associated with this webhook.
 
         Returns
         ---------
@@ -1454,25 +1349,14 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
-        if ephemeral or suppress_embeds:
+        if suppress_embeds:
             flags = MessageFlags._from_value(0)
-            flags.ephemeral = ephemeral
             flags.suppress_embeds = suppress_embeds
         else:
             flags = MISSING
 
-        application_webhook = self.type is WebhookType.application
-        if ephemeral and not application_webhook:
-            raise ValueError('ephemeral messages can only be sent from application webhooks')
-
-        if application_webhook:
+        if self.type is WebhookType.application:
             wait = True
-
-        if view is not MISSING:
-            if isinstance(self._state, _WebhookState):
-                raise ValueError('Webhook views require an associated state with the webhook')
-            if ephemeral is True and view.timeout is None:
-                view.timeout = 15 * 60.0
 
         params = handle_message_parameters(
             content=content,
@@ -1484,7 +1368,6 @@ class Webhook(BaseWebhook):
             embed=embed,
             embeds=embeds,
             flags=flags,
-            view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
@@ -1507,10 +1390,6 @@ class Webhook(BaseWebhook):
         msg = None
         if wait:
             msg = self._create_message(data)
-
-        if view is not MISSING and not view.is_finished():
-            message_id = None if msg is None else msg.id
-            self._state.store_view(view, message_id)
 
         return msg
 
@@ -1563,7 +1442,6 @@ class Webhook(BaseWebhook):
         embeds: List[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: List[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> WebhookMessage:
         """|coro|
@@ -1601,12 +1479,6 @@ class Webhook(BaseWebhook):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
-            The updated view to update this message with. If ``None`` is passed then
-            the view is removed. The webhook must have state attached, similar to
-            :meth:`send`.
-
-            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1630,19 +1502,12 @@ class Webhook(BaseWebhook):
         if self.token is None:
             raise ValueError('This webhook does not have a token associated with it')
 
-        if view is not MISSING:
-            if isinstance(self._state, _WebhookState):
-                raise ValueError('This webhook does not have state associated with it')
-
-            self._state.prevent_view_updates_for(message_id)
-
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         params = handle_message_parameters(
             content=content,
             attachments=attachments,
             embed=embed,
             embeds=embeds,
-            view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
         )
@@ -1658,8 +1523,6 @@ class Webhook(BaseWebhook):
         )
 
         message = self._create_message(data)
-        if view and not view.is_finished():
-            self._state.store_view(view, message_id)
         return message
 
     async def delete_message(self, message_id: int, /) -> None:

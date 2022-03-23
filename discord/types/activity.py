@@ -34,7 +34,7 @@ StatusType = Literal['idle', 'dnd', 'online', 'offline']
 
 class PartialPresenceUpdate(TypedDict):
     user: User
-    guild_id: Snowflake
+    guild_id: Optional[Snowflake]
     status: StatusType
     activities: List[Activity]
     client_status: ClientStatus

@@ -2,18 +2,17 @@
 Discord API Wrapper
 ~~~~~~~~~~~~~~~~~~~
 
-A basic wrapper for the Discord API.
+A basic wrapper for the Discord user API.
 
-:copyright: (c) 2015-present Rapptz
+:copyright: (c) 2015-present Rapptz and 2021-present Dolfies
 :license: MIT, see LICENSE for more details.
-
 """
 
-__title__ = 'discord'
-__author__ = 'Rapptz'
+__title__ = 'discord.py-self'
+__author__ = 'Dolfies'
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2015-present Rapptz'
-__version__ = '2.0.0a'
+__copyright__ = 'Copyright 2015-present Rapptz and 2021-present Dolfies'
+__version__ = '2.0.0a2'
 
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
@@ -43,11 +42,10 @@ from .template import *
 from .widget import *
 from .object import *
 from .reaction import *
-from . import utils, opus, abc, ui, app_commands
+from . import utils, opus, abc
 from .enums import *
 from .embeds import *
 from .mentions import *
-from .shard import *
 from .player import *
 from .webhook import *
 from .voice_client import *
@@ -60,16 +58,21 @@ from .scheduled_event import *
 from .interactions import *
 from .components import *
 from .threads import *
+from .relationship import *
+from .guild_folder import *
+from .settings import *
+from .profile import *
+from .welcome_screen import *
+from .modal import *
 
 
-class VersionInfo(NamedTuple):
+class _VersionInfo(NamedTuple):
     major: int
     minor: int
     micro: int
-    releaselevel: Literal["alpha", "beta", "candidate", "final"]
+    releaselevel: Literal['alpha', 'beta', 'candidate', 'final']
     serial: int
 
-
-version_info: VersionInfo = VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=0)
+version_info: _VersionInfo = _VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=2)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
