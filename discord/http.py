@@ -57,6 +57,7 @@ from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordSer
 from .file import File
 from .tracking import ContextProperties
 from . import utils
+from .mentions import AllowedMentions
 from .utils import MISSING
 
 _log = logging.getLogger(__name__)
@@ -78,6 +79,7 @@ if TYPE_CHECKING:
         appinfo,
         audit_log,
         channel,
+        command,
         emoji,
         guild,
         integration,
@@ -91,7 +93,6 @@ if TYPE_CHECKING:
         widget,
         team,
         threads,
-        voice,
         scheduled_event,
         sticker,
         welcome_screen,
@@ -121,9 +122,9 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
 class MultipartParameters(NamedTuple):
     payload: Optional[Dict[str, Any]]
     multipart: Optional[List[Dict[str, Any]]]
-    files: Optional[List[File]]
+    files: Optional[Sequence[File]]
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(
@@ -146,10 +147,10 @@ def handle_message_parameters(
     nonce: Optional[Union[int, str]] = None,
     flags: MessageFlags = MISSING,
     file: File = MISSING,
-    files: List[File] = MISSING,
+    files: Sequence[File] = MISSING,
     embed: Optional[Embed] = MISSING,
-    embeds: List[Embed] = MISSING,
-    attachments: List[Union[Attachment, File]] = MISSING,
+    embeds: Sequence[Embed] = MISSING,
+    attachments: Sequence[Union[Attachment, File]] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
     stickers: Optional[SnowflakeList] = MISSING,
@@ -215,15 +216,12 @@ def handle_message_parameters(
         payload['allowed_mentions'] = previous_allowed_mentions.to_dict()
 
     if mention_author is not None:
-        try:
-            payload['allowed_mentions']['replied_user'] = mention_author
-        except KeyError:
-            payload['allowed_mentions'] = {
-                'replied_user': mention_author,
-            }
+        if 'allowed_mentions' not in payload:
+            payload['allowed_mentions'] = AllowedMentions().to_dict()
+        payload['allowed_mentions']['replied_user'] = mention_author
 
     if attachments is MISSING:
-        attachments = files  # type: ignore
+        attachments = files
     else:
         files = [a for a in attachments if isinstance(a, File)]
 
@@ -322,23 +320,24 @@ class HTTPClient:
 
     def __init__(
         self,
+        loop: asyncio.AbstractEventLoop,
         connector: Optional[aiohttp.BaseConnector] = None,
         *,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
         unsync_clock: bool = True,
+        http_trace: Optional[aiohttp.TraceConfig] = None,
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
-        self.connector: aiohttp.BaseConnector = connector or aiohttp.TCPConnector(limit=0)
+        self.loop: asyncio.AbstractEventLoop = loop
+        self.connector: aiohttp.BaseConnector = connector or MISSING
         self.__session: aiohttp.ClientSession = MISSING
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
-        self._global_over: asyncio.Event = asyncio.Event()
-        self._global_over.set()
+        self._global_over: asyncio.Event = MISSING
         self.token: Optional[str] = None
         self.ack_token: Optional[str] = None
         self.proxy: Optional[str] = proxy
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
+        self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
         self.use_clock: bool = not unsync_clock
 
         self.user_agent: str = MISSING
@@ -357,7 +356,12 @@ class HTTPClient:
     async def startup(self) -> None:
         if self._started:
             return
-        self.__session = session = aiohttp.ClientSession(connector=self.connector)
+
+        self.__session = session = aiohttp.ClientSession(
+            connector=self.connector,
+            loop=self.loop,
+            trace_configs=None if self.http_trace is None else [self.http_trace],
+        )
         self.user_agent, self.browser_version, self.client_build_number = ua, bv, bn = await utils._get_info(session)
         _log.info('Found user agent %s (%s), build number %s.', ua, bv, bn)
         self.super_properties = sp = {
@@ -587,7 +591,11 @@ class HTTPClient:
 
     def recreate(self) -> None:
         if self.__session and self.__session.closed:
-            self.__session = aiohttp.ClientSession(connector=self.connector)
+            self.__session = aiohttp.ClientSession(
+                connector=self.connector,
+                loop=self.loop,
+                trace_configs=None if self.http_trace is None else [self.http_trace],
+            )
 
     async def close(self) -> None:
         if self.__session:
@@ -599,12 +607,18 @@ class HTTPClient:
         self.token = token
         self.ack_token = None
 
-    def get_me(self, with_analytics_token=True) -> Response[user.User]:
+    def get_me(self, with_analytics_token: bool = True) -> Response[user.User]:
         params = {'with_analytics_token': str(with_analytics_token).lower()}
         return self.request(Route('GET', '/users/@me'), params=params)
 
     async def static_login(self, token: str) -> user.User:
         old_token, self.token = self.token, token
+
+        if self.connector is MISSING:
+            self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
+
+        self._global_over = asyncio.Event()
+        self._global_over.set()
 
         await self.startup()
 
@@ -1254,15 +1268,14 @@ class HTTPClient:
     def sync_template(self, guild_id: Snowflake, code: str) -> Response[template.Template]:
         return self.request(Route('PUT', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
 
-    def edit_template(self, guild_id: Snowflake, code: str, payload) -> Response[template.Template]:
-        r = Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code)
+    def edit_template(self, guild_id: Snowflake, code: str, payload: Dict[str, Any]) -> Response[template.Template]:
         valid_keys = (
             'name',
             'description',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
-        return self.request(r, json=payload)
+        return self.request(Route('PATCH', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code), json=payload)
 
     def delete_template(self, guild_id: Snowflake, code: str) -> Response[None]:
         return self.request(Route('DELETE', '/guilds/{guild_id}/templates/{code}', guild_id=guild_id, code=code))
@@ -1300,7 +1313,7 @@ class HTTPClient:
         guild_id: Snowflake,
         days: int,
         compute_prune_count: bool,
-        roles: List[str],
+        roles: Iterable[str],
         *,
         reason: Optional[str] = None,
     ) -> Response[guild.GuildPrune]:
@@ -1317,7 +1330,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         days: int,
-        roles: List[str],
+        roles: Iterable[str],
     ) -> Response[guild.GuildPrune]:
         params: Dict[str, Any] = {
             'days': days,
@@ -1329,6 +1342,9 @@ class HTTPClient:
 
     def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
         return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
+
+    def get_sticker_guild(self, sticker_id: Snowflake) -> Response[guild.Guild]:
+        return self.request(Route('GET', '/stickers/{sticker_id}/guild', sticker_id=sticker_id))
 
     def list_premium_sticker_packs(
         self, country: str = 'US', locale: str = 'en-US', payment_source_id: Snowflake = MISSING
@@ -1412,6 +1428,9 @@ class HTTPClient:
 
     def get_custom_emoji(self, guild_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
+
+    def get_emoji_guild(self, emoji_id: Snowflake) -> Response[guild.Guild]:
+        return self.request(Route('GET', '/emojis/{emoji_id}', emoji_id=emoji_id))
 
     def create_custom_emoji(
         self,
@@ -1533,7 +1552,9 @@ class HTTPClient:
     def get_widget(self, guild_id: Snowflake) -> Response[widget.Widget]:
         return self.request(Route('GET', '/guilds/{guild_id}/widget.json', guild_id=guild_id))
 
-    def edit_widget(self, guild_id: Snowflake, payload, reason: Optional[str] = None) -> Response[widget.WidgetSettings]:
+    def edit_widget(
+        self, guild_id: Snowflake, payload: widget.EditWidgetSettings, reason: Optional[str] = None
+    ) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
 
     def get_welcome_screen(self, guild_id: Snowflake) -> Response[welcome_screen.WelcomeScreen]:

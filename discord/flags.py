@@ -45,8 +45,8 @@ BF = TypeVar('BF', bound='BaseFlags')
 
 class flag_value:
     def __init__(self, func: Callable[[Any], int]):
-        self.flag = func(None)
-        self.__doc__ = func.__doc__
+        self.flag: int = func(None)
+        self.__doc__: Optional[str] = func.__doc__
 
     @overload
     def __get__(self, instance: None, owner: Type[BF]) -> Self:
@@ -64,7 +64,7 @@ class flag_value:
     def __set__(self, instance: BaseFlags, value: bool) -> None:
         instance._set_flag(self.flag, value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<flag_value flag={self.flag!r}>'
 
 
@@ -72,8 +72,8 @@ class alias_flag_value(flag_value):
     pass
 
 
-def fill_with_flags(*, inverted: bool = False):
-    def decorator(cls: Type[BF]):
+def fill_with_flags(*, inverted: bool = False) -> Callable[[Type[BF]], Type[BF]]:
+    def decorator(cls: Type[BF]) -> Type[BF]:
         # fmt: off
         cls.VALID_FLAGS = {
             name: value.flag
@@ -115,10 +115,10 @@ class BaseFlags:
         self.value = value
         return self
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -533,6 +533,11 @@ class PrivateUserFlags(PublicUserFlags):
         """:class:`bool`: Returns ``True`` if the user has a partner or a verification application."""
         return UserFlags.partner_or_verification_application.value
 
+    @flag_value
+    def disable_premium(self):
+        """:class:`bool`: Returns ``True`` if the user bought premium but has it manually disabled."""
+        return UserFlags.disable_premium.value
+
 
 @fill_with_flags()
 class MemberCacheFlags(BaseFlags):
@@ -576,7 +581,7 @@ class MemberCacheFlags(BaseFlags):
 
     def __init__(self, **kwargs: bool):
         bits = max(self.VALID_FLAGS.values()).bit_length()
-        self.value = (1 << bits) - 1
+        self.value: int = (1 << bits) - 1
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')

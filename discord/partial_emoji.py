@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from datetime import datetime
     from .types.message import PartialEmoji as PartialEmojiPayload
+    from .types.activity import ActivityEmoji
 
 
 class _EmojiTag:
@@ -99,13 +100,13 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         id: Optional[int]
 
     def __init__(self, *, name: str, animated: bool = False, id: Optional[int] = None):
-        self.animated = animated
-        self.name = name
-        self.id = id
+        self.animated: bool = animated
+        self.name: str = name
+        self.id: Optional[int] = id
         self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def from_dict(cls, data: Union[PartialEmojiPayload, Dict[str, Any]]) -> Self:
+    def from_dict(cls, data: Union[PartialEmojiPayload, ActivityEmoji, Dict[str, Any]]) -> Self:
         return cls(
             animated=data.get('animated', False),
             id=utils._get_as_snowflake(data, 'id'),
@@ -178,10 +179,10 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             return f'<a:{self.name}:{self.id}>'
         return f'<:{self.name}:{self.id}>'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if self.is_unicode_emoji():
             return isinstance(other, PartialEmoji) and self.name == other.name
 
@@ -189,7 +190,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             return self.id == other.id
         return False
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:

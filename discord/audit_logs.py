@@ -49,12 +49,13 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .role import Role
+    from .scheduled_event import ScheduledEvent
+    from .state import ConnectionState
     from .types.audit_log import (
         AuditLogChange as AuditLogChangePayload,
         AuditLogEntry as AuditLogEntryPayload,
     )
     from .types.channel import (
-        PartialChannel as PartialChannelPayload,
         PermissionOverwrite as PermissionOverwritePayload,
     )
     from .types.invite import Invite as InvitePayload
@@ -241,8 +242,8 @@ class AuditLogChanges:
     # fmt: on
 
     def __init__(self, entry: AuditLogEntry, data: List[AuditLogChangePayload]):
-        self.before = AuditLogDiff()
-        self.after = AuditLogDiff()
+        self.before: AuditLogDiff = AuditLogDiff()
+        self.after: AuditLogDiff = AuditLogDiff()
 
         for elem in data:
             attr = elem['key']
@@ -389,16 +390,17 @@ class AuditLogEntry(Hashable):
     """
 
     def __init__(self, *, users: Dict[int, User], data: AuditLogEntryPayload, guild: Guild):
-        self._state = guild._state
-        self.guild = guild
-        self._users = users
+        self._state: ConnectionState = guild._state
+        self.guild: Guild = guild
+        self._users: Dict[int, User] = users
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
-        self.action = enums.try_enum(enums.AuditLogAction, data['action_type'])
-        self.id = int(data['id'])
+        self.action: enums.AuditLogAction = enums.try_enum(enums.AuditLogAction, data['action_type'])
+        self.id: int = int(data['id'])
 
-        self.reason = data.get('reason')
+        # This key is technically not usually present
+        self.reason: Optional[str] = data.get('reason')
         extra = data.get('options')
 
         # fmt: off
@@ -462,10 +464,13 @@ class AuditLogEntry(Hashable):
         self._changes = data.get('changes', [])
 
         user_id = utils._get_as_snowflake(data, 'user_id')
-        self.user = user_id and self._get_member(user_id)
+        self.user: Optional[Union[User, Member]] = self._get_member(user_id)
         self._target_id = utils._get_as_snowflake(data, 'target_id')
 
-    def _get_member(self, user_id: int) -> Union[Member, User, None]:
+    def _get_member(self, user_id: Optional[int]) -> Union[Member, User, None]:
+        if user_id is None:
+            return None
+
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
     def __repr__(self) -> str:
@@ -478,12 +483,14 @@ class AuditLogEntry(Hashable):
 
     @utils.cached_property
     def target(self) -> TargetType:
-        if self._target_id is None or self.action.target_type is None:
+        if self.action.target_type is None:
             return None
 
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
+            if self._target_id is None:
+                return None
             return Object(id=self._target_id)
         else:
             return converter(self._target_id)
@@ -522,7 +529,7 @@ class AuditLogEntry(Hashable):
     def _convert_target_role(self, target_id: int) -> Union[Role, Object]:
         return self.guild.get_role(target_id) or Object(id=target_id)
 
-    def _convert_target_invite(self, target_id: int) -> Invite:
+    def _convert_target_invite(self, target_id: None) -> Invite:
         # Invites have target_id set to null
         # So figure out which change has the full invite data
         changeset = self.before if self.action is enums.AuditLogAction.invite_delete else self.after
@@ -557,3 +564,6 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
         return self.guild.get_thread(target_id) or Object(id=target_id)
+
+    def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
+        return self.guild.get_scheduled_event(target_id) or Object(id=target_id)

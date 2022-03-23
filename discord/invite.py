@@ -30,7 +30,7 @@ from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
 from .object import Object
 from .mixins import Hashable
 from .scheduled_event import ScheduledEvent
-from .enums import ChannelType, VerificationLevel, InviteTarget, InviteType, try_enum
+from .enums import ChannelType, VerificationLevel, InviteTarget, InviteType, NSFWLevel, try_enum
 from .welcome_screen import WelcomeScreen
 
 __all__ = (
@@ -165,9 +165,34 @@ class PartialInviteGuild:
         A list of features the guild has. See :attr:`Guild.features` for more information.
     description: Optional[:class:`str`]
         The partial guild's description.
+    nsfw_level: :class:`NSFWLevel`
+        The partial guild's NSFW level.
+
+        .. versionadded:: 2.0
+    vanity_url_code: Optional[:class:`str`]
+        The partial guild's vanity URL code, if available.
+
+        .. versionadded:: 2.0
+    premium_subscription_count: :class:`int`
+        The number of "boosts" the partial guild currently has.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('_state', 'features', '_icon', '_banner', 'id', 'name', '_splash', 'verification_level', 'description')
+    __slots__ = (
+        '_state',
+        '_icon',
+        '_banner',
+        '_splash',
+        'features',
+        'id',
+        'name',
+        'verification_level',
+        'description',
+        'vanity_url_code',
+        'nsfw_level',
+        'premium_subscription_count',
+    )
 
     def __init__(self, state: ConnectionState, data: InviteGuildPayload, id: int):
         self._state: ConnectionState = state
@@ -179,6 +204,9 @@ class PartialInviteGuild:
         self._splash: Optional[str] = data.get('splash')
         self.verification_level: VerificationLevel = try_enum(VerificationLevel, data.get('verification_level'))
         self.description: Optional[str] = data.get('description')
+        self.vanity_url_code: Optional[str] = data.get('vanity_url_code')
+        self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, data.get('nsfw_level', 0))
+        self.premium_subscription_count: int = data.get('premium_subscription_count') or 0
 
     def __str__(self) -> str:
         return self.name
@@ -193,6 +221,16 @@ class PartialInviteGuild:
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return snowflake_time(self.id)
+
+    @property
+    def vanity_url(self) -> Optional[str]:
+        """Optional[:class:`str`]: The Discord vanity invite URL for this partial guild, if available.
+
+        .. versionadded:: 2.0
+        """
+        if self.vanity_url_code is None:
+            return None
+        return f'{Invite.BASE}/{self.vanity_url_code}'
 
     @property
     def icon(self) -> Optional[Asset]:
@@ -446,12 +484,13 @@ class Invite(Hashable):
     @classmethod
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
         guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-
+        guild: Optional[Union[Guild, Object]] = state._get_guild(guild_id)
         channel_id = _get_as_snowflake(data, 'channel_id')
-        if guild_id is not None:
-            guild: Optional[Union[Guild, Object]] = state._get_guild(guild_id) or Object(id=guild_id)
-        if channel_id is not None:
-            channel: Optional[InviteChannelType] = state.get_channel(channel_id) or Object(id=channel_id)  # type: ignore
+        if guild is not None:
+            channel = (guild.get_channel(channel_id) or Object(id=channel_id)) if channel_id is not None else None
+        else:
+            guild = Object(id=guild_id) if guild_id is not None else None
+            channel = Object(id=channel_id) if channel_id is not None else None
 
         return cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
 
@@ -543,7 +582,7 @@ class Invite(Hashable):
 
         Raises
         ------
-        :exc:`.HTTPException`
+        HTTPException
             Using the invite failed.
 
         Returns
@@ -587,7 +626,7 @@ class Invite(Hashable):
 
         Raises
         ------
-        :exc:`.HTTPException`
+        HTTPException
             Using the invite failed.
 
         Returns
@@ -597,7 +636,7 @@ class Invite(Hashable):
         """
         return await self.use()
 
-    async def delete(self, *, reason: Optional[str] = None):
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Revokes the instant invite.

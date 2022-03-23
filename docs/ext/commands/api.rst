@@ -411,6 +411,9 @@ Converters
 .. autoclass:: discord.ext.commands.GuildStickerConverter
     :members:
 
+.. autoclass:: discord.ext.commands.ScheduledEventConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
@@ -539,6 +542,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.GuildStickerNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.ScheduledEventNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
@@ -623,6 +629,7 @@ Exception Hierarchy
                     - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.GuildStickerNotFound`
+                    - :exc:`~.commands.ScheduledEventNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
                     - :exc:`~.commands.ThreadNotFound`

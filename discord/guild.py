@@ -32,9 +32,11 @@ from typing import (
     Any,
     AsyncIterator,
     ClassVar,
+    Collection,
     Coroutine,
     Dict,
     List,
+    Mapping,
     NamedTuple,
     Sequence,
     Set,
@@ -129,6 +131,7 @@ if TYPE_CHECKING:
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
+    from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]
@@ -340,6 +343,7 @@ class Guild(Hashable):
         self._state: ConnectionState = state
         self.notification_settings: Optional[GuildSettings] = None
         self.command_counts: Optional[CommandCounts] = None
+        self._member_count: int = 0
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
@@ -384,7 +388,7 @@ class Guild(Hashable):
             ('id', self.id),
             ('name', self.name),
             ('chunked', self.chunked),
-            ('member_count', getattr(self, '_member_count', None)),
+            ('member_count', self._member_count),
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
@@ -435,9 +439,10 @@ class Guild(Hashable):
         return role
 
     def _from_data(self, guild: GuildPayload) -> None:
-        member_count = guild.get('member_count', guild.get('approximate_member_count'))
-        if member_count is not None:
-            self._member_count: int = member_count
+        try:
+            self._member_count: int = guild['member_count']
+        except KeyError:
+            pass
 
         self.id: int = int(guild['id'])
         self.name: str = guild.get('name', '')
@@ -506,7 +511,7 @@ class Guild(Hashable):
         self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
 
-        large = None if member_count is None else member_count >= 250
+        large = None if self._member_count is 0 else self._member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
 
         if (settings := guild.get('settings')) is not None:
@@ -552,10 +557,9 @@ class Guild(Hashable):
         members, which for this library is set to the maximum of 250.
         """
         if self._large is None:
-            try:
+            if self._member_count is not None:
                 return self._member_count >= 250
-            except AttributeError:
-                return len(self._members) >= 250
+            return len(self._members) >= 250
         return self._large
 
     @property
@@ -958,13 +962,16 @@ class Guild(Hashable):
         return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
 
     @property
-    def member_count(self) -> int:
-        """:class:`int`: Returns the true member count regardless of it being loaded fully or not.
+    def member_count(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the member count if available.
 
         .. warning::
 
             Due to a Discord limitation, this may not always be up-to-date and accurate.
 
+        .. versionchanged:: 2.0
+
+            Now returns an ``Optional[int]``.
         """
         return self._member_count
 
@@ -1054,7 +1061,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.text],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, TextChannelPayload]:
@@ -1065,7 +1072,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.voice],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, VoiceChannelPayload]:
@@ -1076,7 +1083,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.stage_voice],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, StageChannelPayload]:
@@ -1087,7 +1094,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.category],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, CategoryChannelPayload]:
@@ -1098,7 +1105,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.news],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, NewsChannelPayload]:
@@ -1109,7 +1116,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.store],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, StoreChannelPayload]:
@@ -1120,7 +1127,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.text],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
@@ -1131,7 +1138,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: ChannelType,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
@@ -1141,13 +1148,13 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: ChannelType,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         category: Optional[Snowflake] = None,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
         if overwrites is MISSING:
             overwrites = {}
-        elif not isinstance(overwrites, dict):
+        elif not isinstance(overwrites, Mapping):
             raise TypeError('overwrites parameter expects a dict')
 
         perms = []
@@ -1180,7 +1187,7 @@ class Guild(Hashable):
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> TextChannel:
         """|coro|
 
@@ -1201,8 +1208,8 @@ class Guild(Hashable):
             will be required to update the position of the channel in the channel list.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Examples
         ----------
@@ -1297,15 +1304,15 @@ class Guild(Hashable):
         user_limit: int = MISSING,
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> VoiceChannel:
         """|coro|
 
         This is similar to :meth:`create_text_channel` except makes a :class:`VoiceChannel` instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1383,7 +1390,7 @@ class Guild(Hashable):
         *,
         topic: str,
         position: int = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
     ) -> StageChannel:
@@ -1394,8 +1401,8 @@ class Guild(Hashable):
         .. versionadded:: 1.7
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1451,7 +1458,7 @@ class Guild(Hashable):
         self,
         name: str,
         *,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
         position: int = MISSING,
     ) -> CategoryChannel:
@@ -1465,8 +1472,8 @@ class Guild(Hashable):
             cannot have categories.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Raises
         ------
@@ -1575,8 +1582,8 @@ class Guild(Hashable):
             The ``region`` keyword parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         .. versionchanged:: 2.0
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
@@ -1635,11 +1642,11 @@ class Guild(Hashable):
             The new preferred locale for the guild. Used as the primary language in the guild.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
             channel.
         public_updates_channel: Optional[:class:`TextChannel`]
             The new channel that is used for public updates from Discord. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
@@ -1875,7 +1882,7 @@ class Guild(Hashable):
         HTTPException
             Fetching the profile failed.
         InvalidData
-            The profile is not from this guild.
+            The member is not in this guild.
 
         Returns
         --------
@@ -1928,7 +1935,7 @@ class Guild(Hashable):
         :class:`BanEntry`
             The :class:`BanEntry` object for the specified user.
         """
-        data: BanPayload = await self._state.http.get_ban(user.id, self.id)
+        data = await self._state.http.get_ban(user.id, self.id)
         return BanEntry(user=User(state=self._state, data=data['user']), reason=data['reason'])
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, Thread]:
@@ -1996,7 +2003,7 @@ class Guild(Hashable):
         List[:class:`BanEntry`]
             A list of :class:`BanEntry` objects.
         """
-        data: List[BanPayload] = await self._state.http.get_bans(self.id)
+        data = await self._state.http.get_bans(self.id)
         return [BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason']) for e in data]
 
     async def prune_members(
@@ -2004,7 +2011,7 @@ class Guild(Hashable):
         *,
         days: int,
         compute_prune_count: bool = True,
-        roles: List[Snowflake] = MISSING,
+        roles: Collection[Snowflake] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[int]:
         r"""|coro|
@@ -2026,8 +2033,8 @@ class Guild(Hashable):
             The ``roles`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2118,7 +2125,7 @@ class Guild(Hashable):
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def estimate_pruned_members(self, *, days: int, roles: List[Snowflake] = MISSING) -> Optional[int]:
+    async def estimate_pruned_members(self, *, days: int, roles: Collection[Snowflake] = MISSING) -> Optional[int]:
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -2129,8 +2136,8 @@ class Guild(Hashable):
             The returned value can be ``None``.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2673,7 +2680,7 @@ class Guild(Hashable):
         *,
         name: str,
         image: bytes,
-        roles: List[Role] = MISSING,
+        roles: Collection[Role] = MISSING,
         reason: Optional[str] = None,
     ) -> Emoji:
         r"""|coro|
@@ -2831,8 +2838,8 @@ class Guild(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -2925,7 +2932,7 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
-    async def edit_role_positions(self, positions: Dict[Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
+    async def edit_role_positions(self, positions: Mapping[Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
         """|coro|
 
         Bulk edits a list of :class:`Role` in the guild.
@@ -2936,8 +2943,8 @@ class Guild(Hashable):
         .. versionadded:: 1.4
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Example
         ----------
@@ -2974,7 +2981,7 @@ class Guild(Hashable):
         List[:class:`Role`]
             A list of all the roles in the guild.
         """
-        if not isinstance(positions, dict):
+        if not isinstance(positions, Mapping):
             raise TypeError('positions parameter expects a dict')
 
         role_positions = []
@@ -3024,7 +3031,7 @@ class Guild(Hashable):
         user: Snowflake,
         *,
         reason: Optional[str] = None,
-        delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1,
+        delete_message_days: int = 1,
     ) -> None:
         """|coro|
 
@@ -3079,6 +3086,16 @@ class Guild(Hashable):
             Unbanning failed.
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
+
+    @property
+    def vanity_url(self) -> Optional[str]:
+        """Optional[:class:`str`]: The Discord vanity invite URL for this guild, if available.
+
+        .. versionadded:: 2.0
+        """
+        if self.vanity_url_code is None:
+            return None
+        return f'{Invite.BASE}/{self.vanity_url_code}'
 
     async def vanity_invite(self) -> Optional[Invite]:
         """|coro|
@@ -3230,7 +3247,7 @@ class Guild(Hashable):
             after = Object(id=utils.time_snowflake(after, high=True))
 
         if oldest_first is MISSING:
-            reverse = after is not None
+            reverse = after is not MISSING
         else:
             reverse = oldest_first
 
@@ -3340,7 +3357,7 @@ class Guild(Hashable):
         HTTPException
             Editing the widget failed.
         """
-        payload = {}
+        payload: EditWidgetSettings = {}
         if channel is not MISSING:
             payload['channel_id'] = None if channel is None else channel.id
         if enabled is not MISSING:
@@ -3452,14 +3469,14 @@ class Guild(Hashable):
             The members that belong to this guild.
         """
         if self._offline_members_hidden:
-            raise ClientException('This guild cannot be chunked.')
+            raise ClientException('This guild cannot be chunked')
         if self._state.is_guild_evicted(self):
-            raise ClientException('This guild is no longer available.')
+            raise ClientException('This guild is no longer available')
 
         members = await self._state.chunk_guild(self, channels=[channel] if channel else [])
         if members is None:
-            raise ClientException('Chunking failed.')
-        return members  # type: ignore
+            raise ClientException('Chunking failed')
+        return members
 
     async def fetch_members(
         self,
@@ -3509,14 +3526,14 @@ class Guild(Hashable):
             The members that belong to this guild (offline members may not be included).
         """
         if self._state.is_guild_evicted(self):
-            raise ClientException('This guild is no longer available.')
+            raise ClientException('This guild is no longer available')
 
         members = await self._state.scrape_guild(
             self, cache=cache, force_scraping=force_scraping, delay=delay, channels=channels
         )
         if members is None:
             raise ClientException('Fetching members failed')
-        return members  # type: ignore
+        return members
 
     async def query_members(
         self,
@@ -3533,7 +3550,7 @@ class Guild(Hashable):
         Request members that belong to this guild whose username starts with
         the query given.
 
-        This is a websocket operation and can be slow.
+        This is a websocket operation.
 
         .. note::
             This is preferrable to using :meth:`fetch_member` as the client uses

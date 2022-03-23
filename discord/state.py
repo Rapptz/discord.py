@@ -41,6 +41,8 @@ from typing import (
     Coroutine,
     Tuple,
     Deque,
+    Literal,
+    overload,
 )
 import weakref
 import inspect
@@ -93,7 +95,7 @@ if TYPE_CHECKING:
     from .types.activity import Activity as ActivityPayload
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import User as UserPayload, PartialUser as PartialUserPayload
-    from .types.emoji import Emoji as EmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
@@ -376,24 +378,24 @@ class ConnectionState:
     def __init__(
         self,
         *,
-        dispatch: Callable,
-        handlers: Dict[str, Callable],
-        hooks: Dict[str, Callable],
+        dispatch: Callable[..., Any],
+        handlers: Dict[str, Callable[..., Any]],
+        hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
         http: HTTPClient,
-        loop: asyncio.AbstractEventLoop,
         client: Client,
         **options: Any,
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
+        # Set later, after Client.login
+        self.loop: asyncio.AbstractEventLoop = utils.MISSING
         self.http: HTTPClient = http
         self.client = client
         self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
             self.max_messages = 1000
 
-        self.dispatch: Callable = dispatch
-        self.handlers: Dict[str, Callable] = handlers
-        self.hooks: Dict[str, Callable] = hooks
+        self.dispatch: Callable[..., Any] = dispatch
+        self.handlers: Dict[str, Callable[..., Any]] = handlers
+        self.hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = hooks
         self._ready_task: Optional[asyncio.Task] = None
         self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
 
@@ -439,11 +441,11 @@ class ConnectionState:
         if cache_flags._empty:
             self.store_user = self.create_user  # type: ignore
 
-        parsers = {}
+        self.parsers: Dict[str, Callable[[Any], None]]
+        self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
                 parsers[attr[6:].upper()] = func
-        self.parsers: Dict[str, Callable[[Dict[str, Any]], None]] = parsers
 
         self.clear()
 
@@ -504,6 +506,9 @@ class ConnectionState:
             pass
         else:
             await coro(*args, **kwargs)
+
+    async def async_setup(self) -> None:
+        pass
 
     @property
     def session_id(self) -> Optional[str]:
@@ -588,7 +593,7 @@ class ConnectionState:
     def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         return User(state=self, data=data)
 
-    def get_user(self, id):
+    def get_user(self, id: int) -> Optional[User]:
         return self._users.get(id)
 
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
@@ -1049,7 +1054,7 @@ class ConnectionState:
         if old_member._client_status != member._client_status or old_member._activities != member._activities:
             self.dispatch('presence_update', old_member, member)
 
-    def parse_user_update(self, data: gw.UserUpdateEvent):
+    def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
             self.user._update(data)
 
@@ -1260,6 +1265,8 @@ class ConnectionState:
         existing = guild.get_thread(int(data['id']))
         if existing is not None:
             old = existing._update(data)
+            if existing.archived:
+                guild._remove_thread(existing)
             if old is not None:
                 self.dispatch('thread_update', old, existing)
         else:  # Shouldn't happen
@@ -1397,10 +1404,8 @@ class ConnectionState:
     def parse_guild_member_remove(self, data: gw.GuildMemberRemoveEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            try:
+            if guild._member_count is not None:
                 guild._member_count -= 1
-            except AttributeError:
-                pass
 
             user_id = int(data['user']['id'])
             member = guild.get_member(user_id)
@@ -1630,7 +1635,7 @@ class ConnectionState:
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
-    def _get_create_guild(self, data):
+    def _get_create_guild(self, data: gw.GuildCreateEvent):
         guild = self._get_guild(int(data['id']))
         # Discord being Discord sends a GUILD_CREATE after an OPCode 14 is sent (a la bots)
         # However, we want that if we forced a GUILD_CREATE for an unavailable guild
@@ -1640,7 +1645,7 @@ class ConnectionState:
 
         return self._add_guild_from_data(data)
 
-    def is_guild_evicted(self, guild) -> bool:
+    def is_guild_evicted(self, guild: Guild) -> bool:
         return guild.id not in self._guilds
 
     async def assert_guild_presence_count(self, guild: Guild):
@@ -1706,9 +1711,15 @@ class ConnectionState:
                 )
                 request.start()
 
-        if wait:
-            return await request.wait()
-        return request.get_future()
+    @overload
+    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., channels: List[abcSnowflake] = ...) -> Optional[List[Member]]:
+        ...
+
+    @overload
+    async def chunk_guild(
+        self, guild: Guild, *, wait: Literal[False] = ..., channels: List[abcSnowflake] = ...
+    ) -> asyncio.Future[Optional[List[Member]]]:
+        ...
 
     async def chunk_guild(
         self,
@@ -1716,7 +1727,7 @@ class ConnectionState:
         *,
         wait: bool = True,
         channels: List[abcSnowflake] = MISSING,
-    ):
+    ) -> Union[asyncio.Future[Optional[List[Member]]], Optional[List[Member]]]:
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore - self_id is always present here
 
@@ -1960,7 +1971,7 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = ScheduledEvent(state=self, data=data)
             guild._scheduled_events[scheduled_event.id] = scheduled_event
-            self.dispatch('scheduled_event_create', guild, scheduled_event)
+            self.dispatch('scheduled_event_create', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1971,7 +1982,7 @@ class ConnectionState:
             if scheduled_event is not None:
                 old_scheduled_event = copy.copy(scheduled_event)
                 scheduled_event._update(data)
-                self.dispatch('scheduled_event_update', guild, old_scheduled_event, scheduled_event)
+                self.dispatch('scheduled_event_update', old_scheduled_event, scheduled_event)
             else:
                 _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown scheduled event ID: %s. Discarding.', data['id'])
         else:
@@ -1985,7 +1996,7 @@ class ConnectionState:
             except KeyError:
                 pass
             else:
-                self.dispatch('scheduled_event_delete', guild, scheduled_event)
+                self.dispatch('scheduled_event_delete', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -1997,10 +2008,9 @@ class ConnectionState:
                 user = self.get_user(int(data['user_id']))
                 if user is not None:
                     scheduled_event._add_user(user)
-                    self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
+                    self.dispatch('scheduled_event_user_add', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_ADD referencing unknown scheduled event ID: %s. Discarding.',
@@ -2020,7 +2030,6 @@ class ConnectionState:
                     self.dispatch('scheduled_event_user_remove', scheduled_event, user)
                 else:
                     _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
-                self.dispatch('scheduled_event_user_remove', scheduled_event, user)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',
@@ -2173,16 +2182,19 @@ class ConnectionState:
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
-    def get_reaction_emoji(self, data) -> Union[Emoji, PartialEmoji]:
+    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
-            return data['name']
+            # the name key will be a str
+            return data['name']  # type: ignore
 
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
+            return PartialEmoji.with_state(
+                self, animated=data.get('animated', False), id=emoji_id, name=data['name']  # type: ignore
+            )
 
     def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = emoji.id

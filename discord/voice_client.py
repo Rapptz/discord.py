@@ -74,6 +74,7 @@ has_nacl: bool
 
 try:
     import nacl.secret  # type: ignore
+    import nacl.utils  # type: ignore
 
     has_nacl = True
 except ImportError:
@@ -373,14 +374,14 @@ class VoiceClient(VoiceProtocol):
         The endpoint we are connecting to.
     channel: :class:`abc.Connectable`
         The voice channel connected to.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the voice client is running on.
     """
 
     channel: abc.Connectable
     endpoint_ip: str
     voice_port: int
-    secret_key: List[int]
+    ip: str
+    port: int
+    secret_key: Optional[str]
 
     def __init__(self, client: Client, channel: abc.Connectable):
         if not has_nacl:
@@ -414,7 +415,7 @@ class VoiceClient(VoiceProtocol):
         self.idrcs: Dict[int, int] = {}
         self.ssids: Dict[int, int] = {}
 
-    warn_nacl = not has_nacl
+    warn_nacl: bool = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
@@ -443,8 +444,15 @@ class VoiceClient(VoiceProtocol):
 
     # Connection related
 
+    def checked_add(self, attr: str, value: int, limit: int) -> None:
+        val = getattr(self, attr)
+        if val + value > limit:
+            setattr(self, attr, 0)
+        else:
+            setattr(self, attr, val + value)
+
     async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
-        self.session_id = data['session_id']
+        self.session_id: str = data['session_id']
         channel_id = data['channel_id']
 
         if not self._handshaking or self._potentially_reconnecting:
@@ -484,11 +492,12 @@ class VoiceClient(VoiceProtocol):
 
         self.endpoint, _, _ = endpoint.rpartition(':')
         if self.endpoint.startswith('wss://'):
-            self.endpoint = self.endpoint[6:]  # Shouldn't ever be there...
+            # Just in case, strip it off since we're going to add it later
+            self.endpoint: str = self.endpoint[6:]
 
         self.endpoint_ip = MISSING
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
 
         if not self._handshaking:
@@ -575,7 +584,7 @@ class VoiceClient(VoiceProtocol):
                     raise
 
         if self._runner is MISSING:
-            self._runner = self.loop.create_task(self.poll_voice_ws(reconnect))
+            self._runner = self.client.loop.create_task(self.poll_voice_ws(reconnect))
 
     async def potential_reconnect(self) -> bool:
         # Attempt to stop the player thread from playing early

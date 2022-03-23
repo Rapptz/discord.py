@@ -39,6 +39,9 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from .guild import Guild
+    from .role import Role
+    from .state import ConnectionState
     from .types.integration import (
         IntegrationAccount as IntegrationAccountPayload,
         Integration as IntegrationPayload,
@@ -47,8 +50,6 @@ if TYPE_CHECKING:
         IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload,
     )
-    from .guild import Guild
-    from .role import Role
 
 
 class IntegrationAccount:
@@ -109,11 +110,11 @@ class Integration:
     )
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
-        self.guild = guild
-        self._state = guild._state
+        self.guild: Guild = guild
+        self._state: ConnectionState = guild._state
         self._from_data(data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
 
     def _from_data(self, data: IntegrationPayload) -> None:
@@ -123,7 +124,7 @@ class Integration:
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
 
         user = data.get('user')
-        self.user = User(state=self._state, data=user) if user else None
+        self.user: Optional[User] = User(state=self._state, data=user) if user else None
         self.enabled: bool = data['enabled']
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
@@ -232,8 +233,8 @@ class StreamIntegration(Integration):
         do this.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -319,7 +320,7 @@ class IntegrationApplication:
         'user',
     )
 
-    def __init__(self, *, data: IntegrationApplicationPayload, state):
+    def __init__(self, *, data: IntegrationApplicationPayload, state: ConnectionState) -> None:
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.icon: Optional[str] = data['icon']
@@ -358,7 +359,7 @@ class BotIntegration(Integration):
 
     def _from_data(self, data: BotIntegrationPayload) -> None:
         super()._from_data(data)
-        self.application = IntegrationApplication(data=data['application'], state=self._state)
+        self.application: IntegrationApplication = IntegrationApplication(data=data['application'], state=self._state)
 
 
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:

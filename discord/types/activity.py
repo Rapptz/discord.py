@@ -112,3 +112,4 @@ class Activity(_BaseActivity, total=False):
     session_id: Optional[str]
     instance: bool
     buttons: List[ActivityButton]
+    sync_id: str

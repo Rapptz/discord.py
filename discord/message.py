@@ -32,6 +32,7 @@ from os import PathLike
 from typing import (
     Dict,
     TYPE_CHECKING,
+    Sequence,
     Union,
     List,
     Optional,
@@ -40,6 +41,7 @@ from typing import (
     Tuple,
     ClassVar,
     Optional,
+    Type,
     overload,
 )
 
@@ -74,7 +76,6 @@ if TYPE_CHECKING:
         MessageReference as MessageReferencePayload,
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
-        Reaction as ReactionPayload,
     )
 
     from .types.components import Component as ComponentPayload
@@ -85,17 +86,18 @@ if TYPE_CHECKING:
     )
     from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
-    from .types.gateway import MessageReactionRemoveEvent
+    from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
-    from .channel import TextChannel, GroupChannel, DMChannel
+    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
+
 
 __all__ = (
     'Attachment',
@@ -106,7 +108,7 @@ __all__ = (
 )
 
 
-def convert_emoji_reaction(emoji):
+def convert_emoji_reaction(emoji: Union[EmojiInputType, Reaction]) -> str:
     if isinstance(emoji, Reaction):
         emoji = emoji.emoji
 
@@ -218,7 +220,7 @@ class Attachment(Hashable):
 
     async def save(
         self,
-        fp: Union[io.BufferedIOBase, PathLike],
+        fp: Union[io.BufferedIOBase, PathLike[Any]],
         *,
         seek_begin: bool = True,
         use_cached: bool = False,
@@ -364,8 +366,8 @@ class Attachment(Hashable):
 
 
 class DeletedReferencedMessage:
-    """A special sentinel type that denotes whether the
-    resolved message referenced message had since been deleted.
+    """A special sentinel type given when the resolved message reference
+    points to a deleted message.
 
     The purpose of this class is to separate referenced messages that could not be
     fetched and those that were previously fetched but have since been deleted.
@@ -454,7 +456,7 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: Message, *, fail_if_not_exists: bool = True) -> Self:
+    def from_message(cls, message: PartialMessage, *, fail_if_not_exists: bool = True) -> Self:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -512,7 +514,7 @@ class MessageReference:
     to_message_reference_dict = to_dict
 
 
-def flatten_handlers(cls):
+def flatten_handlers(cls: Type[Message]) -> Type[Message]:
     prefix = len('_handle_')
     handlers = [
         (key[prefix:], value)
@@ -527,8 +529,597 @@ def flatten_handlers(cls):
     return cls
 
 
+class PartialMessage(Hashable):
+    """Represents a partial message to aid with working messages when only
+    a message and channel ID are present.
+
+    There are two ways to construct this class. The first one is through
+    the constructor itself, and the second is via the following:
+
+    - :meth:`TextChannel.get_partial_message`
+    - :meth:`Thread.get_partial_message`
+    - :meth:`DMChannel.get_partial_message`
+
+    Note that this class is trimmed down and has no rich attributes.
+
+    .. versionadded:: 1.6
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two partial messages are equal.
+
+        .. describe:: x != y
+
+            Checks if two partial messages are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the partial message's hash.
+
+    Attributes
+    -----------
+    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
+        The channel associated with this partial message.
+    id: :class:`int`
+        The message ID.
+    guild: Optional[:class:`Guild`]
+        The guild that the partial message belongs to, if applicable.
+    """
+
+    __slots__ = ('channel', 'id', '_cs_guild', '_state', 'guild')
+
+    def __init__(self, *, channel: MessageableChannel, id: int) -> None:
+        if not isinstance(channel, PartialMessageable) and channel.type not in (
+            ChannelType.text,
+            ChannelType.news,
+            ChannelType.private,
+            ChannelType.news_thread,
+            ChannelType.public_thread,
+            ChannelType.private_thread,
+        ):
+            raise TypeError(f'Expected PartialMessageable, TextChannel, DMChannel or Thread not {type(channel)!r}')
+
+        self.channel: MessageableChannel = channel
+        self._state: ConnectionState = channel._state
+        self.id: int = id
+
+        self.guild: Optional[Guild] = getattr(channel, 'guild', None)
+
+    def _update(self, data: MessageUpdateEvent) -> None:
+        # This is used for duck typing purposes.
+        # Just do nothing with the data.
+        pass
+
+    # Also needed for duck typing purposes
+    # n.b. not exposed
+    pinned: Any = property(None, lambda x, y: None)
+
+    def __repr__(self) -> str:
+        return f'<PartialMessage id={self.id} channel={self.channel!r}>'
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: The partial message's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to this message."""
+        guild_id = getattr(self.guild, 'id', '@me')
+        return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
+
+    async def fetch(self) -> Message:
+        """|coro|
+
+        Fetches the partial message to a full :class:`Message`.
+
+        Raises
+        --------
+        NotFound
+            The message was not found.
+        Forbidden
+            You do not have the permissions required to get a message.
+        HTTPException
+            Retrieving the message failed.
+
+        Returns
+        --------
+        :class:`Message`
+            The full message.
+        """
+        data = await self._state.http.get_message(self.channel.id, self.id)
+        return self._state.create_message(channel=self.channel, data=data)
+
+    async def delete(self, *, delay: Optional[float] = None) -> None:
+        """|coro|
+
+        Deletes the message.
+
+        Your own messages could be deleted without any proper permissions. However to
+        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
+        permission.
+
+        .. versionchanged:: 1.1
+            Added the new ``delay`` keyword-only parameter.
+
+        Parameters
+        -----------
+        delay: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message. If the deletion fails then it is silently ignored.
+
+        Raises
+        ------
+        Forbidden
+            You do not have proper permissions to delete the message.
+        NotFound
+            The message was deleted already
+        HTTPException
+            Deleting the message failed.
+        """
+        if delay is not None:
+
+            async def delete(delay: float):
+                await asyncio.sleep(delay)
+                try:
+                    await self._state.http.delete_message(self.channel.id, self.id)
+                except HTTPException:
+                    pass
+
+            asyncio.create_task(delete(delay))
+        else:
+            await self._state.http.delete_message(self.channel.id, self.id)
+
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        content: Optional[str] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+    ) -> Message:
+        ...
+
+    async def edit(
+        self,
+        content: Optional[str] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        delete_after: Optional[float] = None,
+        allowed_mentions: Optional[AllowedMentions] = MISSING,
+    ) -> Message:
+        """|coro|
+
+        Edits the message.
+
+        The content must be able to be transformed into a string via ``str(content)``.
+
+        .. versionchanged:: 2.0
+            Edits are no longer in-place, the newly edited message is returned instead.
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
+
+        Parameters
+        -----------
+        content: Optional[:class:`str`]
+            The new content to replace the message with.
+            Could be ``None`` to remove the content.
+        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+            A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
+            then all attachments are removed.
+
+            .. note::
+
+                New files will always appear after current attachments.
+
+            .. versionadded:: 2.0
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
+        allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
+
+            .. versionadded:: 1.4
+
+        Raises
+        -------
+        HTTPException
+            Editing the message failed.
+        Forbidden
+            Tried to suppress a message without permissions or
+            edited a message's content or embed that isn't yours.
+        TypeError
+            You specified both ``embed`` and ``embeds``
+
+        Returns
+        --------
+        :class:`Message`
+            The newly edited message.
+        """
+        if content is not MISSING:
+            previous_allowed_mentions = self._state.allowed_mentions
+        else:
+            previous_allowed_mentions = None
+
+        params = handle_message_parameters(
+            content=content,
+            attachments=attachments,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_allowed_mentions,
+        )
+        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+        message = Message(state=self._state, channel=self.channel, data=data)
+
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+
+        return message
+
+    async def publish(self) -> None:
+        """|coro|
+
+        Publishes this message to your announcement channel.
+
+        You must have the :attr:`~Permissions.send_messages` permission to do this.
+
+        If the message is not your own then the :attr:`~Permissions.manage_messages`
+        permission is also needed.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to publish this message.
+        HTTPException
+            Publishing the message failed.
+        """
+        await self._state.http.publish_message(self.channel.id, self.id)
+
+    async def pin(self, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Pins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for pinning the message. Shows up on the audit log.
+
+            .. versionadded:: 1.4
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to pin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Pinning the message failed, probably due to the channel
+            having more than 50 pinned messages.
+        """
+        await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
+        # pinned exists on PartialMessage for duck typing purposes
+        self.pinned = True
+
+    async def unpin(self, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Unpins the message.
+
+        You must have the :attr:`~Permissions.manage_messages` permission to do
+        this in a non-private channel context.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for unpinning the message. Shows up on the audit log.
+
+            .. versionadded:: 1.4
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to unpin the message.
+        NotFound
+            The message or channel was not found or deleted.
+        HTTPException
+            Unpinning the message failed.
+        """
+        await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
+        # pinned exists on PartialMessage for duck typing purposes
+        self.pinned = False
+
+    async def add_reaction(self, emoji: EmojiInputType, /) -> None:
+        """|coro|
+
+        Adds a reaction to the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You must have the :attr:`~Permissions.read_message_history` permission
+        to use this. If nobody else has reacted to the message using this
+        emoji, the :attr:`~Permissions.add_reactions` permission is required.
+
+        .. versionchanged:: 2.0
+
+            ``emoji`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
+
+        Parameters
+        ------------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to react with.
+
+        Raises
+        --------
+        HTTPException
+            Adding the reaction failed.
+        Forbidden
+            You do not have the proper permissions to react to the message.
+        NotFound
+            The emoji you specified was not found.
+        TypeError
+            The emoji parameter is invalid.
+        """
+        emoji = convert_emoji_reaction(emoji)
+        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
+
+    async def remove_reaction(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
+        """|coro|
+
+        Remove a reaction by the member from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        If the reaction is not your own (i.e. ``member`` parameter is not you) then
+        the :attr:`~Permissions.manage_messages` permission is needed.
+
+        The ``member`` parameter must represent a member and meet
+        the :class:`abc.Snowflake` abc.
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
+
+        Parameters
+        ------------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to remove.
+        member: :class:`abc.Snowflake`
+            The member for which to remove the reaction.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to remove the reaction.
+        NotFound
+            The member or emoji you specified was not found.
+        TypeError
+            The emoji parameter is invalid.
+        """
+        emoji = convert_emoji_reaction(emoji)
+
+        if member.id == self._state.self_id:
+            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
+        else:
+            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+
+    async def clear_reaction(self, emoji: Union[EmojiInputType, Reaction]) -> None:
+        """|coro|
+
+        Clears a specific reaction from the message.
+
+        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        .. versionadded:: 1.3
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
+
+        Parameters
+        -----------
+        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
+            The emoji to clear.
+
+        Raises
+        --------
+        HTTPException
+            Clearing the reaction failed.
+        Forbidden
+            You do not have the proper permissions to clear the reaction.
+        NotFound
+            The emoji you specified was not found.
+        TypeError
+            The emoji parameter is invalid.
+        """
+        emoji = convert_emoji_reaction(emoji)
+        await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
+
+    async def clear_reactions(self) -> None:
+        """|coro|
+
+        Removes all the reactions from the message.
+
+        You need the :attr:`~Permissions.manage_messages` permission to use this.
+
+        Raises
+        --------
+        HTTPException
+            Removing the reactions failed.
+        Forbidden
+            You do not have the proper permissions to remove all the reactions.
+        """
+        await self._state.http.clear_reactions(self.channel.id, self.id)
+
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        reason: Optional[str] = None,
+    ) -> Thread:
+        """|coro|
+
+        Creates a public thread from this message.
+
+        You must have :attr:`~discord.Permissions.create_public_threads` in order to
+        create a public thread from a message.
+
+        The channel this message belongs in must be a :class:`TextChannel`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the thread.
+        auto_archive_duration: :class:`int`
+            The duration in minutes before a thread is automatically archived for inactivity.
+            If not provided, the channel's default auto archive duration is used.
+        slowmode_delay: Optional[:class:`int`]
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            The maximum value possible is `21600`. By default no slowmode rate limit
+            if this is ``None``.
+        reason: Optional[:class:`str`]
+            The reason for creating a new thread. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to create a thread.
+        HTTPException
+            Creating the thread failed.
+        ValueError
+            This message does not have guild info attached.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The created thread.
+        """
+        if self.guild is None:
+            raise ValueError('This message does not have guild info attached')
+
+        default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration', 1440)
+        data = await self._state.http.start_thread_with_message(
+            self.channel.id,
+            self.id,
+            name=name,
+            auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
+            rate_limit_per_user=slowmode_delay,
+            reason=reason,
+            location='Message',
+        )
+        return Thread(guild=self.guild, state=self._state, data=data)
+
+    async def ack(self) -> None:
+        """|coro|
+
+        Marks this message as read.
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        """
+        await self._state.http.ack_message(self.channel.id, self.id)
+
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
+        """|coro|
+
+        A shortcut method to :meth:`.abc.Messageable.send` to reply to the
+        :class:`.Message`.
+
+        .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ValueError
+            The ``files`` list is not of the appropriate size
+        TypeError
+            You specified both ``file`` and ``files``.
+
+        Returns
+        ---------
+        :class:`.Message`
+            The message that was sent.
+        """
+        return await self.channel.send(content, reference=self, **kwargs)
+
+    def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
+        """Creates a :class:`~discord.MessageReference` from the current message.
+
+        .. versionadded:: 1.6
+
+        Parameters
+        ----------
+        fail_if_not_exists: :class:`bool`
+            Whether replying using the message reference should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message.
+
+            .. versionadded:: 1.7
+
+        Returns
+        ---------
+        :class:`~discord.MessageReference`
+            The reference to this message.
+        """
+        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
+
+    def to_message_reference_dict(self) -> MessageReferencePayload:
+        data: MessageReferencePayload = {
+            'message_id': self.id,
+            'channel_id': self.channel.id,
+        }
+
+        if self.guild is not None:
+            data['guild_id'] = self.guild.id
+
+        return data
+
+
 @flatten_handlers
-class Message(Hashable):
+class Message(PartialMessage, Hashable):
     r"""Represents a message from Discord.
 
     .. container:: operations
@@ -595,9 +1186,9 @@ class Message(Hashable):
 
             The order of the mentions list is not in any particular order so you should
             not rely on it. This is a Discord limitation, not one with the library.
-    channel_mentions: List[:class:`abc.GuildChannel`]
-        A list of :class:`abc.GuildChannel` that were mentioned. If the message is in a private message
-        then the list is always empty.
+    channel_mentions: List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]
+        A list of :class:`abc.GuildChannel` or :class:`Thread` that were mentioned. If the message is
+        in a private message then the list is always empty.
     role_mentions: List[:class:`Role`]
         A list of :class:`Role` that were mentioned. If the message is in a private message
         then the list is always empty.
@@ -671,7 +1262,6 @@ class Message(Hashable):
         'application_id',
         'mention_everyone',
         'embeds',
-        'id',
         'mentions',
         'author',
         'attachments',
@@ -686,7 +1276,6 @@ class Message(Hashable):
         'activity',
         'stickers',
         'components',
-        'guild',
         'call',
         'interaction',
     )
@@ -694,7 +1283,6 @@ class Message(Hashable):
     if TYPE_CHECKING:
         _HANDLERS: ClassVar[List[Tuple[str, Callable[..., None]]]]
         _CACHED_SLOTS: ClassVar[List[str]]
-        guild: Optional[Guild]
         reference: Optional[MessageReference]
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
@@ -706,9 +1294,9 @@ class Message(Hashable):
         state: ConnectionState,
         channel: MessageableChannel,
         data: MessagePayload,
-    ):
+    ) -> None:
+        super().__init__(channel=channel, id=int(data['id']))
         self._state: ConnectionState = state
-        self.id: int = int(data['id'])
         self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
@@ -817,7 +1405,7 @@ class Message(Hashable):
 
         return reaction
 
-    def _clear_emoji(self, emoji) -> Optional[Reaction]:
+    def _clear_emoji(self, emoji: PartialEmoji) -> Optional[Reaction]:
         to_check = str(emoji)
         for index, reaction in enumerate(self.reactions):
             if str(reaction.emoji) == to_check:
@@ -829,9 +1417,9 @@ class Message(Hashable):
         del self.reactions[index]
         return reaction
 
-    def _update(self, data):
+    def _update(self, data: MessageUpdateEvent) -> None:
         # In an update scheme, 'author' key has to be handled before 'member'
-        # otherwise they overwrite each other which is undesirable.
+        # otherwise they overwrite each other which is undesirable
         # Since there's no good way to do this we have to iterate over every
         # handler rather than iterating over the keys which is a little slower
         for key, handler in self._HANDLERS:
@@ -984,10 +1572,10 @@ class Message(Hashable):
         return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
     @utils.cached_slot_property('_cs_channel_mentions')
-    def channel_mentions(self) -> List[GuildChannel]:
+    def channel_mentions(self) -> List[Union[GuildChannel, Thread]]:
         if self.guild is None:
             return []
-        it = filter(None, map(self.guild.get_channel, self.raw_channel_mentions))
+        it = filter(None, map(self.guild._resolve_channel, self.raw_channel_mentions))
         return utils._unique(it)
 
     @utils.cached_slot_property('_cs_clean_content')
@@ -1007,40 +1595,47 @@ class Message(Hashable):
             respectively, along with this function.
         """
 
-        # fmt: off
-        transformations = {
-            re.escape(f'<#{channel.id}>'): '#' + channel.name
-            for channel in self.channel_mentions
+        if self.guild:
+
+            def resolve_member(id: int) -> str:
+                m = self.guild.get_member(id) or utils.get(self.mentions, id=id)  # type: ignore
+                return f'@{m.display_name}' if m else '@deleted-user'
+
+            def resolve_role(id: int) -> str:
+                r = self.guild.get_role(id) or utils.get(self.role_mentions, id=id)  # type: ignore
+                return f'@{r.name}' if r else '@deleted-role'
+
+            def resolve_channel(id: int) -> str:
+                c = self.guild._resolve_channel(id)  # type: ignore
+                return f'#{c.name}' if c else '#deleted-channel'
+
+        else:
+
+            def resolve_member(id: int) -> str:
+                m = utils.get(self.mentions, id=id)
+                return f'@{m.display_name}' if m else '@deleted-user'
+
+            def resolve_role(id: int) -> str:
+                return '@deleted-role'
+
+            def resolve_channel(id: int) -> str:
+                return f'#deleted-channel'
+
+        transforms = {
+            '@': resolve_member,
+            '@!': resolve_member,
+            '#': resolve_channel,
+            '@&': resolve_role,
         }
 
-        mention_transforms = {
-            re.escape(f'<@{member.id}>'): '@' + member.display_name
-            for member in self.mentions
-        }
+        def repl(match: re.Match) -> str:
+            type = match[1]
+            id = int(match[2])
+            transformed = transforms[type](id)
+            return transformed
 
-        # Add the <@!user_id> cases as well..
-        second_mention_transforms = {
-            re.escape(f'<@!{member.id}>'): '@' + member.display_name
-            for member in self.mentions
-        }
+        result = re.sub(r'<(@[!&]?|#)([0-9]{15,20})>', repl, self.content)
 
-        transformations.update(mention_transforms)
-        transformations.update(second_mention_transforms)
-
-        if self.guild is not None:
-            role_transforms = {
-                re.escape(f'<@&{role.id}>'): '@' + role.name
-                for role in self.role_mentions
-            }
-            transformations.update(role_transforms)
-
-        # fmt: on
-
-        def repl(obj):
-            return transformations.get(re.escape(obj.group(0)), '')
-
-        pattern = re.compile('|'.join(transformations.keys()))
-        result = pattern.sub(repl, self.content)
         return escape_mentions(result)
 
     @property
@@ -1052,12 +1647,6 @@ class Message(Hashable):
     def edited_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
-
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to this message."""
-        guild_id = getattr(self.guild, 'id', '@me')
-        return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
 
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
@@ -1076,7 +1665,7 @@ class Message(Hashable):
         )
 
     @utils.cached_slot_property('_cs_system_content')
-    def system_content(self):
+    def system_content(self) -> Optional[str]:
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
@@ -1200,52 +1789,12 @@ class Message(Hashable):
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
-    async def delete(self, *, delay: Optional[float] = None) -> None:
-        """|coro|
-
-        Deletes the message.
-
-        Your own messages could be deleted without any proper permissions. However to
-        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
-        permission.
-
-        .. versionchanged:: 1.1
-            Added the new ``delay`` keyword-only parameter.
-
-        Parameters
-        -----------
-        delay: Optional[:class:`float`]
-            If provided, the number of seconds to wait in the background
-            before deleting the message. If the deletion fails then it is silently ignored.
-
-        Raises
-        ------
-        Forbidden
-            You do not have proper permissions to delete the message.
-        NotFound
-            The message was deleted already
-        HTTPException
-            Deleting the message failed.
-        """
-        if delay is not None:
-
-            async def delete(delay: float):
-                await asyncio.sleep(delay)
-                try:
-                    await self._state.http.delete_message(self.channel.id, self.id)
-                except HTTPException:
-                    pass
-
-            asyncio.create_task(delete(delay))
-        else:
-            await self._state.http.delete_message(self.channel.id, self.id)
-
     @overload
     async def edit(
         self,
         *,
         content: Optional[str] = ...,
-        attachments: List[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1257,7 +1806,7 @@ class Message(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        attachments: List[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -1267,8 +1816,8 @@ class Message(Hashable):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
-        suppress: bool = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> Message:
@@ -1285,8 +1834,8 @@ class Message(Hashable):
             Edits are no longer in-place, the newly edited message is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -1335,9 +1884,14 @@ class Message(Hashable):
             The newly edited message.
         """
 
-        previous_allowed_mentions = self._state.allowed_mentions
+        if content is not MISSING:
+            previous_allowed_mentions = self._state.allowed_mentions
+        else:
+            previous_allowed_mentions = None
+
         if suppress is not MISSING:
             flags = MessageFlags._from_value(self.flags.value)
+            flags.suppress_embeds = suppress
         else:
             flags = MISSING
 
@@ -1408,321 +1962,6 @@ class Message(Hashable):
         """
         return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
 
-    async def publish(self) -> None:
-        """|coro|
-
-        Publishes this message to your announcement channel.
-
-        You must have the :attr:`~Permissions.send_messages` permission to do this.
-
-        If the message is not your own then the :attr:`~Permissions.manage_messages`
-        permission is also needed.
-
-        Raises
-        -------
-        Forbidden
-            You do not have the proper permissions to publish this message.
-        HTTPException
-            Publishing the message failed.
-        """
-
-        await self._state.http.publish_message(self.channel.id, self.id)
-
-    async def pin(self, *, reason: Optional[str] = None) -> None:
-        """|coro|
-
-        Pins the message.
-
-        You must have the :attr:`~Permissions.manage_messages` permission to do
-        this in a non-private channel context.
-
-        Parameters
-        -----------
-        reason: Optional[:class:`str`]
-            The reason for pinning the message. Shows up on the audit log.
-
-            .. versionadded:: 1.4
-
-        Raises
-        -------
-        Forbidden
-            You do not have permissions to pin the message.
-        NotFound
-            The message or channel was not found or deleted.
-        HTTPException
-            Pinning the message failed, probably due to the channel
-            having more than 50 pinned messages.
-        """
-
-        await self._state.http.pin_message(self.channel.id, self.id, reason=reason)
-        self.pinned = True
-
-    async def unpin(self, *, reason: Optional[str] = None) -> None:
-        """|coro|
-
-        Unpins the message.
-
-        You must have the :attr:`~Permissions.manage_messages` permission to do
-        this in a non-private channel context.
-
-        Parameters
-        -----------
-        reason: Optional[:class:`str`]
-            The reason for unpinning the message. Shows up on the audit log.
-
-            .. versionadded:: 1.4
-
-        Raises
-        -------
-        Forbidden
-            You do not have permissions to unpin the message.
-        NotFound
-            The message or channel was not found or deleted.
-        HTTPException
-            Unpinning the message failed.
-        """
-
-        await self._state.http.unpin_message(self.channel.id, self.id, reason=reason)
-        self.pinned = False
-
-    async def add_reaction(self, emoji: EmojiInputType, /) -> None:
-        """|coro|
-
-        Add a reaction to the message.
-
-        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
-
-        You must have the :attr:`~Permissions.read_message_history` permission
-        to use this. If nobody else has reacted to the message using this
-        emoji, the :attr:`~Permissions.add_reactions` permission is required.
-
-        .. versionchanged:: 2.0
-
-            ``emoji`` parameter is now positional-only.
-
-        .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
-
-        Parameters
-        ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
-            The emoji to react with.
-
-        Raises
-        --------
-        HTTPException
-            Adding the reaction failed.
-        Forbidden
-            You do not have the proper permissions to react to the message.
-        NotFound
-            The emoji you specified was not found.
-        TypeError
-            The emoji parameter is invalid.
-        """
-
-        emoji = convert_emoji_reaction(emoji)
-        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
-
-    async def remove_reaction(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
-        """|coro|
-
-        Remove a reaction by the member from the message.
-
-        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
-
-        If the reaction is not your own (i.e. ``member`` parameter is not you) then
-        the :attr:`~Permissions.manage_messages` permission is needed.
-
-        The ``member`` parameter must represent a member and meet
-        the :class:`abc.Snowflake` abc.
-
-        .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
-
-        Parameters
-        ------------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
-            The emoji to remove.
-        member: :class:`abc.Snowflake`
-            The member for which to remove the reaction.
-
-        Raises
-        --------
-        HTTPException
-            Removing the reaction failed.
-        Forbidden
-            You do not have the proper permissions to remove the reaction.
-        NotFound
-            The member or emoji you specified was not found.
-        TypeError
-            The emoji parameter is invalid.
-        """
-
-        emoji = convert_emoji_reaction(emoji)
-
-        if member.id == self._state.self_id:
-            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
-        else:
-            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
-
-    async def clear_reaction(self, emoji: Union[EmojiInputType, Reaction]) -> None:
-        """|coro|
-
-        Clears a specific reaction from the message.
-
-        The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
-
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
-
-        .. versionadded:: 1.3
-
-        .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
-
-        Parameters
-        -----------
-        emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
-            The emoji to clear.
-
-        Raises
-        --------
-        HTTPException
-            Clearing the reaction failed.
-        Forbidden
-            You do not have the proper permissions to clear the reaction.
-        NotFound
-            The emoji you specified was not found.
-        TypeError
-            The emoji parameter is invalid.
-        """
-
-        emoji = convert_emoji_reaction(emoji)
-        await self._state.http.clear_single_reaction(self.channel.id, self.id, emoji)
-
-    async def clear_reactions(self) -> None:
-        """|coro|
-
-        Removes all the reactions from the message.
-
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
-
-        Raises
-        --------
-        HTTPException
-            Removing the reactions failed.
-        Forbidden
-            You do not have the proper permissions to remove all the reactions.
-        """
-        await self._state.http.clear_reactions(self.channel.id, self.id)
-
-    async def create_thread(
-        self,
-        *,
-        name: str,
-        auto_archive_duration: ThreadArchiveDuration = MISSING,
-        slowmode_delay: Optional[int] = None,
-        reason: Optional[str] = None,
-    ) -> Thread:
-        """|coro|
-
-        Creates a public thread from this message.
-
-        You must have :attr:`~discord.Permissions.create_public_threads` in order to
-        create a public thread from a message.
-
-        The channel this message belongs in must be a :class:`TextChannel`.
-
-        .. versionadded:: 2.0
-
-        Parameters
-        -----------
-        name: :class:`str`
-            The name of the thread.
-        auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
-            If not provided, the channel's default auto archive duration is used.
-        slowmode_delay: Optional[:class:`int`]
-            Specifies the slowmode rate limit for user in this channel, in seconds.
-            The maximum value possible is `21600`. By default no slowmode rate limit
-            if this is ``None``.
-        reason: Optional[:class:`str`]
-            The reason for creating a new thread. Shows up on the audit log.
-
-        Raises
-        -------
-        Forbidden
-            You do not have permissions to create a thread.
-        HTTPException
-            Creating the thread failed.
-        ValueError
-            This message does not have guild info attached.
-
-        Returns
-        --------
-        :class:`.Thread`
-            The created thread.
-        """
-        if self.guild is None:
-            raise ValueError('This message does not have guild info attached.')
-
-        default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration', 1440)
-        data = await self._state.http.start_thread_with_message(
-            self.channel.id,
-            self.id,
-            name=name,
-            auto_archive_duration=auto_archive_duration or default_auto_archive_duration,
-            rate_limit_per_user=slowmode_delay,
-            reason=reason,
-            location='Message',
-        )
-        return Thread(guild=self.guild, state=self._state, data=data)
-
-    async def ack(self) -> None:
-        """|coro|
-
-        Marks this message as read.
-
-        Raises
-        -------
-        HTTPException
-            Acking failed.
-        """
-        await self._state.http.ack_message(self.channel.id, self.id)
-
-    async def reply(self, content: Optional[str] = None, **kwargs) -> Message:  # TODO: implement thread create "nudge"
-        """|coro|
-
-        A shortcut method to :meth:`.abc.Messageable.send` to reply to the
-        :class:`.Message`.
-
-        .. versionadded:: 1.6
-
-        .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
-
-        Raises
-        --------
-        ~discord.HTTPException
-            Sending the message failed.
-        ~discord.Forbidden
-            You do not have the proper permissions to send the message.
-        ValueError
-            The ``files`` list is not of the appropriate size
-        TypeError
-            You specified both ``file`` and ``files``.
-
-        Returns
-        ---------
-        :class:`.Message`
-            The message that was sent.
-        """
-
-        return await self.channel.send(content, reference=self, **kwargs)
-
     def message_commands(
         self,
         query: Optional[str] = None,
@@ -1792,151 +2031,3 @@ class Message(Hashable):
             application=application,
         )
         return iterator.iterate()
-
-    def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
-        """Creates a :class:`~discord.MessageReference` from the current message.
-
-        .. versionadded:: 1.6
-
-        Parameters
-        ----------
-        fail_if_not_exists: :class:`bool`
-            Whether replying using the message reference should raise :class:`HTTPException`
-            if the message no longer exists or Discord could not fetch the message.
-
-            .. versionadded:: 1.7
-
-        Returns
-        ---------
-        :class:`~discord.MessageReference`
-            The reference to this message.
-        """
-
-        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
-
-    def to_message_reference_dict(self) -> MessageReferencePayload:
-        data: MessageReferencePayload = {
-            'message_id': self.id,
-            'channel_id': self.channel.id,
-        }
-
-        if self.guild is not None:
-            data['guild_id'] = self.guild.id
-
-        return data
-
-
-class PartialMessage(Hashable):
-    """Represents a partial message to aid with working messages when only
-    a message and channel ID are present.
-
-    There are two ways to construct this class. The first one is through
-    the constructor itself, and the second is via the following:
-
-    - :meth:`TextChannel.get_partial_message`
-    - :meth:`Thread.get_partial_message`
-    - :meth:`DMChannel.get_partial_message`
-
-    Note that this class is trimmed down and has no rich attributes.
-
-    .. versionadded:: 1.6
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two partial messages are equal.
-
-        .. describe:: x != y
-
-            Checks if two partial messages are not equal.
-
-        .. describe:: hash(x)
-
-            Returns the partial message's hash.
-
-    Attributes
-    -----------
-    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
-        The channel associated with this partial message.
-    id: :class:`int`
-        The message ID.
-    """
-
-    __slots__ = ('channel', 'id', '_cs_guild', '_state')
-
-    jump_url: str = Message.jump_url  # type: ignore
-    edit = Message.edit
-    add_files = Message.add_files
-    remove_attachments = Message.remove_attachments
-    delete = Message.delete
-    publish = Message.publish
-    pin = Message.pin
-    unpin = Message.unpin
-    add_reaction = Message.add_reaction
-    remove_reaction = Message.remove_reaction
-    clear_reaction = Message.clear_reaction
-    clear_reactions = Message.clear_reactions
-    reply = Message.reply
-    to_reference = Message.to_reference
-    to_message_reference_dict = Message.to_message_reference_dict
-
-    def __init__(self, *, channel: PartialMessageableChannel, id: int):
-        if not isinstance(channel, PartialMessageable) and channel.type not in (
-            ChannelType.text,
-            ChannelType.news,
-            ChannelType.private,
-            ChannelType.news_thread,
-            ChannelType.public_thread,
-            ChannelType.private_thread,
-        ):
-            raise TypeError(f'Expected PartialMessageable, TextChannel, DMChannel or Thread not {type(channel)!r}')
-
-        self.channel: PartialMessageableChannel = channel
-        self._state: ConnectionState = channel._state
-        self.id: int = id
-
-    def _update(self, data) -> None:
-        # This is used for duck typing purposes.
-        # Just do nothing with the data.
-        pass
-
-    # Also needed for duck typing purposes
-    # n.b. not exposed
-    pinned = property(None, lambda x, y: None)
-
-    def __repr__(self) -> str:
-        return f'<PartialMessage id={self.id} channel={self.channel!r}>'
-
-    @property
-    def created_at(self) -> datetime.datetime:
-        """:class:`datetime.datetime`: The partial message's creation time in UTC."""
-        return utils.snowflake_time(self.id)
-
-    @utils.cached_slot_property('_cs_guild')
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild that the partial message belongs to, if applicable."""
-        return getattr(self.channel, 'guild', None)
-
-    async def fetch(self) -> Message:
-        """|coro|
-
-        Fetches the partial message to a full :class:`Message`.
-
-        Raises
-        --------
-        NotFound
-            The message was not found.
-        Forbidden
-            You do not have the permissions required to get a message.
-        HTTPException
-            Retrieving the message failed.
-
-        Returns
-        --------
-        :class:`Message`
-            The full message.
-        """
-
-        data = await self._state.http.get_message(self.channel.id, self.id)
-        return self._state.create_message(channel=self.channel, data=data)

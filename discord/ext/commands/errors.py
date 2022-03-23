@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
 
+    from ._types import BotT
+
 
 __all__ = (
     'CommandError',
@@ -70,6 +72,7 @@ __all__ = (
     'BadInviteArgument',
     'EmojiNotFound',
     'GuildStickerNotFound',
+    'ScheduledEventNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
     'MissingRole',
@@ -134,8 +137,8 @@ class ConversionError(CommandError):
         the ``__cause__`` attribute.
     """
 
-    def __init__(self, converter: Converter, original: Exception) -> None:
-        self.converter: Converter = converter
+    def __init__(self, converter: Converter[Any], original: Exception) -> None:
+        self.converter: Converter[Any] = converter
         self.original: Exception = original
 
 
@@ -223,9 +226,9 @@ class CheckAnyFailure(CheckFailure):
         A list of check predicates that failed.
     """
 
-    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context], bool]]) -> None:
+    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context[BotT]], bool]]) -> None:
         self.checks: List[CheckFailure] = checks
-        self.errors: List[Callable[[Context], bool]] = errors
+        self.errors: List[Callable[[Context[BotT]], bool]] = errors
         super().__init__('You do not have permission to run this command.')
 
 
@@ -515,6 +518,24 @@ class GuildStickerNotFound(BadArgument):
         super().__init__(f'Sticker "{argument}" not found.')
 
 
+class ScheduledEventNotFound(BadArgument):
+    """Exception raised when the bot can not find the scheduled event.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The event supplied by the caller that was not found
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument: str = argument
+        super().__init__(f'ScheduledEvent "{argument}" not found.')
+
+
 class BadBoolArgument(BadArgument):
     """Exception raised when a boolean argument was not convertable.
 
@@ -788,9 +809,9 @@ class BadUnionArgument(UserInputError):
         A list of errors that were caught from failing the conversion.
     """
 
-    def __init__(self, param: Parameter, converters: Tuple[Type, ...], errors: List[CommandError]) -> None:
+    def __init__(self, param: Parameter, converters: Tuple[type, ...], errors: List[CommandError]) -> None:
         self.param: Parameter = param
-        self.converters: Tuple[Type, ...] = converters
+        self.converters: Tuple[type, ...] = converters
         self.errors: List[CommandError] = errors
 
         def _get_name(x):

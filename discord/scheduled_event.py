@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     )
 
     from .abc import Snowflake
+    from .guild import Guild
     from .channel import VoiceChannel, StageChannel
     from .state import ConnectionState
     from .user import User
@@ -79,15 +80,15 @@ class ScheduledEvent(Hashable):
         The scheduled event's ID.
     name: :class:`str`
         The name of the scheduled event.
-    description: :class:`str`
+    description: Optional[:class:`str`]
         The description of the scheduled event.
     entity_type: :class:`EntityType`
         The type of entity this event is for.
-    entity_id: :class:`int`
-        The ID of the entity this event is for.
+    entity_id: Optional[:class:`int`]
+        The ID of the entity this event is for if available.
     start_time: :class:`datetime.datetime`
         The time that the scheduled event will start in UTC.
-    end_time: :class:`datetime.datetime`
+    end_time: Optional[:class:`datetime.datetime`]
         The time that the scheduled event will end in UTC.
     privacy_level: :class:`PrivacyLevel`
         The privacy level of the scheduled event.
@@ -130,9 +131,9 @@ class ScheduledEvent(Hashable):
         self.id: int = int(data['id'])
         self.guild_id: int = int(data['guild_id'])
         self.name: str = data['name']
-        self.description: str = data.get('description', '')
-        self.entity_type = try_enum(EntityType, data['entity_type'])
-        self.entity_id: int = int(data['id'])
+        self.description: Optional[str] = data.get('description')
+        self.entity_type: EntityType = try_enum(EntityType, data['entity_type'])
+        self.entity_id: Optional[int] = _get_as_snowflake(data, 'entity_id')
         self.start_time: datetime = parse_time(data['scheduled_start_time'])
         self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
         self.status: EventStatus = try_enum(EventStatus, data['status'])
@@ -145,15 +146,14 @@ class ScheduledEvent(Hashable):
         self.end_time: Optional[datetime] = parse_time(data.get('scheduled_end_time'))
         self.channel_id: Optional[int] = _get_as_snowflake(data, 'channel_id')
 
-        metadata = data.get('metadata')
-        if metadata:
-            self._unroll_metadata(metadata)
+        metadata = data.get('entity_metadata')
+        self._unroll_metadata(metadata)
 
-    def _unroll_metadata(self, data: EntityMetadata):
-        self.location: Optional[str] = data.get('location')
+    def _unroll_metadata(self, data: Optional[EntityMetadata]):
+        self.location: Optional[str] = data.get('location') if data else None
 
     @classmethod
-    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload):
+    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
         creator_id = data.get('creator_id')
         self = cls(state=state, data=data)
         if creator_id:
@@ -170,9 +170,19 @@ class ScheduledEvent(Hashable):
         return Asset._from_scheduled_event_cover_image(self._state, self.id, self._cover_image)
 
     @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this scheduled event is in."""
+        return self._state._get_guild(self.guild_id)
+
+    @property
     def channel(self) -> Optional[Union[VoiceChannel, StageChannel]]:
         """Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]: The channel this scheduled event is in."""
         return self.guild.get_channel(self.channel_id)  # type: ignore
+
+    @property
+    def url(self) -> str:
+        """:class:`str`: The url for the scheduled event."""
+        return f'https://discord.com/events/{self.guild_id}/{self.id}'
 
     async def start(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
@@ -286,7 +296,7 @@ class ScheduledEvent(Hashable):
         description: str = MISSING,
         channel: Optional[Snowflake] = MISSING,
         start_time: datetime = MISSING,
-        end_time: datetime = MISSING,
+        end_time: Optional[datetime] = MISSING,
         privacy_level: PrivacyLevel = MISSING,
         entity_type: EntityType = MISSING,
         status: EventStatus = MISSING,
@@ -314,9 +324,13 @@ class ScheduledEvent(Hashable):
         start_time: :class:`datetime.datetime`
             The time that the scheduled event will start. This must be a timezone-aware
             datetime object. Consider using :func:`utils.utcnow`.
-        end_time: :class:`datetime.datetime`
+        end_time: Optional[:class:`datetime.datetime`]
             The time that the scheduled event will end. This must be a timezone-aware
             datetime object. Consider using :func:`utils.utcnow`.
+
+            If the entity type is either :attr:`EntityType.voice` or
+            :attr:`EntityType.stage_instance`, the end_time can be cleared by
+            passing ``None``.
 
             Required if the entity type is :attr:`EntityType.external`.
         privacy_level: :class:`PrivacyLevel`
@@ -325,8 +339,8 @@ class ScheduledEvent(Hashable):
             The new entity type.
         status: :class:`EventStatus`
             The new status of the scheduled event.
-        image: :class:`bytes`
-            The new image of the scheduled event.
+        image: Optional[:class:`bytes`]
+            The new image of the scheduled event or ``None`` to remove the image.
         location: :class:`str`
             The new location of the scheduled event.
 
@@ -383,7 +397,7 @@ class ScheduledEvent(Hashable):
             payload['status'] = status.value
 
         if image is not MISSING:
-            image_as_str: str = _bytes_to_base64_data(image)
+            image_as_str: Optional[str] = _bytes_to_base64_data(image) if image is not None else image
             payload['image'] = image_as_str
 
         if entity_type is not MISSING:
@@ -400,25 +414,31 @@ class ScheduledEvent(Hashable):
 
             payload['channel_id'] = channel.id
 
-            if location is not MISSING:
+            if location not in (MISSING, None):
                 raise TypeError('location cannot be set when entity_type is voice or stage_instance')
+            payload['entity_metadata'] = None
         else:
-            if channel is not MISSING:
+            if channel not in (MISSING, None):
                 raise TypeError('channel cannot be set when entity_type is external')
+            payload['channel_id'] = None
 
             if location is MISSING or location is None:
                 raise TypeError('location must be set when entity_type is external')
 
             metadata['location'] = location
 
-            if end_time is MISSING:
+            if end_time is MISSING or end_time is None:
                 raise TypeError('end_time must be set when entity_type is external')
 
-            if end_time.tzinfo is None:
-                raise ValueError(
-                    'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                )
-            payload['scheduled_end_time'] = end_time.isoformat()
+        if end_time is not MISSING:
+            if end_time is not None:
+                if end_time.tzinfo is None:
+                    raise ValueError(
+                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                payload['scheduled_end_time'] = end_time.isoformat()
+            else:
+                payload['scheduled_end_time'] = end_time
 
         if metadata:
             payload['entity_metadata'] = metadata
@@ -459,7 +479,7 @@ class ScheduledEvent(Hashable):
     ) -> AsyncIterator[User]:
         """|coro|
 
-        Retrieves all :class:`User` that are in this thread.
+        Retrieves all :class:`User` that are subscribed to this event.
 
         This requires :attr:`Intents.members` to get information about members
         other than yourself.
@@ -472,7 +492,7 @@ class ScheduledEvent(Hashable):
         Returns
         --------
         List[:class:`User`]
-            All thread members in the thread.
+            All subscribed users of this event.
         """
 
         async def _before_strategy(retrieve, before, limit):
@@ -548,4 +568,4 @@ class ScheduledEvent(Hashable):
         self._users[user.id] = user
 
     def _pop_user(self, user_id: int) -> None:
-        self._users.pop(user_id)
+        self._users.pop(user_id, None)

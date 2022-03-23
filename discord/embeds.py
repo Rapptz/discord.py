@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Final, List, Mapping, Protocol, TYPE_CHECKING, TypeVar, Union
+from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, TypeVar, Union
 
 from . import utils
 from .colour import Colour
@@ -35,20 +35,6 @@ __all__ = (
     'Embed',
 )
 # fmt: on
-
-
-class _EmptyEmbed:
-    def __bool__(self) -> bool:
-        return False
-
-    def __repr__(self) -> str:
-        return 'Embed.Empty'
-
-    def __len__(self) -> int:
-        return 0
-
-
-EmptyEmbed: Final = _EmptyEmbed()
 
 
 class EmbedProxy:
@@ -62,8 +48,8 @@ class EmbedProxy:
         inner = ', '.join((f'{k}={v!r}' for k, v in self.__dict__.items() if not k.startswith('_')))
         return f'EmbedProxy({inner})'
 
-    def __getattr__(self, attr: str) -> _EmptyEmbed:
-        return EmptyEmbed
+    def __getattr__(self, attr: str) -> None:
+        return None
 
 
 if TYPE_CHECKING:
@@ -72,37 +58,36 @@ if TYPE_CHECKING:
     from .types.embed import Embed as EmbedData, EmbedType
 
     T = TypeVar('T')
-    MaybeEmpty = Union[T, _EmptyEmbed]
 
     class _EmbedFooterProxy(Protocol):
-        text: MaybeEmpty[str]
-        icon_url: MaybeEmpty[str]
+        text: Optional[str]
+        icon_url: Optional[str]
 
     class _EmbedFieldProxy(Protocol):
-        name: MaybeEmpty[str]
-        value: MaybeEmpty[str]
+        name: Optional[str]
+        value: Optional[str]
         inline: bool
 
     class _EmbedMediaProxy(Protocol):
-        url: MaybeEmpty[str]
-        proxy_url: MaybeEmpty[str]
-        height: MaybeEmpty[int]
-        width: MaybeEmpty[int]
+        url: Optional[str]
+        proxy_url: Optional[str]
+        height: Optional[int]
+        width: Optional[int]
 
     class _EmbedVideoProxy(Protocol):
-        url: MaybeEmpty[str]
-        height: MaybeEmpty[int]
-        width: MaybeEmpty[int]
+        url: Optional[str]
+        height: Optional[int]
+        width: Optional[int]
 
     class _EmbedProviderProxy(Protocol):
-        name: MaybeEmpty[str]
-        url: MaybeEmpty[str]
+        name: Optional[str]
+        url: Optional[str]
 
     class _EmbedAuthorProxy(Protocol):
-        name: MaybeEmpty[str]
-        url: MaybeEmpty[str]
-        icon_url: MaybeEmpty[str]
-        proxy_icon_url: MaybeEmpty[str]
+        name: Optional[str]
+        url: Optional[str]
+        icon_url: Optional[str]
+        proxy_icon_url: Optional[str]
 
 
 class Embed:
@@ -121,18 +106,15 @@ class Embed:
 
             .. versionadded:: 2.0
 
-    Certain properties return an ``EmbedProxy``, a type
-    that acts similar to a regular :class:`dict` except using dotted access,
-    e.g. ``embed.author.icon_url``. If the attribute
-    is invalid or empty, then a special sentinel value is returned,
-    :attr:`Embed.Empty`.
-
     For ease of use, all parameters that expect a :class:`str` are implicitly
     casted to :class:`str` for you.
 
+    .. versionchanged:: 2.0
+        ``Embed.Empty`` has been removed in favour of ``None``.
+
     Attributes
     -----------
-    title: :class:`str`
+    title: Optional[:class:`str`]
         The title of the embed.
         This can be set during initialisation.
     type: :class:`str`
@@ -140,22 +122,19 @@ class Embed:
         This can be set during initialisation.
         Possible strings for embed types can be found on discord's
         `api docs <https://discord.com/developers/docs/resources/channel#embed-object-embed-types>`_
-    description: :class:`str`
+    description: Optional[:class:`str`]
         The description of the embed.
         This can be set during initialisation.
-    url: :class:`str`
+    url: Optional[:class:`str`]
         The URL of the embed.
         This can be set during initialisation.
-    timestamp: :class:`datetime.datetime`
+    timestamp: Optional[:class:`datetime.datetime`]
         The timestamp of the embed content. This is an aware datetime.
         If a naive datetime is passed, it is converted to an aware
         datetime with the local timezone.
-    colour: Union[:class:`Colour`, :class:`int`]
+    colour: Optional[Union[:class:`Colour`, :class:`int`]]
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
-    Empty
-        A special sentinel value used by ``EmbedProxy`` and this class
-        to denote that the value or attribute is empty.
     """
 
     __slots__ = (
@@ -174,36 +153,34 @@ class Embed:
         'description',
     )
 
-    Empty: Final = EmptyEmbed
-
     def __init__(
         self,
         *,
-        colour: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
-        color: Union[int, Colour, _EmptyEmbed] = EmptyEmbed,
-        title: MaybeEmpty[Any] = EmptyEmbed,
+        colour: Optional[Union[int, Colour]] = None,
+        color: Optional[Union[int, Colour]] = None,
+        title: Optional[Any] = None,
         type: EmbedType = 'rich',
-        url: MaybeEmpty[Any] = EmptyEmbed,
-        description: MaybeEmpty[Any] = EmptyEmbed,
-        timestamp: MaybeEmpty[datetime.datetime] = EmptyEmbed,
+        url: Optional[Any] = None,
+        description: Optional[Any] = None,
+        timestamp: Optional[datetime.datetime] = None,
     ):
 
-        self.colour = colour if colour is not EmptyEmbed else color
-        self.title = title
-        self.type = type
-        self.url = url
-        self.description = description
+        self.colour = colour if colour is not None else color
+        self.title: Optional[str] = title
+        self.type: EmbedType = type
+        self.url: Optional[str] = url
+        self.description: Optional[str] = description
 
-        if self.title is not EmptyEmbed:
+        if self.title is not None:
             self.title = str(self.title)
 
-        if self.description is not EmptyEmbed:
+        if self.description is not None:
             self.description = str(self.description)
 
-        if self.url is not EmptyEmbed:
+        if self.url is not None:
             self.url = str(self.url)
 
-        if timestamp is not EmptyEmbed:
+        if timestamp is not None:
             self.timestamp = timestamp
 
     @classmethod
@@ -227,18 +204,18 @@ class Embed:
 
         # fill in the basic fields
 
-        self.title = data.get('title', EmptyEmbed)
-        self.type = data.get('type', EmptyEmbed)
-        self.description = data.get('description', EmptyEmbed)
-        self.url = data.get('url', EmptyEmbed)
+        self.title = data.get('title', None)
+        self.type = data.get('type', None)
+        self.description = data.get('description', None)
+        self.url = data.get('url', None)
 
-        if self.title is not EmptyEmbed:
+        if self.title is not None:
             self.title = str(self.title)
 
-        if self.description is not EmptyEmbed:
+        if self.description is not None:
             self.description = str(self.description)
 
-        if self.url is not EmptyEmbed:
+        if self.url is not None:
             self.url = str(self.url)
 
         # try to fill in the more rich fields
@@ -268,7 +245,7 @@ class Embed:
         return self.__class__.from_dict(self.to_dict())
 
     def __len__(self) -> int:
-        total = len(self.title) + len(self.description)
+        total = len(self.title or '') + len(self.description or '')
         for field in getattr(self, '_fields', []):
             total += len(field['name']) + len(field['value'])
 
@@ -307,34 +284,36 @@ class Embed:
         )
 
     @property
-    def colour(self) -> MaybeEmpty[Colour]:
-        return getattr(self, '_colour', EmptyEmbed)
+    def colour(self) -> Optional[Colour]:
+        return getattr(self, '_colour', None)
 
     @colour.setter
-    def colour(self, value: Union[int, Colour, _EmptyEmbed]):
-        if isinstance(value, (Colour, _EmptyEmbed)):
+    def colour(self, value: Optional[Union[int, Colour]]) -> None:
+        if value is None:
+            self._colour = None
+        elif isinstance(value, Colour):
             self._colour = value
         elif isinstance(value, int):
             self._colour = Colour(value=value)
         else:
-            raise TypeError(f'Expected discord.Colour, int, or Embed.Empty but received {value.__class__.__name__} instead.')
+            raise TypeError(f'Expected discord.Colour, int, or None but received {value.__class__.__name__} instead.')
 
     color = colour
 
     @property
-    def timestamp(self) -> MaybeEmpty[datetime.datetime]:
-        return getattr(self, '_timestamp', EmptyEmbed)
+    def timestamp(self) -> Optional[datetime.datetime]:
+        return getattr(self, '_timestamp', None)
 
     @timestamp.setter
-    def timestamp(self, value: MaybeEmpty[datetime.datetime]):
+    def timestamp(self, value: Optional[datetime.datetime]) -> None:
         if isinstance(value, datetime.datetime):
             if value.tzinfo is None:
                 value = value.astimezone()
             self._timestamp = value
-        elif isinstance(value, _EmptyEmbed):
-            self._timestamp = value
+        elif value is None:
+            self._timestamp = None
         else:
-            raise TypeError(f"Expected datetime.datetime or Embed.Empty received {value.__class__.__name__} instead")
+            raise TypeError(f"Expected datetime.datetime or None received {value.__class__.__name__} instead")
 
     @property
     def footer(self) -> _EmbedFooterProxy:
@@ -342,12 +321,12 @@ class Embed:
 
         See :meth:`set_footer` for possible values you can access.
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_footer', {}))  # type: ignore
 
-    def set_footer(self, *, text: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> Self:
+    def set_footer(self, *, text: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
         """Sets the footer for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -362,10 +341,10 @@ class Embed:
         """
 
         self._footer = {}
-        if text is not EmptyEmbed:
+        if text is not None:
             self._footer['text'] = str(text)
 
-        if icon_url is not EmptyEmbed:
+        if icon_url is not None:
             self._footer['icon_url'] = str(icon_url)
 
         return self
@@ -396,19 +375,16 @@ class Embed:
         - ``width``
         - ``height``
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
 
-    def set_image(self, *, url: MaybeEmpty[Any]) -> Self:
+    def set_image(self, *, url: Optional[Any]) -> Self:
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
-
-        .. versionchanged:: 1.4
-            Passing :attr:`Empty` removes the image.
 
         Parameters
         -----------
@@ -416,7 +392,7 @@ class Embed:
             The source URL for the image. Only HTTP(S) is supported.
         """
 
-        if url is EmptyEmbed:
+        if url is None:
             try:
                 del self._image
             except AttributeError:
@@ -439,19 +415,19 @@ class Embed:
         - ``width``
         - ``height``
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
-    def set_thumbnail(self, *, url: MaybeEmpty[Any]) -> Self:
+    def set_thumbnail(self, *, url: Optional[Any]) -> Self:
         """Sets the thumbnail for the embed content.
 
         This function returns the class instance to allow for fluent-style
         chaining.
 
         .. versionchanged:: 1.4
-            Passing :attr:`Empty` removes the thumbnail.
+            Passing ``None`` removes the thumbnail.
 
         Parameters
         -----------
@@ -459,7 +435,7 @@ class Embed:
             The source URL for the thumbnail. Only HTTP(S) is supported.
         """
 
-        if url is EmptyEmbed:
+        if url is None:
             try:
                 del self._thumbnail
             except AttributeError:
@@ -481,7 +457,7 @@ class Embed:
         - ``height`` for the video height.
         - ``width`` for the video width.
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_video', {}))  # type: ignore
@@ -492,7 +468,7 @@ class Embed:
 
         The only attributes that might be accessed are ``name`` and ``url``.
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_provider', {}))  # type: ignore
@@ -503,12 +479,12 @@ class Embed:
 
         See :meth:`set_author` for possible values you can access.
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
 
-    def set_author(self, *, name: Any, url: MaybeEmpty[Any] = EmptyEmbed, icon_url: MaybeEmpty[Any] = EmptyEmbed) -> Self:
+    def set_author(self, *, name: Any, url: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -528,10 +504,10 @@ class Embed:
             'name': str(name),
         }
 
-        if url is not EmptyEmbed:
+        if url is not None:
             self._author['url'] = str(url)
 
-        if icon_url is not EmptyEmbed:
+        if icon_url is not None:
             self._author['icon_url'] = str(icon_url)
 
         return self
@@ -553,11 +529,11 @@ class Embed:
 
     @property
     def fields(self) -> List[_EmbedFieldProxy]:
-        """List[Union[``EmbedProxy``, :attr:`Empty`]]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
+        """List[``EmbedProxy``]: Returns a :class:`list` of ``EmbedProxy`` denoting the field contents.
 
         See :meth:`add_field` for possible values you can access.
 
-        If the attribute has no value then :attr:`Empty` is returned.
+        If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
         return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore

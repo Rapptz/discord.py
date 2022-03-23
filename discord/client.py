@@ -27,7 +27,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import signal
 import sys
 import traceback
 from typing import (
@@ -42,6 +41,7 @@ from typing import (
     Sequence,
     TYPE_CHECKING,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -80,6 +80,8 @@ from .team import Team
 from .member import _ClientStatus
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+    from types import TracebackType
     from .types.guild import Guild as GuildPayload
     from .guild import GuildChannel
     from .abc import PrivateChannel, GuildChannel, Snowflake, SnowflakeTime
@@ -97,43 +99,22 @@ __all__ = (
 
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
-
 _log = logging.getLogger(__name__)
 
 
-def _cancel_tasks(loop: asyncio.AbstractEventLoop) -> None:
-    tasks = {t for t in asyncio.all_tasks(loop=loop) if not t.done()}
+class _LoopSentinel:
+    __slots__ = ()
 
-    if not tasks:
-        return
-
-    _log.info('Cleaning up after %d tasks.', len(tasks))
-    for task in tasks:
-        task.cancel()
-
-    loop.run_until_complete(asyncio.gather(*tasks, return_exceptions=True))
-    _log.info('All tasks finished cancelling.')
-
-    for task in tasks:
-        if task.cancelled():
-            continue
-        if task.exception() is not None:
-            loop.call_exception_handler(
-                {
-                    'message': 'Unhandled exception during Client.run shutdown.',
-                    'exception': task.exception(),
-                    'task': task,
-                }
-            )
+    def __getattr__(self, attr: str) -> None:
+        msg = (
+            'loop attribute cannot be accessed in non-async contexts. '
+            'Consider using either an asynchronous main function and passing it to asyncio.run or '
+            'using asynchronous initialisation hooks such as Client.setup_hook'
+        )
+        raise AttributeError(msg)
 
 
-def _cleanup_loop(loop: asyncio.AbstractEventLoop) -> None:
-    try:
-        _cancel_tasks(loop)
-        loop.run_until_complete(loop.shutdown_asyncgens())
-    finally:
-        _log.info('Closing the event loop.')
-        loop.close()
+_loop: Any = _LoopSentinel()
 
 
 class Client:
@@ -150,12 +131,6 @@ class Client:
 
         .. versionchanged:: 1.3
             Allow disabling the message cache and change the default size to ``1000``.
-    loop: Optional[:class:`asyncio.AbstractEventLoop`]
-        The :class:`asyncio.AbstractEventLoop` to use for asynchronous operations.
-        Defaults to ``None``, in which case the default event loop is used via
-        :func:`asyncio.get_event_loop()`.
-    connector: Optional[:class:`aiohttp.BaseConnector`]
-        The connector to use for connection pooling.
     proxy: Optional[:class:`str`]
         Proxy URL.
     proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
@@ -172,10 +147,9 @@ class Client:
 
         .. versionadded:: 1.5
     request_guilds: :class:`bool`
-        Whether to request guilds at startup (behaves similarly to the old
-        guild_subscriptions option). Defaults to True.
+        Whether to request guilds at startup. Defaults to True.
 
-        .. versionadded:: 1.10
+        .. versionadded:: 2.0
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
@@ -209,36 +183,44 @@ class Client:
         Whether to keep presences up-to-date across clients.
         The default behavior is ``True`` (what the client does).
 
+        .. versionadded:: 2.0
+    http_trace: :class:`aiohttp.TraceConfig`
+        The trace configuration to use for tracking HTTP requests the library does using ``aiohttp``.
+        This allows you to check requests the library is using. For more information, check the
+        `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
+
+        .. versionadded:: 2.0
+
     Attributes
     -----------
     ws
         The websocket gateway the client is currently connected to. Could be ``None``.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the client uses for asynchronous operations.
     """
 
-    def __init__(
-        self,
-        *,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
-        **options: Any,
-    ):
-        # Set in the connect method
+    def __init__(self, **options: Any) -> None:
+        self.loop: asyncio.AbstractEventLoop = _loop
+        # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
-        self.loop: asyncio.AbstractEventLoop = asyncio.get_event_loop() if loop is None else loop
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
 
-        connector: Optional[aiohttp.BaseConnector] = options.pop('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
+        http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
         self.http: HTTPClient = HTTPClient(
-            connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop
+            self.loop,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            unsync_clock=unsync_clock,
+            http_trace=http_trace,
         )
 
-        self._handlers: Dict[str, Callable] = {'ready': self._handle_ready, 'connect': self._handle_connect}
+        self._handlers: Dict[str, Callable[..., None]] = {
+            'ready': self._handle_ready,
+            'connect': self._handle_connect,
+        }
 
-        self._hooks: Dict[str, Callable] = {
+        self._hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = {
             'before_identify': self._call_before_identify_hook,
         }
 
@@ -246,7 +228,7 @@ class Client:
         self._sync_presences: bool = options.pop('sync_presence', True)
         self._connection: ConnectionState = self._get_state(**options)
         self._closed: bool = False
-        self._ready: asyncio.Event = asyncio.Event()
+        self._ready: asyncio.Event = MISSING
 
         self._client_status: _ClientStatus = _ClientStatus()
         self._client_activities: Dict[Optional[str], Tuple[ActivityTypes, ...]] = {
@@ -258,6 +240,19 @@ class Client:
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
             _log.warning('PyNaCl is not installed, voice will NOT be supported.')
+
+    async def __aenter__(self) -> Self:
+        await self._async_setup_hook()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        if not self.is_closed():
+            await self.close()
 
     # Internals
 
@@ -350,7 +345,7 @@ class Client:
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
-        return self._ready.is_set()
+        return self._ready is not MISSING and self._ready.is_set()
 
     async def _run_event(
         self,
@@ -377,9 +372,10 @@ class Client:
         **kwargs: Any,
     ) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
-        return asyncio.create_task(wrapped, name=f'discord.py: {event_name}')
+        # Schedules the task
+        return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
 
-    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
+    def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s.', event)
         method = 'on_' + event
 
@@ -419,7 +415,7 @@ class Client:
         else:
             self._schedule_event(coro, method, *args, **kwargs)
 
-    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
         """|coro|
 
         The default error handler provided by the client.
@@ -427,6 +423,10 @@ class Client:
         By default this prints to :data:`sys.stderr` however it could be
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
+
+        .. versionchanged:: 2.0
+
+            ``event_method`` parameter is now positional-only.
         """
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
@@ -471,12 +471,45 @@ class Client:
         """
         pass
 
+    async def _async_setup_hook(self) -> None:
+        # Called whenever the client needs to initialise asyncio objects with a running loop
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+        self._connection.loop = loop
+        await self._connection.async_setup()
+
+        self._ready = asyncio.Event()
+
+    async def setup_hook(self) -> None:
+        """|coro|
+
+        A coroutine to be called to setup the bot, by default this is blank.
+
+        To perform asynchronous setup after the bot is logged in but before
+        it has connected to the Websocket, overwrite this coroutine.
+
+        This is only called once, in :meth:`login`, and will be called before
+        any events are dispatched, making it a better solution than doing such
+        setup in the :func:`~discord.on_ready` event.
+
+        .. warning::
+
+            Since this is called *before* the websocket connection is made therefore
+            anything that waits for the websocket will deadlock, this includes things
+            like :meth:`wait_for` and :meth:`wait_until_ready`.
+
+        .. versionadded:: 2.0
+        """
+        pass
+
     # Login state management
 
     async def login(self, token: str) -> None:
         """|coro|
 
-        Logs in the client with the specified credentials.
+        Logs in the client with the specified credentials and
+        calls the :meth:`setup_hook`.
 
         .. warning::
 
@@ -502,10 +535,13 @@ class Client:
 
         _log.info('Logging in using static token.')
 
+        await self._async_setup_hook()
+
         state = self._connection
         data = await state.http.static_login(token.strip())
         state.analytics_token = data.get('analytics_token', '')
         state.user = ClientUser(state=state, data=data)
+        await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
         """|coro|
@@ -611,7 +647,11 @@ class Client:
             await self.ws.close(code=1000)
 
         await self.http.close()
-        self._ready.clear()
+
+        if self._ready is not MISSING:
+            self._ready.clear()
+
+        self.loop = MISSING
 
     def clear(self) -> None:
         """Clears the internal state of the bot.
@@ -644,12 +684,9 @@ class Client:
         Roughly Equivalent to: ::
 
             try:
-                loop.run_until_complete(start(*args, **kwargs))
+                asyncio.run(self.start(*args, **kwargs))
             except KeyboardInterrupt:
-                loop.run_until_complete(close())
-                # cancel all tasks lingering
-            finally:
-                loop.close()
+                return
 
         .. warning::
 
@@ -657,41 +694,18 @@ class Client:
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
         """
-        loop = self.loop
-
-        try:
-            loop.add_signal_handler(signal.SIGINT, lambda: loop.stop())
-            loop.add_signal_handler(signal.SIGTERM, lambda: loop.stop())
-        except NotImplementedError:
-            pass
 
         async def runner():
-            try:
+            async with self:
                 await self.start(*args, **kwargs)
-            finally:
-                if not self.is_closed():
-                    await self.close()
 
-        def stop_loop_on_completion(f):
-            loop.stop()
-
-        future = asyncio.ensure_future(runner(), loop=loop)
-        future.add_done_callback(stop_loop_on_completion)
         try:
-            loop.run_forever()
+            asyncio.run(runner())
         except KeyboardInterrupt:
-            _log.info('Received signal to terminate bot and event loop.')
-        finally:
-            future.remove_done_callback(stop_loop_on_completion)
-            _log.info('Cleaning up tasks.')
-            _cleanup_loop(loop)
-
-        if not future.cancelled():
-            try:
-                return future.result()
-            except KeyboardInterrupt:
-                # I am unsure why this gets raised here but suppress it anyway
-                return None
+            # nothing to do here
+            # `asyncio.run` handles the loop cleanup
+            # and `self.start` closes all sockets and the HTTPClient instance.
+            return
 
     # Properties
 
@@ -712,7 +726,8 @@ class Client:
 
             The client may be setting multiple activities, these can be accessed under :attr:`initial_activities`.
         """
-        return create_activity(self._connection._activities[0]) if self._connection._activities else None
+        state = self._connection
+        return create_activity(state._activities[0], state) if state._activities else None
 
     @initial_activity.setter
     def initial_activity(self, value: Optional[ActivityTypes]) -> None:
@@ -727,7 +742,8 @@ class Client:
     @property
     def initial_activities(self) -> List[ActivityTypes]:
         """List[:class:`.BaseActivity`]: The activities set upon logging in."""
-        return [create_activity(activity) for activity in self._connection._activities]
+        state = self._connection
+        return [create_activity(activity, state) for activity in state._activities]
 
     @initial_activities.setter
     def initial_activities(self, values: List[ActivityTypes]) -> None:
@@ -750,7 +766,7 @@ class Client:
         return
 
     @initial_status.setter
-    def initial_status(self, value):
+    def initial_status(self, value: Status):
         if value is Status.offline:
             self._connection._status = 'invisible'
         elif isinstance(value, Status):
@@ -837,9 +853,10 @@ class Client:
             the user is listening to a song on Spotify with a title longer
             than 128 characters. See :issue:`1738` for more information.
         """
-        activities = tuple(map(create_activity, self._client_activities[None]))
+        state = self._connection
+        activities = tuple(create_activity(d, state) for d in self._client_activities[None])
         if activities is None and not self.is_closed():
-            activities = getattr(self._connection.settings, 'custom_activity', [])
+            activities = getattr(state.settings, 'custom_activity', [])
             activities = [activities] if activities else activities
         return activities
 
@@ -870,7 +887,8 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        return tuple(map(create_activity, self._client_activities.get('mobile', [])))
+        state = self._connection
+        return tuple(create_activity(d, state) for d in self._client_activities.get('mobile', []))
 
     @property
     def desktop_activities(self) -> Tuple[ActivityTypes]:
@@ -879,7 +897,8 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        return tuple(map(create_activity, self._client_activities.get('desktop', [])))
+        state = self._connection
+        return tuple(create_activity(d, state) for d in self._client_activities.get('desktop', []))
 
     @property
     def web_activities(self) -> Tuple[ActivityTypes]:
@@ -888,7 +907,8 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        return tuple(map(create_activity, self._client_activities.get('web', [])))
+        state = self._connection
+        return tuple(create_activity(d, state) for d in self._client_activities.get('web', []))
 
     @property
     def client_activities(self) -> Tuple[ActivityTypes]:
@@ -897,9 +917,10 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        activities = tuple(map(create_activity, self._client_activities.get('this', [])))
+        state = self._connection
+        activities = tuple(create_activity(d, state) for d in self._client_activities.get('this', []))
         if activities is None and not self.is_closed():
-            activities = getattr(self._connection.settings, 'custom_activity', [])
+            activities = getattr(state.settings, 'custom_activity', [])
             activities = [activities] if activities else activities
         return activities
 
@@ -979,7 +1000,7 @@ class Client:
         Returns
         --------
         Optional[:class:`.StageInstance`]
-            The returns stage instance of ``None`` if not found.
+            The stage instance or ``None`` if not found.
         """
         from .channel import StageChannel
 
@@ -1109,12 +1130,18 @@ class Client:
         """|coro|
 
         Waits until the client's internal cache is all ready.
+
+        .. warning::
+
+            Calling this inside :meth:`setup_hook` can lead to a deadlock.
         """
-        await self._ready.wait()
+        if self._ready is not MISSING:
+            await self._ready.wait()
 
     def wait_for(
         self,
         event: str,
+        /,
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
@@ -1174,6 +1201,10 @@ class Client:
                     else:
                         await channel.send('\N{THUMBS UP SIGN}')
 
+        .. versionchanged:: 2.0
+
+            ``event`` parameter is now positional-only.
+
 
         Parameters
         ------------
@@ -1220,7 +1251,7 @@ class Client:
 
     # Event registration
 
-    def event(self, coro: Coro) -> Coro:
+    def event(self, coro: Coro, /) -> Coro:
         """A decorator that registers an event to listen to.
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
@@ -1235,6 +1266,10 @@ class Client:
             @client.event
             async def on_ready():
                 print('Ready!')
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Raises
         --------
@@ -1257,7 +1292,7 @@ class Client:
         status: Optional[Status] = None,
         afk: bool = False,
         edit_settings: bool = True,
-    ):
+    ) -> None:
         """|coro|
 
         Changes the client's presence.
@@ -1267,8 +1302,8 @@ class Client:
             Added option to update settings.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Example
         ---------
@@ -1439,7 +1474,7 @@ class Client:
         """
         code = utils.resolve_template(code)
         data = await self.http.get_template(code)
-        return Template(data=data, state=self._connection)  # type: ignore
+        return Template(data=data, state=self._connection)
 
     async def fetch_guild(self, guild_id: int, /, *, with_counts: bool = True) -> Guild:
         """|coro|
@@ -1498,8 +1533,8 @@ class Client:
             ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------

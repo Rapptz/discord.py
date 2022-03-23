@@ -1,0 +1,44 @@
+name: crowdin download
+
+on:
+  schedule:
+    - cron: '0 18 * * 1'
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    environment: Crowdin
+    name: download
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Install system dependencies
+        run: |
+          wget -qO - https://artifacts.crowdin.com/repo/GPG-KEY-crowdin | sudo apt-key add -
+          echo "deb https://artifacts.crowdin.com/repo/deb/ /" | sudo tee -a /etc/apt/sources.list.d/crowdin.list
+          sudo apt-get update -qq
+          sudo apt-get install -y crowdin3
+
+      - name: Download translations
+        shell: bash
+        run: |
+          cd docs
+          crowdin download --all
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+
+      - name: Create pull request
+        id: cpr_crowdin
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Crowdin translations download
+          title: "[Crowdin] Updated translation files"
+          body: |
+            Created by the [Crowdin download workflow](.github/workflows/crowdin_download.yml).
+          branch: "auto/crowdin"
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>

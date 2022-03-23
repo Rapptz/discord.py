@@ -28,6 +28,7 @@ line_length = 125
 [tool.pyright]
 include = [
     "discord",
+    "discord/app_commands",
     "discord/types",
     "discord/ext",
     "discord/ext/commands",
@@ -39,6 +40,7 @@ exclude = [
     "dist",
     "docs",
 ]
+reportUnnecessaryTypeIgnoreComment = "warning"
 pythonVersion = "3.8"
 typeCheckingMode = "basic"
 

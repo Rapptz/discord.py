@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Any, TYPE_CHECKING, AsyncIterator, Union, Optional
 
+from .user import User
 from .object import Object
 
 # fmt: off
@@ -34,7 +35,6 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
-    from .user import User
     from .member import Member
     from .types.message import Reaction as ReactionPayload
     from .message import Message
@@ -94,10 +94,10 @@ class Reaction:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return other.emoji != self.emoji
         return True
@@ -149,8 +149,8 @@ class Reaction:
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Raises
         --------

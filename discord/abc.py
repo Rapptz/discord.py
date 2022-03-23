@@ -90,6 +90,9 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.snowflake import (
+        SnowflakeList,
+    )
 
     PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
@@ -725,7 +728,14 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Any = _undefined,
+        reason: Optional[str] = None,
+        **permissions: bool,
+    ) -> None:
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -769,8 +779,8 @@ class GuildChannel:
             await channel.set_permissions(member, overwrite=overwrite)
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
 
         Parameters
@@ -934,7 +944,7 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def move(self, **kwargs) -> None:
+    async def move(self, **kwargs: Any) -> None:
         """|coro|
 
         A rich interface to help move a channel relative to other channels.
@@ -952,8 +962,8 @@ class GuildChannel:
         .. versionadded:: 1.7
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1210,7 +1220,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: List[File] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1244,7 +1254,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: List[File] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1257,19 +1267,19 @@ class Messageable:
 
     async def send(
         self,
-        content=None,
+        content: Optional[str] = None,
         *,
-        tts=False,
-        file=None,
-        files=None,
-        stickers=None,
-        delete_after=None,
-        nonce=MISSING,
-        allowed_mentions=None,
-        reference=None,
-        mention_author=None,
-        suppress_embeds=False,
-    ):
+        tts: bool = False,
+        file: Optional[File] = None,
+        files: Optional[Sequence[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        suppress_embeds: bool = False,
+    ) -> Message:
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1283,8 +1293,8 @@ class Messageable:
         **Specifying both parameters will lead to an exception**.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ------------
@@ -1362,17 +1372,17 @@ class Messageable:
             nonce = str(utils.time_snowflake(datetime.utcnow()))
 
         if stickers is not None:
-            stickers = [sticker.id for sticker in stickers]
+            sticker_ids: SnowflakeList = [sticker.id for sticker in stickers]
         else:
-            stickers = MISSING
+            sticker_ids = MISSING
 
         if reference is not None:
             try:
-                reference = reference.to_message_reference_dict()
+                reference_dict = reference.to_message_reference_dict()
             except AttributeError:
                 raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
-            reference = MISSING
+            reference_dict = MISSING
 
         if suppress_embeds:
             from .message import MessageFlags  # circular import
@@ -1388,10 +1398,10 @@ class Messageable:
             files=files if files is not None else MISSING,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
-            message_reference=reference,
+            message_reference=reference_dict,
             previous_allowed_mentions=previous_allowed_mention,
             mention_author=mention_author,
-            stickers=stickers,
+            stickers=sticker_ids,
             flags=flags,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
@@ -1823,7 +1833,8 @@ class Connectable(Protocol):
         if cls is MISSING:
             cls = VoiceClient
 
-        voice = cls(state.client, channel)
+        # The type checker doesn't understand that VoiceClient *is* T here.
+        voice: T = cls(state.client, channel)  # type: ignore
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class')

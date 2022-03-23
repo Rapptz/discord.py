@@ -89,10 +89,10 @@
         <option value="{{ pathto(p + '/index')|e }}" {% if pagename is prefixedwith p %}selected{% endif %}>{{ ext }}</option>
         {%- endfor %}
       </select>
-      <form role="search" class="search" action="{{ pathto('search') }}" method="get">
+      <form id="search-form" role="search" class="search" action="{{ pathto('search') }}" method="get">
         <div class="search-wrapper">
           <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
-          <button type="submit">
+          <button type="submit" onmousedown="searchBarClick(event, document.getElementById('search-form'));">
             <span class="material-icons">search</span>
           </button>
         </div>
@@ -110,6 +110,14 @@
         <span class="material-icons">settings</span>
       </span>
       <div id="sidebar">
+        <form id="sidebar-form" role="search" class="search" action="{{ pathto('search') }}" method="get">
+        <div class="search-wrapper search-sidebar">
+          <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
+          <button type="submit" onmousedown="searchBarClick(event, document.getElementById('sidebar-form'));">
+            <span class="material-icons">search</span>
+          </button>
+        </div>
+      </form>
         {%- include "localtoc.html" %}
       </div>
     </aside>

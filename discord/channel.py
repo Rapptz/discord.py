@@ -46,7 +46,6 @@ from .permissions import PermissionOverwrite, Permissions
 from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
 from .calls import PrivateCall, GroupCall
 from .mixins import Hashable
-from .object import Object
 from . import utils
 from .utils import MISSING
 from .asset import Asset
@@ -194,7 +193,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         return self
 
     @property
@@ -279,7 +278,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[TextChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
         """|coro|
 
         Edits the channel.
@@ -297,8 +296,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -574,8 +573,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -696,7 +695,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         reason: Optional[:class:`str`]
             The reason for creating a new thread. Shows up on the audit log.
         invitable: :class:`bool`
-            Whether non-modertators can add users to the thread. Only applicable to private threads.
+            Whether non-moderators can add users to the thread. Only applicable to private threads.
             Defaults to ``True``.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.
@@ -863,7 +862,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         return self.guild.id, self.id
 
     def _update(self, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]) -> None:
-        self.guild = guild
+        self.guild: Guild = guild
         self.name: str = data['name']
         self.rtc_region: Optional[str] = data.get('rtc_region')
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
@@ -1031,7 +1030,7 @@ class VoiceChannel(VocalGuildChannel):
     async def edit(self) -> Optional[VoiceChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
         """|coro|
 
         Edits the channel.
@@ -1049,8 +1048,8 @@ class VoiceChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1175,7 +1174,7 @@ class StageChannel(VocalGuildChannel):
 
     def _update(self, guild: Guild, data: StageChannelPayload) -> None:
         super()._update(guild, data)
-        self.topic = data.get('topic')
+        self.topic: Optional[str] = data.get('topic')
 
     @property
     def requesting_to_speak(self) -> List[Member]:
@@ -1316,7 +1315,7 @@ class StageChannel(VocalGuildChannel):
     async def edit(self) -> Optional[StageChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
         """|coro|
 
         Edits the channel.
@@ -1334,8 +1333,8 @@ class StageChannel(VocalGuildChannel):
             The ``region`` parameter now accepts :class:`str` instead of an enum.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`TypeError`.
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1477,7 +1476,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[CategoryChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
         """|coro|
 
         Edits the channel.
@@ -1492,8 +1491,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1533,7 +1532,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
     @utils.copy_doc(discord.abc.GuildChannel.move)
-    async def move(self, **kwargs):
+    async def move(self, **kwargs: Any) -> None:
         kwargs.pop('category', None)
         await super().move(**kwargs)
 
@@ -1717,9 +1716,9 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
         position: int = ...,
         nsfw: bool = ...,
         sync_permissions: bool = ...,
-        category: Optional[CategoryChannel],
-        reason: Optional[str],
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite],
+        category: Optional[CategoryChannel] = ...,
+        reason: Optional[str] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
     ) -> Optional[StoreChannel]:
         ...
 
@@ -1727,7 +1726,7 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
     async def edit(self) -> Optional[StoreChannel]:
         ...
 
-    async def edit(self, *, reason=None, **options):
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StoreChannel]:
         """|coro|
 
         Edits the channel.
@@ -1739,8 +1738,8 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             Edits are no longer in-place, the newly edited channel is returned instead.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError` or :exc:`TypeError` in various cases.
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
 
         Parameters
         ----------
@@ -1844,7 +1843,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     def _add_call(self, **kwargs) -> PrivateCall:
         return PrivateCall(**kwargs)
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         await self._state.access_private_channel(self.id)
         return self
 
@@ -2066,7 +2065,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     def _get_voice_state_pair(self) -> Tuple[int, int]:
         return self.me.id, self.id
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> Self:
         await self._state.access_private_channel(self.id)
         return self
 
@@ -2331,7 +2330,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
 class PartialMessageable(discord.abc.Messageable, Hashable):
     """Represents a partial messageable to aid with working messageable channels when
-    only a channel ID are present.
+    only a channel ID is present.
 
     The only way to construct this class is through :meth:`Client.get_partial_messageable`.
 
@@ -2366,6 +2365,9 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         self.id: int = id
         self.type: Optional[ChannelType] = type
         self.last_message_id: Optional[int] = None
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} type={self.type!r}>'
 
     async def _get_channel(self) -> PartialMessageable:
         return self
