@@ -1,5 +1,3 @@
-# This example requires the 'members' privileged intents
-
 import discord
 
 class MyClient(discord.Client):
@@ -78,8 +76,5 @@ class MyClient(discord.Client):
             # If we want to do something in case of errors we'd do it here.
             pass
 
-intents = discord.Intents.default()
-intents.members = True
-
-client = MyClient(intents=intents)
+client = MyClient()
 client.run('token')

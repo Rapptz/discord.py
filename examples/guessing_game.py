@@ -1,5 +1,3 @@
-# This example requires the 'message_content' privileged intent to function.
-
 import discord
 import random
 import asyncio
@@ -10,8 +8,8 @@ class MyClient(discord.Client):
         print('------')
 
     async def on_message(self, message):
-        # we do not want the bot to reply to itself
-        if message.author.id == self.user.id:
+        # we do not want the bot to reply to other people
+        if message.author.id != self.user.id:
             return
 
         if message.content.startswith('$guess'):
@@ -32,8 +30,5 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send(f'Oops. It is actually {answer}.')
 
-intents = discord.Intents.default()
-intents.message_content = True
-
-client = MyClient(intents=intents)
+client = MyClient()
 client.run('token')

@@ -11,8 +11,8 @@ on:
 jobs:
   deploy:
 
+    name: push to PyPi
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python

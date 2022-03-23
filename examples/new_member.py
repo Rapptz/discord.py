@@ -1,5 +1,3 @@
-# This example requires the 'members' privileged intents
-
 import discord
 
 class MyClient(discord.Client):
@@ -14,8 +12,5 @@ class MyClient(discord.Client):
             await guild.system_channel.send(to_send)
 
 
-intents = discord.Intents.default()
-intents.members = True
-
-client = MyClient(intents=intents)
+client = MyClient()
 client.run('token')

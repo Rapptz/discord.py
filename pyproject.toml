@@ -29,7 +29,6 @@ line_length = 125
 include = [
     "discord",
     "discord/types",
-    "discord/ui",
     "discord/ext",
     "discord/ext/commands",
     "discord/ext/tasks",

@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: [ '3.8' ]
 
-    name: dists & docs ${{ matrix.python-version }}
+    name: dists & docs
     steps:
       - uses: actions/checkout@v2
         with:

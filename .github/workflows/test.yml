@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: [ '3.8' ]
 
-    name: pytest ${{ matrix.python-version }}
+    name: pytest
     steps:
       - uses: actions/checkout@v2
         with:

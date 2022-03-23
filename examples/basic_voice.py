@@ -1,5 +1,3 @@
-# This example requires the 'message_content' privileged intent to function.
-
 import asyncio
 
 import discord
@@ -125,12 +123,8 @@ class Music(commands.Cog):
         elif ctx.voice_client.is_playing():
             ctx.voice_client.stop()
 
-intents = discord.Intents.default()
-intents.message_content = True
-
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("!"),
-                   description='Relatively simple music bot example',
-                   intents=intents)
+                   description='Relatively simple music bot example')
 
 @bot.event
 async def on_ready():

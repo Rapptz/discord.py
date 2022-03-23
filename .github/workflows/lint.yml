@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: [ '3.8' ]
 
-    name: check ${{ matrix.python-version }}
+    name: lint
     steps:
       - uses: actions/checkout@v2
         with:
