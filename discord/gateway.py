@@ -668,14 +668,25 @@ class DiscordWebSocket:
         if status == 'idle':
             since = int(time.time() * 1000)
 
-        payload = {'op': self.PRESENCE, 'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status)}}
+        payload = {
+            'op': self.PRESENCE,
+            'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status)},
+        }
 
         sent = utils._to_json(payload)
         _log.debug('Sending "%s" to change presence.', sent)
         await self.send(sent)
 
     async def request_lazy_guild(
-        self, guild_id: Snowflake, *, typing: Optional[bool] = None, threads: Optional[bool] = None, activities: Optional[bool] = None, members: Optional[List[Snowflake]]=None, channels: Optional[Dict[Snowflake, List[List[int]]]]=None, thread_member_lists: Optional[List[Snowflake]]=None
+        self,
+        guild_id: Snowflake,
+        *,
+        typing: Optional[bool] = None,
+        threads: Optional[bool] = None,
+        activities: Optional[bool] = None,
+        members: Optional[List[Snowflake]] = None,
+        channels: Optional[Dict[Snowflake, List[List[int]]]] = None,
+        thread_member_lists: Optional[List[Snowflake]] = None,
     ):
         payload = {
             'op': self.GUILD_SUBSCRIBE,

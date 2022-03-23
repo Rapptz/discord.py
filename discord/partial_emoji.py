@@ -237,3 +237,35 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             raise ValueError('PartialEmoji is not a custom emoji')
 
         return await super().read()
+
+    async def fetch_guild(self):
+        """|coro|
+
+        Retrieves the guild this emoji belongs to.
+
+        Raises
+        ------
+        NotFound
+            The guild this emoji belongs to is not public.
+        HTTPException
+            An error occurred while fetching the guild.
+        ValueError
+            The emoji is not custom.
+        TypeError
+            The emoji does not have state available.
+
+        Returns
+        -------
+        :class:`Guild`
+            The guild this emoji belongs to.
+        """
+        from .guild import Guild  # Circular import
+
+        if self.id is None:
+            raise ValueError('PartialEmoji is not a custom emoji')
+        if self._state is None:
+            raise TypeError('PartialEmoji does not have state available')
+
+        state = self._state
+        data = await state.http.get_emoji_guild(self.id)
+        return Guild(state=state, data=data)

@@ -1712,7 +1712,9 @@ class ConnectionState:
                 request.start()
 
     @overload
-    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., channels: List[abcSnowflake] = ...) -> Optional[List[Member]]:
+    async def chunk_guild(
+        self, guild: Guild, *, wait: Literal[True] = ..., channels: List[abcSnowflake] = ...
+    ) -> Optional[List[Member]]:
         ...
 
     @overload
