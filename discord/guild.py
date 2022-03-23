@@ -3433,6 +3433,8 @@ class Guild(Hashable):
         Request members that belong to this guild whose username starts with
         the query given.
 
+        This is a websocket operation.
+
         .. versionadded:: 1.3
 
         Parameters
