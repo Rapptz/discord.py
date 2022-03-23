@@ -50,6 +50,7 @@ class _AppInfoOptional(TypedDict, total=False):
     hook: bool
     max_participants: int
 
+
 class _PartialAppInfoOptional(TypedDict, total=False):
     rpc_origins: List[str]
     cover_image: str
@@ -62,6 +63,7 @@ class _PartialAppInfoOptional(TypedDict, total=False):
 
 class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
     pass
+
 
 class AppInfo(PartialAppInfo, _AppInfoOptional):
     owner: User

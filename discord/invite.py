@@ -399,6 +399,7 @@ class Invite(Hashable):
         application = data.get('target_application')
         if application is not None:
             from .appinfo import PartialApplication
+
             application = PartialApplication(data=application, state=state)
         self.target_application: Optional[PartialApplication] = application
 
@@ -552,7 +553,7 @@ class Invite(Hashable):
         """
         state = self._state
         type = self.type
-        if (message := self._message):
+        if message := self._message:
             kwargs = {'message': message}
         else:
             kwargs = {
@@ -563,12 +564,15 @@ class Invite(Hashable):
         data = await state.http.accept_invite(self.code, type, **kwargs)
         if type is InviteType.guild:
             from .guild import Guild
+
             return Guild(data=data['guild'], state=state)
         elif type is InviteType.group_dm:
             from .channel import GroupChannel
+
             return GroupChannel(data=data['channel'], state=state, me=state.user)  # type: ignore
         else:
             from .user import User
+
             return User(data=data['inviter'], state=state)
 
     async def accept(self) -> Union[Guild, User, GroupChannel]:

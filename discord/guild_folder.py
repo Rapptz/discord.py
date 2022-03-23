@@ -57,6 +57,7 @@ class GuildFolder:
     guilds: List[:class:`Guild`]
         The guilds in the folder.
     """
+
     __slots__ = ('_state', 'id', 'name', '_colour', 'guilds')
 
     def __init__(self, *, data, state: ConnectionState) -> None:

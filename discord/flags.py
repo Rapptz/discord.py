@@ -476,35 +476,35 @@ class PublicUserFlags(BaseFlags):
 class PrivateUserFlags(PublicUserFlags):
     r"""Wraps up the Discord User flags.
 
-        .. note::
-            These are only available on your own user flags.
+    .. note::
+        These are only available on your own user flags.
 
-        .. container:: operations
+    .. container:: operations
 
-            .. describe:: x == y
+        .. describe:: x == y
 
-                Checks if two UserFlags are equal.
-            .. describe:: x != y
+            Checks if two UserFlags are equal.
+        .. describe:: x != y
 
-                Checks if two UserFlags are not equal.
-            .. describe:: hash(x)
+            Checks if two UserFlags are not equal.
+        .. describe:: hash(x)
 
-                Return the flag's hash.
-            .. describe:: iter(x)
+            Return the flag's hash.
+        .. describe:: iter(x)
 
-                Returns an iterator of ``(name, value)`` pairs. This allows it
-                to be, for example, constructed as a dict or a list of pairs.
-                Note that aliases are not shown.
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
 
-        .. versionadded:: 2.0
+    .. versionadded:: 2.0
 
-        Attributes
-        -----------
-        value: :class:`int`
-            The raw value. This value is a bit array field of a 53-bit integer
-            representing the currently available flags. You should query
-            flags via the properties rather than using this raw value.
-        """
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
 
     __slots__ = ()
 

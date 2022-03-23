@@ -1262,6 +1262,7 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
 
     def get_mac_browser(pkg: str, binary: str) -> Optional[os.PathLike]:
         import plistlib as plist
+
         pfile: str = f'{os.environ["HOME"]}/Library/Preferences/{pkg}.plist'
         if os.path.exists(pfile):
             with open(pfile, 'rb') as f:
@@ -1271,6 +1272,7 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
 
     def get_windows_browser(browser: str) -> Optional[str]:
         import winreg as reg
+
         reg_path: str = f'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\{browser}.exe'
         exe_path: Optional[str] = None
         for install_type in reg.HKEY_CURRENT_USER, reg.HKEY_LOCAL_MACHINE:
@@ -1288,6 +1290,7 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
 
     def get_linux_browser(browser: str) -> Optional[str]:
         from shutil import which as exists
+
         possibilities: List[str] = [browser + channel for channel in ('', '-beta', '-dev', '-developer', '-canary')]
         for browser in possibilities:
             if exists(browser):
@@ -1311,7 +1314,7 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
             'chromium': functools.partial(get_linux_browser, 'chromium'),
             'microsoft-edge': functools.partial(get_linux_browser, 'microsoft-edge'),
             'opera': functools.partial(get_linux_browser, 'opera'),
-        }
+        },
     }
 
     def get_browser(self, browser: Optional[BrowserEnum] = None) -> Optional[str]:
@@ -1337,27 +1340,29 @@ class Browser:  # Inspired from https://github.com/NoahCardoza/CaptchaHarvester
         width: int = 400,
         height: int = 500,
         browser_args: List[str] = [],
-        extensions: Optional[str] = None
+        extensions: Optional[str] = None,
     ) -> None:
         browser_command: List[str] = [self.browser, *browser_args]
 
         if extensions:
             browser_command.append(f'--load-extension={extensions}')
 
-        browser_command.extend((
-            '--disable-default-apps',
-            '--no-default-browser-check',
-            '--no-check-default-browser',
-            '--no-first-run',
-            '--ignore-certificate-errors',
-            '--disable-background-networking',
-            '--disable-component-update',
-            '--disable-domain-reliability',
-            f'--user-data-dir={os.path.join(tempfile.TemporaryDirectory().name, "Profiles")}',
-            f'--host-rules=MAP {domain} {server[0]}:{server[1]}',
-            f'--window-size={width},{height}',
-            f'--app=https://{domain}'
-        ))
+        browser_command.extend(
+            (
+                '--disable-default-apps',
+                '--no-default-browser-check',
+                '--no-check-default-browser',
+                '--no-first-run',
+                '--ignore-certificate-errors',
+                '--disable-background-networking',
+                '--disable-component-update',
+                '--disable-domain-reliability',
+                f'--user-data-dir={os.path.join(tempfile.TemporaryDirectory().name, "Profiles")}',
+                f'--host-rules=MAP {domain} {server[0]}:{server[1]}',
+                f'--window-size={width},{height}',
+                f'--app=https://{domain}',
+            )
+        )
 
         self.proc = subprocess.Popen(browser_command, stdout=-1, stderr=-1)
 
@@ -1392,7 +1397,7 @@ async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord
         build_request = await session.get(build_url, timeout=7)
         build_file = await build_request.text()
         build_index = build_file.find('buildNumber') + 24
-        return int(build_file[build_index:build_index + 6])
+        return int(build_file[build_index : build_index + 6])
     except asyncio.TimeoutError:
         _log.critical('Could not fetch client build number. Falling back to hardcoded value...')
         return 117300

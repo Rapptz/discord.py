@@ -1778,7 +1778,7 @@ class Connectable(Protocol):
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = MISSING,
-        _channel: Optional[Connectable] = None
+        _channel: Optional[Connectable] = None,
     ) -> T:
         """|coro|
 

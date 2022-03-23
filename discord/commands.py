@@ -98,7 +98,9 @@ class ApplicationCommand(Protocol):
 
         state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)
         try:
-            await state.http.interact(type, data, acc_channel, form_data=True, nonce=nonce, application_id=self._application_id)
+            await state.http.interact(
+                type, data, acc_channel, form_data=True, nonce=nonce, application_id=self._application_id
+            )
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,
@@ -145,9 +147,7 @@ class BaseCommand(ApplicationCommand):
         '_default_member_permissions',
     )
 
-    def __init__(
-        self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None
-    ) -> None:
+    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None) -> None:
         self._state = state
         self._data = data
         self.name = data['name']
@@ -180,12 +180,12 @@ class BaseCommand(ApplicationCommand):
     def application(self):
         """The application this command belongs to."""
         ...
-        #return self._state.get_application(self._application_id)
+        # return self._state.get_application(self._application_id)
 
     @property
     def target_channel(self) -> Optional[Messageable]:
         """Optional[:class:`Messageable`]: The channel this application command will be used on.
-    
+
         You can set this in order to use this command in a different channel without re-fetching it.
         """
         return self._channel
@@ -193,6 +193,7 @@ class BaseCommand(ApplicationCommand):
     @target_channel.setter
     def target_channel(self, value: Optional[Messageable]) -> None:
         from .abc import Messageable
+
         if not isinstance(value, Messageable) and value is not None:
             raise TypeError('channel must derive from Messageable')
         self._channel = value
@@ -280,9 +281,7 @@ class UserCommand(BaseCommand):
         super().__init__(**kwargs)
         self._user = user
 
-    async def __call__(
-        self, user: Optional[Snowflake] = None, *, channel: Optional[Messageable] = None
-    ):
+    async def __call__(self, user: Optional[Snowflake] = None, *, channel: Optional[Messageable] = None):
         """Use the user command.
 
         Parameters
@@ -315,7 +314,7 @@ class UserCommand(BaseCommand):
     @property
     def target_user(self) -> Optional[Snowflake]:
         """Optional[:class:`Snowflake`]: The user this application command will be used on.
-    
+
         You can set this in order to use this command on a different user without re-fetching it.
         """
         return self._user
@@ -323,6 +322,7 @@ class UserCommand(BaseCommand):
     @target_user.setter
     def target_user(self, value: Optional[Snowflake]) -> None:
         from .abc import Snowflake
+
         if not isinstance(value, Snowflake) and value is not None:
             raise TypeError('user must be Snowflake')
         self._user = value
@@ -351,9 +351,7 @@ class MessageCommand(BaseCommand):
         super().__init__(**kwargs)
         self._message = message
 
-    async def __call__(
-        self, message: Optional[Message] = None, *, channel: Optional[Messageable] = None
-    ):
+    async def __call__(self, message: Optional[Message] = None, *, channel: Optional[Messageable] = None):
         """Use the message command.
 
         Parameters
@@ -386,7 +384,7 @@ class MessageCommand(BaseCommand):
     @property
     def target_message(self) -> Optional[Message]:
         """Optional[:class:`Message`]: The message this application command will be used on.
-    
+
         You can set this in order to use this command on a different message without re-fetching it.
         """
         return self._message
@@ -394,6 +392,7 @@ class MessageCommand(BaseCommand):
     @target_message.setter
     def target_message(self, value: Optional[Message]) -> None:
         from .message import Message
+
         if not isinstance(value, Message) and value is not None:
             raise TypeError('message must be Message')
         self._message = value
@@ -423,9 +422,7 @@ class SlashCommand(BaseCommand, SlashMixin):
 
     __slots__ = ('_parent', 'options', 'children')
 
-    def __init__(
-        self, *, data: Dict[str, Any], **kwargs
-    ) -> None:
+    def __init__(self, *, data: Dict[str, Any], **kwargs) -> None:
         super().__init__(data=data, **kwargs)
         self._parent = self
         self._unwrap_options(data.get('options', []))
@@ -537,17 +534,21 @@ class SubCommand(SlashMixin):
         if self.is_group():
             raise TypeError('Cannot use a group')
 
-        options = [{
-            'type': self._type.value,
-            'name': self.name,
-            'options': self._parse_kwargs(kwargs),
-        }]
+        options = [
+            {
+                'type': self._type.value,
+                'name': self.name,
+                'options': self._parse_kwargs(kwargs),
+            }
+        ]
         for parent in self._walk_parents():
-            options = [{
-                'type': parent._type.value,
-                'name': parent.name,
-                'options': options,
-            }]
+            options = [
+                {
+                    'type': parent._type.value,
+                    'name': parent.name,
+                    'options': options,
+                }
+            ]
 
         return await super().__call__(options, channel)
 

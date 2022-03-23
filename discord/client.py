@@ -236,10 +236,7 @@ class Client:
             connector, proxy=proxy, proxy_auth=proxy_auth, unsync_clock=unsync_clock, loop=self.loop
         )
 
-        self._handlers: Dict[str, Callable] = {
-            'ready': self._handle_ready,
-            'connect': self._handle_connect
-        }
+        self._handlers: Dict[str, Callable] = {'ready': self._handle_ready, 'connect': self._handle_connect}
 
         self._hooks: Dict[str, Callable] = {
             'before_identify': self._call_before_identify_hook,
@@ -265,9 +262,15 @@ class Client:
     # Internals
 
     def _get_state(self, **options: Any) -> ConnectionState:
-        return ConnectionState(dispatch=self.dispatch, handlers=self._handlers,
-                               hooks=self._hooks, http=self.http, loop=self.loop,
-                               client=self, **options)
+        return ConnectionState(
+            dispatch=self.dispatch,
+            handlers=self._handlers,
+            hooks=self._hooks,
+            http=self.http,
+            loop=self.loop,
+            client=self,
+            **options,
+        )
 
     def _handle_ready(self) -> None:
         self._ready.set()
@@ -857,7 +860,7 @@ class Client:
 
             The client may have multiple activities, these can be accessed under :attr:`activities`.
         """
-        if (activities := self.activities):
+        if activities := self.activities:
             return activities[0]
 
     @property
@@ -1342,7 +1345,7 @@ class Client:
         self_mute: bool = False,
         self_deaf: bool = False,
         self_video: bool = False,
-        preferred_region: Optional[str] = MISSING
+        preferred_region: Optional[str] = MISSING,
     ) -> None:
         """|coro|
 
@@ -1380,11 +1383,7 @@ class Client:
 
     # Guild stuff
 
-    async def fetch_guilds(
-        self,
-        *,
-        with_counts: bool = True
-    ) -> List[Guild]:
+    async def fetch_guilds(self, *, with_counts: bool = True) -> List[Guild]:
         """Retrieves all your your guilds.
 
         .. note::
@@ -1700,7 +1699,7 @@ class Client:
 
         state = self._connection
         type = invite.type
-        if (message := invite._message):
+        if message := invite._message:
             kwargs = {'message': message}
         else:
             kwargs = {
@@ -1883,10 +1882,10 @@ class Client:
 
         if ch_type in (ChannelType.group, ChannelType.private):
             # The factory will be a DMChannel or GroupChannel here
-            channel = factory(me=self.user, data=data, state=self._connection) # type: ignore
+            channel = factory(me=self.user, data=data, state=self._connection)  # type: ignore
         else:
             # The factory can't be a DMChannel or GroupChannel here
-            guild_id = int(data['guild_id']) # type: ignore
+            guild_id = int(data['guild_id'])  # type: ignore
             guild = self.get_guild(guild_id) or Object(id=guild_id)
             # GuildChannels expect a Guild, we may be passing an Object
             channel = factory(guild=guild, state=self._connection, data=data)  # type: ignore

@@ -62,6 +62,7 @@ class Modal:
     application: :class:`InteractionApplication`
         The application that sent the modal.
     """
+
     __slots__ = ('_state', 'interaction', 'id', 'nonce', 'title', 'custom_id', 'components', 'application')
 
     def __init__(self, *, data: dict, interaction: Interaction):
@@ -110,7 +111,9 @@ class Modal:
 
         state._interaction_cache[nonce] = (int(type), None, interaction.channel)
         try:
-            await state.http.interact(type, self.to_dict(), interaction.channel, nonce=nonce, application_id=self.application.id)
+            await state.http.interact(
+                type, self.to_dict(), interaction.channel, nonce=nonce, application_id=self.application.id
+            )
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,

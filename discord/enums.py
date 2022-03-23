@@ -286,23 +286,23 @@ class ContentFilter(Enum, comparable=True):
 
 
 class UserContentFilter(Enum):
-    always         = 0
+    always = 0
     on_interaction = 1
-    never          = 2
+    never = 2
 
 
 class StickerAnimationOptions(Enum):
-    disabled     = 2
-    friends      = 1
+    disabled = 2
+    friends = 1
     all_messages = 0
 
 
 class FriendFlags(Enum):
-    noone             = 0
-    mutual_guilds     = 1
-    mutual_friends    = 2
+    noone = 0
+    mutual_guilds = 1
+    mutual_friends = 2
     guild_and_friends = 3
-    everyone          = 4
+    everyone = 4
 
     def to_dict(self):
         if self.value == 0:
@@ -365,8 +365,8 @@ class DefaultAvatar(Enum):
 
 
 class RelationshipType(Enum, comparable=True):
-    friend           = 1
-    blocked          = 2
+    friend = 1
+    blocked = 2
     incoming_request = 3
     outgoing_request = 4
 
@@ -570,14 +570,14 @@ class ActivityType(Enum):
 
 
 class HypeSquadHouse(Enum):
-    bravery    = 1
+    bravery = 1
     brilliance = 2
-    balance    = 3
+    balance = 3
 
 
 class PremiumType(Enum, comparable=True):
     nitro_classic = 1
-    nitro         = 2
+    nitro = 2
 
 
 class TeamMembershipState(Enum):
@@ -623,35 +623,35 @@ class StickerFormatType(Enum):
 
 class ReportType(Enum):
     illegal_content = 1
-    harassment      = 2
-    phishing        = 3
-    self_harm       = 4
-    nsfw_content    = 5
+    harassment = 2
+    phishing = 3
+    self_harm = 4
+    nsfw_content = 5
 
     def __int__(self):
         return self.value
 
 
 class RelationshipAction(Enum):
-    send_friend_request    = 'request'
-    unfriend               = 'unfriend'
-    accept_request         = 'accept'
-    deny_request           = 'deny'
-    block                  = 'block'
-    unblock                = 'unblock'
+    send_friend_request = 'request'
+    unfriend = 'unfriend'
+    accept_request = 'accept'
+    deny_request = 'deny'
+    block = 'block'
+    unblock = 'unblock'
     remove_pending_request = 'remove'
 
 
 class UnavailableGuildType(Enum):
     existing = 'ready'
-    joined   = 'joined'
+    joined = 'joined'
 
 
 class RequiredActionType(Enum):
-    verify_phone     = 'REQUIRE_VERIFIED_PHONE'
-    verify_email     = 'REQUIRE_VERIFIED_EMAIL'
+    verify_phone = 'REQUIRE_VERIFIED_PHONE'
+    verify_email = 'REQUIRE_VERIFIED_EMAIL'
     complete_captcha = 'REQUIRE_CAPTCHA'
-    accept_terms     = 'AGREEMENTS'
+    accept_terms = 'AGREEMENTS'
 
 
 class BrowserEnum(Enum):

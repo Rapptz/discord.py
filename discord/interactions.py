@@ -118,9 +118,7 @@ class Interaction:
         return cls(int(id), type, nonce, user=user, name=name, state=user._state, channel=channel)
 
     @classmethod
-    def _from_message(
-        cls, message: Message, *, id: Snowflake, type: int, user: UserPayload, **data
-    ) -> Interaction:
+    def _from_message(cls, message: Message, *, id: Snowflake, type: int, user: UserPayload, **data) -> Interaction:
         state = message._state
         name = data.get('name')
         user_cls = state.store_user(user)
@@ -142,6 +140,7 @@ class Interaction:
         """Optional[:class:`Message`]: Returns the message that is the response to this interaction.
         May not exist or be cached.
         """
+
         def predicate(message: Message) -> bool:
             return message.interaction is not None and message.interaction.id == self.id
 
@@ -154,7 +153,7 @@ class Interaction:
 
     @cached_slot_property('_cs_channel')
     def channel(self) -> MessageableChannel:
-        """Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]: 
+        """Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]:
         Returns the channel this interaction originated from.
         """
         return getattr(self.message, 'channel', None)

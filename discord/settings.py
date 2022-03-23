@@ -28,7 +28,16 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from .activity import create_settings_activity
-from .enums import FriendFlags, Locale, NotificationLevel, Status, StickerAnimationOptions, Theme, UserContentFilter, try_enum
+from .enums import (
+    FriendFlags,
+    Locale,
+    NotificationLevel,
+    Status,
+    StickerAnimationOptions,
+    Theme,
+    UserContentFilter,
+    try_enum,
+)
 from .guild_folder import GuildFolder
 from .utils import MISSING, parse_time, utcnow
 
@@ -385,7 +394,8 @@ class ChannelSettings:
         guild = self._state._get_guild(self._guild_id)
         return guild and guild.get_channel(self._channel_id)
 
-    async def edit(self,
+    async def edit(
+        self,
         *,
         muted: bool = MISSING,
         duration: Optional[int] = MISSING,
@@ -433,7 +443,7 @@ class ChannelSettings:
             if duration is not None:
                 mute_config = {
                     'selected_time_window': duration * 3600,
-                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat()
+                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat(),
                 }
                 payload['mute_config'] = mute_config
 
@@ -448,11 +458,7 @@ class ChannelSettings:
             data = await self._state.http.edit_guild_settings(self._guild_id, fields)
 
         if data:
-            return ChannelSettings(
-                self._guild_id,
-                data=data['channel_overrides'][str(self._channel_id)],
-                state=self._state
-            )
+            return ChannelSettings(self._guild_id, data=data['channel_overrides'][str(self._channel_id)], state=self._state)
         else:
             return self
 
@@ -558,7 +564,7 @@ class GuildSettings:
             if duration is not None:
                 mute_config = {
                     'selected_time_window': duration * 3600,
-                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat()
+                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat(),
                 }
                 payload['mute_config'] = mute_config
 

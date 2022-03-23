@@ -415,4 +415,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         applications: bool = True,
         application: Optional[discord.abc.Snowflake] = None,
     ):
-        return self.message.message_commands(query, limit=limit, command_ids=command_ids, applications=applications, application=application)
+        return self.message.message_commands(
+            query, limit=limit, command_ids=command_ids, applications=applications, application=application
+        )

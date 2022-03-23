@@ -61,9 +61,7 @@ class WelcomeChannel:
         The emoji shown under the description.
     """
 
-    def __init__(
-        self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji]] = None
-    ) -> None:
+    def __init__(self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji]] = None) -> None:
         self.channel = channel
         self.description = description
         self.emoji = emoji

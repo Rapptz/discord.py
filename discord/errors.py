@@ -55,6 +55,7 @@ class DiscordException(Exception):
 
     Ideally speaking, this could be caught to handle any exceptions raised from this library.
     """
+
     pass
 
 
@@ -63,11 +64,13 @@ class ClientException(DiscordException):
 
     These are usually for exceptions that happened due to user input.
     """
+
     pass
 
 
 class GatewayNotFound(DiscordException):
     """An exception that is raised when the gateway for Discord could not be found"""
+
     def __init__(self):
         message = 'The gateway to connect to Discord was not found.'
         super().__init__(message)
@@ -109,6 +112,7 @@ class HTTPException(DiscordException):
     json: :class:`dict`
         The raw error JSON.
     """
+
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
         self.status: int = response.status  # type: ignore - This attribute is filled by the library even if using requests
@@ -141,6 +145,7 @@ class Forbidden(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
+
     pass
 
 
@@ -149,6 +154,7 @@ class NotFound(HTTPException):
 
     Subclass of :exc:`HTTPException`
     """
+
     pass
 
 
@@ -159,6 +165,7 @@ class DiscordServerError(HTTPException):
 
     .. versionadded:: 1.5
     """
+
     pass
 
 
@@ -166,6 +173,7 @@ class InvalidData(ClientException):
     """Exception that's raised when the library encounters unknown
     or invalid data from Discord.
     """
+
     pass
 
 
@@ -174,6 +182,7 @@ class AuthFailure(ClientException):
     fails to log you in from improper credentials or some other misc.
     failure.
     """
+
     pass
 
 
@@ -191,6 +200,7 @@ class ConnectionClosed(ClientException):
     reason: :class:`str`
         The reason provided for the closure.
     """
+
     def __init__(self, socket: ClientWebSocketResponse, *, code: Optional[int] = None):
         # This exception is just the same exception except
         # reconfigured to subclass ClientException for users

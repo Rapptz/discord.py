@@ -259,9 +259,7 @@ class Player:
         """Indicates if we're playing audio, but if we're paused."""
         return self._player and self._player.is_paused()
 
-    def play(
-        self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any] = None
-    ) -> None:
+    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any] = None) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -508,7 +506,11 @@ class VoiceClient(VoiceProtocol):
             await self._state.client.change_voice_state(channel=channel)
 
     async def voice_disconnect(self) -> None:
-        _log.info('The voice handshake is being terminated for channel ID %s (guild ID %s).', (await self.channel._get_channel()).id, getattr(self.guild, 'id', None))
+        _log.info(
+            'The voice handshake is being terminated for channel ID %s (guild ID %s).',
+            (await self.channel._get_channel()).id,
+            getattr(self.guild, 'id', None),
+        )
         if self.guild:
             await self.guild.change_voice_state(channel=None)
         else:
@@ -738,7 +740,7 @@ class VoiceClient(VoiceProtocol):
 
     @staticmethod
     def _strip_header(data) -> bytes:
-        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
+        if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:
             _, length = struct.unpack_from('>HH', data)
             offset = 4 + length * 4
             data = data[offset:]
@@ -801,7 +803,7 @@ class VoiceClient(VoiceProtocol):
 
         return self._strip_header(box.decrypt(bytes(data), bytes(nonce)))
 
-    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any]=None) -> None:
+    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any] = None) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -857,10 +859,10 @@ class VoiceClient(VoiceProtocol):
     @sink.setter
     def sink(self, value):
         self.listener.sink = value
-        #if not isinstance(value, AudioSink):
-            #raise TypeError('Expected AudioSink not {value.__class__.__name__}')
-        #if self._recorder is None:
-            #raise ValueError('Not listening')
+        # if not isinstance(value, AudioSink):
+        # raise TypeError('Expected AudioSink not {value.__class__.__name__}')
+        # if self._recorder is None:
+        # raise ValueError('Not listening')
 
     def send_audio_packet(self, data: bytes) -> None:
         """Sends an audio packet composed of the data.

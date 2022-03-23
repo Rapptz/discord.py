@@ -67,6 +67,7 @@ class ApplicationBot(User):
         Whether the bot requires the completion of the full OAuth2 code
         grant flow to join.
     """
+
     __slots__ = ('public', 'require_code_grant')
 
     def __init__(self, *, data, state: ConnectionState, application: Application):
@@ -179,7 +180,7 @@ class PartialApplication(Hashable):
         'terms_of_service_url',
         'privacy_policy_url',
         '_icon',
-        '_flags'
+        '_flags',
         '_cover_image',
         'public',
         'require_code_grant',
@@ -213,10 +214,22 @@ class PartialApplication(Hashable):
         self.tags: List[str] = data.get('tags', [])
 
         install_params = data.get('install_params', {})
-        self.install_url = data.get('custom_install_url') if not install_params else utils.oauth_url(self.id, permissions=Permissions(int(install_params.get('permissions', 0))), scopes=install_params.get('scopes', utils.MISSING))
+        self.install_url = (
+            data.get('custom_install_url')
+            if not install_params
+            else utils.oauth_url(
+                self.id,
+                permissions=Permissions(int(install_params.get('permissions', 0))),
+                scopes=install_params.get('scopes', utils.MISSING),
+            )
+        )
 
-        self.public: bool = data.get('integration_public', data.get('bot_public', True))  # The two seem to be used interchangeably?
-        self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant', False))  # Same here
+        self.public: bool = data.get(
+            'integration_public', data.get('bot_public', True)
+        )  # The two seem to be used interchangeably?
+        self.require_code_grant: bool = data.get(
+            'integration_require_code_grant', data.get('bot_require_code_grant', False)
+        )  # Same here
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
@@ -311,7 +324,7 @@ class Application(PartialApplication):
         team: Optional[TeamPayload] = data.get('team')
         self.team: Optional[Team] = Team(state, team) if team else None
 
-        if (bot := data.get('bot')):
+        if bot := data.get('bot'):
             bot['public'] = data.get('bot_public', self.public)
             bot['require_code_grant'] = data.get('bot_require_code_grant', self.require_code_grant)
         self.bot: Optional[ApplicationBot] = ApplicationBot(data=bot, state=state, application=self) if bot else None

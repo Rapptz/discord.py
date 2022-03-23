@@ -374,12 +374,14 @@ class HTTPClient:
             'release_channel': 'stable',
             'system_locale': 'en-US',
             'client_build_number': bn,
-            'client_event_source': None
+            'client_event_source': None,
         }
         self.encoded_super_properties = b64encode(json.dumps(sp).encode()).decode('utf-8')
         self._started = True
 
-    async def ws_connect(self, url: str, *, compress: int = 0, host: Optional[str] = None) -> aiohttp.ClientWebSocketResponse:
+    async def ws_connect(
+        self, url: str, *, compress: int = 0, host: Optional[str] = None
+    ) -> aiohttp.ClientWebSocketResponse:
         if not host:
             host = url[6:].split('?')[0].rstrip('/')  # Removes 'wss://' and the query params
 
@@ -430,7 +432,9 @@ class HTTPClient:
             'Origin': 'https://discord.com',
             'Pragma': 'no-cache',
             'Referer': 'https://discord.com/channels/@me',
-            'Sec-CH-UA': '"Google Chrome";v="{0}", "Chromium";v="{0}", ";Not A Brand";v="99"'.format(self.browser_version.split('.')[0]),
+            'Sec-CH-UA': '"Google Chrome";v="{0}", "Chromium";v="{0}", ";Not A Brand";v="99"'.format(
+                self.browser_version.split('.')[0]
+            ),
             'Sec-CH-UA-Mobile': '?0',
             'Sec-CH-UA-Platform': '"Windows"',
             'Sec-Fetch-Dest': 'empty',
@@ -439,7 +443,7 @@ class HTTPClient:
             'User-Agent': self.user_agent,
             'X-Discord-Locale': 'en-US',
             'X-Debug-Options': 'bugReporterEnabled',
-            'X-Super-Properties': self.encoded_super_properties
+            'X-Super-Properties': self.encoded_super_properties,
         }
 
         # Header modification
@@ -596,9 +600,7 @@ class HTTPClient:
         self.ack_token = None
 
     def get_me(self, with_analytics_token=True) -> Response[user.User]:
-        params = {
-            'with_analytics_token': str(with_analytics_token).lower()
-        }
+        params = {'with_analytics_token': str(with_analytics_token).lower()}
         return self.request(Route('GET', '/users/@me'), params=params)
 
     async def static_login(self, token: str) -> user.User:
@@ -673,32 +675,21 @@ class HTTPClient:
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    async def ack_message(
-        self, channel_id: Snowflake, message_id: Snowflake
-    ):  # TODO: response type (simple)
+    async def ack_message(self, channel_id: Snowflake, message_id: Snowflake):  # TODO: response type (simple)
         r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
-        payload = {
-            'token': self.ack_token
-        }
+        payload = {'token': self.ack_token}
 
         data = await self.request(r, json=payload)
         self.ack_token = data['token']
 
-    def unack_message(
-        self, channel_id: Snowflake, message_id: Snowflake, *, mention_count: int = 0
-    ) -> Response[None]:
+    def unack_message(self, channel_id: Snowflake, message_id: Snowflake, *, mention_count: int = 0) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
-        payload = {
-            'manual': True,
-            'mention_count': mention_count
-        }
+        payload = {'manual': True, 'mention_count': mention_count}
 
         return self.request(r, json=payload)
 
     def ack_messages(self, read_states) -> Response[None]:  # TODO: type and implement
-        payload = {
-            'read_states': read_states
-        }
+        payload = {'read_states': read_states}
 
         return self.request(Route('POST', '/read-states/ack-bulk'), json=payload)
 
@@ -916,7 +907,9 @@ class HTTPClient:
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id)
         return self.request(r, json=payload)
 
-    def edit_voice_state(self, guild_id: Snowflake, user_id: Snowflake, payload: Dict[str, Any]) -> Response[None]:  # TODO: remove payload
+    def edit_voice_state(
+        self, guild_id: Snowflake, user_id: Snowflake, payload: Dict[str, Any]
+    ) -> Response[None]:  # TODO: remove payload
         r = Route('PATCH', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=payload)
 
@@ -935,10 +928,12 @@ class HTTPClient:
             r = Route('PATCH', '/guilds/{guild_id}/members/@me', guild_id=guild_id)
             payload['avatar'] = avatar
         else:
-            r = choice((
-                Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id),
-                Route('PATCH', '/guilds/{guild_id}/members/@me', guild_id=guild_id)
-            ))
+            r = choice(
+                (
+                    Route('PATCH', '/guilds/{guild_id}/members/@me/nick', guild_id=guild_id),
+                    Route('PATCH', '/guilds/{guild_id}/members/@me', guild_id=guild_id),
+                )
+            )
 
         return self.request(r, json=payload, reason=reason)
 
@@ -1024,9 +1019,7 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
 
-    def delete_channel(
-        self, channel_id: Snowflake, *, reason: Optional[str] = None
-    ) -> Response[None]:
+    def delete_channel(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
 
     # Thread management
@@ -1085,29 +1078,25 @@ class HTTPClient:
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id)
-        params = {
-            'location': choice(('Banner', 'Toolbar Overflow', 'Context Menu'))
-        }
+        params = {'location': choice(('Banner', 'Toolbar Overflow', 'Context Menu'))}
 
         return self.request(r, params=params)
 
-    def add_user_to_thread(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:  # TODO: Find a way to test private thread stuff
+    def add_user_to_thread(
+        self, channel_id: Snowflake, user_id: Snowflake
+    ) -> Response[None]:  # TODO: Find a way to test private thread stuff
         r = Route('PUT', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
         return self.request(r)
 
     def leave_thread(self, channel_id: Snowflake) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id)
-        params = {
-            'location': choice(('Toolbar Overflow', 'Context Menu'))
-        }
+        params = {'location': choice(('Toolbar Overflow', 'Context Menu'))}
 
         return self.request(r, params=params)
 
     def remove_user_from_thread(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/thread-members/{user_id}', channel_id=channel_id, user_id=user_id)
-        params = {
-            'location': 'Context Menu'
-        }
+        params = {'location': 'Context Menu'}
 
         return self.request(r, params=params)
 
@@ -1190,24 +1179,18 @@ class HTTPClient:
     # Guild management
 
     def get_guilds(self, with_counts: bool = True) -> Response[List[guild.Guild]]:
-        params = {
-            'with_counts': str(with_counts).lower()
-        }
+        params = {'with_counts': str(with_counts).lower()}
 
         return self.request(Route('GET', '/users/@me/guilds'), params=params, super_properties_to_track=True)
 
     def leave_guild(self, guild_id: Snowflake, lurking: bool = False) -> Response[None]:
         r = Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id)
-        payload = {
-            'lurking': lurking
-        }
+        payload = {'lurking': lurking}
 
         return self.request(r, json=payload)
 
     def get_guild(self, guild_id: Snowflake, with_counts: bool = True) -> Response[guild.Guild]:
-        params = {
-            'with_counts': str(with_counts).lower()
-        }
+        params = {'with_counts': str(with_counts).lower()}
 
         return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id), params=params)
 
@@ -1225,7 +1208,7 @@ class HTTPClient:
             'icon': icon,
             'system_channel_id': None,
             'channels': [],
-            'guild_template_code': template  # API go brrr
+            'guild_template_code': template,  # API go brrr
         }
 
         return self.request(Route('POST', '/guilds'), json=payload)
@@ -1302,9 +1285,7 @@ class HTTPClient:
         return self.request(Route('GET', '/guilds/{guild_id}/vanity-url', guild_id=guild_id))
 
     def change_vanity_code(self, guild_id: Snowflake, code: str, *, reason: Optional[str] = None) -> Response[None]:
-        payload = {
-            'code': code
-        }
+        payload = {'code': code}
 
         return self.request(Route('PATCH', '/guilds/{guild_id}/vanity-url', guild_id=guild_id), json=payload, reason=reason)
 
@@ -1483,7 +1464,9 @@ class HTTPClient:
 
         return self.request(Route('GET', '/guilds/{guild_id}/member-verification', guild_id=guild_id), params=params)
 
-    def accept_member_verification(self, guild_id: Snowflake, **payload) -> Response[None]:  # payload is the same as the above return type
+    def accept_member_verification(
+        self, guild_id: Snowflake, **payload
+    ) -> Response[None]:  # payload is the same as the above return type
         return self.request(Route('PUT', '/guilds/{guild_id}/requests/@me', guild_id=guild_id), json=payload)
 
     def get_all_integrations(
@@ -1535,9 +1518,7 @@ class HTTPClient:
         action_type: Optional[AuditLogAction] = None,
     ) -> Response[audit_log.AuditLog]:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
-        params: Dict[str, Any] = {
-            'limit': limit
-        }
+        params: Dict[str, Any] = {'limit': limit}
         if before:
             params['before'] = before
         if after:
@@ -1578,15 +1559,23 @@ class HTTPClient:
                 guild_id=getattr(message.guild, 'id', None),
                 channel_id=message.channel.id,
                 channel_type=getattr(message.channel, 'type', None),
-                message_id=message.id
+                message_id=message.id,
             )
         elif type is InviteType.guild or type is InviteType.group_dm:  # Join Guild, Accept Invite Page
-            props = choice((
-                ContextProperties._from_accept_invite_page(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type),
-                ContextProperties._from_join_guild_popup(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type)
-            ))
+            props = choice(
+                (
+                    ContextProperties._from_accept_invite_page(
+                        guild_id=guild_id, channel_id=channel_id, channel_type=channel_type
+                    ),
+                    ContextProperties._from_join_guild_popup(
+                        guild_id=guild_id, channel_id=channel_id, channel_type=channel_type
+                    ),
+                )
+            )
         else:  # Accept Invite Page
-            props = ContextProperties._from_accept_invite_page(guild_id=guild_id, channel_id=channel_id, channel_type=channel_type)
+            props = ContextProperties._from_accept_invite_page(
+                guild_id=guild_id, channel_id=channel_id, channel_type=channel_type
+            )
         return self.request(Route('POST', '/invites/{invite_id}', invite_id=invite_id), context_properties=props, json={})
 
     def create_invite(
@@ -1751,24 +1740,18 @@ class HTTPClient:
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
     def ring(self, channel_id: Snowflake, *recipients: Snowflake) -> Response[None]:
-        payload = {
-            'recipients': recipients or None
-        }
+        payload = {'recipients': recipients or None}
 
         return self.request(Route('POST', '/channels/{channel_id}/call/ring', channel_id=channel_id), json=payload)
 
     def stop_ringing(self, channel_id: Snowflake, *recipients: Snowflake) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/call/stop-ringing', channel_id=channel_id)
-        payload = {
-            'recipients': recipients
-        }
+        payload = {'recipients': recipients}
 
         return self.request(r, json=payload)
 
     def change_call_voice_region(self, channel_id: int, voice_region: str):  # TODO: return type
-        payload = {
-            'region': voice_region
-        }
+        payload = {'region': voice_region}
 
         return self.request(Route('PATCH', '/channels/{channel_id}/call', channel_id=channel_id), json=payload)
 
@@ -1997,51 +1980,65 @@ class HTTPClient:
     def remove_relationship(self, user_id: Snowflake, *, action: RelationshipAction) -> Response[None]:
         r = Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id)
         if action is RelationshipAction.deny_request:  # User Profile, Friends, DM Channel
-            props = choice((
-                ContextProperties._from_friends_page(), ContextProperties._from_user_profile(),
-                ContextProperties._from_dm_channel()
-            ))
+            props = choice(
+                (
+                    ContextProperties._from_friends_page(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_dm_channel(),
+                )
+            )
         elif action is RelationshipAction.unfriend:  # Friends, ContextMenu, User Profile, DM Channel
-            props = choice((
-                ContextProperties._from_context_menu(), ContextProperties._from_user_profile(),
-                ContextProperties._from_friends_page(), ContextProperties._from_dm_channel()
-            ))
+            props = choice(
+                (
+                    ContextProperties._from_context_menu(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_friends_page(),
+                    ContextProperties._from_dm_channel(),
+                )
+            )
         elif action == RelationshipAction.unblock:  # Friends, ContextMenu, User Profile, DM Channel, NONE
-            props = choice((
-                ContextProperties._from_context_menu(), ContextProperties._from_user_profile(),
-                ContextProperties._from_friends_page(), ContextProperties._from_dm_channel(), None
-            ))
-        elif action == RelationshipAction.remove_pending_request: # Friends
+            props = choice(
+                (
+                    ContextProperties._from_context_menu(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_friends_page(),
+                    ContextProperties._from_dm_channel(),
+                    None,
+                )
+            )
+        elif action == RelationshipAction.remove_pending_request:  # Friends
             props = ContextProperties._from_friends_page()
 
         return self.request(r, context_properties=props)  # type: ignore
 
-    def add_relationship(
-        self, user_id: Snowflake, type: int = MISSING, *, action: RelationshipAction
-    ):  # TODO: return type
+    def add_relationship(self, user_id: Snowflake, type: int = MISSING, *, action: RelationshipAction):  # TODO: return type
         r = Route('PUT', '/users/@me/relationships/{user_id}', user_id=user_id)
         if action is RelationshipAction.accept_request:  # User Profile, Friends, DM Channel
-            props = choice((
-                ContextProperties._from_friends_page(),
-                ContextProperties._from_user_profile(),
-                ContextProperties._from_dm_channel()
-            ))
+            props = choice(
+                (
+                    ContextProperties._from_friends_page(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_dm_channel(),
+                )
+            )
         elif action is RelationshipAction.block:  # Friends, ContextMenu, User Profile, DM Channel.
-            props = choice((
-                ContextProperties._from_context_menu(),
-                ContextProperties._from_user_profile(),
-                ContextProperties._from_friends_page(),
-                ContextProperties._from_dm_channel()
-            ))
+            props = choice(
+                (
+                    ContextProperties._from_context_menu(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_friends_page(),
+                    ContextProperties._from_dm_channel(),
+                )
+            )
         elif action is RelationshipAction.send_friend_request:  # ContextMenu, User Profile, DM Channel
-            props = choice((
-                ContextProperties._from_context_menu(),
-                ContextProperties._from_user_profile(),
-                ContextProperties._from_dm_channel()
-            ))
-        kwargs = {
-            'context_properties': props  # type: ignore
-        }
+            props = choice(
+                (
+                    ContextProperties._from_context_menu(),
+                    ContextProperties._from_user_profile(),
+                    ContextProperties._from_dm_channel(),
+                )
+            )
+        kwargs = {'context_properties': props}  # type: ignore
         if type:
             kwargs['json'] = {'type': type}
 
@@ -2049,21 +2046,13 @@ class HTTPClient:
 
     def send_friend_request(self, username, discriminator):  # TODO: return type
         r = Route('POST', '/users/@me/relationships')
-        props = choice((  # Friends, Group DM
-            ContextProperties._from_add_friend_page,
-            ContextProperties._from_group_dm
-        ))
-        payload = {
-            'username': username,
-            'discriminator': int(discriminator)
-        }
+        props = choice((ContextProperties._from_add_friend_page, ContextProperties._from_group_dm))  # Friends, Group DM
+        payload = {'username': username, 'discriminator': int(discriminator)}
 
         return self.request(r, json=payload, context_properties=props)
 
     def change_friend_nickname(self, user_id, nickname):
-        payload = {
-            'nickname': nickname
-        }
+        payload = {'nickname': nickname}
 
         return self.request(Route('PATCH', '/users/@me/relationships/{user_id}', user_id=user_id), json=payload)
 
@@ -2083,10 +2072,10 @@ class HTTPClient:
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
 
-    def get_user_profile(self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True):  # TODO: return type
-        params: Dict[str, Any] = {
-            'with_mutual_guilds': str(with_mutual_guilds).lower()
-        }
+    def get_user_profile(
+        self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True
+    ):  # TODO: return type
+        params: Dict[str, Any] = {'with_mutual_guilds': str(with_mutual_guilds).lower()}
         if guild_id is not MISSING:
             params['guild_id'] = guild_id
 
@@ -2102,16 +2091,12 @@ class HTTPClient:
         return self.request(Route('GET', '/users/@me/notes/{user_id}', user_id=user_id))
 
     def set_note(self, user_id: Snowflake, *, note: Optional[str] = None) -> Response[None]:
-        payload = {
-            'note': note or ''
-        }
+        payload = {'note': note or ''}
 
         return self.request(Route('PUT', '/users/@me/notes/{user_id}', user_id=user_id), json=payload)
 
     def change_hypesquad_house(self, house_id: int) -> Response[None]:
-        payload = {
-            'house_id': house_id
-        }
+        payload = {'house_id': house_id}
 
         return self.request(Route('POST', '/hypesquad/online'), json=payload)
 
@@ -2124,7 +2109,7 @@ class HTTPClient:
     def edit_settings(self, **payload):  # TODO: return type, is this cheating?
         return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
 
-    def get_tracking(self): # TODO: return type
+    def get_tracking(self):  # TODO: return type
         return self.request(Route('GET', '/users/@me/consent'))
 
     def edit_tracking(self, payload):
@@ -2143,9 +2128,7 @@ class HTTPClient:
         return self.request(Route('GET', '/users/@me/connections/{type}/{id}/access-token', type=type, id=id))
 
     def get_my_applications(self, *, with_team_applications: bool = True) -> Response[List[appinfo.AppInfo]]:
-        params = {
-            'with_team_applications': str(with_team_applications).lower()
-        }
+        params = {'with_team_applications': str(with_team_applications).lower()}
 
         return self.request(Route('GET', '/applications'), params=params, super_properties_to_track=True)
 
@@ -2153,25 +2136,25 @@ class HTTPClient:
         return self.request(Route('GET', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True)
 
     def edit_application(self, app_id: Snowflake, payload) -> Response[appinfo.AppInfo]:
-        return self.request(Route('PATCH', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True, json=payload)
+        return self.request(
+            Route('PATCH', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True, json=payload
+        )
 
     def delete_application(self, app_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/applications/{app_id}/delete', app_id=app_id), super_properties_to_track=True)
 
     def transfer_application(self, app_id: Snowflake, team_id: Snowflake) -> Response[appinfo.AppInfo]:
-        payload = {
-            'team_id': team_id
-        }
+        payload = {'team_id': team_id}
 
-        return self.request(Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload, super_properties_to_track=True)
+        return self.request(
+            Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload, super_properties_to_track=True
+        )
 
     def get_partial_application(self, app_id: Snowflake) -> Response[appinfo.PartialAppInfo]:
-        return self.request(Route('GET', '/applications/{app_id}/rpc', app_id=app_id))
+        return self.request(Route('GET', '/oauth2/applications/{app_id}/rpc', app_id=app_id))
 
     def create_app(self, name: str):
-        payload = {
-            'name': name
-        }
+        payload = {'name': name}
 
         return self.request(Route('POST', '/applications'), json=payload, super_properties_to_track=True)
 
@@ -2183,20 +2166,17 @@ class HTTPClient:
         self, app_id: Snowflake, *, localize: bool = False, with_bundled_skus: bool = True
     ):  # TODO: return type
         r = Route('GET', '/applications/{app_id}/skus', app_id=app_id)
-        params = {
-            'localize': str(localize).lower(),
-            'with_bundled_skus': str(with_bundled_skus).lower()
-        }
+        params = {'localize': str(localize).lower(), 'with_bundled_skus': str(with_bundled_skus).lower()}
 
         return self.request(r, params=params, super_properties_to_track=True)
 
     def get_app_whitelist(self, app_id):
-        return self.request(Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id), super_properties_to_track=True)
+        return self.request(
+            Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id), super_properties_to_track=True
+        )
 
     def create_team(self, name: str):
-        payload = {
-            'name': name
-        }
+        payload = {'name': name}
 
         return self.request(Route('POST', '/teams'), json=payload, super_properties_to_track=True)
 
@@ -2207,7 +2187,9 @@ class HTTPClient:
         return self.request(Route('GET', '/teams/{team_id}', team_id=team_id), super_properties_to_track=True)
 
     def edit_team(self, team_id: Snowflake, payload) -> Response[team.Team]:
-        return self.request(Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload, super_properties_to_track=True)
+        return self.request(
+            Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload, super_properties_to_track=True
+        )
 
     def delete_team(self, team_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/teams/{app_id}/delete', team_id=team_id), super_properties_to_track=True)
@@ -2219,15 +2201,17 @@ class HTTPClient:
         return self.request(Route('GET', '/teams/{team_id}/members', team_id=team_id), super_properties_to_track=True)
 
     def invite_team_member(self, team_id: Snowflake, username: str, discriminator: Snowflake):
-        payload = {
-            'username': username,
-            'discriminator': str(discriminator)
-        }
+        payload = {'username': username, 'discriminator': str(discriminator)}
 
-        return self.request(Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload, super_properties_to_track=True)
+        return self.request(
+            Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload, super_properties_to_track=True
+        )
 
     def remove_team_member(self, team_id: Snowflake, user_id: Snowflake):
-        return self.request(Route('DELETE', '/teams/{team_id}/members/{user_id}', team_id=team_id, user_id=user_id), super_properties_to_track=True)
+        return self.request(
+            Route('DELETE', '/teams/{team_id}/members/{user_id}', team_id=team_id, user_id=user_id),
+            super_properties_to_track=True,
+        )
 
     def botify_app(self, app_id: Snowflake):
         return self.request(Route('POST', '/applications/{app_id}/bot', app_id=app_id), super_properties_to_track=True)
@@ -2241,12 +2225,7 @@ class HTTPClient:
     def mobile_report(  # Report v1
         self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, reason: str
     ):  # TODO: return type
-        payload = {
-            'guild_id': guild_id,
-            'channel_id': channel_id,
-            'message_id': message_id,
-            'reason': reason
-        }
+        payload = {'guild_id': guild_id, 'channel_id': channel_id, 'message_id': message_id, 'reason': reason}
 
         return self.request(Route('POST', '/report'), json=payload)
 
@@ -2262,7 +2241,7 @@ class HTTPClient:
         *,
         form_data: bool = False,
         nonce: Optional[str] = MISSING,
-        application_id: Snowflake = MISSING
+        application_id: Snowflake = MISSING,
     ) -> Response[None]:
         state = getattr(message, '_state', channel._state)
         payload = {

@@ -99,7 +99,9 @@ class Profile:
 
         self.premium_since: Optional[datetime] = utils.parse_time(data['premium_since'])
         self.boosting_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
-        self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]  # TODO: parse these
+        self.connections: List[PartialConnection] = [
+            PartialConnection(d) for d in data['connected_accounts']
+        ] 
 
         self.mutual_guilds: Optional[List[Guild]] = self._parse_mutual_guilds(data.get('mutual_guilds'))
         self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))
@@ -151,12 +153,14 @@ class Profile:
 
 class UserProfile(Profile, User):
     """Represents a Discord user's profile. This is a :class:`User` with extended attributes."""
+
     def __repr__(self) -> str:
         return f'<UserProfile id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system} premium={self.premium}>'
 
 
 class MemberProfile(Profile, Member):
     """Represents a Discord member's profile. This is a :class:`Member` with extended attributes."""
+
     def __repr__(self) -> str:
         return (
             f'<MemberProfile id={self._user.id} name={self._user.name!r} discriminator={self._user.discriminator!r}'

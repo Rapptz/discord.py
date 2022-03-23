@@ -52,7 +52,6 @@ _Func = Callable[[T], Union[OT, Awaitable[OT]]]
 OLDEST_OBJECT = Object(id=0)
 
 
-
 def _is_fake(item: Union[Messageable, Message]) -> bool:  # I hate this too, but <circular imports> and performance exist
     try:
         item.guild  # type: ignore
@@ -127,11 +126,11 @@ class CommandIterator:
         }
         if self.applications:
             kwargs['applications'] = True  # Only sent if it's True...
-        if (app := self.application):
+        if app := self.application:
             kwargs['application'] = app.id
         if (query := self.query) is not None:
             kwargs['query'] = query
-        if (cmds := self.command_ids):
+        if cmds := self.command_ids:
             kwargs['command_ids'] = cmds
         self.kwargs = kwargs
 
@@ -173,7 +172,9 @@ class CommandIterator:
         for _ in range(3):
             await state.ws.request_commands(**kwargs, limit=retrieve, nonce=nonce)
             try:
-                data: Optional[Dict[str, Any]] = await asyncio.wait_for(state.ws.wait_for('guild_application_commands_update', predicate), timeout=3)
+                data: Optional[Dict[str, Any]] = await asyncio.wait_for(
+                    state.ws.wait_for('guild_application_commands_update', predicate), timeout=3
+                )
             except asyncio.TimeoutError:
                 pass
 

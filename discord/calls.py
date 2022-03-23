@@ -56,6 +56,7 @@ def _running_only(func: Callable):
             raise ClientException('Call is over')
         else:
             return func(self, *args, **kwargs)
+
     return decorator
 
 
@@ -75,9 +76,7 @@ class CallMessage:
         The message associated with this call message.
     """
 
-    def __init__(
-        self, message: Message, *, participants: List[User], ended_timestamp: str
-    ) -> None:
+    def __init__(self, message: Message, *, participants: List[User], ended_timestamp: str) -> None:
         self.message = message
         self.ended_timestamp = utils.parse_time(ended_timestamp)
         self.participants = participants
@@ -175,9 +174,7 @@ class PrivateCall:
         state = self.voice_state_for(user)
         return bool(state and state.channel and state.channel.id == self._channel_id)
 
-    def _update(
-        self, *, ringing: SnowflakeList = [], region: str = MISSING
-    ) -> None:
+    def _update(self, *, ringing: SnowflakeList = [], region: str = MISSING) -> None:
         if region is not MISSING:
             self.region = region
         channel = self.channel
@@ -206,7 +203,9 @@ class PrivateCall:
     @property
     def voice_states(self) -> Dict[int, VoiceState]:
         """Mapping[:class:`int`, :class:`VoiceState`]: Returns a mapping of user IDs who have voice states in this call."""
-        return {k: v for k, v in self._state._voice_states.items() if bool(v and v.channel and v.channel.id == self._channel_id)}
+        return {
+            k: v for k, v in self._state._voice_states.items() if bool(v and v.channel and v.channel.id == self._channel_id)
+        }
 
     async def fetch_message(self) -> Optional[Message]:
         """|coro|
@@ -440,9 +439,7 @@ class GroupCall(PrivateCall):
     if TYPE_CHECKING:
         channel: GroupChannel
 
-    def _update(
-        self, *, ringing: List[int] = [], region: str = MISSING
-    ) -> None:
+    def _update(self, *, ringing: List[int] = [], region: str = MISSING) -> None:
         if region is not MISSING:
             self.region = region
 

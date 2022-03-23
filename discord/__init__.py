@@ -73,6 +73,7 @@ class _VersionInfo(NamedTuple):
     releaselevel: Literal['alpha', 'beta', 'candidate', 'final']
     serial: int
 
+
 version_info: _VersionInfo = _VersionInfo(major=2, minor=0, micro=0, releaselevel='alpha', serial=2)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

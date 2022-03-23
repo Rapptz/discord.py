@@ -293,7 +293,7 @@ class SelectMenu(Component):
         return {
             'compontent_type': self.type.value,
             'custom_id': self.custom_id,
-            'values': [option.value for option in options]
+            'values': [option.value for option in options],
         }
 
     async def choose(self, *options: SelectOption) -> Interaction:
@@ -460,7 +460,7 @@ class TextInput(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: TextInputPayload, _ = MISSING) -> None:
+    def __init__(self, data: TextInputPayload, _=MISSING) -> None:
         self.type: ComponentType = ComponentType.text_input
         self.style: TextStyle = try_enum(TextStyle, data['style'])
         self.label: str = data['label']
@@ -489,8 +489,13 @@ class TextInput(Component):
     @value.setter
     def value(self, value: Optional[str]) -> None:
         length = len(value) if value is not None else 0
-        if (self.required or value is not None) and ((self.min_length is not None and length < self.min_length) or (self.max_length is not None and length > self.max_length)):
-            raise ValueError(f'value cannot be shorter than {self.min_length or 0} or longer than {self.max_length or "infinity"}')
+        if (self.required or value is not None) and (
+            (self.min_length is not None and length < self.min_length)
+            or (self.max_length is not None and length > self.max_length)
+        ):
+            raise ValueError(
+                f'value cannot be shorter than {self.min_length or 0} or longer than {self.max_length or "infinity"}'
+            )
 
         self._answer = value
 

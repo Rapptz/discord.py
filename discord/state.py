@@ -244,7 +244,11 @@ class MemberSidebar:
         guild = self.guild
         ret = set()
 
-        channels = [channel for channel in self.guild.channels if channel.type != ChannelType.stage_voice and channel.permissions_for(guild.me).read_messages]
+        channels = [
+            channel
+            for channel in self.guild.channels
+            if channel.type != ChannelType.stage_voice and channel.permissions_for(guild.me).read_messages
+        ]
         if guild.rules_channel is not None:
             channels.insert(0, guild.rules_channel)
 
@@ -693,7 +697,11 @@ class ConnectionState:
                 self._private_channels_by_user.pop(recipient.id, None)
 
     def _get_message(self, msg_id: Optional[int]) -> Optional[Message]:
-        return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
+        return (
+            utils.find(lambda m: m.id == msg_id, reversed(self._messages))
+            if self._messages
+            else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
+        )
 
     def _add_guild_from_data(self, data: GuildPayload, *, from_ready: bool = False) -> Optional[Guild]:
         guild_id = int(data['id'])
@@ -809,7 +817,7 @@ class ConnectionState:
             extra_data.get('guilds', []),
             extra_data.get('merged_members', []),
             data.get('merged_members', []),
-            extra_data['merged_presences'].get('guilds', [])
+            extra_data['merged_presences'].get('guilds', []),
         ):
             guild_data['settings'] = utils.find(  # type: ignore - This key does not actually exist in the payload
                 lambda i: i['guild_id'] == guild_data['id'],
@@ -1474,7 +1482,7 @@ class ConnectionState:
                         continue
 
                     member = Member(data=item['member'], guild=guild, state=self)
-                    if (presence := item['member'].get('presence')):
+                    if presence := item['member'].get('presence'):
                         member._presence_update(presence, empty_tuple)  # type: ignore
 
                     members.append(member)
@@ -1496,10 +1504,12 @@ class ConnectionState:
                     old_member = Member._copy(member)
                     dispatch = bool(member._update(mdata))
 
-                    if (presence := mdata.get('presence')):
+                    if presence := mdata.get('presence'):
                         member._presence_update(presence, empty_tuple)  # type: ignore
 
-                    if should_parse and (old_member._client_status != member._client_status or old_member._activities != member._activities):
+                    if should_parse and (
+                        old_member._client_status != member._client_status or old_member._activities != member._activities
+                    ):
                         self.dispatch('presence_update', old_member, member)
 
                     user_update = member._update_inner_user(user)
@@ -1512,7 +1522,7 @@ class ConnectionState:
                     disregard.append(member)
                 else:
                     member = Member(data=mdata, guild=guild, state=self)
-                    if (presence := mdata.get('presence')):
+                    if presence := mdata.get('presence'):
                         member._presence_update(presence, empty_tuple)  # type: ignore
 
                     to_add.append(member)
@@ -1533,10 +1543,12 @@ class ConnectionState:
                     old_member = Member._copy(member)
                     dispatch = bool(member._update(mdata))
 
-                    if (presence := mdata.get('presence')):
+                    if presence := mdata.get('presence'):
                         member._presence_update(presence, empty_tuple)  # type: ignore
 
-                    if should_parse and (old_member._client_status != member._client_status or old_member._activities != member._activities):
+                    if should_parse and (
+                        old_member._client_status != member._client_status or old_member._activities != member._activities
+                    ):
                         self.dispatch('presence_update', old_member, member)
 
                     user_update = member._update_inner_user(user)
@@ -1547,7 +1559,7 @@ class ConnectionState:
                         self.dispatch('member_update', old_member, member)
                 else:
                     member = Member(data=mdata, guild=guild, state=self)
-                    if (presence := mdata.get('presence')):
+                    if presence := mdata.get('presence'):
                         member._presence_update(presence, empty_tuple)  # type: ignore
 
                     guild._member_list.insert(opdata['index'], member)  # Race condition?
@@ -1557,7 +1569,11 @@ class ConnectionState:
                 try:
                     item = guild._member_list.pop(index)
                 except IndexError:
-                    _log.debug('GUILD_MEMBER_LIST_UPDATE type DELETE referencing an unknown member index %s in %s. Discarding.', index, guild.id)
+                    _log.debug(
+                        'GUILD_MEMBER_LIST_UPDATE type DELETE referencing an unknown member index %s in %s. Discarding.',
+                        index,
+                        guild.id,
+                    )
                     continue
 
                 if item is not None:
@@ -1581,7 +1597,9 @@ class ConnectionState:
     def parse_guild_application_command_counts_update(self, data) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            _log.debug('GUILD_APPLICATION_COMMAND_COUNTS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            _log.debug(
+                'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id']
+            )
             return
 
         guild.command_counts = CommandCounts(data.get(0, 0), data.get(1, 0), data.get(2, 0))
@@ -1661,17 +1679,19 @@ class ConnectionState:
         cache: bool,
         force_scraping: bool = False,
         channels: List[abcSnowflake] = MISSING,
-        delay: Union[int, float] = MISSING
+        delay: Union[int, float] = MISSING,
     ):
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore - self_id is always present here
 
-        if not force_scraping and any({
-            guild.me.guild_permissions.administrator,
-            guild.me.guild_permissions.kick_members,
-            guild.me.guild_permissions.ban_members,
-            guild.me.guild_permissions.manage_roles,
-        }):
+        if not force_scraping and any(
+            {
+                guild.me.guild_permissions.administrator,
+                guild.me.guild_permissions.kick_members,
+                guild.me.guild_permissions.ban_members,
+                guild.me.guild_permissions.manage_roles,
+            }
+        ):
             request = self._chunk_requests.get(guild.id)
             if request is None:
                 self._chunk_requests[guild.id] = request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
@@ -1681,7 +1701,9 @@ class ConnectionState:
 
             request = self._scrape_requests.get(guild.id)
             if request is None:
-                self._scrape_requests[guild.id] = request = MemberSidebar(guild, channels, chunk=False, cache=cache, loop=self.loop, delay=delay)
+                self._scrape_requests[guild.id] = request = MemberSidebar(
+                    guild, channels, chunk=False, cache=cache, loop=self.loop, delay=delay
+                )
                 request.start()
 
         if wait:
@@ -1700,7 +1722,9 @@ class ConnectionState:
 
         request = self._scrape_requests.get(guild.id)
         if request is None:
-            self._scrape_requests[guild.id] = request = MemberSidebar(guild, channels, chunk=True, cache=True, loop=self.loop, delay=0)
+            self._scrape_requests[guild.id] = request = MemberSidebar(
+                guild, channels, chunk=True, cache=True, loop=self.loop, delay=0
+            )
             request.start()
 
         if wait:

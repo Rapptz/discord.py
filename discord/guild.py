@@ -3479,7 +3479,7 @@ class Guild(Hashable):
         .. versionadded:: 2.0
 
         .. note::
-            If you are the owner, have either of :attr:`Permissions.adminstrator`, 
+            If you are the owner, have either of :attr:`Permissions.adminstrator`,
             :attr:`Permission.kick_members`, :attr:`Permission.ban_members`, or :attr:`Permission.manage_roles`,
             permissions will be fetched through OPcode 8 (this includes offline members).
             Else, they will be scraped from the member sidebar.
@@ -3511,7 +3511,9 @@ class Guild(Hashable):
         if self._state.is_guild_evicted(self):
             raise ClientException('This guild is no longer available.')
 
-        members = await self._state.scrape_guild(self, cache=cache, force_scraping=force_scraping, delay=delay, channels=channels)
+        members = await self._state.scrape_guild(
+            self, cache=cache, force_scraping=force_scraping, delay=delay, channels=channels
+        )
         if members is None:
             raise ClientException('Fetching members failed')
         return members  # type: ignore
@@ -3602,7 +3604,7 @@ class Guild(Hashable):
         self_mute: bool = False,
         self_deaf: bool = False,
         self_video: bool = False,
-        preferred_region: Optional[str] = MISSING
+        preferred_region: Optional[str] = MISSING,
     ) -> None:
         """|coro|
 

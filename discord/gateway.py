@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
+
     def __init__(self, *, resume: bool = True):
         self.resume = resume
         self.op: str = 'RESUME' if resume else 'IDENTIFY'
@@ -433,20 +434,15 @@ class DiscordWebSocket:
                 'token': self.token,
                 'capabilities': 253,
                 'properties': self._super_properties,
-                'presence': {
-                    'status': 'online',
-                    'since': 0,
-                    'activities': [],
-                    'afk': False
-                },
+                'presence': {'status': 'online', 'since': 0, 'activities': [], 'afk': False},
                 'compress': False,
                 'client_state': {
                     'guild_hashes': {},
                     'highest_last_message_id': '0',
                     'read_state_version': 0,
-                    'user_guild_settings_version': -1
-                }
-            }
+                    'user_guild_settings_version': -1,
+                },
+            },
         }
 
         if not self._zlib_enabled:
@@ -543,14 +539,12 @@ class DiscordWebSocket:
             self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
-            _log.info('Connected to Gateway: %s (Session ID: %s).',
-                      ', '.join(trace), self.session_id)
+            _log.info('Connected to Gateway: %s (Session ID: %s).', ', '.join(trace), self.session_id)
             await self.voice_state()  # Initial OP 4
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])
-            _log.info('Gateway has successfully RESUMED session %s under trace %s.',
-                      self.session_id, ', '.join(trace))
+            _log.info('Gateway has successfully RESUMED session %s under trace %s.', self.session_id, ', '.join(trace))
 
         try:
             func = self._discord_parsers[event]
@@ -663,7 +657,7 @@ class DiscordWebSocket:
         activities: Optional[List[BaseActivity]] = None,
         status: Optional[str] = None,
         since: float = 0.0,
-        afk: bool = False
+        afk: bool = False,
     ) -> None:
         if activities is not None:
             if not all(isinstance(activity, BaseActivity) for activity in activities):
@@ -675,26 +669,20 @@ class DiscordWebSocket:
         if status == 'idle':
             since = int(time.time() * 1000)
 
-        payload = {
-            'op': self.PRESENCE,
-            'd': {
-                'activities': activities,
-                'afk': afk,
-                'since': since,
-                'status': str(status)
-            }
-        }
+        payload = {'op': self.PRESENCE, 'd': {'activities': activities, 'afk': afk, 'since': since, 'status': str(status)}}
 
         sent = utils._to_json(payload)
         _log.debug('Sending "%s" to change presence.', sent)
         await self.send(sent)
 
-    async def request_lazy_guild(self, guild_id, *, typing=None, threads=None, activities=None, members=None, channels=None, thread_member_lists=None):
+    async def request_lazy_guild(
+        self, guild_id, *, typing=None, threads=None, activities=None, members=None, channels=None, thread_member_lists=None
+    ):
         payload = {
             'op': self.GUILD_SUBSCRIBE,
             'd': {
                 'guild_id': str(guild_id),
-            }
+            },
         }
 
         data = payload['d']
@@ -732,7 +720,7 @@ class DiscordWebSocket:
                 'limit': limit,
                 'presences': presences,
                 'user_ids': user_ids,
-            }
+            },
         }
 
         if nonce:
@@ -758,7 +746,7 @@ class DiscordWebSocket:
                 'self_mute': self_mute,
                 'self_deaf': self_deaf,
                 'self_video': self_video,
-            }
+            },
         }
 
         if preferred_region is not None:
@@ -768,12 +756,7 @@ class DiscordWebSocket:
         await self.send_as_json(payload)
 
     async def access_dm(self, channel_id: int):
-        payload = {
-            'op': self.CALL_CONNECT,
-            'd': {
-                'channel_id': str(channel_id)
-            }
-        }
+        payload = {'op': self.CALL_CONNECT, 'd': {'channel_id': str(channel_id)}}
 
         _log.debug('Sending ACCESS_DM for channel %s.', channel_id)
         await self.send_as_json(payload)
@@ -796,7 +779,7 @@ class DiscordWebSocket:
             'd': {
                 'guild_id': guild_id,
                 'type': type,
-            }
+            },
         }
 
         if nonce is not None:
@@ -1014,8 +997,8 @@ class DiscordVoiceWebSocket:
             else:
                 ssrc.speaking = speaking
 
-            #item = state.guild or state._state
-            #item._update_speaking_status(user_id, speaking)
+            # item = state.guild or state._state
+            # item._update_speaking_status(user_id, speaking)
 
         await self._hook(self, msg)
 

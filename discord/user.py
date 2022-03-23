@@ -29,7 +29,16 @@ from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 import discord.abc
 from .asset import Asset
 from .colour import Colour
-from .enums import Locale, AppCommandType, DefaultAvatar, HypeSquadHouse, PremiumType, RelationshipAction, RelationshipType, try_enum
+from .enums import (
+    Locale,
+    AppCommandType,
+    DefaultAvatar,
+    HypeSquadHouse,
+    PremiumType,
+    RelationshipAction,
+    RelationshipType,
+    try_enum,
+)
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags
 from .iterators import FakeCommandIterator
@@ -67,6 +76,7 @@ __all__ = (
 
 class Note:
     """Represents a Discord note."""
+
     __slots__ = ('_state', '_note', '_user_id', '_user')
 
     def __init__(
@@ -171,7 +181,7 @@ class Note:
         return base + '>'
 
     def __len__(self) -> int:
-        if (note := self._note):
+        if note := self._note:
             return len(note)
         return 0
 
@@ -973,7 +983,9 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         HTTPException
             Blocking the user failed.
         """
-        await self._state.http.add_relationship(self.id, type=RelationshipType.blocked.value, action=RelationshipAction.block)
+        await self._state.http.add_relationship(
+            self.id, type=RelationshipType.blocked.value, action=RelationshipAction.block
+        )
 
     async def unblock(self) -> None:
         """|coro|
@@ -1017,9 +1029,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         """
         await self._state.http.send_friend_request(self.name, self.discriminator)
 
-    async def profile(
-        self, *, with_mutuals: bool = True, fetch_note: bool = True
-    ) -> UserProfile:
+    async def profile(self, *, with_mutuals: bool = True, fetch_note: bool = True) -> UserProfile:
         """|coro|
 
         Gets the user's profile.

@@ -254,15 +254,15 @@ class Activity(BaseActivity):
 
     def __eq__(self, other):
         return (
-            isinstance(other, Activity) and
-            other.type == self.type and
-            other.name == self.name and
-            other.url == self.url and
-            other.emoji == self.emoji and
-            other.state == self.state and
-            other.session_id == self.session_id and
-            other.sync_id == self.sync_id and
-            other.start == self.start
+            isinstance(other, Activity)
+            and other.type == self.type
+            and other.name == self.name
+            and other.url == self.url
+            and other.emoji == self.emoji
+            and other.state == self.state
+            and other.session_id == self.session_id
+            and other.sync_id == self.sync_id
+            and other.start == self.start
         )
 
     def __ne__(self, other):
@@ -810,9 +810,9 @@ class CustomActivity(BaseActivity):
     def to_settings_dict(self) -> Dict[str, Any]:
         o: Dict[str, Optional[Union[str, int]]] = {}
 
-        if (text := self.name):
+        if text := self.name:
             o['text'] = text
-        if (emoji := self.emoji):
+        if emoji := self.emoji:
             o['emoji_name'] = emoji.name
             if emoji.id:
                 o['emoji_id'] = emoji.id
@@ -879,6 +879,7 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
     return Activity(**data)
+
 
 def create_settings_activity(*, data, state):
     if not data:

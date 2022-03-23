@@ -2227,7 +2227,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     @overload
     async def edit(
-        self, *, name: Optional[str] = ..., icon: Optional[bytes] = ...,
+        self,
+        *,
+        name: Optional[str] = ...,
+        icon: Optional[bytes] = ...,
     ) -> Optional[GroupChannel]:
         ...
 
@@ -2324,7 +2327,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         if call is None and ring:
             await self._initial_ring()
         return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
-
 
 
 class PartialMessageable(discord.abc.Messageable, Hashable):

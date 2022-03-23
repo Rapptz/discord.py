@@ -385,7 +385,7 @@ class DeletedReferencedMessage:
     def id(self) -> int:
         """:class:`int`: The message ID of the deleted referenced message."""
         # The parent's message id won't be None here
-        return self._parent.message_id # type: ignore
+        return self._parent.message_id  # type: ignore
 
     @property
     def channel_id(self) -> int:

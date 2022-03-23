@@ -69,7 +69,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
             'Verify Email': 'eyJsb2NhdGlvbiI6IlZlcmlmeSBFbWFpbCJ9',
             'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
             'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
-            'None': 'e30='
+            'None': 'e30=',
         }
 
         try:
@@ -83,93 +83,67 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     @classmethod
     def _from_friends_page(cls) -> ContextProperties:
-        data = {
-            'location': 'Friends'
-        }
+        data = {'location': 'Friends'}
         return cls(data)
 
     @classmethod
     def _from_context_menu(cls) -> ContextProperties:
-        data = {
-            'location': 'ContextMenu'
-        }
+        data = {'location': 'ContextMenu'}
         return cls(data)
 
     @classmethod
     def _from_user_profile(cls) -> ContextProperties:
-        data = {
-            'location': 'User Profile'
-        }
+        data = {'location': 'User Profile'}
         return cls(data)
 
     @classmethod
     def _from_add_friend_page(cls) -> ContextProperties:
-        data = {
-            'location': 'Add Friend'
-        }
+        data = {'location': 'Add Friend'}
         return cls(data)
 
     @classmethod
     def _from_guild_header_menu(cls) -> ContextProperties:
-        data = {
-            'location': 'Guild Header'
-        }
+        data = {'location': 'Guild Header'}
         return cls(data)
 
     @classmethod
     def _from_group_dm(cls) -> ContextProperties:
-        data = {
-            'location': 'Group DM'
-        }
+        data = {'location': 'Group DM'}
         return cls(data)
 
     @classmethod
     def _from_new_group_dm(cls) -> ContextProperties:
-        data = {
-            'location': 'New Group DM'
-        }
+        data = {'location': 'New Group DM'}
         return cls(data)
 
     @classmethod
     def _from_dm_channel(cls) -> ContextProperties:
-        data = {
-            'location': 'DM Channel'
-        }
+        data = {'location': 'DM Channel'}
         return cls(data)
 
     @classmethod
     def _from_add_to_dm(cls) -> ContextProperties:
-        data = {
-            'location': 'Add Friends to DM'
-        }
+        data = {'location': 'Add Friends to DM'}
         return cls(data)
 
     @classmethod
     def _from_app(cls) -> ContextProperties:
-        data = {
-            'location': '/app'
-        }
+        data = {'location': '/app'}
         return cls(data)
 
     @classmethod
     def _from_login(cls) -> ContextProperties:
-        data = {
-            'location': 'Login'
-        }
+        data = {'location': 'Login'}
         return cls(data)
 
     @classmethod
     def _from_register(cls) -> ContextProperties:
-        data = {
-            'location': 'Register'
-        }
+        data = {'location': 'Register'}
         return cls(data)
 
     @classmethod
     def _from_verification(cls) -> ContextProperties:
-        data = {
-            'location': 'Verify Email'
-        }
+        data = {'location': 'Verify Email'}
         return cls(data)
 
     @classmethod
