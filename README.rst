@@ -11,7 +11,18 @@ discord.py-self
    :target: https://pypi.python.org/pypi/discord.py-self
    :alt: PyPI supported Python versions
 
-A modern, easy to use, feature-rich, and async ready API wrapper for Discord written in Python.
+A modern, easy to use, feature-rich, and async ready API wrapper for Discord's user API written in Python.
+
+Fork Changes
+------------
+
+This has been moved `here <https://dolfies.github.io/discord.py-self/changes/>`_. Proper docs hosted on ReadTheDocs are a work-in-progress.
+
+| **Credits:**
+| - `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for Discord API help.
+
+| **Note:**
+| Automating user accounts is against the Discord ToS. This library is a proof of concept and I do not recommend using it. Do so at your own risk.
 
 Key Features
 -------------
@@ -19,6 +30,8 @@ Key Features
 - Modern Pythonic API using ``async`` and ``await``.
 - Proper rate limit handling.
 - Optimised in both speed and memory.
+- Mostly compatible with the official ``discord.py``.
+- Prevents selfbot detection.
 
 Installing
 ----------
