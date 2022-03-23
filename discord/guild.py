@@ -1897,11 +1897,6 @@ class Guild(Hashable):
 
             async for member in guild.fetch_members(limit=150):
                 print(member.name)
-
-        Flattening into a list ::
-
-            members = await guild.fetch_members(limit=150).flatten()
-            # members is now a list of Member...
         """
 
         if not self._state._intents.members:
@@ -3437,8 +3432,6 @@ class Guild(Hashable):
 
         Request members that belong to this guild whose username starts with
         the query given.
-
-        This is a websocket operation and can be slow.
 
         .. versionadded:: 1.3
 
