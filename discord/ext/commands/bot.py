@@ -156,6 +156,7 @@ class BotBase(GroupMixin[None]):
         self,
         command_prefix: PrefixType[BotT],
         help_command: Optional[HelpCommand[Any]] = _default,
+        tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
@@ -163,7 +164,7 @@ class BotBase(GroupMixin[None]):
         self.command_prefix: PrefixType[BotT] = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
-        self.__tree: app_commands.CommandTree[Self] = app_commands.CommandTree(self)  # type: ignore
+        self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
         self._checks: List[Check] = []
@@ -1347,6 +1348,10 @@ class Bot(BotBase, discord.Client):
         the ``command_prefix`` is set to ``!``. Defaults to ``False``.
 
         .. versionadded:: 1.7
+    tree_cls: Type[:class:`~discord.app_commands.CommandTree`]
+        The type of application command tree to use. Defaults to :class:`~discord.app_commands.CommandTree`.
+
+        .. versionadded:: 2.0
     """
 
     pass
