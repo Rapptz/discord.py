@@ -571,6 +571,7 @@ class PartialMessage(Hashable):
     def __init__(self, *, channel: MessageableChannel, id: int) -> None:
         if not isinstance(channel, PartialMessageable) and channel.type not in (
             ChannelType.text,
+            ChannelType.voice,
             ChannelType.news,
             ChannelType.private,
             ChannelType.news_thread,
