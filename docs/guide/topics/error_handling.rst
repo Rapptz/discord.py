@@ -272,7 +272,7 @@ Handling errors in a :class:`~.ui.View` is as simple as overriding it's :meth:`~
 In :ref:`Application Commands <discord_app_commands>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To handle errors in a :class:`~.app_commands.CommandTree` there's two ways of doing so:
+There are two ways of handling errors in a :class:`~.app_commands.CommandTree`:
   - Subclassing :class:`~.app_commands.CommandTree` and overriding :meth:`~.app_commands.CommandTree.on_error`.
   - Decorating a function with :meth:`~.app_commands.CommandTree.error`, which is the recommended way.
 
