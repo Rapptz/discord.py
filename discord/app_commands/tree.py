@@ -971,6 +971,17 @@ class CommandTree(Generic[ClientT]):
                 await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, ctx_menu, e)
 
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
+        """|coro|
+
+        A global check to determine if an :class:`~discord.Interaction` should
+        be processed by the tree.
+
+        The default implementation returns True (all interactions are processed),
+        but can be overridden if custom behaviour is desired.
+        """
+        return True
+
     async def call(self, interaction: Interaction) -> None:
         """|coro|
 
@@ -994,6 +1005,9 @@ class CommandTree(Generic[ClientT]):
         AppCommandError
             An error occurred while calling the command.
         """
+        if not await self.interaction_check(interaction):
+            return
+
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         type = data.get('type', 1)
         if type != 1:
