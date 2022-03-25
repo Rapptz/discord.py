@@ -141,6 +141,12 @@ def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Ass
     return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore - target_id won't be None in this case
 
 
+def _transform_cover_image(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
+    if data is None:
+        return None
+    return Asset._from_scheduled_event_cover_image(entry._state, entry._target_id, data)  # type: ignore - target_id won't be None in this case
+
+
 def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
     def _transform(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
         if data is None:
@@ -238,6 +244,8 @@ class AuditLogChanges:
         'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
         'status':                        (None, _enum_transformer(enums.EventStatus)),
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
+        'preferred_local':               (None, _enum_transformer(enums.Locale)),
+        'image_hash':                    ('cover_image', _transform_cover_image),
     }
     # fmt: on
 
