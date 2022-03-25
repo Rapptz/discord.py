@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
 from functools import partial
 from itertools import groupby
 
@@ -127,6 +127,18 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
 
+class _ViewCallback:
+    __slots__ = ('view', 'callback', 'item')
+
+    def __init__(self, callback: ItemCallbackType[Any, Any], view: View, item: Item[View]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
+        self.view: View = view
+        self.item: Item[View] = item
+
+    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
+        return self.callback(self.view, interaction, self.item)
+
+
 class View:
     """Represents a UI view.
 
@@ -169,7 +181,7 @@ class View:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = partial(func, self, item)  # type: ignore
+            item.callback = _ViewCallback(func, self, item)
             item._view = self
             setattr(self, func.__name__, item)
             children.append(item)

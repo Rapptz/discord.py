@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item')
 V = TypeVar('V', bound='View', covariant=True)
-ItemCallbackType = Callable[[V, I, Interaction], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[V, Interaction, I], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):

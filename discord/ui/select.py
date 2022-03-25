@@ -305,8 +305,8 @@ def select(
     """A decorator that attaches a select menu to a component.
 
     The function being decorated should have three parameters, ``self`` representing
-    the :class:`discord.ui.View`, the :class:`discord.ui.Select` being pressed and
-    the :class:`discord.Interaction` you receive.
+    the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
+    the :class:`discord.ui.Select` being used.
 
     In order to get the selected items that the user has chosen within the callback
     use :attr:`Select.values`.
