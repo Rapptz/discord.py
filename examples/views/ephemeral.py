@@ -4,16 +4,18 @@ from discord.ext import commands
 
 import discord
 
+
 class EphemeralCounterBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        
+
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
+
 
 # Define a simple View that gives us a counter button
 class Counter(discord.ui.View):
@@ -33,6 +35,7 @@ class Counter(discord.ui.View):
         # Make sure to update the message with our updated selves
         await interaction.response.edit_message(view=self)
 
+
 # Define a View that will give us our own personal counter button
 class EphemeralCounter(discord.ui.View):
     # When this button is pressed, it will respond with a Counter view that will
@@ -42,11 +45,14 @@ class EphemeralCounter(discord.ui.View):
         # ephemeral=True makes the message hidden from everyone except the button presser
         await interaction.response.send_message('Enjoy!', view=Counter(), ephemeral=True)
 
+
 bot = EphemeralCounterBot()
+
 
 @bot.command()
 async def counter(ctx: commands.Context):
     """Starts a counter for pressing."""
     await ctx.send('Press!', view=EphemeralCounter())
+
 
 bot.run('token')

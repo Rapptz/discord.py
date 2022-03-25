@@ -2,6 +2,7 @@
 
 import discord
 
+
 class MyClient(discord.Client):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -18,6 +19,7 @@ class MyClient(discord.Client):
     async def on_message_delete(self, message):
         msg = f'{message.author} has deleted the message: {message.content}'
         await message.channel.send(msg)
+
 
 intents = discord.Intents.default()
 intents.message_content = True

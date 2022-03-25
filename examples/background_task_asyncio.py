@@ -1,6 +1,7 @@
 import discord
 import asyncio
 
+
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -16,11 +17,11 @@ class MyClient(discord.Client):
     async def my_background_task(self):
         await self.wait_until_ready()
         counter = 0
-        channel = self.get_channel(1234567) # channel ID goes here
+        channel = self.get_channel(1234567)  # channel ID goes here
         while not self.is_closed():
             counter += 1
             await channel.send(counter)
-            await asyncio.sleep(60) # task runs every 60 seconds
+            await asyncio.sleep(60)  # task runs every 60 seconds
 
 
 client = MyClient()
