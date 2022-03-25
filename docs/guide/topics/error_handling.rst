@@ -143,7 +143,7 @@ You can use the same function for multiple commands too, simply by adding multip
 Using Global and Local Error Handlers Together
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some times, you may want or need to use local and global error handlers, in these cases, there are multiple ways of checking if 
+Sometimes, you may want or need to use local and global error handlers, in these cases, there are multiple ways of checking if 
 the error has already been handled before. There are many approaches on how to do this:
 
 - Using the :meth:`Cog.has_error_handler <discord.ext.commands.Cog.has_error_handler>`
