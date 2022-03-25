@@ -69,6 +69,7 @@ Our code might look like this:
         async def callback(self, interaction: discord.Interaction) -> None:
             self.view.result = True
             self.view.stop()
+            await interaction.response.defer()
 
 There's a bit to unpack here already, the ``__init__`` is setting the ``style`` and ``label`` parameters, which 
 set the colour and text of the button respectively.
@@ -121,11 +122,12 @@ In this case, we're creating a button we can use the :func:`~discord.ui.button` 
         @discord.ui.button(label="No", style=discord.ButtonStyle.primary)
         async def no_button(
             self,
-            button: discord.ui.Button[Confirm],
             interaction: discord.Interaction,
+            button: discord.ui.Button[Confirm],
         ) -> None:
             self.result = False
             self.stop()
+            await interaction.response.defer()
 
 Using the decorator approach greatly simplifies the code, but it's not as flexible as using a custom class.
 We set parameters prior to the creation of the view-instance, so context-specific variables are not available.
@@ -133,7 +135,7 @@ If modifications are needed, we would instead have to override component instanc
 
 The function we're decorating acts similarly to the :meth:`~discord.ui.Button.callback` method, it's called when the button is clicked.
 However the arguments passed to the function are different. Rather than ``self`` referring to the component, it refers to the view, with
-the component being passed as the next argument.
+the component being passed as the last argument.
 
 When using component decorators, we no longer need to explicitly add the component to the view, this is done automatically.
 
@@ -203,8 +205,8 @@ To start out our code might look like this:
         )
         async def selector(
             self,
-            component: discord.ui.Select['RoleSelector'],
             interaction: discord.Interaction,
+            component: discord.ui.Select['RoleSelector'],
         ) -> None:
             raise NotImplementedError
 
@@ -239,8 +241,8 @@ After adding these details our code will look something like this:
         )
         async def selector(
             self,
-            component: discord.ui.Select['RoleSelector'],
             interaction: discord.Interaction,
+            component: discord.ui.Select['RoleSelector'],
         ) -> None:
             raise NotImplementedError
 
@@ -272,13 +274,14 @@ Our function body might look like this:
         )
         async def selector(
             self,
-            component: discord.ui.Select['RoleSelector'],
             interaction: discord.Interaction,
+            component: discord.ui.Select['RoleSelector'],
         ) -> None:
             role_id = int(component.values[0])
             role = discord.Object(id=role_id)
             await interaction.user.remove_roles(*self.roles)
             await interaction.user.add_roles(role)
+            await interaction.response.defer()
 
 
 Making a View Persist
