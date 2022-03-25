@@ -826,7 +826,8 @@ class CommandTree(Generic[ClientT]):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('context menu function must be a coroutine function')
 
-            context_menu = ContextMenu._from_decorator(func, name=name)
+            actual_name = func.__name__.title() if name is MISSING else name
+            context_menu = ContextMenu(name=actual_name, callback=func)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 

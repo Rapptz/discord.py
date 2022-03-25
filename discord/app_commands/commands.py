@@ -718,7 +718,8 @@ class ContextMenu:
     name: :class:`str`
         The name of the context menu.
     type: :class:`.AppCommandType`
-        The type of context menu application command.
+        The type of context menu application command. By default, this is inferred
+        by the parameter of the callback.
     checks
         A list of predicates that take a :class:`~discord.Interaction` parameter
         to indicate whether the command callback should be executed. If an exception
@@ -732,15 +733,19 @@ class ContextMenu:
         *,
         name: str,
         callback: ContextMenuCallback,
-        type: AppCommandType,
+        type: AppCommandType = MISSING,
         guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
-        self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
+        if type is MISSING:
+            type = actual_type
+
         if actual_type != type:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
+
+        self.type: AppCommandType = type
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
@@ -752,22 +757,6 @@ class ContextMenu:
     def callback(self) -> ContextMenuCallback:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
-
-    @classmethod
-    def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
-        (param, annotation, type) = _get_context_menu_parameter(callback)
-
-        self = cls.__new__(cls)
-        self.name = callback.__name__.title() if name is MISSING else name
-        self._callback = callback
-        self.type = type
-        self._param_name = param
-        self._annotation = annotation
-        self.module = callback.__module__
-        self._guild_ids = None
-        self.on_error = None
-        self.checks = getattr(callback, '__discord_app_commands_checks__', [])
-        return self
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -1248,7 +1237,8 @@ def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], Cont
         if not inspect.iscoroutinefunction(func):
             raise TypeError('context menu function must be a coroutine function')
 
-        return ContextMenu._from_decorator(func, name=name)
+        actual_name = func.__name__.title() if name is MISSING else name
+        return ContextMenu(name=actual_name, callback=func)
 
     return decorator
 
