@@ -82,7 +82,7 @@ which gets called when an error occurs inside of this Cog.
 
         async def cog_check(ctx):
             """ Custom check for this cog only. """
-            if ctx.guild and ctx.guild.id != 336642139381301249:
+            if ctx.guild and ctx.guild.id != GUILD_ID:
                 raise commands.DisabledCommand
 
         async def cog_command_error(self, ctx, error):
