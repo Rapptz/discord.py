@@ -1,22 +1,21 @@
 .. currentmodule:: discord
 
 
-==========================
 Errors and Error Handling
 ==========================
 
 Handling Errors
-===============
+---------------
 
-When an error ocurrs in a command or an event, it will, by default, show an error in the console to denote that the error 
-ocurred and has been silently ignored. In order to avoid this, an error handler is needed.
+When an error ocurrs in am ext.commands command, a client event, or a bot listener, it will by default show an error in the console 
+to denote that the error ocurred. If you wish to handle errors a different way, an error handler is needed.
 
 In :ref:`Commands <discord_ext_commands>`
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All errors that are raised by a command derive from :exc:`~.ext.commands.CommandError`. If an error that occurs during a command does
 not inherit from :exc:`~.ext.commands.CommandError`, it will automatically get wrapped in a :exc:`~.ext.commands.CommandInvokeError`, 
-to retrieve/unwrap this error we need to access it's ``.original`` attribute.
+to retrieve/unwrap this error we need to access the error's ``.original`` attribute.
 
 **Example**
 
@@ -26,7 +25,7 @@ to retrieve/unwrap this error we need to access it's ``.original`` attribute.
          error = error.original
 
 Global Error handlers
-~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^
 
 You can create global error handlers by creating :func:`.on_command_error` events, which work like any other event in 
 the :ref:`discord-api-events`, these are called for every exception that occurs in a command, before invoke hooks, command
@@ -64,11 +63,11 @@ converters, etc.
     an :ref:`else <py:else>` statement at the end of our logic and handle all the remaining 'unhandled' errors.
 
 Local Error Handlers
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 
 In :class:`Cogs <~ext.commands.Cog>`
 
-***************************************
++++++++++++++++++++++++++++++++++++
 
 To handle errors in only a single :class:`~ext.commands.Cog` you override it's :meth:`~ext.commands.Cog.cog_command_error` method,
 which gets called when an error occurs inside of this Cog.
@@ -93,7 +92,7 @@ which gets called when an error occurs inside of this Cog.
       
 In a :class:`~.ext.commands.Command`
 
-************************************
++++++++++++++++++++++++++++++++++++
 
 
 To handle errors for a specific command, we decorate the function with :meth:`~ext.commands.Command.error`, which will 
@@ -141,7 +140,7 @@ You can use the same function for multiple commands too, simply by adding multip
     in it, do not handle them in local error handlers, as this may cause them to be handled twice or more.
 
 Using Global and Local Error Handlers Together
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes, you may want or need to use local and global error handlers, in these cases, there are multiple ways of checking if 
 the error has already been handled before. There are many approaches on how to do this:
@@ -217,7 +216,7 @@ the error has already been handled before. There are many approaches on how to d
         traceback.print_exception(type(error), error, error.__traceback__)
 
 In :ref:`Events <discord-api-events>`
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If an error ocurrs in an event, it does not go to any command error handler, as it is not a command. These errors are instead
 propagated to :meth:`~Client.on_error`, and can be retrieved with a standard call to :func:`sys.exc_info`. 
@@ -252,10 +251,10 @@ propagated to :meth:`~Client.on_error`, and can be retrieved with a standard cal
     :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
 
 In :ref:`Interactions <interactions_api>`
------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In :ref:`Views <discord_ui_kit>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Handling errors in a :class:`~.ui.View` is as simple as overriding it's :meth:`~.ui.View.on_error`.
 
@@ -270,7 +269,7 @@ Handling errors in a :class:`~.ui.View` is as simple as overriding it's :meth:`~
             ...
 
 In :ref:`Application Commands <discord_app_commands>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are two ways of handling errors in a :class:`~.app_commands.CommandTree`:
   - Subclassing :class:`~.app_commands.CommandTree` and overriding :meth:`~.app_commands.CommandTree.on_error`.
@@ -278,7 +277,7 @@ There are two ways of handling errors in a :class:`~.app_commands.CommandTree`:
 
 All errors that are raised by an application command derive from :exc:`~.app_commands.CommandError`. If an error that occurs during a 
 command does not inherit from :exc:`~.ext.commands.CommandError`, it will get wrapped in a :exc:`~.app_commands.CommandInvokeError`, 
-to retrieve/unwrap this error we need to access it's ``.original`` attribute.
+to retrieve/unwrap this error we need to access the error's ``.original`` attribute.
 
 **Example**
 
@@ -325,7 +324,7 @@ to retrieve/unwrap this error we need to access it's ``.original`` attribute.
     new one will cause a :class:`~.ClientException` to be raised denoting that there is already a tree associated with that client.
 
 In :ref:`Tasks <discord_ext_tasks>`
-----------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If an error occurs in a :meth:`~ext.tasks.loop` it will, by default, print the error to console and stop the task from running. 
 If you'd like to overwrite this behaviour, you can add an error handler that calls :meth:`~ext.tasks.Loop.restart` on the loop on 
@@ -356,6 +355,6 @@ top of printing the error, or sending it to a channel or whatever you may want.
         hourly_messages.restart()
 
 Creating Custom Errors
-======================
+----------------------
 
 Working on it.
