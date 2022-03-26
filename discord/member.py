@@ -753,7 +753,7 @@ class Member(discord.abc.Messageable, _UserTag):
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         .. versionchanged:: 2.0
-            The newly member is now optionally returned, if applicable.
+            The newly updated member is now optionally returned, if applicable.
 
         Parameters
         -----------
