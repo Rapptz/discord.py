@@ -970,8 +970,8 @@ class Group:
         self._children: Dict[str, Union[Command, Group]] = {}
 
         for child in self.__discord_app_commands_group_children__:
-            child.parent = self
             child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
+            child.parent = self
             self._children[child.name] = child
             if child._attr and not cls.__discord_app_commands_skip_init_binding__:
                 setattr(self, child._attr, child)
@@ -992,7 +992,15 @@ class Group:
         copy.parent = self.parent
         copy.module = self.module
         copy._attr = self._attr
-        copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
+        copy._children = {}
+
+        for child in self._children.values():
+            child = child._copy_with_binding(binding)
+            child.parent = copy
+            copy._children[child.name] = child
+            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(copy, child._attr, child)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
