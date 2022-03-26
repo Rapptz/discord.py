@@ -244,7 +244,7 @@ class AuditLogChanges:
         'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
         'status':                        (None, _enum_transformer(enums.EventStatus)),
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
-        'preferred_locale':               (None, _enum_transformer(enums.Locale)),
+        'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
     }
     # fmt: on
