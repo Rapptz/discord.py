@@ -125,7 +125,7 @@ else:
 
 
 CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
-VALID_SLASH_COMMAND_NAME = re.compile(r'^[?!\w-]{1,32}$')
+VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
 VALID_CONTEXT_MENU_NAME = re.compile(r'^[?!\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
