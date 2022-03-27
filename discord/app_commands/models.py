@@ -95,6 +95,10 @@ class AppCommand(Hashable):
         .. describe:: str(x)
 
             Returns the application command's name.
+            
+        .. describe:: int(x)
+
+            Returns the application command's ID.
 
     Attributes
     -----------
@@ -147,6 +151,9 @@ class AppCommand(Hashable):
     def __str__(self) -> str:
         return self.name
 
+    def __int__(self) -> int:
+        return self.id
+    
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
 
@@ -236,6 +243,10 @@ class AppCommandChannel(Hashable):
 
             Returns the channel's name.
 
+        .. describe:: int(x)
+
+            Returns the channel's ID.
+            
     Attributes
     -----------
     id: :class:`int`
@@ -277,6 +288,9 @@ class AppCommandChannel(Hashable):
     def __str__(self) -> str:
         return self.name
 
+    def __int__(self) -> int:
+        return self.id
+    
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
 
