@@ -14,4 +14,6 @@ docs/crowdin.py
 *.jpg
 *.flac
 *.mo
-/.coverage
+/.coverage*
+/dist
+discord/_version.py

@@ -1,6 +1,85 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = [
+    "hatchling>=0.22.0",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "discord.py"
+description = "A Python wrapper for the Discord API"
+readme = "README.rst"
+license = "MIT"
+requires-python = ">=3.8.0"
+authors = [
+    { name = "Rapptz" },
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = [
+    "aiohttp>=3.6.0,<4",
+]
+dynamic = [
+    "version",
+]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx==4.4.0",
+    "sphinxcontrib-websupport",
+    "sphinxcontrib_trio==1.1.2",
+    "typing-extensions",
+]
+speed = [
+    "orjson>=3.5.4",
+]
+test = [
+    "coverage[toml]",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+]
+voice = [
+    "PyNaCl>=1.3.0,<1.6",
+]
+
+[project.urls]
+Documentation = "https://discordpy.readthedocs.io/en/latest/"
+Homepage = "https://github.com/Rapptz/discord.py"
+"Issue tracker" = "https://github.com/Rapptz/discord.py/issues"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "discord/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/discord",
+    "/requirements.txt",
+]
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "/discord/*",
+    "/discord/bin",
+    "/discord/ext",
+]
 
 [tool.black]
 line-length = 125
