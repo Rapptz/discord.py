@@ -95,6 +95,7 @@ Error = Union[
     UnboundError,
 ]
 Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
+Binding = Union['Group', 'Cog']
 
 
 if TYPE_CHECKING:
@@ -371,6 +372,19 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     return (parameter.name, resolved, type)
 
 
+def _find_binding(parent: Optional[Group], cls: Optional[Type[GroupT]], binding: Binding) -> Optional[Binding]:
+    if cls is not None and not issubclass(binding.__class__, cls):
+        if parent is not None:
+            if issubclass(parent.__class__, cls):
+                return parent
+
+            parent_parent = parent.parent
+            if parent_parent is not None and issubclass(parent_parent.__class__, cls):
+                return parent_parent
+
+    return binding
+
+
 class Command(Generic[GroupT, P, T]):
     """A class that implements an application command.
 
@@ -412,6 +426,7 @@ class Command(Generic[GroupT, P, T]):
         self.name: str = validate_name(name)
         self.description: str = description
         self._attr: Optional[str] = None
+        self._binding_cls: Optional[Type[GroupT]] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
@@ -436,13 +451,14 @@ class Command(Generic[GroupT, P, T]):
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
+        self._binding_cls = owner  # type: ignore
 
     @property
     def callback(self) -> CommandCallback[GroupT, P, T]:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    def _copy_with_binding(self, binding: GroupT) -> Command:
+    def _copy_with(self, *, parent: Optional[Group], binding: GroupT, set_attr: bool) -> Command:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -450,12 +466,20 @@ class Command(Generic[GroupT, P, T]):
         copy.checks = self.checks
         copy.description = self.description
         copy._attr = self._attr
+        copy._binding_cls = self._binding_cls
         copy._callback = self._callback
-        copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.module = self.module
-        copy.binding = binding
+        copy.parent = parent
+
+        copy_binding: Optional[GroupT] = _find_binding(parent, self._binding_cls, binding)  # type: ignore
+
+        if set_attr and copy._attr:
+            setattr(copy_binding, copy._attr, copy)
+
+        copy.binding = copy_binding
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -950,6 +974,7 @@ class Group:
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
+        self._binding_cls: Optional[Type[Binding]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
@@ -969,37 +994,51 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
+        groups: Dict[Tuple[str, Type[Group]], Group] = {}
+
         for child in self.__discord_app_commands_group_children__:
-            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
-            child.parent = self
-            self._children[child.name] = child
-            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
-                setattr(self, child._attr, child)
+            copy = (
+                child._copy_with(parent=self, binding=self, set_attr=True)
+                if not cls.__discord_app_commands_skip_init_binding__
+                else child
+            )
+
+            if isinstance(copy, Group):
+                groups[(copy.name, copy.__class__)] = copy
+
+            self._children[copy.name] = copy
+            if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, copy._attr, copy)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
+        self._binding_cls = owner  # type: ignore
         self.module = owner.__module__
 
-    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
+    def _copy_with(self, *, parent: Optional[Group], binding: Binding, set_attr: bool) -> Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
         copy._guild_ids = self._guild_ids
         copy.description = self.description
-        copy.parent = self.parent
+        copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
+        copy._binding_cls = self._binding_cls
         copy._children = {}
 
         for child in self._children.values():
-            child = child._copy_with_binding(binding)
-            child.parent = copy
-            copy._children[child.name] = child
-            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
-                setattr(copy, child._attr, child)
+            child_copy = child._copy_with(parent=copy, binding=binding, set_attr=set_attr)
+            child_copy.parent = copy
+            copy._children[child_copy.name] = child_copy
+
+        copy_binding: Optional[Binding] = _find_binding(parent, self._binding_cls, binding)
+
+        if set_attr and copy._attr:
+            setattr(copy_binding, copy._attr, copy)
 
         return copy
 
