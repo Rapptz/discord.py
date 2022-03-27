@@ -803,7 +803,7 @@ class Client:
         Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
-        return self._connection.get_channel(id)  # type: ignore - The cache contains all channel types
+        return self._connection.get_channel(id)  # type: ignore # The cache contains all channel types
 
     def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
@@ -1180,7 +1180,7 @@ class Client:
                 continue
 
             if activity is not None:
-                me.activities = (activity,)  # type: ignore - Type checker does not understand the downcast here
+                me.activities = (activity,)  # type: ignore # Type checker does not understand the downcast here
             else:
                 me.activities = ()
 

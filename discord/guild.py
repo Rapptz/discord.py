@@ -403,7 +403,7 @@ class Guild(Hashable):
 
     def _update_voice_state(self, data: GuildVoiceState, channel_id: int) -> Tuple[Optional[Member], VoiceState, VoiceState]:
         user_id = int(data['user_id'])
-        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore - this will always be a voice channel
+        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore # this will always be a voice channel
         try:
             # check if we should remove the voice state from cache
             if channel is None:
@@ -512,7 +512,7 @@ class Guild(Hashable):
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)  # type: ignore - Members will have the 'user' key in this scenario
+            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
             if cache_joined or member.id == self_id:
                 self._add_member(member)
 
@@ -604,7 +604,7 @@ class Guild(Hashable):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
-        self_id = self._state.user.id  # type: ignore - state.user won't be None if we're logged in
+        self_id = self._state.user.id  # type: ignore # state.user won't be None if we're logged in
         # The self member is *always* cached
         return self.get_member(self_id)  # type: ignore
 
@@ -2028,11 +2028,11 @@ class Guild(Hashable):
         if ch_type in (ChannelType.group, ChannelType.private):
             raise InvalidData('Channel ID resolved to a private channel')
 
-        guild_id = int(data['guild_id'])  # type: ignore - channel won't be a private channel
+        guild_id = int(data['guild_id'])  # type: ignore # channel won't be a private channel
         if self.id != guild_id:
             raise InvalidData('Guild ID resolved to a different guild')
 
-        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore - channel won't be a private channel
+        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore # channel won't be a private channel
         return channel
 
     async def bans(self) -> List[BanEntry]:
@@ -3166,7 +3166,7 @@ class Guild(Hashable):
         payload['max_uses'] = 0
         payload['max_age'] = 0
         payload['uses'] = payload.get('uses', 0)
-        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore - we're faking a payload here
+        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore # we're faking a payload here
 
     async def audit_logs(
         self,

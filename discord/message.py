@@ -507,7 +507,7 @@ class MessageReference:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result  # type: ignore - Type checker doesn't understand these are the same.
+        return result  # type: ignore # Type checker doesn't understand these are the same.
 
     to_message_reference_dict = to_dict
 

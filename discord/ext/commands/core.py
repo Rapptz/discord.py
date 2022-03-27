@@ -1622,7 +1622,7 @@ def command(
     [
         Union[
             Callable[Concatenate[ContextT, P], Coro[Any]],
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
         ]
     ],
     CommandT,
@@ -1691,7 +1691,7 @@ def group(
 ) -> Callable[
     [
         Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
             Callable[Concatenate[ContextT, P], Coro[Any]],
         ]
     ],

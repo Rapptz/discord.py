@@ -511,7 +511,7 @@ class GuildChannel:
 
         If there is no category then this is ``None``.
         """
-        return self.guild.get_channel(self.category_id)  # type: ignore - These are coerced into CategoryChannel
+        return self.guild.get_channel(self.category_id)  # type: ignore # These are coerced into CategoryChannel
 
     @property
     def permissions_synced(self) -> bool:
@@ -843,7 +843,7 @@ class GuildChannel:
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache
-        self.guild._channels[obj.id] = obj  # type: ignore - obj is a GuildChannel
+        self.guild._channels[obj.id] = obj  # type: ignore # obj is a GuildChannel
         return obj
 
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:

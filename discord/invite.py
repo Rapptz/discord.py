@@ -533,7 +533,7 @@ class Invite(Hashable):
         """
         self.scheduled_event_id = scheduled_event.id
         try:
-            self.scheduled_event = self.guild.get_scheduled_event(scheduled_event.id)  # type: ignore - handled below
+            self.scheduled_event = self.guild.get_scheduled_event(scheduled_event.id)  # type: ignore # handled below
         except AttributeError:
             self.scheduled_event = None
 
