@@ -1348,9 +1348,9 @@ def rename(**parameters: str) -> Callable[[T], T]:
             _populate_renames(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
