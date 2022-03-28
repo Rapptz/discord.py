@@ -126,11 +126,7 @@ def unwrap_function(function: Callable[..., Any], /) -> Callable[..., Any]:
 
 
 def get_signature_parameters(
-    function: Callable[..., Any],
-    globalns: Dict[str, Any],
-    /,
-    *,
-    skip_parameters: Optional[int] = None,
+    function: Callable[..., Any], globalns: Dict[str, Any], /, *, skip_parameters: Optional[int] = None,
 ) -> Dict[str, inspect.Parameter]:
     signature = inspect.signature(function)
     params = {}
@@ -319,10 +315,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     def __init__(
         self,
-        func: Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-            Callable[Concatenate[ContextT, P], Coro[T]],
-        ],
+        func: Union[Callable[Concatenate[CogT, ContextT, P], Coro[T]], Callable[Concatenate[ContextT, P], Coro[T]],],
         /,
         **kwargs: Any,
     ) -> None:
@@ -415,16 +408,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     @property
     def callback(
         self,
-    ) -> Union[Callable[Concatenate[CogT, Context, P], Coro[T]], Callable[Concatenate[Context, P], Coro[T]],]:
+    ) -> Union[
+        Callable[Concatenate[CogT, Context, P], Coro[T]], Callable[Concatenate[Context, P], Coro[T]],
+    ]:
         return self._callback
 
     @callback.setter
     def callback(
-        self,
-        function: Union[
-            Callable[Concatenate[CogT, Context, P], Coro[T]],
-            Callable[Concatenate[Context, P], Coro[T]],
-        ],
+        self, function: Union[Callable[Concatenate[CogT, Context, P], Coro[T]], Callable[Concatenate[Context, P], Coro[T]],],
     ) -> None:
         self._callback = function
         unwrap = unwrap_function(function)
@@ -672,7 +663,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         .. versionadded:: 2.0
         """
         return self._buckets._cooldown
-    
+
     @property
     def full_parent_name(self) -> str:
         """:class:`str`: Retrieves the fully qualified parent command name.
@@ -1354,46 +1345,22 @@ class GroupMixin(Generic[CogT]):
 
     @overload
     def command(
-        self: GroupMixin[CogT],
-        name: str = ...,
-        *args: Any,
-        **kwargs: Any,
+        self: GroupMixin[CogT], name: str = ..., *args: Any, **kwargs: Any,
     ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
+        [Union[Callable[Concatenate[CogT, ContextT, P], Coro[T]], Callable[Concatenate[ContextT, P], Coro[T]],]],
         Command[CogT, P, T],
     ]:
         ...
 
     @overload
     def command(
-        self: GroupMixin[CogT],
-        name: str = ...,
-        cls: Type[CommandT] = ...,
-        *args: Any,
-        **kwargs: Any,
+        self: GroupMixin[CogT], name: str = ..., cls: Type[CommandT] = ..., *args: Any, **kwargs: Any,
     ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        CommandT,
+        [Union[Callable[Concatenate[CogT, ContextT, P], Coro[T]], Callable[Concatenate[ContextT, P], Coro[T]],]], CommandT,
     ]:
         ...
 
-    def command(
-        self,
-        name: str = MISSING,
-        cls: Type[Command[Any, ..., Any]] = MISSING,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def command(self, name: str = MISSING, cls: Type[Command[Any, ..., Any]] = MISSING, *args: Any, **kwargs: Any,) -> Any:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
@@ -1414,46 +1381,22 @@ class GroupMixin(Generic[CogT]):
 
     @overload
     def group(
-        self: GroupMixin[CogT],
-        name: str = ...,
-        *args: Any,
-        **kwargs: Any,
+        self: GroupMixin[CogT], name: str = ..., *args: Any, **kwargs: Any,
     ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
+        [Union[Callable[Concatenate[CogT, ContextT, P], Coro[T]], Callable[Concatenate[ContextT, P], Coro[T]],]],
         Group[CogT, P, T],
     ]:
         ...
 
     @overload
     def group(
-        self: GroupMixin[CogT],
-        name: str = ...,
-        cls: Type[GroupT] = ...,
-        *args: Any,
-        **kwargs: Any,
+        self: GroupMixin[CogT], name: str = ..., cls: Type[GroupT] = ..., *args: Any, **kwargs: Any,
     ) -> Callable[
-        [
-            Union[
-                Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-                Callable[Concatenate[ContextT, P], Coro[T]],
-            ]
-        ],
-        GroupT,
+        [Union[Callable[Concatenate[CogT, ContextT, P], Coro[T]], Callable[Concatenate[ContextT, P], Coro[T]],]], GroupT,
     ]:
         ...
 
-    def group(
-        self,
-        name: str = MISSING,
-        cls: Type[Group[Any, ..., Any]] = MISSING,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
+    def group(self, name: str = MISSING, cls: Type[Group[Any, ..., Any]] = MISSING, *args: Any, **kwargs: Any,) -> Any:
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
@@ -1615,18 +1558,13 @@ if TYPE_CHECKING:
 
 
 @overload
-def command(
-    name: str = ...,
-    **attrs: Any,
-) -> _CommandDecorator:
+def command(name: str = ..., **attrs: Any,) -> _CommandDecorator:
     ...
 
 
 @overload
 def command(
-    name: str = ...,
-    cls: Type[CommandT] = ...,
-    **attrs: Any,
+    name: str = ..., cls: Type[CommandT] = ..., **attrs: Any,
 ) -> Callable[
     [
         Union[
@@ -1639,11 +1577,7 @@ def command(
     ...
 
 
-def command(
-    name: str = MISSING,
-    cls: Type[Command[Any, ..., Any]] = MISSING,
-    **attrs: Any,
-) -> Any:
+def command(name: str = MISSING, cls: Type[Command[Any, ..., Any]] = MISSING, **attrs: Any,) -> Any:
     """A decorator that transforms a function into a :class:`.Command`
     or if called with :func:`.group`, :class:`.Group`.
 
@@ -1685,18 +1619,13 @@ def command(
 
 
 @overload
-def group(
-    name: str = ...,
-    **attrs: Any,
-) -> _GroupDecorator:
+def group(name: str = ..., **attrs: Any,) -> _GroupDecorator:
     ...
 
 
 @overload
 def group(
-    name: str = ...,
-    cls: Type[GroupT] = ...,
-    **attrs: Any,
+    name: str = ..., cls: Type[GroupT] = ..., **attrs: Any,
 ) -> Callable[
     [
         Union[
@@ -1709,11 +1638,7 @@ def group(
     ...
 
 
-def group(
-    name: str = MISSING,
-    cls: Type[Group[Any, ..., Any]] = MISSING,
-    **attrs: Any,
-) -> Any:
+def group(name: str = MISSING, cls: Type[Group[Any, ..., Any]] = MISSING, **attrs: Any,) -> Any:
     """A decorator that transforms a function into a :class:`.Group`.
 
     This is similar to the :func:`~discord.ext.commands.command` decorator but the ``cls``
@@ -2255,9 +2180,7 @@ def is_nsfw() -> Callable[[T], T]:
 
 
 def cooldown(
-    rate: int,
-    per: float,
-    type: Union[BucketType, Callable[[Message], Any]] = BucketType.default,
+    rate: int, per: float, type: Union[BucketType, Callable[[Message], Any]] = BucketType.default,
 ) -> Callable[[T], T]:
     """A decorator that adds a cooldown to a :class:`.Command`
 
@@ -2296,8 +2219,7 @@ def cooldown(
 
 
 def dynamic_cooldown(
-    cooldown: Union[BucketType, Callable[[Message], Any]],
-    type: BucketType = BucketType.default,
+    cooldown: Union[BucketType, Callable[[Message], Any]], type: BucketType = BucketType.default,
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
