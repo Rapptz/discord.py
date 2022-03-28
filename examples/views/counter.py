@@ -9,7 +9,7 @@ class CounterBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        
+
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
@@ -25,7 +25,7 @@ class Counter(discord.ui.View):
     # When it hits 5, the counter button is disabled and it turns green.
     # note: The name of the function does not matter to the library
     @discord.ui.button(label='0', style=discord.ButtonStyle.red)
-    async def count(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def count(self, interaction: discord.Interaction, button: discord.ui.Button):
         number = int(button.label) if button.label else 0
         if number + 1 >= 5:
             button.style = discord.ButtonStyle.green

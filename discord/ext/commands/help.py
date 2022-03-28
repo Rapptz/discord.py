@@ -54,9 +54,10 @@ if TYPE_CHECKING:
 
     import discord.abc
 
+    from ._types import Coro
     from .bot import BotBase
-    from .context import Context
     from .cog import Cog
+    from .context import Context
 
 __all__ = (
     'Paginator',
@@ -261,6 +262,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
     ) -> None:
         self.show_hidden: bool = show_hidden
         self.verify_checks: bool = verify_checks
+        self.command_attrs: Dict[str, Any]
         self.command_attrs = attrs = command_attrs if command_attrs is not MISSING else {}
         attrs.setdefault('name', 'help')
         attrs.setdefault('help', 'Shows this message')
@@ -269,8 +271,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
             self.command_callback, globals(), skip_parameters=1
         )
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self.on_help_command_error
 
-    async def __call__(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
+    async def __call__(self, context: ContextT, /, *args: Any, **kwargs: Any) -> Any:
         return await self._set_context(context, *args, **kwargs)
 
     async def _set_context(self, context: ContextT, *args: Any, **kwargs: Any) -> Any:
@@ -291,14 +295,25 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         bot.remove_command(self.name)
         self._eject_cog()
 
-    async def invoke(self, ctx: ContextT) -> None:
-        # we need to temporarily set the cog to None to prevent the cog
-        # from being passed into the command callback.
+    async def _call_without_cog(self, callback: Callable[[ContextT], Coro[T]], ctx: ContextT) -> T:
         cog = self._cog
-        self._cog = None
-        await self.prepare(ctx)
-        self._cog = cog
-        await self.callback(*ctx.args, **ctx.kwargs)
+        self.cog = None
+        try:
+            return await callback(ctx)
+        finally:
+            self.cog = cog
+
+    async def _parse_arguments(self, ctx: ContextT) -> None:
+        return await self._call_without_cog(super()._parse_arguments, ctx)
+
+    async def call_before_hooks(self, ctx: ContextT, /) -> None:
+        return await self._call_without_cog(super().call_before_hooks, ctx)
+
+    async def call_after_hooks(self, ctx: ContextT, /) -> None:
+        return await self._call_without_cog(super().call_after_hooks, ctx)
+
+    async def can_run(self, ctx: ContextT, /) -> bool:
+        return await self._call_without_cog(super().can_run, ctx)
 
     def get_bot_mapping(self) -> Dict[Optional[Cog], List[Command[Any, ..., Any]]]:
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
@@ -328,8 +343,12 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             return command_name
         return ctx.invoked_with
 
-    def get_command_signature(self, command: Command[Any, ..., Any]) -> str:
+    def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
         """Retrieves the signature portion of the help page.
+
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -342,7 +361,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             The signature for the command.
         """
 
-        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore - the parent will be a Group
+        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore # the parent will be a Group
         entries = []
         while parent is not None:
             if not parent.signature or parent.invoke_without_command:
@@ -363,10 +382,14 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         return f'{self.context.clean_prefix}{alias} {command.signature}'
 
-    def remove_mentions(self, string: str) -> str:
+    def remove_mentions(self, string: str, /) -> str:
         """Removes mentions from the string to prevent abuse.
 
         This includes ``@everyone``, ``@here``, member mentions and role mentions.
+
+        .. versionchanged:: 2.0
+
+            ``string`` parameter is now positional-only.
 
         Returns
         -------
@@ -378,6 +401,9 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             return transforms.get(obj.group(0), '@invalid')
 
         return self.MENTION_PATTERN.sub(replace, string)
+
+    async def _on_error_cog_implementation(self, _, ctx: ContextT, error: CommandError) -> None:
+        await self.on_help_command_error(ctx, error)
 
     def _inject_into_cog(self, cog: Cog) -> None:
         # Warning: hacky
@@ -403,6 +429,8 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         functools.update_wrapper(wrapped_walk_commands, cog.walk_commands)
         cog.get_commands = wrapped_get_commands
         cog.walk_commands = wrapped_walk_commands
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self._on_error_cog_implementation
         self._cog = cog
 
     def _eject_cog(self) -> None:
@@ -410,6 +438,8 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             return
 
         # revert back into their original methods
+        if not hasattr(self.on_help_command_error, '__help_command_not_overridden__'):
+            self.on_error = self.on_help_command_error
         cog = self._cog
         cog.get_commands = cog.get_commands.__wrapped__
         cog.walk_commands = cog.walk_commands.__wrapped__
@@ -428,13 +458,17 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         if cog is not None:
             self._inject_into_cog(cog)
 
-    def command_not_found(self, string: str) -> str:
+    def command_not_found(self, string: str, /) -> str:
         """|maybecoro|
 
         A method called when a command is not found in the help command.
         This is useful to override for i18n.
 
         Defaults to ``No command called {0} found.``
+
+        .. versionchanged:: 2.0
+
+            ``string`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -449,7 +483,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return f'No command called "{string}" found.'
 
-    def subcommand_not_found(self, command: Command[Any, ..., Any], string: str) -> str:
+    def subcommand_not_found(self, command: Command[Any, ..., Any], string: str, /) -> str:
         """|maybecoro|
 
         A method called when a command did not have a subcommand requested in the help command.
@@ -461,6 +495,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             - If there is no subcommand in the ``command`` parameter.
         - ``'Command "{command.qualified_name}" has no subcommand named {string}'``
             - If the ``command`` parameter has subcommands but not one named ``string``.
+
+        .. versionchanged:: 2.0
+
+            ``command`` and ``string`` parameters are now positional-only.
 
         Parameters
         ------------
@@ -482,6 +520,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
     async def filter_commands(
         self,
         commands: Iterable[Command[Any, ..., Any]],
+        /,
         *,
         sort: bool = False,
         key: Optional[Callable[[Command[Any, ..., Any]], Any]] = None,
@@ -492,6 +531,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
         This takes into account the :attr:`verify_checks` and :attr:`show_hidden`
         attributes.
+
+        .. versionchanged:: 2.0
+
+            ``commands`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -518,7 +561,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         if self.verify_checks is False:
             # if we do not need to verify the checks then we can just
             # run it straight through normally without using await.
-            return sorted(iterator, key=key) if sort else list(iterator)  # type: ignore - the key shouldn't be None
+            return sorted(iterator, key=key) if sort else list(iterator)  # type: ignore # the key shouldn't be None
 
         if self.verify_checks is None and not self.context.guild:
             # if verify_checks is None and we're in a DM, don't verify
@@ -541,8 +584,12 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             ret.sort(key=key)
         return ret
 
-    def get_max_size(self, commands: Sequence[Command[Any, ..., Any]]) -> int:
+    def get_max_size(self, commands: Sequence[Command[Any, ..., Any]], /) -> int:
         """Returns the largest name length of the specified command list.
+
+        .. versionchanged:: 2.0
+
+            ``commands`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -572,7 +619,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return self.context.channel
 
-    async def send_error_message(self, error: str) -> None:
+    async def send_error_message(self, error: str, /) -> None:
         """|coro|
 
         Handles the implementation when an error happens in the help command.
@@ -587,6 +634,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
 
             You can access the invocation context with :attr:`HelpCommand.context`.
 
+        .. versionchanged:: 2.0
+
+            ``error`` parameter is now positional-only.
+
         Parameters
         ------------
         error: :class:`str`
@@ -597,7 +648,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         await destination.send(error)
 
     @_not_overridden
-    async def on_help_command_error(self, ctx: ContextT, error: CommandError) -> None:
+    async def on_help_command_error(self, ctx: ContextT, error: CommandError, /) -> None:
         """|coro|
 
         The help command's error handler, as specified by :ref:`ext_commands_error_handler`.
@@ -608,6 +659,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         By default this method does nothing and just propagates to the default
         error handlers.
 
+        .. versionchanged:: 2.0
+
+            ``ctx`` and ``error`` parameters are now positional-only.
+
         Parameters
         ------------
         ctx: :class:`Context`
@@ -617,7 +672,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         pass
 
-    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]]) -> None:
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]], /) -> None:
         """|coro|
 
         Handles the implementation of the bot command page in the help command.
@@ -637,6 +692,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             Also, the commands in the mapping are not filtered. To do the filtering
             you will have to call :meth:`filter_commands` yourself.
 
+        .. versionchanged:: 2.0
+
+            ``mapping`` parameter is now positional-only.
+
         Parameters
         ------------
         mapping: Mapping[Optional[:class:`Cog`], List[:class:`Command`]]
@@ -646,7 +705,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return None
 
-    async def send_cog_help(self, cog: Cog) -> None:
+    async def send_cog_help(self, cog: Cog, /) -> None:
         """|coro|
 
         Handles the implementation of the cog page in the help command.
@@ -667,6 +726,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             The commands returned not filtered. To do the filtering you will have to call
             :meth:`filter_commands` yourself.
 
+        .. versionchanged:: 2.0
+
+            ``cog`` parameter is now positional-only.
+
         Parameters
         -----------
         cog: :class:`Cog`
@@ -674,7 +737,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return None
 
-    async def send_group_help(self, group: Group[Any, ..., Any]) -> None:
+    async def send_group_help(self, group: Group[Any, ..., Any], /) -> None:
         """|coro|
 
         Handles the implementation of the group page in the help command.
@@ -695,6 +758,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             :attr:`Group.commands`. The commands returned not filtered. To do the
             filtering you will have to call :meth:`filter_commands` yourself.
 
+        .. versionchanged:: 2.0
+
+            ``group`` parameter is now positional-only.
+
         Parameters
         -----------
         group: :class:`Group`
@@ -702,7 +769,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return None
 
-    async def send_command_help(self, command: Command[Any, ..., Any]) -> None:
+    async def send_command_help(self, command: Command[Any, ..., Any], /) -> None:
         """|coro|
 
         Handles the implementation of the single command page in the help command.
@@ -733,6 +800,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             There are more than just these attributes but feel free to play around with
             these to help you get started to get the output that you want.
 
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
+
         Parameters
         -----------
         command: :class:`Command`
@@ -740,7 +811,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         return None
 
-    async def prepare_help_command(self, ctx: ContextT, command: Optional[str] = None) -> None:
+    async def prepare_help_command(self, ctx: ContextT, command: Optional[str] = None, /) -> None:
         """|coro|
 
         A low level method that can be used to prepare the help command
@@ -755,6 +826,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             This is called *inside* the help command callback body. So all
             the usual rules that happen inside apply here as well.
 
+        .. versionchanged:: 2.0
+
+            ``ctx`` and ``command`` parameters are now positional-only.
+
         Parameters
         -----------
         ctx: :class:`Context`
@@ -764,7 +839,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         """
         pass
 
-    async def command_callback(self, ctx: ContextT, *, command: Optional[str] = None) -> Any:
+    async def command_callback(self, ctx: ContextT, /, *, command: Optional[str] = None) -> Any:
         """|coro|
 
         The actual implementation of the help command.
@@ -782,6 +857,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         - :meth:`send_error_message`
         - :meth:`on_help_command_error`
         - :meth:`prepare_help_command`
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
         """
         await self.prepare_help_command(ctx, command)
 
@@ -877,8 +956,13 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
 
         super().__init__(**options)
 
-    def shorten_text(self, text: str) -> str:
-        """:class:`str`: Shortens text to fit into the :attr:`width`."""
+    def shorten_text(self, text: str, /) -> str:
+        """:class:`str`: Shortens text to fit into the :attr:`width`.
+
+        .. versionchanged:: 2.0
+
+            ``text`` parameter is now positional-only.
+        """
         if len(text) > self.width:
             return text[: self.width - 3].rstrip() + '...'
         return text
@@ -892,7 +976,7 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
         )
 
     def add_indented_commands(
-        self, commands: Sequence[Command[Any, ..., Any]], *, heading: str, max_size: Optional[int] = None
+        self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
     ) -> None:
         """Indents a list of commands after the specified heading.
 
@@ -902,6 +986,10 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
         :attr:`indent` spaces, padded to ``max_size`` followed by
         the command's :attr:`Command.short_doc` and then shortened
         to fit into the :attr:`width`.
+
+        .. versionchanged:: 2.0
+
+            ``commands`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -935,8 +1023,12 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
         for page in self.paginator.pages:
             await destination.send(page)
 
-    def add_command_formatting(self, command: Command[Any, ..., Any]) -> None:
+    def add_command_formatting(self, command: Command[Any, ..., Any], /) -> None:
         """A utility function to format the non-indented block of commands and groups.
+
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -967,11 +1059,11 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx: ContextT, command: str) -> None:
+    async def prepare_help_command(self, ctx: ContextT, command: Optional[str] = None, /) -> None:
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 
-    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]]) -> None:
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]], /) -> None:
         ctx = self.context
         bot = ctx.bot
 
@@ -1001,12 +1093,12 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
 
         await self.send_pages()
 
-    async def send_command_help(self, command: Command[Any, ..., Any]) -> None:
+    async def send_command_help(self, command: Command[Any, ..., Any], /) -> None:
         self.add_command_formatting(command)
         self.paginator.close_page()
         await self.send_pages()
 
-    async def send_group_help(self, group: Group[Any, ..., Any]) -> None:
+    async def send_group_help(self, group: Group[Any, ..., Any], /) -> None:
         self.add_command_formatting(group)
 
         filtered = await self.filter_commands(group.commands, sort=self.sort_commands)
@@ -1020,7 +1112,7 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
 
         await self.send_pages()
 
-    async def send_cog_help(self, cog: Cog) -> None:
+    async def send_cog_help(self, cog: Cog, /) -> None:
         if cog.description:
             self.paginator.add_line(cog.description, empty=True)
 
@@ -1106,7 +1198,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
             f"You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category."
         )
 
-    def get_command_signature(self, command: Command[Any, ..., Any]) -> str:
+    def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
         return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
 
     def get_ending_note(self) -> str:
@@ -1121,13 +1213,17 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
         """
         return ''
 
-    def add_bot_commands_formatting(self, commands: Sequence[Command[Any, ..., Any]], heading: str) -> None:
+    def add_bot_commands_formatting(self, commands: Sequence[Command[Any, ..., Any]], heading: str, /) -> None:
         """Adds the minified bot heading with commands to the output.
 
         The formatting should be added to the :attr:`paginator`.
 
         The default implementation is a bold underline heading followed
         by commands separated by an EN SPACE (U+2002) in the next line.
+
+        .. versionchanged:: 2.0
+
+            ``commands`` and ``heading`` parameters are now positional-only.
 
         Parameters
         -----------
@@ -1142,13 +1238,17 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
             self.paginator.add_line(f'__**{heading}**__')
             self.paginator.add_line(joined)
 
-    def add_subcommand_formatting(self, command: Command[Any, ..., Any]) -> None:
+    def add_subcommand_formatting(self, command: Command[Any, ..., Any], /) -> None:
         """Adds formatting information on a subcommand.
 
         The formatting should be added to the :attr:`paginator`.
 
         The default implementation is the prefix and the :attr:`Command.qualified_name`
         optionally followed by an En dash and the command's :attr:`Command.short_doc`.
+
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1158,7 +1258,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
         fmt = '{0}{1} \N{EN DASH} {2}' if command.short_doc else '{0}{1}'
         self.paginator.add_line(fmt.format(self.context.clean_prefix, command.qualified_name, command.short_doc))
 
-    def add_aliases_formatting(self, aliases: Sequence[str]) -> None:
+    def add_aliases_formatting(self, aliases: Sequence[str], /) -> None:
         """Adds the formatting information on a command's aliases.
 
         The formatting should be added to the :attr:`paginator`.
@@ -1168,6 +1268,10 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
 
         This is not called if there are no aliases to format.
 
+        .. versionchanged:: 2.0
+
+            ``aliases`` parameter is now positional-only.
+
         Parameters
         -----------
         aliases: Sequence[:class:`str`]
@@ -1175,8 +1279,12 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
         """
         self.paginator.add_line(f'**{self.aliases_heading}** {", ".join(aliases)}', empty=True)
 
-    def add_command_formatting(self, command: Command[Any, ..., Any]) -> None:
+    def add_command_formatting(self, command: Command[Any, ..., Any], /) -> None:
         """A utility function to format commands and groups.
+
+        .. versionchanged:: 2.0
+
+            ``command`` parameter is now positional-only.
 
         Parameters
         ------------
@@ -1211,11 +1319,11 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
         else:
             return ctx.channel
 
-    async def prepare_help_command(self, ctx: ContextT, command: str) -> None:
+    async def prepare_help_command(self, ctx: ContextT, command: Optional[str] = None, /) -> None:
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 
-    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]]) -> None:
+    async def send_bot_help(self, mapping: Mapping[Optional[Cog], List[Command[Any, ..., Any]]], /) -> None:
         ctx = self.context
         bot = ctx.bot
 
@@ -1246,7 +1354,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
 
         await self.send_pages()
 
-    async def send_cog_help(self, cog: Cog) -> None:
+    async def send_cog_help(self, cog: Cog, /) -> None:
         bot = self.context.bot
         if bot.description:
             self.paginator.add_line(bot.description, empty=True)
@@ -1271,7 +1379,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
 
         await self.send_pages()
 
-    async def send_group_help(self, group: Group[Any, ..., Any]) -> None:
+    async def send_group_help(self, group: Group[Any, ..., Any], /) -> None:
         self.add_command_formatting(group)
 
         filtered = await self.filter_commands(group.commands, sort=self.sort_commands)
@@ -1291,7 +1399,7 @@ class MinimalHelpCommand(HelpCommand[ContextT]):
 
         await self.send_pages()
 
-    async def send_command_help(self, command: Command[Any, ..., Any]) -> None:
+    async def send_command_help(self, command: Command[Any, ..., Any], /) -> None:
         self.add_command_formatting(command)
         self.paginator.close_page()
         await self.send_pages()

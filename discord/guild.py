@@ -403,7 +403,7 @@ class Guild(Hashable):
 
     def _update_voice_state(self, data: GuildVoiceState, channel_id: int) -> Tuple[Optional[Member], VoiceState, VoiceState]:
         user_id = int(data['user_id'])
-        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore - this will always be a voice channel
+        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore # this will always be a voice channel
         try:
             # check if we should remove the voice state from cache
             if channel is None:
@@ -512,7 +512,7 @@ class Guild(Hashable):
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)  # type: ignore - Members will have the 'user' key in this scenario
+            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
             if cache_joined or member.id == self_id:
                 self._add_member(member)
 
@@ -604,7 +604,7 @@ class Guild(Hashable):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
-        self_id = self._state.user.id  # type: ignore - state.user won't be None if we're logged in
+        self_id = self._state.user.id  # type: ignore # state.user won't be None if we're logged in
         # The self member is *always* cached
         return self.get_member(self_id)  # type: ignore
 
@@ -1601,7 +1601,7 @@ class Guild(Hashable):
             The new name of the guild.
         description: Optional[:class:`str`]
             The new description of the guild. Could be ``None`` for no description.
-            This is only available to guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
+            This is only available to guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
             GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
@@ -1646,11 +1646,11 @@ class Guild(Hashable):
             The new preferred locale for the guild. Used as the primary language in the guild.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
             channel.
         public_updates_channel: Optional[:class:`TextChannel`]
             The new channel that is used for public updates from Discord. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
@@ -1897,11 +1897,6 @@ class Guild(Hashable):
 
             async for member in guild.fetch_members(limit=150):
                 print(member.name)
-
-        Flattening into a list ::
-
-            members = await guild.fetch_members(limit=150).flatten()
-            # members is now a list of Member...
         """
 
         if not self._state._intents.members:
@@ -2033,11 +2028,11 @@ class Guild(Hashable):
         if ch_type in (ChannelType.group, ChannelType.private):
             raise InvalidData('Channel ID resolved to a private channel')
 
-        guild_id = int(data['guild_id'])  # type: ignore - channel won't be a private channel
+        guild_id = int(data['guild_id'])  # type: ignore # channel won't be a private channel
         if self.id != guild_id:
             raise InvalidData('Guild ID resolved to a different guild')
 
-        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore - channel won't be a private channel
+        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore # channel won't be a private channel
         return channel
 
     async def bans(self) -> List[BanEntry]:
@@ -3171,7 +3166,7 @@ class Guild(Hashable):
         payload['max_uses'] = 0
         payload['max_age'] = 0
         payload['uses'] = payload.get('uses', 0)
-        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore - we're faking a payload here
+        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore # we're faking a payload here
 
     async def audit_logs(
         self,
@@ -3438,7 +3433,7 @@ class Guild(Hashable):
         Request members that belong to this guild whose username starts with
         the query given.
 
-        This is a websocket operation and can be slow.
+        This is a websocket operation.
 
         .. versionadded:: 1.3
 

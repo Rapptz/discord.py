@@ -1690,7 +1690,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.afk_channel`
         - :attr:`~AuditLogDiff.system_channel`
         - :attr:`~AuditLogDiff.afk_timeout`
-        - :attr:`~AuditLogDiff.default_message_notifications`
+        - :attr:`~AuditLogDiff.default_notifications`
         - :attr:`~AuditLogDiff.explicit_content_filter`
         - :attr:`~AuditLogDiff.mfa_level`
         - :attr:`~AuditLogDiff.name`
@@ -2286,6 +2286,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2304,6 +2305,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2322,6 +2324,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -3024,12 +3027,6 @@ AuditLogDiff
 
         :type: :class:`ContentFilter`
 
-    .. attribute:: default_message_notifications
-
-        The guild's default message notification setting.
-
-        :type: :class:`int`
-
     .. attribute:: vanity_url_code
 
         The guild's vanity URL.
@@ -3365,7 +3362,7 @@ AuditLogDiff
 
         See also :attr:`Guild.preferred_locale`
 
-        :type: :class:`str`
+        :type: :class:`Locale`
 
     .. attribute:: prune_delete_days
 
@@ -3384,6 +3381,14 @@ AuditLogDiff
         The type of entity this scheduled event is for.
 
         :type: :class:`EntityType`
+
+    .. attribute:: cover_image
+
+        The scheduled event's cover image.
+
+        See also :attr:`ScheduledEvent.cover_image`.
+
+        :type: :class:`Asset`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these

@@ -600,7 +600,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         from .webhook import Webhook
 
         if avatar is not None:
-            avatar = utils._bytes_to_base64_data(avatar)  # type: ignore - Silence reassignment error
+            avatar = utils._bytes_to_base64_data(avatar)  # type: ignore # Silence reassignment error
 
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)

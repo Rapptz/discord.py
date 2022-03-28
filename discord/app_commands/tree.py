@@ -677,7 +677,8 @@ class CommandTree(Generic[ClientT]):
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation prints the traceback to stderr if the command does
+        not have any error handlers attached to it.
 
         Parameters
         -----------
@@ -690,6 +691,9 @@ class CommandTree(Generic[ClientT]):
         """
 
         if command is not None:
+            if command._has_any_error_handlers():
+                return
+
             print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
         else:
             print(f'Ignoring exception in command tree:', file=sys.stderr)
@@ -822,7 +826,8 @@ class CommandTree(Generic[ClientT]):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('context menu function must be a coroutine function')
 
-            context_menu = ContextMenu._from_decorator(func, name=name)
+            actual_name = func.__name__.title() if name is MISSING else name
+            context_menu = ContextMenu(name=actual_name, callback=func)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
@@ -963,7 +968,20 @@ class CommandTree(Generic[ClientT]):
         try:
             await ctx_menu._invoke(interaction, value)
         except AppCommandError as e:
+            if ctx_menu.on_error is not None:
+                await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, ctx_menu, e)
+
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
+        """|coro|
+
+        A global check to determine if an :class:`~discord.Interaction` should
+        be processed by the tree.
+
+        The default implementation returns True (all interactions are processed),
+        but can be overridden if custom behaviour is desired.
+        """
+        return True
 
     async def call(self, interaction: Interaction) -> None:
         """|coro|
@@ -988,6 +1006,9 @@ class CommandTree(Generic[ClientT]):
         AppCommandError
             An error occurred while calling the command.
         """
+        if not await self.interaction_check(interaction):
+            return
+
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         type = data.get('type', 1)
         if type != 1:

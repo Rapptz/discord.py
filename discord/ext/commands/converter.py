@@ -375,7 +375,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
         channel = self._resolve_channel(ctx, guild_id, channel_id)
         if not channel or not isinstance(channel, discord.abc.Messageable):
-            raise ChannelNotFound(channel_id)  # type: ignore - channel_id won't be None here
+            raise ChannelNotFound(channel_id)  # type: ignore # channel_id won't be None here
         return discord.PartialMessage(channel=channel, id=message_id)
 
 
@@ -407,7 +407,7 @@ class MessageConverter(IDConverter[discord.Message]):
         except discord.NotFound:
             raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise ChannelNotReadable(channel)  # type: ignore - type-checker thinks channel could be a DMChannel at this point
+            raise ChannelNotReadable(channel)  # type: ignore # type-checker thinks channel could be a DMChannel at this point
 
 
 class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):

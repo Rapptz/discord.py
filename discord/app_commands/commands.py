@@ -88,9 +88,10 @@ else:
 T = TypeVar('T')
 GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
 Coro = Coroutine[Any, Any, T]
+UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
     Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
-    Callable[['Interaction', AppCommandError], Coro[Any]],
+    UnboundError,
 ]
 Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
 
@@ -125,7 +126,7 @@ else:
 
 CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
-VALID_CONTEXT_MENU_NAME = re.compile(r'^[\w\s-]{1,32}$')
+VALID_CONTEXT_MENU_NAME = re.compile(r'^[?!\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -453,6 +454,23 @@ class Command(Generic[GroupT, P, T]):
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, self, error)
 
+    def _has_any_error_handlers(self) -> bool:
+        if self.on_error is not None:
+            return True
+
+        parent = self.parent
+        if parent is not None:
+            # Check if the on_error is overridden
+            if parent.__class__.on_error is not Group.on_error:
+                return True
+
+            if parent.parent is not None:
+                parent_cls = parent.parent.__class__
+                if parent_cls.on_error is not Group.on_error:
+                    return True
+
+        return False
+
     async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
         if not await self._check_can_run(interaction):
             raise CheckFailure(f'The check functions for command {self.name!r} failed.')
@@ -700,7 +718,8 @@ class ContextMenu:
     name: :class:`str`
         The name of the context menu.
     type: :class:`.AppCommandType`
-        The type of context menu application command.
+        The type of context menu application command. By default, this is inferred
+        by the parameter of the callback.
     checks
         A list of predicates that take a :class:`~discord.Interaction` parameter
         to indicate whether the command callback should be executed. If an exception
@@ -714,40 +733,30 @@ class ContextMenu:
         *,
         name: str,
         callback: ContextMenuCallback,
-        type: AppCommandType,
+        type: AppCommandType = MISSING,
         guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
-        self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
+        if type is MISSING:
+            type = actual_type
+
         if actual_type != type:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
+
+        self.type: AppCommandType = type
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
         self._guild_ids = guild_ids
+        self.on_error: Optional[UnboundError] = None
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
     @property
     def callback(self) -> ContextMenuCallback:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
-
-    @classmethod
-    def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
-        (param, annotation, type) = _get_context_menu_parameter(callback)
-
-        self = cls.__new__(cls)
-        self.name = callback.__name__.title() if name is MISSING else name
-        self._callback = callback
-        self.type = type
-        self._param_name = param
-        self._annotation = annotation
-        self.module = callback.__module__
-        self._guild_ids = None
-        self.checks = getattr(callback, '__discord_app_commands_checks__', [])
-        return self
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -763,6 +772,9 @@ class ContextMenu:
         # Type checker does not understand negative narrowing cases like this function
         return await async_all(f(interaction) for f in predicates)  # type: ignore
 
+    def _has_any_error_handlers(self) -> bool:
+        return self.on_error is not None
+
     async def _invoke(self, interaction: Interaction, arg: Any):
         try:
             if not await self._check_can_run(interaction):
@@ -773,6 +785,32 @@ class ContextMenu:
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
+
+    def error(self, coro: UnboundError) -> UnboundError:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in the body
+        of the command or during handling of the command. The error handler must take
+        2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
 
     def add_check(self, func: Check, /) -> None:
         """Adds a check to the command.
@@ -1199,7 +1237,8 @@ def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], Cont
         if not inspect.iscoroutinefunction(func):
             raise TypeError('context menu function must be a coroutine function')
 
-        return ContextMenu._from_decorator(func, name=name)
+        actual_name = func.__name__.title() if name is MISSING else name
+        return ContextMenu(name=actual_name, callback=func)
 
     return decorator
 
@@ -1233,9 +1272,9 @@ def describe(**parameters: str) -> Callable[[T], T]:
             _populate_descriptions(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1302,9 +1341,9 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
             _populate_choices(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1354,9 +1393,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             _populate_autocomplete(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 

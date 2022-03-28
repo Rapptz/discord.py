@@ -92,10 +92,11 @@ class TransformerError(AppCommandError):
 
     This inherits from :exc:`~discord.app_commands.AppCommandError`.
 
-    .. note::
-
-        If the transformer raises a custom :exc:`AppCommandError` then it will
-        be propagated rather than wrapped into this exception.
+    If an exception occurs while converting that does not subclass
+    :exc:`AppCommandError` then the exception is wrapped into this exception.
+    The original exception can be retrieved using the ``__cause__`` attribute.
+    Otherwise if the exception derives from :exc:`AppCommandError` then it will
+    be propagated as-is.
 
     .. versionadded:: 2.0
 

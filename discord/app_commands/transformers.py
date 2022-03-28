@@ -44,11 +44,11 @@ from typing import (
     Union,
 )
 
-from .errors import TransformerError
+from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..enums import AppCommandOptionType, ChannelType
-from ..utils import MISSING
+from ..utils import MISSING, maybe_coroutine
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -136,7 +136,14 @@ class CommandParameter:
                     raise TransformerError(value, self.type, self._annotation)
                 return choice
 
-            return await self._annotation.transform(interaction, value)
+            try:
+                # ParamSpec doesn't understand that transform is a callable since it's unbound
+                return await maybe_coroutine(self._annotation.transform, interaction, value)  # type: ignore
+            except AppCommandError:
+                raise
+            except Exception as e:
+                raise TransformerError(value, self.type, self._annotation) from e
+
         return value
 
 
@@ -218,7 +225,7 @@ class Transformer:
 
     @classmethod
     async def transform(cls, interaction: Interaction, value: Any) -> Any:
-        """|coro|
+        """|maybecoro|
 
         Transforms the converted option value into another value.
 
