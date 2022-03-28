@@ -361,7 +361,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             The signature for the command.
         """
 
-        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore - the parent will be a Group
+        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore # the parent will be a Group
         entries = []
         while parent is not None:
             if not parent.signature or parent.invoke_without_command:
@@ -561,7 +561,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         if self.verify_checks is False:
             # if we do not need to verify the checks then we can just
             # run it straight through normally without using await.
-            return sorted(iterator, key=key) if sort else list(iterator)  # type: ignore - the key shouldn't be None
+            return sorted(iterator, key=key) if sort else list(iterator)  # type: ignore # the key shouldn't be None
 
         if self.verify_checks is None and not self.context.guild:
             # if verify_checks is None and we're in a DM, don't verify

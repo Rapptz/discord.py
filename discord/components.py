@@ -126,7 +126,7 @@ class ActionRow(Component):
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore - Type checker does not understand these are the same
+        }  # type: ignore # Type checker does not understand these are the same
 
 
 class Button(Component):
@@ -198,7 +198,7 @@ class Button(Component):
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        return payload  # type: ignore - Type checker does not understand these are the same
+        return payload  # type: ignore # Type checker does not understand these are the same
 
 
 class SelectMenu(Component):
@@ -364,7 +364,7 @@ class SelectOption:
         }
 
         if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore - This Dict[str, Any] is compatible with PartialEmoji
+            payload['emoji'] = self.emoji.to_dict()  # type: ignore # This Dict[str, Any] is compatible with PartialEmoji
 
         if self.description:
             payload['description'] = self.description

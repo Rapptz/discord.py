@@ -134,17 +134,17 @@ class Namespace:
             opt_type = option['type']
             name = option['name']
             if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 if value is None:
                     self.__dict__[name] = float('nan')
                 else:
                     self.__dict__[name] = float(value)
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore -- Key is there
+                snowflake: str = option['value']  # type: ignore # Key is there
                 if opt_type == 9:  # Mentionable
                     # Mentionable is User | Role, these do not cause any conflict
                     key = ResolveKey.any_with(snowflake)

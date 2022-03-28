@@ -278,7 +278,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user  # type: ignore - user can't be None after login
+        return self._state.user  # type: ignore
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
@@ -301,7 +301,7 @@ class VoiceClient(VoiceProtocol):
                 # We're being disconnected so cleanup
                 await self.disconnect()
             else:
-                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore - this won't be None
+                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
         else:
             self._voice_state_complete.set()
 

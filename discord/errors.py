@@ -117,7 +117,7 @@ class HTTPException(DiscordException):
 
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
-        self.status: int = response.status  # type: ignore - This attribute is filled by the library even if using requests
+        self.status: int = response.status  # type: ignore # This attribute is filled by the library even if using requests
         self.code: int
         self.text: str
         if isinstance(message, dict):

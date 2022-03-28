@@ -1272,9 +1272,9 @@ def describe(**parameters: str) -> Callable[[T], T]:
             _populate_descriptions(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1341,9 +1341,9 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
             _populate_choices(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1393,9 +1393,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             _populate_autocomplete(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
