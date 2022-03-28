@@ -1288,6 +1288,10 @@ class Bot(BotBase, discord.Client):
 
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
+    
+    Unlike :class:`discord.Client`, This class does not require manually setting
+    a :class:`~discord.app_commands.CommandTree` and is automatically set upon 
+    instansiating the class.
 
     Attributes
     -----------
