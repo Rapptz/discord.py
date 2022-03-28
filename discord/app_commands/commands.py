@@ -75,6 +75,7 @@ __all__ = (
     'command',
     'describe',
     'check',
+    'rename',
     'choices',
     'autocomplete',
     'guilds',
@@ -217,6 +218,29 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
         raise TypeError(f'unknown parameter given: {first}')
 
 
+def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, str]) -> None:
+    rename_map: Dict[str, str] = {}
+
+    # original name to renamed name
+
+    for name in params.keys():
+        new_name = renames.pop(name, MISSING)
+
+        if new_name is MISSING:
+            rename_map[name] = name
+            continue
+
+        if name in rename_map:
+            raise ValueError(f'{new_name} is already used')
+
+        rename_map[name] = new_name
+        params[name]._rename = new_name
+
+    if renames:
+        first = next(iter(renames))
+        raise ValueError(f'unknown parameter given: {first}')
+
+
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
     for name, param in params.items():
         choices = all_choices.pop(name, MISSING)
@@ -297,6 +321,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
                 param.description = '…'
     else:
         _populate_descriptions(result, descriptions)
+
+    try:
+        renames = func.__discord_app_commands_param_rename__
+    except AttributeError:
+        pass
+    else:
+        _populate_renames(result, renames)
 
     try:
         choices = func.__discord_app_commands_param_choices__
@@ -475,23 +506,29 @@ class Command(Generic[GroupT, P, T]):
             raise CheckFailure(f'The check functions for command {self.name!r} failed.')
 
         values = namespace.__dict__
-        for name, param in self._params.items():
+        transformed_values = {}
+        # get parameters mapped to their renamed names
+        params = {param.display_name: param for param in self._params.values()}
+
+        for name, param in params.items():
             try:
                 value = values[name]
             except KeyError:
                 if not param.required:
-                    values[name] = param.default
+                    transformed_values[name] = param.default
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
-                values[name] = await param.transform(interaction, value)
+                if param._rename is not MISSING:
+                    name = param.name
+                transformed_values[name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **values)  # type: ignore
-            return await self._callback(interaction, **values)  # type: ignore
+                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
+            return await self._callback(interaction, **transformed_values)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
@@ -1274,6 +1311,46 @@ def describe(**parameters: str) -> Callable[[T], T]:
                 inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def rename(**parameters: str) -> Callable[[T], T]:
+    r"""Renames the given parameters by their name using the key of the keyword argument
+    as the name.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.rename(the_member_to_ban='member')
+        async def ban(interaction: discord.Interaction, the_member_to_ban: discord.Member):
+            await interaction.response.send_message(f'Banned {the_member_to_ban}')
+
+    Parameters
+    -----------
+    \*\*parameters
+        The name of the parameters.
+
+    Raises
+    --------
+    ValueError
+        The parameter name is already used by another parameter.
+    TypeError
+        The parameter name is not found.
+    """
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_renames(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore - Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore - Runtime attribute assignment
 
         return inner
 

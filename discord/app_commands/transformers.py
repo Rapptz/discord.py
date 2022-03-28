@@ -101,12 +101,13 @@ class CommandParameter:
     min_value: Optional[Union[int, float]] = None
     max_value: Optional[Union[int, float]] = None
     autocomplete: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    _rename: str = MISSING
     _annotation: Any = MISSING
 
     def to_dict(self) -> Dict[str, Any]:
         base = {
             'type': self.type.value,
-            'name': self.name,
+            'name': self.display_name,
             'description': self.description,
             'required': self.required,
         }
@@ -145,6 +146,11 @@ class CommandParameter:
                 raise TransformerError(value, self.type, self._annotation) from e
 
         return value
+
+    @property
+    def display_name(self) -> str:
+        """:class:`str`: The name of the parameter as it should be displayed to the user."""
+        return self.name if self._rename is MISSING else self._rename
 
 
 class Transformer:

@@ -462,6 +462,9 @@ Decorators
 .. autofunction:: discord.app_commands.describe
     :decorator:
 
+.. autofunction:: discord.app_commands.rename
+    :decorator:
+
 .. autofunction:: discord.app_commands.choices
     :decorator:
 
