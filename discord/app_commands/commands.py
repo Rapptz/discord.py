@@ -219,22 +219,22 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
 
 
 def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, str]) -> None:
-    old_params = params.copy()
-    for name, param in old_params.items():
-        rename = renames.pop(name, MISSING)
-        if rename is MISSING:
+    rename_map: Dict[str, str] = {}
+
+    # original name to renamed name
+
+    for name in params.keys():
+        new_name = renames.pop(name, MISSING)
+
+        if new_name is MISSING:
+            rename_map[name] = name
             continue
 
-        if not isinstance(rename, str):
-            raise TypeError('rename must be a string')
+        if name in rename_map:
+            raise ValueError(f'{new_name} is already used')
 
-        param._rename = rename
-        params.pop(name)
-        params[rename] = param
-
-    if renames:
-        first = next(iter(renames))
-        raise TypeError(f'unknown parameter given: {first}')
+        rename_map[name] = new_name
+        params[name]._rename = new_name
 
 
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
@@ -502,26 +502,29 @@ class Command(Generic[GroupT, P, T]):
             raise CheckFailure(f'The check functions for command {self.name!r} failed.')
 
         values = namespace.__dict__
-        for name, param in self._params.items():
+        transformed_values = {}
+        # get parameters mapped to their renamed names
+        params = {param.display_name: param for param in self._params.values()}
+
+        for name, param in params.items():
             try:
                 value = values[name]
             except KeyError:
                 if not param.required:
-                    values[name] = param.default
+                    transformed_values[name] = param.default
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
                 if param._rename is not MISSING:
                     name = param.name
-                    values.pop(param._rename)
-                values[name] = await param.transform(interaction, value)
+                transformed_values[name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **values)  # type: ignore
-            return await self._callback(interaction, **values)  # type: ignore
+                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
+            return await self._callback(interaction, **transformed_values)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
