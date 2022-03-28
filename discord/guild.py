@@ -109,7 +109,7 @@ if TYPE_CHECKING:
     )
     from .types.voice import GuildVoiceState
     from .permissions import Permissions
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
     from .state import ConnectionState
@@ -120,7 +120,6 @@ if TYPE_CHECKING:
         NewsChannel as NewsChannelPayload,
         VoiceChannel as VoiceChannelPayload,
         CategoryChannel as CategoryChannelPayload,
-        StoreChannel as StoreChannelPayload,
         StageChannel as StageChannelPayload,
     )
     from .types.integration import IntegrationType
@@ -128,7 +127,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]
+    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
 
 
@@ -1113,17 +1112,6 @@ class Guild(Hashable):
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, NewsChannelPayload]:
-        ...
-
-    @overload
-    def _create_channel(
-        self,
-        name: str,
-        channel_type: Literal[ChannelType.store],
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
-        category: Optional[Snowflake] = ...,
-        **options: Any,
-    ) -> Coroutine[Any, Any, StoreChannelPayload]:
         ...
 
     @overload

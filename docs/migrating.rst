@@ -618,10 +618,6 @@ The following have been changed:
 
     - Note that this method will return ``None`` instead of :class:`StageChannel` if the edit was only positional.
 
-- :meth:`StoreChannel.edit`
-
-    - Note that this method will return ``None`` instead of :class:`StoreChannel` if the edit was only positional.
-
 - :meth:`TextChannel.edit`
 
     - Note that this method will return ``None`` instead of :class:`TextChannel` if the edit was only positional.
@@ -896,7 +892,6 @@ The following methods have been changed:
 - :meth:`Role.edit`
 - :meth:`StageChannel.edit`
 - :meth:`StageInstance.edit`
-- :meth:`StoreChannel.edit`
 - :meth:`StreamIntegration.edit`
 - :meth:`TextChannel.edit`
 - :meth:`VoiceChannel.edit`
@@ -914,6 +909,17 @@ The following methods have been changed:
 - :meth:`abc.Messageable.send`
 - :meth:`Webhook.send`
 - :meth:`abc.GuildChannel.set_permissions`
+
+Removal of ``StoreChannel``
+-----------------------------
+
+Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_. Therefore, the library has removed support for it as well.
+
+This removes the following:
+
+- ``StoreChannel``
+- ``commands.StoreChannelConverter``
+- ``ChannelType.store``
 
 Function Signature Changes
 ----------------------------

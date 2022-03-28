@@ -383,9 +383,6 @@ Converters
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
     :members:
 
-.. autoclass:: discord.ext.commands.StoreChannelConverter
-    :members:
-
 .. autoclass:: discord.ext.commands.StageChannelConverter
     :members:
 

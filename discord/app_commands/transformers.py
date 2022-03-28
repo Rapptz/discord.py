@@ -46,7 +46,7 @@ from typing import (
 
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
-from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..enums import AppCommandOptionType, ChannelType
 from ..utils import MISSING, maybe_coroutine
 from ..user import User
@@ -513,7 +513,6 @@ def channel_transformer(*channel_types: Type[Any], raw: Optional[bool] = False) 
 CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     AppCommandChannel: [
         ChannelType.stage_voice,
-        ChannelType.store,
         ChannelType.voice,
         ChannelType.text,
         ChannelType.news,
@@ -521,7 +520,6 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
-    StoreChannel: [ChannelType.store],
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
@@ -538,7 +536,6 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Type[Transformer]] = {
     AppCommandChannel: channel_transformer(AppCommandChannel, raw=True),
     AppCommandThread: channel_transformer(AppCommandThread, raw=True),
     StageChannel: channel_transformer(StageChannel),
-    StoreChannel: channel_transformer(StoreChannel),
     VoiceChannel: channel_transformer(VoiceChannel),
     TextChannel: channel_transformer(TextChannel),
     CategoryChannel: channel_transformer(CategoryChannel),

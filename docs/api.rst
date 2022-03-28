@@ -1275,10 +1275,6 @@ of :class:`enum.Enum`.
 
         A guild news channel.
 
-    .. attribute:: store
-
-        A guild store channel.
-
     .. attribute:: stage_voice
 
         A guild stage voice channel.
@@ -3744,15 +3740,6 @@ ThreadMember
 
 .. autoclass:: ThreadMember()
     :members:
-
-StoreChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: StoreChannel
-
-.. autoclass:: StoreChannel()
-    :members:
-    :inherited-members:
 
 VoiceChannel
 ~~~~~~~~~~~~~
