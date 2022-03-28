@@ -437,7 +437,7 @@ class Thread(Messageable, Hashable):
         without discrimination.
 
         You must have the :attr:`~Permissions.manage_messages` permission to
-        delete messages even if they are your own. 
+        delete messages even if they are your own.
         The :attr:`~Permissions.read_message_history` permission is
         also needed to retrieve message history.
 
