@@ -468,14 +468,31 @@ Decorators
 .. autofunction:: discord.app_commands.choices
     :decorator:
 
-.. autofunction:: discord.app_commands.check
-    :decorator:
-
 .. autofunction:: discord.app_commands.autocomplete
     :decorator:
 
 .. autofunction:: discord.app_commands.guilds
     :decorator:
+
+Checks
++++++++
+
+.. autofunction:: discord.app_commands.check
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_any_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_permissions
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.bot_has_permissions
+    :decorator:
+
+
 
 Namespace
 ~~~~~~~~~~
@@ -527,6 +544,21 @@ Exceptions
 .. autoexception:: discord.app_commands.CheckFailure
     :members:
 
+.. autoexception:: discord.app_commands.NoPrivateMessage
+    :members:
+
+.. autoexception:: discord.app_commands.MissingRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingAnyRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingPermissions
+    :members:
+
+.. autoexception:: discord.app_commands.BotMissingPermissions
+    :members:
+
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
     :members:
 
@@ -546,6 +578,11 @@ Exception Hierarchy
             - :exc:`~discord.app_commands.CommandInvokeError`
             - :exc:`~discord.app_commands.TransformerError`
             - :exc:`~discord.app_commands.CheckFailure`
+                - :exc:`~discord.app_commands.NoPrivateMessage`
+                - :exc:`~discord.app_commands.MissingRole`
+                - :exc:`~discord.app_commands.MissingAnyRole`
+                - :exc:`~discord.app_commands.MissingPermissions`
+                - :exc:`~discord.app_commands.BotMissingPermissions`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`

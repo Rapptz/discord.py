@@ -38,11 +38,17 @@ __all__ = (
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
+    'NoPrivateMessage',
+    'MissingRole',
+    'MissingAnyRole',
+    'MissingPermissions',
+    'BotMissingPermissions',
 )
 
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
+    from ..types.snowflake import Snowflake, SnowflakeList
 
 
 class AppCommandError(DiscordException):
@@ -139,6 +145,121 @@ class CheckFailure(AppCommandError):
     """
 
     pass
+
+
+class NoPrivateMessage(CheckFailure):
+    """An exception raised when a command does not work in a direct message.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message or 'This command cannot be used in direct messages.')
+
+
+class MissingRole(CheckFailure):
+    """An exception raised when the command invoker lacks a role to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~discord.app_commands.checks.has_role`.
+    """
+
+    def __init__(self, missing_role: Snowflake) -> None:
+        self.missing_role: Snowflake = missing_role
+        message = f'Role {missing_role!r} is required to run this command.'
+        super().__init__(message)
+
+
+class MissingAnyRole(CheckFailure):
+    """An exception raised when the command invoker lacks any of the roles
+    specified to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is missing.
+        These are the parameters passed to :func:`~discord.app_commands.checks.has_any_role`.
+    """
+
+    def __init__(self, missing_roles: SnowflakeList) -> None:
+        self.missing_roles: SnowflakeList = missing_roles
+
+        missing = [f"'{role}'" for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = f'You are missing at least one of the required roles: {fmt}'
+        super().__init__(message)
+
+
+class MissingPermissions(CheckFailure):
+    """An exception raised when the command invoker lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'You are missing {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
+
+
+class BotMissingPermissions(CheckFailure):
+    """An exception raised when the bot's member lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'Bot requires {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
 
 
 class CommandAlreadyRegistered(AppCommandError):

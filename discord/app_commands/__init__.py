@@ -15,3 +15,4 @@ from .models import *
 from .tree import *
 from .namespace import *
 from .transformers import *
+from . import checks as checks
