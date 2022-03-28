@@ -1347,7 +1347,7 @@ def rename(**parameters: str) -> Callable[[T], T]:
         if isinstance(inner, Command):
             _populate_renames(inner._params, parameters)
         else:
-            rename_param = getattr(inner, "__discord_app_commands_param_rename__")
+            rename_param = getattr(inner, "__discord_app_commands_param_rename__", None)
             if rename_param:
                 rename_param.update(parameters)
             else:
