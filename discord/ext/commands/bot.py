@@ -1291,7 +1291,7 @@ class Bot(BotBase, discord.Client):
     
     Unlike :class:`discord.Client`, This class does not require manually setting
     a :class:`~discord.app_commands.CommandTree` and is automatically set upon 
-    instansiating the class.
+    instantiating the class.
 
     Attributes
     -----------
