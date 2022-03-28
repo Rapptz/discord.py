@@ -23,50 +23,44 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import asyncio
+import datetime
+import functools
+import inspect
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     Generator,
     Generic,
-    Literal,
     List,
+    Literal,
     Optional,
-    Union,
     Set,
     Tuple,
-    TypeVar,
     Type,
-    TYPE_CHECKING,
+    TypeVar,
+    Union,
     overload,
 )
-import asyncio
-import functools
-import inspect
-import datetime
 
 import discord
 
-from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
-from .converter import run_converters, get_converter, Greedy
+from . import parameters
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
-
+from .converter import Greedy, get_converter, run_converters
+from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
+from .errors import *
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, TypeGuard, Self
+    from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
 
     from discord.message import Message
 
-    from ._types import (
-        Coro,
-        CoroFunc,
-        Check,
-        Hook,
-        Error,
-    )
+    from ._types import Check, Coro, CoroFunc, Error, Hook
 
 
 __all__ = (
@@ -154,7 +148,15 @@ def get_signature_parameters(
         if annotation is Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
-        params[name] = parameter.replace(annotation=annotation)
+        params[name] = parameter.replace(
+            annotation=annotation,
+            default=parameter
+            if isinstance(parameter.default, parameters.Parameter)
+            else parameters.Parameter(
+                converter=annotation if annotation is not inspect.Signature.empty else MISSING,
+                default=parameter.default if parameter.default is not inspect.Signature.empty else MISSING,
+            ),
+        )
 
     return params
 
@@ -591,7 +593,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
                     return await converter._construct_default(ctx)
                 raise MissingRequiredArgument(param)
-            return param.default
+            return await param.default.get_default(ctx)
 
         previous = view.index
         if consume_rest_is_special:
@@ -607,8 +609,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     raise exc
         view.previous = previous
 
-        # type-checker fails to narrow argument
-        return await run_converters(ctx, converter, argument, param)  # type: ignore
+        return await run_converters(ctx, converter, argument, param)
 
     async def _transform_greedy_pos(self, ctx: Context, param: inspect.Parameter, required: bool, converter: Any) -> Any:
         view = ctx.view
@@ -628,7 +629,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(value)
 
         if not result and not required:
-            return param.default
+            return await param.default.get_default(ctx)
         return result
 
     async def _transform_greedy_var_pos(self, ctx: Context, param: inspect.Parameter, converter: Any) -> Any:
@@ -1056,7 +1057,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
-                    result.append(f'[{name}={param.default}]' if not greedy else f'[{name}={param.default}]...')
+                    default_ = (
+                        param.default
+                        if not isinstance(param.default, parameters.Parameter)
+                        else param.default.displayed_default
+                    )
+                    result.append(f'[{name}={default_}]' if not greedy else f'[{name}={default_}]...')
                     continue
                 else:
                     result.append(f'[{name}]')

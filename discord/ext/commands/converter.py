@@ -24,34 +24,36 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import re
 import inspect
+import re
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Generic,
     Iterable,
+    List,
     Literal,
     Optional,
-    TYPE_CHECKING,
-    List,
     Protocol,
+    Tuple,
     Type,
     TypeVar,
-    Tuple,
     Union,
-    runtime_checkable,
     overload,
+    runtime_checkable,
 )
 
 import discord
+
 from .errors import *
 
 if TYPE_CHECKING:
-    from .context import Context
     from discord.state import Channel
     from discord.threads import Thread
-    from .bot import Bot, AutoShardedBot
+
+    from .bot import AutoShardedBot, Bot
+    from .context import Context
 
     _Bot = TypeVar('_Bot', bound=Union[Bot, AutoShardedBot])
 
@@ -1100,7 +1102,7 @@ _GenericAlias = type(List[T])
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: Type = _GenericAlias) -> bool:
-    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)  # type: ignore
+    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)
 
 
 CONVERTER_MAPPING: Dict[Type[Any], Any] = {
