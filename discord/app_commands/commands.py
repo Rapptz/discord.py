@@ -236,6 +236,10 @@ def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, st
         rename_map[name] = new_name
         params[name]._rename = new_name
 
+    if renames:
+        first = next(iter(renames))
+        raise ValueError(f'unknown parameter given: {first}')
+
 
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
     for name, param in params.items():
@@ -1335,6 +1339,8 @@ def rename(**parameters: str) -> Callable[[T], T]:
     --------
     ValueError
         The parameter name is already used by another parameter.
+    TypeError
+        The parameter name is not found.
     """
 
     def decorator(inner: T) -> T:
