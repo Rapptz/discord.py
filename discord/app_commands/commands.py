@@ -1314,6 +1314,29 @@ def describe(**parameters: str) -> Callable[[T], T]:
 
 
 def rename(**parameters: str) -> Callable[[T], T]:
+    r"""Renames the given parameters by their name using the key of the keyword argument
+    as the name.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.rename(the_member_to_ban='member')
+        async def ban(interaction: discord.Interaction, the_member_to_ban: discord.Member):
+            await interaction.response.send_message(f'Banned {the_member_to_ban}')
+
+    Parameters
+    -----------
+    \*\*parameters
+        The name of the parameters.
+
+    Raises
+    --------
+    ValueError
+        The parameter name is already used by another parameter.
+    """
+
     def decorator(inner: T) -> T:
         if isinstance(inner, Command):
             _populate_renames(inner._params, parameters)
