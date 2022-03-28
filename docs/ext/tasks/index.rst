@@ -108,7 +108,7 @@ Doing something during cancellation:
 
     class MyCog(commands.Cog):
         def __init__(self, bot):
-            self.bot= bot
+            self.bot = bot
             self._batch = []
             self.lock = asyncio.Lock()
             self.bulker.start()
