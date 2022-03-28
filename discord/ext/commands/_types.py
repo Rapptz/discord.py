@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 
-from typing import Any, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union, Tuple
+from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union, Tuple
 
 
 T = TypeVar('T')
@@ -37,18 +37,16 @@ if TYPE_CHECKING:
     from .errors import CommandError
 
     P = ParamSpec('P')
-    MaybeCoroFunc = Union[
-        Callable[P, 'Coro[T]'],
-        Callable[P, T],
-    ]
+    MaybeAwaitableFunc = Callable[P, 'MaybeAwaitable[T]']
 else:
     P = TypeVar('P')
-    MaybeCoroFunc = Tuple[P, T]
+    MaybeAwaitableFunc = Tuple[P, T]
 
 _Bot = Union['Bot', 'AutoShardedBot']
 Coro = Coroutine[Any, Any, T]
-MaybeCoro = Union[T, Coro[T]]
 CoroFunc = Callable[..., Coro[Any]]
+MaybeCoro = Union[T, Coro[T]]
+MaybeAwaitable = Union[T, Awaitable[T]]
 
 Check = Union[Callable[["Cog", "ContextT"], MaybeCoro[bool]], Callable[["ContextT"], MaybeCoro[bool]]]
 Hook = Union[Callable[["Cog", "ContextT"], Coro[Any]], Callable[["ContextT"], Coro[Any]]]

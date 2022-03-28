@@ -74,11 +74,11 @@ if TYPE_CHECKING:
         Check,
         CoroFunc,
         ContextT,
-        MaybeCoroFunc,
+        MaybeAwaitableFunc,
     )
 
     _Prefix = Union[Iterable[str], str]
-    _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
+    _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
 __all__ = (

@@ -31,6 +31,7 @@ import re
 
 from typing import (
     TYPE_CHECKING,
+    Awaitable,
     Optional,
     Generator,
     Generic,
@@ -54,7 +55,6 @@ if TYPE_CHECKING:
 
     import discord.abc
 
-    from ._types import Coro
     from .bot import BotBase
     from .cog import Cog
     from .context import Context
@@ -295,7 +295,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
         bot.remove_command(self.name)
         self._eject_cog()
 
-    async def _call_without_cog(self, callback: Callable[[ContextT], Coro[T]], ctx: ContextT) -> T:
+    async def _call_without_cog(self, callback: Callable[[ContextT], Awaitable[T]], ctx: ContextT) -> T:
         cog = self._cog
         self.cog = None
         try:
