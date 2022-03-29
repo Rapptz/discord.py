@@ -511,9 +511,9 @@ class Invite(Hashable):
     @property
     def url(self) -> str:
         """:class:`str`: A property that retrieves the invite URL."""
-        url = self.BASE + '/' + self.code
+        url = f'{self.BASE}/{self.code}'
         if self.scheduled_event_id is not None:
-            url += '?event=' + str(self.scheduled_event_id)
+            url += f'?event={str(self.scheduled_event_id)}'
         return url
 
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:

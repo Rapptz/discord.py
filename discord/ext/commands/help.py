@@ -367,7 +367,7 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             if not parent.signature or parent.invoke_without_command:
                 entries.append(parent.name)
             else:
-                entries.append(parent.name + ' ' + parent.signature)
+                entries.append(f'{parent.name} {parent.signature}')
             parent = parent.parent  # type: ignore
         parent_sig = ' '.join(reversed(entries))
 
@@ -375,10 +375,10 @@ class HelpCommand(HelpCommandCommand, Generic[ContextT]):
             aliases = '|'.join(command.aliases)
             fmt = f'[{command.name}|{aliases}]'
             if parent_sig:
-                fmt = parent_sig + ' ' + fmt
+                fmt = f'{parent_sig} {fmt}'
             alias = fmt
         else:
-            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
+            alias = f'{parent_sig} {command.name}' if parent_sig else command.name
 
         return f'{self.context.clean_prefix}{alias} {command.signature}'
 
@@ -964,7 +964,7 @@ class DefaultHelpCommand(HelpCommand[ContextT]):
             ``text`` parameter is now positional-only.
         """
         if len(text) > self.width:
-            return text[: self.width - 3].rstrip() + '...'
+            return f'{text[: self.width - 3].rstrip()}...'
         return text
 
     def get_ending_note(self) -> str:

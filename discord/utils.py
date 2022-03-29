@@ -586,7 +586,7 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 
 def _is_submodule(parent: str, child: str) -> bool:
-    return parent == child or child.startswith(parent + '.')
+    return parent == child or child.startswith(f'{parent}.')
 
 
 if HAS_ORJSON:

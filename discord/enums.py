@@ -71,7 +71,7 @@ if TYPE_CHECKING:
 def _create_value_cls(name: str, comparable: bool):
     # All the type ignores here are due to the type checker being unable to recognise
     # Runtime type creation without exploding.
-    cls = namedtuple('_EnumValue_' + name, 'name value')
+    cls = namedtuple(f'_EnumValue_{name}', 'name value')
     cls.__repr__ = lambda self: f'<{name}.{self.name}: {self.value!r}>'  # type: ignore
     cls.__str__ = lambda self: f'{name}.{self.name}'  # type: ignore
     if comparable:

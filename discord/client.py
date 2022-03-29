@@ -392,7 +392,7 @@ class Client:
 
     def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
-        method = 'on_' + event
+        method = f'on_{event}'
 
         listeners = self._listeners.get(event)
         if listeners:

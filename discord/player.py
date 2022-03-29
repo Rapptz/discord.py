@@ -179,7 +179,7 @@ class FFmpegAudio(AudioSource):
             process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, **subprocess_kwargs)
         except FileNotFoundError:
             executable = args.partition(' ')[0] if isinstance(args, str) else args[0]
-            raise ClientException(executable + ' was not found.') from None
+            raise ClientException(f'{executable} was not found.') from None
         except subprocess.SubprocessError as exc:
             raise ClientException(f'Popen failed: {exc.__class__.__name__}: {exc}') from exc
         else:
@@ -506,7 +506,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         probefunc = fallback = None
 
         if isinstance(method, str):
-            probefunc = getattr(cls, '_probe_codec_' + method, None)
+            probefunc = getattr(cls, f'_probe_codec_{method}', None)
             if probefunc is None:
                 raise AttributeError(f"Invalid probe method {method!r}")
 
@@ -542,7 +542,8 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @staticmethod
     def _probe_codec_native(source, executable: str = 'ffmpeg') -> Tuple[Optional[str], Optional[int]]:
-        exe = executable[:2] + 'probe' if executable in ('ffmpeg', 'avconv') else executable
+        exe = f'{executable[:2]}probe' if executable in {'ffmpeg', 'avconv'} else executable
+
         args = [exe, '-v', 'quiet', '-print_format', 'json', '-show_streams', '-select_streams', 'a:0', source]
         output = subprocess.check_output(args, timeout=20)
         codec = bitrate = None

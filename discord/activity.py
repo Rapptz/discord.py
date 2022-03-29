@@ -673,7 +673,7 @@ class Spotify:
         if large_image[:8] != 'spotify:':
             return ''
         album_image_id = large_image[8:]
-        return 'https://i.scdn.co/image/' + album_image_id
+        return f'https://i.scdn.co/image/{album_image_id}'
 
     @property
     def track_id(self) -> str:

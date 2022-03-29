@@ -82,7 +82,7 @@ class GatewayNotFound(DiscordException):
 def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     items: List[Tuple[str, str]] = []
     for k, v in d.items():
-        new_key = key + '.' + k if key else k
+        new_key = f'{key}.{k}' if key else k
 
         if isinstance(v, dict):
             try:

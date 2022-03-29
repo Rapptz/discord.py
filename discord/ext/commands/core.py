@@ -730,7 +730,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         parent = self.full_parent_name
         if parent:
-            return parent + ' ' + self.name
+            return f'{parent} {self.name}'
         else:
             return self.name
 
