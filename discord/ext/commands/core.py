@@ -665,6 +665,15 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         return self.params.copy()
 
     @property
+    def cooldown(self) -> Optional[Cooldown]:
+        """Optional[:class:`~discord.app_commands.Cooldown`]: The cooldown of a command when invoked
+        or ``None`` if the command doesn't have a registered cooldown.
+
+        .. versionadded:: 2.0
+        """
+        return self._buckets._cooldown
+
+    @property
     def full_parent_name(self) -> str:
         """:class:`str`: Retrieves the fully qualified parent command name.
 
