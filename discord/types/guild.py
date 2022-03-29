@@ -35,7 +35,6 @@ from .role import Role
 from .member import Member
 from .emoji import Emoji
 from .user import User
-from .sticker import GuildSticker
 from .threads import Thread
 
 

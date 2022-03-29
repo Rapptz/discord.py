@@ -40,7 +40,6 @@ from typing import (
     Callable,
     Tuple,
     ClassVar,
-    Optional,
     Type,
     overload,
 )
@@ -85,7 +84,7 @@ if TYPE_CHECKING:
     from .types.embed import Embed as EmbedPayload
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
-    from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
+    from .abc import GuildChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
     from .channel import TextChannel

@@ -48,7 +48,6 @@ from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Di
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
-    from .enums import Status
 
 __all__ = (
     'AutoShardedClient',

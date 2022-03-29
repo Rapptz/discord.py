@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Callable, Collection, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Callable, Collection, Coroutine, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -51,7 +51,6 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
