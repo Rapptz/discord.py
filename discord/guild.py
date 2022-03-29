@@ -278,7 +278,7 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
     premium_progress_bar_enabled: :class:`bool`
-        Indicates if the guild has premium AKA server boost level progress bar enabled.
+        Indicates if the guild has a premium (i.e. server boost level) progress bar enabled.
 
         .. versionadded:: 2.0
     """
