@@ -666,8 +666,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     @property
     def cooldown(self) -> Optional[Cooldown]:
-        """Optional[:class:`Cooldown`]: The cooldown of a command when invoked or ``None`` if the command
-        doesn't have a registered cooldown.
+        """Optional[:class:`~discord.app_commands.Cooldown`]: The cooldown of a command when invoked
+        or ``None`` if the command doesn't have a registered cooldown.
 
         .. versionadded:: 2.0
         """
