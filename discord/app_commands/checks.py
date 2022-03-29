@@ -432,6 +432,23 @@ def cooldown(
     If a cooldown is triggered, then :exc:`~discord.app_commands.CommandOnCooldown` is
     raised to the error handlers.
 
+    Examples
+    ---------
+
+    Setting a one per 5 seconds per member cooldown on a command:
+
+    .. code-block:: python3
+
+        @tree.command()
+        @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id))
+        async def test(interaction: discord.Interaction):
+            await interaction.response.send_message('Hello')
+
+        @test.error
+        async def on_test_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            if isinstance(error, app_commands.CommandOnCooldown):
+                await interaction.response.send_message(str(error), ephemeral=True)
+
     Parameters
     ------------
     rate: :class:`int`
@@ -479,6 +496,28 @@ def dynamic_cooldown(
 
     If a cooldown is triggered, then :exc:`~discord.app_commands.CommandOnCooldown` is
     raised to the error handlers.
+
+    Examples
+    ---------
+
+    Setting a cooldown for everyone but the owner.
+
+    .. code-block:: python3
+
+        def cooldown_for_everyone_but_me(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+            if interaction.user.id == 80088516616269824:
+                return None
+            return app_commands.Cooldown(1, 10.0)
+
+        @tree.command()
+        @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_me)
+        async def test(interaction: discord.Interaction):
+            await interaction.response.send_message('Hello')
+
+        @test.error
+        async def on_test_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            if isinstance(error, app_commands.CommandOnCooldown):
+                await interaction.response.send_message(str(error), ephemeral=True)
 
     Parameters
     ------------
