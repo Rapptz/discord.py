@@ -519,9 +519,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             other.checks = self.checks.copy()
         if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
-        if self._max_concurrency != other._max_concurrency:
-            # _max_concurrency won't be None at this point
-            other._max_concurrency = self._max_concurrency.copy()  # type: ignore
+        if self._max_concurrency and self._max_concurrency != other._max_concurrency:
+            other._max_concurrency = self._max_concurrency.copy()
 
         try:
             other.on_error = self.on_error
