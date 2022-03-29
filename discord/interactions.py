@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, PartialMessageable
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
 
