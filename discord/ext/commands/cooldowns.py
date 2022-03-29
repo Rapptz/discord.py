@@ -33,6 +33,7 @@ from collections import deque
 
 from ...abc import PrivateChannel
 from .errors import MaxConcurrencyReached
+from discord.app_commands import Cooldown as Cooldown
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -77,120 +78,6 @@ class BucketType(Enum):
 
     def __call__(self, msg: Message) -> Any:
         return self.get_key(msg)
-
-
-class Cooldown:
-    """Represents a cooldown for a command.
-
-    Attributes
-    -----------
-    rate: :class:`int`
-        The total number of tokens available per :attr:`per` seconds.
-    per: :class:`float`
-        The length of the cooldown period in seconds.
-    """
-
-    __slots__ = ('rate', 'per', '_window', '_tokens', '_last')
-
-    def __init__(self, rate: float, per: float) -> None:
-        self.rate: int = int(rate)
-        self.per: float = float(per)
-        self._window: float = 0.0
-        self._tokens: int = self.rate
-        self._last: float = 0.0
-
-    def get_tokens(self, current: Optional[float] = None) -> int:
-        """Returns the number of available tokens before rate limiting is applied.
-
-        Parameters
-        ------------
-        current: Optional[:class:`float`]
-            The time in seconds since Unix epoch to calculate tokens at.
-            If not supplied then :func:`time.time()` is used.
-
-        Returns
-        --------
-        :class:`int`
-            The number of tokens available before the cooldown is to be applied.
-        """
-        if not current:
-            current = time.time()
-
-        tokens = self._tokens
-
-        if current > self._window + self.per:
-            tokens = self.rate
-        return tokens
-
-    def get_retry_after(self, current: Optional[float] = None) -> float:
-        """Returns the time in seconds until the cooldown will be reset.
-
-        Parameters
-        -------------
-        current: Optional[:class:`float`]
-            The current time in seconds since Unix epoch.
-            If not supplied, then :func:`time.time()` is used.
-
-        Returns
-        -------
-        :class:`float`
-            The number of seconds to wait before this cooldown will be reset.
-        """
-        current = current or time.time()
-        tokens = self.get_tokens(current)
-
-        if tokens == 0:
-            return self.per - (current - self._window)
-
-        return 0.0
-
-    def update_rate_limit(self, current: Optional[float] = None) -> Optional[float]:
-        """Updates the cooldown rate limit.
-
-        Parameters
-        -------------
-        current: Optional[:class:`float`]
-            The time in seconds since Unix epoch to update the rate limit at.
-            If not supplied, then :func:`time.time()` is used.
-
-        Returns
-        -------
-        Optional[:class:`float`]
-            The retry-after time in seconds if rate limited.
-        """
-        current = current or time.time()
-        self._last = current
-
-        self._tokens = self.get_tokens(current)
-
-        # first token used means that we start a new rate limit window
-        if self._tokens == self.rate:
-            self._window = current
-
-        # check if we are rate limited
-        if self._tokens == 0:
-            return self.per - (current - self._window)
-
-        # we're not so decrement our tokens
-        self._tokens -= 1
-
-    def reset(self) -> None:
-        """Reset the cooldown to its initial state."""
-        self._tokens = self.rate
-        self._last = 0.0
-
-    def copy(self) -> Cooldown:
-        """Creates a copy of this cooldown.
-
-        Returns
-        --------
-        :class:`Cooldown`
-            A new instance of this cooldown.
-        """
-        return Cooldown(self.rate, self.per)
-
-    def __repr__(self) -> str:
-        return f'<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>'
 
 
 class CooldownMapping:

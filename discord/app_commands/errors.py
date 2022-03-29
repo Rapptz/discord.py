@@ -43,12 +43,14 @@ __all__ = (
     'MissingAnyRole',
     'MissingPermissions',
     'BotMissingPermissions',
+    'CommandOnCooldown',
 )
 
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
     from ..types.snowflake import Snowflake, SnowflakeList
+    from .checks import Cooldown
 
 
 class AppCommandError(DiscordException):
@@ -260,6 +262,27 @@ class BotMissingPermissions(CheckFailure):
             fmt = ' and '.join(missing)
         message = f'Bot requires {fmt} permission(s) to run this command.'
         super().__init__(message, *args)
+
+
+class CommandOnCooldown(CheckFailure):
+    """An exception raised when the command being invoked is on cooldown.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    cooldown: :class:`~discord.app_commands.Cooldown`
+        The cooldown that was triggered.
+    retry_after: :class:`float`
+        The amount of seconds to wait before you can retry again.
+    """
+
+    def __init__(self, cooldown: Cooldown, retry_after: float) -> None:
+        self.cooldown: Cooldown = cooldown
+        self.retry_after: float = retry_after
+        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 
 class CommandAlreadyRegistered(AppCommandError):

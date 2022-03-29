@@ -330,14 +330,6 @@ Checks
 
 .. _ext_commands_api_context:
 
-Cooldown
----------
-
-.. attributetable:: discord.ext.commands.Cooldown
-
-.. autoclass:: discord.ext.commands.Cooldown
-    :members:
-
 Context
 --------
 

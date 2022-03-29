@@ -451,7 +451,7 @@ Group
     :members:
 
 Decorators
-+++++++++++
+~~~~~~~~~~~
 
 .. autofunction:: discord.app_commands.command
     :decorator:
@@ -475,7 +475,7 @@ Decorators
     :decorator:
 
 Checks
-+++++++
+~~~~~~~
 
 .. autofunction:: discord.app_commands.check
     :decorator:
@@ -492,6 +492,19 @@ Checks
 .. autofunction:: discord.app_commands.checks.bot_has_permissions
     :decorator:
 
+.. autofunction:: discord.app_commands.checks.cooldown
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.dynamic_cooldown
+    :decorator:
+
+Cooldown
+~~~~~~~~~
+
+.. attributetable:: discord.app_commands.Cooldown
+
+.. autoclass:: discord.app_commands.Cooldown
+    :members:
 
 
 Namespace
@@ -559,6 +572,9 @@ Exceptions
 .. autoexception:: discord.app_commands.BotMissingPermissions
     :members:
 
+.. autoexception:: discord.app_commands.CommandOnCooldown
+    :members:
+
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
     :members:
 
@@ -583,6 +599,7 @@ Exception Hierarchy
                 - :exc:`~discord.app_commands.MissingAnyRole`
                 - :exc:`~discord.app_commands.MissingPermissions`
                 - :exc:`~discord.app_commands.BotMissingPermissions`
+                - :exc:`~discord.app_commands.CommandOnCooldown`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
