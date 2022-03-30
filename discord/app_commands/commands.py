@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Set,
     TYPE_CHECKING,
@@ -87,7 +88,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
+GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
 UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
@@ -95,6 +96,7 @@ Error = Union[
     UnboundError,
 ]
 Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
+Binding = Union['Group', 'Cog']
 
 
 if TYPE_CHECKING:
@@ -442,7 +444,16 @@ class Command(Generic[GroupT, P, T]):
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    def _copy_with_binding(self, binding: GroupT) -> Command:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: GroupT,
+        bindings: MutableMapping[GroupT, GroupT] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Command:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -451,11 +462,15 @@ class Command(Generic[GroupT, P, T]):
         copy.description = self.description
         copy._attr = self._attr
         copy._callback = self._callback
-        copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.module = self.module
-        copy.binding = binding
+        copy.parent = parent
+        copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+
+        if copy._attr and set_on_binding:
+            setattr(copy.binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -969,12 +984,19 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
+        bindings: Dict[Group, Group] = {}
+
         for child in self.__discord_app_commands_group_children__:
-            child.parent = self
-            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
-            self._children[child.name] = child
-            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
-                setattr(self, child._attr, child)
+            # commands and groups created directly in this class (no parent)
+            copy = (
+                child._copy_with(parent=self, binding=self, bindings=bindings, set_on_binding=False)
+                if not cls.__discord_app_commands_skip_init_binding__
+                else child
+            )
+
+            self._children[copy.name] = copy
+            if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, copy._attr, copy)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
@@ -983,16 +1005,36 @@ class Group:
         self._attr = name
         self.module = owner.__module__
 
-    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: Binding,
+        bindings: MutableMapping[Group, Group] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Group:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
         copy._guild_ids = self._guild_ids
         copy.description = self.description
-        copy.parent = self.parent
+        copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
-        copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
+        copy._children = {}
+
+        bindings[self] = copy
+
+        for child in self._children.values():
+            child_copy = child._copy_with(parent=copy, binding=binding, bindings=bindings)
+            child_copy.parent = copy
+            copy._children[child_copy.name] = child_copy
+
+        if copy._attr and set_on_binding:
+            setattr(parent or binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
