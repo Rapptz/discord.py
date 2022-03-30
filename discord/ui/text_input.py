@@ -118,7 +118,7 @@ class TextInput(Item[V]):
             min_length=min_length,
             max_length=max_length,
         )
-        self.row: Optional[int] = row
+        self.row = row
 
     def __str__(self) -> str:
         return self.value or ''

@@ -124,7 +124,7 @@ class Select(Item[V]):
             options=options,
             disabled=disabled,
         )
-        self.row: Optional[int] = row
+        self.row = row
 
     @property
     def custom_id(self) -> str:
