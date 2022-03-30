@@ -255,12 +255,9 @@ class Cog(metaclass=CogMeta):
                 # Not even with TypeGuard somehow.
                 parent=self if cls.__cog_is_app_commands_group__ else None,  # type: ignore
                 binding=self,
-                set_attr=True,
             )
 
             children.append(copy)
-            if command._attr:
-                setattr(self, command._attr, copy)
 
         self.__cog_app_commands__ = children
         if cls.__cog_is_app_commands_group__:

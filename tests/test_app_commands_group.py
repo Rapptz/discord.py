@@ -203,6 +203,10 @@ def test_cog_with_group_subclass_with_group_subclass():
         async def my_cog_command(self, interaction: discord.Interaction) -> None:
             ...
 
+        @my_group.sub_group.command()
+        async def my_sub_group_cog_command(self, interaction: discord.Interaction) -> None:
+            ...
+
     cog = MyCog()
     assert MyGroup.__discord_app_commands_group_children__[0].parent is not cog.my_group
     assert MySubGroup.__discord_app_commands_group_children__[0].parent is not cog.my_group.sub_group
@@ -220,6 +224,8 @@ def test_cog_with_group_subclass_with_group_subclass():
     assert cog.my_group.sub_group.my_sub_group_command.binding is cog.my_group.sub_group
     assert cog.my_cog_command.parent is cog.my_group
     assert cog.my_cog_command.binding is cog
+    assert cog.my_sub_group_cog_command.parent is cog.my_group.sub_group
+    assert cog.my_sub_group_cog_command.binding is cog
 
 
 def test_cog_group_with_commands():

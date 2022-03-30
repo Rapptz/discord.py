@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Set,
     TYPE_CHECKING,
@@ -87,7 +88,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
+GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
 UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
@@ -372,19 +373,6 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     return (parameter.name, resolved, type)
 
 
-def _find_binding(parent: Optional[Group], cls: Optional[Type[GroupT]], binding: Binding) -> Optional[Binding]:
-    if cls is not None and not issubclass(binding.__class__, cls):
-        if parent is not None:
-            if issubclass(parent.__class__, cls):
-                return parent
-
-            parent_parent = parent.parent
-            if parent_parent is not None and issubclass(parent_parent.__class__, cls):
-                return parent_parent
-
-    return binding
-
-
 class Command(Generic[GroupT, P, T]):
     """A class that implements an application command.
 
@@ -426,7 +414,6 @@ class Command(Generic[GroupT, P, T]):
         self.name: str = validate_name(name)
         self.description: str = description
         self._attr: Optional[str] = None
-        self._binding_cls: Optional[Type[GroupT]] = None
         self._callback: CommandCallback[GroupT, P, T] = callback
         self.parent: Optional[Group] = parent
         self.binding: Optional[GroupT] = None
@@ -451,14 +438,20 @@ class Command(Generic[GroupT, P, T]):
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
-        self._binding_cls = owner  # type: ignore
 
     @property
     def callback(self) -> CommandCallback[GroupT, P, T]:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    def _copy_with(self, *, parent: Optional[Group], binding: GroupT, set_attr: bool) -> Command:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: GroupT,
+        bindings: MutableMapping[GroupT, GroupT] = {},
+        set_on_binding: bool = True,
+    ) -> Command:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -466,19 +459,15 @@ class Command(Generic[GroupT, P, T]):
         copy.checks = self.checks
         copy.description = self.description
         copy._attr = self._attr
-        copy._binding_cls = self._binding_cls
         copy._callback = self._callback
         copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.module = self.module
         copy.parent = parent
+        copy.binding = bindings.get(self.binding) if self.binding is not None else binding
 
-        copy_binding: Optional[GroupT] = _find_binding(parent, self._binding_cls, binding)  # type: ignore
-
-        if set_attr and copy._attr:
-            setattr(copy_binding, copy._attr, copy)
-
-        copy.binding = copy_binding
+        if copy._attr and set_on_binding:
+            setattr(copy.binding, copy._attr, copy)
 
         return copy
 
@@ -974,7 +963,6 @@ class Group:
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
-        self._binding_cls: Optional[Type[Binding]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
@@ -994,17 +982,15 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
-        groups: Dict[Tuple[str, Type[Group]], Group] = {}
+        bindings: Dict[Group, Group] = {}
 
         for child in self.__discord_app_commands_group_children__:
+            # commands and groups created directly in this class (no parent)
             copy = (
-                child._copy_with(parent=self, binding=self, set_attr=True)
+                child._copy_with(parent=self, binding=self, bindings=bindings, set_on_binding=False)
                 if not cls.__discord_app_commands_skip_init_binding__
                 else child
             )
-
-            if isinstance(copy, Group):
-                groups[(copy.name, copy.__class__)] = copy
 
             self._children[copy.name] = copy
             if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
@@ -1015,10 +1001,16 @@ class Group:
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
-        self._binding_cls = owner  # type: ignore
         self.module = owner.__module__
 
-    def _copy_with(self, *, parent: Optional[Group], binding: Binding, set_attr: bool) -> Group:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: Binding,
+        bindings: MutableMapping[Group, Group] = {},
+        set_on_binding: bool = True,
+    ) -> Group:
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -1027,18 +1019,17 @@ class Group:
         copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
-        copy._binding_cls = self._binding_cls
         copy._children = {}
 
+        bindings[self] = copy
+
         for child in self._children.values():
-            child_copy = child._copy_with(parent=copy, binding=binding, set_attr=set_attr)
+            child_copy = child._copy_with(parent=copy, binding=binding, bindings=bindings)
             child_copy.parent = copy
             copy._children[child_copy.name] = child_copy
 
-        copy_binding: Optional[Binding] = _find_binding(parent, self._binding_cls, binding)
-
-        if set_attr and copy._attr:
-            setattr(copy_binding, copy._attr, copy)
+        if copy._attr and set_on_binding:
+            setattr(parent or binding, copy._attr, copy)
 
         return copy
 
