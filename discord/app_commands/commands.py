@@ -564,12 +564,19 @@ class Command(Generic[GroupT, P, T]):
             raise CommandInvokeError(self, e) from e
 
     async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
+        # The namespace contains the Discord provided names so this will be fine
+        # even if the name is renamed
         value = namespace.__dict__[name]
 
         try:
             param = self._params[name]
         except KeyError:
-            raise CommandSignatureMismatch(self) from None
+            # Slow case, it might be a rename
+            params = {param.display_name: param for param in self._params.values()}
+            try:
+                param = params[name]
+            except KeyError:
+                raise CommandSignatureMismatch(self) from None
 
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
