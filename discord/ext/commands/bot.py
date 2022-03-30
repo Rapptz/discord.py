@@ -1089,7 +1089,7 @@ class BotBase(GroupMixin[None]):
         if ret is None:
             ret = []
 
-        if not isinstance(ret, str):
+        elif not isinstance(ret, str):
             try:
                 ret = list(ret)  # type: ignore
             except TypeError:
