@@ -1403,6 +1403,7 @@ Miscellanous Changes
 - ``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`.
 - :meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 - :meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes.
+- ``MessageType.application_command`` has been renamed to :attr:`MessageType.chat_input_command` due to the addition of context menu commands.
 
 .. _migrating_2_0_tasks:
 
