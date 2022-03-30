@@ -77,7 +77,7 @@ if TYPE_CHECKING:
         MaybeCoroFunc,
     )
 
-    _Prefix = Optional[Union[Iterable[str], str]]
+    _Prefix = Union[Iterable[str], str]
     _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
@@ -154,14 +154,14 @@ _default: Any = _DefaultRepr()
 class BotBase(GroupMixin[None]):
     def __init__(
         self,
-        command_prefix: PrefixType[BotT] = None,
+        command_prefix: Optional[PrefixType[BotT]] = None,
         help_command: Optional[HelpCommand[Any]] = _default,
         tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
         super().__init__(**options)
-        self.command_prefix: PrefixType[BotT] = command_prefix
+        self.command_prefix: Optional[PrefixType[BotT]] = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
         self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
@@ -1277,6 +1277,11 @@ class BotBase(GroupMixin[None]):
         await self.invoke(ctx)  # type: ignore
 
     async def on_message(self, message: Message, /) -> None:
+        # skip processing commands if the command_prefix is None or an
+        # empty iterable. The empty string, however, is a valid prefix.
+        if not isinstance(self.command_prefix, str) and not self.command_prefix:
+            return
+        # process commands in the message
         await self.process_commands(message)
 
 
