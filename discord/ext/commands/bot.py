@@ -77,7 +77,7 @@ if TYPE_CHECKING:
         MaybeCoroFunc,
     )
 
-    _Prefix = Union[Iterable[str], str]
+    _Prefix = Optional[Union[Iterable[str], str]]
     _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
@@ -154,7 +154,7 @@ _default: Any = _DefaultRepr()
 class BotBase(GroupMixin[None]):
     def __init__(
         self,
-        command_prefix: PrefixType[BotT],
+        command_prefix: PrefixType[BotT] = None,
         help_command: Optional[HelpCommand[Any]] = _default,
         tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
         description: Optional[str] = None,
@@ -1081,9 +1081,13 @@ class BotBase(GroupMixin[None]):
             listening for.
         """
         prefix = ret = self.command_prefix
+
         if callable(prefix):
             # self will be a Bot or AutoShardedBot
             ret = await discord.utils.maybe_coroutine(prefix, self, message)  # type: ignore
+
+        if ret is None:
+            ret = []
 
         if not isinstance(ret, str):
             try:
@@ -1098,9 +1102,6 @@ class BotBase(GroupMixin[None]):
                     "command_prefix must be plain string, iterable of strings, or callable "
                     f"returning either of these, not {ret.__class__.__name__}"
                 )
-
-            if not ret:
-                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
@@ -1312,8 +1313,7 @@ class Bot(BotBase, discord.Client):
         The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
-        allowed.
+        :attr:`.Context.prefix`.
 
         .. note::
 
