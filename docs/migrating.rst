@@ -1171,8 +1171,6 @@ The following changes have been made:
 
 - :meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included.
 
-- ``MessageType.application_command`` has been renamed to :attr:`MessageType.chat_input_command` due to the addition of context menu commands.
-
 .. _migrating_2_0_commands:
 
 Command Extension Changes
