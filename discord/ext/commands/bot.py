@@ -1274,11 +1274,6 @@ class BotBase(GroupMixin[None]):
         await self.invoke(ctx)  # type: ignore
 
     async def on_message(self, message: Message, /) -> None:
-        # Skip processing commands if the command_prefix is an empty iterable.
-        # The empty string, however, is a valid prefix.
-        if not isinstance(self.command_prefix, str) and not self.command_prefix:
-            return
-        # Process commands in the message
         await self.process_commands(message)
 
 
