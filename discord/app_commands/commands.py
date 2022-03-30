@@ -449,9 +449,11 @@ class Command(Generic[GroupT, P, T]):
         *,
         parent: Optional[Group],
         binding: GroupT,
-        bindings: MutableMapping[GroupT, GroupT] = {},
+        bindings: MutableMapping[GroupT, GroupT] = MISSING,
         set_on_binding: bool = True,
     ) -> Command:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -1008,9 +1010,11 @@ class Group:
         *,
         parent: Optional[Group],
         binding: Binding,
-        bindings: MutableMapping[Group, Group] = {},
+        bindings: MutableMapping[Group, Group] = MISSING,
         set_on_binding: bool = True,
     ) -> Group:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
