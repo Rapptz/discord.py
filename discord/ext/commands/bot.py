@@ -155,7 +155,7 @@ class BotBase(GroupMixin[None]):
     def __init__(
         self,
         command_prefix: PrefixType[BotT],
-        help_command: Optional[HelpCommand[Any]] = _default,
+        help_command: Optional[HelpCommand] = _default,
         tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
         description: Optional[str] = None,
         **options: Any,
@@ -171,7 +171,7 @@ class BotBase(GroupMixin[None]):
         self._check_once: List[Check] = []
         self._before_invoke: Optional[CoroFunc] = None
         self._after_invoke: Optional[CoroFunc] = None
-        self._help_command: Optional[HelpCommand[Any]] = None
+        self._help_command: Optional[HelpCommand] = None
         self.description: str = inspect.cleandoc(description) if description else ''
         self.owner_id: Optional[int] = options.get('owner_id')
         self.owner_ids: Optional[Collection[int]] = options.get('owner_ids', set())
@@ -1025,11 +1025,11 @@ class BotBase(GroupMixin[None]):
     # help command stuff
 
     @property
-    def help_command(self) -> Optional[HelpCommand[Any]]:
+    def help_command(self) -> Optional[HelpCommand]:
         return self._help_command
 
     @help_command.setter
-    def help_command(self, value: Optional[HelpCommand[Any]]) -> None:
+    def help_command(self, value: Optional[HelpCommand]) -> None:
         if value is not None:
             if not isinstance(value, HelpCommand):
                 raise TypeError('help_command must be a subclass of HelpCommand')

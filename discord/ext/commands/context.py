@@ -354,7 +354,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         from .core import Group, Command, wrap_callback
         from .errors import CommandError
-        from .help import _context
 
         bot = self.bot
         cmd = bot.help_command
@@ -362,7 +361,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if cmd is None:
             return None
 
-        _context.set(self)
+        cmd = cmd.copy()
+        cmd.context = self
 
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
