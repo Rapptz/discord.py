@@ -69,7 +69,7 @@ class File:
             To pass binary data, consider usage of ``io.BytesIO``.
 
     spoiler: :class:`bool`
-        Whether the attachment is a spoiler. if left unspecified, the :attr:`~File.filename` is used 
+        Whether the attachment is a spoiler. if left unspecified, the :attr:`~File.filename` is used
         to determine if the file is a spoiler.
     description: Optional[:class:`str`]
         The file description to display, currently only supported for images.
@@ -121,9 +121,9 @@ class File:
     @property
     def filename(self) -> str:
         """:class:`str`:
-            The filename to display when uploading to Discord.
-            If this is not given then it defaults to ``fp.name`` or if ``fp`` is
-            a string then the ``filename`` will default to the string given.
+        The filename to display when uploading to Discord.
+        If this is not given then it defaults to ``fp.name`` or if ``fp`` is
+        a string then the ``filename`` will default to the string given.
         """
         return 'SPOILER_' * self.spoiler + self._filename
 
