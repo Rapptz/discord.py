@@ -147,14 +147,16 @@ def _to_kebab_case(text: str) -> str:
 def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
-        raise ValueError('names must be between 1-32 characters')
+        raise ValueError(
+            'names must be between 1-32 characters and contain only lower-case letters, hyphens, or underscores.'
+        )
 
     # Ideally, name.islower() would work instead but since certain characters
     # are Lo (e.g. CJK) those don't pass the test. I'd use `casefold` instead as
     # well, but chances are the server-side check is probably something similar to
     # this code anyway.
     if name.lower() != name:
-        raise ValueError('names must be all lower case')
+        raise ValueError('names must be all lower-case')
     return name
 
 
