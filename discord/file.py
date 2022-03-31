@@ -124,7 +124,7 @@ class File:
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
         """
-        return 'SPOILER_' * self.spoiler + self._filename
+        return 'SPOILER_' + self._filename if self.spoiler else self._filename
 
     @filename.setter
     def filename(self, value: str) -> None:
