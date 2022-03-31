@@ -69,13 +69,11 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
 
-    InteractionChannel = Union[
-        VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread, PartialMessageable
-    ]
+    InteractionChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, Thread, PartialMessageable]
 
 MISSING: Any = utils.MISSING
 
@@ -143,7 +141,7 @@ class Interaction:
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
         self._client: Client = state._get_client()
-        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
+        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
 
@@ -178,7 +176,7 @@ class Interaction:
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
             try:
-                member = data['member']  # type: ignore - The key is optional and handled
+                member = data['member']  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
             else:
@@ -187,7 +185,7 @@ class Interaction:
                 self._permissions = self.user._permissions or 0
         else:
             try:
-                self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
+                self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
 

@@ -74,11 +74,11 @@ if TYPE_CHECKING:
         Check,
         CoroFunc,
         ContextT,
-        MaybeCoroFunc,
+        MaybeAwaitableFunc,
     )
 
     _Prefix = Union[Iterable[str], str]
-    _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
+    _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
 __all__ = (
@@ -92,10 +92,14 @@ T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
 
 
-def when_mentioned(bot: _Bot, msg: Message) -> List[str]:
+def when_mentioned(bot: _Bot, msg: Message, /) -> List[str]:
     """A callable that implements a command prefix equivalent to being mentioned.
 
     These are meant to be passed into the :attr:`.Bot.command_prefix` attribute.
+
+        .. versionchanged:: 2.0
+
+            ``bot`` and ``msg`` parameters are now positional-only.
     """
     # bot.user will never be None when this is called
     return [f'<@{bot.user.id}> ', f'<@!{bot.user.id}> ']  # type: ignore
@@ -152,6 +156,7 @@ class BotBase(GroupMixin[None]):
         self,
         command_prefix: PrefixType[BotT],
         help_command: Optional[HelpCommand] = _default,
+        tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
@@ -159,7 +164,7 @@ class BotBase(GroupMixin[None]):
         self.command_prefix: PrefixType[BotT] = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
-        self.__tree: app_commands.CommandTree[Self] = app_commands.CommandTree(self)  # type: ignore
+        self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
         self._checks: List[Check] = []
@@ -185,7 +190,7 @@ class BotBase(GroupMixin[None]):
 
     # internal helpers
 
-    def dispatch(self, event_name: str, *args: Any, **kwargs: Any) -> None:
+    def dispatch(self, event_name: str, /, *args: Any, **kwargs: Any) -> None:
         # super() will resolve to Client
         super().dispatch(event_name, *args, **kwargs)  # type: ignore
         ev = 'on_' + event_name
@@ -208,7 +213,7 @@ class BotBase(GroupMixin[None]):
 
         await super().close()  # type: ignore
 
-    async def on_command_error(self, context: Context[BotT], exception: errors.CommandError) -> None:
+    async def on_command_error(self, context: Context[BotT], exception: errors.CommandError, /) -> None:
         """|coro|
 
         The default command error handler provided by the bot.
@@ -217,6 +222,10 @@ class BotBase(GroupMixin[None]):
         overridden to have a different implementation.
 
         This only fires if you do not specify any listeners for command error.
+
+        .. versionchanged:: 2.0
+
+            ``context`` and ``exception`` parameters are now positional-only.
         """
         if self.extra_events.get('on_command_error', None):
             return
@@ -234,7 +243,7 @@ class BotBase(GroupMixin[None]):
 
     # global check registration
 
-    def check(self, func: T) -> T:
+    def check(self, func: T, /) -> T:
         r"""A decorator that adds a global check to the bot.
 
         A global check is similar to a :func:`.check` that is applied
@@ -258,6 +267,9 @@ class BotBase(GroupMixin[None]):
             def check_commands(ctx):
                 return ctx.command.qualified_name in allowed_commands
 
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
         """
         # T was used instead of Check to ensure the type matches on return
         self.add_check(func)  # type: ignore
@@ -312,7 +324,7 @@ class BotBase(GroupMixin[None]):
         except ValueError:
             pass
 
-    def check_once(self, func: CFT) -> CFT:
+    def check_once(self, func: CFT, /) -> CFT:
         r"""A decorator that adds a "call once" global check to the bot.
 
         Unlike regular global checks, this one is called only once
@@ -346,11 +358,15 @@ class BotBase(GroupMixin[None]):
             def whitelist(ctx):
                 return ctx.message.author.id in my_whitelist
 
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
+
         """
         self.add_check(func, call_once=True)
         return func
 
-    async def can_run(self, ctx: Context[BotT], *, call_once: bool = False) -> bool:
+    async def can_run(self, ctx: Context[BotT], /, *, call_once: bool = False) -> bool:
         data = self._check_once if call_once else self._checks
 
         if len(data) == 0:
@@ -359,7 +375,7 @@ class BotBase(GroupMixin[None]):
         # type-checker doesn't distinguish between functions and methods
         return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
-    async def is_owner(self, user: User) -> bool:
+    async def is_owner(self, user: User, /) -> bool:
         """|coro|
 
         Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
@@ -371,6 +387,10 @@ class BotBase(GroupMixin[None]):
         .. versionchanged:: 1.3
             The function also checks if the application is team-owned if
             :attr:`owner_ids` is not set.
+
+        .. versionchanged:: 2.0
+
+            ``user`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -397,7 +417,7 @@ class BotBase(GroupMixin[None]):
                 self.owner_id = owner_id = app.owner.id
                 return user.id == owner_id
 
-    def before_invoke(self, coro: CFT) -> CFT:
+    def before_invoke(self, coro: CFT, /) -> CFT:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -412,6 +432,10 @@ class BotBase(GroupMixin[None]):
             only called if all checks and argument parsing procedures pass
             without error. If any check or argument parsing procedures fail
             then the hooks are not called.
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -429,7 +453,7 @@ class BotBase(GroupMixin[None]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: CFT) -> CFT:
+    def after_invoke(self, coro: CFT, /) -> CFT:
         r"""A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -445,6 +469,10 @@ class BotBase(GroupMixin[None]):
             however, **always** called regardless of the internal command
             callback raising an error (i.e. :exc:`.CommandInvokeError`\).
             This makes it ideal for clean-up scenarios.
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -464,8 +492,12 @@ class BotBase(GroupMixin[None]):
 
     # listener registration
 
-    def add_listener(self, func: CoroFunc, name: str = MISSING) -> None:
+    def add_listener(self, func: CoroFunc, /, name: str = MISSING) -> None:
         """The non decorator alternative to :meth:`.listen`.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -496,8 +528,12 @@ class BotBase(GroupMixin[None]):
         else:
             self.extra_events[name] = [func]
 
-    def remove_listener(self, func: CoroFunc, name: str = MISSING) -> None:
+    def remove_listener(self, func: CoroFunc, /, name: str = MISSING) -> None:
         """Removes a listener from the pool of listeners.
+
+        .. versionchanged:: 2.0
+
+            ``func`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -667,6 +703,7 @@ class BotBase(GroupMixin[None]):
         self,
         name: str,
         /,
+        *,
         guild: Optional[Snowflake] = MISSING,
         guilds: List[Snowflake] = MISSING,
     ) -> Optional[Cog]:
@@ -1022,11 +1059,15 @@ class BotBase(GroupMixin[None]):
 
     # command processing
 
-    async def get_prefix(self, message: Message) -> Union[List[str], str]:
+    async def get_prefix(self, message: Message, /) -> Union[List[str], str]:
         """|coro|
 
         Retrieves the prefix the bot is listening to
         with the message as a context.
+
+        .. versionchanged:: 2.0
+
+            ``message`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1040,6 +1081,7 @@ class BotBase(GroupMixin[None]):
             listening for.
         """
         prefix = ret = self.command_prefix
+
         if callable(prefix):
             # self will be a Bot or AutoShardedBot
             ret = await discord.utils.maybe_coroutine(prefix, self, message)  # type: ignore
@@ -1058,15 +1100,13 @@ class BotBase(GroupMixin[None]):
                     f"returning either of these, not {ret.__class__.__name__}"
                 )
 
-            if not ret:
-                raise ValueError("Iterable command_prefix must contain at least one prefix")
-
         return ret
 
     @overload
     async def get_context(
         self,
         message: Message,
+        /,
     ) -> Context[Self]:  # type: ignore
         ...
 
@@ -1074,6 +1114,7 @@ class BotBase(GroupMixin[None]):
     async def get_context(
         self,
         message: Message,
+        /,
         *,
         cls: Type[ContextT] = ...,
     ) -> ContextT:
@@ -1082,6 +1123,7 @@ class BotBase(GroupMixin[None]):
     async def get_context(
         self,
         message: Message,
+        /,
         *,
         cls: Type[ContextT] = MISSING,
     ) -> Any:
@@ -1096,6 +1138,10 @@ class BotBase(GroupMixin[None]):
         context, :attr:`.Context.valid` must be checked to make sure it is.
         If the context is not valid then it is not a valid candidate to be
         invoked under :meth:`~.Bot.invoke`.
+
+        .. versionchanged:: 2.0
+
+            ``message`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1164,11 +1210,15 @@ class BotBase(GroupMixin[None]):
         ctx.command = self.all_commands.get(invoker)
         return ctx
 
-    async def invoke(self, ctx: Context[BotT]) -> None:
+    async def invoke(self, ctx: Context[BotT], /) -> None:
         """|coro|
 
         Invokes the command given under the invocation context and
         handles all the internal event dispatch mechanisms.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1190,7 +1240,7 @@ class BotBase(GroupMixin[None]):
             exc = errors.CommandNotFound(f'Command "{ctx.invoked_with}" is not found')
             self.dispatch('command_error', ctx, exc)
 
-    async def process_commands(self, message: Message) -> None:
+    async def process_commands(self, message: Message, /) -> None:
         """|coro|
 
         This function processes the commands that have been registered
@@ -1207,6 +1257,10 @@ class BotBase(GroupMixin[None]):
         This also checks if the message's author is a bot and doesn't
         call :meth:`~.Bot.get_context` or :meth:`~.Bot.invoke` if so.
 
+        .. versionchanged:: 2.0
+
+            ``message`` parameter is now positional-only.
+
         Parameters
         -----------
         message: :class:`discord.Message`
@@ -1219,7 +1273,7 @@ class BotBase(GroupMixin[None]):
         # the type of the invocation context's bot attribute will be correct
         await self.invoke(ctx)  # type: ignore
 
-    async def on_message(self, message: Message) -> None:
+    async def on_message(self, message: Message, /) -> None:
         await self.process_commands(message)
 
 
@@ -1232,6 +1286,10 @@ class Bot(BotBase, discord.Client):
 
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
+
+    Unlike :class:`discord.Client`, This class does not require manually setting
+    a :class:`~discord.app_commands.CommandTree` and is automatically set upon
+    instantiating the class.
 
     Attributes
     -----------
@@ -1252,8 +1310,7 @@ class Bot(BotBase, discord.Client):
         The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
-        allowed.
+        :attr:`.Context.prefix`.
 
         .. note::
 
@@ -1292,6 +1349,10 @@ class Bot(BotBase, discord.Client):
         the ``command_prefix`` is set to ``!``. Defaults to ``False``.
 
         .. versionadded:: 1.7
+    tree_cls: Type[:class:`~discord.app_commands.CommandTree`]
+        The type of application command tree to use. Defaults to :class:`~discord.app_commands.CommandTree`.
+
+        .. versionadded:: 2.0
     """
 
     pass

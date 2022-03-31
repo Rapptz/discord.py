@@ -451,7 +451,7 @@ Group
     :members:
 
 Decorators
-+++++++++++
+~~~~~~~~~~~
 
 .. autofunction:: discord.app_commands.command
     :decorator:
@@ -462,6 +462,9 @@ Decorators
 .. autofunction:: discord.app_commands.describe
     :decorator:
 
+.. autofunction:: discord.app_commands.rename
+    :decorator:
+
 .. autofunction:: discord.app_commands.choices
     :decorator:
 
@@ -470,6 +473,39 @@ Decorators
 
 .. autofunction:: discord.app_commands.guilds
     :decorator:
+
+Checks
+~~~~~~~
+
+.. autofunction:: discord.app_commands.check
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_any_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_permissions
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.bot_has_permissions
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.cooldown
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.dynamic_cooldown
+    :decorator:
+
+Cooldown
+~~~~~~~~~
+
+.. attributetable:: discord.app_commands.Cooldown
+
+.. autoclass:: discord.app_commands.Cooldown
+    :members:
+
 
 Namespace
 ~~~~~~~~~~
@@ -518,6 +554,30 @@ Exceptions
 .. autoexception:: discord.app_commands.TransformerError
     :members:
 
+.. autoexception:: discord.app_commands.CheckFailure
+    :members:
+
+.. autoexception:: discord.app_commands.NoPrivateMessage
+    :members:
+
+.. autoexception:: discord.app_commands.MissingRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingAnyRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingPermissions
+    :members:
+
+.. autoexception:: discord.app_commands.BotMissingPermissions
+    :members:
+
+.. autoexception:: discord.app_commands.CommandOnCooldown
+    :members:
+
+.. autoexception:: discord.app_commands.MaxCommandsReached
+    :members:
+
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
     :members:
 
@@ -536,6 +596,14 @@ Exception Hierarchy
         - :exc:`~discord.app_commands.AppCommandError`
             - :exc:`~discord.app_commands.CommandInvokeError`
             - :exc:`~discord.app_commands.TransformerError`
+            - :exc:`~discord.app_commands.CheckFailure`
+                - :exc:`~discord.app_commands.NoPrivateMessage`
+                - :exc:`~discord.app_commands.MissingRole`
+                - :exc:`~discord.app_commands.MissingAnyRole`
+                - :exc:`~discord.app_commands.MissingPermissions`
+                - :exc:`~discord.app_commands.BotMissingPermissions`
+                - :exc:`~discord.app_commands.CommandOnCooldown`
+            - :exc:`~discord.app_commands.MaxCommandsReached`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`

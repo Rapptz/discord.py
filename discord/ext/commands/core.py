@@ -68,6 +68,8 @@ if TYPE_CHECKING:
         Check,
         Hook,
         Error,
+        ErrorT,
+        HookT,
     )
 
 
@@ -105,7 +107,6 @@ CogT = TypeVar('CogT', bound='Optional[Cog]')
 CommandT = TypeVar('CommandT', bound='Command')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -113,7 +114,7 @@ else:
     P = TypeVar('P')
 
 
-def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
+def unwrap_function(function: Callable[..., Any], /) -> Callable[..., Any]:
     partial = functools.partial
     while True:
         if hasattr(function, '__wrapped__'):
@@ -127,6 +128,7 @@ def unwrap_function(function: Callable[..., Any]) -> Callable[..., Any]:
 def get_signature_parameters(
     function: Callable[..., Any],
     globalns: Dict[str, Any],
+    /,
     *,
     skip_parameters: Optional[int] = None,
 ) -> Dict[str, inspect.Parameter]:
@@ -160,7 +162,7 @@ def get_signature_parameters(
     return params
 
 
-def wrap_callback(coro: Callable[P, Coro[T]]) -> Callable[P, Coro[Optional[T]]]:
+def wrap_callback(coro: Callable[P, Coro[T]], /) -> Callable[P, Coro[Optional[T]]]:
     @functools.wraps(coro)
     async def wrapped(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
         try:
@@ -177,7 +179,7 @@ def wrap_callback(coro: Callable[P, Coro[T]]) -> Callable[P, Coro[Optional[T]]]:
 
 
 def hooked_wrapped_callback(
-    command: Command[Any, ..., Any], ctx: Context[BotT], coro: Callable[P, Coro[T]]
+    command: Command[Any, ..., Any], ctx: Context[BotT], coro: Callable[P, Coro[T]], /
 ) -> Callable[P, Coro[Optional[T]]]:
     @functools.wraps(coro)
     async def wrapped(*args: P.args, **kwargs: P.kwargs) -> Optional[T]:
@@ -321,6 +323,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             Callable[Concatenate[CogT, ContextT, P], Coro[T]],
             Callable[Concatenate[ContextT, P], Coro[T]],
         ],
+        /,
         **kwargs: Any,
     ) -> None:
         if not asyncio.iscoroutinefunction(func):
@@ -487,7 +490,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
         self.cog = cog
 
-    async def __call__(self, context: Context[BotT], *args: P.args, **kwargs: P.kwargs) -> T:
+    async def __call__(self, context: Context[BotT], /, *args: P.args, **kwargs: P.kwargs) -> T:
         """|coro|
 
         Calls the internal callback that the command holds.
@@ -499,6 +502,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             the proper arguments and types to this function.
 
         .. versionadded:: 1.3
+
+        .. versionchanged:: 2.0
+
+            ``context`` parameter is now positional-only.
         """
         if self.cog is not None:
             return await self.callback(self.cog, context, *args, **kwargs)  # type: ignore
@@ -512,9 +519,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             other.checks = self.checks.copy()
         if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
-        if self._max_concurrency != other._max_concurrency:
-            # _max_concurrency won't be None at this point
-            other._max_concurrency = self._max_concurrency.copy()  # type: ignore
+        if self._max_concurrency and self._max_concurrency != other._max_concurrency:
+            other._max_concurrency = self._max_concurrency.copy()
 
         try:
             other.on_error = self.on_error
@@ -542,7 +548,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         else:
             return self.copy()
 
-    async def dispatch_error(self, ctx: Context[BotT], error: CommandError) -> None:
+    async def dispatch_error(self, ctx: Context[BotT], error: CommandError, /) -> None:
         ctx.command_failed = True
         cog = self.cog
         try:
@@ -565,7 +571,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context[BotT], param: inspect.Parameter) -> Any:
+    async def transform(self, ctx: Context[BotT], param: inspect.Parameter, /) -> Any:
         required = param.default is param.empty
         converter = get_converter(param)
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
@@ -656,6 +662,15 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         Useful for inspecting signature.
         """
         return self.params.copy()
+
+    @property
+    def cooldown(self) -> Optional[Cooldown]:
+        """Optional[:class:`~discord.app_commands.Cooldown`]: The cooldown of a command when invoked
+        or ``None`` if the command doesn't have a registered cooldown.
+
+        .. versionadded:: 2.0
+        """
+        return self._buckets._cooldown
 
     @property
     def full_parent_name(self) -> str:
@@ -757,7 +772,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if not self.ignore_extra and not view.eof:
             raise TooManyArguments('Too many arguments passed to ' + self.qualified_name)
 
-    async def call_before_hooks(self, ctx: Context[BotT]) -> None:
+    async def call_before_hooks(self, ctx: Context[BotT], /) -> None:
         # now that we're done preparing we can call the pre-command hooks
         # first, call the command local hook:
         cog = self.cog
@@ -782,7 +797,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if hook is not None:
             await hook(ctx)
 
-    async def call_after_hooks(self, ctx: Context[BotT]) -> None:
+    async def call_after_hooks(self, ctx: Context[BotT], /) -> None:
         cog = self.cog
         if self._after_invoke is not None:
             instance = getattr(self._after_invoke, '__self__', cog)
@@ -811,7 +826,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if retry_after:
                     raise CommandOnCooldown(bucket, retry_after, self._buckets.type)  # type: ignore
 
-    async def prepare(self, ctx: Context[BotT]) -> None:
+    async def prepare(self, ctx: Context[BotT], /) -> None:
         ctx.command = self
 
         if not await self.can_run(ctx):
@@ -835,8 +850,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 await self._max_concurrency.release(ctx)  # type: ignore
             raise
 
-    def is_on_cooldown(self, ctx: Context[BotT]) -> bool:
+    def is_on_cooldown(self, ctx: Context[BotT], /) -> bool:
         """Checks whether the command is currently on cooldown.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -856,8 +875,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
         return bucket.get_tokens(current) == 0
 
-    def reset_cooldown(self, ctx: Context[BotT]) -> None:
+    def reset_cooldown(self, ctx: Context[BotT], /) -> None:
         """Resets the cooldown on this command.
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -868,10 +891,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             bucket = self._buckets.get_bucket(ctx.message)
             bucket.reset()
 
-    def get_cooldown_retry_after(self, ctx: Context[BotT]) -> float:
+    def get_cooldown_retry_after(self, ctx: Context[BotT], /) -> float:
         """Retrieves the amount of seconds before this command can be tried again.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -892,7 +919,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         return 0.0
 
-    async def invoke(self, ctx: Context[BotT]) -> None:
+    async def invoke(self, ctx: Context[BotT], /) -> None:
         await self.prepare(ctx)
 
         # terminate the invoked_subcommand chain.
@@ -903,7 +930,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         injected = hooked_wrapped_callback(self, ctx, self.callback)
         await injected(*ctx.args, **ctx.kwargs)  # type: ignore
 
-    async def reinvoke(self, ctx: Context[BotT], *, call_hooks: bool = False) -> None:
+    async def reinvoke(self, ctx: Context[BotT], /, *, call_hooks: bool = False) -> None:
         ctx.command = self
         await self._parse_arguments(ctx)
 
@@ -920,12 +947,16 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: FuncT) -> FuncT:
+    def error(self, coro: ErrorT, /) -> ErrorT:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
         a single command. However, the :func:`.on_command_error` is still
         invoked afterwards as the catch-all.
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -951,7 +982,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: FuncT) -> FuncT:
+    def before_invoke(self, coro: HookT, /) -> HookT:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -961,6 +992,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         This pre-invoke hook takes a sole parameter, a :class:`.Context`.
 
         See :meth:`.Bot.before_invoke` for more info.
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -978,7 +1013,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: FuncT) -> FuncT:
+    def after_invoke(self, coro: HookT, /) -> HookT:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -988,6 +1023,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         This post-invoke hook takes a sole parameter, a :class:`.Context`.
 
         See :meth:`.Bot.after_invoke` for more info.
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1080,7 +1119,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         return ' '.join(result)
 
-    async def can_run(self, ctx: Context[BotT]) -> bool:
+    async def can_run(self, ctx: Context[BotT], /) -> bool:
         """|coro|
 
         Checks if the command can be executed by checking all the predicates
@@ -1089,6 +1128,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionchanged:: 1.3
             Checks whether the command is disabled or not
+
+        .. versionchanged:: 2.0
+
+            ``ctx`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1468,7 +1511,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
             ret.add_command(cmd.copy())
         return ret
 
-    async def invoke(self, ctx: Context[BotT]) -> None:
+    async def invoke(self, ctx: Context[BotT], /) -> None:
         ctx.invoked_subcommand = None
         ctx.subcommand_passed = None
         early_invoke = not self.invoke_without_command
@@ -1499,7 +1542,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
             view.previous = previous
             await super().invoke(ctx)
 
-    async def reinvoke(self, ctx: Context[BotT], *, call_hooks: bool = False) -> None:
+    async def reinvoke(self, ctx: Context[BotT], /, *, call_hooks: bool = False) -> None:
         ctx.invoked_subcommand = None
         early_invoke = not self.invoke_without_command
         if early_invoke:
@@ -1587,7 +1630,7 @@ def command(
     [
         Union[
             Callable[Concatenate[ContextT, P], Coro[Any]],
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
         ]
     ],
     CommandT,
@@ -1656,7 +1699,7 @@ def group(
 ) -> Callable[
     [
         Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
             Callable[Concatenate[ContextT, P], Coro[Any]],
         ]
     ],
@@ -1684,7 +1727,7 @@ def group(
     return command(name=name, cls=cls, **attrs)
 
 
-def check(predicate: Check[ContextT]) -> Callable[[T], T]:
+def check(predicate: Check[ContextT], /) -> Callable[[T], T]:
     r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
@@ -1748,6 +1791,10 @@ def check(predicate: Check[ContextT]) -> Callable[[T], T]:
         @is_me()
         async def only_me(ctx):
             await ctx.send('Only you!')
+
+    .. versionchanged:: 2.0
+
+        ``predicate`` parameter is now positional-only.
 
     Parameters
     -----------
@@ -1848,7 +1895,7 @@ def check_any(*checks: Check[ContextT]) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_role(item: Union[int, str]) -> Callable[[T], T]:
+def has_role(item: Union[int, str], /) -> Callable[[T], T]:
     """A :func:`.check` that is added that checks if the member invoking the
     command has the role specified via the name or ID specified.
 
@@ -1868,6 +1915,10 @@ def has_role(item: Union[int, str]) -> Callable[[T], T]:
 
         Raise :exc:`.MissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
+
+    .. versionchanged:: 2.0
+
+        ``item`` parameter is now positional-only.
 
     Parameters
     -----------
@@ -1936,7 +1987,7 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
     return check(predicate)
 
 
-def bot_has_role(item: int) -> Callable[[T], T]:
+def bot_has_role(item: int, /) -> Callable[[T], T]:
     """Similar to :func:`.has_role` except checks if the bot itself has the
     role.
 
@@ -1948,6 +1999,10 @@ def bot_has_role(item: int) -> Callable[[T], T]:
 
         Raise :exc:`.BotMissingRole` or :exc:`.NoPrivateMessage`
         instead of generic :exc:`.CheckFailure`
+
+    .. versionchanged:: 2.0
+
+        ``item`` parameter is now positional-only.
     """
 
     def predicate(ctx):
@@ -2247,8 +2302,8 @@ def dynamic_cooldown(
 
     This differs from :func:`.cooldown` in that it takes a function that
     accepts a single parameter of type :class:`.discord.Message` and must
-    return a :class:`.Cooldown` or ``None``. If ``None`` is returned then
-    that cooldown is effectively bypassed.
+    return a :class:`~discord.app_commands.Cooldown` or ``None``.
+    If ``None`` is returned then that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based
@@ -2265,7 +2320,7 @@ def dynamic_cooldown(
 
     Parameters
     ------------
-    cooldown: Callable[[:class:`.discord.Message`], Optional[:class:`.Cooldown`]]
+    cooldown: Callable[[:class:`.discord.Message`], Optional[:class:`~discord.app_commands.Cooldown`]]
         A function that takes a message and returns a cooldown that will
         apply to this invocation or ``None`` if the cooldown should be bypassed.
     type: :class:`.BucketType`
@@ -2319,13 +2374,17 @@ def max_concurrency(number: int, per: BucketType = BucketType.default, *, wait: 
     return decorator  # type: ignore
 
 
-def before_invoke(coro) -> Callable[[T], T]:
+def before_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
     do not have to be within the same cog.
 
     .. versionadded:: 1.4
+
+    .. versionchanged:: 2.0
+
+        ``coro`` parameter is now positional-only.
 
     Example
     ---------
@@ -2367,13 +2426,17 @@ def before_invoke(coro) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def after_invoke(coro) -> Callable[[T], T]:
+def after_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
     do not have to be within the same cog.
 
     .. versionadded:: 1.4
+
+    .. versionchanged:: 2.0
+
+        ``coro`` parameter is now positional-only.
     """
 
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:

@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
 from functools import partial
 from itertools import groupby
 
@@ -127,6 +127,18 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
 
+class _ViewCallback:
+    __slots__ = ('view', 'callback', 'item')
+
+    def __init__(self, callback: ItemCallbackType[Any, Any], view: View, item: Item[View]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
+        self.view: View = view
+        self.item: Item[View] = item
+
+    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
+        return self.callback(self.view, interaction, self.item)
+
+
 class View:
     """Represents a UI view.
 
@@ -142,9 +154,6 @@ class View:
 
     Attributes
     ------------
-    timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
     children: List[:class:`Item`]
         The list of children attached to this view.
     """
@@ -169,14 +178,14 @@ class View:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = partial(func, self, item)  # type: ignore
+            item.callback = _ViewCallback(func, self, item)
             item._view = self
             setattr(self, func.__name__, item)
             children.append(item)
         return children
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
-        self.timeout = timeout
+        self.__timeout = timeout
         self.children: List[Item[Self]] = self._init_children()
         self.__weights = _ViewWeights(self.children)
         self.id: str = os.urandom(16).hex()
@@ -225,6 +234,29 @@ class View:
 
         return components
 
+    def _refresh_timeout(self) -> None:
+        if self.__timeout:
+            self.__timeout_expiry = time.monotonic() + self.__timeout
+
+    @property
+    def timeout(self) -> Optional[float]:
+        """Optional[:class:`float`]: The timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+        """
+        return self.__timeout
+
+    @timeout.setter
+    def timeout(self, value: Optional[float]) -> None:
+        # If the timeout task is already running this allows it to update
+        # the expiry while it's running
+        if self.__timeout_task is not None:
+            if value is not None:
+                self.__timeout_expiry = time.monotonic() + value
+            else:
+                self.__timeout_expiry = None
+
+        self.__timeout = value
+
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
         """Converts a message's components into a :class:`View`.
@@ -252,8 +284,11 @@ class View:
             view.add_item(_component_to_item(component))
         return view
 
-    def add_item(self, item: Item[Any]) -> None:
+    def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
 
         Parameters
         -----------
@@ -279,9 +314,13 @@ class View:
 
         item._view = self
         self.children.append(item)
+        return self
 
-    def remove_item(self, item: Item[Any]) -> None:
+    def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from the view.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
 
         Parameters
         -----------
@@ -295,11 +334,17 @@ class View:
             pass
         else:
             self.__weights.remove_item(item)
+        return self
 
-    def clear_items(self) -> None:
-        """Removes all items from the view."""
+    def clear_items(self) -> Self:
+        """Removes all items from the view.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
         self.children.clear()
         self.__weights.clear()
+        return self
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|

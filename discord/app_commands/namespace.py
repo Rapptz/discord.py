@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, NamedTuple, Tuple
 from ..member import Member
 from ..object import Object
 from ..role import Role
@@ -88,6 +88,10 @@ class Namespace:
         .. describe:: key in x
 
             Checks if the attribute is in the namespace.
+        .. describe:: iter(x)
+
+           Returns an iterator of ``(name, value)`` pairs. This allows it
+           to be, for example, constructed as a dict or a list of pairs.
 
     This namespace object converts resolved objects into their appropriate form depending on their
     type. Consult the table below for conversion information.
@@ -113,6 +117,14 @@ class Namespace:
     +-------------------------------------------+-------------------------------------------------------------------------------+
     | :attr:`.AppCommandOptionType.attachment`  | :class:`~discord.Attachment`                                                  |
     +-------------------------------------------+-------------------------------------------------------------------------------+
+
+    .. note::
+
+        In autocomplete interactions, the namespace might not be validated or filled in. Discord does not
+        send the resolved data as well, so this means that certain fields end up just as IDs rather than
+        the resolved data. In these cases, a :class:`discord.Object` is returned instead.
+
+        This is a Discord limitation.
     """
 
     def __init__(
@@ -126,17 +138,17 @@ class Namespace:
             opt_type = option['type']
             name = option['name']
             if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 if value is None:
                     self.__dict__[name] = float('nan')
                 else:
                     self.__dict__[name] = float(value)
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore -- Key is there
+                snowflake: str = option['value']  # type: ignore # Key is there
                 if opt_type == 9:  # Mentionable
                     # Mentionable is User | Role, these do not cause any conflict
                     key = ResolveKey.any_with(snowflake)
@@ -147,7 +159,7 @@ class Namespace:
                     # servers will still have them so this needs to be handled.
                     key = ResolveKey(id=snowflake, type=opt_type)
 
-                value = completed.get(key)
+                value = completed.get(key) or Object(id=int(snowflake))
                 self.__dict__[name] = value
 
     @classmethod
@@ -229,6 +241,9 @@ class Namespace:
 
     def __getattr__(self, attr: str) -> Any:
         return None
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        yield from self.__dict__.items()
 
     def _update_with_defaults(self, defaults: Iterable[Tuple[str, Any]]) -> None:
         for key, value in defaults:

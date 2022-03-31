@@ -105,6 +105,9 @@ class Button(Item[V]):
         if url is None and custom_id is None:
             custom_id = os.urandom(16).hex()
 
+        if custom_id is not None and not isinstance(custom_id, str):
+            raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
+
         if url is not None:
             style = ButtonStyle.link
 
@@ -125,7 +128,7 @@ class Button(Item[V]):
             style=style,
             emoji=emoji,
         )
-        self.row: Optional[int] = row
+        self.row = row
 
     @property
     def style(self) -> ButtonStyle:
@@ -240,8 +243,8 @@ def button(
     """A decorator that attaches a button to a component.
 
     The function being decorated should have three parameters, ``self`` representing
-    the :class:`discord.ui.View`, the :class:`discord.ui.Button` being pressed and
-    the :class:`discord.Interaction` you receive.
+    the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
+    the :class:`discord.ui.Button` being pressed.
 
     .. note::
 

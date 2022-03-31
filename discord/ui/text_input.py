@@ -104,6 +104,9 @@ class TextInput(Item[V]):
         self._value: Optional[str] = default
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
+        if not isinstance(custom_id, str):
+            raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
+
         self._underlying = TextInputComponent._raw_construct(
             type=ComponentType.text_input,
             label=label,
@@ -115,14 +118,14 @@ class TextInput(Item[V]):
             min_length=min_length,
             max_length=max_length,
         )
-        self.row: Optional[int] = row
+        self.row = row
 
     def __str__(self) -> str:
         return self.value or ''
 
     @property
     def custom_id(self) -> str:
-        """:class:`str`: The ID of the select menu that gets received during an interaction."""
+        """:class:`str`: The ID of the text input that gets received during an interaction."""
         return self._underlying.custom_id
 
     @custom_id.setter

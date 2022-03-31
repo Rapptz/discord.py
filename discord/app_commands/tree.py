@@ -55,6 +55,7 @@ from .errors import (
     CommandAlreadyRegistered,
     CommandNotFound,
     CommandSignatureMismatch,
+    MaxCommandsReached,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -194,7 +195,7 @@ class CommandTree(Generic[ClientT]):
 
         Raises
         --------
-        ValueError
+        MaxCommandsReached
             The maximum number of commands was reached for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -206,7 +207,7 @@ class CommandTree(Generic[ClientT]):
 
         mapping.update(self._global_commands)
         if len(mapping) > 100:
-            raise ValueError('maximum number of slash commands exceeded (100)')
+            raise MaxCommandsReached(guild_id=guild.id, limit=100)
 
         ctx_menu: Dict[Tuple[str, Optional[int], int], ContextMenu] = {
             (name, guild.id, cmd_type): cmd
@@ -218,7 +219,7 @@ class CommandTree(Generic[ClientT]):
         for cmd_type, count in counter.items():
             if count > 5:
                 as_enum = AppCommandType(cmd_type)
-                raise ValueError(f'maximum number of context menu commands exceeded (5) for type {as_enum!s}')
+                raise MaxCommandsReached(guild_id=guild.id, limit=5, type=as_enum)
 
         self._context_menus.update(ctx_menu)
         self._guild_commands[guild.id] = mapping
@@ -261,7 +262,7 @@ class CommandTree(Generic[ClientT]):
         TypeError
             The application command passed is not a valid application command.
             Or, ``guild`` and ``guilds`` were both given.
-        ValueError
+        MaxCommandsReached
             The maximum number of commands was reached globally or for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -284,7 +285,7 @@ class CommandTree(Generic[ClientT]):
 
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
                 if total + found > 5:
-                    raise ValueError('maximum number of context menu commands exceeded (5)')
+                    raise MaxCommandsReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
 
             if guild_ids is None:
@@ -315,7 +316,7 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
                 if len(commands) + found > 100:
-                    raise ValueError(f'maximum number of slash commands exceeded (100) for guild_id {guild_id}')
+                    raise MaxCommandsReached(guild_id=guild_id, limit=100)
 
             # Actually add the command now that it has been verified to be okay.
             for guild_id in guild_ids:
@@ -326,7 +327,7 @@ class CommandTree(Generic[ClientT]):
             if found and not override:
                 raise CommandAlreadyRegistered(name, None)
             if len(self._global_commands) + found > 100:
-                raise ValueError('maximum number of global slash commands exceeded (100)')
+                raise MaxCommandsReached(guild_id=None, limit=100)
             self._global_commands[name] = root
 
     @overload
@@ -677,7 +678,8 @@ class CommandTree(Generic[ClientT]):
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation prints the traceback to stderr if the command does
+        not have any error handlers attached to it.
 
         Parameters
         -----------
@@ -690,6 +692,9 @@ class CommandTree(Generic[ClientT]):
         """
 
         if command is not None:
+            if command._has_any_error_handlers():
+                return
+
             print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
         else:
             print(f'Ignoring exception in command tree:', file=sys.stderr)
@@ -822,7 +827,8 @@ class CommandTree(Generic[ClientT]):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('context menu function must be a coroutine function')
 
-            context_menu = ContextMenu._from_decorator(func, name=name)
+            actual_name = func.__name__.title() if name is MISSING else name
+            context_menu = ContextMenu(name=actual_name, callback=func)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
@@ -963,7 +969,20 @@ class CommandTree(Generic[ClientT]):
         try:
             await ctx_menu._invoke(interaction, value)
         except AppCommandError as e:
+            if ctx_menu.on_error is not None:
+                await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, ctx_menu, e)
+
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
+        """|coro|
+
+        A global check to determine if an :class:`~discord.Interaction` should
+        be processed by the tree.
+
+        The default implementation returns True (all interactions are processed),
+        but can be overridden if custom behaviour is desired.
+        """
+        return True
 
     async def call(self, interaction: Interaction) -> None:
         """|coro|
@@ -988,6 +1007,9 @@ class CommandTree(Generic[ClientT]):
         AppCommandError
             An error occurred while calling the command.
         """
+        if not await self.interaction_check(interaction):
+            return
+
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         type = data.get('type', 1)
         if type != 1:

@@ -66,10 +66,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .enums import (
-        AuditLogAction,
-        InteractionResponseType,
-    )
+    from .enums import AuditLogAction
 
     from .types import (
         appinfo,
@@ -86,7 +83,6 @@ if TYPE_CHECKING:
         role,
         user,
         webhook,
-        channel,
         widget,
         threads,
         scheduled_event,

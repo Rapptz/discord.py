@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Set,
     TYPE_CHECKING,
@@ -49,11 +50,11 @@ import re
 from ..enums import AppCommandOptionType, AppCommandType
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
-from .errors import AppCommandError, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
+from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..message import Message
 from ..user import User
 from ..member import Member
-from ..utils import resolve_annotation, MISSING, is_inside_class
+from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
@@ -74,6 +75,8 @@ __all__ = (
     'context_menu',
     'command',
     'describe',
+    'check',
+    'rename',
     'choices',
     'autocomplete',
     'guilds',
@@ -85,12 +88,15 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
+GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
+UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
     Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
-    Callable[['Interaction', AppCommandError], Coro[Any]],
+    UnboundError,
 ]
+Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
+Binding = Union['Group', 'Cog']
 
 
 if TYPE_CHECKING:
@@ -121,8 +127,8 @@ else:
     AutocompleteCallback = Callable[..., Coro[T]]
 
 
+CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
-VALID_CONTEXT_MENU_NAME = re.compile(r'^[\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -141,19 +147,21 @@ def _to_kebab_case(text: str) -> str:
 def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
-        raise ValueError('names must be between 1-32 characters')
+        raise ValueError(
+            'names must be between 1-32 characters and contain only lower-case letters, hyphens, or underscores.'
+        )
 
     # Ideally, name.islower() would work instead but since certain characters
     # are Lo (e.g. CJK) those don't pass the test. I'd use `casefold` instead as
     # well, but chances are the server-side check is probably something similar to
     # this code anyway.
     if name.lower() != name:
-        raise ValueError('names must be all lower case')
+        raise ValueError('names must be all lower-case')
     return name
 
 
 def validate_context_menu_name(name: str) -> str:
-    if VALID_CONTEXT_MENU_NAME.match(name) is None:
+    if not name or len(name) > 32:
         raise ValueError('context menu names must be between 1-32 characters')
     return name
 
@@ -212,6 +220,29 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
     if descriptions:
         first = next(iter(descriptions))
         raise TypeError(f'unknown parameter given: {first}')
+
+
+def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, str]) -> None:
+    rename_map: Dict[str, str] = {}
+
+    # original name to renamed name
+
+    for name in params.keys():
+        new_name = renames.pop(name, MISSING)
+
+        if new_name is MISSING:
+            rename_map[name] = name
+            continue
+
+        if name in rename_map:
+            raise ValueError(f'{new_name} is already used')
+
+        rename_map[name] = new_name
+        params[name]._rename = new_name
+
+    if renames:
+        first = next(iter(renames))
+        raise ValueError(f'unknown parameter given: {first}')
 
 
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
@@ -296,6 +327,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
         _populate_descriptions(result, descriptions)
 
     try:
+        renames = func.__discord_app_commands_param_rename__
+    except AttributeError:
+        pass
+    else:
+        _populate_renames(result, renames)
+
+    try:
         choices = func.__discord_app_commands_param_choices__
     except AttributeError:
         pass
@@ -356,6 +394,12 @@ class Command(Generic[GroupT, P, T]):
     description: :class:`str`
         The description of the application command. This shows up in the UI to describe
         the application command.
+    checks
+        A list of predicates that take a :class:`~discord.Interaction` parameter
+        to indicate whether the command callback should be executed. If an exception
+        is necessary to be thrown to signal failure, then one inherited from
+        :exc:`AppCommandError` should be used. If all the checks fail without
+        propagating an exception, :exc:`CheckFailure` is raised.
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
     """
@@ -386,6 +430,7 @@ class Command(Generic[GroupT, P, T]):
             pass
 
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
+        self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
         self._guild_ids: Optional[List[int]] = guild_ids or getattr(
             callback, '__discord_app_commands_default_guilds__', None
         )
@@ -401,19 +446,33 @@ class Command(Generic[GroupT, P, T]):
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    def _copy_with_binding(self, binding: GroupT) -> Command:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: GroupT,
+        bindings: MutableMapping[GroupT, GroupT] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Command:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
         copy._guild_ids = self._guild_ids
+        copy.checks = self.checks
         copy.description = self.description
         copy._attr = self._attr
         copy._callback = self._callback
-        copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.module = self.module
-        copy.binding = binding
+        copy.parent = parent
+        copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+
+        if copy._attr and set_on_binding:
+            setattr(copy.binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -442,25 +501,47 @@ class Command(Generic[GroupT, P, T]):
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, self, error)
 
+    def _has_any_error_handlers(self) -> bool:
+        if self.on_error is not None:
+            return True
+
+        parent = self.parent
+        if parent is not None:
+            # Check if the on_error is overridden
+            if parent.__class__.on_error is not Group.on_error:
+                return True
+
+            if parent.parent is not None:
+                parent_cls = parent.parent.__class__
+                if parent_cls.on_error is not Group.on_error:
+                    return True
+
+        return False
+
     async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
+        if not await self._check_can_run(interaction):
+            raise CheckFailure(f'The check functions for command {self.name!r} failed.')
+
         values = namespace.__dict__
-        for name, param in self._params.items():
+        transformed_values = {}
+
+        for param in self._params.values():
             try:
-                value = values[name]
+                value = values[param.display_name]
             except KeyError:
                 if not param.required:
-                    values[name] = param.default
+                    transformed_values[param.name] = param.default
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
-                values[name] = await param.transform(interaction, value)
+                transformed_values[param.name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **values)  # type: ignore
-            return await self._callback(interaction, **values)  # type: ignore
+                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
+            return await self._callback(interaction, **transformed_values)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
@@ -481,12 +562,19 @@ class Command(Generic[GroupT, P, T]):
             raise CommandInvokeError(self, e) from e
 
     async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
+        # The namespace contains the Discord provided names so this will be fine
+        # even if the name is renamed
         value = namespace.__dict__[name]
 
         try:
             param = self._params[name]
         except KeyError:
-            raise CommandSignatureMismatch(self) from None
+            # Slow case, it might be a rename
+            params = {param.display_name: param for param in self._params.values()}
+            try:
+                param = params[name]
+            except KeyError:
+                raise CommandSignatureMismatch(self) from None
 
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
@@ -514,6 +602,34 @@ class Command(Generic[GroupT, P, T]):
             return None
         parent = self.parent
         return parent.parent or parent
+
+    async def _check_can_run(self, interaction: Interaction) -> bool:
+        if self.parent is not None and self.parent is not self.binding:
+            # For commands with a parent which isn't the binding, i.e.
+            # <binding>
+            #     <parent>
+            #         <command>
+            # The parent check needs to be called first
+            if not await maybe_coroutine(self.parent.interaction_check, interaction):
+                return False
+
+        if self.binding is not None:
+            try:
+                # Type checker does not like runtime attribute retrieval
+                check: Check = self.binding.interaction_check  # type: ignore
+            except AttributeError:
+                pass
+            else:
+                ret = await maybe_coroutine(check, interaction)
+                if not ret:
+                    return False
+
+        predicates = self.checks
+        if not predicates:
+            return True
+
+        # Type checker does not understand negative narrowing cases like this function
+        return await async_all(f(interaction) for f in predicates)  # type: ignore
 
     def error(self, coro: Error[GroupT]) -> Error[GroupT]:
         """A decorator that registers a coroutine as a local error handler.
@@ -611,6 +727,36 @@ class Command(Generic[GroupT, P, T]):
 
         return decorator
 
+    def add_check(self, func: Check, /) -> None:
+        """Adds a check to the command.
+
+        This is the non-decorator interface to :func:`check`.
+
+        Parameters
+        -----------
+        func
+            The function that will be used as a check.
+        """
+
+        self.checks.append(func)
+
+    def remove_check(self, func: Check, /) -> None:
+        """Removes a check from the command.
+
+        This function is idempotent and will not raise an exception
+        if the function is not in the command's checks.
+
+        Parameters
+        -----------
+        func
+            The function to remove from the checks.
+        """
+
+        try:
+            self.checks.remove(func)
+        except ValueError:
+            pass
+
 
 class ContextMenu:
     """A class that implements a context menu application command.
@@ -628,7 +774,14 @@ class ContextMenu:
     name: :class:`str`
         The name of the context menu.
     type: :class:`.AppCommandType`
-        The type of context menu application command.
+        The type of context menu application command. By default, this is inferred
+        by the parameter of the callback.
+    checks
+        A list of predicates that take a :class:`~discord.Interaction` parameter
+        to indicate whether the command callback should be executed. If an exception
+        is necessary to be thrown to signal failure, then one inherited from
+        :exc:`AppCommandError` should be used. If all the checks fail without
+        propagating an exception, :exc:`CheckFailure` is raised.
     """
 
     def __init__(
@@ -636,38 +789,30 @@ class ContextMenu:
         *,
         name: str,
         callback: ContextMenuCallback,
-        type: AppCommandType,
+        type: AppCommandType = MISSING,
         guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
-        self.type: AppCommandType = type
         (param, annotation, actual_type) = _get_context_menu_parameter(callback)
+        if type is MISSING:
+            type = actual_type
+
         if actual_type != type:
             raise ValueError(f'context menu callback implies a type of {actual_type} but {type} was passed.')
+
+        self.type: AppCommandType = type
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
         self._guild_ids = guild_ids
+        self.on_error: Optional[UnboundError] = None
+        self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
     @property
     def callback(self) -> ContextMenuCallback:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
-
-    @classmethod
-    def _from_decorator(cls, callback: ContextMenuCallback, *, name: str = MISSING) -> ContextMenu:
-        (param, annotation, type) = _get_context_menu_parameter(callback)
-
-        self = cls.__new__(cls)
-        self.name = callback.__name__.title() if name is MISSING else name
-        self._callback = callback
-        self.type = type
-        self._param_name = param
-        self._annotation = annotation
-        self.module = callback.__module__
-        self._guild_ids = None
-        return self
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -675,13 +820,83 @@ class ContextMenu:
             'type': self.type.value,
         }
 
+    async def _check_can_run(self, interaction: Interaction) -> bool:
+        predicates = self.checks
+        if not predicates:
+            return True
+
+        # Type checker does not understand negative narrowing cases like this function
+        return await async_all(f(interaction) for f in predicates)  # type: ignore
+
+    def _has_any_error_handlers(self) -> bool:
+        return self.on_error is not None
+
     async def _invoke(self, interaction: Interaction, arg: Any):
         try:
+            if not await self._check_can_run(interaction):
+                raise CheckFailure(f'The check functions for context menu {self.name!r} failed.')
+
             await self._callback(interaction, arg)
         except AppCommandError:
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
+
+    def error(self, coro: UnboundError) -> UnboundError:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in the body
+        of the command or during handling of the command. The error handler must take
+        2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
+
+    def add_check(self, func: Check, /) -> None:
+        """Adds a check to the command.
+
+        This is the non-decorator interface to :func:`check`.
+
+        Parameters
+        -----------
+        func
+            The function that will be used as a check.
+        """
+
+        self.checks.append(func)
+
+    def remove_check(self, func: Check, /) -> None:
+        """Removes a check from the command.
+
+        This function is idempotent and will not raise an exception
+        if the function is not in the command's checks.
+
+        Parameters
+        -----------
+        func
+            The function to remove from the checks.
+        """
+
+        try:
+            self.checks.remove(func)
+        except ValueError:
+            pass
 
 
 class Group:
@@ -774,12 +989,19 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
+        bindings: Dict[Group, Group] = {}
+
         for child in self.__discord_app_commands_group_children__:
-            child.parent = self
-            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
-            self._children[child.name] = child
-            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
-                setattr(self, child._attr, child)
+            # commands and groups created directly in this class (no parent)
+            copy = (
+                child._copy_with(parent=self, binding=self, bindings=bindings, set_on_binding=False)
+                if not cls.__discord_app_commands_skip_init_binding__
+                else child
+            )
+
+            self._children[copy.name] = copy
+            if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, copy._attr, copy)
 
         if parent is not None and parent.parent is not None:
             raise ValueError('groups can only be nested at most one level')
@@ -788,16 +1010,36 @@ class Group:
         self._attr = name
         self.module = owner.__module__
 
-    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: Binding,
+        bindings: MutableMapping[Group, Group] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Group:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
         copy._guild_ids = self._guild_ids
         copy.description = self.description
-        copy.parent = self.parent
+        copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
-        copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
+        copy._children = {}
+
+        bindings[self] = copy
+
+        for child in self._children.values():
+            child_copy = child._copy_with(parent=copy, binding=binding, bindings=bindings)
+            child_copy.parent = copy
+            copy._children[child_copy.name] = child_copy
+
+        if copy._attr and set_on_binding:
+            setattr(parent or binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -856,6 +1098,37 @@ class Group:
         """
 
         pass
+
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        """|coro|
+
+        A callback that is called when an interaction happens within the group
+        that checks whether a command inside the group should be executed.
+
+        This is useful to override if, for example, you want to ensure that the
+        interaction author is a given user.
+
+        The default implementation of this returns ``True``.
+
+        .. note::
+
+            If an exception occurs within the body then the check
+            is considered a failure and error handlers such as
+            :meth:`on_error` is called. See :exc:`AppCommandError`
+            for more information.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that occurred.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether the view children's callbacks should be called.
+        """
+
+        return True
 
     def add_command(self, command: Union[Command[Any, ..., Any], Group], /, *, override: bool = False) -> None:
         """Adds a command or group to this group's internal list of commands.
@@ -1047,7 +1320,8 @@ def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], Cont
         if not inspect.iscoroutinefunction(func):
             raise TypeError('context menu function must be a coroutine function')
 
-        return ContextMenu._from_decorator(func, name=name)
+        actual_name = func.__name__.title() if name is MISSING else name
+        return ContextMenu(name=actual_name, callback=func)
 
     return decorator
 
@@ -1081,9 +1355,49 @@ def describe(**parameters: str) -> Callable[[T], T]:
             _populate_descriptions(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def rename(**parameters: str) -> Callable[[T], T]:
+    r"""Renames the given parameters by their name using the key of the keyword argument
+    as the name.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.rename(the_member_to_ban='member')
+        async def ban(interaction: discord.Interaction, the_member_to_ban: discord.Member):
+            await interaction.response.send_message(f'Banned {the_member_to_ban}')
+
+    Parameters
+    -----------
+    \*\*parameters
+        The name of the parameters.
+
+    Raises
+    --------
+    ValueError
+        The parameter name is already used by another parameter.
+    TypeError
+        The parameter name is not found.
+    """
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_renames(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore # Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1150,9 +1464,9 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
             _populate_choices(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1202,9 +1516,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             _populate_autocomplete(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1260,3 +1574,62 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
         return inner
 
     return decorator
+
+
+def check(predicate: Check) -> Callable[[T], T]:
+    r"""A decorator that adds a check to an application command.
+
+    These checks should be predicates that take in a single parameter taking
+    a :class:`~discord.Interaction`. If the check returns a ``False``\-like value then
+    during invocation a :exc:`CheckFailure` exception is raised and sent to
+    the appropriate error handlers.
+
+    These checks can be either a coroutine or not.
+
+    Examples
+    ---------
+
+    Creating a basic check to see if the command invoker is you.
+
+    .. code-block:: python3
+
+        def check_if_it_is_me(interaction: discord.Interaction) -> bool:
+            return interaction.user.id == 85309593344815104
+
+        @tree.command()
+        @app_commands.check(check_if_it_is_me)
+        async def only_for_me(interaction: discord.Interaction):
+            await interaction.response.send_message('I know you!', ephemeral=True)
+
+    Transforming common checks into its own decorator:
+
+    .. code-block:: python3
+
+        def is_me():
+            def predicate(interaction: discord.Interaction) -> bool:
+                return interaction.user.id == 85309593344815104
+            return app_commands.check(predicate)
+
+        @tree.command()
+        @is_me()
+        async def only_me(interaction: discord.Interaction):
+            await interaction.response.send_message('Only you!')
+
+    Parameters
+    -----------
+    predicate: Callable[[:class:`~discord.Interaction`], :class:`bool`]
+        The predicate to check if the command should be invoked.
+    """
+
+    def decorator(func: CheckInputParameter) -> CheckInputParameter:
+        if isinstance(func, (Command, ContextMenu)):
+            func.checks.append(predicate)
+        else:
+            if not hasattr(func, '__discord_app_commands_checks__'):
+                func.__discord_app_commands_checks__ = []
+
+            func.__discord_app_commands_checks__.append(predicate)
+
+        return func
+
+    return decorator  # type: ignore

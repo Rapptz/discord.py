@@ -362,7 +362,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return None
 
         cmd = cmd.copy()
-        cmd.context = self  # type: ignore
+        cmd.context = self
+
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)
             mapping = cmd.get_bot_mapping()

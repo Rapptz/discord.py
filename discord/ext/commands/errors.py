@@ -587,7 +587,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: :class:`.Cooldown`
+    cooldown: :class:`~discord.app_commands.Cooldown`
         A class with attributes ``rate`` and ``per`` similar to the
         :func:`.cooldown` decorator.
     type: :class:`BucketType`

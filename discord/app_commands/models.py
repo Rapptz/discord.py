@@ -142,7 +142,7 @@ class AppCommand(Hashable):
             'name': self.name,
             'description': self.description,
             'options': [opt.to_dict() for opt in self.options],
-        }  # type: ignore -- Type checker does not understand this literal.
+        }  # type: ignore # Type checker does not understand this literal.
 
     def __str__(self) -> str:
         return self.name
@@ -319,7 +319,7 @@ class AppCommandChannel(Hashable):
             The full channel.
         """
         client = self._state._get_client()
-        return await client.fetch_channel(self.id)  # type: ignore -- This is explicit narrowing
+        return await client.fetch_channel(self.id)  # type: ignore # This is explicit narrowing
 
     @property
     def mention(self) -> str:
@@ -493,7 +493,7 @@ class AppCommandThread(Hashable):
             The full thread.
         """
         client = self._state._get_client()
-        return await client.fetch_channel(self.id)  # type: ignore -- This is explicit narrowing
+        return await client.fetch_channel(self.id)  # type: ignore # This is explicit narrowing
 
 
 class Argument:
@@ -554,7 +554,7 @@ class Argument:
             'required': self.required,
             'choices': [choice.to_dict() for choice in self.choices],
             'options': [],
-        }  # type: ignore -- Type checker does not understand this literal.
+        }  # type: ignore # Type checker does not understand this literal.
 
 
 class AppCommandGroup:
@@ -623,7 +623,7 @@ class AppCommandGroup:
             'required': self.required,
             'choices': [choice.to_dict() for choice in self.choices],
             'options': [arg.to_dict() for arg in self.arguments],
-        }  # type: ignore -- Type checker does not understand this literal.
+        }  # type: ignore # Type checker does not understand this literal.
 
 
 def app_command_option_factory(

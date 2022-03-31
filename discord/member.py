@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Callable, Collection, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -51,7 +51,6 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
@@ -332,7 +331,7 @@ class Member(discord.abc.Messageable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
-        create_dm: Callable[[], Coroutine[Any, Any, DMChannel]]
+        create_dm: Callable[[], Awaitable[DMChannel]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
@@ -690,7 +689,7 @@ class Member(discord.abc.Messageable, _UserTag):
     async def ban(
         self,
         *,
-        delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1,
+        delete_message_days: int = 1,
         reason: Optional[str] = None,
     ) -> None:
         """|coro|
@@ -753,7 +752,7 @@ class Member(discord.abc.Messageable, _UserTag):
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         .. versionchanged:: 2.0
-            The newly member is now optionally returned, if applicable.
+            The newly updated member is now optionally returned, if applicable.
 
         Parameters
         -----------
