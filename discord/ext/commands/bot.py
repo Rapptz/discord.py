@@ -1081,6 +1081,7 @@ class BotBase(GroupMixin[None]):
             listening for.
         """
         prefix = ret = self.command_prefix
+
         if callable(prefix):
             # self will be a Bot or AutoShardedBot
             ret = await discord.utils.maybe_coroutine(prefix, self, message)  # type: ignore
@@ -1098,9 +1099,6 @@ class BotBase(GroupMixin[None]):
                     "command_prefix must be plain string, iterable of strings, or callable "
                     f"returning either of these, not {ret.__class__.__name__}"
                 )
-
-            if not ret:
-                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
@@ -1312,8 +1310,7 @@ class Bot(BotBase, discord.Client):
         The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
-        allowed.
+        :attr:`.Context.prefix`.
 
         .. note::
 
