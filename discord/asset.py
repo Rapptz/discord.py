@@ -140,10 +140,14 @@ class AssetMixin:
 
         Raises
         ------
+        DiscordException
+            The asset does not have an associated state.
+        TypeError
+            The asset is a sticker with lottie type.
         HTTPException
             Downloading the asset failed.
         Forbidden
-            You do not have permissions to access this asset
+            You do not have permissions to access this asset.
         NotFound
             The asset was deleted.
 
