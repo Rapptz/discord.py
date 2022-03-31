@@ -524,12 +524,10 @@ class Command(Generic[GroupT, P, T]):
 
         values = namespace.__dict__
         transformed_values = {}
-        # get parameters mapped to their renamed names
-        params = {param.display_name: param for param in self._params.values()}
 
-        for name, param in params.items():
+        for param in self._params.values():
             try:
-                value = values[name]
+                value = values[param.display_name]
             except KeyError:
                 if not param.required:
                     transformed_values[param.name] = param.default
