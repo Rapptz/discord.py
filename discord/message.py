@@ -340,7 +340,7 @@ class Attachment(Hashable):
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
+        return File(io.BytesIO(data), filename=self.filename, description=self.description, spoiler=spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {
