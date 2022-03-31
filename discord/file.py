@@ -120,8 +120,7 @@ class File:
 
     @property
     def filename(self) -> str:
-        """:class:`str`:
-        The filename to display when uploading to Discord.
+        """:class:`str`: The filename to display when uploading to Discord.
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
         """
