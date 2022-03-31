@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, NamedTuple, Tuple
 from ..member import Member
 from ..object import Object
 from ..role import Role
@@ -88,6 +88,10 @@ class Namespace:
         .. describe:: key in x
 
             Checks if the attribute is in the namespace.
+        .. describe:: iter(x)
+
+           Returns an iterator of ``(name, value)`` pairs. This allows it
+           to be, for example, constructed as a dict or a list of pairs.
 
     This namespace object converts resolved objects into their appropriate form depending on their
     type. Consult the table below for conversion information.
@@ -237,6 +241,9 @@ class Namespace:
 
     def __getattr__(self, attr: str) -> Any:
         return None
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        yield from self.__dict__.items()
 
     def _update_with_defaults(self, defaults: Iterable[Tuple[str, Any]]) -> None:
         for key, value in defaults:
