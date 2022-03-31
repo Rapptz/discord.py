@@ -532,13 +532,11 @@ class Command(Generic[GroupT, P, T]):
                 value = values[name]
             except KeyError:
                 if not param.required:
-                    transformed_values[name] = param.default
+                    transformed_values[param.name] = param.default
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
-                if param._rename is not MISSING:
-                    name = param.name
-                transformed_values[name] = await param.transform(interaction, value)
+                transformed_values[param.name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
