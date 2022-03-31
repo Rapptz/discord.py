@@ -245,7 +245,7 @@ class CommandTree(Generic[ClientT]):
         command: Union[:class:`Command`, :class:`Group`]
             The application command or group to add.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
@@ -381,7 +381,7 @@ class CommandTree(Generic[ClientT]):
         command: :class:`str`
             The name of the root command to remove.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to remove the command from. If not given then it
+            The guild to remove the command from. If not given or ``None`` then it
             removes a global command instead.
         type: :class:`~discord.AppCommandType`
             The type of command to remove. Defaults to :attr:`~discord.AppCommandType.chat_input`,
@@ -457,7 +457,7 @@ class CommandTree(Generic[ClientT]):
         command: :class:`str`
             The name of the root command to get.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to get the command from. If not given then it
+            The guild to get the command from. If not given or ``None`` then it
             gets a global command instead.
         type: :class:`~discord.AppCommandType`
             The type of command to get. Defaults to :attr:`~discord.AppCommandType.chat_input`,
@@ -523,8 +523,8 @@ class CommandTree(Generic[ClientT]):
         Parameters
         -----------
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to get the commands from. If not given then it
-            gets all global commands instead.
+            The guild to get the commands from, not including global commands.
+            If not given or ``None`` then only global commands are returned.
         type: :class:`~discord.AppCommandType`
             The type of commands to get. Defaults to :attr:`~discord.AppCommandType.chat_input`,
             i.e. slash commands.
@@ -588,8 +588,8 @@ class CommandTree(Generic[ClientT]):
         Parameters
         -----------
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to iterate the commands from. If not given then it
-            iterates all global commands instead.
+            The guild to iterate the commands from, not including global commands.
+            If not given or ``None`` then only global commands are iterated.
         type: :class:`~discord.AppCommandType`
             The type of commands to iterate over. Defaults to :attr:`~discord.AppCommandType.chat_input`,
             i.e. slash commands.
@@ -751,7 +751,7 @@ class CommandTree(Generic[ClientT]):
             the application command. If not given, it defaults to the first line of the docstring
             of the callback shortened to 100 characters.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
@@ -815,7 +815,7 @@ class CommandTree(Generic[ClientT]):
             version of the callback name. Note that unlike regular slash commands this can
             have spaces and upper case characters in the name.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
