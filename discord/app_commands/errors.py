@@ -38,6 +38,7 @@ __all__ = (
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
+    'MaxCommandsReached',
     'NoPrivateMessage',
     'MissingRole',
     'MissingAnyRole',
@@ -330,6 +331,39 @@ class CommandNotFound(AppCommandError):
         self.parents: List[str] = parents
         self.type: AppCommandType = type
         super().__init__(f'Application command {name!r} not found')
+
+
+class MaxCommandsReached(AppCommandError):
+    """An exception raised when the maximum number of application commands was reached
+    either globally or in a guild.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    type: :class:`~discord.AppCommandType`
+        The type of command that reached the limit.
+    guild_id: Optional[:class:`int`]
+        The guild ID that reached the limit or ``None`` if it was global.
+    limit: :class:`int`
+        The limit that was hit.
+    """
+
+    def __init__(self, guild_id: Optional[int], limit: int, type: AppCommandType = AppCommandType.chat_input):
+        self.guild_id: Optional[int] = guild_id
+        self.limit: int = limit
+        self.type: AppCommandType = type
+
+        lookup = {
+            AppCommandType.chat_input: 'slash commands',
+            AppCommandType.message: 'message context menu commands',
+            AppCommandType.user: 'user context menu commands',
+        }
+        desc = lookup.get(type, 'application commands')
+        ns = 'globally' if self.guild_id is None else f'for guild ID {self.guild_id}'
+        super().__init__(f'maximum number of {desc} exceeded {limit} {ns}')
 
 
 class CommandSignatureMismatch(AppCommandError):
