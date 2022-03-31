@@ -155,7 +155,7 @@ class AssetMixin:
 
         data = await self.read()
         url = yarl.URL(self.url)
-        filename = url.path.split('/')[-1]
+        _, _, filename = url.path.rpartition('/')
         return File(io.BytesIO(data), filename=filename, spoiler=spoiler)
 
 
