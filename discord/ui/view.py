@@ -154,9 +154,6 @@ class View:
 
     Attributes
     ------------
-    timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
     children: List[:class:`Item`]
         The list of children attached to this view.
     """
@@ -188,7 +185,7 @@ class View:
         return children
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
-        self.timeout = timeout
+        self.__timeout = timeout
         self.children: List[Item[Self]] = self._init_children()
         self.__weights = _ViewWeights(self.children)
         self.id: str = os.urandom(16).hex()
@@ -236,6 +233,29 @@ class View:
             )
 
         return components
+
+    def _refresh_timeout(self) -> None:
+        if self.__timeout:
+            self.__timeout_expiry = time.monotonic() + self.__timeout
+
+    @property
+    def timeout(self) -> Optional[float]:
+        """Optional[:class:`float`]: The timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+        """
+        return self.__timeout
+
+    @timeout.setter
+    def timeout(self, value: Optional[float]) -> None:
+        # If the timeout task is already running this allows it to update
+        # the expiry while it's running
+        if self.__timeout_task is not None:
+            if value is not None:
+                self.__timeout_expiry = time.monotonic() + value
+            else:
+                self.__timeout_expiry = None
+
+        self.__timeout = value
 
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
