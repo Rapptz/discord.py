@@ -31,6 +31,7 @@ from typing import (
     AsyncIterator,
     Awaitable,
     Callable,
+    Coroutine,
     Dict,
     ForwardRef,
     Generic,
@@ -151,6 +152,7 @@ else:
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
+Coro = Coroutine[Any, Any, T]
 MaybeAwaitable = Union[T, Awaitable[T]]
 
 
@@ -392,11 +394,11 @@ def find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]
 
 
 @overload
-def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Awaitable[Optional[T]]:
+def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Coro[Optional[T]]:
     ...
 
 
-def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional[T], Awaitable[Optional[T]]]:
+def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional[T], Coro[Optional[T]]]:
     r"""A helper to return the first element found in the sequence
     that meets the predicate. For example: ::
 
@@ -478,11 +480,11 @@ def get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
 
 
 @overload
-def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Awaitable[Optional[T]]:
+def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Coro[Optional[T]]:
     ...
 
 
-def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Awaitable[Optional[T]]]:
+def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional[T]]]:
     r"""A helper that returns the first element in the iterable that meets
     all the traits passed in ``attrs``. This is an alternative for
     :func:`~discord.utils.find`.
