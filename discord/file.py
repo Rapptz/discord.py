@@ -67,7 +67,7 @@ class File:
             To pass binary data, consider usage of ``io.BytesIO``.
 
     spoiler: :class:`bool`
-        Whether the attachment is a spoiler. if left unspecified, the :attr:`~File.filename` is used
+        Whether the attachment is a spoiler. If left unspecified, the :attr:`~File.filename` is used
         to determine if the file is a spoiler.
     description: Optional[:class:`str`]
         The file description to display, currently only supported for images.
