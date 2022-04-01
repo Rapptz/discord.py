@@ -2056,9 +2056,8 @@ class Guild(Hashable):
         Parameters
         -----------
         limit: Optional[:class:`int`]
-            The number of bans to retrieve.
-            If ``None``, it retrieves every guild you have access to. Note, however,
-            that this would make it a slow operation.
+            The number of bans to retrieve. If ``None``, it retrieves every ban in
+            the guild. Note, however, that this would make it a slow operation.
             Defaults to ``1000``.
         before: :class:`.abc.Snowflake`
             Retrieves bans before this user.
