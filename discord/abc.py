@@ -538,6 +538,7 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
+        - Member timeout
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -623,6 +624,12 @@ class GuildChannel:
         # Bypass all channel-specific overrides
         if base.administrator:
             return Permissions.all()
+
+        if obj.is_timed_out():
+            # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
+            # being explicitly denied
+            base.value &= Permissions._timeout_mask()
+            return base
 
         # Apply @everyone allow/deny first since it's special
         try:

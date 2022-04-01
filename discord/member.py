@@ -649,8 +649,11 @@ class Member(discord.abc.Messageable, _UserTag):
         channel permission overwrites. For 100% accurate permission
         calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
-        This does take into consideration guild ownership and the
-        administrator implication.
+        This does take into consideration guild ownership, the
+        administrator implication, and whether the member is timed out.
+
+        .. versionchanged:: 2.0
+            Member timeouts are taken into consideration.
         """
 
         if self.guild.owner_id == self.id:
@@ -662,6 +665,9 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if base.administrator:
             return Permissions.all()
+
+        if self.is_timed_out():
+            base.value &= Permissions._timeout_mask()
 
         return base
 
