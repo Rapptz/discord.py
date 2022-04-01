@@ -55,7 +55,7 @@ from .errors import (
     CommandAlreadyRegistered,
     CommandNotFound,
     CommandSignatureMismatch,
-    MaxCommandsReached,
+    CommandLimitReached,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -195,7 +195,7 @@ class CommandTree(Generic[ClientT]):
 
         Raises
         --------
-        MaxCommandsReached
+        CommandLimitReached
             The maximum number of commands was reached for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -207,7 +207,7 @@ class CommandTree(Generic[ClientT]):
 
         mapping.update(self._global_commands)
         if len(mapping) > 100:
-            raise MaxCommandsReached(guild_id=guild.id, limit=100)
+            raise CommandLimitReached(guild_id=guild.id, limit=100)
 
         ctx_menu: Dict[Tuple[str, Optional[int], int], ContextMenu] = {
             (name, guild.id, cmd_type): cmd
@@ -219,7 +219,7 @@ class CommandTree(Generic[ClientT]):
         for cmd_type, count in counter.items():
             if count > 5:
                 as_enum = AppCommandType(cmd_type)
-                raise MaxCommandsReached(guild_id=guild.id, limit=5, type=as_enum)
+                raise CommandLimitReached(guild_id=guild.id, limit=5, type=as_enum)
 
         self._context_menus.update(ctx_menu)
         self._guild_commands[guild.id] = mapping
@@ -262,7 +262,7 @@ class CommandTree(Generic[ClientT]):
         TypeError
             The application command passed is not a valid application command.
             Or, ``guild`` and ``guilds`` were both given.
-        MaxCommandsReached
+        CommandLimitReached
             The maximum number of commands was reached globally or for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -285,7 +285,7 @@ class CommandTree(Generic[ClientT]):
 
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
                 if total + found > 5:
-                    raise MaxCommandsReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
+                    raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
 
             if guild_ids is None:
@@ -316,7 +316,7 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
                 if len(commands) + found > 100:
-                    raise MaxCommandsReached(guild_id=guild_id, limit=100)
+                    raise CommandLimitReached(guild_id=guild_id, limit=100)
 
             # Actually add the command now that it has been verified to be okay.
             for guild_id in guild_ids:
@@ -327,7 +327,7 @@ class CommandTree(Generic[ClientT]):
             if found and not override:
                 raise CommandAlreadyRegistered(name, None)
             if len(self._global_commands) + found > 100:
-                raise MaxCommandsReached(guild_id=None, limit=100)
+                raise CommandLimitReached(guild_id=None, limit=100)
             self._global_commands[name] = root
 
     @overload

@@ -38,7 +38,7 @@ __all__ = (
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
-    'MaxCommandsReached',
+    'CommandLimitReached',
     'NoPrivateMessage',
     'MissingRole',
     'MissingAnyRole',
@@ -333,7 +333,7 @@ class CommandNotFound(AppCommandError):
         super().__init__(f'Application command {name!r} not found')
 
 
-class MaxCommandsReached(AppCommandError):
+class CommandLimitReached(AppCommandError):
     """An exception raised when the maximum number of application commands was reached
     either globally or in a guild.
 

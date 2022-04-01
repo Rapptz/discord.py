@@ -575,7 +575,7 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandOnCooldown
     :members:
 
-.. autoexception:: discord.app_commands.MaxCommandsReached
+.. autoexception:: discord.app_commands.CommandLimitReached
     :members:
 
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
@@ -603,7 +603,7 @@ Exception Hierarchy
                 - :exc:`~discord.app_commands.MissingPermissions`
                 - :exc:`~discord.app_commands.BotMissingPermissions`
                 - :exc:`~discord.app_commands.CommandOnCooldown`
-            - :exc:`~discord.app_commands.MaxCommandsReached`
+            - :exc:`~discord.app_commands.CommandLimitReached`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
