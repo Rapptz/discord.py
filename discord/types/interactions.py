@@ -235,7 +235,11 @@ class ModalSubmitInteraction(_BaseInteraction):
 Interaction = Union[PingInteraction, ApplicationCommandInteraction, MessageComponentInteraction, ModalSubmitInteraction]
 
 
-class MessageInteraction(TypedDict):
+class _MessageInteractionOptional(TypedDict, total=False):
+    member: Member
+
+
+class MessageInteraction(_MessageInteractionOptional):
     id: Snowflake
     type: InteractionType
     name: str
