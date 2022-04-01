@@ -38,7 +38,9 @@ __all__ = (
 
 
 def _strip_spoiler(filename: str) -> Tuple[str, bool]:
-    stripped = filename.lstrip('SPOILER_')
+    stripped = filename
+    while stripped.startswith('SPOILER_'):
+        stripped = stripped[8:]  # len('SPOILER_')
     spoiler = stripped != filename
     return stripped, spoiler
 
