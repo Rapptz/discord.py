@@ -921,6 +921,22 @@ This removes the following:
 - ``commands.StoreChannelConverter``
 - ``ChannelType.store``
 
+Change in ``Guild.bans`` endpoint
+-----------------------------------
+
+Due to a breaking API change by Discord, :meth:`Guild.bans` no longer returns a list of every ban in the guild but instead is paginated using an asynchronous iterator.
+
+.. code-block:: python3
+
+    # before
+
+    bans = await guild.bans()
+
+    # after
+    async for ban in guild.bans(limit=1000):
+        ...
+
+
 Function Signature Changes
 ----------------------------
 
