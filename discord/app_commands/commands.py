@@ -971,6 +971,7 @@ class Group:
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
+        self._owner_cls: Optional[Type[Any]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
@@ -1004,12 +1005,15 @@ class Group:
             if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
                 setattr(self, copy._attr, copy)
 
-        if parent is not None and parent.parent is not None:
-            raise ValueError('groups can only be nested at most one level')
+        if parent is not None:
+            if parent.parent is not None:
+                raise ValueError('groups can only be nested at most one level')
+            parent.add_command(self)
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
         self.module = owner.__module__
+        self._owner_cls = owner
 
     def _copy_with(
         self,
@@ -1029,6 +1033,7 @@ class Group:
         copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
+        copy._owner_cls = self._owner_cls
         copy._children = {}
 
         bindings[self] = copy
@@ -1037,6 +1042,12 @@ class Group:
             child_copy = child._copy_with(parent=copy, binding=binding, bindings=bindings)
             child_copy.parent = copy
             copy._children[child_copy.name] = child_copy
+
+            if isinstance(child_copy, Group) and child_copy._attr and set_on_binding:
+                if binding.__class__ is child_copy._owner_cls:
+                    setattr(binding, child_copy._attr, child_copy)
+                elif child_copy._owner_cls is copy.__class__:
+                    setattr(copy, child_copy._attr, child_copy)
 
         if copy._attr and set_on_binding:
             setattr(parent or binding, copy._attr, copy)
