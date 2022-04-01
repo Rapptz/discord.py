@@ -105,7 +105,7 @@ class Parameter(inspect.Parameter, Generic[T_co]):
 
     @property
     def displayed_default(self) -> str:
-        if self._displayed_default is not MISSING:
+        if self._displayed_default is not empty:
             return self._displayed_default
 
         return "" if self.required else str(self.default)
