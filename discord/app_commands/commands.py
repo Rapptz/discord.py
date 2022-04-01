@@ -148,7 +148,7 @@ def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
         raise ValueError(
-            'names must be between 1-32 characters and contain only lower-case letters, hyphens, or underscores.'
+            'names must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
         )
 
     # Ideally, name.islower() would work instead but since certain characters
@@ -237,6 +237,7 @@ def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, st
         if name in rename_map:
             raise ValueError(f'{new_name} is already used')
 
+        new_name = validate_name(new_name)
         rename_map[name] = new_name
         params[name]._rename = new_name
 
