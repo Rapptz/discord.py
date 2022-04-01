@@ -912,7 +912,9 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def timeout(self, when: Union[datetime.timedelta, datetime.datetime], /, *, reason: Optional[str] = None) -> None:
+    async def timeout(
+        self, until: Optional[Union[datetime.timedelta, datetime.datetime]], /, *, reason: Optional[str] = None
+    ) -> None:
         """|coro|
 
         Applies a time out to a member until the specified date time or for the
@@ -925,26 +927,28 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Parameters
         -----------
-        when: Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]
+        until: Optional[Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]]
             If this is a :class:`datetime.timedelta` then it represents the amount of
             time the member should be timed out for. If this is a :class:`datetime.datetime`
-            then it's when the member's timeout should expire. Note that the API only allows
-            for timeouts up to 28 days.
+            then it's when the member's timeout should expire. If ``None`` is passed then the
+            timeout is removed. Note that the API only allows for timeouts up to 28 days.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
         TypeError
-            The ``when`` parameter was the wrong type of the datetime was not timezone-aware.
+            The ``until`` parameter was the wrong type of the datetime was not timezone-aware.
         """
 
-        if isinstance(when, datetime.timedelta):
-            timed_out_until = utils.utcnow() + when
-        elif isinstance(when, datetime.datetime):
-            timed_out_until = when
+        if until is None:
+            timed_out_until = None
+        elif isinstance(until, datetime.timedelta):
+            timed_out_until = utils.utcnow() + until
+        elif isinstance(until, datetime.datetime):
+            timed_out_until = until
         else:
-            raise TypeError(f'expected datetime.datetime or datetime.timedelta not {when.__class__!r}')
+            raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__!r}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 
