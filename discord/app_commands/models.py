@@ -181,19 +181,8 @@ class Choice(Generic[ChoiceT]):
     __slots__ = ('name', 'value')
 
     def __init__(self, *, name: str, value: ChoiceT):
-        # Circular import avoidance
-        from .commands import validate_name
-
-        self.name: str = validate_name(name)
+        self.name: str = name
         self.value: ChoiceT = value
-
-    @classmethod
-    def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[Union[int, float, str]]:
-        # This is to avoid the validation check on Discord provided payloads.
-        self = cls.__new__(cls)
-        self.name = data['name']
-        self.value = data['value']
-        return self  # type: ignore # Trick type checker to widen ChoiceT to Union
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, Choice) and self.name == o.name and self.value == o.value
@@ -553,7 +542,9 @@ class Argument:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice[Union[int, float, str]]] = [Choice.from_dict(d) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -615,7 +606,9 @@ class AppCommandGroup:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
-        self.choices: List[Choice[Union[int, float, str]]] = [Choice.from_dict(d) for d in data.get('choices', [])]
+        self.choices: List[Choice[Union[int, float, str]]] = [
+            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
+        ]
         self.arguments: List[Argument] = [
             Argument(parent=self, state=self._state, data=d)
             for d in data.get('options', [])
