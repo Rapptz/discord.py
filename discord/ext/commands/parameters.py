@@ -49,8 +49,8 @@ empty: Any = inspect.Parameter.empty
 class Parameter(inspect.Parameter, Generic[T_co]):
     def __init__(
         self,
-        name: str = empty,
-        kind: ParamKinds = empty,
+        name: str,
+        kind: ParamKinds,
         default: DefaultType[T_co] = empty,
         annotation: Any = empty,
         displayed_default: str = empty,

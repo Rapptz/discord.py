@@ -1034,20 +1034,20 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             greedy = isinstance(param.converter, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
-            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
-            # parameter signature is a literal list of it's values
             annotation = param.converter.converter if greedy else param.converter  # type: ignore  # needs conditional types
             origin = getattr(annotation, '__origin__', None)
             if not greedy and origin is Union:
                 none_cls = type(None)
-                union_args = annotation.__args__
+                union_args = annotation.__args__  # type: ignore  # this is safe
                 optional = union_args[-1] is none_cls
                 if len(union_args) == 2 and optional:
                     annotation = union_args[0]
                     origin = getattr(annotation, '__origin__', None)
 
+            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+            # parameter signature is a literal list of it's values
             if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)  # type: ignore  # this is safe
             if param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
