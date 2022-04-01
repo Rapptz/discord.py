@@ -624,6 +624,7 @@ class BotBase(GroupMixin):
         Optional[:class:`Cog`]
             The cog that was requested. If not found, returns ``None``.
         """
+        print(type(name), name)
         return self.__cogs.get(name)
 
     def remove_cog(

@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from discord.state import Channel
     from discord.threads import Thread
 
+    from . import parameters
     from .bot import AutoShardedBot, Bot
     from .context import Context
 
@@ -1088,16 +1089,6 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-def get_converter(param: inspect.Parameter) -> Any:
-    converter = param.annotation
-    if converter is param.empty:
-        if param.default is not param.empty:
-            converter = str if param.default is None else type(param.default)
-        else:
-            converter = str
-    return converter
-
-
 _GenericAlias = type(List[T])
 
 
@@ -1168,7 +1159,7 @@ async def _actual_conversion(ctx: Context, converter, argument: str, param: insp
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context, converter, argument: str, param: inspect.Parameter):
+async def run_converters(ctx: Context, converter, argument: str, param: parameters.Parameter):
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.
@@ -1185,7 +1176,7 @@ async def run_converters(ctx: Context, converter, argument: str, param: inspect.
         The converter to run, this corresponds to the annotation in the function.
     argument: :class:`str`
         The argument to convert to.
-    param: :class:`inspect.Parameter`
+    param: :class:`.Parameter`
         The parameter being converted. This is mainly for error reporting.
 
     Raises
@@ -1210,7 +1201,7 @@ async def run_converters(ctx: Context, converter, argument: str, param: inspect.
             # with the other parameters
             if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
                 ctx.view.undo()
-                return None if param.default is param.empty else param.default
+                return None if not param.required else await param.get_default(ctx)
 
             try:
                 value = await run_converters(ctx, conv, argument, param)

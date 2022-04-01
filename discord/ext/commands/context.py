@@ -23,14 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import inspect
 import re
-
-from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union
 
 import discord.abc
 import discord.utils
-
 from discord.message import Message
 
 if TYPE_CHECKING:
@@ -43,10 +40,11 @@ if TYPE_CHECKING:
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
-    from .bot import Bot, AutoShardedBot
+    from .bot import AutoShardedBot, Bot
     from .cog import Cog
     from .core import Command
     from .help import HelpCommand
+    from .parameters import Parameter
     from .view import StringView
 
 # fmt: off
@@ -91,7 +89,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
         :func:`.on_command_error` event then this dict could be incomplete.
-    current_parameter: Optional[:class:`inspect.Parameter`]
+    current_parameter: Optional[:class:`.Parameter`]
         The parameter that is currently being inspected and converted.
         This is only of use for within converters.
 
@@ -139,7 +137,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         invoked_subcommand: Optional[Command] = None,
         subcommand_passed: Optional[str] = None,
         command_failed: bool = False,
-        current_parameter: Optional[inspect.Parameter] = None,
+        current_parameter: Optional[Parameter] = None,
     ):
         self.message: Message = message
         self.bot: BotT = bot
@@ -153,7 +151,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         self.invoked_subcommand: Optional[Command] = invoked_subcommand
         self.subcommand_passed: Optional[str] = subcommand_passed
         self.command_failed: bool = command_failed
-        self.current_parameter: Optional[inspect.Parameter] = current_parameter
+        self.current_parameter: Optional[Parameter] = current_parameter
         self._state: ConnectionState = self.message._state
 
     async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -351,7 +349,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         Any
             The result of the help command, if any.
         """
-        from .core import Group, Command, wrap_callback
+        from .core import Command, Group, wrap_callback
         from .errors import CommandError
 
         bot = self.bot

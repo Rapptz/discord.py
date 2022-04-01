@@ -51,7 +51,7 @@ from . import parameters
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
-from .converter import Greedy, get_converter, run_converters
+from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
 
@@ -122,9 +122,9 @@ def get_signature_parameters(
     globalns: Dict[str, Any],
     *,
     skip_parameters: Optional[int] = None,
-) -> Dict[str, inspect.Parameter]:
-    signature = inspect.signature(function)
-    params = {}
+) -> Dict[str, parameters.Parameter]:
+    signature = parameters.Signature.from_callable(function)
+    params: Dict[str, parameters.Parameter] = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
     required_params = discord.utils.is_inside_class(function) + 1 if skip_parameters is None else skip_parameters
@@ -136,10 +136,15 @@ def get_signature_parameters(
         next(iterator)
 
     for name, parameter in iterator:
+        default = parameter.default
+        if isinstance(default, parameters.Parameter):  # update from the default
+            print("updating default")
+            parameter._annotation = default.annotation
+            parameter._default = default.default
+            parameter._displayed_default = default._displayed_default
+
         annotation = parameter.annotation
-        if annotation is parameter.empty:
-            params[name] = parameter
-            continue
+
         if annotation is None:
             params[name] = parameter.replace(annotation=type(None))
             continue
@@ -148,15 +153,7 @@ def get_signature_parameters(
         if annotation is Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
-        params[name] = parameter.replace(
-            annotation=annotation,
-            default=parameter
-            if isinstance(parameter.default, parameters.Parameter)
-            else parameters.Parameter(
-                converter=annotation if annotation is not inspect.Signature.empty else MISSING,
-                default=parameter.default if parameter.default is not inspect.Signature.empty else MISSING,
-            ),
-        )
+        params[name] = parameter.replace(annotation=annotation)
 
     return params
 
@@ -564,9 +561,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context, param: inspect.Parameter) -> Any:
-        required = param.default is param.empty
-        converter = get_converter(param)
+    async def transform(self, ctx: Context, param: parameters.Parameter) -> Any:
+        required = param.required
+        converter = param.converter
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
         view.skip_ws()
@@ -593,7 +590,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
                     return await converter._construct_default(ctx)
                 raise MissingRequiredArgument(param)
-            return await param.default.get_default(ctx)
+            return await param.get_default(ctx)
 
         previous = view.index
         if consume_rest_is_special:
@@ -611,7 +608,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         return await run_converters(ctx, converter, argument, param)
 
-    async def _transform_greedy_pos(self, ctx: Context, param: inspect.Parameter, required: bool, converter: Any) -> Any:
+    async def _transform_greedy_pos(self, ctx: Context, param: parameters.Parameter, required: bool, converter: Any) -> Any:
         view = ctx.view
         result = []
         while not view.eof:
@@ -629,10 +626,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(value)
 
         if not result and not required:
-            return await param.default.get_default(ctx)
+            return await param.get_default(ctx)
         return result
 
-    async def _transform_greedy_var_pos(self, ctx: Context, param: inspect.Parameter, converter: Any) -> Any:
+    async def _transform_greedy_var_pos(self, ctx: Context, param: parameters.Parameter, converter: Any) -> Any:
         view = ctx.view
         previous = view.index
         try:
@@ -645,7 +642,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return value
 
     @property
-    def clean_params(self) -> Dict[str, inspect.Parameter]:
+    def clean_params(self) -> Dict[str, parameters.Parameter]:
         """Dict[:class:`str`, :class:`inspect.Parameter`]:
         Retrieves the parameter dictionary without the context or self parameters.
 
@@ -721,7 +718,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         ctx.args = [ctx] if self.cog is None else [self.cog, ctx]
         ctx.kwargs = {}
         args = ctx.args
-        kwargs = ctx.kwargs
+        kwargs = ctx.kwargs  # required isnt work if None seems to be passsing parameter to **kwargs
 
         view = ctx.view
         iterator = iter(self.params.items())
@@ -734,7 +731,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
-                    converter = get_converter(param)
+                    converter = parameter.converter
                     argument = view.read_rest()
                     kwargs[name] = await run_converters(ctx, converter, argument, param)
                 else:
@@ -1035,12 +1032,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, Greedy)
+            greedy = isinstance(param.converter, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
-            annotation = param.annotation.converter if greedy else param.annotation
+            annotation = param.converter.converter if greedy else param.converter  # type: ignore  # needs conditional types
             origin = getattr(annotation, '__origin__', None)
             if not greedy and origin is Union:
                 none_cls = type(None)
@@ -1052,17 +1049,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
             if origin is Literal:
                 name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
-            if param.default is not param.empty:
+            if param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
-                    default_ = (
-                        param.default
-                        if not isinstance(param.default, parameters.Parameter)
-                        else param.default.displayed_default
+                    result.append(
+                        f'[{name}={param.displayed_default}]' if not greedy else f'[{name}={param.displayed_default}]...'
                     )
-                    result.append(f'[{name}={default_}]' if not greedy else f'[{name}={default_}]...')
                     continue
                 else:
                     result.append(f'[{name}]')
