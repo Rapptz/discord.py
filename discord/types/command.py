@@ -58,7 +58,7 @@ class _StringApplicationCommandOptionChoice(TypedDict):
     value: str
 
 
-class _StringApplicationCommandOption(TypedDict):
+class _StringApplicationCommandOption(_BaseApplicationCommandOption):
     type: Literal[3]
     choices: NotRequired[List[_StringApplicationCommandOptionChoice]]
     autocomplete: NotRequired[bool]
