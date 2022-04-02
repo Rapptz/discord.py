@@ -51,9 +51,9 @@ class VanityInvite(_InviteMetadata):
     revoked: NotRequired[bool]
 
 
-class IncompleteInvite(_InviteMetadata, total=False):
-    code: Required[str]
-    channel: Required[PartialChannel]
+class IncompleteInvite(_InviteMetadata):
+    code: str
+    channel: PartialChannel
 
 
 class Invite(IncompleteInvite, total=False):
