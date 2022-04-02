@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-import datetime
 import logging
 import sys
 import traceback
@@ -66,7 +65,7 @@ from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
-from .utils import MISSING, time_snowflake
+from .utils import MISSING
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
@@ -82,14 +81,14 @@ from .member import _ClientStatus
 if TYPE_CHECKING:
     from typing_extensions import Self
     from types import TracebackType
-    from .types.guild import Guild as GuildPayload
     from .guild import GuildChannel
-    from .abc import PrivateChannel, GuildChannel, Snowflake, SnowflakeTime
+    from .abc import PrivateChannel, GuildChannel, Snowflake
     from .channel import DMChannel
     from .message import Message
     from .member import Member
     from .relationship import Relationship
     from .voice_client import VoiceProtocol
+    from .types.snowflake import Snowflake as _Snowflake
 
 # fmt: off
 __all__ = (
@@ -2125,6 +2124,8 @@ class Client:
 
         Retrieves a list of :class:`Note` objects representing all your notes.
 
+        .. versionadded:: 1.9
+
         Raises
         -------
         HTTPException
@@ -2143,6 +2144,8 @@ class Client:
         """|coro|
 
         Retrieves a :class:`Note` for the specified user ID.
+
+        .. versionadded:: 1.9
 
         Parameters
         -----------
@@ -2168,6 +2171,8 @@ class Client:
 
         Retrieves all of your connections.
 
+        .. versionadded:: 2.0
+
         Raises
         -------
         HTTPException
@@ -2186,6 +2191,8 @@ class Client:
         """|coro|
 
         Retrieves all your private channels.
+
+        .. versionadded:: 2.0
 
         Raises
         -------
@@ -2229,16 +2236,18 @@ class Client:
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
 
-    async def create_group(self, *recipients) -> GroupChannel:
+    async def create_group(self, *recipients: Snowflake) -> GroupChannel:
         r"""|coro|
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
         of type :attr:`RelationshipType.friend`.
 
+        .. versionadded:: 2.0
+
         Parameters
         -----------
-        \*recipients: :class:`User`
+        \*recipients: :class:`~abc.Snowflake`
             An argument :class:`list` of :class:`User` to have in
             your group.
 
@@ -2252,7 +2261,7 @@ class Client:
         :class:`.GroupChannel`
             The new group channel.
         """
-        users = [u.id for u in recipients]
+        users: List[_Snowflake] = [u.id for u in recipients]
         state = self._connection
         data = await state.http.start_group(users)
         return GroupChannel(me=self.user, data=data, state=state)  # type: ignore - user is always present when logged in
