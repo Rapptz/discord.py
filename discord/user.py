@@ -93,6 +93,8 @@ class Note:
     def note(self) -> Optional[str]:
         """Returns the note.
 
+        There is an alias for this named :attr:`value`.
+
         Raises
         -------
         ClientException
@@ -102,13 +104,22 @@ class Note:
             raise ClientException('Note is not fetched')
         return self._note
 
+    @property
+    def value(self) -> Optional[str]:
+        """Returns the note.
+
+        This is an alias of :attr:`note`.
+
+        Raises
+        -------
+        ClientException
+            Attempted to access note without fetching it.
+        """
+        return self.note
+
     @cached_slot_property('_user')
     def user(self) -> _Snowflake:
-        """:class:`Snowflake`: Returns the :class:`User` the note belongs to.
-
-        If the user isn't in the cache, it returns a
-        :class:`Object` instead.
-        """
+        """:class:`Snowflake`: Returns the :class:`User` or :class:`Object` the note belongs to."""
         user_id = self._user_id
 
         user = self._state.get_user(user_id)
@@ -177,8 +188,8 @@ class Note:
         base = f'<Note user={self.user!r}'
         note = self._note
         if note is not MISSING:
-            note = note or '""'
-            base += f' note={note}'
+            note = note or ''
+            base += f' note={note!r}'
         return base + '>'
 
     def __len__(self) -> int:
