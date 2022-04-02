@@ -45,35 +45,37 @@ if TYPE_CHECKING:
 T = TypeVar('T')
 
 
-def _get_command_options(**options: str) -> List[ApplicationCommandInteractionDataOptionPayload]:
-    return [
-        {
-            'type': discord.AppCommandOptionType.string.value,
-            'name': name,
-            'value': value,
-        }
-        for name, value in options.items()
-    ]
-
-
-def _get_command_data(
-    command, options: List[ApplicationCommandInteractionDataOptionPayload]
-) -> ChatInputApplicationCommandInteractionDataPayload:
-
-    data: Union[ChatInputApplicationCommandInteractionDataPayload, ApplicationCommandInteractionDataOptionPayload] = {
-        'type': discord.AppCommandType.chat_input.value,
-        'name': command.name,
-        'options': options,
-    }
-
-    if command.parent is None:
-        data['id'] = hash(command)  # type: ignore # narrowing isn't possible
-        return data  # type: ignore # see above
-    else:
-        return _get_command_data(command.parent, [data])
-
-
 class MockCommandInteraction(discord.Interaction):
+    @classmethod
+    def _get_command_options(cls, **options: str) -> List[ApplicationCommandInteractionDataOptionPayload]:
+        return [
+            {
+                'type': discord.AppCommandOptionType.string.value,
+                'name': name,
+                'value': value,
+            }
+            for name, value in options.items()
+        ]
+
+    @classmethod
+    def _get_command_data(
+        cls,
+        command: Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group],
+        options: List[ApplicationCommandInteractionDataOptionPayload],
+    ) -> ChatInputApplicationCommandInteractionDataPayload:
+
+        data: Union[ChatInputApplicationCommandInteractionDataPayload, ApplicationCommandInteractionDataOptionPayload] = {
+            'type': discord.AppCommandType.chat_input.value,
+            'name': command.name,
+            'options': options,
+        }
+
+        if command.parent is None:
+            data['id'] = hash(command)  # type: ignore # narrowing isn't possible
+            return data  # type: ignore # see above
+        else:
+            return cls._get_command_data(command.parent, [data])
+
     def __init__(
         self,
         client: discord.Client,
@@ -87,7 +89,7 @@ class MockCommandInteraction(discord.Interaction):
             "token": "",
             "version": 1,
             "type": 2,
-            "data": _get_command_data(command, _get_command_options(**options)),
+            "data": self._get_command_data(command, self._get_command_options(**options)),
         }
         super().__init__(data=data, state=client._connection)
 
