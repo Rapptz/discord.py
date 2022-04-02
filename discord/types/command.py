@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, TypedDict, Union
+from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
 from .snowflake import Snowflake
@@ -57,13 +58,10 @@ class _StringApplicationCommandOptionChoice(TypedDict):
     value: str
 
 
-class _StringApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
-    choices: List[_StringApplicationCommandOptionChoice]
-    autocomplete: bool
-
-
-class _StringApplicationCommandOption(_StringApplicationCommandOptionOptional):
+class _StringApplicationCommandOption(_BaseApplicationCommandOption):
     type: Literal[3]
+    choices: NotRequired[List[_StringApplicationCommandOptionChoice]]
+    autocomplete: NotRequired[bool]
 
 
 class _IntegerApplicationCommandOptionChoice(TypedDict):
@@ -71,27 +69,21 @@ class _IntegerApplicationCommandOptionChoice(TypedDict):
     value: int
 
 
-class _IntegerApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
+class _IntegerApplicationCommandOption(_BaseApplicationCommandOption, total=False):
+    type: Required[Literal[4]]
     min_value: int
     max_value: int
     choices: List[_IntegerApplicationCommandOptionChoice]
     autocomplete: bool
 
 
-class _IntegerApplicationCommandOption(_IntegerApplicationCommandOptionOptional):
-    type: Literal[4]
-
-
 class _BooleanApplicationCommandOption(_BaseValueApplicationCommandOption):
     type: Literal[5]
 
 
-class _ChannelApplicationCommandOptionChoiceOptional(_BaseApplicationCommandOption, total=False):
-    channel_types: List[ChannelType]
-
-
-class _ChannelApplicationCommandOptionChoice(_ChannelApplicationCommandOptionChoiceOptional):
+class _ChannelApplicationCommandOptionChoice(_BaseApplicationCommandOption):
     type: Literal[7]
+    channel_types: NotRequired[List[ChannelType]]
 
 
 class _NonChannelSnowflakeApplicationCommandOptionChoice(_BaseValueApplicationCommandOption):
@@ -109,15 +101,12 @@ class _NumberApplicationCommandOptionChoice(TypedDict):
     value: float
 
 
-class _NumberApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
+class _NumberApplicationCommandOption(_BaseValueApplicationCommandOption, total=False):
+    type: Required[Literal[10]]
     min_value: float
     max_value: float
     choices: List[_NumberApplicationCommandOptionChoice]
     autocomplete: bool
-
-
-class _NumberApplicationCommandOption(_NumberApplicationCommandOptionOptional):
-    type: Literal[10]
 
 
 _ValueApplicationCommandOption = Union[
@@ -148,16 +137,13 @@ class _BaseApplicationCommand(TypedDict):
     version: Snowflake
 
 
-class _ChatInputApplicationCommandOptional(_BaseApplicationCommand, total=False):
+class _ChatInputApplicationCommand(_BaseApplicationCommand, total=False):
+    description: Required[str]
     type: Literal[1]
     options: Union[
         List[_ValueApplicationCommandOption],
         List[Union[_SubCommandCommandOption, _SubCommandGroupCommandOption]],
     ]
-
-
-class _ChatInputApplicationCommand(_ChatInputApplicationCommandOptional):
-    description: str
 
 
 class _BaseContextMenuApplicationCommand(_BaseApplicationCommand):
