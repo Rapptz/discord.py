@@ -751,7 +751,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         limit: Optional[int] = 100,
         before: Optional[Union[Snowflake, datetime.datetime]] = None,
     ) -> AsyncIterator[Thread]:
-        """Returns an :term:`asynchronous iterator` that iterates over all archived threads in the guild,
+        """Returns an :term:`asynchronous iterator` that iterates over all archived threads in this text channel,
         in order of decreasing ID for joined threads, and decreasing :attr:`Thread.archive_timestamp` otherwise.
 
         You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
