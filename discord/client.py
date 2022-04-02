@@ -1370,10 +1370,10 @@ class Client:
         status_str = str(status)
         activities_tuple = tuple(a.to_dict() for a in activities)
         self._client_status._this = str(status)
-        self._client_activities['this'] = activities_tuple
+        self._client_activities['this'] = activities_tuple  # type: ignore
         if self._session_count <= 1:
             self._client_status._status = status_str
-            self._client_activities[None] = self._client_activities['this'] = activities_tuple
+            self._client_activities[None] = self._client_activities['this'] = activities_tuple  # type: ignore
 
     async def change_voice_state(
         self,
@@ -2258,15 +2258,15 @@ class Client:
         return GroupChannel(me=self.user, data=data, state=state)  # type: ignore - user is always present when logged in
 
     @overload
-    async def send_friend_request(self, user: BaseUser) -> Relationship:
+    async def send_friend_request(self, user: BaseUser, /) -> Relationship:
         ...
 
     @overload
-    async def send_friend_request(self, user: str) -> Relationship:
+    async def send_friend_request(self, user: str, /) -> Relationship:
         ...
 
     @overload
-    async def send_friend_request(self, username: str, discriminator: str) -> Relationship:
+    async def send_friend_request(self, username: str, discriminator: str, /) -> Relationship:
         ...
 
     async def send_friend_request(self, *args: Union[BaseUser, str]) -> Relationship:

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
@@ -52,9 +52,10 @@ if TYPE_CHECKING:
 
     from datetime import datetime
 
-    from .abc import Snowflake as _Snowflake
+    from .abc import Snowflake as _Snowflake, T as ConnectReturn
     from .calls import PrivateCall
     from .channel import DMChannel
+    from .client import Client
     from .member import VoiceState
     from .message import Message
     from .profile import UserProfile
@@ -544,7 +545,7 @@ class ClientUser(BaseUser):
         self.bio = data.get('bio') or None
         self.nsfw_allowed = data.get('nsfw_allowed', False)
 
-    def get_relationship(self, user_id: int) -> Relationship:
+    def get_relationship(self, user_id: int) -> Optional[Relationship]:
         """Retrieves the :class:`Relationship` if applicable.
 
         Parameters
@@ -572,12 +573,12 @@ class ClientUser(BaseUser):
     @property
     def friends(self) -> List[Relationship]:
         r"""List[:class:`User`]: Returns all the users that the user is friends with."""
-        return [r.user for r in self._state._relationships.values() if r.type is RelationshipType.friend]
+        return [r for r in self._state._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self) -> List[Relationship]:
         r"""List[:class:`User`]: Returns all the users that the user has blocked."""
-        return [r.user for r in self._state._relationships.values() if r.type is RelationshipType.blocked]
+        return [r for r in self._state._relationships.values() if r.type is RelationshipType.blocked]
 
     @property
     def settings(self) -> Optional[UserSettings]:
@@ -842,10 +843,10 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
-        return self._state.self_id, 'self_id'
+        return self._state.self_id, 'self_id'  # type: ignore - self_id is always set at this point
 
     def _get_voice_state_pair(self) -> Tuple[int, int]:
-        return self._state.self_id, self.dm_channel.id
+        return self._state.self_id, self.dm_channel.id  # type: ignore - self_id is always set at this point
 
     async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
@@ -867,16 +868,22 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     @property
     def relationship(self) -> Optional[Relationship]:
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
-        return self._state.user.get_relationship(self.id)
+        return self._state.user.get_relationship(self.id)  # type: ignore - user is always present when logged in
 
-    async def connect(self, *, ring=True, **kwargs):
+    @copy_doc(discord.abc.Connectable.connect)
+    async def connect(
+        self,
+        *,
+        timeout: float = 60.0,
+        reconnect: bool = True,
+        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        ring: bool = True,
+    ) -> ConnectReturn:
         channel = await self._get_channel()
-        call = self.call
-        if call is not None:
-            ring = False
-        await super().connect(_channel=channel, **kwargs)
-        if ring:
+        call = channel.call
+        if call is None and ring:
             await channel._initial_ring()
+        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls, _channel=channel)
 
     async def create_dm(self) -> DMChannel:
         """|coro|

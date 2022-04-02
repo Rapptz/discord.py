@@ -51,3 +51,4 @@ class User(PartialUser, total=False):
     bio: str
     analytics_token: str
     phone: Optional[str]
+    token: str

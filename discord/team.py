@@ -170,15 +170,15 @@ class Team:
         return members
 
     @overload
-    async def invite_member(self, user: BaseUser) -> TeamMember:
+    async def invite_member(self, user: BaseUser, /) -> TeamMember:
         ...
 
     @overload
-    async def invite_member(self, user: str) -> TeamMember:
+    async def invite_member(self, user: str, /) -> TeamMember:
         ...
 
     @overload
-    async def invite_member(self, username: str, discriminator: str) -> TeamMember:
+    async def invite_member(self, username: str, discriminator: str, /) -> TeamMember:
         ...
 
     async def invite_member(self, *args: Union[BaseUser, str]) -> TeamMember:
