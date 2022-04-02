@@ -152,6 +152,13 @@ class Permissions(BaseFlags):
         return cls(0b11111111111111111111111111111111111111111)
 
     @classmethod
+    def _timeout_mask(cls) -> int:
+        p = cls.all()
+        p.view_channel = False
+        p.read_message_history = False
+        return ~p.value
+
+    @classmethod
     def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific

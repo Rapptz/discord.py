@@ -2023,13 +2023,46 @@ class Guild(Hashable):
         channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore # channel won't be a private channel
         return channel
 
-    async def bans(self) -> List[BanEntry]:
-        """|coro|
-
-        Retrieves all the users that are banned from the guild as a :class:`list` of :class:`BanEntry`.
+    async def bans(
+        self,
+        *,
+        limit: Optional[int] = 1000,
+        before: Snowflake = MISSING,
+        after: Snowflake = MISSING,
+    ) -> AsyncIterator[BanEntry]:
+        """Retrieves an :term:`asynchronous iterator` of the users that are banned from the guild as a :class:`BanEntry`.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
+
+        .. versionchanged:: 2.0
+            Due to a breaking change in Discord's API, this now returns a paginated iterator instead of a list.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for entry in guild.bans(limit=150):
+                print(entry.user, entry.reason)
+
+        Flattening into a list ::
+
+            bans = [entry async for entry in guild.bans(limit=2000)]
+            # bans is now a list of BanEntry...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of bans to retrieve. If ``None``, it retrieves every ban in
+            the guild. Note, however, that this would make it a slow operation.
+            Defaults to ``1000``.
+        before: :class:`.abc.Snowflake`
+            Retrieves bans before this user.
+        after: :class:`.abc.Snowflake`
+            Retrieve bans after this user.
 
         Raises
         -------
@@ -2037,15 +2070,64 @@ class Guild(Hashable):
             You do not have proper permissions to get the information.
         HTTPException
             An error occurred while fetching the information.
+        TypeError
+            Both ``after`` and ``before`` were provided, as Discord does not
+            support this type of pagination.
 
-        Returns
+        Yields
         --------
-        List[:class:`BanEntry`]
-            A list of :class:`BanEntry` objects.
+        :class:`BanEntry`
+            The ban entry of the banned user.
         """
 
-        data: List[BanPayload] = await self._state.http.get_bans(self.id)
-        return [BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason']) for e in data]
+        if before is not MISSING and after is not MISSING:
+            raise TypeError('bans pagination does not support both before and after')
+
+        # This endpoint paginates in ascending order.
+        endpoint = self._state.http.get_bans
+
+        async def _before_strategy(retrieve, before, limit):
+            before_id = before.id if before else None
+            data = await endpoint(self.id, limit=retrieve, before=before_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[0]['user']['id']))
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve, after, limit):
+            after_id = after.id if after else None
+            data = await endpoint(self.id, limit=retrieve, after=after_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=int(data[-1]['user']['id']))
+
+            return data, after, limit
+
+        if before:
+            strategy, state = _before_strategy, before
+        else:
+            strategy, state = _after_strategy, after
+
+        while True:
+            retrieve = min(1000 if limit is None else limit, 1000)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 1000:
+                limit = 0
+
+            for e in data:
+                yield BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason'])
 
     async def prune_members(
         self,

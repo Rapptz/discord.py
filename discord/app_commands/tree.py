@@ -55,7 +55,7 @@ from .errors import (
     CommandAlreadyRegistered,
     CommandNotFound,
     CommandSignatureMismatch,
-    MaxCommandsReached,
+    CommandLimitReached,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -195,7 +195,7 @@ class CommandTree(Generic[ClientT]):
 
         Raises
         --------
-        MaxCommandsReached
+        CommandLimitReached
             The maximum number of commands was reached for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -207,7 +207,7 @@ class CommandTree(Generic[ClientT]):
 
         mapping.update(self._global_commands)
         if len(mapping) > 100:
-            raise MaxCommandsReached(guild_id=guild.id, limit=100)
+            raise CommandLimitReached(guild_id=guild.id, limit=100)
 
         ctx_menu: Dict[Tuple[str, Optional[int], int], ContextMenu] = {
             (name, guild.id, cmd_type): cmd
@@ -219,7 +219,7 @@ class CommandTree(Generic[ClientT]):
         for cmd_type, count in counter.items():
             if count > 5:
                 as_enum = AppCommandType(cmd_type)
-                raise MaxCommandsReached(guild_id=guild.id, limit=5, type=as_enum)
+                raise CommandLimitReached(guild_id=guild.id, limit=5, type=as_enum)
 
         self._context_menus.update(ctx_menu)
         self._guild_commands[guild.id] = mapping
@@ -245,7 +245,7 @@ class CommandTree(Generic[ClientT]):
         command: Union[:class:`Command`, :class:`Group`]
             The application command or group to add.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
@@ -262,7 +262,7 @@ class CommandTree(Generic[ClientT]):
         TypeError
             The application command passed is not a valid application command.
             Or, ``guild`` and ``guilds`` were both given.
-        MaxCommandsReached
+        CommandLimitReached
             The maximum number of commands was reached globally or for that guild.
             This is currently 100 for slash commands and 5 for context menu commands.
         """
@@ -285,7 +285,7 @@ class CommandTree(Generic[ClientT]):
 
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
                 if total + found > 5:
-                    raise MaxCommandsReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
+                    raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
 
             if guild_ids is None:
@@ -316,7 +316,7 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
                 if len(commands) + found > 100:
-                    raise MaxCommandsReached(guild_id=guild_id, limit=100)
+                    raise CommandLimitReached(guild_id=guild_id, limit=100)
 
             # Actually add the command now that it has been verified to be okay.
             for guild_id in guild_ids:
@@ -327,7 +327,7 @@ class CommandTree(Generic[ClientT]):
             if found and not override:
                 raise CommandAlreadyRegistered(name, None)
             if len(self._global_commands) + found > 100:
-                raise MaxCommandsReached(guild_id=None, limit=100)
+                raise CommandLimitReached(guild_id=None, limit=100)
             self._global_commands[name] = root
 
     @overload
@@ -381,7 +381,7 @@ class CommandTree(Generic[ClientT]):
         command: :class:`str`
             The name of the root command to remove.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to remove the command from. If not given then it
+            The guild to remove the command from. If not given or ``None`` then it
             removes a global command instead.
         type: :class:`~discord.AppCommandType`
             The type of command to remove. Defaults to :attr:`~discord.AppCommandType.chat_input`,
@@ -457,7 +457,7 @@ class CommandTree(Generic[ClientT]):
         command: :class:`str`
             The name of the root command to get.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to get the command from. If not given then it
+            The guild to get the command from. If not given or ``None`` then it
             gets a global command instead.
         type: :class:`~discord.AppCommandType`
             The type of command to get. Defaults to :attr:`~discord.AppCommandType.chat_input`,
@@ -523,8 +523,8 @@ class CommandTree(Generic[ClientT]):
         Parameters
         -----------
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to get the commands from. If not given then it
-            gets all global commands instead.
+            The guild to get the commands from, not including global commands.
+            If not given or ``None`` then only global commands are returned.
         type: :class:`~discord.AppCommandType`
             The type of commands to get. Defaults to :attr:`~discord.AppCommandType.chat_input`,
             i.e. slash commands.
@@ -588,8 +588,8 @@ class CommandTree(Generic[ClientT]):
         Parameters
         -----------
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to iterate the commands from. If not given then it
-            iterates all global commands instead.
+            The guild to iterate the commands from, not including global commands.
+            If not given or ``None`` then only global commands are iterated.
         type: :class:`~discord.AppCommandType`
             The type of commands to iterate over. Defaults to :attr:`~discord.AppCommandType.chat_input`,
             i.e. slash commands.
@@ -751,7 +751,7 @@ class CommandTree(Generic[ClientT]):
             the application command. If not given, it defaults to the first line of the docstring
             of the callback shortened to 100 characters.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
@@ -815,7 +815,7 @@ class CommandTree(Generic[ClientT]):
             version of the callback name. Note that unlike regular slash commands this can
             have spaces and upper case characters in the name.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to add the command to. If not given then it
+            The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
