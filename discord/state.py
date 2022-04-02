@@ -592,8 +592,8 @@ class ConnectionState:
         self.dispatch('message', message)
         if self._messages is not None:
             self._messages.append(message)
-        # we ensure that the channel is either a TextChannel or Thread
-        if channel and channel.__class__ in (TextChannel, Thread):
+        # we ensure that the channel is either a TextChannel, VoiceChannel, or Thread
+        if channel and channel.__class__ in (TextChannel, VoiceChannel, Thread):
             channel.last_message_id = message.id  # type: ignore
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:
@@ -1497,9 +1497,7 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(
-        self, *, channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable], data: MessagePayload
-    ) -> Message:
+    def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
 
 

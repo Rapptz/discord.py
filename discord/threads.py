@@ -26,11 +26,9 @@ from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
 from datetime import datetime
-import time
-import asyncio
 
 from .mixins import Hashable
-from .abc import Messageable
+from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException
 from .utils import MISSING, parse_time, _get_as_snowflake
@@ -367,7 +365,7 @@ class Thread(Messageable, Hashable):
             raise ClientException('Parent channel not found')
         return parent.permissions_for(obj)
 
-    async def delete_messages(self, messages: Iterable[Snowflake], /) -> None:
+    async def delete_messages(self, messages: Iterable[Snowflake], /, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -383,12 +381,12 @@ class Thread(Messageable, Hashable):
         You must have the :attr:`~Permissions.manage_messages` permission to
         use this.
 
-        Usable only by bot accounts.
-
         Parameters
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
             An iterable of messages denoting which ones to bulk delete.
+        reason: Optional[:class:`str`]
+            The reason for deleting the messages. Shows up on the audit log.
 
         Raises
         ------
@@ -410,14 +408,14 @@ class Thread(Messageable, Hashable):
 
         if len(messages) == 1:
             message_id = messages[0].id
-            await self._state.http.delete_message(self.id, message_id)
+            await self._state.http.delete_message(self.id, message_id, reason=reason)
             return
 
         if len(messages) > 100:
             raise ClientException('Can only bulk delete messages up to 100 messages')
 
         message_ids: SnowflakeList = [m.id for m in messages]
-        await self._state.http.delete_messages(self.id, message_ids)
+        await self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     async def purge(
         self,
@@ -429,6 +427,7 @@ class Thread(Messageable, Hashable):
         around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = False,
         bulk: bool = True,
+        reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
 
@@ -472,6 +471,8 @@ class Thread(Messageable, Hashable):
             If ``True``, use bulk delete. Setting this to ``False`` is useful for mass-deleting
             a bot's own messages without :attr:`Permissions.manage_messages`. When ``True``, will
             fall back to single delete if messages are older than two weeks.
+        reason: Optional[:class:`str`]
+            The reason for purging the messages. Shows up on the audit log.
 
         Raises
         -------
@@ -486,55 +487,17 @@ class Thread(Messageable, Hashable):
             The list of messages that were deleted.
         """
 
-        if check is MISSING:
-            check = lambda m: True
-
-        iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
-        ret: List[Message] = []
-        count = 0
-
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-
-        async def _single_delete_strategy(messages: Iterable[Message]):
-            for m in messages:
-                await m.delete()
-
-        strategy = self.delete_messages if bulk else _single_delete_strategy
-
-        async for message in iterator:
-            if count == 100:
-                to_delete = ret[-100:]
-                await strategy(to_delete)
-                count = 0
-                await asyncio.sleep(1)
-
-            if not check(message):
-                continue
-
-            if message.id < minimum_time:
-                # older than 14 days old
-                if count == 1:
-                    await ret[-1].delete()
-                elif count >= 2:
-                    to_delete = ret[-count:]
-                    await strategy(to_delete)
-
-                count = 0
-                strategy = _single_delete_strategy
-
-            count += 1
-            ret.append(message)
-
-        # SOme messages remaining to poll
-        if count >= 2:
-            # more than 2 messages -> bulk delete
-            to_delete = ret[-count:]
-            await strategy(to_delete)
-        elif count == 1:
-            # delete a single message
-            await ret[-1].delete()
-
-        return ret
+        return await _purge_helper(
+            self,
+            limit=limit,
+            check=check,
+            before=before,
+            after=after,
+            around=around,
+            oldest_first=oldest_first,
+            bulk=bulk,
+            reason=reason,
+        )
 
     async def edit(
         self,

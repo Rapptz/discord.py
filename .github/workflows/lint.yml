@@ -41,9 +41,7 @@ jobs:
 
       - name: Run pyright
         run: |
-          # It is OK for the types to not pass at this stage
-          # We are just running it as a quick reference check
-          pyright || echo "Type checking did not pass"
+          pyright
 
       - name: Run black
         if: ${{ always() && steps.install-deps.outcome == 'success' }}
