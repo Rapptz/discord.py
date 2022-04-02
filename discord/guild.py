@@ -105,10 +105,9 @@ _log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
     from .types.guild import (
-        Ban as BanPayload,
         Guild as GuildPayload,
+        GuildPreview as GuildPreviewPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
-        GuildFeature,
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -266,6 +265,12 @@ class Guild(Hashable):
         The notification settings for the guild.
 
         .. versionadded:: 2.0
+    keywords: Optional[:class:`str`]
+        Discovery search keywords for the guild.
+
+        .. versionadded:: 2.0
+    primary_category_id: Optional[:class:`int`]
+        The ID of the primary discovery category for the guild.
     """
 
     __slots__ = (
@@ -320,6 +325,12 @@ class Guild(Hashable):
         '_true_online_count',
         '_chunked',
         '_member_list',
+        'keywords',
+        'primary_category_id',
+        'application_command_count',
+        '_load_id',
+        '_joined_at',
+        '_cs_joined',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -330,7 +341,7 @@ class Guild(Hashable):
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
 
-    def __init__(self, *, data: GuildPayload, state: ConnectionState) -> None:
+    def __init__(self, *, data: Union[GuildPayload, GuildPreviewPayload], state: ConnectionState) -> None:
         self._chunked = False
         self._roles: Dict[int, Role] = {}
         self._channels: Dict[int, GuildChannel] = {}
@@ -344,6 +355,7 @@ class Guild(Hashable):
         self.notification_settings: Optional[GuildSettings] = None
         self.command_counts: Optional[CommandCounts] = None
         self._member_count: int = 0
+        self._presence_count: Optional[int] = None
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
@@ -438,9 +450,9 @@ class Guild(Hashable):
 
         return role
 
-    def _from_data(self, guild: GuildPayload) -> None:
+    def _from_data(self, guild: Union[GuildPayload, GuildPreviewPayload]) -> None:
         try:
-            self._member_count: int = guild['member_count']
+            self._member_count: int = guild['member_count']  # type: ignore - Handled below
         except KeyError:
             pass
 
@@ -483,7 +495,8 @@ class Guild(Hashable):
         self.stickers: Tuple[GuildSticker, ...] = tuple(
             map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
         )
-        self.features: List[GuildFeature] = guild.get('features', [])
+        self.features: List[str] = guild.get('features', [])
+        self.keywords: List[str] = guild.get('keywords', [])
         self._icon: Optional[str] = guild.get('icon')
         self._banner: Optional[str] = guild.get('banner')
         self._splash: Optional[str] = guild.get('splash')
@@ -506,10 +519,12 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
-        self._presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
+        self.application_command_count: int = guild.get('application_command_count', 0)
+        self.primary_category_id: Optional[int] = guild.get('primary_category_id')
+        self._joined_at = guild.get('joined_at')
 
         large = None if self._member_count is 0 else self._member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
@@ -593,8 +608,22 @@ class Guild(Hashable):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
-        self_id = self._state.user.id  # type: ignore - state.user won't be None if we're logged in
+        self_id = self._state.self_id
         return self.get_member(self_id)  # type: ignore - The self member is *always* cached
+
+    @utils.cached_slot_property('_cs_joined')
+    def joined(self) -> bool:
+        """:class:`bool`: Returns whether you are a member of this guild.
+        May not be accurate for :class:`Guild`s fetched over HTTP.
+        """
+        if self.me or self.joined_at:
+            return True
+        return self._state.is_guild_evicted(self)
+
+    @property
+    def joined_at(self) -> Optional[datetime]:
+        """:class:`datetime.datetime`: Returns when you joined the guild."""
+        return utils.parse_time(self._joined_at)
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
@@ -1519,7 +1548,7 @@ class Guild(Hashable):
         HTTPException
             Leaving the guild failed.
         """
-        await self._state.http.leave_guild(self.id)
+        await self._state.http.leave_guild(self.id, lurking=not self.joined)
 
     async def delete(self) -> None:
         """|coro|

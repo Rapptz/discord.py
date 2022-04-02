@@ -32,7 +32,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Type
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
 
 import aiohttp
 
@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .client import Client
+    from .enums import Status
     from .state import ConnectionState
     from .types.snowflake import Snowflake
     from .voice_client import VoiceClient
@@ -654,7 +655,7 @@ class DiscordWebSocket:
         self,
         *,
         activities: Optional[List[BaseActivity]] = None,
-        status: Optional[str] = None,
+        status: Optional[Status] = None,
         since: float = 0.0,
         afk: bool = False,
     ) -> None:
@@ -670,7 +671,7 @@ class DiscordWebSocket:
 
         payload = {
             'op': self.PRESENCE,
-            'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status)},
+            'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status or 'online')},
         }
 
         sent = utils._to_json(payload)
@@ -961,7 +962,7 @@ class DiscordVoiceWebSocket:
 
     async def client_connect(self) -> None:
         payload = {
-            'op': self.CLIENT_CONNECT,
+            'op': self.VIDEO,
             'd': {
                 'audio_ssrc': self._connection.ssrc,
             },

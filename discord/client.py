@@ -232,8 +232,8 @@ class Client:
 
         self._client_status: _ClientStatus = _ClientStatus()
         self._client_activities: Dict[Optional[str], Tuple[ActivityTypes, ...]] = {
-            None: None,
-            'this': None,
+            None: tuple(),
+            'this': tuple(),
         }
         self._session_count = 1
 
@@ -275,8 +275,8 @@ class Client:
         activities = self.initial_activities
         status = self.initial_status
         if status is None:
-            status = getattr(state.settings, 'status', None)
-        self.loop.create_task(self.change_presence(activities=activities, status=status))
+            status = getattr(state.settings, 'status', None) or Status.online
+        self.loop.create_task(self.change_presence(activities=activities, status=status))  # type: ignore
 
     @property
     def latency(self) -> float:
@@ -435,7 +435,11 @@ class Client:
         if not self._sync_presences:
             return
 
-        if old_settings._status == new_settings._status and old_settings._custom_status == new_settings._custom_status:
+        if (
+            old_settings is not None
+            and old_settings._status == new_settings._status
+            and old_settings._custom_status == new_settings._custom_status
+        ):
             return  # Nothing changed
 
         status = new_settings.status
@@ -443,7 +447,7 @@ class Client:
         if (activity := new_settings.custom_activity) is not None:
             activities.append(activity)
 
-        await self.change_presence(status=status, activities=activities, edit_settings=False)
+        await self.change_presence(status=status, activities=activities, edit_settings=False)  # type: ignore
 
     # Hooks
 
@@ -582,7 +586,7 @@ class Client:
             except ReconnectWebSocket as e:
                 _log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
-                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)  # type: ignore - These are always present at this point
                 continue
             except (
                 OSError,
@@ -606,7 +610,7 @@ class Client:
 
                 # If we get connection reset by peer then try to RESUME
                 if isinstance(exc, OSError) and exc.errno in (54, 10054):
-                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
+                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)  # type: ignore - These are always present at this point
                     continue
 
                 # We should only get this when an unhandled close code happens,
@@ -624,7 +628,7 @@ class Client:
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session
                 # This is apparently what the official Discord client does
-                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
+                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)  # type: ignore - These are always present at this point
 
     async def close(self) -> None:
         """|coro|
@@ -734,8 +738,7 @@ class Client:
         if value is None:
             self._connection._activities = []
         elif isinstance(value, BaseActivity):
-            # ConnectionState._activities is typehinted as List[ActivityPayload], we're passing List[Dict[str, Any]]
-            self._connection._activities = [value.to_dict()]  # type: ignore
+            self._connection._activities = [value.to_dict()]
         else:
             raise TypeError('activity must derive from BaseActivity')
 
@@ -750,8 +753,7 @@ class Client:
         if not values:
             self._connection._activities = []
         elif all(isinstance(value, BaseActivity) for value in values):
-            # ConnectionState._activities is typehinted as List[ActivityPayload], we're passing List[Dict[str, Any]]
-            self._connection._activities = [value.to_dict() for value in values]  # type: ignore
+            self._connection._activities = [value.to_dict() for value in values]
         else:
             raise TypeError('activity must derive from BaseActivity')
 
@@ -854,7 +856,7 @@ class Client:
             than 128 characters. See :issue:`1738` for more information.
         """
         state = self._connection
-        activities = tuple(create_activity(d, state) for d in self._client_activities[None])
+        activities = tuple(create_activity(d, state) for d in self._client_activities[None])  # type: ignore
         if activities is None and not self.is_closed():
             activities = getattr(state.settings, 'custom_activity', [])
             activities = [activities] if activities else activities
@@ -1363,7 +1365,7 @@ class Client:
 
             payload: Dict[str, Any] = {'status': status}
             payload['custom_activity'] = custom_activity
-            await self.user.edit_settings(**payload)
+            await self.user.edit_settings(**payload)  # type: ignore - user is always present when logged in
 
         status_str = str(status)
         activities_tuple = tuple(a.to_dict() for a in activities)
@@ -1433,7 +1435,7 @@ class Client:
         Parameters
         -----------
         with_counts: :class:`bool`
-            Whether to return approximate :attr:`.Guild.member_count` and :attr:`.Guild.presence_count`.
+            Whether to fill :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`.
             Defaults to ``True``.
 
         Raises
@@ -1448,7 +1450,10 @@ class Client:
         """
         state = self._connection
         guilds = await state.http.get_guilds(with_counts)
-        return [Guild(data=data, state=state) for data in guilds]
+        guilds = [Guild(data=data, state=state) for data in guilds]
+        for guild in guilds:
+            guild._cs_joined = True
+        return guilds
 
     async def fetch_template(self, code: Union[Template, str]) -> Template:
         """|coro|
@@ -1517,6 +1522,28 @@ class Client:
             The guild from the ID.
         """
         data = await self.http.get_guild(guild_id, with_counts)
+        guild = Guild(data=data, state=self._connection)
+        guild._cs_joined = True
+        return guild
+
+    async def fetch_guild_preview(self, guild_id: int, /) -> Guild:
+        """|coro|
+
+        Retrieves a public :class:`.Guild` preview from an ID.
+
+        Raises
+        ------
+        NotFound
+            Guild with given ID does not exist/is not public.
+        HTTPException
+            Retrieving the guild failed.
+
+        Returns
+        --------
+        :class:`.Guild`
+            The guild from the ID.
+        """
+        data = await self.http.get_guild_preview(guild_id)
         return Guild(data=data, state=self._connection)
 
     async def create_guild(
@@ -1570,7 +1597,69 @@ class Client:
             data = await self.http.create_from_template(code, name, icon_base64)
         else:
             data = await self.http.create_guild(name, icon_base64)
-        return Guild(data=data, state=self._connection)
+
+        guild = Guild(data=data, state=self._connection)
+        guild._cs_joined = True
+        return guild
+
+    async def join_guild(self, guild_id: int, /, lurking: bool = False) -> Guild:
+        """|coro|
+
+        Joins a discoverable :class:`.Guild`.
+
+        Parameters
+        -----------
+        guild_id: :class:`int`
+            The ID of the guild to join.
+        lurking: :class:`bool`
+            Whether to lurk the guild.
+
+        Raises
+        -------
+        NotFound
+            Guild with given ID does not exist/have discovery enabled.
+        HTTPException
+            Joining the guild failed.
+
+        Returns
+        --------
+        :class:`.Guild`
+            The guild that was joined.
+        """
+        state = self._connection
+        data = await state.http.join_guild(guild_id, lurking, state.session_id)
+        guild = Guild(data=data, state=state)
+        guild._cs_joined = not lurking
+        return guild
+
+    async def leave_guild(self, guild: Snowflake, /, lurking: bool = MISSING) -> None:
+        """|coro|
+
+        Leaves a guild. Equivalent to :meth:`Guild.leave`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        guild: :class:`abc.Snowflake`
+            The guild to leave.
+        lurking: :class:`bool`
+            Whether you are lurking the guild.
+
+        Raises
+        -------
+        HTTPException
+            Leaving the guild failed.
+        """
+        lurking = lurking if lurking is not MISSING else MISSING
+        if lurking is MISSING:
+            attr = getattr(guild, 'joined', lurking)
+            if attr is not MISSING:
+                lurking = not attr
+            elif (new_guild := self._connection._get_guild(guild.id)) is not None:
+                lurking = not new_guild.joined
+
+        await self.http.leave_guild(guild.id, lurking=lurking)
 
     async def fetch_stage_instance(self, channel_id: int, /) -> StageInstance:
         """|coro|
@@ -1700,7 +1789,6 @@ class Client:
         HTTPException
             Revoking the invite failed.
         """
-
         resolved = utils.resolve_invite(invite)
         await self.http.delete_invite(resolved.code)
 
@@ -1728,7 +1816,6 @@ class Client:
             The guild joined. This is not the same guild that is
             added to cache.
         """
-
         if not isinstance(invite, Invite):
             invite = await self.fetch_invite(invite, with_counts=False, with_expiration=False)
 
@@ -1744,7 +1831,9 @@ class Client:
             }
         data = await state.http.accept_invite(invite.code, type, **kwargs)
         if type is InviteType.guild:
-            return Guild(data=data['guild'], state=state)
+            guild = Guild(data=data['guild'], state=state)
+            guild._cs_joined = True
+            return guild
         elif type is InviteType.group_dm:
             return GroupChannel(data=data['channel'], state=state, me=state.user)  # type: ignore
         else:
@@ -1973,7 +2062,7 @@ class Client:
             The sticker you requested.
         """
         data = await self.http.get_sticker(sticker_id)
-        cls, _ = _sticker_factory(data['type'])  # type: ignore
+        cls, _ = _sticker_factory(data['type'])
         return cls(state=self._connection, data=data)  # type: ignore
 
     async def fetch_sticker_packs(
@@ -2013,6 +2102,8 @@ class Client:
         """|coro|
 
         Retrieves a sticker pack with the specified ID.
+
+        .. versionadded:: 2.0
 
         Raises
         -------
@@ -2108,7 +2199,7 @@ class Client:
         """
         state = self._connection
         channels = await state.http.get_private_channels()
-        return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]
+        return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore - user is always present when logged in
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
@@ -2161,10 +2252,10 @@ class Client:
         :class:`.GroupChannel`
             The new group channel.
         """
-        users = [str(u.id) for u in recipients]
+        users = [u.id for u in recipients]
         state = self._connection
         data = await state.http.start_group(users)
-        return GroupChannel(me=self.user, data=data, state=state)
+        return GroupChannel(me=self.user, data=data, state=state)  # type: ignore - user is always present when logged in
 
     @overload
     async def send_friend_request(self, user: BaseUser) -> Relationship:
@@ -2225,7 +2316,7 @@ class Client:
             user = args[0]
             if isinstance(user, BaseUser):
                 user = str(user)
-            username, discrim = user.split('#')  # type: ignore
+            username, discrim = user.split('#')
         elif len(args) == 2:
             username, discrim = args  # type: ignore
         else:
@@ -2278,6 +2369,10 @@ class Client:
 
         Raises
         -------
+        NotFound
+            The application was not found.
+        Forbidden
+            You do not own the application.
         HTTPException
             Retrieving the application failed.
 
@@ -2294,6 +2389,20 @@ class Client:
         """|coro|
 
         Retrieves the partial application with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        app_id: :class:`int`
+            The ID of the partial application to fetch.
+
+        Raises
+        -------
+        NotFound
+            The partial application was not found.
+        HTTPException
+            Retrieving the partial application failed.
 
         Returns
         --------
@@ -2330,6 +2439,8 @@ class Client:
 
         Retrieves the team with the given ID.
 
+        You must be a part of the team.
+
         .. versionadded:: 2.0
 
         Parameters
@@ -2339,6 +2450,10 @@ class Client:
 
         Raises
         -------
+        NotFound
+            The team was not found.
+        Forbidden
+            You are not a part of the team.
         HTTPException
             Retrieving the team failed.
 
@@ -2355,6 +2470,8 @@ class Client:
         """|coro|
 
         Creates an application.
+
+        .. versionadded:: 2.0
 
         Parameters
         ----------
@@ -2379,6 +2496,8 @@ class Client:
         """|coro|
 
         Creates a team.
+
+        .. versionadded:: 2.0
 
         Parameters
         ----------

@@ -485,8 +485,6 @@ class ClientUser(BaseUser):
         The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
-    premium: :class:`bool`
-        Specifies if the user is a premium user (i.e. has Discord Nitro).
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (i.e. Nitro or Nitro Classic). Could be None if the user is not premium.
     note: :class:`Note`
@@ -507,7 +505,6 @@ class ClientUser(BaseUser):
         'phone',
         'premium_type',
         'note',
-        'premium',
         'bio',
         'nsfw_allowed',
     )
@@ -519,7 +516,6 @@ class ClientUser(BaseUser):
         locale: Locale
         _flags: int
         mfa_enabled: bool
-        premium: bool
         premium_type: Optional[PremiumType]
         bio: Optional[str]
         nsfw_allowed: bool
@@ -542,8 +538,9 @@ class ClientUser(BaseUser):
         self.locale = try_enum(Locale, data.get('locale', 'en-US'))
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
-        self.premium = data.get('premium', False)
-        self.premium_type = try_enum(PremiumType, data.get('premium_type', None))
+        self.premium_type = try_enum(PremiumType, data['premium_type']) if 'premium_type' in data else None
+        self.bio = data.get('bio')
+        self.nsfw_allowed = data.get('nsfw_allowed', False)
         self.bio = data.get('bio') or None
         self.nsfw_allowed = data.get('nsfw_allowed', False)
 
@@ -561,6 +558,11 @@ class ClientUser(BaseUser):
             The relationship if available or ``None``.
         """
         return self._state._relationships.get(user_id)
+
+    @property
+    def premium(self) -> bool:
+        """Indicates if the user is a premium user (i.e. has Discord Nitro)."""
+        return self.premium_type is not None
 
     @property
     def relationships(self) -> List[Relationship]:

@@ -26,12 +26,15 @@ from __future__ import annotations
 
 from base64 import b64encode
 import json
+from random import choice
 
-from typing import Any, Dict, overload, Optional, TYPE_CHECKING
+from typing import Dict, overload, Optional, TYPE_CHECKING
 
 from .utils import MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .enums import ChannelType
     from .types.snowflake import Snowflake
     from .state import ConnectionState
@@ -56,6 +59,8 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     def _encode_data(self, data) -> str:
         library = {
+            'None': 'e30=',
+            # Locations
             'Friends': 'eyJsb2NhdGlvbiI6IkZyaWVuZHMifQ==',
             'ContextMenu': 'eyJsb2NhdGlvbiI6IkNvbnRleHRNZW51In0=',
             'User Profile': 'eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9',
@@ -69,80 +74,82 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
             'Verify Email': 'eyJsb2NhdGlvbiI6IlZlcmlmeSBFbWFpbCJ9',
             'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
             'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
-            'None': 'e30=',
+            # Sources
+            'Chat Input Blocker - Lurker Mode': 'eyJzb3VyY2UiOiJDaGF0IElucHV0IEJsb2NrZXIgLSBMdXJrZXIgTW9kZSJ9',
+            'Notice - Lurker Mode': 'eyJzb3VyY2UiOiJOb3RpY2UgLSBMdXJrZXIgTW9kZSJ9',
         }
 
         try:
-            return library[data.get('location', 'None')]
+            return library[self.target or 'None']
         except KeyError:
             return b64encode(json.dumps(data, separators=(',', ':')).encode()).decode('utf-8')
 
     @classmethod
-    def _empty(cls) -> ContextProperties:
+    def _empty(cls) -> Self:
         return cls({})
 
     @classmethod
-    def _from_friends_page(cls) -> ContextProperties:
+    def _from_friends_page(cls) -> Self:
         data = {'location': 'Friends'}
         return cls(data)
 
     @classmethod
-    def _from_context_menu(cls) -> ContextProperties:
+    def _from_context_menu(cls) -> Self:
         data = {'location': 'ContextMenu'}
         return cls(data)
 
     @classmethod
-    def _from_user_profile(cls) -> ContextProperties:
+    def _from_user_profile(cls) -> Self:
         data = {'location': 'User Profile'}
         return cls(data)
 
     @classmethod
-    def _from_add_friend_page(cls) -> ContextProperties:
+    def _from_add_friend_page(cls) -> Self:
         data = {'location': 'Add Friend'}
         return cls(data)
 
     @classmethod
-    def _from_guild_header_menu(cls) -> ContextProperties:
+    def _from_guild_header_menu(cls) -> Self:
         data = {'location': 'Guild Header'}
         return cls(data)
 
     @classmethod
-    def _from_group_dm(cls) -> ContextProperties:
+    def _from_group_dm(cls) -> Self:
         data = {'location': 'Group DM'}
         return cls(data)
 
     @classmethod
-    def _from_new_group_dm(cls) -> ContextProperties:
+    def _from_new_group_dm(cls) -> Self:
         data = {'location': 'New Group DM'}
         return cls(data)
 
     @classmethod
-    def _from_dm_channel(cls) -> ContextProperties:
+    def _from_dm_channel(cls) -> Self:
         data = {'location': 'DM Channel'}
         return cls(data)
 
     @classmethod
-    def _from_add_to_dm(cls) -> ContextProperties:
+    def _from_add_to_dm(cls) -> Self:
         data = {'location': 'Add Friends to DM'}
         return cls(data)
 
     @classmethod
-    def _from_app(cls) -> ContextProperties:
+    def _from_app(cls) -> Self:
         data = {'location': '/app'}
         return cls(data)
 
     @classmethod
-    def _from_login(cls) -> ContextProperties:
+    def _from_login(cls) -> Self:
         data = {'location': 'Login'}
         return cls(data)
 
     @classmethod
-    def _from_register(cls) -> ContextProperties:
+    def _from_register(cls) -> Self:
         data = {'location': 'Register'}
         return cls(data)
 
     @classmethod
-    def _from_verification(cls) -> ContextProperties:
+    def _from_verification(cls) -> Self:
         data = {'location': 'Verify Email'}
         return cls(data)
 
@@ -153,7 +160,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         guild_id: Snowflake = MISSING,
         channel_id: Snowflake = MISSING,
         channel_type: ChannelType = MISSING,
-    ) -> ContextProperties:
+    ) -> Self:
         data: Dict[str, Snowflake] = {
             'location': 'Accept Invite Page',
         }
@@ -172,7 +179,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         guild_id: Snowflake = MISSING,
         channel_id: Snowflake = MISSING,
         channel_type: ChannelType = MISSING,
-    ) -> ContextProperties:
+    ) -> Self:
         data: Dict[str, Snowflake] = {
             'location': 'Join Guild',
         }
@@ -192,7 +199,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         channel_id: Snowflake,
         message_id: Snowflake,
         channel_type: Optional[ChannelType],
-    ) -> ContextProperties:
+    ) -> Self:
         data = {
             'location': 'Invite Button Embed',
             'location_guild_id': str(guild_id) if guild_id else None,
@@ -202,9 +209,14 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         }
         return cls(data)
 
+    @classmethod
+    def _from_lurking(cls, source: str = MISSING) -> Self:
+        data = {'source': source or choice(('Chat Input Blocker - Lurker Mode', 'Notice - Lurker Mode'))}
+        return cls(data)
+
     @property
-    def location(self) -> Optional[str]:
-        return self._data.get('location')  # type: ignore
+    def target(self) -> Optional[str]:
+        return self._data.get('location', data.get('source'))  # type: ignore
 
     @property
     def guild_id(self) -> Optional[int]:
@@ -232,10 +244,10 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return self.value is not None
 
     def __str__(self) -> str:
-        return self._data.get('location', 'None')  # type: ignore
+        return self.target or 'None'
 
     def __repr__(self) -> str:
-        return f'<ContextProperties location={self.location}>'
+        return f'<ContextProperties target={self.target!r}>'
 
     def __eq__(self, other) -> bool:
         return isinstance(other, ContextProperties) and self.value == other.value

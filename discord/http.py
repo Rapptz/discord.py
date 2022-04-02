@@ -1197,6 +1197,33 @@ class HTTPClient:
 
         return self.request(Route('GET', '/users/@me/guilds'), params=params, super_properties_to_track=True)
 
+    def join_guild(
+        self,
+        guild_id: Snowflake,
+        lurker: bool,
+        session_id: Optional[str] = MISSING,
+        load_id: str = MISSING,
+        location: str = MISSING,
+    ) -> Response[guild.Guild]:
+        params = {
+            'lurker': str(lurker).lower(),
+        }
+        if lurker:
+            params['session_id'] = session_id or utils._generate_session_id()
+        if load_id is not MISSING:
+            params['recommendation_load_id'] = load_id
+            params['location'] = 'Guild%20Discovery'
+        if location is not MISSING:
+            params['location'] = location
+        props = ContextProperties._empty() if lurker else ContextProperties._from_lurking()
+
+        return self.request(
+            Route('PUT', '/guilds/{guild_id}/members/@me', guild_id=guild_id),
+            context_properties=props,
+            params=params,
+            json={},
+        )
+
     def leave_guild(self, guild_id: Snowflake, lurking: bool = False) -> Response[None]:
         r = Route('DELETE', '/users/@me/guilds/{guild_id}', guild_id=guild_id)
         payload = {'lurking': lurking}
@@ -2079,64 +2106,7 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/users/@me/relationships/{user_id}', user_id=user_id), json=payload)
 
-    # Misc
-
-    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        # The gateway URL hasn't changed for over 5 years
-        # And, the official clients aren't GETting it anymore, sooooo...
-        self.zlib = zlib
-        if zlib:
-            value = 'wss://gateway.discord.gg?encoding={0}&v=9&compress=zlib-stream'
-        else:
-            value = 'wss://gateway.discord.gg?encoding={0}&v=9'
-
-        return value.format(encoding)
-
-    def get_user(self, user_id: Snowflake) -> Response[user.User]:
-        return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
-
-    def get_user_profile(
-        self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True
-    ):  # TODO: return type
-        params: Dict[str, Any] = {'with_mutual_guilds': str(with_mutual_guilds).lower()}
-        if guild_id is not MISSING:
-            params['guild_id'] = guild_id
-
-        return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
-
-    def get_mutual_friends(self, user_id: Snowflake):  # TODO: return type
-        return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
-
-    def get_notes(self):  # TODO: return type
-        return self.request(Route('GET', '/users/@me/notes'))
-
-    def get_note(self, user_id: Snowflake):  # TODO: return type
-        return self.request(Route('GET', '/users/@me/notes/{user_id}', user_id=user_id))
-
-    def set_note(self, user_id: Snowflake, *, note: Optional[str] = None) -> Response[None]:
-        payload = {'note': note or ''}
-
-        return self.request(Route('PUT', '/users/@me/notes/{user_id}', user_id=user_id), json=payload)
-
-    def change_hypesquad_house(self, house_id: int) -> Response[None]:
-        payload = {'house_id': house_id}
-
-        return self.request(Route('POST', '/hypesquad/online'), json=payload)
-
-    def leave_hypesquad_house(self) -> Response[None]:
-        return self.request(Route('DELETE', '/hypesquad/online'))
-
-    def get_settings(self):  # TODO: return type
-        return self.request(Route('GET', '/users/@me/settings'))
-
-    def edit_settings(self, **payload):  # TODO: return type, is this cheating?
-        return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
-
-    def get_tracking(self):  # TODO: return type
-        return self.request(Route('GET', '/users/@me/consent'))
-
-    def edit_tracking(self, payload):
-        return self.request(Route('POST', '/users/@me/consent'), json=payload)
+    # Connections
 
     def get_connections(self):
         return self.request(Route('GET', '/users/@me/connections'))
@@ -2149,6 +2119,8 @@ class HTTPClient:
 
     def get_connection_token(self, type: str, id: str):
         return self.request(Route('GET', '/users/@me/connections/{type}/{id}/access-token', type=type, id=id))
+
+    # Applications
 
     def get_my_applications(self, *, with_team_applications: bool = True) -> Response[List[appinfo.AppInfo]]:
         params = {'with_team_applications': str(with_team_applications).lower()}
@@ -2244,6 +2216,65 @@ class HTTPClient:
 
     def reset_token(self, app_id: Snowflake):
         return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id), super_properties_to_track=True)
+
+    # Misc
+
+    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
+        # The gateway URL hasn't changed for over 5 years
+        # And, the official clients aren't GETting it anymore, sooooo...
+        self.zlib = zlib
+        if zlib:
+            value = 'wss://gateway.discord.gg?encoding={0}&v=9&compress=zlib-stream'
+        else:
+            value = 'wss://gateway.discord.gg?encoding={0}&v=9'
+
+        return value.format(encoding)
+
+    def get_user(self, user_id: Snowflake) -> Response[user.User]:
+        return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
+
+    def get_user_profile(
+        self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True
+    ):  # TODO: return type
+        params: Dict[str, Any] = {'with_mutual_guilds': str(with_mutual_guilds).lower()}
+        if guild_id is not MISSING:
+            params['guild_id'] = guild_id
+
+        return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
+
+    def get_mutual_friends(self, user_id: Snowflake):  # TODO: return type
+        return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
+
+    def get_notes(self):  # TODO: return type
+        return self.request(Route('GET', '/users/@me/notes'))
+
+    def get_note(self, user_id: Snowflake):  # TODO: return type
+        return self.request(Route('GET', '/users/@me/notes/{user_id}', user_id=user_id))
+
+    def set_note(self, user_id: Snowflake, *, note: Optional[str] = None) -> Response[None]:
+        payload = {'note': note or ''}
+
+        return self.request(Route('PUT', '/users/@me/notes/{user_id}', user_id=user_id), json=payload)
+
+    def change_hypesquad_house(self, house_id: int) -> Response[None]:
+        payload = {'house_id': house_id}
+
+        return self.request(Route('POST', '/hypesquad/online'), json=payload)
+
+    def leave_hypesquad_house(self) -> Response[None]:
+        return self.request(Route('DELETE', '/hypesquad/online'))
+
+    def get_settings(self):  # TODO: return type
+        return self.request(Route('GET', '/users/@me/settings'))
+
+    def edit_settings(self, **payload):  # TODO: return type, is this cheating?
+        return self.request(Route('PATCH', '/users/@me/settings'), json=payload)
+
+    def get_tracking(self):  # TODO: return type
+        return self.request(Route('GET', '/users/@me/consent'))
+
+    def edit_tracking(self, payload):
+        return self.request(Route('POST', '/users/@me/consent'), json=payload)
 
     def mobile_report(  # Report v1
         self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, reason: str

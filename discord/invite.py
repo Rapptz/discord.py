@@ -604,7 +604,9 @@ class Invite(Hashable):
         if type is InviteType.guild:
             from .guild import Guild
 
-            return Guild(data=data['guild'], state=state)
+            guild = Guild(data=data['guild'], state=state)
+            guild._cs_joined = True
+            return guild
         elif type is InviteType.group_dm:
             from .channel import GroupChannel
 

@@ -228,7 +228,7 @@ class Team:
             user = args[0]
             if isinstance(user, BaseUser):
                 user = str(user)
-            username, discrim = user.split('#')  # type: ignore
+            username, discrim = user.split('#')
         elif len(args) == 2:
             username, discrim = args  # type: ignore
         else:
