@@ -499,7 +499,7 @@ The main differences between text channels and threads are:
         - :attr:`Permissions.create_private_threads`
         - :attr:`Permissions.send_messages_in_threads`
 
-- Threads do not have their own nsfw status, they inherit it from their parent channel.
+- Threads do not have their own NSFW status, they inherit it from their parent channel.
 
     - This means that :class:`Thread` does not have an ``nsfw`` attribute.
 
@@ -1204,7 +1204,7 @@ As an extension to the :ref:`asyncio changes <migrating_2_0_client_async_setup>`
 
 To accommodate this, the following changes have been made:
 
-- the ``setup`` and ``teardown`` functions in extensions must now be coroutines.
+- The ``setup`` and ``teardown`` functions in extensions must now be coroutines.
 - :meth:`ext.commands.Bot.load_extension` must now be awaited.
 - :meth:`ext.commands.Bot.unload_extension` must now be awaited.
 - :meth:`ext.commands.Bot.reload_extension` must now be awaited.
@@ -1404,7 +1404,7 @@ The following attributes have been removed:
 
     - Use :attr:`ext.commands.Context.clean_prefix` instead.
 
-Miscellanous Changes
+Miscellaneous Changes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 - :meth:`ext.commands.Bot.add_cog` is now raising :exc:`ClientException` when a cog with the same name is already loaded.
