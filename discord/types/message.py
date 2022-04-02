@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
+
 from .snowflake import Snowflake, SnowflakeList
 from .member import Member, UserWithMember
 from .user import User
@@ -36,12 +38,9 @@ from .interactions import MessageInteraction
 from .sticker import StickerItem
 
 
-class _PartialMessageOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class PartialMessage(_PartialMessageOptional):
+class PartialMessage(TypedDict):
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
 
 
 class ChannelMention(TypedDict):
@@ -57,21 +56,18 @@ class Reaction(TypedDict):
     emoji: PartialEmoji
 
 
-class _AttachmentOptional(TypedDict, total=False):
-    height: Optional[int]
-    width: Optional[int]
-    description: str
-    content_type: str
-    spoiler: bool
-    ephemeral: bool
-
-
-class Attachment(_AttachmentOptional):
+class Attachment(TypedDict):
     id: Snowflake
     filename: str
     size: int
     url: str
     proxy_url: str
+    height: NotRequired[Optional[int]]
+    width: NotRequired[Optional[int]]
+    description: NotRequired[str]
+    content_type: NotRequired[str]
+    spoiler: NotRequired[bool]
+    ephemeral: NotRequired[bool]
 
 
 MessageActivityType = Literal[1, 2, 3, 5]
@@ -82,15 +78,12 @@ class MessageActivity(TypedDict):
     party_id: str
 
 
-class _MessageApplicationOptional(TypedDict, total=False):
-    cover_image: str
-
-
-class MessageApplication(_MessageApplicationOptional):
+class MessageApplication(TypedDict):
     id: Snowflake
     description: str
     icon: Optional[str]
     name: str
+    cover_image: NotRequired[str]
 
 
 class MessageReference(TypedDict, total=False):
@@ -100,30 +93,11 @@ class MessageReference(TypedDict, total=False):
     fail_if_not_exists: bool
 
 
-class _MessageOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    member: Member
-    mention_channels: List[ChannelMention]
-    reactions: List[Reaction]
-    nonce: Union[int, str]
-    webhook_id: Snowflake
-    activity: MessageActivity
-    application: MessageApplication
-    application_id: Snowflake
-    message_reference: MessageReference
-    flags: int
-    sticker_items: List[StickerItem]
-    referenced_message: Optional[Message]
-    interaction: MessageInteraction
-    components: List[Component]
-
-
 MessageType = Literal[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 19, 20, 21]
 
 
-class Message(_MessageOptional):
+class Message(PartialMessage):
     id: Snowflake
-    channel_id: Snowflake
     author: User
     content: str
     timestamp: str
@@ -136,6 +110,20 @@ class Message(_MessageOptional):
     embeds: List[Embed]
     pinned: bool
     type: MessageType
+    member: NotRequired[Member]
+    mention_channels: NotRequired[List[ChannelMention]]
+    reactions: NotRequired[List[Reaction]]
+    nonce: NotRequired[Union[int, str]]
+    webhook_id: NotRequired[Snowflake]
+    activity: NotRequired[MessageActivity]
+    application: NotRequired[MessageApplication]
+    application_id: NotRequired[Snowflake]
+    message_reference: NotRequired[MessageReference]
+    flags: NotRequired[int]
+    sticker_items: NotRequired[List[StickerItem]]
+    referenced_message: NotRequired[Optional[Message]]
+    interaction: NotRequired[MessageInteraction]
+    components: NotRequired[List[Component]]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']

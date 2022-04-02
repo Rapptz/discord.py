@@ -52,7 +52,6 @@ if TYPE_CHECKING:
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
         ListPremiumStickerPacks as ListPremiumStickerPacksPayload,
-        EditGuildSticker,
     )
 
 
@@ -469,7 +468,7 @@ class GuildSticker(Sticker):
         :class:`GuildSticker`
             The newly modified sticker.
         """
-        payload: EditGuildSticker = {}
+        payload = {}
 
         if name is not MISSING:
             payload['name'] = name

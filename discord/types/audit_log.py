@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
 
 from .webhook import Webhook
 from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
@@ -273,17 +274,14 @@ class AuditEntryInfo(TypedDict):
     role_name: str
 
 
-class _AuditLogEntryOptional(TypedDict, total=False):
-    changes: List[AuditLogChange]
-    options: AuditEntryInfo
-    reason: str
-
-
-class AuditLogEntry(_AuditLogEntryOptional):
+class AuditLogEntry(TypedDict):
     target_id: Optional[str]
     user_id: Optional[Snowflake]
     id: Snowflake
     action_type: AuditLogEvent
+    changes: NotRequired[List[AuditLogChange]]
+    options: NotRequired[AuditEntryInfo]
+    reason: NotRequired[str]
 
 
 class AuditLog(TypedDict):
