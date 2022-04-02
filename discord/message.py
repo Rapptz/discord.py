@@ -641,7 +641,9 @@ class PartialMessage(Hashable):
             ChannelType.public_thread,
             ChannelType.private_thread,
         ):
-            raise TypeError(f'Expected PartialMessageable, TextChannel, DMChannel or Thread not {type(channel)!r}')
+            raise TypeError(
+                f'expected PartialMessageable, TextChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
+            )
 
         self.channel: MessageableChannel = channel
         self._state: ConnectionState = channel._state

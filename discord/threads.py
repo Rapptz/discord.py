@@ -30,7 +30,7 @@ import time
 import asyncio
 
 from .mixins import Hashable
-from .abc import Messageable
+from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException
 from .utils import MISSING, parse_time, _get_as_snowflake
@@ -489,55 +489,17 @@ class Thread(Messageable, Hashable):
             The list of messages that were deleted.
         """
 
-        if check is MISSING:
-            check = lambda m: True
-
-        iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
-        ret: List[Message] = []
-        count = 0
-
-        minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
-
-        async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
-            for m in messages:
-                await m.delete()
-
-        strategy = self.delete_messages if bulk else _single_delete_strategy
-
-        async for message in iterator:
-            if count == 100:
-                to_delete = ret[-100:]
-                await strategy(to_delete, reason=reason)
-                count = 0
-                await asyncio.sleep(1)
-
-            if not check(message):
-                continue
-
-            if message.id < minimum_time:
-                # older than 14 days old
-                if count == 1:
-                    await ret[-1].delete()
-                elif count >= 2:
-                    to_delete = ret[-count:]
-                    await strategy(to_delete, reason=reason)
-
-                count = 0
-                strategy = _single_delete_strategy
-
-            count += 1
-            ret.append(message)
-
-        # SOme messages remaining to poll
-        if count >= 2:
-            # more than 2 messages -> bulk delete
-            to_delete = ret[-count:]
-            await strategy(to_delete, reason=reason)
-        elif count == 1:
-            # delete a single message
-            await ret[-1].delete()
-
-        return ret
+        return await _purge_helper(
+            self,
+            limit=limit,
+            check=check,
+            before=before,
+            after=after,
+            around=around,
+            oldest_first=oldest_first,
+            bulk=bulk,
+            reason=reason,
+        )
 
     async def edit(
         self,
