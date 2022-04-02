@@ -1375,7 +1375,8 @@ class Message(PartialMessage, Hashable):
         channel: MessageableChannel,
         data: MessagePayload,
     ) -> None:
-        super().__init__(channel=channel, id=int(data['id']))
+        self.channel: MessageableChannel = channel
+        self.id: int = int(data['id'])
         self._state: ConnectionState = state
         self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
