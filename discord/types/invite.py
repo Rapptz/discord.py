@@ -37,20 +37,23 @@ from .appinfo import PartialAppInfo
 InviteTargetType = Literal[1, 2]
 
 
-class VanityInvite(TypedDict):
-    code: Optional[str]
-    revoked: NotRequired[bool]
-
-
-class IncompleteInvite(TypedDict, total=False):
-    code: Required[str]
-    channel: Required[PartialChannel]
+class _InviteMetadata(TypedDict, total=False):
     uses: int
     max_uses: int
     max_age: int
     temporary: bool
     created_at: str
     expires_at: Optional[str]
+
+
+class VanityInvite(_InviteMetadata):
+    code: Optional[str]
+    revoked: NotRequired[bool]
+
+
+class IncompleteInvite(_InviteMetadata, total=False):
+    code: Required[str]
+    channel: Required[PartialChannel]
 
 
 class Invite(IncompleteInvite, total=False):
