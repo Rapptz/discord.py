@@ -3431,7 +3431,7 @@ class Guild(Hashable):
         self,
         *,
         description: str = MISSING,
-        welcome_channels: List[WelcomeChannel] = MISSING,
+        welcome_channels: Sequence[WelcomeChannel] = MISSING,
         enabled: bool = MISSING,
     ):
         """|coro|

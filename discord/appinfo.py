@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Optional
+from typing import Collection, List, TYPE_CHECKING, Optional
 
 from . import utils
 from .asset import Asset
@@ -358,12 +358,12 @@ class Application(PartialApplication):
         description: Optional[str] = MISSING,
         icon: Optional[bytes] = MISSING,
         cover_image: Optional[bytes] = MISSING,
-        tags: List[str] = MISSING,
+        tags: Collection[str] = MISSING,
         terms_of_service_url: Optional[str] = MISSING,
         privacy_policy_url: Optional[str] = MISSING,
         interactions_endpoint_url: Optional[str] = MISSING,
-        redirect_uris: List[str] = MISSING,
-        rpc_origins: List[str] = MISSING,
+        redirect_uris: Collection[str] = MISSING,
+        rpc_origins: Collection[str] = MISSING,
         public: bool = MISSING,
         require_code_grant: bool = MISSING,
         flags: ApplicationFlags = MISSING,

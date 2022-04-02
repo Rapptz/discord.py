@@ -757,7 +757,7 @@ class Client:
         return [create_activity(activity, state) for activity in state._activities]
 
     @initial_activities.setter
-    def initial_activities(self, values: List[ActivityTypes]) -> None:
+    def initial_activities(self, values: Sequence[ActivityTypes]) -> None:
         if not values:
             self._connection._activities = []
         elif all(isinstance(value, BaseActivity) for value in values):
