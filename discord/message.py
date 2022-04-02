@@ -545,6 +545,8 @@ class MessageInteraction(Hashable):
         The user or member that invoked the interaction.
     """
 
+    __slots__: Tuple[str, ...] = ('id', 'type', 'name', 'user')
+
     def __init__(self, *, state: ConnectionState, guild: Optional[Guild], data: MessageInteractionPayload) -> None:
         self.id: int = int(data['id'])
         self.type: InteractionType = try_enum(InteractionType, data['type'])

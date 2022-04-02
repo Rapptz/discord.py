@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Any, TYPE_CHECKING, List, Callable, Type, Tuple, Union
+from typing import Optional, Any, TYPE_CHECKING, List, Callable, Tuple, Union
 
 from discord.errors import ClientException, DiscordException
 

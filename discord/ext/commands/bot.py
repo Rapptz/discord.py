@@ -156,7 +156,7 @@ class BotBase(GroupMixin[None]):
         self,
         command_prefix: PrefixType[BotT],
         help_command: Optional[HelpCommand] = _default,
-        tree_cls: Type[app_commands.CommandTree] = app_commands.CommandTree,
+        tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:

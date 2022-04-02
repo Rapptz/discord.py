@@ -1306,7 +1306,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         sticker_id: Snowflake,
-        payload: sticker.EditGuildSticker,
+        payload: Dict[str, Any],
         reason: Optional[str],
     ) -> Response[sticker.GuildSticker]:
         return self.request(
