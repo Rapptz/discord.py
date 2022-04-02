@@ -45,10 +45,8 @@ if TYPE_CHECKING:
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
-    from .bot import Bot, AutoShardedBot
     from .cog import Cog
     from .core import Command
-    from .help import HelpCommand
     from .view import StringView
 
 # fmt: off

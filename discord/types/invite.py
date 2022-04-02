@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Literal, Optional, TypedDict, Union
-from typing_extensions import NotRequired, Required
+from typing_extensions import NotRequired
 
 from .scheduled_event import GuildScheduledEvent
 from .snowflake import Snowflake

@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Type
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
 
 import aiohttp
 
