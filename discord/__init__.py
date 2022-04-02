@@ -64,6 +64,7 @@ from .settings import *
 from .profile import *
 from .welcome_screen import *
 from .modal import *
+from .handlers import *
 
 
 class _VersionInfo(NamedTuple):

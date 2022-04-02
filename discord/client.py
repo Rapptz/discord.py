@@ -77,6 +77,7 @@ from .profile import UserProfile
 from .connections import Connection
 from .team import Team
 from .member import _ClientStatus
+from .handlers import CaptchaHandler
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -189,6 +190,10 @@ class Client:
         `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
 
         .. versionadded:: 2.0
+    captcha_handler: Optional[:class:`CaptchaHandler`]
+        A class that solves captcha challenges.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -206,12 +211,16 @@ class Client:
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
         http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
+        captcha_handler: Optional[CaptchaHandler] = options.pop('captcha_handler', None)
+        if captcha_handler is not None and not isinstance(captcha_handler, CaptchaHandler):
+            raise TypeError(f'captcha_handler must be CaptchaHandler not {type(captcha_handler)!r}')
         self.http: HTTPClient = HTTPClient(
             self.loop,
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
             http_trace=http_trace,
+            captcha_handler=captcha_handler,
         )
 
         self._handlers: Dict[str, Callable[..., None]] = {

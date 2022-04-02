@@ -41,7 +41,6 @@ from typing import (
     Optional,
     overload,
     Sequence,
-    Tuple,
     TYPE_CHECKING,
     Type,
     TypeVar,
@@ -60,13 +59,21 @@ from . import utils
 from .mentions import AllowedMentions
 from .utils import MISSING
 
+CAPTCHA_VALUES = {
+    'incorrect-captcha',
+    'response-already-used',
+    'captcha-required',
+    'invalid-input-response',
+    'invalid-response',
+    'You need to update your app',  # Discord moment
+}
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .abc import Snowflake as abcSnowflake
     from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
+    from .handlers import CaptchaHandler
     from .threads import Thread
     from .file import File
     from .mentions import AllowedMentions
@@ -79,7 +86,6 @@ if TYPE_CHECKING:
         appinfo,
         audit_log,
         channel,
-        command,
         emoji,
         guild,
         integration,
@@ -168,7 +174,7 @@ def handle_message_parameters(
     if attachments is not MISSING and files is not MISSING:
         raise TypeError('Cannot mix attachments and files keyword arguments.')
 
-    payload = {}
+    payload: Any = {'tts': tts}
     if embeds is not MISSING:
         if len(embeds) > 10:
             raise ValueError('embeds has a maximum of 10 elements.')
@@ -198,7 +204,6 @@ def handle_message_parameters(
         else:
             payload['sticker_ids'] = []
 
-    payload['tts'] = tts
     if avatar_url:
         payload['avatar_url'] = str(avatar_url)
     if username:
@@ -327,6 +332,7 @@ class HTTPClient:
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
         http_trace: Optional[aiohttp.TraceConfig] = None,
+        captcha_handler: Optional[CaptchaHandler] = None,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self.connector: aiohttp.BaseConnector = connector or MISSING
@@ -339,6 +345,7 @@ class HTTPClient:
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
         self.use_clock: bool = not unsync_clock
+        self.captcha_handler: Optional[CaptchaHandler] = captcha_handler
 
         self.user_agent: str = MISSING
         self.super_properties: Dict[str, Any] = {}
@@ -381,6 +388,10 @@ class HTTPClient:
             'client_event_source': None,
         }
         self.encoded_super_properties = b64encode(json.dumps(sp).encode()).decode('utf-8')
+
+        if self.captcha_handler is not None:
+            await self.captcha_handler.startup()
+
         self._started = True
 
     async def ws_connect(
@@ -421,6 +432,7 @@ class HTTPClient:
         bucket = route.bucket
         method = route.method
         url = route.url
+        captcha_handler = self.captcha_handler
 
         lock = self._locks.get(bucket)
         if lock is None:
@@ -458,9 +470,9 @@ class HTTPClient:
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason)
 
-        if 'json' in kwargs:
+        if payload := kwargs.pop('json', None):
             headers['Content-Type'] = 'application/json'
-            kwargs['data'] = utils._to_json(kwargs.pop('json'))
+            kwargs['data'] = utils._to_json(payload)
 
         if 'context_properties' in kwargs:
             props = kwargs.pop('context_properties')
@@ -566,6 +578,24 @@ class HTTPClient:
                         await asyncio.sleep(1 + tries * 2)
                         continue
                     raise
+
+                # Captcha handling
+                except HTTPException as e:
+                    try:
+                        captcha_key = data['captcha_key']  # type: ignore - Handled below
+                    except (KeyError, TypeError):
+                        raise
+                    else:
+                        values = [i for i in captcha_key if any(value in i for value in CAPTCHA_VALUES)]
+                        if captcha_handler is None or tries == 4:
+                            raise HTTPException(e.response, {'code': -1, 'message': 'Captcha required'}) from e
+                        elif not values:
+                            raise
+                        else:
+                            previous = payload or {}
+                            previous['captcha_key'] = await captcha_handler.fetch_token(data, self.proxy, self.proxy_auth)  # type: ignore - data is json here
+                            kwargs['headers']['Content-Type'] = 'application/json'
+                            kwargs['data'] = utils._to_json(previous)
 
             if response is not None:
                 # We've run out of retries, raise
