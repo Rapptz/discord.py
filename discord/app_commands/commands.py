@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    MutableMapping,
     Optional,
     Set,
     TYPE_CHECKING,
@@ -75,6 +76,7 @@ __all__ = (
     'command',
     'describe',
     'check',
+    'rename',
     'choices',
     'autocomplete',
     'guilds',
@@ -86,7 +88,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
-GroupT = TypeVar('GroupT', bound='Union[Group, Cog]')
+GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
 UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
@@ -94,6 +96,7 @@ Error = Union[
     UnboundError,
 ]
 Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
+Binding = Union['Group', 'Cog']
 
 
 if TYPE_CHECKING:
@@ -126,7 +129,6 @@ else:
 
 CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
-VALID_CONTEXT_MENU_NAME = re.compile(r'^[?!\w\s-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 
@@ -145,19 +147,21 @@ def _to_kebab_case(text: str) -> str:
 def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
-        raise ValueError('names must be between 1-32 characters')
+        raise ValueError(
+            'names must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
+        )
 
     # Ideally, name.islower() would work instead but since certain characters
     # are Lo (e.g. CJK) those don't pass the test. I'd use `casefold` instead as
     # well, but chances are the server-side check is probably something similar to
     # this code anyway.
     if name.lower() != name:
-        raise ValueError('names must be all lower case')
+        raise ValueError('names must be all lower-case')
     return name
 
 
 def validate_context_menu_name(name: str) -> str:
-    if VALID_CONTEXT_MENU_NAME.match(name) is None:
+    if not name or len(name) > 32:
         raise ValueError('context menu names must be between 1-32 characters')
     return name
 
@@ -216,6 +220,30 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
     if descriptions:
         first = next(iter(descriptions))
         raise TypeError(f'unknown parameter given: {first}')
+
+
+def _populate_renames(params: Dict[str, CommandParameter], renames: Dict[str, str]) -> None:
+    rename_map: Dict[str, str] = {}
+
+    # original name to renamed name
+
+    for name in params.keys():
+        new_name = renames.pop(name, MISSING)
+
+        if new_name is MISSING:
+            rename_map[name] = name
+            continue
+
+        if name in rename_map:
+            raise ValueError(f'{new_name} is already used')
+
+        new_name = validate_name(new_name)
+        rename_map[name] = new_name
+        params[name]._rename = new_name
+
+    if renames:
+        first = next(iter(renames))
+        raise ValueError(f'unknown parameter given: {first}')
 
 
 def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str, List[Choice]]) -> None:
@@ -298,6 +326,13 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
                 param.description = '…'
     else:
         _populate_descriptions(result, descriptions)
+
+    try:
+        renames = func.__discord_app_commands_param_rename__
+    except AttributeError:
+        pass
+    else:
+        _populate_renames(result, renames)
 
     try:
         choices = func.__discord_app_commands_param_choices__
@@ -412,7 +447,16 @@ class Command(Generic[GroupT, P, T]):
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    def _copy_with_binding(self, binding: GroupT) -> Command:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: GroupT,
+        bindings: MutableMapping[GroupT, GroupT] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Command:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
@@ -421,11 +465,15 @@ class Command(Generic[GroupT, P, T]):
         copy.description = self.description
         copy._attr = self._attr
         copy._callback = self._callback
-        copy.parent = self.parent
         copy.on_error = self.on_error
         copy._params = self._params.copy()
         copy.module = self.module
-        copy.binding = binding
+        copy.parent = parent
+        copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+
+        if copy._attr and set_on_binding:
+            setattr(copy.binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -476,23 +524,25 @@ class Command(Generic[GroupT, P, T]):
             raise CheckFailure(f'The check functions for command {self.name!r} failed.')
 
         values = namespace.__dict__
-        for name, param in self._params.items():
+        transformed_values = {}
+
+        for param in self._params.values():
             try:
-                value = values[name]
+                value = values[param.display_name]
             except KeyError:
                 if not param.required:
-                    values[name] = param.default
+                    transformed_values[param.name] = param.default
                 else:
                     raise CommandSignatureMismatch(self) from None
             else:
-                values[name] = await param.transform(interaction, value)
+                transformed_values[param.name] = await param.transform(interaction, value)
 
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **values)  # type: ignore
-            return await self._callback(interaction, **values)  # type: ignore
+                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
+            return await self._callback(interaction, **transformed_values)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
@@ -513,12 +563,19 @@ class Command(Generic[GroupT, P, T]):
             raise CommandInvokeError(self, e) from e
 
     async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
+        # The namespace contains the Discord provided names so this will be fine
+        # even if the name is renamed
         value = namespace.__dict__[name]
 
         try:
             param = self._params[name]
         except KeyError:
-            raise CommandSignatureMismatch(self) from None
+            # Slow case, it might be a rename
+            params = {param.display_name: param for param in self._params.values()}
+            try:
+                param = params[name]
+            except KeyError:
+                raise CommandSignatureMismatch(self) from None
 
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
@@ -914,6 +971,7 @@ class Group:
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
+        self._owner_cls: Optional[Type[Any]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
 
         if not self.description:
@@ -933,30 +991,67 @@ class Group:
 
         self._children: Dict[str, Union[Command, Group]] = {}
 
-        for child in self.__discord_app_commands_group_children__:
-            child.parent = self
-            child = child._copy_with_binding(self) if not cls.__discord_app_commands_skip_init_binding__ else child
-            self._children[child.name] = child
-            if child._attr and not cls.__discord_app_commands_skip_init_binding__:
-                setattr(self, child._attr, child)
+        bindings: Dict[Group, Group] = {}
 
-        if parent is not None and parent.parent is not None:
-            raise ValueError('groups can only be nested at most one level')
+        for child in self.__discord_app_commands_group_children__:
+            # commands and groups created directly in this class (no parent)
+            copy = (
+                child._copy_with(parent=self, binding=self, bindings=bindings, set_on_binding=False)
+                if not cls.__discord_app_commands_skip_init_binding__
+                else child
+            )
+
+            self._children[copy.name] = copy
+            if copy._attr and not cls.__discord_app_commands_skip_init_binding__:
+                setattr(self, copy._attr, copy)
+
+        if parent is not None:
+            if parent.parent is not None:
+                raise ValueError('groups can only be nested at most one level')
+            parent.add_command(self)
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
         self.module = owner.__module__
+        self._owner_cls = owner
 
-    def _copy_with_binding(self, binding: Union[Group, Cog]) -> Group:
+    def _copy_with(
+        self,
+        *,
+        parent: Optional[Group],
+        binding: Binding,
+        bindings: MutableMapping[Group, Group] = MISSING,
+        set_on_binding: bool = True,
+    ) -> Group:
+        bindings = {} if bindings is MISSING else bindings
+
         cls = self.__class__
         copy = cls.__new__(cls)
         copy.name = self.name
         copy._guild_ids = self._guild_ids
         copy.description = self.description
-        copy.parent = self.parent
+        copy.parent = parent
         copy.module = self.module
         copy._attr = self._attr
-        copy._children = {child.name: child._copy_with_binding(binding) for child in self._children.values()}
+        copy._owner_cls = self._owner_cls
+        copy._children = {}
+
+        bindings[self] = copy
+
+        for child in self._children.values():
+            child_copy = child._copy_with(parent=copy, binding=binding, bindings=bindings)
+            child_copy.parent = copy
+            copy._children[child_copy.name] = child_copy
+
+            if isinstance(child_copy, Group) and child_copy._attr and set_on_binding:
+                if binding.__class__ is child_copy._owner_cls:
+                    setattr(binding, child_copy._attr, child_copy)
+                elif child_copy._owner_cls is copy.__class__:
+                    setattr(copy, child_copy._attr, child_copy)
+
+        if copy._attr and set_on_binding:
+            setattr(parent or binding, copy._attr, copy)
+
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
@@ -1272,9 +1367,49 @@ def describe(**parameters: str) -> Callable[[T], T]:
             _populate_descriptions(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_description__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
+
+        return inner
+
+    return decorator
+
+
+def rename(**parameters: str) -> Callable[[T], T]:
+    r"""Renames the given parameters by their name using the key of the keyword argument
+    as the name.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.rename(the_member_to_ban='member')
+        async def ban(interaction: discord.Interaction, the_member_to_ban: discord.Member):
+            await interaction.response.send_message(f'Banned {the_member_to_ban}')
+
+    Parameters
+    -----------
+    \*\*parameters
+        The name of the parameters.
+
+    Raises
+    --------
+    ValueError
+        The parameter name is already used by another parameter.
+    TypeError
+        The parameter name is not found.
+    """
+
+    def decorator(inner: T) -> T:
+        if isinstance(inner, Command):
+            _populate_renames(inner._params, parameters)
+        else:
+            try:
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore # Runtime attribute access
+            except AttributeError:
+                inner.__discord_app_commands_param_rename__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1341,9 +1476,9 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
             _populate_choices(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_choices__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 
@@ -1393,9 +1528,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             _populate_autocomplete(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore - Runtime attribute access
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
-                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore - Runtime attribute assignment
+                inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore # Runtime attribute assignment
 
         return inner
 

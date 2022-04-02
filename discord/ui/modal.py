@@ -28,7 +28,6 @@ import asyncio
 import logging
 import os
 import sys
-import time
 import traceback
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
@@ -88,9 +87,6 @@ class Modal(View):
 
     Attributes
     ------------
-    timeout: Optional[:class:`float`]
-        Timeout from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
     title: :class:`str`
         The title of the modal.
     children: List[:class:`Item`]
@@ -184,9 +180,7 @@ class Modal(View):
 
     async def _scheduled_task(self, interaction: Interaction):
         try:
-            if self.timeout:
-                self.__timeout_expiry = time.monotonic() + self.timeout
-
+            self._refresh_timeout()
             allow = await self.interaction_check(interaction)
             if not allow:
                 return

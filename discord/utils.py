@@ -140,10 +140,7 @@ if TYPE_CHECKING:
 
     P = ParamSpec('P')
 
-    MaybeCoroFunc = Union[
-        Callable[P, Coroutine[Any, Any, 'T']],
-        Callable[P, 'T'],
-    ]
+    MaybeAwaitableFunc = Callable[P, 'MaybeAwaitable[T]']
 
     _SnowflakeListBase = array.array[int]
 
@@ -156,6 +153,7 @@ T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
+MaybeAwaitable = Union[T, Awaitable[T]]
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -615,7 +613,7 @@ def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
         return float(reset_after)
 
 
-async def maybe_coroutine(f: MaybeCoroFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
@@ -1032,9 +1030,9 @@ def evaluate_annotation(
     if implicit_str and isinstance(tp, str):
         if tp in cache:
             return cache[tp]
-        evaluated = eval(tp, globals, locals)
+        evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
-        return evaluate_annotation(evaluated, globals, locals, cache)
+        return evaluated
 
     if hasattr(tp, '__args__'):
         implicit_str = True

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Any, TYPE_CHECKING, List, Callable, Type, Tuple, Union
+from typing import Optional, Any, TYPE_CHECKING, List, Callable, Tuple, Union
 
 from discord.errors import ClientException, DiscordException
 
@@ -587,7 +587,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: :class:`.Cooldown`
+    cooldown: :class:`~discord.app_commands.Cooldown`
         A class with attributes ``rate`` and ``per`` similar to the
         :func:`.cooldown` decorator.
     type: :class:`BucketType`

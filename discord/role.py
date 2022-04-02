@@ -37,8 +37,6 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
-
     import datetime
     from .types.role import (
         Role as RolePayload,

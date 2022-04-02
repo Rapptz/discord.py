@@ -1275,10 +1275,6 @@ of :class:`enum.Enum`.
 
         A guild news channel.
 
-    .. attribute:: store
-
-        A guild store channel.
-
     .. attribute:: stage_voice
 
         A guild stage voice channel.
@@ -1407,9 +1403,9 @@ of :class:`enum.Enum`.
         The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
-    .. attribute:: application_command
+    .. attribute:: chat_input_command
 
-        The system message denoting that an application (or "slash") command was executed.
+        The system message denoting that a slash command was executed.
 
         .. versionadded:: 2.0
     .. attribute:: guild_invite_reminder
@@ -1421,6 +1417,11 @@ of :class:`enum.Enum`.
 
         The system message denoting the message in the thread that is the one that started the
         thread's conversation topic.
+
+        .. versionadded:: 2.0
+    .. attribute:: context_menu_command
+
+        The system message denoting that a context menu command was executed.
 
         .. versionadded:: 2.0
 
@@ -3744,15 +3745,6 @@ ThreadMember
 
 .. autoclass:: ThreadMember()
     :members:
-
-StoreChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: StoreChannel
-
-.. autoclass:: StoreChannel()
-    :members:
-    :inherited-members:
 
 VoiceChannel
 ~~~~~~~~~~~~~

@@ -330,14 +330,6 @@ Checks
 
 .. _ext_commands_api_context:
 
-Cooldown
----------
-
-.. attributetable:: discord.ext.commands.Cooldown
-
-.. autoclass:: discord.ext.commands.Cooldown
-    :members:
-
 Context
 --------
 
@@ -381,9 +373,6 @@ Converters
     :members:
 
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
-    :members:
-
-.. autoclass:: discord.ext.commands.StoreChannelConverter
     :members:
 
 .. autoclass:: discord.ext.commands.StageChannelConverter

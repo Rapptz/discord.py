@@ -499,7 +499,7 @@ The main differences between text channels and threads are:
         - :attr:`Permissions.create_private_threads`
         - :attr:`Permissions.send_messages_in_threads`
 
-- Threads do not have their own nsfw status, they inherit it from their parent channel.
+- Threads do not have their own NSFW status, they inherit it from their parent channel.
 
     - This means that :class:`Thread` does not have an ``nsfw`` attribute.
 
@@ -617,10 +617,6 @@ The following have been changed:
 - :meth:`StageChannel.edit`
 
     - Note that this method will return ``None`` instead of :class:`StageChannel` if the edit was only positional.
-
-- :meth:`StoreChannel.edit`
-
-    - Note that this method will return ``None`` instead of :class:`StoreChannel` if the edit was only positional.
 
 - :meth:`TextChannel.edit`
 
@@ -896,7 +892,6 @@ The following methods have been changed:
 - :meth:`Role.edit`
 - :meth:`StageChannel.edit`
 - :meth:`StageInstance.edit`
-- :meth:`StoreChannel.edit`
 - :meth:`StreamIntegration.edit`
 - :meth:`TextChannel.edit`
 - :meth:`VoiceChannel.edit`
@@ -914,6 +909,33 @@ The following methods have been changed:
 - :meth:`abc.Messageable.send`
 - :meth:`Webhook.send`
 - :meth:`abc.GuildChannel.set_permissions`
+
+Removal of ``StoreChannel``
+-----------------------------
+
+Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_. Therefore, the library has removed support for it as well.
+
+This removes the following:
+
+- ``StoreChannel``
+- ``commands.StoreChannelConverter``
+- ``ChannelType.store``
+
+Change in ``Guild.bans`` endpoint
+-----------------------------------
+
+Due to a breaking API change by Discord, :meth:`Guild.bans` no longer returns a list of every ban in the guild but instead is paginated using an asynchronous iterator.
+
+.. code-block:: python3
+
+    # before
+
+    bans = await guild.bans()
+
+    # after
+    async for ban in guild.bans(limit=1000):
+        ...
+
 
 Function Signature Changes
 ----------------------------
@@ -939,7 +961,7 @@ Parameters in the following methods are now all positional-only:
 - :meth:`Client.fetch_webhook`
 - :meth:`Client.fetch_widget`
 - :meth:`Message.add_reaction`
-- :meth:`Client.error`
+- :meth:`Client.on_error`
 - :meth:`abc.Messageable.fetch_message`
 - :meth:`abc.GuildChannel.permissions_for`
 - :meth:`DMChannel.get_partial_message`
@@ -1165,6 +1187,9 @@ The following changes have been made:
 
 - :meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included.
 
+- :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
+
+
 .. _migrating_2_0_commands:
 
 Command Extension Changes
@@ -1179,7 +1204,7 @@ As an extension to the :ref:`asyncio changes <migrating_2_0_client_async_setup>`
 
 To accommodate this, the following changes have been made:
 
-- the ``setup`` and ``teardown`` functions in extensions must now be coroutines.
+- The ``setup`` and ``teardown`` functions in extensions must now be coroutines.
 - :meth:`ext.commands.Bot.load_extension` must now be awaited.
 - :meth:`ext.commands.Bot.unload_extension` must now be awaited.
 - :meth:`ext.commands.Bot.reload_extension` must now be awaited.
@@ -1379,7 +1404,7 @@ The following attributes have been removed:
 
     - Use :attr:`ext.commands.Context.clean_prefix` instead.
 
-Miscellanous Changes
+Miscellaneous Changes
 ~~~~~~~~~~~~~~~~~~~~~~
 
 - :meth:`ext.commands.Bot.add_cog` is now raising :exc:`ClientException` when a cog with the same name is already loaded.

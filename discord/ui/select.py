@@ -111,6 +111,9 @@ class Select(Item[V]):
         self._selected_values: List[str] = []
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
+        if not isinstance(custom_id, str):
+            raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
+
         options = [] if options is MISSING else options
         self._underlying = SelectMenu._raw_construct(
             custom_id=custom_id,
@@ -121,7 +124,7 @@ class Select(Item[V]):
             options=options,
             disabled=disabled,
         )
-        self.row: Optional[int] = row
+        self.row = row
 
     @property
     def custom_id(self) -> str:

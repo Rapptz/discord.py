@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Type
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
 
 import aiohttp
 
@@ -829,7 +829,7 @@ class DiscordVoiceWebSocket:
         self._close_code: Optional[int] = None
         self.secret_key: Optional[str] = None
         if hook:
-            self._hook = hook  # type: ignore - type-checker doesn't like overriding methods
+            self._hook = hook  # type: ignore # type-checker doesn't like overriding methods
 
     async def _hook(self, *args: Any) -> None:
         pass

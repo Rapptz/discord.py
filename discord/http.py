@@ -66,10 +66,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .enums import (
-        AuditLogAction,
-        InteractionResponseType,
-    )
+    from .enums import AuditLogAction
 
     from .types import (
         appinfo,
@@ -86,7 +83,6 @@ if TYPE_CHECKING:
         role,
         user,
         webhook,
-        channel,
         widget,
         threads,
         scheduled_event,
@@ -1179,8 +1175,22 @@ class HTTPClient:
             payload['icon'] = icon
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
-    def get_bans(self, guild_id: Snowflake) -> Response[List[guild.Ban]]:
-        return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
+    def get_bans(
+        self,
+        guild_id: Snowflake,
+        limit: int,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+    ) -> Response[List[guild.Ban]]:
+        params: Dict[str, Any] = {
+            'limit': limit,
+        }
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+
+        return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id), params=params)
 
     def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
@@ -1296,7 +1306,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         sticker_id: Snowflake,
-        payload: sticker.EditGuildSticker,
+        payload: Dict[str, Any],
         reason: Optional[str],
     ) -> Response[sticker.GuildSticker]:
         return self.request(

@@ -245,7 +245,7 @@ class ConnectionState:
         self._command_tree: Optional[CommandTree] = None
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
+            self.store_user = self.store_user_no_intents  # type: ignore # This reassignment is on purpose
 
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
@@ -333,7 +333,7 @@ class ConnectionState:
 
     def _update_references(self, ws: DiscordWebSocket) -> None:
         for vc in self.voice_clients:
-            vc.main_ws = ws  # type: ignore - Silencing the unknown attribute (ok at runtime).
+            vc.main_ws = ws  # type: ignore # Silencing the unknown attribute (ok at runtime).
 
     def store_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         # this way is 300% faster than `dict.setdefault`.
@@ -592,8 +592,8 @@ class ConnectionState:
         self.dispatch('message', message)
         if self._messages is not None:
             self._messages.append(message)
-        # we ensure that the channel is either a TextChannel or Thread
-        if channel and channel.__class__ in (TextChannel, Thread):
+        # we ensure that the channel is either a TextChannel, VoiceChannel, or Thread
+        if channel and channel.__class__ in (TextChannel, VoiceChannel, Thread):
             channel.last_message_id = message.id  # type: ignore
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:
@@ -794,7 +794,7 @@ class ConnectionState:
             channel = guild.get_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel._update(guild, data)  # type: ignore - the data payload varies based on the channel type.
+                channel._update(guild, data)  # type: ignore # the data payload varies based on the channel type.
                 self.dispatch('guild_channel_update', old_channel, channel)
             else:
                 _log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
@@ -1018,7 +1018,7 @@ class ConnectionState:
             self.dispatch('member_update', old_member, member)
         else:
             if self.member_cache_flags.joined:
-                member = Member(data=data, guild=guild, state=self)  # type: ignore - the data is not complete, contains a delta of values
+                member = Member(data=data, guild=guild, state=self)  # type: ignore # the data is not complete, contains a delta of values
 
                 # Force an update on the inner user if necessary
                 user_update = member._update_inner_user(user)
@@ -1497,9 +1497,7 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(
-        self, *, channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable], data: MessagePayload
-    ) -> Message:
+    def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
 
 
@@ -1623,17 +1621,17 @@ class AutoShardedConnectionState(ConnectionState):
                 self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
-            self._add_guild_from_data(guild_data)  # type: ignore - _add_guild_from_data requires a complete Guild payload
+            self._add_guild_from_data(guild_data)  # type: ignore # _add_guild_from_data requires a complete Guild payload
 
         if self._messages:
             self._update_message_references()
 
         self.dispatch('connect')
-        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
+        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore # This is an internal discord.py key
 
         if self._ready_task is None:
             self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
-        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
+        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore # This is an internal discord.py key

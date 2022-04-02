@@ -38,11 +38,20 @@ __all__ = (
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
+    'CommandLimitReached',
+    'NoPrivateMessage',
+    'MissingRole',
+    'MissingAnyRole',
+    'MissingPermissions',
+    'BotMissingPermissions',
+    'CommandOnCooldown',
 )
 
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
+    from ..types.snowflake import Snowflake, SnowflakeList
+    from .checks import Cooldown
 
 
 class AppCommandError(DiscordException):
@@ -141,6 +150,142 @@ class CheckFailure(AppCommandError):
     pass
 
 
+class NoPrivateMessage(CheckFailure):
+    """An exception raised when a command does not work in a direct message.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message or 'This command cannot be used in direct messages.')
+
+
+class MissingRole(CheckFailure):
+    """An exception raised when the command invoker lacks a role to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~discord.app_commands.checks.has_role`.
+    """
+
+    def __init__(self, missing_role: Snowflake) -> None:
+        self.missing_role: Snowflake = missing_role
+        message = f'Role {missing_role!r} is required to run this command.'
+        super().__init__(message)
+
+
+class MissingAnyRole(CheckFailure):
+    """An exception raised when the command invoker lacks any of the roles
+    specified to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is missing.
+        These are the parameters passed to :func:`~discord.app_commands.checks.has_any_role`.
+    """
+
+    def __init__(self, missing_roles: SnowflakeList) -> None:
+        self.missing_roles: SnowflakeList = missing_roles
+
+        missing = [f"'{role}'" for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = f'You are missing at least one of the required roles: {fmt}'
+        super().__init__(message)
+
+
+class MissingPermissions(CheckFailure):
+    """An exception raised when the command invoker lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'You are missing {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
+
+
+class BotMissingPermissions(CheckFailure):
+    """An exception raised when the bot's member lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'Bot requires {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
+
+
+class CommandOnCooldown(CheckFailure):
+    """An exception raised when the command being invoked is on cooldown.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    cooldown: :class:`~discord.app_commands.Cooldown`
+        The cooldown that was triggered.
+    retry_after: :class:`float`
+        The amount of seconds to wait before you can retry again.
+    """
+
+    def __init__(self, cooldown: Cooldown, retry_after: float) -> None:
+        self.cooldown: Cooldown = cooldown
+        self.retry_after: float = retry_after
+        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
+
+
 class CommandAlreadyRegistered(AppCommandError):
     """An exception raised when a command is already registered.
 
@@ -186,6 +331,39 @@ class CommandNotFound(AppCommandError):
         self.parents: List[str] = parents
         self.type: AppCommandType = type
         super().__init__(f'Application command {name!r} not found')
+
+
+class CommandLimitReached(AppCommandError):
+    """An exception raised when the maximum number of application commands was reached
+    either globally or in a guild.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    type: :class:`~discord.AppCommandType`
+        The type of command that reached the limit.
+    guild_id: Optional[:class:`int`]
+        The guild ID that reached the limit or ``None`` if it was global.
+    limit: :class:`int`
+        The limit that was hit.
+    """
+
+    def __init__(self, guild_id: Optional[int], limit: int, type: AppCommandType = AppCommandType.chat_input):
+        self.guild_id: Optional[int] = guild_id
+        self.limit: int = limit
+        self.type: AppCommandType = type
+
+        lookup = {
+            AppCommandType.chat_input: 'slash commands',
+            AppCommandType.message: 'message context menu commands',
+            AppCommandType.user: 'user context menu commands',
+        }
+        desc = lookup.get(type, 'application commands')
+        ns = 'globally' if self.guild_id is None else f'for guild ID {self.guild_id}'
+        super().__init__(f'maximum number of {desc} exceeded {limit} {ns}')
 
 
 class CommandSignatureMismatch(AppCommandError):
