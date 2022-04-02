@@ -188,6 +188,8 @@ class PartialApplication(Hashable):
         'hook',
         'premium_tier_level',
         'tags',
+        'max_participants',
+        'install_url',
     )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):

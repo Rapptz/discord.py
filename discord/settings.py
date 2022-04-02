@@ -385,7 +385,7 @@ class ChannelSettings:
         self._channel_id = int(data['channel_id'])
         self.collapsed = data.get('collapsed', False)
 
-        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))  # type: ignore
+        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))
         self.muted = MuteConfig(data.get('muted', False), data.get('mute_config') or {})
 
     @property

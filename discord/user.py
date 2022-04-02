@@ -93,7 +93,7 @@ class Note:
     def note(self) -> Optional[str]:
         """Returns the note.
 
-        There is an alias for this named :attr:`value`.
+        There is an alias for this called :attr:`value`.
 
         Raises
         -------

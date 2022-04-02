@@ -142,12 +142,12 @@ class VoiceState:
     )
 
     def __init__(
-        self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel] = None
+        self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[ConnectableChannel] = None
     ):
         self.session_id: Optional[str] = data.get('session_id')
         self._update(data, channel)
 
-    def _update(self, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel]):
+    def _update(self, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[ConnectableChannel]):
         self.self_mute: bool = data.get('self_mute', False)
         self.self_deaf: bool = data.get('self_deaf', False)
         self.self_stream: bool = data.get('self_stream', False)
@@ -874,7 +874,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             data = await http.edit_member(guild_id, self.id, reason=reason, **payload)
 
         if data:
-            return Member(data=data, guild=self.guild, state=self._state)  # type: ignore
+            return Member(data=data, guild=self.guild, state=self._state)
 
     async def request_to_speak(self) -> None:
         """|coro|

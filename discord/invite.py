@@ -477,9 +477,9 @@ class Invite(Hashable):
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 
         if message is not None:
-            data['message'] = message
+            data['message'] = message  # type: ignore - Not a real field
 
-        return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen)
+        return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen)  # type: ignore
 
     @classmethod
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:

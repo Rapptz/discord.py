@@ -72,7 +72,6 @@ __all__ = (
     'UnavailableGuildType',
     'RequiredActionType',
     'ReportType',
-    'BrowserEnum',
     'ApplicationVerificationState',
     'StoreApplicationState',
     'RPCApplicationState',
@@ -653,15 +652,6 @@ class RequiredActionType(Enum):
     verify_email = 'REQUIRE_VERIFIED_EMAIL'
     complete_captcha = 'REQUIRE_CAPTCHA'
     accept_terms = 'AGREEMENTS'
-
-
-class BrowserEnum(Enum):
-    google_chrome = 'chrome'
-    chrome = 'chrome'
-    chromium = 'chromium'
-    microsoft_edge = 'microsoft-edge'
-    edge = 'microsoft-edge'
-    opera = 'opera'
 
 
 class InviteTarget(Enum):

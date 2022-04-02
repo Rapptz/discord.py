@@ -527,10 +527,12 @@ class ConnectionState:
     def voice_clients(self) -> List[VoiceProtocol]:
         return list(self._voice_clients.values())
 
-    def _update_voice_state(self, data: GuildVoiceState, channel_id: Optional[int]) -> Tuple[User, VoiceState, VoiceState]:
+    def _update_voice_state(
+        self, data: GuildVoiceState, channel_id: Optional[int]
+    ) -> Tuple[Optional[User], VoiceState, VoiceState]:
         user_id = int(data['user_id'])
         user = self.get_user(user_id)
-        channel = self._get_private_channel(channel_id)
+        channel: Optional[Union[DMChannel, GroupChannel]] = self._get_private_channel(channel_id)  # type: ignore
 
         try:
             # Check if we should remove the voice state from cache
@@ -756,7 +758,13 @@ class ConnectionState:
         return self.ws.request_chunks([guild_id], query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def query_members(
-        self, guild: Guild, query: Optional[str], limit: int, user_ids: Optional[List[int]], cache: bool, presences: bool
+        self,
+        guild: Guild,
+        query: Optional[str],
+        limit: int,
+        user_ids: Optional[List[Snowflake]],
+        cache: bool,
+        presences: bool,
     ) -> List[Member]:
         guild_id = guild.id
         request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
@@ -830,7 +838,7 @@ class ConnectionState:
             ) or {'guild_id': guild_data['id']}
 
             for presence in merged_presences:
-                presence['user'] = {'id': presence['user_id']}
+                presence['user'] = {'id': presence['user_id']}  # type: ignore - :(
 
             voice_states = guild_data.setdefault('voice_states', [])
             voice_states.extend(guild_extra.get('voice_states', []))
@@ -1660,7 +1668,7 @@ class ConnectionState:
         else:
             raise RuntimeError('No channels viewable')
 
-        requests = {str(channel.id): [[0, 99]]}
+        requests: Dict[Snowflake, List[List[int]]] = {str(channel.id): [[0, 99]]}
 
         def predicate(data):
             return int(data['guild_id']) == guild.id

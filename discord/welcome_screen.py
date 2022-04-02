@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .emoji import Emoji
     from .guild import Guild
+    from .invite import PartialInviteGuild
     from .state import ConnectionState
     from .types.welcome_screen import (
         WelcomeScreen as WelcomeScreenPayload,
@@ -71,7 +72,7 @@ class WelcomeChannel:
 
     @classmethod
     def _from_dict(cls, *, data: WelcomeScreenChannelPayload, state: ConnectionState) -> WelcomeChannel:
-        channel_id = _get_as_snowflake(data, 'channel_id')
+        channel_id = int(data['channel_id'])
         channel = state.get_channel(channel_id) or Object(id=channel_id)
 
         emoji = None
@@ -83,7 +84,7 @@ class WelcomeChannel:
         return cls(channel=channel, description=data.get('description', ''), emoji=emoji)
 
     def _to_dict(self) -> WelcomeScreenChannelPayload:
-        data = {
+        data: WelcomeScreenChannelPayload = {
             'channel_id': self.channel.id,
             'description': self.description,
             'emoji_id': None,
@@ -117,7 +118,7 @@ class WelcomeScreen:
         The channels shown on the welcome screen.
     """
 
-    def __init__(self, *, data: WelcomeScreenPayload, guild: Guild) -> None:
+    def __init__(self, *, data: WelcomeScreenPayload, guild: Union[Guild, PartialInviteGuild]) -> None:
         self.guild = guild
         self._update(data)
 

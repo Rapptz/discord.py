@@ -634,7 +634,7 @@ class HTTPClient:
 
     # PM functionality
 
-    def start_group(self, recipients: List[Snowflake]) -> Response[channel.GroupDMChannel]:
+    def start_group(self, recipients: SnowflakeList) -> Response[channel.GroupDMChannel]:
         payload = {
             'recipients': recipients,
         }

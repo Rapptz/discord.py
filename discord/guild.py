@@ -129,7 +129,7 @@ if TYPE_CHECKING:
         StageChannel as StageChannelPayload,
     )
     from .types.integration import IntegrationType
-    from .types.snowflake import SnowflakeList
+    from .types.snowflake import SnowflakeList, Snowflake as _Snowflake
     from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
@@ -405,7 +405,9 @@ class Guild(Hashable):
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
 
-    def _update_voice_state(self, data: GuildVoiceState, channel_id: int) -> Tuple[Optional[Member], VoiceState, VoiceState]:
+    def _update_voice_state(
+        self, data: GuildVoiceState, channel_id: Optional[int]
+    ) -> Tuple[Optional[Member], VoiceState, VoiceState]:
         cache_flags = self._state.member_cache_flags
         user_id = int(data['user_id'])
         channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore - this will always be a voice channel
@@ -3270,9 +3272,9 @@ class Guild(Hashable):
         if action:
             action = action.value
 
-        if isinstance(before, datetime.datetime):
+        if isinstance(before, datetime):
             before = Object(id=utils.time_snowflake(before, high=False))
-        if isinstance(after, datetime.datetime):
+        if isinstance(after, datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
 
         if oldest_first is MISSING:
@@ -3636,10 +3638,10 @@ class Guild(Hashable):
 
         limit = min(100, limit or 5)
         members = await self._state.query_members(
-            self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache
+            self, query=query, limit=limit, user_ids=user_ids, presences=presences, cache=cache  # type: ignore - The two types are compatible
         )
         if subscribe:
-            ids = [str(m.id) for m in members]
+            ids: List[_Snowflake] = [str(m.id) for m in members]
             await self._state.ws.request_lazy_guild(self.id, members=ids)
         return members
 
