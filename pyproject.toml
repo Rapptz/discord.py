@@ -28,7 +28,6 @@ line_length = 125
 [tool.pyright]
 include = [
     "discord",
-    "discord/app_commands",
     "discord/types",
     "discord/ext",
     "discord/ext/commands",
