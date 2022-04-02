@@ -780,7 +780,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         HTTPException
             The request to get the archived threads failed.
         ValueError
-            `joined`` was set to ``True`` and ``private`` was set to ``False``. You cannot retrieve public archived
+            ``joined`` was set to ``True`` and ``private`` was set to ``False``. You cannot retrieve public archived
             threads that you have joined.
 
         Yields
