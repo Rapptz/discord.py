@@ -961,7 +961,7 @@ Parameters in the following methods are now all positional-only:
 - :meth:`Client.fetch_webhook`
 - :meth:`Client.fetch_widget`
 - :meth:`Message.add_reaction`
-- :meth:`Client.error`
+- :meth:`Client.on_error`
 - :meth:`abc.Messageable.fetch_message`
 - :meth:`abc.GuildChannel.permissions_for`
 - :meth:`DMChannel.get_partial_message`
