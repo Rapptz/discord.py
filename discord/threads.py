@@ -26,8 +26,6 @@ from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
 from datetime import datetime
-import time
-import asyncio
 
 from .mixins import Hashable
 from .abc import Messageable, _purge_helper

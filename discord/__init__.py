@@ -43,7 +43,13 @@ from .template import *
 from .widget import *
 from .object import *
 from .reaction import *
-from . import utils, opus, abc, ui, app_commands
+from . import (
+    utils as utils,
+    opus as opus,
+    abc as abc,
+    ui as ui,
+    app_commands as app_commands,
+)
 from .enums import *
 from .embeds import *
 from .mentions import *
