@@ -281,7 +281,7 @@ class MemberSidebar:
             for member in members:
                 guild._add_member(member)
 
-    async def wait(self) -> List[Member]:
+    async def wait(self) -> Optional[List[Member]]:
         future = self.loop.create_future()
         self.waiters.append(future)
         try:
@@ -333,7 +333,7 @@ class MemberSidebar:
                     self.subscribing = False
                     break
                 requests[channel] = ranges
-            if not self.subscribing:
+            if not self.subscribing and not requests:
                 break
 
             if not requests:
@@ -363,8 +363,8 @@ class MemberSidebar:
 
         if not self.chunk:  # Freeze cache
             await ws.request_lazy_guild(guild.id, channels={})
-
-        self.guild._chunked = True
+        else:
+            self.guild._chunked = True
 
 
 async def logging_coroutine(coroutine: Coroutine[Any, Any, T], *, info: str) -> Optional[T]:
@@ -1684,6 +1684,32 @@ class ConnectionState:
             data = await self.http.get_guild_preview(guild.id)
             guild._presence_count = data['approximate_presence_count']
 
+    @overload
+    async def scrape_guild(
+        self,
+        guild: Guild,
+        *,
+        wait: bool = True,
+        cache: bool,
+        force_scraping: bool = ...,
+        channels: List[abcSnowflake] = ...,
+        delay: Union[int, float] = ...,
+    ) -> Optional[List[Member]]:
+        ...
+
+    @overload
+    async def scrape_guild(
+        self,
+        guild: Guild,
+        *,
+        wait: bool = False,
+        cache: bool,
+        force_scraping: bool = ...,
+        channels: List[abcSnowflake] = ...,
+        delay: Union[int, float] = ...,
+    ) -> asyncio.Future[Optional[List[Member]]]:
+        ...
+
     async def scrape_guild(
         self,
         guild: Guild,
@@ -1693,7 +1719,7 @@ class ConnectionState:
         force_scraping: bool = False,
         channels: List[abcSnowflake] = MISSING,
         delay: Union[int, float] = MISSING,
-    ):
+    ) -> Union[Optional[List[Member]], asyncio.Future[Optional[List[Member]]]]:
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore - self_id is always present here
 
@@ -1718,6 +1744,10 @@ class ConnectionState:
                     guild, channels, chunk=False, cache=cache, loop=self.loop, delay=delay
                 )
                 request.start()
+
+        if wait:
+            return await request.wait()
+        return request.get_future()  # type: ignore - Honestly, I'm confused too
 
     @overload
     async def chunk_guild(

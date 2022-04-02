@@ -528,7 +528,7 @@ class Guild(Hashable):
         self.primary_category_id: Optional[int] = guild.get('primary_category_id')
         self._joined_at = guild.get('joined_at')
 
-        large = None if self._member_count is 0 else self._member_count >= 250
+        large = None if self._member_count == 0 else self._member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
 
         if (settings := guild.get('settings')) is not None:

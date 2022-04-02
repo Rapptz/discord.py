@@ -216,7 +216,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     @property
     def target(self) -> Optional[str]:
-        return self._data.get('location', data.get('source'))  # type: ignore
+        return self._data.get('location', self._data.get('source'))  # type: ignore
 
     @property
     def guild_id(self) -> Optional[int]:
