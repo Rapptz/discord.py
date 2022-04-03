@@ -1176,7 +1176,7 @@ async def run_converters(ctx: Context, converter, argument: str, param: paramete
         The converter to run, this corresponds to the annotation in the function.
     argument: :class:`str`
         The argument to convert to.
-    param: :class:`.Parameter`
+    param: :class:`Parameter`
         The parameter being converted. This is mainly for error reporting.
 
     Raises

@@ -173,7 +173,7 @@ class MissingRequiredArgument(UserInputError):
 
     Attributes
     -----------
-    param: :class:`.Parameter`
+    param: :class:`Parameter`
         The argument that is missing.
     """
 

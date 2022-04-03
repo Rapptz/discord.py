@@ -89,7 +89,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         A dictionary of transformed arguments that were passed into the command.
         Similar to :attr:`args`\, if this is accessed in the
         :func:`.on_command_error` event then this dict could be incomplete.
-    current_parameter: Optional[:class:`.Parameter`]
+    current_parameter: Optional[:class:`Parameter`]
         The parameter that is currently being inspected and converted.
         This is only of use for within converters.
 

@@ -445,7 +445,7 @@ Defaults
 --------
 
 .. autoclass:: discord.ext.commands.Parameter()
-    :member:
+    :members:
 
 .. autofunction:: discord.ext.commands.Parameter
 
