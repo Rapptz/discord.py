@@ -58,3 +58,8 @@ class Widget(TypedDict):
 class WidgetSettings(TypedDict):
     enabled: bool
     channel_id: Optional[Snowflake]
+
+
+class EditWidgetSettings(TypedDict, total=False):
+    enabled: bool
+    channel_id: Optional[Snowflake]

@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
 
+    from ._types import BotT
     from .context import Context
     from .converter import Converter
     from .cooldowns import BucketType, Cooldown
@@ -137,8 +138,8 @@ class ConversionError(CommandError):
         the ``__cause__`` attribute.
     """
 
-    def __init__(self, converter: Converter, original: Exception) -> None:
-        self.converter: Converter = converter
+    def __init__(self, converter: Converter[Any], original: Exception) -> None:
+        self.converter: Converter[Any] = converter
         self.original: Exception = original
 
 
@@ -226,9 +227,9 @@ class CheckAnyFailure(CheckFailure):
         A list of check predicates that failed.
     """
 
-    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context], bool]]) -> None:
+    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context[BotT]], bool]]) -> None:
         self.checks: List[CheckFailure] = checks
-        self.errors: List[Callable[[Context], bool]] = errors
+        self.errors: List[Callable[[Context[BotT]], bool]] = errors
         super().__init__('You do not have permission to run this command.')
 
 
@@ -587,7 +588,7 @@ class CommandOnCooldown(CommandError):
 
     Attributes
     -----------
-    cooldown: :class:`.Cooldown`
+    cooldown: :class:`~discord.app_commands.Cooldown`
         A class with attributes ``rate`` and ``per`` similar to the
         :func:`.cooldown` decorator.
     type: :class:`BucketType`
@@ -809,9 +810,9 @@ class BadUnionArgument(UserInputError):
         A list of errors that were caught from failing the conversion.
     """
 
-    def __init__(self, param: Parameter, converters: Tuple[Type, ...], errors: List[CommandError]) -> None:
+    def __init__(self, param: Parameter, converters: Tuple[type, ...], errors: List[CommandError]) -> None:
         self.param: Parameter = param
-        self.converters: Tuple[Type, ...] = converters
+        self.converters: Tuple[type, ...] = converters
         self.errors: List[CommandError] = errors
 
         def _get_name(x):

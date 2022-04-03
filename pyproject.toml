@@ -41,7 +41,8 @@ exclude = [
     "dist",
     "docs",
 ]
-reportUnnecessaryTypeIgnoreComment = true
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"
 pythonVersion = "3.8"
 typeCheckingMode = "basic"
 

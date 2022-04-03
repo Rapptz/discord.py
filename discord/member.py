@@ -27,9 +27,8 @@ from __future__ import annotations
 import datetime
 import inspect
 import itertools
-import sys
 from operator import attrgetter
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
 
 import discord.abc
 
@@ -52,7 +51,6 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
@@ -207,7 +205,7 @@ class _ClientStatus:
         return self
 
 
-def flatten_user(cls):
+def flatten_user(cls: Any) -> Type[Member]:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
         if attr.startswith('_'):
@@ -333,7 +331,7 @@ class Member(discord.abc.Messageable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
-        create_dm = User.create_dm
+        create_dm: Callable[[], Awaitable[DMChannel]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
@@ -369,10 +367,10 @@ class Member(discord.abc.Messageable, _UserTag):
             f' bot={self._user.bot} nick={self.nick!r} guild={self.guild!r}>'
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -425,7 +423,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user = member._user
         return self
 
-    async def _get_channel(self):
+    async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
 
@@ -651,8 +649,11 @@ class Member(discord.abc.Messageable, _UserTag):
         channel permission overwrites. For 100% accurate permission
         calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
-        This does take into consideration guild ownership and the
-        administrator implication.
+        This does take into consideration guild ownership, the
+        administrator implication, and whether the member is timed out.
+
+        .. versionchanged:: 2.0
+            Member timeouts are taken into consideration.
         """
 
         if self.guild.owner_id == self.id:
@@ -664,6 +665,9 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if base.administrator:
             return Permissions.all()
+
+        if self.is_timed_out():
+            base.value &= Permissions._timeout_mask()
 
         return base
 
@@ -691,7 +695,7 @@ class Member(discord.abc.Messageable, _UserTag):
     async def ban(
         self,
         *,
-        delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1,
+        delete_message_days: int = 1,
         reason: Optional[str] = None,
     ) -> None:
         """|coro|
@@ -721,7 +725,7 @@ class Member(discord.abc.Messageable, _UserTag):
         mute: bool = MISSING,
         deafen: bool = MISSING,
         suppress: bool = MISSING,
-        roles: List[discord.abc.Snowflake] = MISSING,
+        roles: Collection[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
         reason: Optional[str] = None,
@@ -754,7 +758,7 @@ class Member(discord.abc.Messageable, _UserTag):
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         .. versionchanged:: 2.0
-            The newly member is now optionally returned, if applicable.
+            The newly updated member is now optionally returned, if applicable.
 
         Parameters
         -----------
@@ -914,7 +918,9 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def timeout(self, when: Union[datetime.timedelta, datetime.datetime], /, *, reason: Optional[str] = None) -> None:
+    async def timeout(
+        self, until: Optional[Union[datetime.timedelta, datetime.datetime]], /, *, reason: Optional[str] = None
+    ) -> None:
         """|coro|
 
         Applies a time out to a member until the specified date time or for the
@@ -927,26 +933,28 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Parameters
         -----------
-        when: Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]
+        until: Optional[Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]]
             If this is a :class:`datetime.timedelta` then it represents the amount of
             time the member should be timed out for. If this is a :class:`datetime.datetime`
-            then it's when the member's timeout should expire. Note that the API only allows
-            for timeouts up to 28 days.
+            then it's when the member's timeout should expire. If ``None`` is passed then the
+            timeout is removed. Note that the API only allows for timeouts up to 28 days.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
         TypeError
-            The ``when`` parameter was the wrong type of the datetime was not timezone-aware.
+            The ``until`` parameter was the wrong type of the datetime was not timezone-aware.
         """
 
-        if isinstance(when, datetime.timedelta):
-            timed_out_until = utils.utcnow() + when
-        elif isinstance(when, datetime.datetime):
-            timed_out_until = when
+        if until is None:
+            timed_out_until = None
+        elif isinstance(until, datetime.timedelta):
+            timed_out_until = utils.utcnow() + until
+        elif isinstance(until, datetime.datetime):
+            timed_out_until = until
         else:
-            raise TypeError(f'expected datetime.datetime or datetime.timedelta not {when.__class__!r}')
+            raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__!r}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 

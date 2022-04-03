@@ -25,13 +25,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Dict, Optional, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
 
 from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException
+from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
 
@@ -42,6 +42,7 @@ from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
+from .app_commands.namespace import Namespace
 
 __all__ = (
     'Interaction',
@@ -53,6 +54,10 @@ if TYPE_CHECKING:
     from .types.interactions import (
         Interaction as InteractionPayload,
         InteractionData,
+        ApplicationCommandInteractionData,
+    )
+    from .types.webhook import (
+        Webhook as WebhookPayload,
     )
     from .client import Client
     from .guild import Guild
@@ -64,12 +69,11 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
     from .threads import Thread
+    from .app_commands.commands import Command, ContextMenu
 
-    InteractionChannel = Union[
-        VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, Thread, PartialMessageable
-    ]
+    InteractionChannel = Union[VoiceChannel, StageChannel, TextChannel, CategoryChannel, Thread, PartialMessageable]
 
 MISSING: Any = utils.MISSING
 
@@ -130,12 +134,14 @@ class Interaction:
         '_cs_response',
         '_cs_followup',
         '_cs_channel',
+        '_cs_namespace',
+        '_cs_command',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
         self._client: Client = state._get_client()
-        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
+        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
 
@@ -170,7 +176,7 @@ class Interaction:
         if self.guild_id:
             guild = self.guild or Object(id=self.guild_id)
             try:
-                member = data['member']  # type: ignore - The key is optional and handled
+                member = data['member']  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
             else:
@@ -179,7 +185,7 @@ class Interaction:
                 self._permissions = self.user._permissions or 0
         else:
             try:
-                self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
+                self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
 
@@ -217,6 +223,58 @@ class Interaction:
         """
         return Permissions(self._permissions)
 
+    @utils.cached_slot_property('_cs_namespace')
+    def namespace(self) -> Namespace:
+        """:class:`app_commands.Namespace`: The resolved namespace for this interaction.
+
+        If the interaction is not an application command related interaction or the client does not have a
+        tree attached to it then this returns an empty namespace.
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return Namespace(self, {}, [])
+
+        tree = self._state._command_tree
+        if tree is None:
+            return Namespace(self, {}, [])
+
+        # The type checker does not understand this narrowing
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+
+        try:
+            _, options = tree._get_app_command_options(data)
+        except DiscordException:
+            options = []
+
+        return Namespace(self, data.get('resolved', {}), options)
+
+    @utils.cached_slot_property('_cs_command')
+    def command(self) -> Optional[Union[Command[Any, ..., Any], ContextMenu]]:
+        """Optional[Union[:class:`app_commands.Command`, :class:`app_commands.ContextMenu`]]: The command being called from
+        this interaction.
+
+        If the interaction is not an application command related interaction or the command is not found in the client's
+        attached tree then ``None`` is returned.
+        """
+        if self.type not in (InteractionType.application_command, InteractionType.autocomplete):
+            return None
+
+        tree = self._state._command_tree
+        if tree is None:
+            return None
+
+        # The type checker does not understand this narrowing
+        data: ApplicationCommandInteractionData = self.data  # type: ignore
+        cmd_type = data.get('type', 1)
+        if cmd_type == 1:
+            try:
+                command, _ = tree._get_app_command_options(data)
+            except DiscordException:
+                return None
+            else:
+                return command
+        else:
+            return tree._get_context_menu(data)
+
     @utils.cached_slot_property('_cs_response')
     def response(self) -> InteractionResponse:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
@@ -229,7 +287,7 @@ class Interaction:
     @utils.cached_slot_property('_cs_followup')
     def followup(self) -> Webhook:
         """:class:`Webhook`: Returns the follow up webhook for follow up interactions."""
-        payload = {
+        payload: WebhookPayload = {
             'id': self.application_id,
             'type': 3,
             'token': self.token,
@@ -255,9 +313,10 @@ class Interaction:
 
         Fetches the original interaction response message associated with the interaction.
 
-        If the interaction response was :meth:`InteractionResponse.send_message` then this would
-        return the message that was sent using that response. Otherwise, this would return
-        the message that triggered the interaction.
+        If the interaction response was a newly created message (i.e. through :meth:`InteractionResponse.send_message`
+        or :meth:`InteractionResponse.defer`, where ``thinking`` is ``True``) then this returns the message that was sent
+        using that response. Otherwise, this returns the message that triggered the interaction (i.e.
+        through a component).
 
         Repeated calls to this will return a cached value.
 
@@ -267,6 +326,8 @@ class Interaction:
             Fetching the original response message failed.
         ClientException
             The channel for the message could not be resolved.
+        NotFound
+            The interaction response message does not exist.
 
         Returns
         --------
@@ -298,9 +359,9 @@ class Interaction:
         self,
         *,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:
@@ -342,6 +403,8 @@ class Interaction:
         -------
         HTTPException
             Editing the message failed.
+        NotFound
+            The interaction response message does not exist.
         Forbidden
             Edited a message that is not yours.
         TypeError
@@ -376,7 +439,8 @@ class Interaction:
         )
 
         # The message channel types should always match
-        message = InteractionMessage(state=self._state, channel=self.channel, data=data)  # type: ignore
+        state = _InteractionMessageState(self, self._state)
+        message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
             self._state.store_view(view, message.id)
         return message
@@ -393,6 +457,8 @@ class Interaction:
         -------
         HTTPException
             Deleting the message failed.
+        NotFound
+            The interaction response message does not exist or has already been deleted.
         Forbidden
             Deleted a message that is not yours.
         """
@@ -515,9 +581,9 @@ class InteractionResponse:
         content: Optional[Any] = None,
         *,
         embed: Embed = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         file: File = MISSING,
-        files: List[File] = MISSING,
+        files: Sequence[File] = MISSING,
         view: View = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
@@ -615,8 +681,8 @@ class InteractionResponse:
         *,
         content: Optional[Any] = MISSING,
         embed: Optional[Embed] = MISSING,
-        embeds: List[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> None:
@@ -695,7 +761,7 @@ class InteractionResponse:
 
         self._responded = True
 
-    async def send_modal(self, modal: Modal, /):
+    async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
 
         Responds to this interaction by sending a modal.
@@ -730,7 +796,7 @@ class InteractionResponse:
         self._parent._state.store_view(modal)
         self._responded = True
 
-    async def autocomplete(self, choices: List[Choice[ChoiceT]]) -> None:
+    async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
 
         Responds to this interaction by giving the user the choices they can use.
@@ -814,9 +880,9 @@ class InteractionMessage(Message):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        embeds: List[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
-        attachments: List[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:

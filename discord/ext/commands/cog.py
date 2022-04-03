@@ -26,10 +26,11 @@ from __future__ import annotations
 import inspect
 import discord
 from discord import app_commands
+from discord.utils import maybe_coroutine
 
 from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
-from ._types import _BaseCommand
+from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -111,7 +112,7 @@ class CogMeta(type):
 
     __cog_name__: str
     __cog_settings__: Dict[str, Any]
-    __cog_commands__: List[Command]
+    __cog_commands__: List[Command[Any, ..., Any]]
     __cog_is_app_commands_group__: bool
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
@@ -120,7 +121,8 @@ class CogMeta(type):
         name, bases, attrs = args
         attrs['__cog_name__'] = kwargs.get('name', name)
         attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
-        attrs['__cog_is_app_commands_group__'] = is_parent = app_commands.Group in bases
+        is_parent = any(issubclass(base, app_commands.Group) for base in bases)
+        attrs['__cog_is_app_commands_group__'] = is_parent
 
         description = kwargs.get('description', None)
         if description is None:
@@ -248,16 +250,14 @@ class Cog(metaclass=CogMeta):
         # Register the application commands
         children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
         for command in cls.__cog_app_commands__:
-            copy = command._copy_with_binding(self)
-
-            if cls.__cog_is_app_commands_group__:
+            copy = command._copy_with(
                 # Type checker doesn't understand this type of narrowing.
                 # Not even with TypeGuard somehow.
-                copy.parent = self  # type: ignore
+                parent=self if cls.__cog_is_app_commands_group__ else None,  # type: ignore
+                binding=self,
+            )
 
             children.append(copy)
-            if command._attr:
-                setattr(self, command._attr, copy)
 
         self.__cog_app_commands__ = children
         if cls.__cog_is_app_commands_group__:
@@ -377,18 +377,35 @@ class Cog(metaclass=CogMeta):
         return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
     @_cog_special_method
-    def cog_unload(self) -> None:
-        """A special method that is called when the cog gets removed.
+    async def cog_load(self) -> None:
+        """|maybecoro|
 
-        This function **cannot** be a coroutine. It must be a regular
-        function.
+        A special method that is called when the cog gets loaded.
 
-        Subclasses must replace this if they want special unloading behaviour.
+        Subclasses must replace this if they want special asynchronous loading behaviour.
+        Note that the ``__init__`` special method does not allow asynchronous code to run
+        inside it, thus this is helpful for setting up code that needs to be asynchronous.
+
+        .. versionadded:: 2.0
         """
         pass
 
     @_cog_special_method
-    def bot_check_once(self, ctx: Context) -> bool:
+    async def cog_unload(self) -> None:
+        """|maybecoro|
+
+        A special method that is called when the cog gets removed.
+
+        Subclasses must replace this if they want special unloading behaviour.
+
+        .. versionchanged:: 2.0
+
+            This method can now be a :term:`coroutine`.
+        """
+        pass
+
+    @_cog_special_method
+    def bot_check_once(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :meth:`.Bot.check_once`
         check.
 
@@ -398,7 +415,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def bot_check(self, ctx: Context) -> bool:
+    def bot_check(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :meth:`.Bot.check`
         check.
 
@@ -408,7 +425,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    def cog_check(self, ctx: Context) -> bool:
+    def cog_check(self, ctx: Context[BotT]) -> bool:
         """A special method that registers as a :func:`~discord.ext.commands.check`
         for every command and subcommand in this cog.
 
@@ -418,7 +435,7 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
-    async def cog_command_error(self, ctx: Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: Context[BotT], error: Exception) -> None:
         """A special method that is called whenever an error
         is dispatched inside this cog.
 
@@ -437,7 +454,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_before_invoke(self, ctx: Context) -> None:
+    async def cog_before_invoke(self, ctx: Context[BotT]) -> None:
         """A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
@@ -452,7 +469,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_after_invoke(self, ctx: Context) -> None:
+    async def cog_after_invoke(self, ctx: Context[BotT]) -> None:
         """A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.
@@ -466,8 +483,12 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
+    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
         cls = self.__class__
+
+        # we'll call this first so that errors can propagate without
+        # having to worry about undoing anything
+        await maybe_coroutine(self.cog_load)
 
         # realistically, the only thing that can cause loading errors
         # is essentially just the command loading, which raises if there are
@@ -477,7 +498,8 @@ class Cog(metaclass=CogMeta):
             command.cog = self
             if command.parent is None:
                 try:
-                    bot.add_command(command)
+                    # Type checker does not understand the generic bounds here
+                    bot.add_command(command)  # type: ignore
                 except Exception as e:
                     # undo our additions
                     for to_undo in self.__cog_commands__[:index]:
@@ -507,7 +529,7 @@ class Cog(metaclass=CogMeta):
 
         return self
 
-    def _eject(self, bot: BotBase, guild_ids: Optional[Iterable[int]]) -> None:
+    async def _eject(self, bot: BotBase, guild_ids: Optional[Iterable[int]]) -> None:
         cls = self.__class__
 
         try:
@@ -534,6 +556,6 @@ class Cog(metaclass=CogMeta):
                 bot.remove_check(self.bot_check_once, call_once=True)
         finally:
             try:
-                self.cog_unload()
+                await maybe_coroutine(self.cog_unload)
             except Exception:
                 pass

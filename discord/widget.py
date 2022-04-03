@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
@@ -278,7 +278,7 @@ class Widget:
     def __str__(self) -> str:
         return self.json_url
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Widget):
             return self.id == other.id
         return False

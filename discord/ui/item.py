@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item')
 V = TypeVar('V', bound='View', covariant=True)
-ItemCallbackType = Callable[[V, I, Interaction], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[V, Interaction, I], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):
@@ -72,10 +72,10 @@ class Item(Generic[V]):
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def refresh_component(self, component: Component) -> None:
+    def _refresh_component(self, component: Component) -> None:
         return None
 
-    def refresh_state(self, data: Dict[str, Any]) -> None:
+    def _refresh_state(self, data: Dict[str, Any]) -> None:
         return None
 
     @classmethod
@@ -101,7 +101,7 @@ class Item(Generic[V]):
         return self._row
 
     @row.setter
-    def row(self, value: Optional[int]):
+    def row(self, value: Optional[int]) -> None:
         if value is None:
             self._row = None
         elif 5 > value >= 0:
@@ -118,7 +118,7 @@ class Item(Generic[V]):
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 
-    async def callback(self, interaction: Interaction):
+    async def callback(self, interaction: Interaction) -> Any:
         """|coro|
 
         The callback associated with this UI item.

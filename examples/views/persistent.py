@@ -17,15 +17,15 @@ class PersistentView(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label='Green', style=discord.ButtonStyle.green, custom_id='persistent_view:green')
-    async def green(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def green(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message('This is green.', ephemeral=True)
 
     @discord.ui.button(label='Red', style=discord.ButtonStyle.red, custom_id='persistent_view:red')
-    async def red(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def red(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message('This is red.', ephemeral=True)
 
     @discord.ui.button(label='Grey', style=discord.ButtonStyle.grey, custom_id='persistent_view:grey')
-    async def grey(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def grey(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message('This is grey.', ephemeral=True)
 
 
@@ -33,20 +33,18 @@ class PersistentViewBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        
+
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
-        self.persistent_views_added = False
+
+    async def setup_hook(self) -> None:
+        # Register the persistent view for listening here.
+        # Note that this does not send the view to any message.
+        # In order to do this you need to first send a message with the View, which is shown below.
+        # If you have the message_id you can also pass it as a keyword argument, but for this example
+        # we don't have one.
+        self.add_view(PersistentView())
 
     async def on_ready(self):
-        if not self.persistent_views_added:
-            # Register the persistent view for listening here.
-            # Note that this does not send the view to any message.
-            # In order to do this you need to first send a message with the View, which is shown below.
-            # If you have the message_id you can also pass it as a keyword argument, but for this example
-            # we don't have one.
-            self.add_view(PersistentView())
-            self.persistent_views_added = True
-
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 

@@ -11,6 +11,13 @@ how you can arbitrarily nest groups and commands to have a rich sub-command syst
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
 signature to the Python function.
 
+.. warning::
+
+    You must have access to the :attr:`~discord.Intents.message_content` intent for the commands extension
+    to function. This must be set both in the developer portal and within your code.
+
+    Failure to do this will result in your bot not responding to any of your commands.
+
 For example, in the given command definition:
 
 .. code-block:: python3
@@ -171,9 +178,9 @@ As seen earlier, every command must take at least a single parameter, called the
 This parameter gives you access to something called the "invocation context". Essentially all the information you need to
 know how the command was executed. It contains a lot of useful information:
 
-- :attr:`.Context.guild` to fetch the :class:`Guild` of the command, if any.
-- :attr:`.Context.message` to fetch the :class:`Message` of the command.
-- :attr:`.Context.author` to fetch the :class:`Member` or :class:`User` that called the command.
+- :attr:`.Context.guild` returns the :class:`Guild` of the command, if any.
+- :attr:`.Context.message` returns the :class:`Message` of the command.
+- :attr:`.Context.author` returns the :class:`Member` or :class:`User` that called the command.
 - :meth:`.Context.send` to send a message to the channel the command was used in.
 
 The context implements the :class:`abc.Messageable` interface, so anything you can do on a :class:`abc.Messageable` you
@@ -383,7 +390,6 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`TextChannel`
 - :class:`VoiceChannel`
 - :class:`StageChannel` (since v1.7)
-- :class:`StoreChannel` (since v1.7)
 - :class:`CategoryChannel`
 - :class:`Invite`
 - :class:`Guild` (since v1.7)
@@ -422,8 +428,6 @@ converter is given below:
 | :class:`VoiceChannel`    | :class:`~ext.commands.VoiceChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`StageChannel`    | :class:`~ext.commands.StageChannelConverter`    |
-+--------------------------+-------------------------------------------------+
-| :class:`StoreChannel`    | :class:`~ext.commands.StoreChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
 +--------------------------+-------------------------------------------------+

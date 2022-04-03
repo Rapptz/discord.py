@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, AsyncIterator, Union, Optional
+from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
 from .user import User
 from .object import Object
@@ -94,10 +94,10 @@ class Reaction:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return other.emoji != self.emoji
         return True

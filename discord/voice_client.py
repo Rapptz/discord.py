@@ -75,6 +75,7 @@ has_nacl: bool
 
 try:
     import nacl.secret  # type: ignore
+    import nacl.utils  # type: ignore
 
     has_nacl = True
 except ImportError:
@@ -222,8 +223,6 @@ class VoiceClient(VoiceProtocol):
         The endpoint we are connecting to.
     channel: Union[:class:`VoiceChannel`, :class:`StageChannel`]
         The voice channel connected to.
-    loop: :class:`asyncio.AbstractEventLoop`
-        The event loop that the voice client is running on.
     """
 
     channel: VocalGuildChannel
@@ -264,7 +263,7 @@ class VoiceClient(VoiceProtocol):
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
 
-    warn_nacl = not has_nacl
+    warn_nacl: bool = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
@@ -279,9 +278,9 @@ class VoiceClient(VoiceProtocol):
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user  # type: ignore - user can't be None after login
+        return self._state.user  # type: ignore
 
-    def checked_add(self, attr, value, limit):
+    def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
         if val + value > limit:
             setattr(self, attr, 0)
@@ -291,7 +290,7 @@ class VoiceClient(VoiceProtocol):
     # connection related
 
     async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
-        self.session_id = data['session_id']
+        self.session_id: str = data['session_id']
         channel_id = data['channel_id']
 
         if not self._handshaking or self._potentially_reconnecting:
@@ -302,7 +301,7 @@ class VoiceClient(VoiceProtocol):
                 # We're being disconnected so cleanup
                 await self.disconnect()
             else:
-                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore - this won't be None
+                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
         else:
             self._voice_state_complete.set()
 
@@ -325,12 +324,12 @@ class VoiceClient(VoiceProtocol):
         self.endpoint, _, _ = endpoint.rpartition(':')
         if self.endpoint.startswith('wss://'):
             # Just in case, strip it off since we're going to add it later
-            self.endpoint = self.endpoint[6:]
+            self.endpoint: str = self.endpoint[6:]
 
         # This gets set later
         self.endpoint_ip = MISSING
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
 
         if not self._handshaking:
@@ -405,7 +404,7 @@ class VoiceClient(VoiceProtocol):
                     raise
 
         if self._runner is MISSING:
-            self._runner = self.loop.create_task(self.poll_voice_ws(reconnect))
+            self._runner = self.client.loop.create_task(self.poll_voice_ws(reconnect))
 
     async def potential_reconnect(self) -> bool:
         # Attempt to stop the player thread from playing early

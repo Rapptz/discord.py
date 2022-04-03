@@ -31,9 +31,11 @@ from typing import (
     Any,
     AsyncIterator,
     ClassVar,
+    Collection,
     Coroutine,
     Dict,
     List,
+    Mapping,
     NamedTuple,
     Sequence,
     Set,
@@ -107,7 +109,7 @@ if TYPE_CHECKING:
     )
     from .types.voice import GuildVoiceState
     from .permissions import Permissions
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
     from .state import ConnectionState
@@ -118,14 +120,14 @@ if TYPE_CHECKING:
         NewsChannel as NewsChannelPayload,
         VoiceChannel as VoiceChannelPayload,
         CategoryChannel as CategoryChannelPayload,
-        StoreChannel as StoreChannelPayload,
         StageChannel as StageChannelPayload,
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
+    from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel, StoreChannel]
+    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
 
 
@@ -400,7 +402,7 @@ class Guild(Hashable):
 
     def _update_voice_state(self, data: GuildVoiceState, channel_id: int) -> Tuple[Optional[Member], VoiceState, VoiceState]:
         user_id = int(data['user_id'])
-        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore - this will always be a voice channel
+        channel: Optional[VocalGuildChannel] = self.get_channel(channel_id)  # type: ignore # this will always be a voice channel
         try:
             # check if we should remove the voice state from cache
             if channel is None:
@@ -509,7 +511,7 @@ class Guild(Hashable):
         cache_joined = self._state.member_cache_flags.joined
         self_id = self._state.self_id
         for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)  # type: ignore - Members will have the 'user' key in this scenario
+            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
             if cache_joined or member.id == self_id:
                 self._add_member(member)
 
@@ -601,7 +603,7 @@ class Guild(Hashable):
         """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
         """
-        self_id = self._state.user.id  # type: ignore - state.user won't be None if we're logged in
+        self_id = self._state.user.id  # type: ignore # state.user won't be None if we're logged in
         # The self member is *always* cached
         return self.get_member(self_id)  # type: ignore
 
@@ -1062,7 +1064,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.text],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, TextChannelPayload]:
@@ -1073,7 +1075,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.voice],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, VoiceChannelPayload]:
@@ -1084,7 +1086,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.stage_voice],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, StageChannelPayload]:
@@ -1095,7 +1097,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.category],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, CategoryChannelPayload]:
@@ -1106,7 +1108,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.news],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, NewsChannelPayload]:
@@ -1116,19 +1118,8 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
-        channel_type: Literal[ChannelType.store],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
-        category: Optional[Snowflake] = ...,
-        **options: Any,
-    ) -> Coroutine[Any, Any, StoreChannelPayload]:
-        ...
-
-    @overload
-    def _create_channel(
-        self,
-        name: str,
         channel_type: Literal[ChannelType.text],
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
@@ -1139,7 +1130,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: ChannelType,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
@@ -1149,13 +1140,13 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: ChannelType,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         category: Optional[Snowflake] = None,
         **options: Any,
     ) -> Coroutine[Any, Any, GuildChannelPayload]:
         if overwrites is MISSING:
             overwrites = {}
-        elif not isinstance(overwrites, dict):
+        elif not isinstance(overwrites, Mapping):
             raise TypeError('overwrites parameter expects a dict.')
 
         perms = []
@@ -1188,7 +1179,7 @@ class Guild(Hashable):
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> TextChannel:
         """|coro|
 
@@ -1305,7 +1296,7 @@ class Guild(Hashable):
         user_limit: int = MISSING,
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> VoiceChannel:
         """|coro|
 
@@ -1391,7 +1382,7 @@ class Guild(Hashable):
         *,
         topic: str,
         position: int = MISSING,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
     ) -> StageChannel:
@@ -1459,7 +1450,7 @@ class Guild(Hashable):
         self,
         name: str,
         *,
-        overwrites: Dict[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
         position: int = MISSING,
     ) -> CategoryChannel:
@@ -1598,7 +1589,7 @@ class Guild(Hashable):
             The new name of the guild.
         description: Optional[:class:`str`]
             The new description of the guild. Could be ``None`` for no description.
-            This is only available to guilds that contain ``PUBLIC`` in :attr:`Guild.features`.
+            This is only available to guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the icon. Only PNG/JPEG is supported.
             GIF is only available to guilds that contain ``ANIMATED_ICON`` in :attr:`Guild.features`.
@@ -1643,11 +1634,11 @@ class Guild(Hashable):
             The new preferred locale for the guild. Used as the primary language in the guild.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
             channel.
         public_updates_channel: Optional[:class:`TextChannel`]
             The new channel that is used for public updates from Discord. This is only available to
-            guilds that contain ``PUBLIC`` in :attr:`Guild.features`. Could be ``None`` for no
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
@@ -1853,7 +1844,7 @@ class Guild(Hashable):
 
         return threads
 
-    async def fetch_members(self, *, limit: int = 1000, after: SnowflakeTime = MISSING) -> AsyncIterator[Member]:
+    async def fetch_members(self, *, limit: Optional[int] = 1000, after: SnowflakeTime = MISSING) -> AsyncIterator[Member]:
         """Retrieves an :term:`asynchronous iterator` that enables receiving the guild's members. In order to use this,
         :meth:`Intents.members` must be enabled.
 
@@ -1894,11 +1885,6 @@ class Guild(Hashable):
 
             async for member in guild.fetch_members(limit=150):
                 print(member.name)
-
-        Flattening into a list ::
-
-            members = await guild.fetch_members(limit=150).flatten()
-            # members is now a list of Member...
         """
 
         if not self._state._intents.members:
@@ -2030,20 +2016,53 @@ class Guild(Hashable):
         if ch_type in (ChannelType.group, ChannelType.private):
             raise InvalidData('Channel ID resolved to a private channel')
 
-        guild_id = int(data['guild_id'])  # type: ignore - channel won't be a private channel
+        guild_id = int(data['guild_id'])  # type: ignore # channel won't be a private channel
         if self.id != guild_id:
             raise InvalidData('Guild ID resolved to a different guild')
 
-        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore - channel won't be a private channel
+        channel: GuildChannel = factory(guild=self, state=self._state, data=data)  # type: ignore # channel won't be a private channel
         return channel
 
-    async def bans(self) -> List[BanEntry]:
-        """|coro|
-
-        Retrieves all the users that are banned from the guild as a :class:`list` of :class:`BanEntry`.
+    async def bans(
+        self,
+        *,
+        limit: Optional[int] = 1000,
+        before: Snowflake = MISSING,
+        after: Snowflake = MISSING,
+    ) -> AsyncIterator[BanEntry]:
+        """Retrieves an :term:`asynchronous iterator` of the users that are banned from the guild as a :class:`BanEntry`.
 
         You must have the :attr:`~Permissions.ban_members` permission
         to get this information.
+
+        .. versionchanged:: 2.0
+            Due to a breaking change in Discord's API, this now returns a paginated iterator instead of a list.
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for entry in guild.bans(limit=150):
+                print(entry.user, entry.reason)
+
+        Flattening into a list ::
+
+            bans = [entry async for entry in guild.bans(limit=2000)]
+            # bans is now a list of BanEntry...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of bans to retrieve. If ``None``, it retrieves every ban in
+            the guild. Note, however, that this would make it a slow operation.
+            Defaults to ``1000``.
+        before: :class:`.abc.Snowflake`
+            Retrieves bans before this user.
+        after: :class:`.abc.Snowflake`
+            Retrieve bans after this user.
 
         Raises
         -------
@@ -2051,22 +2070,71 @@ class Guild(Hashable):
             You do not have proper permissions to get the information.
         HTTPException
             An error occurred while fetching the information.
+        TypeError
+            Both ``after`` and ``before`` were provided, as Discord does not
+            support this type of pagination.
 
-        Returns
+        Yields
         --------
-        List[:class:`BanEntry`]
-            A list of :class:`BanEntry` objects.
+        :class:`BanEntry`
+            The ban entry of the banned user.
         """
 
-        data: List[BanPayload] = await self._state.http.get_bans(self.id)
-        return [BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason']) for e in data]
+        if before is not MISSING and after is not MISSING:
+            raise TypeError('bans pagination does not support both before and after')
+
+        # This endpoint paginates in ascending order.
+        endpoint = self._state.http.get_bans
+
+        async def _before_strategy(retrieve, before, limit):
+            before_id = before.id if before else None
+            data = await endpoint(self.id, limit=retrieve, before=before_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[0]['user']['id']))
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve, after, limit):
+            after_id = after.id if after else None
+            data = await endpoint(self.id, limit=retrieve, after=after_id)
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=int(data[-1]['user']['id']))
+
+            return data, after, limit
+
+        if before:
+            strategy, state = _before_strategy, before
+        else:
+            strategy, state = _after_strategy, after
+
+        while True:
+            retrieve = min(1000 if limit is None else limit, 1000)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 1000:
+                limit = 0
+
+            for e in data:
+                yield BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason'])
 
     async def prune_members(
         self,
         *,
         days: int,
         compute_prune_count: bool = True,
-        roles: List[Snowflake] = MISSING,
+        roles: Collection[Snowflake] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[int]:
         r"""|coro|
@@ -2182,7 +2250,7 @@ class Guild(Hashable):
         data = await self._state.http.guild_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def estimate_pruned_members(self, *, days: int, roles: List[Snowflake] = MISSING) -> Optional[int]:
+    async def estimate_pruned_members(self, *, days: int, roles: Collection[Snowflake] = MISSING) -> Optional[int]:
         """|coro|
 
         Similar to :meth:`prune_members` except instead of actually
@@ -2735,7 +2803,7 @@ class Guild(Hashable):
         *,
         name: str,
         image: bytes,
-        roles: List[Role] = MISSING,
+        roles: Collection[Role] = MISSING,
         reason: Optional[str] = None,
     ) -> Emoji:
         r"""|coro|
@@ -2964,7 +3032,7 @@ class Guild(Hashable):
         # TODO: add to cache
         return role
 
-    async def edit_role_positions(self, positions: Dict[Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
+    async def edit_role_positions(self, positions: Mapping[Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
         """|coro|
 
         Bulk edits a list of :class:`Role` in the guild.
@@ -3013,7 +3081,7 @@ class Guild(Hashable):
         List[:class:`Role`]
             A list of all the roles in the guild.
         """
-        if not isinstance(positions, dict):
+        if not isinstance(positions, Mapping):
             raise TypeError('positions parameter expects a dict.')
 
         role_positions = []
@@ -3063,7 +3131,7 @@ class Guild(Hashable):
         user: Snowflake,
         *,
         reason: Optional[str] = None,
-        delete_message_days: Literal[0, 1, 2, 3, 4, 5, 6, 7] = 1,
+        delete_message_days: int = 1,
     ) -> None:
         """|coro|
 
@@ -3168,7 +3236,7 @@ class Guild(Hashable):
         payload['max_uses'] = 0
         payload['max_age'] = 0
         payload['uses'] = payload.get('uses', 0)
-        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore - we're faking a payload here
+        return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore # we're faking a payload here
 
     async def audit_logs(
         self,
@@ -3281,7 +3349,7 @@ class Guild(Hashable):
             after = Object(id=utils.time_snowflake(after, high=True))
 
         if oldest_first is MISSING:
-            reverse = after is not None
+            reverse = after is not MISSING
         else:
             reverse = oldest_first
 
@@ -3379,7 +3447,7 @@ class Guild(Hashable):
         HTTPException
             Editing the widget failed.
         """
-        payload = {}
+        payload: EditWidgetSettings = {}
         if channel is not MISSING:
             payload['channel_id'] = None if channel is None else channel.id
         if enabled is not MISSING:
@@ -3387,7 +3455,7 @@ class Guild(Hashable):
 
         await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
 
-    async def chunk(self, *, cache: bool = True) -> None:
+    async def chunk(self, *, cache: bool = True) -> List[Member]:
         """|coro|
 
         Requests all members that belong to this guild. In order to use this,
@@ -3406,13 +3474,20 @@ class Guild(Hashable):
         -------
         ClientException
             The members intent is not enabled.
+
+        Returns
+        --------
+        List[:class:`Member`]
+            The list of members in the guild.
         """
 
         if not self._state._intents.members:
             raise ClientException('Intents.members must be enabled to use this.')
 
         if not self._state.is_guild_evicted(self):
-            await self._state.chunk_guild(self, cache=cache)
+            return await self._state.chunk_guild(self, cache=cache)
+
+        return []
 
     async def query_members(
         self,
@@ -3428,7 +3503,7 @@ class Guild(Hashable):
         Request members that belong to this guild whose username starts with
         the query given.
 
-        This is a websocket operation and can be slow.
+        This is a websocket operation.
 
         .. versionadded:: 1.3
 
@@ -3492,7 +3567,7 @@ class Guild(Hashable):
 
     async def change_voice_state(
         self, *, channel: Optional[abc.Snowflake], self_mute: bool = False, self_deaf: bool = False
-    ):
+    ) -> None:
         """|coro|
 
         Changes client's voice state in the guild.

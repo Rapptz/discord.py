@@ -9,7 +9,7 @@ import traceback
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
-# We need an `discord.app_commands.CommandTree` instance 
+# We need an `discord.app_commands.CommandTree` instance
 # to register application commands (slash commands in this case)
 tree = app_commands.CommandTree(client)
 
@@ -18,6 +18,7 @@ tree = app_commands.CommandTree(client)
 # to test it in a guild.
 TEST_GUILD = discord.Object(ID)
 
+
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
@@ -25,6 +26,7 @@ async def on_ready():
 
     # Sync the application command with Discord.
     await tree.sync(guild=TEST_GUILD)
+
 
 class Feedback(discord.ui.Modal, title='Feedback'):
     # Our modal classes MUST subclass `discord.ui.Modal`,
@@ -35,7 +37,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
     # By default, it is required and is a short-style input which is exactly
     # what we want.
     name = discord.ui.TextInput(
-        label='Name', 
+        label='Name',
         placeholder='Your name here...',
     )
 
@@ -55,7 +57,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
         await interaction.response.send_message(f'Thanks for your feedback, {self.name.value}!', ephemeral=True)
 
     async def on_error(self, error: Exception, interaction: discord.Interaction) -> None:
-        await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True) 
+        await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 
         # Make sure we know what the error actually is
         traceback.print_tb(error.__traceback__)
@@ -65,5 +67,6 @@ class Feedback(discord.ui.Modal, title='Feedback'):
 async def feedback(interaction: discord.Interaction):
     # Send the modal with an instance of our `Feedback` class
     await interaction.response.send_modal(Feedback())
+
 
 client.run('token')

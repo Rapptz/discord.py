@@ -152,6 +152,13 @@ class Permissions(BaseFlags):
         return cls(0b11111111111111111111111111111111111111111)
 
     @classmethod
+    def _timeout_mask(cls) -> int:
+        p = cls.all()
+        p.view_channel = False
+        p.read_message_history = False
+        return ~p.value
+
+    @classmethod
     def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
@@ -231,12 +238,19 @@ class Permissions(BaseFlags):
 
     @classmethod
     def stage_moderator(cls) -> Self:
-        """A factory method that creates a :class:`Permissions` with all
-        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+        """A factory method that creates a :class:`Permissions` with all permissions
+        for stage moderators set to ``True``. These permissions are currently:
+
+        - :attr:`manage_channels`
+        - :attr:`mute_members`
+        - :attr:`move_members`
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+            Added :attr:`manage_channels` permission and removed :attr:`request_to_speak` permission.
         """
-        return cls(0b100000001010000000000000000000000)
+        return cls(0b1010000000000000000010000)
 
     @classmethod
     def advanced(cls) -> Self:
@@ -276,7 +290,7 @@ class Permissions(BaseFlags):
         # So 0000 OP2 0101 -> 0101
         # The OP is base  & ~denied.
         # The OP2 is base | allowed.
-        self.value = (self.value & ~deny) | allow
+        self.value: int = (self.value & ~deny) | allow
 
     @flag_value
     def create_instant_invite(self) -> int:
@@ -681,6 +695,8 @@ class PermissionOverwrite:
         send_messages_in_threads: Optional[bool]
         external_stickers: Optional[bool]
         use_external_stickers: Optional[bool]
+        use_embedded_activities: Optional[bool]
+        moderate_members: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
@@ -691,7 +707,7 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, PermissionOverwrite) and self._values == other._values
 
     def _set(self, key: str, value: Optional[bool]) -> None:
@@ -744,7 +760,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs: bool) -> None:
+    def update(self, **kwargs: Optional[bool]) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword

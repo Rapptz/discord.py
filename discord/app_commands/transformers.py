@@ -44,11 +44,11 @@ from typing import (
     Union,
 )
 
-from .errors import TransformerError
+from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
-from ..channel import StageChannel, StoreChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..enums import AppCommandOptionType, ChannelType
-from ..utils import MISSING
+from ..utils import MISSING, maybe_coroutine
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -61,6 +61,8 @@ __all__ = (
 )
 
 T = TypeVar('T')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 NoneType = type(None)
 
 if TYPE_CHECKING:
@@ -95,18 +97,19 @@ class CommandParameter:
     description: str = MISSING
     required: bool = MISSING
     default: Any = MISSING
-    choices: List[Choice] = MISSING
+    choices: List[Choice[Union[str, int, float]]] = MISSING
     type: AppCommandOptionType = MISSING
     channel_types: List[ChannelType] = MISSING
     min_value: Optional[Union[int, float]] = None
     max_value: Optional[Union[int, float]] = None
     autocomplete: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    _rename: str = MISSING
     _annotation: Any = MISSING
 
     def to_dict(self) -> Dict[str, Any]:
         base = {
             'type': self.type.value,
-            'name': self.name,
+            'name': self.display_name,
             'description': self.description,
             'required': self.required,
         }
@@ -124,6 +127,9 @@ class CommandParameter:
 
         return base
 
+    def is_choice_annotation(self) -> bool:
+        return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
+
     async def transform(self, interaction: Interaction, value: Any) -> Any:
         if hasattr(self._annotation, '__discord_app_commands_transformer__'):
             # This one needs special handling for type safety reasons
@@ -133,8 +139,20 @@ class CommandParameter:
                     raise TransformerError(value, self.type, self._annotation)
                 return choice
 
-            return await self._annotation.transform(interaction, value)
+            try:
+                # ParamSpec doesn't understand that transform is a callable since it's unbound
+                return await maybe_coroutine(self._annotation.transform, interaction, value)  # type: ignore
+            except AppCommandError:
+                raise
+            except Exception as e:
+                raise TransformerError(value, self.type, self._annotation) from e
+
         return value
+
+    @property
+    def display_name(self) -> str:
+        """:class:`str`: The name of the parameter as it should be displayed to the user."""
+        return self.name if self._rename is MISSING else self._rename
 
 
 class Transformer:
@@ -215,7 +233,7 @@ class Transformer:
 
     @classmethod
     async def transform(cls, interaction: Interaction, value: Any) -> Any:
-        """|coro|
+        """|maybecoro|
 
         Transforms the converted option value into another value.
 
@@ -232,6 +250,35 @@ class Transformer:
             for how certain option types correspond to certain values.
         """
         raise NotImplementedError('Derived classes need to implement this.')
+
+    @classmethod
+    async def autocomplete(
+        cls, interaction: Interaction, value: Union[int, float, str]
+    ) -> List[Choice[Union[int, float, str]]]:
+        """|coro|
+
+        An autocomplete prompt handler to be automatically used by options using this transformer.
+
+        .. note::
+
+            Autocomplete is only supported for options with a :meth:`~discord.app_commands.Transformer.type`
+            of :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`,
+            or :attr:`~discord.AppCommandOptionType.number`.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The autocomplete interaction being handled.
+        value: Union[:class:`str`, :class:`int`, :class:`float`]
+            The current value entered by the user.
+
+        Returns
+        --------
+        List[:class:`~discord.app_commands.Choice`]
+            A list of choices to be displayed to the user, a maximum of 25.
+
+        """
+        raise NotImplementedError('Derived classes can implement this.')
 
 
 class _TransformMetadata:
@@ -267,9 +314,6 @@ def _make_range_transformer(
 
 
 def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
-    if len(values) < 2:
-        raise TypeError(f'typing.Literal requires at least two values.')
-
     first = type(values[0])
     if first is int:
         opt_type = AppCommandOptionType.integer
@@ -506,16 +550,15 @@ def channel_transformer(*channel_types: Type[Any], raw: Optional[bool] = False) 
 CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     AppCommandChannel: [
         ChannelType.stage_voice,
-        ChannelType.store,
         ChannelType.voice,
         ChannelType.text,
+        ChannelType.news,
         ChannelType.category,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
-    StoreChannel: [ChannelType.store],
     VoiceChannel: [ChannelType.voice],
-    TextChannel: [ChannelType.text],
+    TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
 }
 
@@ -530,7 +573,6 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Type[Transformer]] = {
     AppCommandChannel: channel_transformer(AppCommandChannel, raw=True),
     AppCommandThread: channel_transformer(AppCommandThread, raw=True),
     StageChannel: channel_transformer(StageChannel),
-    StoreChannel: channel_transformer(StoreChannel),
     VoiceChannel: channel_transformer(VoiceChannel),
     TextChannel: channel_transformer(TextChannel),
     CategoryChannel: channel_transformer(CategoryChannel),
@@ -548,7 +590,7 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
 def get_supported_annotation(
     annotation: Any,
     *,
-    _none=NoneType,
+    _none: type = NoneType,
     _mapping: Dict[Any, Type[Transformer]] = BUILT_IN_TRANSFORMERS,
 ) -> Tuple[Any, Any]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.
@@ -667,5 +709,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
+
+    autocomplete_func = getattr(inner.autocomplete, '__func__', inner.autocomplete)
+    if autocomplete_func is not Transformer.autocomplete.__func__:
+        from .commands import _validate_auto_complete_callback
+
+        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
 
     return result

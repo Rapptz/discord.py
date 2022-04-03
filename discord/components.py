@@ -126,7 +126,7 @@ class ActionRow(Component):
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore - Type checker does not understand these are the same
+        }  # type: ignore # Type checker does not understand these are the same
 
 
 class Button(Component):
@@ -198,7 +198,7 @@ class Button(Component):
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        return payload  # type: ignore - Type checker does not understand these are the same
+        return payload  # type: ignore # Type checker does not understand these are the same
 
 
 class SelectMenu(Component):
@@ -310,9 +310,9 @@ class SelectOption:
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         default: bool = False,
     ) -> None:
-        self.label = label
-        self.value = label if value is MISSING else value
-        self.description = description
+        self.label: str = label
+        self.value: str = label if value is MISSING else value
+        self.description: Optional[str] = description
 
         if emoji is not None:
             if isinstance(emoji, str):
@@ -322,8 +322,8 @@ class SelectOption:
             else:
                 raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
 
-        self.emoji = emoji
-        self.default = default
+        self.emoji: Optional[Union[str, Emoji, PartialEmoji]] = emoji
+        self.default: bool = default
 
     def __repr__(self) -> str:
         return (
@@ -364,7 +364,7 @@ class SelectOption:
         }
 
         if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore - This Dict[str, Any] is compatible with PartialEmoji
+            payload['emoji'] = self.emoji.to_dict()  # type: ignore # This Dict[str, Any] is compatible with PartialEmoji
 
         if self.description:
             payload['description'] = self.description

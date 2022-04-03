@@ -43,6 +43,8 @@ from typing import (
     Sequence,
     Tuple,
     Deque,
+    Literal,
+    overload,
 )
 import weakref
 import inspect
@@ -88,7 +90,7 @@ if TYPE_CHECKING:
     from .types.activity import Activity as ActivityPayload
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import User as UserPayload, PartialUser as PartialUserPayload
-    from .types.emoji import Emoji as EmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
@@ -165,22 +167,22 @@ class ConnectionState:
     def __init__(
         self,
         *,
-        dispatch: Callable,
-        handlers: Dict[str, Callable],
-        hooks: Dict[str, Callable],
+        dispatch: Callable[..., Any],
+        handlers: Dict[str, Callable[..., Any]],
+        hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
         http: HTTPClient,
-        loop: asyncio.AbstractEventLoop,
         **options: Any,
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
+        # Set later, after Client.login
+        self.loop: asyncio.AbstractEventLoop = utils.MISSING
         self.http: HTTPClient = http
         self.max_messages: Optional[int] = options.get('max_messages', 1000)
         if self.max_messages is not None and self.max_messages <= 0:
             self.max_messages = 1000
 
-        self.dispatch: Callable = dispatch
-        self.handlers: Dict[str, Callable] = handlers
-        self.hooks: Dict[str, Callable] = hooks
+        self.dispatch: Callable[..., Any] = dispatch
+        self.handlers: Dict[str, Callable[..., Any]] = handlers
+        self.hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = hooks
         self.shard_count: Optional[int] = None
         self._ready_task: Optional[asyncio.Task] = None
         self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
@@ -243,8 +245,9 @@ class ConnectionState:
         self._command_tree: Optional[CommandTree] = None
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
+            self.store_user = self.store_user_no_intents  # type: ignore # This reassignment is on purpose
 
+        self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
@@ -300,6 +303,9 @@ class ConnectionState:
         else:
             await coro(*args, **kwargs)
 
+    async def async_setup(self) -> None:
+        pass
+
     @property
     def self_id(self) -> Optional[int]:
         u = self.user
@@ -327,7 +333,7 @@ class ConnectionState:
 
     def _update_references(self, ws: DiscordWebSocket) -> None:
         for vc in self.voice_clients:
-            vc.main_ws = ws  # type: ignore - Silencing the unknown attribute (ok at runtime).
+            vc.main_ws = ws  # type: ignore # Silencing the unknown attribute (ok at runtime).
 
     def store_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         # this way is 300% faster than `dict.setdefault`.
@@ -340,13 +346,13 @@ class ConnectionState:
                 self._users[user_id] = user
             return user
 
-    def store_user_no_intents(self, data):
+    def store_user_no_intents(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         return User(state=self, data=data)
 
     def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
         return User(state=self, data=data)
 
-    def get_user(self, id):
+    def get_user(self, id: int) -> Optional[User]:
         return self._users.get(id)
 
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
@@ -568,8 +574,7 @@ class ConnectionState:
                 pass
             else:
                 self.application_id = utils._get_as_snowflake(application, 'id')
-                # flags will always be present here
-                self.application_flags = ApplicationFlags._from_value(application['flags'])  # type: ignore
+                self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
             self._add_guild_from_data(guild_data)  # type: ignore
@@ -587,8 +592,8 @@ class ConnectionState:
         self.dispatch('message', message)
         if self._messages is not None:
             self._messages.append(message)
-        # we ensure that the channel is either a TextChannel or Thread
-        if channel and channel.__class__ in (TextChannel, Thread):
+        # we ensure that the channel is either a TextChannel, VoiceChannel, or Thread
+        if channel and channel.__class__ in (TextChannel, VoiceChannel, Thread):
             channel.last_message_id = message.id  # type: ignore
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:
@@ -708,13 +713,15 @@ class ConnectionState:
             self._command_tree._from_interaction(interaction)
         elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            component_type = interaction.data['component_type']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            component_type = inner_data['component_type']
             self._view_store.dispatch_view(component_type, custom_id, interaction)
         elif data['type'] == 5:  # modal submit
             # These keys are always there for this interaction type
-            custom_id = interaction.data['custom_id']  # type: ignore
-            components = interaction.data['components']  # type: ignore
+            inner_data = data['data']
+            custom_id = inner_data['custom_id']
+            components = inner_data['components']
             self._view_store.dispatch_modal(custom_id, interaction, components)  # type: ignore
         self.dispatch('interaction', interaction)
 
@@ -740,7 +747,7 @@ class ConnectionState:
 
         self.dispatch('presence_update', old_member, member)
 
-    def parse_user_update(self, data: gw.UserUpdateEvent):
+    def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
             self.user._update(data)
 
@@ -787,7 +794,7 @@ class ConnectionState:
             channel = guild.get_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel._update(guild, data)  # type: ignore - the data payload varies based on the channel type.
+                channel._update(guild, data)  # type: ignore # the data payload varies based on the channel type.
                 self.dispatch('guild_channel_update', old_channel, channel)
             else:
                 _log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
@@ -1011,7 +1018,7 @@ class ConnectionState:
             self.dispatch('member_update', old_member, member)
         else:
             if self.member_cache_flags.joined:
-                member = Member(data=data, guild=guild, state=self)  # type: ignore - the data is not complete, contains a delta of values
+                member = Member(data=data, guild=guild, state=self)  # type: ignore # the data is not complete, contains a delta of values
 
                 # Force an update on the inner user if necessary
                 user_update = member._update_inner_user(user)
@@ -1047,7 +1054,7 @@ class ConnectionState:
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
 
-    def _get_create_guild(self, data):
+    def _get_create_guild(self, data: gw.GuildCreateEvent) -> Guild:
         if data.get('unavailable') is False:
             # GUILD_CREATE with unavailable in the response
             # usually means that the guild has become available
@@ -1060,10 +1067,22 @@ class ConnectionState:
 
         return self._add_guild_from_data(data)
 
-    def is_guild_evicted(self, guild) -> bool:
+    def is_guild_evicted(self, guild: Guild) -> bool:
         return guild.id not in self._guilds
 
-    async def chunk_guild(self, guild, *, wait=True, cache=None):
+    @overload
+    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[Member]:
+        ...
+
+    @overload
+    async def chunk_guild(
+        self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...
+    ) -> asyncio.Future[List[Member]]:
+        ...
+
+    async def chunk_guild(
+        self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None
+    ) -> Union[List[Member], asyncio.Future[List[Member]]]:
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
         if request is None:
@@ -1442,16 +1461,19 @@ class ConnectionState:
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 
-    def get_reaction_emoji(self, data) -> Union[Emoji, PartialEmoji]:
+    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = utils._get_as_snowflake(data, 'id')
 
         if not emoji_id:
-            return data['name']
+            # the name key will be a str
+            return data['name']  # type: ignore
 
         try:
             return self._emojis[emoji_id]
         except KeyError:
-            return PartialEmoji.with_state(self, animated=data.get('animated', False), id=emoji_id, name=data['name'])
+            return PartialEmoji.with_state(
+                self, animated=data.get('animated', False), id=emoji_id, name=data['name']  # type: ignore
+            )
 
     def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = emoji.id
@@ -1475,9 +1497,7 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(
-        self, *, channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable], data: MessagePayload
-    ) -> Message:
+    def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
 
 
@@ -1485,7 +1505,6 @@ class AutoShardedConnectionState(ConnectionState):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.shard_ids: Union[List[int], range] = []
-        self.shards_launched: asyncio.Event = asyncio.Event()
 
     def _update_message_references(self) -> None:
         # self._messages won't be None when this is called
@@ -1499,6 +1518,9 @@ class AutoShardedConnectionState(ConnectionState):
                 channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
                 # channel will either be a TextChannel, Thread or Object
                 msg._rebind_cached_references(new_guild, channel)  # type: ignore
+
+    async def async_setup(self) -> None:
+        self.shards_launched: asyncio.Event = asyncio.Event()
 
     async def chunker(
         self,
@@ -1584,6 +1606,7 @@ class AutoShardedConnectionState(ConnectionState):
         if not hasattr(self, '_ready_state'):
             self._ready_state = asyncio.Queue()
 
+        self.user: Optional[ClientUser]
         self.user = user = ClientUser(state=self, data=data['user'])
         # self._users is a list of Users, we're setting a ClientUser
         self._users[user.id] = user  # type: ignore
@@ -1594,21 +1617,21 @@ class AutoShardedConnectionState(ConnectionState):
             except KeyError:
                 pass
             else:
-                self.application_id = utils._get_as_snowflake(application, 'id')
-                self.application_flags = ApplicationFlags._from_value(application['flags'])
+                self.application_id: Optional[int] = utils._get_as_snowflake(application, 'id')
+                self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
-            self._add_guild_from_data(guild_data)  # type: ignore - _add_guild_from_data requires a complete Guild payload
+            self._add_guild_from_data(guild_data)  # type: ignore # _add_guild_from_data requires a complete Guild payload
 
         if self._messages:
             self._update_message_references()
 
         self.dispatch('connect')
-        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
+        self.dispatch('shard_connect', data['__shard_id__'])  # type: ignore # This is an internal discord.py key
 
         if self._ready_task is None:
             self._ready_task = asyncio.create_task(self._delay_ready())
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
-        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore - This is an internal discord.py key
+        self.dispatch('shard_resumed', data['__shard_id__'])  # type: ignore # This is an internal discord.py key

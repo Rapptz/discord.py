@@ -1,6 +1,7 @@
-# This example requires the 'members' privileged intent
+# This example requires the 'members' privileged intent to function.
 
 import discord
+
 
 class MyClient(discord.Client):
     async def on_ready(self):

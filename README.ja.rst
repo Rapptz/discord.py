@@ -84,7 +84,9 @@ Linuxで音声サポートを導入するには、前述のコマンドを実行
             if message.content == 'ping':
                 await message.channel.send('pong')
 
-    client = MyClient()
+    intents = discord.Intents.default()
+    intents.message_content = True
+    client = MyClient(intents=intents)
     client.run('token')
 
 Botの例
@@ -95,7 +97,9 @@ Botの例
     import discord
     from discord.ext import commands
 
-    bot = commands.Bot(command_prefix='>')
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.Bot(command_prefix='>', intents=intents)
 
     @bot.command()
     async def ping(ctx):

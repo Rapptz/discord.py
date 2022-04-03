@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
+import time
 import asyncio
 from datetime import datetime
 from typing import (
@@ -32,6 +33,7 @@ from typing import (
     AsyncIterator,
     Callable,
     Dict,
+    Iterable,
     List,
     Optional,
     TYPE_CHECKING,
@@ -81,7 +83,7 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
@@ -91,8 +93,11 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.snowflake import (
+        SnowflakeList,
+    )
 
-    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
+    PartialMessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -105,6 +110,69 @@ class _Undefined:
 
 
 _undefined: Any = _Undefined()
+
+
+async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
+    for m in messages:
+        await m.delete()
+
+
+async def _purge_helper(
+    channel: Union[Thread, TextChannel, VoiceChannel],
+    *,
+    limit: Optional[int] = 100,
+    check: Callable[[Message], bool] = MISSING,
+    before: Optional[SnowflakeTime] = None,
+    after: Optional[SnowflakeTime] = None,
+    around: Optional[SnowflakeTime] = None,
+    oldest_first: Optional[bool] = False,
+    bulk: bool = True,
+    reason: Optional[str] = None,
+) -> List[Message]:
+    if check is MISSING:
+        check = lambda m: True
+
+    iterator = channel.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
+    ret: List[Message] = []
+    count = 0
+
+    minimum_time = int((time.time() - 14 * 24 * 60 * 60) * 1000.0 - 1420070400000) << 22
+    strategy = channel.delete_messages if bulk else _single_delete_strategy
+
+    async for message in iterator:
+        if count == 100:
+            to_delete = ret[-100:]
+            await strategy(to_delete, reason=reason)
+            count = 0
+            await asyncio.sleep(1)
+
+        if not check(message):
+            continue
+
+        if message.id < minimum_time:
+            # older than 14 days old
+            if count == 1:
+                await ret[-1].delete()
+            elif count >= 2:
+                to_delete = ret[-count:]
+                await strategy(to_delete, reason=reason)
+
+            count = 0
+            strategy = _single_delete_strategy
+
+        count += 1
+        ret.append(message)
+
+    # Some messages remaining to poll
+    if count >= 2:
+        # more than 2 messages -> bulk delete
+        to_delete = ret[-count:]
+        await strategy(to_delete, reason=reason)
+    elif count == 1:
+        # delete a single message
+        await ret[-1].delete()
+
+    return ret
 
 
 @runtime_checkable
@@ -508,7 +576,7 @@ class GuildChannel:
 
         If there is no category then this is ``None``.
         """
-        return self.guild.get_channel(self.category_id)  # type: ignore - These are coerced into CategoryChannel
+        return self.guild.get_channel(self.category_id)  # type: ignore # These are coerced into CategoryChannel
 
     @property
     def permissions_synced(self) -> bool:
@@ -535,6 +603,7 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
+        - Member timeout
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -620,6 +689,12 @@ class GuildChannel:
         # Bypass all channel-specific overrides
         if base.administrator:
             return Permissions.all()
+
+        if obj.is_timed_out():
+            # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
+            # being explicitly denied
+            base.value &= Permissions._timeout_mask()
+            return base
 
         # Apply @everyone allow/deny first since it's special
         try:
@@ -708,7 +783,14 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def set_permissions(self, target, *, overwrite=_undefined, reason=None, **permissions):
+    async def set_permissions(
+        self,
+        target: Union[Member, Role],
+        *,
+        overwrite: Any = _undefined,
+        reason: Optional[str] = None,
+        **permissions: bool,
+    ) -> None:
         r"""|coro|
 
         Sets the channel specific permission overwrites for a target in the
@@ -833,7 +915,7 @@ class GuildChannel:
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # temporarily add it to the cache
-        self.guild._channels[obj.id] = obj  # type: ignore - obj is a GuildChannel
+        self.guild._channels[obj.id] = obj  # type: ignore # obj is a GuildChannel
         return obj
 
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
@@ -917,7 +999,7 @@ class GuildChannel:
     ) -> None:
         ...
 
-    async def move(self, **kwargs) -> None:
+    async def move(self, **kwargs: Any) -> None:
         """|coro|
 
         A rich interface to help move a channel relative to other channels.
@@ -1156,6 +1238,7 @@ class Messageable:
     The following implement this ABC:
 
     - :class:`~discord.TextChannel`
+    - :class:`~discord.VoiceChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
     - :class:`~discord.User`
@@ -1196,7 +1279,7 @@ class Messageable:
         *,
         tts: bool = ...,
         embed: Embed = ...,
-        files: List[File] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1214,7 +1297,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
+        embeds: Sequence[Embed] = ...,
         file: File = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
@@ -1233,8 +1316,8 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        embeds: List[Embed] = ...,
-        files: List[File] = ...,
+        embeds: Sequence[Embed] = ...,
+        files: Sequence[File] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1248,22 +1331,22 @@ class Messageable:
 
     async def send(
         self,
-        content=None,
+        content: Optional[str] = None,
         *,
-        tts=False,
-        embed=None,
-        embeds=None,
-        file=None,
-        files=None,
-        stickers=None,
-        delete_after=None,
-        nonce=None,
-        allowed_mentions=None,
-        reference=None,
-        mention_author=None,
-        view=None,
-        suppress_embeds=False,
-    ):
+        tts: bool = False,
+        embed: Optional[Embed] = None,
+        embeds: Optional[Sequence[Embed]] = None,
+        file: Optional[File] = None,
+        files: Optional[Sequence[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = None,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        view: Optional[View] = None,
+        suppress_embeds: bool = False,
+    ) -> Message:
         """|coro|
 
         Sends a message to the destination with the content given.
@@ -1368,17 +1451,17 @@ class Messageable:
         previous_allowed_mention = state.allowed_mentions
 
         if stickers is not None:
-            stickers = [sticker.id for sticker in stickers]
+            sticker_ids: SnowflakeList = [sticker.id for sticker in stickers]
         else:
-            stickers = MISSING
+            sticker_ids = MISSING
 
         if reference is not None:
             try:
-                reference = reference.to_message_reference_dict()
+                reference_dict = reference.to_message_reference_dict()
             except AttributeError:
                 raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
         else:
-            reference = MISSING
+            reference_dict = MISSING
 
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__!r}')
@@ -1399,10 +1482,10 @@ class Messageable:
             embeds=embeds if embeds is not None else MISSING,
             nonce=nonce,
             allowed_mentions=allowed_mentions,
-            message_reference=reference,
+            message_reference=reference_dict,
             previous_allowed_mentions=previous_allowed_mention,
             mention_author=mention_author,
-            stickers=stickers,
+            stickers=sticker_ids,
             view=view,
             flags=flags,
         ) as params:
