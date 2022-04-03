@@ -258,7 +258,9 @@ class Transformer:
 
     @classmethod
     @_not_overridden
-    async def autocomplete(cls, interaction: Interaction, value: Union[int, float, str]) -> List[Choice[Union[int, float, str]]]:
+    async def autocomplete(
+        cls, interaction: Interaction, value: Union[int, float, str]
+    ) -> List[Choice[Union[int, float, str]]]:
         """|coro|
 
         An autocomplete prompt handler to be automatically used by options using this transformer.
