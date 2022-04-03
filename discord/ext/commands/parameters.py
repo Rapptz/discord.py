@@ -121,7 +121,7 @@ class Parameter(inspect.Parameter):
         return self.default is empty
 
     @property
-    def converter(self) -> Type[Any]:
+    def converter(self) -> Any:
         """The converter that should be used for this parameter.
 
         Note
