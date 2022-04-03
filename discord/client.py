@@ -714,9 +714,9 @@ class Client:
         try:
             asyncio.run(runner())
         except KeyboardInterrupt:
-            # nothing to do here
+            # Nothing to do here
             # `asyncio.run` handles the loop cleanup
-            # and `self.start` closes all sockets and the HTTPClient instance.
+            # and `self.start` closes all sockets and the HTTPClient instance
             return
 
     # Properties
@@ -1371,8 +1371,11 @@ class Client:
                 if getattr(activity, 'type', None) is ActivityType.custom:
                     custom_activity = activity
 
-            payload: Dict[str, Any] = {'status': status}
-            payload['custom_activity'] = custom_activity
+            payload: Dict[str, Any] = {}
+            if status != getattr(self.user.settings, 'status', None):  # type: ignore - user is always present when logged in
+                payload['status'] = status
+            if custom_activity != getattr(self.user.settings, 'custom_activity', None):  # type: ignore - user is always present when logged in
+                payload['custom_activity'] = custom_activity
             await self.user.edit_settings(**payload)  # type: ignore - user is always present when logged in
 
         status_str = str(status)
@@ -1494,6 +1497,10 @@ class Client:
 
         Retrieves a :class:`.Guild` from an ID.
 
+        .. versionchanged:: 2.0
+
+            ``guild_id`` parameter is now positional-only.
+
         .. note::
 
             Using this, you will **not** receive :attr:`.Guild.channels` and :attr:`.Guild.members`.
@@ -1538,6 +1545,8 @@ class Client:
         """|coro|
 
         Retrieves a public :class:`.Guild` preview from an ID.
+
+        .. versionadded:: 2.0
 
         Raises
         ------
@@ -1703,6 +1712,7 @@ class Client:
     async def fetch_invite(
         self,
         url: Union[Invite, str],
+        /,
         *,
         with_counts: bool = True,
         with_expiration: bool = True,
@@ -1717,6 +1727,10 @@ class Client:
             If the invite is for a guild you have not joined, the guild and channel
             attributes of the returned :class:`.Invite` will be :class:`.PartialInviteGuild` and
             :class:`.PartialInviteChannel` respectively.
+
+        .. versionchanged:: 2.0
+
+            ``url`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -1800,13 +1814,17 @@ class Client:
         resolved = utils.resolve_invite(invite)
         await self.http.delete_invite(resolved.code)
 
-    async def accept_invite(self, invite: Union[Invite, str]) -> Union[Guild, User, GroupChannel]:
+    async def accept_invite(self, invite: Union[Invite, str], /) -> Union[Guild, User, GroupChannel]:
         """|coro|
 
         Uses an invite.
         Either joins a guild, joins a group DM, or adds a friend.
 
         .. versionadded:: 1.9
+
+        .. versionchanged:: 2.0
+
+            ``invite`` parameter is now positional-only.
 
         Parameters
         ----------
@@ -2073,25 +2091,12 @@ class Client:
         cls, _ = _sticker_factory(data['type'])
         return cls(state=self._connection, data=data)  # type: ignore
 
-    async def fetch_sticker_packs(
-        self, *, country: str = 'US', locale: str = 'en-US', payment_source_id: int = MISSING
-    ) -> List[StickerPack]:
+    async def fetch_sticker_packs(self) -> List[StickerPack]:
         """|coro|
 
         Retrieves all available default sticker packs.
 
         .. versionadded:: 2.0
-
-        Parameters
-        -----------
-        country: :class:`str`
-            ISO 3166 country code to fetch the sticker packs for.
-            Defaults to ``US``.
-        locale: :class:`str`
-            ISO 639 language code the name and description should be in.
-            Defaults to ``en-US``.
-        payment_source_id: :class:`int`
-            Unknown.
 
         Raises
         -------
@@ -2103,7 +2108,7 @@ class Client:
         List[:class:`.StickerPack`]
             All available sticker packs.
         """
-        data = await self.http.list_premium_sticker_packs(country, locale, payment_source_id)
+        data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
     async def fetch_sticker_pack(self, pack_id: int, /):
@@ -2149,12 +2154,16 @@ class Client:
         data = await state.http.get_notes()
         return [Note(state, int(id), note=note) for id, note in data.items()]
 
-    async def fetch_note(self, user_id: int) -> Note:
+    async def fetch_note(self, user_id: int, /) -> Note:
         """|coro|
 
         Retrieves a :class:`Note` for the specified user ID.
 
         .. versionadded:: 1.9
+
+        .. versionchanged:: 2.0
+
+            ``user_id`` parameter is now positional-only.
 
         Parameters
         -----------
@@ -2217,7 +2226,7 @@ class Client:
         channels = await state.http.get_private_channels()
         return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore - user is always present when logged in
 
-    async def create_dm(self, user: Snowflake) -> DMChannel:
+    async def create_dm(self, user: Snowflake, /) -> DMChannel:
         """|coro|
 
         Creates a :class:`.DMChannel` with this user.
@@ -2293,6 +2302,10 @@ class Client:
         Sends a friend request to another user.
 
         This function can be used in multiple ways.
+
+        .. versionchanged:: 2.0
+
+            All parameters are now positional-only.
 
         .. code-block:: python
 
@@ -2484,7 +2497,7 @@ class Client:
         data = await state.http.get_team(team_id)
         return Team(state=state, data=data)
 
-    async def create_application(self, name: str):
+    async def create_application(self, name: str, /):
         """|coro|
 
         Creates an application.
@@ -2510,7 +2523,7 @@ class Client:
         data = await state.http.create_app(name)
         return Application(state=state, data=data)
 
-    async def create_team(self, name: str):
+    async def create_team(self, name: str, /):
         """|coro|
 
         Creates a team.
