@@ -917,8 +917,8 @@ class BaseWebhook(Hashable):
         return self._state and self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[Union[TextChannel, VoiceChannel]]:
-        """Optional[Union[:class:`TextChannel`, :class:`VoiceChannel`]]: The text/voice channel this webhook belongs to.
+    def channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
@@ -970,8 +970,9 @@ class Webhook(BaseWebhook):
 
     There are two main ways to use Webhooks. The first is through the ones
     received by the library such as :meth:`.Guild.webhooks`,
-    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`. The ones received by the library will
-    automatically be bound using the library's internal HTTP session.
+    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`.
+    The ones received by the library will automatically be
+    bound using the library's internal HTTP session.
 
     The second form involves creating a webhook object manually using the
     :meth:`~.Webhook.from_url` or :meth:`~.Webhook.partial` classmethods.
