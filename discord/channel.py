@@ -130,11 +130,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Bots and users with :attr:`~Permissions.manage_channels` or
         :attr:`~Permissions.manage_messages` bypass slowmode.
     nsfw: :class:`bool`
-        If the channel is marked as "not safe for work".
-
-        .. note::
-
-            To check if the channel or the guild of that channel are marked as NSFW, consider :meth:`is_nsfw` instead.
+        If the channel is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`
         The default auto archive duration in minutes for threads created in this channel.
 
@@ -843,6 +839,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         'name',
         'id',
         'guild',
+        'nsfw',
         'bitrate',
         'user_limit',
         '_state',
@@ -868,6 +865,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
     def _update(self, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]) -> None:
         self.guild: Guild = guild
         self.name: str = data['name']
+        self.nsfw: bool = data.get('nsfw', False)
         self.rtc_region: Optional[str] = data.get('rtc_region')
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
@@ -880,6 +878,13 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
     @property
     def _sorting_bucket(self) -> int:
         return ChannelType.voice.value
+
+    def is_nsfw(self) -> bool:
+        """:class:`bool`: Checks if the channel is NSFW.
+
+        .. versionadded:: 2.0
+        """
+        return self.nsfw
 
     @property
     def members(self) -> List[Member]:
@@ -966,6 +971,10 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work" or "age restricted".
+
+        .. versionadded:: 2.0
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
     position: :class:`int`
@@ -1275,6 +1284,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         self,
         *,
         name: str = ...,
+        nsfw: bool = ...,
         bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
@@ -1318,6 +1328,8 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
             The new channel's name.
         bitrate: :class:`int`
             The new channel's bitrate.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
         user_limit: :class:`int`
             The new channel's user limit.
         position: :class:`int`
@@ -1396,6 +1408,10 @@ class StageChannel(VocalGuildChannel):
         The guild the channel belongs to.
     id: :class:`int`
         The channel ID.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work" or "age restricted".
+
+        .. versionadded:: 2.0
     topic: Optional[:class:`str`]
         The channel's topic. ``None`` if it isn't set.
     category_id: Optional[:class:`int`]
@@ -1562,6 +1578,7 @@ class StageChannel(VocalGuildChannel):
         self,
         *,
         name: str = ...,
+        nsfw: bool = ...,
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
@@ -1603,6 +1620,8 @@ class StageChannel(VocalGuildChannel):
             The new channel's name.
         position: :class:`int`
             The new channel's position.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
         sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
