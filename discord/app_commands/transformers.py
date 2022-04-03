@@ -265,7 +265,7 @@ class Transformer:
 
         .. note::
 
-            Autocomplete is only supported for options with :attr:`~discord.app.commands.Transformer.type`
+            Autocomplete is only supported for options with :meth:`~discord.app.commands.Transformer.type`
             :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`,
             and :attr:`~discord.AppCommandOptionType.number`.
 
