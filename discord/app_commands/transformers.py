@@ -61,6 +61,8 @@ __all__ = (
 )
 
 T = TypeVar('T')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 NoneType = type(None)
 
 if TYPE_CHECKING:
@@ -248,6 +250,35 @@ class Transformer:
             for how certain option types correspond to certain values.
         """
         raise NotImplementedError('Derived classes need to implement this.')
+
+    @classmethod
+    async def autocomplete(
+        cls, interaction: Interaction, value: Union[int, float, str]
+    ) -> List[Choice[Union[int, float, str]]]:
+        """|coro|
+
+        An autocomplete prompt handler to be automatically used by options using this transformer.
+
+        .. note::
+
+            Autocomplete is only supported for options with a :meth:`~discord.app_commands.Transformer.type`
+            of :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`,
+            or :attr:`~discord.AppCommandOptionType.number`.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The autocomplete interaction being handled.
+        value: Union[:class:`str`, :class:`int`, :class:`float`]
+            The current value entered by the user.
+
+        Returns
+        --------
+        List[:class:`~discord.app_commands.Choice`]
+            A list of choices to be displayed to the user, a maximum of 25.
+
+        """
+        raise NotImplementedError('Derived classes can implement this.')
 
 
 class _TransformMetadata:
@@ -678,5 +709,10 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
+
+    if inner.autocomplete is not Transformer.autocomplete:
+        from .commands import _validate_auto_complete_callback
+
+        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
 
     return result

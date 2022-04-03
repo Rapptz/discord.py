@@ -167,12 +167,20 @@ def validate_context_menu_name(name: str) -> str:
 
 
 def _validate_auto_complete_callback(
-    callback: AutocompleteCallback[GroupT, ChoiceT]
+    callback: AutocompleteCallback[GroupT, ChoiceT],
+    skip_binding: bool = False,
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
 
-    requires_binding = is_inside_class(callback)
-    required_parameters = 2 + requires_binding
+    binding = getattr(callback, '__self__', None)
+    if binding is not None:
+        callback = callback.__func__
+
+    requires_binding = (binding is None and is_inside_class(callback)) or skip_binding
+
     callback.requires_binding = requires_binding
+    callback.binding = binding
+
+    required_parameters = 2 + requires_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
         raise TypeError('autocomplete callback requires either 2 or 3 parameters to be passed')
@@ -581,8 +589,9 @@ class Command(Generic[GroupT, P, T]):
             raise CommandSignatureMismatch(self)
 
         if param.autocomplete.requires_binding:
-            if self.binding is not None:
-                choices = await param.autocomplete(self.binding, interaction, value)
+            binding = param.autocomplete.binding or self.binding
+            if binding is not None:
+                choices = await param.autocomplete(binding, interaction, value)
             else:
                 raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
