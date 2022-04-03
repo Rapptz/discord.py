@@ -969,9 +969,10 @@ class Webhook(BaseWebhook):
     bot user or authentication.
 
     There are two main ways to use Webhooks. The first is through the ones
-    received by the library such as :meth:`.Guild.webhooks` and
-    :meth:`.TextChannel.webhooks`. The ones received by the library will
-    automatically be bound using the library's internal HTTP session.
+    received by the library such as :meth:`.Guild.webhooks`,
+    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`.
+    The ones received by the library will automatically be
+    bound using the library's internal HTTP session.
 
     The second form involves creating a webhook object manually using the
     :meth:`~.Webhook.from_url` or :meth:`~.Webhook.partial` classmethods.
