@@ -1321,13 +1321,21 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.components: List[Component] = [_component_factory(d, self) for d in data.get('components', [])]
         self.call: Optional[CallMessage] = None
-        self.interaction: Optional[Interaction] = None
 
         try:
             # If the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild  # type: ignore
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+
+        self.interaction: Optional[Interaction] = None
+
+        try:
+            interaction = data['interaction']
+        except KeyError:
+            pass
+        else:
+            self.interaction = Interaction._from_message(self, **interaction)
 
         try:
             ref = data['message_reference']

@@ -439,7 +439,7 @@ class ConnectionState:
         self._status: Optional[str] = status
 
         if cache_flags._empty:
-            self.store_user = self.create_user  # type: ignore # Purposeful reassignment
+            self.store_user = self.create_user  # type: ignore # This reassignment is on purpose
 
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}

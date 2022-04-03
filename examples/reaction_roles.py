@@ -77,5 +77,6 @@ class MyClient(discord.Client):
             # If we want to do something in case of errors we'd do it here.
             pass
 
+
 client = MyClient()
 client.run('token')

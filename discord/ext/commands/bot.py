@@ -1279,5 +1279,3 @@ class Bot(BotBase, discord.Client):
 
         .. versionadded:: 1.7
     """
-
-    pass

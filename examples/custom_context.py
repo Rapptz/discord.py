@@ -28,6 +28,7 @@ class MyBot(commands.Bot):
         # use the new MyContext class
         return await super().get_context(message, cls=cls)
 
+
 bot = MyBot(command_prefix='!', self_bot=True)
 
 

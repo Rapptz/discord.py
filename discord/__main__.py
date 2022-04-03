@@ -56,6 +56,8 @@ def show_version() -> None:
 def core(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
     if args.version:
         show_version()
+    else:
+        parser.print_help()
 
 
 _bot_template = """#!/usr/bin/env python3
