@@ -717,7 +717,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         ctx.args = [ctx] if self.cog is None else [self.cog, ctx]
         ctx.kwargs = {}
         args = ctx.args
-        kwargs = ctx.kwargs  # required isnt work if None seems to be passsing parameter to **kwargs
+        kwargs = ctx.kwargs
 
         view = ctx.view
         iterator = iter(self.params.items())
