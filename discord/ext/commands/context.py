@@ -44,7 +44,6 @@ if TYPE_CHECKING:
 
     from .cog import Cog
     from .core import Command
-    from .help import HelpCommand
     from .parameters import Parameter
     from .view import StringView
 

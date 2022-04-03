@@ -436,15 +436,21 @@ Defaults
 .. autoclass:: discord.ext.commands.Parameter()
     :members:
 
-.. autofunction:: discord.ext.commands.Parameter
+.. autofunction:: discord.ext.commands.parameter
 
 .. autofunction:: discord.ext.commands.param
 
-.. autodata:: discord.ext.commands.Author
+.. data:: discord.ext.commands.Author
 
-.. autodata:: discord.ext.commands.CurrentChannel
+    A default :class:`.Parameter` which returns the :attr:`~.Context.author` for this context.
 
-.. autodata:: discord.ext.commands.CurrentGuild
+.. data:: discord.ext.commands.CurrentChannel
+
+    A default :class:`.Parameter` which returns the :attr:`~.Context.channel` for this context.
+
+.. data:: discord.ext.commands.CurrentGuild
+
+    A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``.
 
 .. _ext_commands_api_errors:
 

@@ -103,10 +103,18 @@ class Parameter(inspect.Parameter):
         )
 
     if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
-        name = property(attrgetter("_name"), lambda self, name: setattr(self, "_name", name))
-        kind = property(attrgetter("_kind"), lambda self, kind: setattr(self, "_kind", kind))
-        default = property(attrgetter("_default"), lambda self, default: setattr(self, "_default", default))
-        annotation = property(attrgetter("_annotation"), lambda self, annotation: setattr(self, "_annotation", annotation))
+        name = property(attrgetter("_name"), lambda self, name: setattr(self, "_name", name), doc="The parameter's name.")
+        kind = property(attrgetter("_kind"), lambda self, kind: setattr(self, "_kind", kind), doc="The parameter's kind.")
+        default = property(
+            attrgetter("_default"),
+            lambda self, default: setattr(self, "_default", default),
+            doc="The parameter's default value.",
+        )
+        annotation = property(
+            attrgetter("_annotation"),
+            lambda self, annotation: setattr(self, "_annotation", annotation),
+            doc="The parameter's annotation.",
+        )
 
     @property
     def required(self) -> bool:
@@ -118,7 +126,7 @@ class Parameter(inspect.Parameter):
 
         Note
         ----
-        This is the same as :attr:`annotation if it's non-empty otherwise it's the type of :attr:`default` or :class:`str`
+        This is the same as :attr:`annotation` if it's non-empty otherwise it's the type of :attr:`default` or :class:`str`
         if the parameter has no default.
         """
         if self.annotation is empty:
@@ -127,20 +135,21 @@ class Parameter(inspect.Parameter):
         return self.annotation
 
     @property
-    def displayed_default(self) -> str:
+    def displayed_default(self) -> str | None:
         """The displayed default in :class:`Command.signature`."""
         if self._displayed_default is not empty:
             return self._displayed_default
 
-        return "" if self.required else str(self.default)
+        return None if self.required else str(self.default)
 
     async def get_default(self, ctx: Context) -> Any:
         """|coro|
+
         Gets this parameter's default value.
         """
         # pre-condition: required is False
         if callable(self.default):
-            return await maybe_coroutine(self.default, ctx)
+            return await maybe_coroutine(self.default, ctx)  # type: ignore
         return self.default
 
 
@@ -154,25 +163,11 @@ def parameter(
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
-    .. versionadded:: 2.0.0
-
-    Parameters
-    ----------
-    converter: Any
-        The converter to use for this parameter, this replaces the annotation at runtime which is transparent to type checkers.
-    default: Any
-        The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a
-        positional :class:`Context` argument.
-    displayed_default: :class:`str`
-        The displayed default in :attr:`Command.signature`.
-
     Examples
     --------
 
-    A custom converter
-    ~~~~~~~~~~~~~~~~~~
-    Whilst annotating a parameter with a custom converter works at runtime, type checkers don't like it cause they can't
-    understand what's going on.
+    A custom converter, whilst annotating a parameter with a custom converter works at runtime, type checkers don't like it
+    cause they can't understand what's going on.
 
     .. code-block:: python3
 
@@ -194,9 +189,7 @@ def parameter(
         async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoolConverter)):
             cool_value.foo  # no error (hurray)
 
-    A custom default
-    ~~~~~~~~~~~~~~~~
-    Custom defaults can be used to have late binding behaviour
+    A custom default can be used to have late binding behaviour
 
     .. code-block:: python3
 
@@ -204,16 +197,28 @@ def parameter(
         async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
             await ctx.send(f'Hello {to.mention} :wave:')
 
-    Because this is such a common use-case, the library provides :data:`Author`, :data:`CurrentChannel` and
-    :data:`CurrentGuild`, armed with this we can simplify ``wave`` to:
+    Because this is such a common use-case, the library provides :obj:`.Author`, :obj:`.CurrentChannel` and
+    :obj:`.CurrentGuild`, armed with this we can simplify ``wave`` to:
 
     .. code-block:: python3
 
         @bot.command()
-        async def wave(to: discord.User = Author):
+        async def wave(to: discord.User = commands.Author):
             await ctx.send(f'Hello {to.mention} :wave:')
 
-    :data:`Author` and friends also have other benefits like having the displayed default being filled.
+    :obj:`Author` and co also have other benefits like having the displayed default being filled.
+
+    .. versionadded:: 2.0.0
+
+    Parameters
+    ----------
+    converter: Any
+        The converter to use for this parameter, this replaces the annotation at runtime which is transparent to type checkers.
+    default: Any
+        The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a
+        positional :class:`Context` argument.
+    displayed_default: :class:`str`
+        The displayed default in :attr:`Command.signature`.
     """
     return Parameter(
         name="empty",
@@ -225,7 +230,10 @@ def parameter(
 
 
 param = parameter
-"""An alias for :func:`parameter`."""
+"""param(*, converter=..., default=..., displayed_default=...)
+
+An alias for :func:`parameter`.
+"""
 
 # some handy defaults
 Author: Union[Member, User] = parameter(
@@ -233,12 +241,12 @@ Author: Union[Member, User] = parameter(
     displayed_default="<you>",
     converter=Union[converter.MemberConverter, converter.UserConverter],
 )
-"""Default parameter which returns the author for this context."""
+"""A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context."""
 
 CurrentChannel: TextChannel = parameter(
     default=attrgetter("channel"), displayed_default="<this channel>", converter=converter.TextChannelConverter
 )
-"""Default parameter which returns the channel for this context."""
+"""A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context."""
 
 
 def default_guild(ctx: Context) -> Guild:
@@ -248,7 +256,7 @@ def default_guild(ctx: Context) -> Guild:
 
 
 CurrentGuild: Guild = parameter(default=default_guild, displayed_default="<this server>", converter=converter.GuildConverter)
-"""Default parameter which returns the guild for this context."""
+"""A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context."""
 
 
 class Signature(inspect.Signature):

@@ -439,7 +439,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             globalns = {}
 
-        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(function, globalns)
+        self.params: Dict[str, parameters.Parameter] = get_signature_parameters(function, globalns)
 
     def add_check(self, func: Check[ContextT], /) -> None:
         """Adds a check to the command.
@@ -576,7 +576,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             ctx.bot.dispatch('command_error', ctx, error)
 
     async def transform(self, ctx: Context[BotT], param: parameters.Parameter, /) -> Any:
-        required = param.required
         converter = param.converter
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
@@ -586,7 +585,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # it undos the view ready for the next parameter to use instead
         if isinstance(converter, Greedy):
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
-                return await self._transform_greedy_pos(ctx, param, required, converter.converter)
+                return await self._transform_greedy_pos(ctx, param, param.required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
                 return await self._transform_greedy_var_pos(ctx, param, converter.converter)
             else:
@@ -598,7 +597,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError()  # break the loop
-            if required:
+            if param.required:
                 if self._is_typing_optional(param.annotation):
                     return None
                 if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
@@ -620,7 +619,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     raise exc
         view.previous = previous
 
-        return await run_converters(ctx, converter, argument, param)
+        # type-checker fails to narrow argument
+        return await run_converters(ctx, converter, argument, param)  # type: ignore
 
     async def _transform_greedy_pos(
         self, ctx: Context[BotT], param: parameters.Parameter, required: bool, converter: Any
@@ -756,9 +756,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
-                    converter = parameter.converter
                     ctx.current_argument = argument = view.read_rest()
-                    kwargs[name] = await run_converters(ctx, converter, argument, param)
+                    kwargs[name] = await run_converters(ctx, param.converter, argument, param)
                 else:
                     kwargs[name] = await self.transform(ctx, param)
                 break
@@ -1098,7 +1097,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             # parameter signature is a literal list of it's values
             if origin is Literal:
                 name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)  # type: ignore  # this is safe
-            if param.required:
+            if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
