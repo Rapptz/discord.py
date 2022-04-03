@@ -3547,12 +3547,11 @@ class Guild(Hashable):
         if presences and not self._state._intents.presences:
             raise ClientException('Intents.presences must be enabled to use this.')
 
-        if query is None:
-            if query == '':
-                raise ValueError('Cannot pass empty query string.')
+        if query == '':
+            raise ValueError('Cannot pass empty query string.')
 
-            if user_ids is None:
-                raise ValueError('Must pass either query or user_ids')
+        if query is None and user_ids is None:
+            raise ValueError('Must pass either query or user_ids')
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')
