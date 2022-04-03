@@ -44,6 +44,7 @@ from typing import (
 )
 
 import discord
+
 from .errors import *
 
 if TYPE_CHECKING:
@@ -1173,7 +1174,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
             # with the other parameters
             if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
                 ctx.view.undo()
-                return None if not param.required else await param.get_default(ctx)
+                return None if param.required else await param.get_default(ctx)
 
             try:
                 value = await run_converters(ctx, conv, argument, param)

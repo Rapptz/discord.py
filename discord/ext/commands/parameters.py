@@ -159,7 +159,7 @@ def parameter(
     default: Any = empty,
     displayed_default: str = empty,
 ) -> Any:
-    r"""parameter(*, converter=..., default=..., displayed_default=...)
+    r"""parameter(\*, converter=..., default=..., displayed_default=...)
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
@@ -206,7 +206,7 @@ def parameter(
         async def wave(to: discord.User = commands.Author):
             await ctx.send(f'Hello {to.mention} :wave:')
 
-    :obj:`Author` and co also have other benefits like having the displayed default being filled.
+    :obj:`.Author` and co also have other benefits like having the displayed default being filled.
 
     .. versionadded:: 2.0.0
 

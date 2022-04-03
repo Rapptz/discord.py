@@ -29,7 +29,6 @@ import re
 import sys
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Pattern, Set, Tuple, Union
-from discord.ext.commands.parameters import Parameter
 
 from discord.utils import MISSING, maybe_coroutine, resolve_annotation
 
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
 
     from ._types import BotT
     from .context import Context
+    from .parameters import Parameter
 
 
 @dataclass
