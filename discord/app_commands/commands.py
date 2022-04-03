@@ -176,10 +176,10 @@ def _validate_auto_complete_callback(
         callback = callback.__func__
 
     requires_binding = (binding is None and is_inside_class(callback)) or skip_binding
-    
+
     callback.requires_binding = requires_binding
     callback.binding = binding
-    
+
     required_parameters = 2 + requires_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
