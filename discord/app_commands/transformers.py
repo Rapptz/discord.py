@@ -61,6 +61,7 @@ __all__ = (
 )
 
 T = TypeVar('T')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 NoneType = type(None)
 
@@ -152,6 +153,11 @@ class CommandParameter:
     def display_name(self) -> str:
         """:class:`str`: The name of the parameter as it should be displayed to the user."""
         return self.name if self._rename is MISSING else self._rename
+
+
+def _not_overridden(f: FuncT) -> FuncT:
+    f.__transformer_autocomplete_not_overridden__ = True
+    return f
 
 
 class Transformer:
@@ -251,6 +257,7 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     @classmethod
+    @_not_overridden
     async def autocomplete(cls, interaction: Interaction, value: ChoiceT) -> List[Choice[ChoiceT]]:
         """|coro|
 
@@ -706,14 +713,14 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
 
-    if inner.autocomplete is not Transformer.autocomplete:
+    print(Transformer.autocomplete.__func__)
+    print(inner.autocomplete.__func__)
+
+    if not hasattr(inner.autocomplete.__func__, '__transformer_autocomplete_not_overridden__'):
         from .commands import _validate_auto_complete_callback
 
-        if inspect.ismethod(inner.autocomplete):
-            async def func(*args, **kwargs):
-                return await inner.autocomplete(*args, **kwargs)
-        else:
-            func = inner.autocomplete  # type: ignore
+        async def func(*args, **kwargs):
+            return await inner.autocomplete(*args, **kwargs)
 
         result.autocomplete = _validate_auto_complete_callback(func, skip_binding=True)
 
