@@ -155,11 +155,6 @@ class CommandParameter:
         return self.name if self._rename is MISSING else self._rename
 
 
-def _not_overridden(f: FuncT) -> FuncT:
-    f.__transformer_autocomplete_not_overridden__ = True
-    return f
-
-
 class Transformer:
     """The base class that allows a type annotation in an application command parameter
     to map into a :class:`~discord.AppCommandOptionType` and transform the raw value into one
@@ -257,7 +252,6 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     @classmethod
-    @_not_overridden
     async def autocomplete(
         cls, interaction: Interaction, value: Union[int, float, str]
     ) -> List[Choice[Union[int, float, str]]]:
@@ -716,12 +710,9 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
 
-    if not hasattr(inner.autocomplete.__func__, '__transformer_autocomplete_not_overridden__'):
+    if inner.autocomplete is not Transformer.autocomplete:
         from .commands import _validate_auto_complete_callback
 
-        async def func(*args, **kwargs):
-            return await inner.autocomplete(*args, **kwargs)
-
-        result.autocomplete = _validate_auto_complete_callback(func, skip_binding=True)
+        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
 
     return result
