@@ -107,7 +107,7 @@ class Profile:
         application = data.get('application', {})
         install_params = application.get('install_params', {})
         self.application_id = app_id = utils._get_as_snowflake(application, 'id')
-        self.install_url = application.get('custom_install_url') if not install_params else utils.oauth_url(app_id, permissions=Permissions(int(install_params.get('permissions', 0))), scopes=install_params.get('scopes', utils.MISSING))  # type: ignore - app_id is always present here
+        self.install_url = application.get('custom_install_url') if not install_params else utils.oauth_url(app_id, permissions=Permissions(int(install_params.get('permissions', 0))), scopes=install_params.get('scopes', utils.MISSING))  # type: ignore # app_id is always present here
 
     def _parse_mutual_guilds(self, mutual_guilds) -> Optional[List[Guild]]:
         if mutual_guilds is None:
@@ -118,7 +118,7 @@ class Profile:
         def get_guild(guild):
             return state._get_guild(int(guild['id'])) or Object(id=int(guild['id']))
 
-        return list(filter(None, map(get_guild, mutual_guilds)))  # type: ignore - Lying for better developer UX
+        return list(filter(None, map(get_guild, mutual_guilds)))  # type: ignore # Lying for better developer UX
 
     def _parse_mutual_friends(self, mutual_friends) -> Optional[List[User]]:
         if mutual_friends is None:

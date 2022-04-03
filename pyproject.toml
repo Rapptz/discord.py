@@ -40,6 +40,7 @@ exclude = [
     "docs",
 ]
 reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"
 pythonVersion = "3.8"
 typeCheckingMode = "basic"
 

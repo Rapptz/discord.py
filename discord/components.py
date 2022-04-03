@@ -135,7 +135,7 @@ class ActionRow(Component):
         return {
             'type': int(self.type),
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore - Type checker does not understand these are the same
+        }  # type: ignore # Type checker does not understand these are the same
 
 
 class Button(Component):

@@ -74,7 +74,6 @@ __all__ = (
     'PartialEmojiConverter',
     'CategoryChannelConverter',
     'IDConverter',
-    'StoreChannelConverter',
     'ThreadConverter',
     'GuildChannelConverter',
     'GuildStickerConverter',
@@ -375,7 +374,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
         channel = self._resolve_channel(ctx, guild_id, channel_id)
         if not channel or not isinstance(channel, discord.abc.Messageable):
-            raise ChannelNotFound(channel_id)  # type: ignore - channel_id won't be None here
+            raise ChannelNotFound(channel_id)  # type: ignore # channel_id won't be None here
         return discord.PartialMessage(channel=channel, id=message_id)
 
 
@@ -407,7 +406,7 @@ class MessageConverter(IDConverter[discord.Message]):
         except discord.NotFound:
             raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise ChannelNotReadable(channel)  # type: ignore - type-checker thinks channel could be a DMChannel at this point
+            raise ChannelNotReadable(channel)  # type: ignore # type-checker thinks channel could be a DMChannel at this point
 
 
 class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
@@ -462,8 +461,6 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
     @staticmethod
     def _resolve_thread(ctx: Context[BotT], argument: str, attribute: str, type: Type[TT]) -> TT:
-        bot = ctx.bot
-
         match = IDConverter._get_id_match(argument) or re.match(r'<#([0-9]{15,20})>$', argument)
         result = None
         guild = ctx.guild
@@ -561,25 +558,6 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.CategoryChannel:
         return GuildChannelConverter._resolve_channel(ctx, argument, 'categories', discord.CategoryChannel)
-
-
-class StoreChannelConverter(IDConverter[discord.StoreChannel]):
-    """Converts to a :class:`~discord.StoreChannel`.
-
-    All lookups are via the local guild. If in a DM context, then the lookup
-    is done by the global cache.
-
-    The lookup strategy is as follows (in order):
-
-    1. Lookup by ID.
-    2. Lookup by mention.
-    3. Lookup by name.
-
-    .. versionadded:: 1.7
-    """
-
-    async def convert(self, ctx: Context[BotT], argument: str) -> discord.StoreChannel:
-        return GuildChannelConverter._resolve_channel(ctx, argument, 'channels', discord.StoreChannel)
 
 
 class ThreadConverter(IDConverter[discord.Thread]):
@@ -1118,7 +1096,6 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.Emoji: EmojiConverter,
     discord.PartialEmoji: PartialEmojiConverter,
     discord.CategoryChannel: CategoryChannelConverter,
-    discord.StoreChannel: StoreChannelConverter,
     discord.Thread: ThreadConverter,
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,

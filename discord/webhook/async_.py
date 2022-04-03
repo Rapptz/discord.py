@@ -1072,7 +1072,7 @@ class Webhook(BaseWebhook):
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
-            ``~InvalidArgument``.
+            ``InvalidArgument``.
 
         Parameters
         ------------

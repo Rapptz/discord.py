@@ -30,9 +30,10 @@ class MyBot(commands.Bot):
 
 bot = MyBot(command_prefix='!', self_bot=True)
 
+
 @bot.command()
 async def guess(ctx, number: int):
-    """ Guess a random number from 1 to 6. """
+    """Guess a random number from 1 to 6."""
     # explained in a previous example, this gives you
     # a random number from 1-6
     value = random.randint(1, 6)
@@ -41,8 +42,9 @@ async def guess(ctx, number: int):
     # or a red cross mark if it wasn't
     await ctx.tick(number == value)
 
+
 # IMPORTANT: You shouldn't hard code your token
-# these are very important, and leaking them can 
+# these are very important, and leaking them can
 # let people do very malicious things with your
 # bot. Try to use a file or something to keep
 # them private, and don't commit it to GitHub

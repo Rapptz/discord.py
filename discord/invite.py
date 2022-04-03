@@ -477,7 +477,7 @@ class Invite(Hashable):
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 
         if message is not None:
-            data['message'] = message  # type: ignore - Not a real field
+            data['message'] = message  # type: ignore # Not a real field
 
         return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen)  # type: ignore
 
@@ -564,7 +564,7 @@ class Invite(Hashable):
         """
         self.scheduled_event_id = scheduled_event.id
         try:
-            self.scheduled_event = self.guild.get_scheduled_event(scheduled_event.id)  # type: ignore - handled below
+            self.scheduled_event = self.guild.get_scheduled_event(scheduled_event.id)  # type: ignore # handled below
         except AttributeError:
             self.scheduled_event = None
 

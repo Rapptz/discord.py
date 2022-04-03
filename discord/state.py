@@ -439,7 +439,7 @@ class ConnectionState:
         self._status: Optional[str] = status
 
         if cache_flags._empty:
-            self.store_user = self.create_user  # type: ignore
+            self.store_user = self.create_user  # type: ignore # Purposeful reassignment
 
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
@@ -566,7 +566,7 @@ class ConnectionState:
 
     def _update_references(self, ws: DiscordWebSocket) -> None:
         for vc in self.voice_clients:
-            vc.main_ws = ws  # type: ignore - Silencing the unknown attribute (ok at runtime).
+            vc.main_ws = ws  # type: ignore # Silencing the unknown attribute (ok at runtime).
 
     def _add_interaction(self, interaction: Interaction) -> None:
         self._interactions[interaction.id] = interaction
@@ -832,13 +832,13 @@ class ConnectionState:
             data.get('merged_members', []),
             extra_data['merged_presences'].get('guilds', []),
         ):
-            guild_data['settings'] = utils.find(  # type: ignore - This key does not actually exist in the payload
+            guild_data['settings'] = utils.find(  # type: ignore # This key does not actually exist in the payload
                 lambda i: i['guild_id'] == guild_data['id'],
                 guild_settings,
             ) or {'guild_id': guild_data['id']}
 
             for presence in merged_presences:
-                presence['user'] = {'id': presence['user_id']}  # type: ignore - :(
+                presence['user'] = {'id': presence['user_id']}  # type: ignore # :(
 
             voice_states = guild_data.setdefault('voice_states', [])
             voice_states.extend(guild_extra.get('voice_states', []))
@@ -923,8 +923,7 @@ class ConnectionState:
         if message.call is not None:
             self._call_message_cache[message.id] = message
 
-        # We ensure that the channel is either a TextChannel or Thread
-        if channel and channel.__class__ in (TextChannel, Thread):
+        if channel:
             channel.last_message_id = message.id  # type: ignore
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:
@@ -968,7 +967,7 @@ class ConnectionState:
     def parse_message_reaction_add(self, data: gw.MessageReactionAddEvent) -> None:
         emoji = data['emoji']
         emoji_id = utils._get_as_snowflake(emoji, 'id')
-        emoji = PartialEmoji.with_state(self, id=emoji_id, animated=emoji.get('animated', False), name=emoji['name'])
+        emoji = PartialEmoji.with_state(self, id=emoji_id, animated=emoji.get('animated', False), name=emoji['name'])  # type: ignore
         raw = RawReactionActionEvent(data, emoji, 'REACTION_ADD')
 
         member_data = data.get('member')
@@ -1182,7 +1181,7 @@ class ConnectionState:
             channel = guild.get_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel._update(guild, data)  # type: ignore - the data payload varies based on the channel type.
+                channel._update(guild, data)  # type: ignore # the data payload varies based on the channel type.
                 self.dispatch('guild_channel_update', old_channel, channel)
             else:
                 _log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
@@ -1442,7 +1441,12 @@ class ConnectionState:
                 self.dispatch('member_update', old_member, member)
         else:
             if self.member_cache_flags.other or user_id == self.self_id or guild.chunked:
-                member = Member(data=data, guild=guild, state=self)  # type: ignore - The data is close enough
+                member = Member(data=data, guild=guild, state=self)  # type: ignore # The data is close enough
+                # Force an update on the inner user if necessary
+                user_update = member._update_inner_user(user)
+                if user_update:
+                    self.dispatch('user_update', user_update[0], user_update[1])
+
                 guild._add_member(member)
             _log.debug('GUILD_MEMBER_UPDATE referencing an unknown member ID: %s.', user_id)
 
@@ -1721,7 +1725,7 @@ class ConnectionState:
         delay: Union[int, float] = MISSING,
     ) -> Union[Optional[List[Member]], asyncio.Future[Optional[List[Member]]]]:
         if not guild.me:
-            await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore - self_id is always present here
+            await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore # self_id is always present here
 
         if not force_scraping and any(
             {
@@ -1747,7 +1751,7 @@ class ConnectionState:
 
         if wait:
             return await request.wait()
-        return request.get_future()  # type: ignore - Honestly, I'm confused too
+        return request.get_future()  # type: ignore # Honestly, I'm confused too
 
     @overload
     async def chunk_guild(
@@ -1769,7 +1773,7 @@ class ConnectionState:
         channels: List[abcSnowflake] = MISSING,
     ) -> Union[asyncio.Future[Optional[List[Member]]], Optional[List[Member]]]:
         if not guild.me:
-            await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore - self_id is always present here
+            await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore # self_id is always present here
 
         request = self._scrape_requests.get(guild.id)
         if request is None:
@@ -2165,7 +2169,7 @@ class ConnectionState:
 
     def parse_relationship_add(self, data) -> None:
         key = int(data['id'])
-        old = self.user.get_relationship(key)  # type: ignore - self.user is always present here
+        old = self.user.get_relationship(key)  # type: ignore # self.user is always present here
         new = Relationship(state=self, data=data)
         self._relationships[key] = new
         if old is not None:
@@ -2184,7 +2188,7 @@ class ConnectionState:
 
     def parse_interaction_create(self, data) -> None:
         type, name, channel = self._interaction_cache.pop(data['nonce'], (0, None, None))
-        i = Interaction._from_self(channel, type=type, user=self.user, name=name, **data)  # type: ignore - self.user is always present here
+        i = Interaction._from_self(channel, type=type, user=self.user, name=name, **data)  # type: ignore # self.user is always present here
         self._interactions[i.id] = i
         self.dispatch('interaction', i)
 
@@ -2192,7 +2196,7 @@ class ConnectionState:
         id = int(data['id'])
         i = self._interactions.get(id, None)
         if i is None:
-            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore - self.user is always present here
+            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore # self.user is always present here
         i.successful = True
         self.dispatch('interaction_finish', i)
 
@@ -2200,7 +2204,7 @@ class ConnectionState:
         id = int(data['id'])
         i = self._interactions.pop(id, None)
         if i is None:
-            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore - self.user is always present here
+            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore # self.user is always present here
         i.successful = False
         self.dispatch('interaction_finish', i)
 
@@ -2258,7 +2262,5 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(
-        self, *, channel: Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable], data: MessagePayload
-    ) -> Message:
+    def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)

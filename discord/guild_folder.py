@@ -65,7 +65,7 @@ class GuildFolder:
         self.id: Snowflake = data['id']
         self.name: str = data['name']
         self._colour: int = data['color']
-        self.guilds: List[Guild] = list(filter(None, map(self._get_guild, data['guild_ids'])))  # type: ignore - Lying for better developer UX
+        self.guilds: List[Guild] = list(filter(None, map(self._get_guild, data['guild_ids'])))  # type: ignore # Lying for better developer UX
 
     def _get_guild(self, id):
         return self._state._get_guild(int(id)) or Object(id=int(id))

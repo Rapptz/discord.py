@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
-
+from typing_extensions import NotRequired
 
 from .channel import ChannelTypeWithoutThread, ThreadMetadata
 from .threads import ThreadType
@@ -120,14 +120,11 @@ ApplicationCommandInteractionDataOption = Union[
 ]
 
 
-class _BaseApplicationCommandInteractionDataOptional(TypedDict, total=False):
-    resolved: ResolvedData
-    guild_id: Snowflake
-
-
-class _BaseApplicationCommandInteractionData(_BaseApplicationCommandInteractionDataOptional):
+class _BaseApplicationCommandInteractionData(TypedDict):
     id: Snowflake
     name: str
+    resolved: NotRequired[ResolvedData]
+    guild_id: NotRequired[Snowflake]
 
 
 class ChatInputApplicationCommandInteractionData(_BaseApplicationCommandInteractionData, total=False):
@@ -199,18 +196,15 @@ InteractionData = Union[
 ]
 
 
-class _BaseInteractionOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    channel_id: Snowflake
-    locale: str
-    guild_locale: str
-
-
-class _BaseInteraction(_BaseInteractionOptional):
+class _BaseInteraction(TypedDict):
     id: Snowflake
     application_id: Snowflake
     token: str
     version: Literal[1]
+    guild_id: NotRequired[Snowflake]
+    channel_id: NotRequired[Snowflake]
+    locale: NotRequired[str]
+    guild_locale: NotRequired[str]
 
 
 class PingInteraction(_BaseInteraction):
@@ -240,3 +234,4 @@ class MessageInteraction(TypedDict):
     type: InteractionType
     name: str
     user: User
+    member: NotRequired[Member]

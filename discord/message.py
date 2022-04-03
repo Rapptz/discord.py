@@ -40,7 +40,6 @@ from typing import (
     Callable,
     Tuple,
     ClassVar,
-    Optional,
     Type,
     overload,
 )
@@ -78,6 +77,8 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
     )
 
+    from .types.interactions import MessageInteraction as MessageInteractionPayload
+
     from .types.components import Component as ComponentPayload
     from .types.threads import ThreadArchiveDuration
     from .types.member import (
@@ -88,7 +89,7 @@ if TYPE_CHECKING:
     from .types.embed import Embed as EmbedPayload
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
-    from .abc import GuildChannel, PartialMessageableChannel, MessageableChannel
+    from .abc import GuildChannel, MessageableChannel
     from .components import Component
     from .state import ConnectionState
     from .channel import TextChannel
@@ -343,7 +344,7 @@ class Attachment(Hashable):
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename, spoiler=spoiler)
+        return File(io.BytesIO(data), filename=self.filename, description=self.description, spoiler=spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {
@@ -509,7 +510,7 @@ class MessageReference:
             result['guild_id'] = self.guild_id
         if self.fail_if_not_exists is not None:
             result['fail_if_not_exists'] = self.fail_if_not_exists
-        return result  # type: ignore - Type checker doesn't understand these are the same
+        return result  # type: ignore # Type checker doesn't understand these are the same
 
     to_message_reference_dict = to_dict
 
@@ -573,13 +574,16 @@ class PartialMessage(Hashable):
     def __init__(self, *, channel: MessageableChannel, id: int) -> None:
         if not isinstance(channel, PartialMessageable) and channel.type not in (
             ChannelType.text,
+            ChannelType.voice,
             ChannelType.news,
             ChannelType.private,
             ChannelType.news_thread,
             ChannelType.public_thread,
             ChannelType.private_thread,
         ):
-            raise TypeError(f'Expected PartialMessageable, TextChannel, DMChannel or Thread not {type(channel)!r}')
+            raise TypeError(
+                f'expected PartialMessageable, TextChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
+            )
 
         self.channel: MessageableChannel = channel
         self._state: ConnectionState = channel._state
@@ -1241,7 +1245,7 @@ class Message(PartialMessage, Hashable):
 
         .. versionadded:: 2.0
     interaction: Optional[:class:`Interaction`]
-        The interaction the message is replying to, if applicable.
+        The interaction that this message is a response to.
 
         .. versionadded:: 2.0
     """
@@ -1295,7 +1299,8 @@ class Message(PartialMessage, Hashable):
         channel: MessageableChannel,
         data: MessagePayload,
     ) -> None:
-        super().__init__(channel=channel, id=int(data['id']))
+        self.channel: MessageableChannel = channel
+        self.id: int = int(data['id'])
         self._state: ConnectionState = state
         self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
@@ -1390,17 +1395,17 @@ class Message(PartialMessage, Hashable):
         reaction = utils.find(lambda r: r.emoji == emoji, self.reactions)
 
         if reaction is None:
-            # already removed?
+            # Already removed?
             raise ValueError('Emoji already removed?')
 
-        # if reaction isn't in the list, we crash. This means discord
+        # If reaction isn't in the list, we crash; this means Discord
         # sent bad data, or we stored improperly
         reaction.count -= 1
 
         if user_id == self._state.self_id:
             reaction.me = False
         if reaction.count == 0:
-            # this raises ValueError if something went wrong as well.
+            # This raises ValueError if something went wrong as well
             self.reactions.remove(reaction)
 
         return reaction
@@ -1411,7 +1416,7 @@ class Message(PartialMessage, Hashable):
             if str(reaction.emoji) == to_check:
                 break
         else:
-            # didn't find anything so just return
+            # Didn't find anything so just return
             return
 
         del self.reactions[index]
@@ -1430,7 +1435,7 @@ class Message(PartialMessage, Hashable):
             else:
                 handler(self, value)
 
-        # clear the cached properties
+        # Clear the cached properties
         for attr in self._CACHED_SLOTS:
             try:
                 delattr(self, attr)
@@ -1484,9 +1489,9 @@ class Message(PartialMessage, Hashable):
         # The gateway now gives us full Member objects sometimes with the following keys
         # deaf, mute, joined_at, roles
         # For the sake of performance I'm going to assume that the only
-        # field that needs *updating* would be the joined_at field.
+        # field that needs *updating* would be the joined_at field
         # If there is no Member object (for some strange reason), then we can upgrade
-        # ourselves to a more "partial" member object.
+        # ourselves to a more "partial" member object
         author = self.author
         try:
             # Update member reference
@@ -1540,8 +1545,8 @@ class Message(PartialMessage, Hashable):
     def _handle_components(self, components: List[ComponentPayload]):
         self.components = [_component_factory(d, self) for d in components]
 
-    def _handle_interaction(self, interaction: Dict[str, Any]):
-        self.interaction = Interaction._from_message(self, **interaction)
+    def _handle_interaction(self, data: MessageInteractionPayload):
+        self.interaction = Interaction._from_message(self, **data)
 
     def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
         self.guild = new_guild

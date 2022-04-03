@@ -84,7 +84,7 @@ class Cooldown:
 
     Attributes
     -----------
-    rate: :class:`int`
+    rate: :class:`float`
         The total number of tokens available per :attr:`per` seconds.
     per: :class:`float`
         The length of the cooldown period in seconds.
@@ -179,7 +179,7 @@ class Cooldown:
         self._tokens = self.rate
         self._last = 0.0
 
-    def copy(self) -> Cooldown:
+    def copy(self) -> Self:
         """Creates a copy of this cooldown.
 
         Returns

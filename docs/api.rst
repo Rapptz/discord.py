@@ -1776,10 +1776,6 @@ of :class:`enum.Enum`.
 
         A guild news channel.
 
-    .. attribute:: store
-
-        A guild store channel.
-
     .. attribute:: stage_voice
 
         A guild stage voice channel.
@@ -1908,9 +1904,9 @@ of :class:`enum.Enum`.
         The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
-    .. attribute:: application_command
+    .. attribute:: chat_input_command
 
-        The system message denoting that an application (or "slash") command was executed.
+        The system message denoting that a slash command was executed.
 
         .. versionadded:: 2.0
     .. attribute:: guild_invite_reminder
@@ -1922,6 +1918,11 @@ of :class:`enum.Enum`.
 
         The system message denoting the message in the thread that is the one that started the
         thread's conversation topic.
+
+        .. versionadded:: 2.0
+    .. attribute:: context_menu_command
+
+        The system message denoting that a context menu command was executed.
 
         .. versionadded:: 2.0
 
@@ -2191,7 +2192,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.afk_channel`
         - :attr:`~AuditLogDiff.system_channel`
         - :attr:`~AuditLogDiff.afk_timeout`
-        - :attr:`~AuditLogDiff.default_message_notifications`
+        - :attr:`~AuditLogDiff.default_notifications`
         - :attr:`~AuditLogDiff.explicit_content_filter`
         - :attr:`~AuditLogDiff.mfa_level`
         - :attr:`~AuditLogDiff.name`
@@ -2787,6 +2788,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2805,6 +2807,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2823,6 +2826,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -3102,7 +3106,7 @@ of :class:`enum.Enum`.
 
 .. class:: Locale
 
-    Supported locales by Discord. Mainly used for application command localisation.
+    Supported locales by Discord.
 
     .. versionadded:: 2.0
 
@@ -3530,12 +3534,6 @@ AuditLogDiff
 
         :type: :class:`ContentFilter`
 
-    .. attribute:: default_message_notifications
-
-        The guild's default message notification setting.
-
-        :type: :class:`int`
-
     .. attribute:: vanity_url_code
 
         The guild's vanity URL.
@@ -3871,7 +3869,7 @@ AuditLogDiff
 
         See also :attr:`Guild.preferred_locale`
 
-        :type: :class:`str`
+        :type: :class:`Locale`
 
     .. attribute:: prune_delete_days
 
@@ -3890,6 +3888,14 @@ AuditLogDiff
         The type of entity this scheduled event is for.
 
         :type: :class:`EntityType`
+
+    .. attribute:: cover_image
+
+        The scheduled event's cover image.
+
+        See also :attr:`ScheduledEvent.cover_image`.
+
+        :type: :class:`Asset`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
@@ -4319,15 +4325,6 @@ ThreadMember
 
 .. autoclass:: ThreadMember()
     :members:
-
-StoreChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: StoreChannel
-
-.. autoclass:: StoreChannel()
-    :members:
-    :inherited-members:
 
 VoiceChannel
 ~~~~~~~~~~~~~

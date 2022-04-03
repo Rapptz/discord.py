@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
-    from .bot import Bot
     from .cog import Cog
     from .core import Command
     from .view import StringView
@@ -96,6 +95,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         This is only of use for within converters.
 
         .. versionadded:: 2.0
+    current_argument: Optional[:class:`str`]
+        The argument string of the :attr:`current_parameter` that is currently being converted.
+        This is only of use for within converters.
+
+        .. versionadded:: 2.0
     prefix: Optional[:class:`str`]
         The prefix that was used to invoke the command.
     command: Optional[:class:`Command`]
@@ -140,6 +144,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         subcommand_passed: Optional[str] = None,
         command_failed: bool = False,
         current_parameter: Optional[inspect.Parameter] = None,
+        current_argument: Optional[str] = None,
     ):
         self.message: Message = message
         self.bot: BotT = bot
@@ -154,6 +159,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         self.subcommand_passed: Optional[str] = subcommand_passed
         self.command_failed: bool = command_failed
         self.current_parameter: Optional[inspect.Parameter] = current_parameter
+        self.current_argument: Optional[str] = current_argument
         self._state: ConnectionState = self.message._state
 
     async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -353,7 +359,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         from .core import Group, Command, wrap_callback
         from .errors import CommandError
-        from .help import _context
 
         bot = self.bot
         cmd = bot.help_command
@@ -361,7 +366,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if cmd is None:
             return None
 
-        _context.set(self)
+        cmd = cmd.copy()
+        cmd.context = self
 
         if len(args) == 0:
             await cmd.prepare_help_command(self, None)

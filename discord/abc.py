@@ -79,9 +79,8 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .guild import Guild
     from .member import Member
-    from .channel import CategoryChannel
     from .message import Message, MessageReference, PartialMessage
-    from .channel import DMChannel, GroupChannel, PartialMessageable, TextChannel, VocalGuildChannel
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, CategoryChannel
     from .threads import Thread
     from .enums import InviteTarget
     from .types.channel import (
@@ -94,10 +93,9 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
 
-    PartialMessageableChannel = Union[TextChannel, Thread, DMChannel, PartialMessageable]
+    PartialMessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
-    ConnectableChannel = Union[VocalGuildChannel, DMChannel, GroupChannel, User]
 
 MISSING = utils.MISSING
 
@@ -108,6 +106,43 @@ class _Undefined:
 
 
 _undefined: Any = _Undefined()
+
+
+async def _purge_helper(
+    channel: Union[Thread, TextChannel, VoiceChannel],
+    *,
+    limit: Optional[int] = 100,
+    check: Callable[[Message], bool] = MISSING,
+    before: Optional[SnowflakeTime] = None,
+    after: Optional[SnowflakeTime] = None,
+    around: Optional[SnowflakeTime] = None,
+    oldest_first: Optional[bool] = False,
+    reason: Optional[str] = None,
+) -> List[Message]:
+    if check is MISSING:
+        check = lambda m: True
+
+    state = channel._state
+    channel_id = channel.id
+    iterator = channel.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
+    ret: List[Message] = []
+    count = 0
+
+    async for message in iterator:
+        if count == 50:
+            to_delete = ret[-50:]
+            await state._delete_messages(channel_id, to_delete, reason=reason)
+            count = 0
+        if not check(message):
+            continue
+
+        count += 1
+        ret.append(message)
+
+    # Some messages remaining to poll
+    to_delete = ret[-count:]
+    await state._delete_messages(channel_id, to_delete, reason=reason)
+    return ret
 
 
 @runtime_checkable
@@ -528,7 +563,7 @@ class GuildChannel:
 
         If there is no category then this is ``None``.
         """
-        return self.guild.get_channel(self.category_id)  # type: ignore - These are coerced into CategoryChannel
+        return self.guild.get_channel(self.category_id)  # type: ignore # These are coerced into CategoryChannel
 
     @property
     def permissions_synced(self) -> bool:
@@ -555,6 +590,7 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
+        - Member timeout
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -640,6 +676,12 @@ class GuildChannel:
         # Bypass all channel-specific overrides
         if base.administrator:
             return Permissions.all()
+
+        if obj.is_timed_out():
+            # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
+            # being explicitly denied
+            base.value &= Permissions._timeout_mask()
+            return base
 
         # Apply @everyone allow/deny first since it's special
         try:
@@ -860,7 +902,7 @@ class GuildChannel:
         obj = cls(state=self._state, guild=self.guild, data=data)
 
         # Temporarily add it to the cache
-        self.guild._channels[obj.id] = obj  # type: ignore - obj is a GuildChannel
+        self.guild._channels[obj.id] = obj  # type: ignore # obj is a GuildChannel
         return obj
 
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
@@ -1768,6 +1810,8 @@ class Connectable(Protocol):
     - :class:`~discord.StageChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
+    - :class:`~discord.User`
+    - :class:`~discord.Member`
     """
 
     __slots__ = ()

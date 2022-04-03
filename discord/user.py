@@ -854,10 +854,10 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
-        return self._state.self_id, 'self_id'  # type: ignore - self_id is always set at this point
+        return self._state.self_id, 'self_id'  # type: ignore # self_id is always set at this point
 
     def _get_voice_state_pair(self) -> Tuple[int, int]:
-        return self._state.self_id, self.dm_channel.id  # type: ignore - self_id is always set at this point
+        return self._state.self_id, self.dm_channel.id  # type: ignore # self_id is always set at this point
 
     async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
@@ -879,7 +879,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     @property
     def relationship(self) -> Optional[Relationship]:
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
-        return self._state.user.get_relationship(self.id)  # type: ignore - user is always present when logged in
+        return self._state.user.get_relationship(self.id)  # type: ignore # user is always present when logged in
 
     @copy_doc(discord.abc.Connectable.connect)
     async def connect(

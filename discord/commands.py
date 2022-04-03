@@ -29,7 +29,8 @@ from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_che
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
-from .utils import _generate_session_id, time_snowflake
+from .mixins import Hashable
+from .utils import time_snowflake
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
@@ -113,7 +114,7 @@ class ApplicationCommand(Protocol):
         return i
 
 
-class BaseCommand(ApplicationCommand):
+class BaseCommand(ApplicationCommand, Hashable):
     """Represents a base command.
 
     Attributes

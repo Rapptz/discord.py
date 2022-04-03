@@ -26,12 +26,11 @@ from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
 from datetime import datetime
-import time
 import asyncio
 import copy
 
 from .mixins import Hashable
-from .abc import Messageable
+from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException, InvalidData
 from .utils import MISSING, parse_time, snowflake_time, _get_as_snowflake
@@ -384,7 +383,7 @@ class Thread(Messageable, Hashable):
             raise ClientException('Parent channel not found')
         return parent.permissions_for(obj)
 
-    async def delete_messages(self, messages: Iterable[Snowflake], /) -> None:
+    async def delete_messages(self, messages: Iterable[Snowflake], /, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -402,6 +401,8 @@ class Thread(Messageable, Hashable):
         -----------
         messages: Iterable[:class:`abc.Snowflake`]
             An iterable of messages denoting which ones to bulk delete.
+        reason: Optional[:class:`str`]
+            The reason for deleting the messages. Shows up on the audit log.
 
         Raises
         ------
@@ -416,7 +417,7 @@ class Thread(Messageable, Hashable):
         if len(messages) == 0:
             return  # Do nothing
 
-        await self._state._delete_messages(self.id, messages)
+        await self._state._delete_messages(self.id, messages, reason=reason)
 
     async def purge(
         self,
@@ -427,6 +428,7 @@ class Thread(Messageable, Hashable):
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
         oldest_first: Optional[bool] = False,
+        reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
 
@@ -464,6 +466,8 @@ class Thread(Messageable, Hashable):
             Same as ``around`` in :meth:`history`.
         oldest_first: Optional[:class:`bool`]
             Same as ``oldest_first`` in :meth:`history`.
+        reason: Optional[:class:`str`]
+            The reason for purging the messages. Shows up on the audit log.
 
         Raises
         -------
@@ -477,32 +481,16 @@ class Thread(Messageable, Hashable):
         List[:class:`.Message`]
             The list of messages that were deleted.
         """
-        if check is MISSING:
-            check = lambda m: True
-
-        state = self._state
-        channel_id = self.id
-        iterator = self.history(limit=limit, before=before, after=after, oldest_first=oldest_first, around=around)
-        ret: List[Message] = []
-        count = 0
-
-        async for message in iterator:
-            if count == 50:
-                to_delete = ret[-50:]
-                await state._delete_messages(channel_id, to_delete)
-                count = 0
-
-            if not check(message):
-                continue
-
-            count += 1
-            ret.append(message)
-
-        # Some messages remaining to poll
-        to_delete = ret[-count:]
-        await state._delete_messages(channel_id, to_delete)
-
-        return ret
+        return await _purge_helper(
+            self,
+            limit=limit,
+            check=check,
+            before=before,
+            after=after,
+            around=around,
+            oldest_first=oldest_first,
+            reason=reason,
+        )
 
     async def edit(
         self,

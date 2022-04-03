@@ -246,7 +246,7 @@ class FakeCommandIterator:
             channel = await item._get_channel()  # type: ignore
             item = None
             text = None
-        if not channel.recipient.bot:  # type: ignore - Type checker cannot understand this
+        if not channel.recipient.bot:  # type: ignore # Type checker cannot understand this
             raise TypeError('User is not a bot')
         return channel, text, item  # type: ignore
 

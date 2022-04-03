@@ -27,10 +27,11 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING, Union
 
 from .enums import InteractionType, try_enum
+from .mixins import Hashable
 from .utils import cached_slot_property, find, MISSING
 
 if TYPE_CHECKING:
-    from .channel import DMChannel, GroupChannel, TextChannel
+    from .channel import DMChannel, GroupChannel, TextChannel, VoiceChannel
     from .guild import Guild
     from .message import Message
     from .modal import Modal
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from .types.user import User as UserPayload
     from .user import BaseUser, ClientUser
 
-    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel]
+    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, VoiceChannel]
 
 # fmt: off
 __all__ = (
@@ -49,7 +50,7 @@ __all__ = (
 # fmt: on
 
 
-class Interaction:
+class Interaction(Hashable):
     """Represents an interaction.
 
     .. versionadded:: 2.0

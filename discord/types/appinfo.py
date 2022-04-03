@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TypedDict, List, Optional
+from typing_extensions import NotRequired
 
 from .user import User
 from .team import Team
@@ -38,39 +39,34 @@ class BaseAppInfo(TypedDict):
     icon: Optional[str]
     summary: str
     description: str
-
-
-class _AppInfoOptional(TypedDict, total=False):
-    team: Team
-    guild_id: Snowflake
-    primary_sku_id: Snowflake
-    slug: str
-    terms_of_service_url: str
-    privacy_policy_url: str
-    hook: bool
-    max_participants: int
-
-
-class _PartialAppInfoOptional(TypedDict, total=False):
+    cover_image: Optional[str]
+    flags: NotRequired[int]
     rpc_origins: List[str]
-    cover_image: str
-    hook: bool
-    terms_of_service_url: str
-    privacy_policy_url: str
-    max_participants: int
-    flags: int
 
 
-class PartialAppInfo(_PartialAppInfoOptional, BaseAppInfo):
-    pass
-
-
-class AppInfo(PartialAppInfo, _AppInfoOptional):
+class AppInfo(BaseAppInfo):
     owner: User
-    integration_public: bool
-    integration_require_code_grant: bool
-    secret: str
+    bot_public: NotRequired[bool]
+    bot_require_code_grant: NotRequired[bool]
+    integration_public: NotRequired[bool]
+    integration_require_code_grant: NotRequired[bool]
+    team: NotRequired[Team]
+    guild_id: NotRequired[Snowflake]
+    primary_sku_id: NotRequired[Snowflake]
+    slug: NotRequired[str]
+    terms_of_service_url: NotRequired[str]
+    privacy_policy_url: NotRequired[str]
+    hook: NotRequired[bool]
+    max_participants: NotRequired[int]
+    interactions_endpoint_url: NotRequired[str]
     verification_state: int
     store_application_state: int
     rpc_application_state: int
     interactions_endpoint_url: str
+
+
+class PartialAppInfo(BaseAppInfo, total=False):
+    hook: bool
+    terms_of_service_url: str
+    privacy_policy_url: str
+    max_participants: int

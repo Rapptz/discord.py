@@ -65,18 +65,18 @@ if TYPE_CHECKING:
     import importlib.machinery
 
     from discord.message import Message
-    from discord.abc import User, Snowflake
+    from discord.abc import User
     from ._types import (
         _Bot,
         BotT,
         Check,
         CoroFunc,
         ContextT,
-        MaybeCoroFunc,
+        MaybeAwaitableFunc,
     )
 
     _Prefix = Union[Iterable[str], str]
-    _PrefixCallable = MaybeCoroFunc[[BotT, Message], _Prefix]
+    _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
 __all__ = (
@@ -152,22 +152,20 @@ class BotBase(GroupMixin[None]):
     def __init__(
         self,
         command_prefix: PrefixType[BotT],
-        help_command: Optional[HelpCommand[Any]] = _default,
+        help_command: Optional[HelpCommand] = _default,
         description: Optional[str] = None,
         **options: Any,
     ) -> None:
         super().__init__(**options)
         self.command_prefix: PrefixType[BotT] = command_prefix
         self.extra_events: Dict[str, List[CoroFunc]] = {}
-        # Self doesn't have the ClientT bound, but since this is a mixin it technically does
-        self.__tree: app_commands.CommandTree[Self] = app_commands.CommandTree(self)  # type: ignore
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
         self._checks: List[Check] = []
         self._check_once: List[Check] = []
         self._before_invoke: Optional[CoroFunc] = None
         self._after_invoke: Optional[CoroFunc] = None
-        self._help_command: Optional[HelpCommand[Any]] = None
+        self._help_command: Optional[HelpCommand] = None
         self.description: str = inspect.cleandoc(description) if description else ''
         self.owner_id: Optional[int] = options.get('owner_id')
         self.owner_ids: Optional[Collection[int]] = options.get('owner_ids', set())
@@ -594,17 +592,12 @@ class BotBase(GroupMixin[None]):
         /,
         *,
         override: bool = False,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
     ) -> None:
         """|coro|
 
         Adds a "cog" to the bot.
 
         A cog is a class that has its own event listeners and commands.
-
-        If the cog is a :class:`.app_commands.Group` then it is added to
-        the bot's :class:`~discord.app_commands.CommandTree` as well.
 
         .. note::
 
@@ -633,19 +626,6 @@ class BotBase(GroupMixin[None]):
             instead of raising an error.
 
             .. versionadded:: 2.0
-        guild: Optional[:class:`~discord.abc.Snowflake`]
-            If the cog is an application command group, then this would be the
-            guild where the cog group would be added to. If not given then
-            it becomes a global command instead.
-
-            .. versionadded:: 2.0
-        guilds: List[:class:`~discord.abc.Snowflake`]
-            If the cog is an application command group, then this would be the
-            guilds where the cog group would be added to. If not given then
-            it becomes a global command instead. Cannot be mixed with
-            ``guild``.
-
-            .. versionadded:: 2.0
 
         Raises
         -------
@@ -666,12 +646,9 @@ class BotBase(GroupMixin[None]):
         if existing is not None:
             if not override:
                 raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
-            await self.remove_cog(cog_name, guild=guild, guilds=guilds)
+            await self.remove_cog(cog_name)
 
-        if isinstance(cog, app_commands.Group):
-            self.__tree.add_command(cog, override=override, guild=guild, guilds=guilds)
-
-        cog = await cog._inject(self, override=override, guild=guild, guilds=guilds)
+        cog = await cog._inject(self, override=override)
         self.__cogs[cog_name] = cog
 
     def get_cog(self, name: str, /) -> Optional[Cog]:
@@ -701,9 +678,6 @@ class BotBase(GroupMixin[None]):
         self,
         name: str,
         /,
-        *,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
     ) -> Optional[Cog]:
         """|coro|
 
@@ -726,19 +700,6 @@ class BotBase(GroupMixin[None]):
         -----------
         name: :class:`str`
             The name of the cog to remove.
-        guild: Optional[:class:`~discord.abc.Snowflake`]
-            If the cog is an application command group, then this would be the
-            guild where the cog group would be removed from. If not given then
-            a global command is removed instead instead.
-
-            .. versionadded:: 2.0
-        guilds: List[:class:`~discord.abc.Snowflake`]
-            If the cog is an application command group, then this would be the
-            guilds where the cog group would be removed from. If not given then
-            a global command is removed instead instead. Cannot be mixed with
-            ``guild``.
-
-            .. versionadded:: 2.0
 
         Returns
         -------
@@ -754,15 +715,7 @@ class BotBase(GroupMixin[None]):
         if help_command and help_command.cog is cog:
             help_command.cog = None
 
-        guild_ids = _retrieve_guild_ids(cog, guild, guilds)
-        if isinstance(cog, app_commands.Group):
-            if guild_ids is None:
-                self.__tree.remove_command(name)
-            else:
-                for guild_id in guild_ids:
-                    self.__tree.remove_command(name, guild=discord.Object(guild_id))
-
-        await cog._eject(self, guild_ids=guild_ids)
+        await cog._eject(self)
 
         return cog
 
@@ -796,9 +749,6 @@ class BotBase(GroupMixin[None]):
 
             for index in reversed(remove):
                 del event_list[index]
-
-        # remove all relevant application commands from the tree
-        self.__tree._remove_with_module(name)
 
     async def _call_module_finalizers(self, lib: types.ModuleType, key: str) -> None:
         try:
@@ -1023,11 +973,11 @@ class BotBase(GroupMixin[None]):
     # help command stuff
 
     @property
-    def help_command(self) -> Optional[HelpCommand[Any]]:
+    def help_command(self) -> Optional[HelpCommand]:
         return self._help_command
 
     @help_command.setter
-    def help_command(self, value: Optional[HelpCommand[Any]]) -> None:
+    def help_command(self, value: Optional[HelpCommand]) -> None:
         if value is not None:
             if not isinstance(value, HelpCommand):
                 raise TypeError('help_command must be a subclass of HelpCommand')
@@ -1040,20 +990,6 @@ class BotBase(GroupMixin[None]):
             self._help_command = None
         else:
             self._help_command = None
-
-    # application command interop
-
-    # As mentioned above, this is a mixin so the Self type hint fails here.
-    # However, since the only classes that can use this are subclasses of Client
-    # anyway, then this is sound.
-    @property
-    def tree(self) -> app_commands.CommandTree[Self]:  # type: ignore
-        """:class:`~discord.app_commands.CommandTree`: The command tree responsible for handling the application commands
-        in this bot.
-
-        .. versionadded:: 2.0
-        """
-        return self.__tree
 
     # command processing
 
@@ -1079,6 +1015,7 @@ class BotBase(GroupMixin[None]):
             listening for.
         """
         prefix = ret = self.command_prefix
+
         if callable(prefix):
             # self will be a Bot or AutoShardedBot
             ret = await discord.utils.maybe_coroutine(prefix, self, message)  # type: ignore
@@ -1096,9 +1033,6 @@ class BotBase(GroupMixin[None]):
                     "command_prefix must be plain string, iterable of strings, or callable "
                     f"returning either of these, not {ret.__class__.__name__}"
                 )
-
-            if not ret:
-                raise ValueError("Iterable command_prefix must contain at least one prefix")
 
         return ret
 
@@ -1306,8 +1240,7 @@ class Bot(BotBase, discord.Client):
         The command prefix could also be an iterable of strings indicating that
         multiple checks for the prefix should be used and the first one to
         match will be the invocation prefix. You can get this prefix via
-        :attr:`.Context.prefix`. To avoid confusion empty iterables are not
-        allowed.
+        :attr:`.Context.prefix`.
 
         .. note::
 

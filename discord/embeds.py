@@ -709,4 +709,4 @@ class Embed:
         if self.title:
             result['title'] = self.title
 
-        return result  # type: ignore - This payload is equivalent to the EmbedData type
+        return result  # type: ignore # This payload is equivalent to the EmbedData type

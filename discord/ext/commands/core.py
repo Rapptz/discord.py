@@ -519,9 +519,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             other.checks = self.checks.copy()
         if self._buckets.valid and not other._buckets.valid:
             other._buckets = self._buckets.copy()
-        if self._max_concurrency != other._max_concurrency:
-            # _max_concurrency won't be None at this point
-            other._max_concurrency = self._max_concurrency.copy()  # type: ignore
+        if self._max_concurrency and self._max_concurrency != other._max_concurrency:
+            other._max_concurrency = self._max_concurrency.copy()
 
         try:
             other.on_error = self.on_error
@@ -605,10 +604,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         previous = view.index
         if consume_rest_is_special:
-            argument = view.read_rest().strip()
+            ctx.current_argument = argument = view.read_rest().strip()
         else:
             try:
-                argument = view.get_quoted_word()
+                ctx.current_argument = argument = view.get_quoted_word()
             except ArgumentParsingError as exc:
                 if self._is_typing_optional(param.annotation):
                     view.index = previous
@@ -631,7 +630,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
             view.skip_ws()
             try:
-                argument = view.get_quoted_word()
+                ctx.current_argument = argument = view.get_quoted_word()
                 value = await run_converters(ctx, converter, argument, param)  # type: ignore
             except (CommandError, ArgumentParsingError):
                 view.index = previous
@@ -647,7 +646,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         view = ctx.view
         previous = view.index
         try:
-            argument = view.get_quoted_word()
+            ctx.current_argument = argument = view.get_quoted_word()
             value = await run_converters(ctx, converter, argument, param)  # type: ignore
         except (CommandError, ArgumentParsingError):
             view.index = previous
@@ -663,6 +662,15 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         Useful for inspecting signature.
         """
         return self.params.copy()
+
+    @property
+    def cooldown(self) -> Optional[Cooldown]:
+        """Optional[:class:`.Cooldown`]: The cooldown of a command when invoked
+        or ``None`` if the command doesn't have a registered cooldown.
+
+        .. versionadded:: 2.0
+        """
+        return self._buckets._cooldown
 
     @property
     def full_parent_name(self) -> str:
@@ -746,7 +754,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
                     converter = get_converter(param)
-                    argument = view.read_rest()
+                    ctx.current_argument = argument = view.read_rest()
                     kwargs[name] = await run_converters(ctx, converter, argument, param)
                 else:
                     kwargs[name] = await self.transform(ctx, param)
@@ -1622,7 +1630,7 @@ def command(
     [
         Union[
             Callable[Concatenate[ContextT, P], Coro[Any]],
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
         ]
     ],
     CommandT,
@@ -1691,7 +1699,7 @@ def group(
 ) -> Callable[
     [
         Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore - CogT is used here to allow covariance
+            Callable[Concatenate[CogT, ContextT, P], Coro[Any]],  # type: ignore # CogT is used here to allow covariance
             Callable[Concatenate[ContextT, P], Coro[Any]],
         ]
     ],
@@ -2294,8 +2302,8 @@ def dynamic_cooldown(
 
     This differs from :func:`.cooldown` in that it takes a function that
     accepts a single parameter of type :class:`.discord.Message` and must
-    return a :class:`.Cooldown` or ``None``. If ``None`` is returned then
-    that cooldown is effectively bypassed.
+    return a :class:`.Cooldown` or ``None``.
+    If ``None`` is returned then that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
     of times in a specific time frame. These cooldowns can be based

@@ -89,12 +89,12 @@ class CallMessage:
     @property
     def initiator(self) -> User:
         """:class:`User`: Returns the user that started the call."""
-        return self.message.author  # type: ignore - Cannot be a Member in private messages
+        return self.message.author  # type: ignore # Cannot be a Member in private messages
 
     @property
     def channel(self) -> _PrivateChannel:
         r""":class:`PrivateChannel`\: The private channel associated with this message."""
-        return self.message.channel  # type: ignore - Can only be a private channel here
+        return self.message.channel  # type: ignore # Can only be a private channel here
 
     @property
     def duration(self) -> datetime.timedelta:
@@ -186,7 +186,7 @@ class PrivateCall:
     def initiator(self) -> Optional[User]:
         """Optional[:class:`User`]: Returns the user that started the call. The call message must be available to obtain this information."""
         if self.message:
-            return self.message.author  # type: ignore - Cannot be a Member in private messages
+            return self.message.author  # type: ignore # Cannot be a Member in private messages
 
     @property
     def connected(self) -> bool:

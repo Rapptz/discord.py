@@ -132,13 +132,19 @@ def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset
     if entry.action is enums.AuditLogAction.guild_update:
         return Asset._from_guild_icon(entry._state, entry.guild.id, data)
     else:
-        return Asset._from_icon(entry._state, entry._target_id, data, path='role')  # type: ignore - target_id won't be None in this case
+        return Asset._from_icon(entry._state, entry._target_id, data, path='role')  # type: ignore # target_id won't be None in this case
 
 
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore - target_id won't be None in this case
+    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
+
+
+def _transform_cover_image(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
+    if data is None:
+        return None
+    return Asset._from_scheduled_event_cover_image(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
 
 
 def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
@@ -238,6 +244,8 @@ class AuditLogChanges:
         'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
         'status':                        (None, _enum_transformer(enums.EventStatus)),
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
+        'preferred_locale':              (None, _enum_transformer(enums.Locale)),
+        'image_hash':                    ('cover_image', _transform_cover_image),
     }
     # fmt: on
 
@@ -250,10 +258,10 @@ class AuditLogChanges:
 
             # Special cases for role add/remove
             if attr == '$add':
-                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore - new_value is a list of roles in this case
+                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
             elif attr == '$remove':
-                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore - new_value is a list of roles in this case
+                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
 
             try:
@@ -310,7 +318,7 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']  # type: ignore - Object doesn't usually have name
+                role.name = e['name']  # type: ignore # Object doesn't usually have name
 
             data.append(role)
 
@@ -448,7 +456,7 @@ class AuditLogEntry(Hashable):
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')  # type: ignore - Object doesn't usually have name
+                        role.name = self.extra.get('role_name')  # type: ignore # Object doesn't usually have name
                     self.extra = role
             elif self.action.name.startswith('stage_instance'):
                 channel_id = int(extra['channel_id'])
@@ -540,7 +548,7 @@ class AuditLogEntry(Hashable):
             'code': changeset.code,
             'temporary': changeset.temporary,
             'uses': changeset.uses,
-            'channel': None,  # type: ignore - the channel is passed to the Invite constructor directly
+            'channel': None,  # type: ignore # the channel is passed to the Invite constructor directly
         }
 
         obj = Invite(state=self._state, data=fake_payload, guild=self.guild, channel=changeset.channel)

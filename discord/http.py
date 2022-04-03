@@ -72,7 +72,7 @@ _log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel
     from .handlers import CaptchaHandler
     from .threads import Thread
     from .file import File
@@ -110,7 +110,7 @@ if TYPE_CHECKING:
     T = TypeVar('T')
     BE = TypeVar('BE', bound=BaseException)
     Response = Coroutine[Any, Any, T]
-    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable]
+    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel]
 
 
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
@@ -356,7 +356,7 @@ class HTTPClient:
         session = self.__session
         if session:
             try:
-                session.connector._close()  # type: ignore - Handled below
+                session.connector._close()  # type: ignore # Handled below
             except AttributeError:
                 pass
 
@@ -582,7 +582,7 @@ class HTTPClient:
                 # Captcha handling
                 except HTTPException as e:
                     try:
-                        captcha_key = data['captcha_key']  # type: ignore - Handled below
+                        captcha_key = data['captcha_key']  # type: ignore # Handled below
                     except (KeyError, TypeError):
                         raise
                     else:
@@ -593,7 +593,7 @@ class HTTPClient:
                             raise
                         else:
                             previous = payload or {}
-                            previous['captcha_key'] = await captcha_handler.fetch_token(data, self.proxy, self.proxy_auth)  # type: ignore - data is json here
+                            previous['captcha_key'] = await captcha_handler.fetch_token(data, self.proxy, self.proxy_auth)  # type: ignore # data is json here
                             kwargs['headers']['Content-Type'] = 'application/json'
                             kwargs['data'] = utils._to_json(previous)
 
@@ -839,9 +839,9 @@ class HTTPClient:
         try:
             msg = data[0]
         except IndexError:
-            raise NotFound(_FakeResponse('Not Found', 404), 'message not found')  # type: ignore - _FakeResponse is not a real response
+            raise NotFound(_FakeResponse('Not Found', 404), 'message not found')  # type: ignore # _FakeResponse is not a real response
         if int(msg['id']) != message_id:
-            raise NotFound(_FakeResponse('Not Found', 404), 'message not found')  # type: ignore - _FakeResponse is not a real Response
+            raise NotFound(_FakeResponse('Not Found', 404), 'message not found')  # type: ignore # _FakeResponse is not a real Response
 
         return msg
 
@@ -1347,8 +1347,22 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/templates/{code}', code=code), json=payload)
 
-    def get_bans(self, guild_id: Snowflake) -> Response[List[guild.Ban]]:
-        return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id))
+    def get_bans(
+        self,
+        guild_id: Snowflake,
+        limit: int,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+    ) -> Response[List[guild.Ban]]:
+        params: Dict[str, Any] = {}
+        if limit != 1000:
+            params['limit'] = limit
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+
+        return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id), params=params)
 
     def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))
@@ -1467,7 +1481,7 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         sticker_id: Snowflake,
-        payload: sticker.EditGuildSticker,
+        payload: Dict[str, Any],
         reason: Optional[str],
     ) -> Response[sticker.GuildSticker]:
         return self.request(

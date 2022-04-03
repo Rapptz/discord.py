@@ -316,7 +316,7 @@ class Application(PartialApplication):
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self.slug: Optional[str] = data.get('slug')
-        self.interactions_endpoint_url: Optional[str] = data['interactions_endpoint_url']
+        self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
 
         self.verification_state = try_enum(ApplicationVerificationState, data['verification_state'])
         self.store_application_state = try_enum(StoreApplicationState, data['store_application_state'])
@@ -335,7 +335,7 @@ class Application(PartialApplication):
         if owner is not None:
             self.owner: abcUser = state.create_user(owner)
         else:
-            self.owner: abcUser = state.user  # type: ignore - state.user will always be present here
+            self.owner: abcUser = state.user  # type: ignore # state.user will always be present here
 
     def __repr__(self) -> str:
         return (
@@ -469,7 +469,7 @@ class Application(PartialApplication):
             The new secret.
         """
         data = await self._state.http.reset_secret(self.id)
-        return data['secret']
+        return data['secret']  # type: ignore # Usually not there
 
     async def create_bot(self) -> ApplicationBot:
         """|coro|
@@ -544,7 +544,7 @@ class InteractionApplication(Hashable):
         self._icon: Optional[str] = data.get('icon')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
 
-        self.bot: User = None  # type: ignore - This should never be None but it's volatile
+        self.bot: User = None  # type: ignore # This should never be None but it's volatile
         user = data.get('bot')
         if user is not None:
             self.bot = User(state=self._state, data=user)

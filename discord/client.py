@@ -594,7 +594,7 @@ class Client:
             except ReconnectWebSocket as e:
                 _log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
-                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)  # type: ignore - These are always present at this point
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)  # type: ignore # These are always present at this point
                 continue
             except (
                 OSError,
@@ -618,7 +618,7 @@ class Client:
 
                 # If we get connection reset by peer then try to RESUME
                 if isinstance(exc, OSError) and exc.errno in (54, 10054):
-                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)  # type: ignore - These are always present at this point
+                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)  # type: ignore # These are always present at this point
                     continue
 
                 # We should only get this when an unhandled close code happens,
@@ -636,7 +636,7 @@ class Client:
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session
                 # This is apparently what the official Discord client does
-                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)  # type: ignore - These are always present at this point
+                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)  # type: ignore # These are always present at this point
 
     async def close(self) -> None:
         """|coro|
@@ -973,7 +973,7 @@ class Client:
         Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
-        return self._connection.get_channel(id)  # type: ignore - The cache contains all channel types
+        return self._connection.get_channel(id)  # type: ignore # The cache contains all channel types
 
     def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
@@ -1372,11 +1372,11 @@ class Client:
                     custom_activity = activity
 
             payload: Dict[str, Any] = {}
-            if status != getattr(self.user.settings, 'status', None):  # type: ignore - user is always present when logged in
+            if status != getattr(self.user.settings, 'status', None):  # type: ignore # user is always present when logged in
                 payload['status'] = status
-            if custom_activity != getattr(self.user.settings, 'custom_activity', None):  # type: ignore - user is always present when logged in
+            if custom_activity != getattr(self.user.settings, 'custom_activity', None):  # type: ignore # user is always present when logged in
                 payload['custom_activity'] = custom_activity
-            await self.user.edit_settings(**payload)  # type: ignore - user is always present when logged in
+            await self.user.edit_settings(**payload)  # type: ignore # user is always present when logged in
 
         status_str = str(status)
         activities_tuple = tuple(a.to_dict() for a in activities)
@@ -1574,7 +1574,7 @@ class Client:
         Creates a :class:`.Guild`.
 
         .. versionchanged:: 2.0
-            ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
+            ``name`` and ``icon`` parameters are now keyword-only. The ``region`` parameter has been removed.
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
@@ -2224,7 +2224,7 @@ class Client:
         """
         state = self._connection
         channels = await state.http.get_private_channels()
-        return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore - user is always present when logged in
+        return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore # user is always present when logged in
 
     async def create_dm(self, user: Snowflake, /) -> DMChannel:
         """|coro|
@@ -2282,7 +2282,7 @@ class Client:
         users: List[_Snowflake] = [u.id for u in recipients]
         state = self._connection
         data = await state.http.start_group(users)
-        return GroupChannel(me=self.user, data=data, state=state)  # type: ignore - user is always present when logged in
+        return GroupChannel(me=self.user, data=data, state=state)  # type: ignore # user is always present when logged in
 
     @overload
     async def send_friend_request(self, user: BaseUser, /) -> Relationship:
