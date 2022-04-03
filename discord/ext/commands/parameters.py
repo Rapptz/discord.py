@@ -1,38 +1,30 @@
 from __future__ import annotations
 
 import inspect
-from dataclasses import dataclass
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, Literal, OrderedDict, Type, TypeVar, Union
-
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Literal, OrderedDict, Type, Union
 
 from ...utils import MISSING, maybe_coroutine
+from . import converter
+from .errors import MissingRequiredArgument
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
+    from typing_extensions import Self
 
+    from ...channel import TextChannel
+    from ...guild import Guild
+    from ...member import Member
+    from ...user import User
     from .context import Context
-    from .converter import Converter, Greedy
 
 __all__ = (
     "Parameter",
     "parameter",
     "param",
+    "Author",
+    "CurrentChannel",
+    "CurrentGuild",
 )
-
-T = TypeVar("T")
-T_co = TypeVar("T_co", covariant=True)
-
-if TYPE_CHECKING:
-    ConverterType: TypeAlias = "Union[Converter[T], Callable[[str], T], Greedy[T], Type[None], bool]"
-    DefaultType: TypeAlias = "Union[T, Callable[[Context], Union[T, Awaitable[T]]]]"
-else:
-
-    class ConverterType(Generic[T]):
-        pass
-
-    DefaultType = ConverterType
 
 
 ParamKinds = Union[
@@ -46,12 +38,12 @@ ParamKinds = Union[
 empty: Any = inspect.Parameter.empty
 
 
-class Parameter(inspect.Parameter, Generic[T_co]):
+class Parameter(inspect.Parameter):
     def __init__(
         self,
         name: str,
         kind: ParamKinds,
-        default: DefaultType[T_co] = empty,
+        default: Any = empty,
         annotation: Any = empty,
         displayed_default: str = empty,
     ) -> None:
@@ -86,7 +78,7 @@ class Parameter(inspect.Parameter, Generic[T_co]):
             name=name, kind=kind, default=default, annotation=annotation, displayed_default=displayed_default
         )
 
-    if not TYPE_CHECKING:
+    if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
         name = property(attrgetter("_name"), lambda self, name: setattr(self, "_name", name))
         kind = property(attrgetter("_kind"), lambda self, kind: setattr(self, "_kind", kind))
         default = property(attrgetter("_default"), lambda self, default: setattr(self, "_default", default))
@@ -97,7 +89,14 @@ class Parameter(inspect.Parameter, Generic[T_co]):
         return self.default is empty
 
     @property
-    def converter(self) -> ConverterType[T_co]:
+    def converter(self) -> Type[Any]:
+        """The converter that should be used for this parameter.
+
+        Note
+        ----
+        This is the same as :attr:`annotation if it's non-empty otherwise it's the type of :attr:`default` or :class:`str`
+        if the parameter has no default.
+        """
         if self.annotation is empty:
             return type(self.default) if self.default not in (empty, None) else str
 
@@ -105,12 +104,16 @@ class Parameter(inspect.Parameter, Generic[T_co]):
 
     @property
     def displayed_default(self) -> str:
+        """The displayed default in :class:`Command.signature`."""
         if self._displayed_default is not empty:
             return self._displayed_default
 
         return "" if self.required else str(self.default)
 
-    async def get_default(self, ctx: Context) -> T_co:
+    async def get_default(self, ctx: Context) -> Any:
+        """|coro|
+        Gets this parameter's default value.
+        """
         # pre-condition: required is False
         if callable(self.default):
             return await maybe_coroutine(self.default, ctx)
@@ -119,11 +122,75 @@ class Parameter(inspect.Parameter, Generic[T_co]):
 
 def parameter(
     *,
-    converter: ConverterType[T] = empty,
-    default: DefaultType[T] = empty,
+    converter: Any = empty,
+    default: Any = empty,
     displayed_default: str = empty,
 ) -> Any:
-    """Some docs or something"""
+    r"""parameter(*, converter=..., default=..., displayed_default=...)
+
+    A way to assign custom metadata for a :class:`Command`\'s parameter.
+
+    .. versionadded:: 2.0.0
+
+    Parameters
+    ----------
+    converter: Any
+        The converter to use for this parameter, this replaces the annotation at runtime which is transparent to type checkers.
+    default: Any
+        The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a
+        positional :class:`Context` argument.
+    displayed_default: :class:`str`
+        The displayed default in :attr:`Command.signature`.
+
+    Examples
+    --------
+
+    A custom converter
+    ~~~~~~~~~~~~~~~~~~
+    Whilst annotating a parameter with a custom converter works at runtime, type checkers don't like it cause they can't
+    understand what's going on.
+
+    .. code-block:: python3
+
+        class SomeType:
+            foo: int
+
+        class MyVeryCoolConverter(commands.Converter[SomeType]):
+            ...  # implementation left as an exercise for the reader
+
+        @bot.command()
+        async def bar(ctx, cool_value: MyVeryCoolConverter):
+            cool_value.foo  # type checker warns MyVeryCoolConverter has no value foo (uh-oh)
+
+    However, fear not we can use :func:`parameter` to tell type checkers what's going on.
+
+    .. code-block:: python3
+
+        @bot.command()
+        async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoolConverter)):
+            cool_value.foo  # no error (hurray)
+
+    A custom default
+    ~~~~~~~~~~~~~~~~
+    Custom defaults can be used to have late binding behaviour
+
+    .. code-block:: python3
+
+        @bot.command()
+        async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
+            await ctx.send(f'Hello {to.mention} :wave:')
+
+    Because this is such a common use-case, the library provides :data:`Author`, :data:`CurrentChannel` and
+    :data:`CurrentGuild`, armed with this we can simplify ``wave`` to:
+
+    .. code-block:: python3
+
+        @bot.command()
+        async def wave(to: discord.User = Author):
+            await ctx.send(f'Hello {to.mention} :wave:')
+
+    :data:`Author` and friends also have other benefits like having the displayed default being filled.
+    """
     return Parameter(
         name="empty",
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
@@ -134,6 +201,30 @@ def parameter(
 
 
 param = parameter
+"""An alias for :func:`parameter`."""
+
+# some handy defaults
+Author: Union[Member, User] = parameter(
+    default=attrgetter("author"),
+    displayed_default="<you>",
+    converter=Union[converter.MemberConverter, converter.UserConverter],
+)
+"""Default parameter which returns the author for this context."""
+
+CurrentChannel: TextChannel = parameter(
+    default=attrgetter("channel"), displayed_default="<this channel>", converter=converter.TextChannelConverter
+)
+"""Default parameter which returns the channel for this context."""
+
+
+def default_guild(ctx: Context) -> Guild:
+    if ctx.guild is not None:
+        return ctx.guild
+    raise MissingRequiredArgument(ctx.current_parameter)  # type: ignore  # this is never going to be None
+
+
+CurrentGuild: Guild = parameter(default=default_guild, displayed_default="<this server>", converter=converter.GuildConverter)
+"""Default parameter which returns the guild for this context."""
 
 
 class Signature(inspect.Signature):

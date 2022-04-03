@@ -440,6 +440,23 @@ Flag Converter
 
 .. autofunction:: discord.ext.commands.flag
 
+
+Defaults
+--------
+
+.. autoclass:: discord.ext.commands.Parameter()
+    :member:
+
+.. autofunction:: discord.ext.commands.Parameter
+
+.. autofunction:: discord.ext.commands.param
+
+.. autodata:: discord.ext.commands.Author
+
+.. autodata:: discord.ext.commands.CurrentChannel
+
+.. autodata:: discord.ext.commands.CurrentGuild
+
 .. _ext_commands_api_errors:
 
 Exceptions
