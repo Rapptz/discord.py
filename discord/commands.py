@@ -159,7 +159,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.version = int(data['version'])
         self.type = try_enum(AppCommandType, data['type'])
         self.default_permission: bool = data['default_permission']
-        self._dm_permission = data['dm_permission']
+        self._dm_permission = data.get('dm_permission')
         self._default_member_permissions = data['default_member_permissions']
 
     def __repr__(self) -> str:
