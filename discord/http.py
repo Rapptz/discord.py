@@ -52,7 +52,7 @@ import weakref
 import aiohttp
 
 from .enums import RelationshipAction, InviteType
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError
+from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, CaptchaRequired
 from .file import File
 from .tracking import ContextProperties
 from . import utils
@@ -470,7 +470,7 @@ class HTTPClient:
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason)
 
-        if payload := kwargs.pop('json', None):
+        if payload := kwargs.pop('json', None) is not None:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = utils._to_json(payload)
 
@@ -569,6 +569,8 @@ class HTTPClient:
                         elif response.status >= 500:
                             raise DiscordServerError(response, data)
                         else:
+                            if 'captcha_key' in data:
+                                raise CaptchaRequired(response, data)  # type: ignore # Should not be text at this point
                             raise HTTPException(response, data)
 
                 # This is handling exceptions from the request
@@ -580,22 +582,17 @@ class HTTPClient:
                     raise
 
                 # Captcha handling
-                except HTTPException as e:
-                    try:
-                        captcha_key = data['captcha_key']  # type: ignore # Handled below
-                    except (KeyError, TypeError):
+                except CaptchaRequired as e:
+                    values = [i for i in e.json['captcha_key'] if any(value in i for value in CAPTCHA_VALUES)]
+                    if captcha_handler is None or tries == 4:
+                        raise
+                    elif not values:
                         raise
                     else:
-                        values = [i for i in captcha_key if any(value in i for value in CAPTCHA_VALUES)]
-                        if captcha_handler is None or tries == 4:
-                            raise HTTPException(e.response, {'code': -1, 'message': 'Captcha required'}) from e
-                        elif not values:
-                            raise
-                        else:
-                            previous = payload or {}
-                            previous['captcha_key'] = await captcha_handler.fetch_token(data, self.proxy, self.proxy_auth)  # type: ignore # data is json here
-                            kwargs['headers']['Content-Type'] = 'application/json'
-                            kwargs['data'] = utils._to_json(previous)
+                        previous = payload or {}
+                        previous['captcha_key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
+                        kwargs['headers']['Content-Type'] = 'application/json'
+                        kwargs['data'] = utils._to_json(previous)
 
             if response is not None:
                 # We've run out of retries, raise

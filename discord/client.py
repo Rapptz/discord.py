@@ -1376,7 +1376,8 @@ class Client:
                 payload['status'] = status
             if custom_activity != getattr(self.user.settings, 'custom_activity', None):  # type: ignore # user is always present when logged in
                 payload['custom_activity'] = custom_activity
-            await self.user.edit_settings(**payload)  # type: ignore # user is always present when logged in
+            if payload:
+                await self.user.edit_settings(**payload)  # type: ignore # user is always present when logged in
 
         status_str = str(status)
         activities_tuple = tuple(a.to_dict() for a in activities)

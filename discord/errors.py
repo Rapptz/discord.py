@@ -47,6 +47,7 @@ __all__ = (
     'AuthFailure',
     'LoginFailure',
     'ConnectionClosed',
+    'CaptchaRequired',
 )
 
 
@@ -167,6 +168,19 @@ class DiscordServerError(HTTPException):
     """
 
     pass
+
+
+class CaptchaRequired(HTTPException):
+    """Exception that's raised when a captcha is required and no handler exists.
+
+    Subclass of :exc:`HTTPException`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, response: _ResponseType, message: Dict[str, Any]):
+        super().__init__(response, {'code': -1, 'message': 'Captcha required'})
+        self.json = message
 
 
 class InvalidData(ClientException):
