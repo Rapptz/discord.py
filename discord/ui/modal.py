@@ -89,8 +89,6 @@ class Modal(View):
     ------------
     title: :class:`str`
         The title of the modal.
-    children: List[:class:`Item`]
-        The list of children attached to this view.
     custom_id: :class:`str`
         The ID of the modal that gets received during an interaction.
     """
@@ -172,7 +170,7 @@ class Modal(View):
             if component['type'] == 1:
                 self._refresh(component['components'])
             else:
-                item = find(lambda i: i.custom_id == component['custom_id'], self.children)  # type: ignore
+                item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue

@@ -151,11 +151,6 @@ class View:
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
-
-    Attributes
-    ------------
-    children: List[:class:`Item`]
-        The list of children attached to this view.
     """
 
     __discord_ui_view__: ClassVar[bool] = True
@@ -186,8 +181,8 @@ class View:
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
         self.__timeout = timeout
-        self.children: List[Item[Self]] = self._init_children()
-        self.__weights = _ViewWeights(self.children)
+        self._children: List[Item[Self]] = self._init_children()
+        self.__weights = _ViewWeights(self._children)
         self.id: str = os.urandom(16).hex()
         self.__cancel_callback: Optional[Callable[[View], None]] = None
         self.__timeout_expiry: Optional[float] = None
@@ -195,7 +190,7 @@ class View:
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self.children)}>'
+        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
 
     async def __timeout_task_impl(self) -> None:
         while True:
@@ -218,7 +213,7 @@ class View:
         def key(item: Item) -> int:
             return item._rendered_row or 0
 
-        children = sorted(self.children, key=key)
+        children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
         for _, group in groupby(children, key=key):
             children = [item.to_component_dict() for item in group]
@@ -256,6 +251,11 @@ class View:
                 self.__timeout_expiry = None
 
         self.__timeout = value
+
+    @property
+    def children(self) -> List[Item[Self]]:
+        """List[:class:`Item`]: The list of children attached to this view."""
+        return self._children.copy()
 
     @classmethod
     def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
@@ -304,7 +304,7 @@ class View:
             or the row the item is trying to be added to is full.
         """
 
-        if len(self.children) > 25:
+        if len(self._children) > 25:
             raise ValueError('maximum number of children exceeded')
 
         if not isinstance(item, Item):
@@ -313,7 +313,7 @@ class View:
         self.__weights.add_item(item)
 
         item._view = self
-        self.children.append(item)
+        self._children.append(item)
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
@@ -329,7 +329,7 @@ class View:
         """
 
         try:
-            self.children.remove(item)
+            self._children.remove(item)
         except ValueError:
             pass
         else:
@@ -342,7 +342,7 @@ class View:
         This function returns the class instance to allow for fluent-style
         chaining.
         """
-        self.children.clear()
+        self._children.clear()
         self.__weights.clear()
         return self
 
@@ -445,7 +445,7 @@ class View:
         # fmt: off
         old_state: Dict[Tuple[int, str], Item[Any]] = {
             (item.type.value, item.custom_id): item  # type: ignore
-            for item in self.children
+            for item in self._children
             if item.is_dispatchable()
         }
         # fmt: on
@@ -459,7 +459,7 @@ class View:
                 older._refresh_component(component)
                 children.append(older)
 
-        self.children = children
+        self._children = children
 
     def stop(self) -> None:
         """Stops listening to interaction events from this view.
@@ -492,7 +492,7 @@ class View:
         A persistent view has all their components with a set ``custom_id`` and
         a :attr:`timeout` set to ``None``.
         """
-        return self.timeout is None and all(item.is_persistent() for item in self.children)
+        return self.timeout is None and all(item.is_persistent() for item in self._children)
 
     async def wait(self) -> bool:
         """Waits until the view has finished interacting.
@@ -547,7 +547,7 @@ class ViewStore:
 
         self.__verify_integrity()
 
-        for item in view.children:
+        for item in view._children:
             if item.is_dispatchable():
                 self._views[(item.type.value, message_id, item.custom_id)] = (view, item)  # type: ignore
 
@@ -559,7 +559,7 @@ class ViewStore:
             self._modals.pop(view.custom_id, None)  # type: ignore
             return
 
-        for item in view.children:
+        for item in view._children:
             if item.is_dispatchable():
                 self._views.pop((item.type.value, item.custom_id), None)  # type: ignore
 
