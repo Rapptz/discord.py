@@ -265,8 +265,8 @@ class Transformer:
 
         .. note::
 
-            Autocomplete is only supported for options with :attr:`~discord.app.commands.Transformer.type` 
-            :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`, 
+            Autocomplete is only supported for options with :attr:`~discord.app.commands.Transformer.type`
+            :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`,
             and :attr:`~discord.AppCommandOptionType.number`.
 
         Parameters
@@ -280,9 +280,10 @@ class Transformer:
         --------
         List[:class:`~discord.app_commands.Choice`]
             A list of choices to be displayed to the user, a maximum of 25.
-        
+
         """
         raise NotImplementedError('Derived classes can implement this.')
+
 
 class _TransformMetadata:
     __discord_app_commands_transform__: ClassVar[bool] = True
