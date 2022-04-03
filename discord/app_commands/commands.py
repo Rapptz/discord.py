@@ -167,10 +167,11 @@ def validate_context_menu_name(name: str) -> str:
 
 
 def _validate_auto_complete_callback(
-    callback: AutocompleteCallback[GroupT, ChoiceT]
+    callback: AutocompleteCallback[GroupT, ChoiceT],
+    skip_binding: bool = False,
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
 
-    requires_binding = is_inside_class(callback)
+    requires_binding = is_inside_class(callback) and not skip_binding
     required_parameters = 2 + requires_binding
     callback.requires_binding = requires_binding
     params = inspect.signature(callback).parameters
