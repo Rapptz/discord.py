@@ -714,9 +714,6 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
 
-    print(Transformer.autocomplete.__func__)
-    print(inner.autocomplete.__func__)
-
     if not hasattr(inner.autocomplete.__func__, '__transformer_autocomplete_not_overridden__'):
         from .commands import _validate_auto_complete_callback
 
