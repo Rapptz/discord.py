@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import inspect
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Literal, OrderedDict, Type, Union
+from typing import TYPE_CHECKING, Any, Literal, OrderedDict, Union
 
 from ...utils import MISSING, maybe_coroutine
 from . import converter
@@ -146,6 +146,11 @@ class Parameter(inspect.Parameter):
         """|coro|
 
         Gets this parameter's default value.
+
+        Parameters
+        ----------
+        ctx: :class:`Context`
+            The invocation context to get the default argument for.
         """
         # pre-condition: required is False
         if callable(self.default):
@@ -230,7 +235,7 @@ def parameter(
 
 
 param = parameter
-"""param(*, converter=..., default=..., displayed_default=...)
+r"""param(\*, converter=..., default=..., displayed_default=...)
 
 An alias for :func:`parameter`.
 """
