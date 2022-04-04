@@ -36,7 +36,7 @@ For example:
 
 This produces a modal which appears on Discord as:
 
-.. image:: /images/guide/interactions/modals1.png
+.. image:: /images/guide/interactions/modal_example.png
 
 Let's break down the code:
 
