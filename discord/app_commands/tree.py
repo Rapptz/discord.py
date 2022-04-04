@@ -854,6 +854,8 @@ class CommandTree(Generic[ClientT]):
         -------
         HTTPException
             Syncing the commands failed.
+        Forbidden
+            The client does not have the ``applications.commands`` scope in the guild.
         ClientException
             The client does not have an application ID.
 
