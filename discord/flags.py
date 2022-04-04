@@ -552,6 +552,10 @@ class Intents(BaseFlags):
         - :func:`on_guild_channel_create`
         - :func:`on_guild_channel_delete`
         - :func:`on_guild_channel_pins_update`
+        - :func:`on_thread_create`
+        - :func:`on_thread_join`
+        - :func:`on_thread_update`
+        - :func:`on_thread_delete`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -574,6 +578,8 @@ class Intents(BaseFlags):
         - :func:`on_member_remove`
         - :func:`on_member_update`
         - :func:`on_user_update`
+        - :func:`on_thread_member_join`
+        - :func:`on_thread_member_remove`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
