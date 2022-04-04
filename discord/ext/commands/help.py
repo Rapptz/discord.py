@@ -1019,7 +1019,7 @@ class DefaultHelpCommand(HelpCommand):
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.commands_heading: str = options.pop('commands_heading', "Commands:")
+        self.commands_heading: str = options.pop('commands_heading', 'Commands:')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
 
@@ -1043,8 +1043,8 @@ class DefaultHelpCommand(HelpCommand):
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
         return (
-            f"Type {self.context.clean_prefix}{command_name} command for more info on a command.\n"
-            f"You can also type {self.context.clean_prefix}{command_name} category for more info on a category."
+            f'Type {self.context.clean_prefix}{command_name} command for more info on a command.\n'
+            f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
         )
 
     def add_indented_commands(
@@ -1233,10 +1233,10 @@ class MinimalHelpCommand(HelpCommand):
 
     def __init__(self, **options: Any) -> None:
         self.sort_commands: bool = options.pop('sort_commands', True)
-        self.commands_heading: str = options.pop('commands_heading', "Commands")
+        self.commands_heading: str = options.pop('commands_heading', 'Commands')
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.aliases_heading: str = options.pop('aliases_heading', "Aliases:")
+        self.aliases_heading: str = options.pop('aliases_heading', 'Aliases:')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
 
@@ -1266,8 +1266,8 @@ class MinimalHelpCommand(HelpCommand):
         """
         command_name = self.invoked_with
         return (
-            f"Use `{self.context.clean_prefix}{command_name} [command]` for more info on a command.\n"
-            f"You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category."
+            f'Use `{self.context.clean_prefix}{command_name} [command]` for more info on a command.\n'
+            f'You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category.'
         )
 
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:

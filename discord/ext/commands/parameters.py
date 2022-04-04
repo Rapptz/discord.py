@@ -29,27 +29,24 @@ from operator import attrgetter
 from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
 
 from discord.utils import MISSING, maybe_coroutine
+
 from . import converter
 from .errors import MissingRequiredArgument
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from discord import (
-        TextChannel,
-        Guild,
-        Member,
-        User,
-    )
+    from discord import Guild, Member, TextChannel, User
+
     from .context import Context
 
 __all__ = (
-    "Parameter",
-    "parameter",
-    "param",
-    "Author",
-    "CurrentChannel",
-    "CurrentGuild",
+    'Parameter',
+    'parameter',
+    'param',
+    'Author',
+    'CurrentChannel',
+    'CurrentGuild',
 )
 
 
@@ -65,14 +62,19 @@ empty: Any = inspect.Parameter.empty
 
 
 def _gen_property(name: str) -> property:
+    attr = f'_{name}'
     return property(
-        attrgetter(f"_{name}"),
-        lambda self, value: setattr(self, "_{name}", value),
+        attrgetter(attr),
+        lambda self, value: setattr(self, attr, value),
         doc="The parameter's {name}.",
     )
 
 
 class Parameter(inspect.Parameter):
+    r"""The type of a :class:`Command`\'s parameter. A subclass of :class:`inspect.Parameter`."""
+
+    __slots__ = ("_displayed_default",)
+
     def __init__(
         self,
         name: str,
@@ -117,10 +119,10 @@ class Parameter(inspect.Parameter):
         )
 
     if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
-        name = _gen_property("name")
-        kind = _gen_property("kind")
-        default = _gen_property("default")
-        annotation = _gen_property("annotation")
+        name = _gen_property('name')
+        kind = _gen_property('kind')
+        default = _gen_property('default')
+        annotation = _gen_property('annotation')
 
     @property
     def required(self) -> bool:
@@ -169,6 +171,8 @@ def parameter(
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
+    .. versionadded:: 2.0.0
+
     Examples
     --------
     A custom default can be used to have late binding behaviour.
@@ -178,8 +182,6 @@ def parameter(
         @bot.command()
         async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
             await ctx.send(f'Hello {to.mention} :wave:')
-
-    .. versionadded:: 2.0.0
 
     Parameters
     ----------
@@ -192,7 +194,7 @@ def parameter(
         The displayed default in :attr:`Command.signature`.
     """
     return Parameter(
-        name="empty",
+        name='empty',
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
         annotation=converter,
         default=default,
@@ -208,14 +210,14 @@ An alias for :func:`parameter`.
 
 # some handy defaults
 Author: Union[Member, User] = parameter(
-    default=attrgetter("author"),
-    displayed_default="<you>",
+    default=attrgetter('author'),
+    displayed_default='<you>',
     converter=Union[converter.MemberConverter, converter.UserConverter],
 )
 
 CurrentChannel: TextChannel = parameter(
-    default=attrgetter("channel"),
-    displayed_default="<this channel>",
+    default=attrgetter('channel'),
+    displayed_default='<this channel>',
     converter=converter.TextChannelConverter,
 )
 
@@ -228,7 +230,7 @@ def default_guild(ctx: Context) -> Guild:
 
 CurrentGuild: Guild = parameter(
     default=default_guild,
-    displayed_default="<this server>",
+    displayed_default='<this server>',
     converter=converter.GuildConverter,
 )
 
