@@ -768,10 +768,12 @@ A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` e
 given as a :class:`dict` rather than a :class:`list`.
 
 
-Default parameters
+.. _ext_commands_parameter:
+
+Parameter Metadata
 -------------------
 
-:func:`~ext.commands.parameter` assigns custom metadata for a :class:`~ext.commands.Command`'s parameter.
+:func:`~ext.commands.parameter` assigns custom metadata to a :class:`~ext.commands.Command`'s parameter.
 
 This is useful for:
 
@@ -806,8 +808,8 @@ This is useful for:
       async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
           await ctx.send(f'Hello {to.mention} :wave:')
 
-  Because this is such a common use-case, the library provides :obj:`~ext.commands.Author`, :obj:`~ext.commands.CurrentChannel` and
-  :obj:`~ext.commands.CurrentGuild`, armed with this we can simplify ``wave`` to:
+  Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and
+  :obj:`~.ext.commands.CurrentGuild`, armed with this we can simplify ``wave`` to:
 
   .. code-block:: python3
 
@@ -815,7 +817,7 @@ This is useful for:
       async def wave(to: discord.User = commands.Author):
           await ctx.send(f'Hello {to.mention} :wave:')
 
-  :obj:`~ext.commands.Author` and co also have other benefits like having the displayed default being filled.
+  :obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled.
 
 
 .. _ext_commands_error_handler:
