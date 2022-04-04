@@ -26,11 +26,11 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union
 
-from ._types import BotT
-
 import discord.abc
 import discord.utils
 from discord.message import Message
+
+from ._types import BotT
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec

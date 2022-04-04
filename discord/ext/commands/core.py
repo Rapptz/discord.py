@@ -47,30 +47,20 @@ from typing import (
 
 import discord
 
-from . import parameters
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
 from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
+from .parameters import Parameter, Signature
 
 if TYPE_CHECKING:
     from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
 
     from discord.message import Message
 
-    from ._types import (
-        BotT,
-        ContextT,
-        Coro,
-        CoroFunc,
-        Check,
-        Hook,
-        Error,
-        ErrorT,
-        HookT,
-    )
+    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, ErrorT, Hook, HookT
 
 
 __all__ = (
@@ -131,9 +121,9 @@ def get_signature_parameters(
     /,
     *,
     skip_parameters: Optional[int] = None,
-) -> Dict[str, parameters.Parameter]:
-    signature = parameters.Signature.from_callable(function)
-    params: Dict[str, parameters.Parameter] = {}
+) -> Dict[str, Parameter]:
+    signature = Signature.from_callable(function)
+    params: Dict[str, Parameter] = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
     required_params = discord.utils.is_inside_class(function) + 1 if skip_parameters is None else skip_parameters
@@ -146,7 +136,7 @@ def get_signature_parameters(
 
     for name, parameter in iterator:
         default = parameter.default
-        if isinstance(default, parameters.Parameter):  # update from the default
+        if isinstance(default, Parameter):  # update from the default
             parameter._annotation = default.annotation
             parameter._default = default.default
             parameter._displayed_default = default._displayed_default
@@ -439,7 +429,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             globalns = {}
 
-        self.params: Dict[str, parameters.Parameter] = get_signature_parameters(function, globalns)
+        self.params: Dict[str, Parameter] = get_signature_parameters(function, globalns)
 
     def add_check(self, func: Check[ContextT], /) -> None:
         """Adds a check to the command.
@@ -575,7 +565,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context[BotT], param: parameters.Parameter, /) -> Any:
+    async def transform(self, ctx: Context[BotT], param: Parameter, /) -> Any:
         converter = param.converter
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
@@ -622,9 +612,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # type-checker fails to narrow argument
         return await run_converters(ctx, converter, argument, param)  # type: ignore
 
-    async def _transform_greedy_pos(
-        self, ctx: Context[BotT], param: parameters.Parameter, required: bool, converter: Any
-    ) -> Any:
+    async def _transform_greedy_pos(self, ctx: Context[BotT], param: Parameter, required: bool, converter: Any) -> Any:
         view = ctx.view
         result = []
         while not view.eof:
@@ -645,7 +633,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return await param.get_default(ctx)
         return result
 
-    async def _transform_greedy_var_pos(self, ctx: Context[BotT], param: parameters.Parameter, converter: Any) -> Any:
+    async def _transform_greedy_var_pos(self, ctx: Context[BotT], param: Parameter, converter: Any) -> Any:
         view = ctx.view
         previous = view.index
         try:
@@ -658,8 +646,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return value
 
     @property
-    def clean_params(self) -> Dict[str, parameters.Parameter]:
-        """Dict[:class:`str`, :class:`inspect.Parameter`]:
+    def clean_params(self) -> Dict[str, Parameter]:
+        """Dict[:class:`str`, :class:`Parameter`]:
         Retrieves the parameter dictionary without the context or self parameters.
 
         Useful for inspecting signature.

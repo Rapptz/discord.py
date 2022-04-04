@@ -112,7 +112,7 @@ Quick example:
 
 With this change, constructor of :class:`Client` no longer accepts ``connector`` and ``loop`` parameters.
 
-In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
+In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs,
 see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
 
 Abstract Base Classes Changes
@@ -1240,7 +1240,7 @@ Quick example of loading an extension:
         async with bot:
             await bot.load_extension('my_extension')
             await bot.start(TOKEN)
-    
+
     asyncio.run(main())
 
 
@@ -1422,6 +1422,7 @@ Miscellaneous Changes
 - ``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`.
 - :meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 - :meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes.
+- :attr:`ext.commands.Command.clean_params` type now uses a custom :class:`inspect.Parameter` to handle defaults.
 
 .. _migrating_2_0_tasks:
 

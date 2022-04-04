@@ -66,13 +66,13 @@ if TYPE_CHECKING:
     )
 
 __all__ = (
-    'Paginator',
-    'HelpCommand',
-    'DefaultHelpCommand',
-    'MinimalHelpCommand',
+    "Paginator",
+    "HelpCommand",
+    "DefaultHelpCommand",
+    "MinimalHelpCommand",
 )
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
 
@@ -121,7 +121,7 @@ class Paginator:
     """
 
     def __init__(
-        self, prefix: Optional[str] = '```', suffix: Optional[str] = '```', max_size: int = 2000, linesep: str = '\n'
+        self, prefix: Optional[str] = "```", suffix: Optional[str] = "```", max_size: int = 2000, linesep: str = "\n"
     ) -> None:
         self.prefix: Optional[str] = prefix
         self.suffix: Optional[str] = suffix
@@ -151,7 +151,7 @@ class Paginator:
     def _linesep_len(self) -> int:
         return len(self.linesep)
 
-    def add_line(self, line: str = '', *, empty: bool = False) -> None:
+    def add_line(self, line: str = "", *, empty: bool = False) -> None:
         """Adds a line to the current page.
 
         If the line exceeds the :attr:`max_size` then an exception
@@ -171,7 +171,7 @@ class Paginator:
         """
         max_page_size = self.max_size - self._prefix_len - self._suffix_len - 2 * self._linesep_len
         if len(line) > max_page_size:
-            raise RuntimeError(f'Line exceeds maximum page size {max_page_size}')
+            raise RuntimeError(f"Line exceeds maximum page size {max_page_size}")
 
         if self._count + len(line) + self._linesep_len > self.max_size - self._suffix_len:
             self.close_page()
@@ -180,7 +180,7 @@ class Paginator:
         self._current_page.append(line)
 
         if empty:
-            self._current_page.append('')
+            self._current_page.append("")
             self._count += self._linesep_len
 
     def close_page(self) -> None:
@@ -209,7 +209,7 @@ class Paginator:
         return self._pages
 
     def __repr__(self) -> str:
-        fmt = '<Paginator prefix: {0.prefix!r} suffix: {0.suffix!r} linesep: {0.linesep!r} max_size: {0.max_size} count: {0._count}>'
+        fmt = "<Paginator prefix: {0.prefix!r} suffix: {0.suffix!r} linesep: {0.linesep!r} max_size: {0.max_size} count: {0._count}>"
         return fmt.format(self)
 
 
@@ -232,7 +232,7 @@ class _HelpCommandImpl(Command):
         self.params = get_signature_parameters(injected.command_callback, globals(), skip_parameters=1)
 
         on_error = injected.on_help_command_error
-        if not hasattr(on_error, '__help_command_not_overridden__'):
+        if not hasattr(on_error, "__help_command_not_overridden__"):
             if self.cog is not None:
                 self.on_error = self._on_error_cog_implementation
             else:
@@ -325,13 +325,13 @@ class HelpCommand:
     """
 
     MENTION_TRANSFORMS = {
-        '@everyone': '@\u200beveryone',
-        '@here': '@\u200bhere',
-        r'<@!?[0-9]{17,22}>': '@deleted-user',
-        r'<@&[0-9]{17,22}>': '@deleted-role',
+        "@everyone": "@\u200beveryone",
+        "@here": "@\u200bhere",
+        r"<@!?[0-9]{17,22}>": "@deleted-user",
+        r"<@&[0-9]{17,22}>": "@deleted-role",
     }
 
-    MENTION_PATTERN = re.compile('|'.join(MENTION_TRANSFORMS.keys()))
+    MENTION_PATTERN = re.compile("|".join(MENTION_TRANSFORMS.keys()))
 
     if TYPE_CHECKING:
         __original_kwargs__: Dict[str, Any]
@@ -354,12 +354,12 @@ class HelpCommand:
         return self
 
     def __init__(self, **options: Any) -> None:
-        self.show_hidden: bool = options.pop('show_hidden', False)
-        self.verify_checks: bool = options.pop('verify_checks', True)
+        self.show_hidden: bool = options.pop("show_hidden", False)
+        self.verify_checks: bool = options.pop("verify_checks", True)
         self.command_attrs: Dict[str, Any]
-        self.command_attrs = attrs = options.pop('command_attrs', {})
-        attrs.setdefault('name', 'help')
-        attrs.setdefault('help', 'Shows this message')
+        self.command_attrs = attrs = options.pop("command_attrs", {})
+        attrs.setdefault("name", "help")
+        attrs.setdefault("help", "Shows this message")
         self.context: Context[_Bot] = MISSING
         self._command_impl = _HelpCommandImpl(self, **self.command_attrs)
 
@@ -468,20 +468,20 @@ class HelpCommand:
             if not parent.signature or parent.invoke_without_command:
                 entries.append(parent.name)
             else:
-                entries.append(parent.name + ' ' + parent.signature)
+                entries.append(parent.name + " " + parent.signature)
             parent = parent.parent  # type: ignore
-        parent_sig = ' '.join(reversed(entries))
+        parent_sig = " ".join(reversed(entries))
 
         if len(command.aliases) > 0:
-            aliases = '|'.join(command.aliases)
-            fmt = f'[{command.name}|{aliases}]'
+            aliases = "|".join(command.aliases)
+            fmt = f"[{command.name}|{aliases}]"
             if parent_sig:
-                fmt = parent_sig + ' ' + fmt
+                fmt = parent_sig + " " + fmt
             alias = fmt
         else:
-            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
+            alias = command.name if not parent_sig else parent_sig + " " + command.name
 
-        return f'{self.context.clean_prefix}{alias} {command.signature}'
+        return f"{self.context.clean_prefix}{alias} {command.signature}"
 
     def remove_mentions(self, string: str, /) -> str:
         """Removes mentions from the string to prevent abuse.
@@ -499,7 +499,7 @@ class HelpCommand:
         """
 
         def replace(obj: re.Match, *, transforms: Dict[str, str] = self.MENTION_TRANSFORMS) -> str:
-            return transforms.get(obj.group(0), '@invalid')
+            return transforms.get(obj.group(0), "@invalid")
 
         return self.MENTION_PATTERN.sub(replace, string)
 
@@ -952,7 +952,7 @@ class HelpCommand:
         # Since we want to have detailed errors when someone
         # passes an invalid subcommand, we need to walk through
         # the command group chain ourselves.
-        keys = command.split(' ')
+        keys = command.split(" ")
         cmd = bot.all_commands.get(keys[0])
         if cmd is None:
             string = await maybe_coro(self.command_not_found, self.remove_mentions(keys[0]))
@@ -1013,14 +1013,14 @@ class DefaultHelpCommand(HelpCommand):
     """
 
     def __init__(self, **options: Any) -> None:
-        self.width: int = options.pop('width', 80)
-        self.indent: int = options.pop('indent', 2)
-        self.sort_commands: bool = options.pop('sort_commands', True)
-        self.dm_help: bool = options.pop('dm_help', False)
-        self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.commands_heading: str = options.pop('commands_heading', "Commands:")
-        self.no_category: str = options.pop('no_category', 'No Category')
-        self.paginator: Paginator = options.pop('paginator', None)
+        self.width: int = options.pop("width", 80)
+        self.indent: int = options.pop("indent", 2)
+        self.sort_commands: bool = options.pop("sort_commands", True)
+        self.dm_help: bool = options.pop("dm_help", False)
+        self.dm_help_threshold: int = options.pop("dm_help_threshold", 1000)
+        self.commands_heading: str = options.pop("commands_heading", "Commands:")
+        self.no_category: str = options.pop("no_category", "No Category")
+        self.paginator: Paginator = options.pop("paginator", None)
 
         if self.paginator is None:
             self.paginator: Paginator = Paginator()
@@ -1035,7 +1035,7 @@ class DefaultHelpCommand(HelpCommand):
             ``text`` parameter is now positional-only.
         """
         if len(text) > self.width:
-            return text[: self.width - 3].rstrip() + '...'
+            return text[: self.width - 3].rstrip() + "..."
         return text
 
     def get_ending_note(self) -> str:
@@ -1142,11 +1142,11 @@ class DefaultHelpCommand(HelpCommand):
             # <description> portion
             self.paginator.add_line(bot.description, empty=True)
 
-        no_category = f'\u200b{self.no_category}:'
+        no_category = f"\u200b{self.no_category}:"
 
         def get_category(command, *, no_category=no_category):
             cog = command.cog
-            return cog.qualified_name + ':' if cog is not None else no_category
+            return cog.qualified_name + ":" if cog is not None else no_category
 
         filtered = await self.filter_commands(bot.commands, sort=True, key=get_category)
         max_size = self.get_max_size(filtered)
@@ -1231,13 +1231,13 @@ class MinimalHelpCommand(HelpCommand):
     """
 
     def __init__(self, **options: Any) -> None:
-        self.sort_commands: bool = options.pop('sort_commands', True)
-        self.commands_heading: str = options.pop('commands_heading', "Commands")
-        self.dm_help: bool = options.pop('dm_help', False)
-        self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.aliases_heading: str = options.pop('aliases_heading', "Aliases:")
-        self.no_category: str = options.pop('no_category', 'No Category')
-        self.paginator: Paginator = options.pop('paginator', None)
+        self.sort_commands: bool = options.pop("sort_commands", True)
+        self.commands_heading: str = options.pop("commands_heading", "Commands")
+        self.dm_help: bool = options.pop("dm_help", False)
+        self.dm_help_threshold: int = options.pop("dm_help_threshold", 1000)
+        self.aliases_heading: str = options.pop("aliases_heading", "Aliases:")
+        self.no_category: str = options.pop("no_category", "No Category")
+        self.paginator: Paginator = options.pop("paginator", None)
 
         if self.paginator is None:
             self.paginator: Paginator = Paginator(suffix=None, prefix=None)
@@ -1270,7 +1270,7 @@ class MinimalHelpCommand(HelpCommand):
         )
 
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
-        return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
+        return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
 
     def get_ending_note(self) -> str:
         """Return the help command's ending note. This is mainly useful to override for i18n purposes.
@@ -1282,7 +1282,7 @@ class MinimalHelpCommand(HelpCommand):
         :class:`str`
             The help command ending note.
         """
-        return ''
+        return ""
 
     def add_bot_commands_formatting(self, commands: Sequence[Command[Any, ..., Any]], heading: str, /) -> None:
         """Adds the minified bot heading with commands to the output.
@@ -1305,8 +1305,8 @@ class MinimalHelpCommand(HelpCommand):
         """
         if commands:
             # U+2002 Middle Dot
-            joined = '\u2002'.join(c.name for c in commands)
-            self.paginator.add_line(f'__**{heading}**__')
+            joined = "\u2002".join(c.name for c in commands)
+            self.paginator.add_line(f"__**{heading}**__")
             self.paginator.add_line(joined)
 
     def add_subcommand_formatting(self, command: Command[Any, ..., Any], /) -> None:
@@ -1326,7 +1326,7 @@ class MinimalHelpCommand(HelpCommand):
         command: :class:`Command`
             The command to show information of.
         """
-        fmt = '{0}{1} \N{EN DASH} {2}' if command.short_doc else '{0}{1}'
+        fmt = "{0}{1} \N{EN DASH} {2}" if command.short_doc else "{0}{1}"
         self.paginator.add_line(fmt.format(self.context.clean_prefix, command.qualified_name, command.short_doc))
 
     def add_aliases_formatting(self, aliases: Sequence[str], /) -> None:
@@ -1405,7 +1405,7 @@ class MinimalHelpCommand(HelpCommand):
         if note:
             self.paginator.add_line(note, empty=True)
 
-        no_category = f'\u200b{self.no_category}'
+        no_category = f"\u200b{self.no_category}"
 
         def get_category(command: Command[Any, ..., Any], *, no_category: str = no_category) -> str:
             cog = command.cog
@@ -1439,7 +1439,7 @@ class MinimalHelpCommand(HelpCommand):
 
         filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
         if filtered:
-            self.paginator.add_line(f'**{cog.qualified_name} {self.commands_heading}**')
+            self.paginator.add_line(f"**{cog.qualified_name} {self.commands_heading}**")
             for command in filtered:
                 self.add_subcommand_formatting(command)
 
@@ -1459,7 +1459,7 @@ class MinimalHelpCommand(HelpCommand):
             if note:
                 self.paginator.add_line(note, empty=True)
 
-            self.paginator.add_line(f'**{self.commands_heading}**')
+            self.paginator.add_line(f"**{self.commands_heading}**")
             for command in filtered:
                 self.add_subcommand_formatting(command)
 

@@ -26,19 +26,21 @@ from __future__ import annotations
 
 import inspect
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Literal, OrderedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
 
-from ...utils import MISSING, maybe_coroutine
+from discord.utils import MISSING, maybe_coroutine
 from . import converter
 from .errors import MissingRequiredArgument
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ...channel import TextChannel
-    from ...guild import Guild
-    from ...member import Member
-    from ...user import User
+    from discord import (
+        TextChannel,
+        Guild,
+        Member,
+        User,
+    )
     from .context import Context
 
 __all__ = (
@@ -60,6 +62,14 @@ ParamKinds = Union[
 ]
 
 empty: Any = inspect.Parameter.empty
+
+
+def _gen_property(name: str) -> property:
+    return property(
+        attrgetter(f"_{name}"),
+        lambda self, value: setattr(self, "_{name}", value),
+        doc="The parameter's {name}.",
+    )
 
 
 class Parameter(inspect.Parameter):
@@ -99,44 +109,35 @@ class Parameter(inspect.Parameter):
             displayed_default = self._displayed_default
 
         return self.__class__(
-            name=name, kind=kind, default=default, annotation=annotation, displayed_default=displayed_default
+            name=name,
+            kind=kind,
+            default=default,
+            annotation=annotation,
+            displayed_default=displayed_default,
         )
 
     if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
-        name = property(attrgetter("_name"), lambda self, name: setattr(self, "_name", name), doc="The parameter's name.")
-        kind = property(attrgetter("_kind"), lambda self, kind: setattr(self, "_kind", kind), doc="The parameter's kind.")
-        default = property(
-            attrgetter("_default"),
-            lambda self, default: setattr(self, "_default", default),
-            doc="The parameter's default value.",
-        )
-        annotation = property(
-            attrgetter("_annotation"),
-            lambda self, annotation: setattr(self, "_annotation", annotation),
-            doc="The parameter's annotation.",
-        )
+        name = _gen_property("name")
+        kind = _gen_property("kind")
+        default = _gen_property("default")
+        annotation = _gen_property("annotation")
 
     @property
     def required(self) -> bool:
+        """Whether this parameter is required."""
         return self.default is empty
 
     @property
     def converter(self) -> Any:
-        """The converter that should be used for this parameter.
-
-        Note
-        ----
-        This is the same as :attr:`annotation` if it's non-empty otherwise it's the type of :attr:`default` or :class:`str`
-        if the parameter has no default.
-        """
+        """The converter that should be used for this parameter."""
         if self.annotation is empty:
             return type(self.default) if self.default not in (empty, None) else str
 
         return self.annotation
 
     @property
-    def displayed_default(self) -> str | None:
-        """The displayed default in :class:`Command.signature`."""
+    def displayed_default(self) -> Optional[str]:
+        """Optional[:class:`str`]: The displayed default in :class:`Command.signature`."""
         if self._displayed_default is not empty:
             return self._displayed_default
 
@@ -170,48 +171,13 @@ def parameter(
 
     Examples
     --------
-
-    A custom converter, whilst annotating a parameter with a custom converter works at runtime, type checkers don't like it
-    cause they can't understand what's going on.
-
-    .. code-block:: python3
-
-        class SomeType:
-            foo: int
-
-        class MyVeryCoolConverter(commands.Converter[SomeType]):
-            ...  # implementation left as an exercise for the reader
-
-        @bot.command()
-        async def bar(ctx, cool_value: MyVeryCoolConverter):
-            cool_value.foo  # type checker warns MyVeryCoolConverter has no value foo (uh-oh)
-
-    However, fear not we can use :func:`parameter` to tell type checkers what's going on.
-
-    .. code-block:: python3
-
-        @bot.command()
-        async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoolConverter)):
-            cool_value.foo  # no error (hurray)
-
-    A custom default can be used to have late binding behaviour
+    A custom default can be used to have late binding behaviour.
 
     .. code-block:: python3
 
         @bot.command()
         async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
             await ctx.send(f'Hello {to.mention} :wave:')
-
-    Because this is such a common use-case, the library provides :obj:`.Author`, :obj:`.CurrentChannel` and
-    :obj:`.CurrentGuild`, armed with this we can simplify ``wave`` to:
-
-    .. code-block:: python3
-
-        @bot.command()
-        async def wave(to: discord.User = commands.Author):
-            await ctx.send(f'Hello {to.mention} :wave:')
-
-    :obj:`.Author` and co also have other benefits like having the displayed default being filled.
 
     .. versionadded:: 2.0.0
 
@@ -246,12 +212,12 @@ Author: Union[Member, User] = parameter(
     displayed_default="<you>",
     converter=Union[converter.MemberConverter, converter.UserConverter],
 )
-"""A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context."""
 
 CurrentChannel: TextChannel = parameter(
-    default=attrgetter("channel"), displayed_default="<this channel>", converter=converter.TextChannelConverter
+    default=attrgetter("channel"),
+    displayed_default="<this channel>",
+    converter=converter.TextChannelConverter,
 )
-"""A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context."""
 
 
 def default_guild(ctx: Context) -> Guild:
@@ -260,8 +226,11 @@ def default_guild(ctx: Context) -> Guild:
     raise MissingRequiredArgument(ctx.current_parameter)  # type: ignore  # this is never going to be None
 
 
-CurrentGuild: Guild = parameter(default=default_guild, displayed_default="<this server>", converter=converter.GuildConverter)
-"""A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context."""
+CurrentGuild: Guild = parameter(
+    default=default_guild,
+    displayed_default="<this server>",
+    converter=converter.GuildConverter,
+)
 
 
 class Signature(inspect.Signature):

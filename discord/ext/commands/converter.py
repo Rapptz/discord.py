@@ -51,7 +51,7 @@ if TYPE_CHECKING:
     from discord.state import Channel
     from discord.threads import Thread
 
-    from . import parameters
+    from .parameters import Parameter
     from ._types import BotT, _Bot
     from .context import Context
 
@@ -1067,7 +1067,7 @@ _GenericAlias = type(List[T])
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: type = _GenericAlias) -> bool:
-    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)  # type: ignore
+    return isinstance(tp, type) and issubclass(tp, Generic) or isinstance(tp, _GenericAlias)
 
 
 CONVERTER_MAPPING: Dict[type, Any] = {
@@ -1132,7 +1132,7 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: parameters.Parameter) -> Any:
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.
