@@ -24,35 +24,36 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import re
 import inspect
+import re
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Generic,
     Iterable,
+    List,
     Literal,
     Optional,
-    TYPE_CHECKING,
-    List,
     Protocol,
+    Tuple,
     Type,
     TypeVar,
-    Tuple,
     Union,
     runtime_checkable,
 )
 
 import discord
+
 from .errors import *
 
 if TYPE_CHECKING:
-    from .context import Context
     from discord.state import Channel
     from discord.threads import Thread
 
+    from .parameters import Parameter
     from ._types import BotT, _Bot
-
+    from .context import Context
 
 __all__ = (
     'Converter',
@@ -1062,16 +1063,6 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-def get_converter(param: inspect.Parameter) -> Any:
-    converter = param.annotation
-    if converter is param.empty:
-        if param.default is not param.empty:
-            converter = str if param.default is None else type(param.default)
-        else:
-            converter = str
-    return converter
-
-
 _GenericAlias = type(List[T])
 
 
@@ -1141,7 +1132,7 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter) -> Any:
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.
@@ -1158,7 +1149,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
         The converter to run, this corresponds to the annotation in the function.
     argument: :class:`str`
         The argument to convert to.
-    param: :class:`inspect.Parameter`
+    param: :class:`Parameter`
         The parameter being converted. This is mainly for error reporting.
 
     Raises
@@ -1183,7 +1174,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
             # with the other parameters
             if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
                 ctx.view.undo()
-                return None if param.default is param.empty else param.default
+                return None if param.required else await param.get_default(ctx)
 
             try:
                 value = await run_converters(ctx, conv, argument, param)
