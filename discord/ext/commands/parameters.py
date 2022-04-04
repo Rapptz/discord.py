@@ -66,12 +66,13 @@ def _gen_property(name: str) -> property:
     return property(
         attrgetter(attr),
         lambda self, value: setattr(self, attr, value),
-        doc="The parameter's {name}.",
+        doc=f"The parameter's {name}.",
     )
 
 
 class Parameter(inspect.Parameter):
     r"""A class that stores information on a :class:`Command`\'s parameter.
+
     This is a subclass of :class:`inspect.Parameter`.
 
     .. versionadded:: 2.0
