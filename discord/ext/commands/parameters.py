@@ -71,9 +71,13 @@ def _gen_property(name: str) -> property:
 
 
 class Parameter(inspect.Parameter):
-    r"""The type of a :class:`Command`\'s parameter. A subclass of :class:`inspect.Parameter`."""
+    r"""A class that stores information on a :class:`Command`\'s parameter.
+    This is a subclass of :class:`inspect.Parameter`.
 
-    __slots__ = ("_displayed_default",)
+    .. versionadded:: 2.0
+    """
+
+    __slots__ = ('_displayed_default',)
 
     def __init__(
         self,
@@ -126,7 +130,7 @@ class Parameter(inspect.Parameter):
 
     @property
     def required(self) -> bool:
-        """Whether this parameter is required."""
+        """:class:`bool`: Whether this parameter is required."""
         return self.default is empty
 
     @property
@@ -153,7 +157,7 @@ class Parameter(inspect.Parameter):
         Parameters
         ----------
         ctx: :class:`Context`
-            The invocation context to get the default argument for.
+            The invocation context that is used to get the default argument.
         """
         # pre-condition: required is False
         if callable(self.default):
@@ -171,7 +175,7 @@ def parameter(
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
-    .. versionadded:: 2.0.0
+    .. versionadded:: 2.0
 
     Examples
     --------
@@ -206,6 +210,8 @@ param = parameter
 r"""param(\*, converter=..., default=..., displayed_default=...)
 
 An alias for :func:`parameter`.
+
+.. versionadded:: 2.0
 """
 
 # some handy defaults

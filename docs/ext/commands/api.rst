@@ -444,13 +444,19 @@ Defaults
 
     A default :class:`.Parameter` which returns the :attr:`~.Context.author` for this context.
 
+    .. versionadded:: 2.0
+
 .. data:: discord.ext.commands.CurrentChannel
 
     A default :class:`.Parameter` which returns the :attr:`~.Context.channel` for this context.
 
+    .. versionadded:: 2.0
+
 .. data:: discord.ext.commands.CurrentGuild
 
     A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``.
+
+    .. versionadded:: 2.0
 
 .. _ext_commands_api_errors:
 
