@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-09 03:48+0900\n"
-"PO-Revision-Date: 2022-03-09 13:28\n"
+"PO-Revision-Date: 2022-04-04 09:28\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -95,7 +95,7 @@ msgstr ":resource:`Discord <discord>` サーバーに参加し、質問してみ
 
 #: ../../index.rst:39
 msgid "If you're looking for something specific, try the :ref:`index <genindex>` or :ref:`searching <search>`."
-msgstr "特定の何かを探している場合は :ref:`index <genindex>` か :ref:`searching <search>` を利用してください。"
+msgstr "特定の何かを探している場合は :ref:`目次 <genindex>` か :ref:`検索 <search>` を利用してください。"
 
 #: ../../index.rst:40
 msgid "Report bugs in the :resource:`issue tracker <issues>`."

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 03:48+0900\n"
-"PO-Revision-Date: 2022-03-09 13:28\n"
+"POT-Creation-Date: 2022-03-14 21:01+0900\n"
+"PO-Revision-Date: 2022-04-04 09:28\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -42,8 +42,8 @@ msgid "hello.py"
 msgstr "hello.py"
 
 #: ../../ext/commands/extensions.rst:30
-msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``bot.load_extension('hello')``."
-msgstr ""
+msgid "In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``await bot.load_extension('hello')``."
+msgstr "この例では簡単なコマンドを定義し、エクステンションが読み込まれた際に、コマンドがボットに追加されるようにします。最後にエクステンションを読み込むために、 :meth:`.Bot.load_extension` を呼び出します。このエクステンションを読み込むためには、 ``await bot.load_extension('hello')`` を呼び出します。"
 
 #: ../../ext/commands/extensions.rst:32
 msgid "Cogs"
@@ -63,7 +63,7 @@ msgstr "リロード"
 
 #: ../../ext/commands/extensions.rst:44
 msgid "When you make a change to the extension and want to reload the references, the library comes with a function to do this for you, :meth:`.Bot.reload_extension`."
-msgstr ""
+msgstr "エクステンションに変更を加えて、その変更を再読み込みしたい場合があります。このためにライブラリには :meth:`.Bot.reload_extension` という関数が用意されています。"
 
 #: ../../ext/commands/extensions.rst:50
 msgid "Once the extension reloads, any changes that we did will be applied. This is useful if we want to add or remove functionality without restarting our bot. If an error occurred during the reloading process, the bot will pretend as if the reload never happened."

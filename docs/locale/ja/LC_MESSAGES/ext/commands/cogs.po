@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 03:48+0900\n"
-"PO-Revision-Date: 2022-03-09 13:28\n"
+"POT-Creation-Date: 2022-03-14 21:01+0900\n"
+"PO-Revision-Date: 2022-04-04 09:28\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -114,66 +114,70 @@ msgid "They are as follows:"
 msgstr "そのための特殊なメソッドは以下のとおりです:"
 
 #: ../../ext/commands/cogs.rst:115
+msgid ":meth:`.Cog.cog_load`"
+msgstr ":meth:`.Cog.cog_load`"
+
+#: ../../ext/commands/cogs.rst:116
 msgid ":meth:`.Cog.cog_unload`"
 msgstr ":meth:`.Cog.cog_unload`"
 
-#: ../../ext/commands/cogs.rst:116
+#: ../../ext/commands/cogs.rst:117
 msgid ":meth:`.Cog.cog_check`"
 msgstr ":meth:`.Cog.cog_check`"
 
-#: ../../ext/commands/cogs.rst:117
+#: ../../ext/commands/cogs.rst:118
 msgid ":meth:`.Cog.cog_command_error`"
 msgstr ":meth:`.Cog.cog_command_error`"
 
-#: ../../ext/commands/cogs.rst:118
+#: ../../ext/commands/cogs.rst:119
 msgid ":meth:`.Cog.cog_before_invoke`"
 msgstr ":meth:`.Cog.cog_before_invoke`"
 
-#: ../../ext/commands/cogs.rst:119
+#: ../../ext/commands/cogs.rst:120
 msgid ":meth:`.Cog.cog_after_invoke`"
 msgstr ":meth:`.Cog.cog_after_invoke`"
 
-#: ../../ext/commands/cogs.rst:120
+#: ../../ext/commands/cogs.rst:121
 msgid ":meth:`.Cog.bot_check`"
 msgstr ":meth:`.Cog.bot_check`"
 
-#: ../../ext/commands/cogs.rst:121
+#: ../../ext/commands/cogs.rst:122
 msgid ":meth:`.Cog.bot_check_once`"
 msgstr ":meth:`.Cog.bot_check_once`"
 
-#: ../../ext/commands/cogs.rst:123
+#: ../../ext/commands/cogs.rst:124
 msgid "You can visit the reference to get more detail."
 msgstr "詳細はリファレンスを参照してください。"
 
-#: ../../ext/commands/cogs.rst:128
+#: ../../ext/commands/cogs.rst:129
 msgid "Meta Options"
 msgstr "メタオプション"
 
-#: ../../ext/commands/cogs.rst:130
+#: ../../ext/commands/cogs.rst:131
 msgid "At the heart of a cog resides a metaclass, :class:`.commands.CogMeta`, which can take various options to customise some of the behaviour. To do this, we pass keyword arguments to the class definition line. For example, to change the cog name we can pass the ``name`` keyword argument as follows:"
 msgstr "コグの中核にはメタクラスである :class:`.commands.CogMeta` が存在します。これにはいくつかの挙動を変更ができる様々なオプションが用意されています。オプションを使用する際はキーワード引数をクラス定義の行で渡します。例えば、コグの名前を変更する場合はキーワード引数 ``name`` を次のように渡します。"
 
-#: ../../ext/commands/cogs.rst:137
+#: ../../ext/commands/cogs.rst:138
 msgid "To see more options that you can set, see the documentation of :class:`.commands.CogMeta`."
 msgstr "設定可能な他のオプションについては :class:`.commands.CogMeta` のドキュメントを参照してください。"
 
-#: ../../ext/commands/cogs.rst:140
+#: ../../ext/commands/cogs.rst:141
 msgid "Inspection"
 msgstr "インスペクション"
 
-#: ../../ext/commands/cogs.rst:142
+#: ../../ext/commands/cogs.rst:143
 msgid "Since cogs ultimately are classes, we have some tools to help us inspect certain properties of the cog."
 msgstr "コグは究極的にはクラスのため、コグの特定のプロパティを調べるのに役立つツールがいくつか用意されています。"
 
-#: ../../ext/commands/cogs.rst:145
+#: ../../ext/commands/cogs.rst:146
 msgid "To get a :class:`list` of commands, we can use :meth:`.Cog.get_commands`. ::"
 msgstr ":meth:`.Cog.get_commands` を使うことで、コマンドの :class:`list` を取得できます。"
 
-#: ../../ext/commands/cogs.rst:151
+#: ../../ext/commands/cogs.rst:152
 msgid "If we want to get the subcommands as well, we can use the :meth:`.Cog.walk_commands` generator. ::"
 msgstr "サブコマンドを取得したい場合は :meth:`.Cog.walk_commands` ジェネレータを使うことができます。"
 
-#: ../../ext/commands/cogs.rst:155
+#: ../../ext/commands/cogs.rst:156
 msgid "To do the same with listeners, we can query them with :meth:`.Cog.get_listeners`. This returns a list of tuples -- the first element being the listener name and the second one being the actual function itself. ::"
 msgstr "これ同様の処理をリスナーで行う場合は、 :meth:`.Cog.get_listeners` が使用できます。これはタプルのリストを返します -- 最初の要素がリスナーの名前で、二つ目の要素が関数そのものです。"
 
