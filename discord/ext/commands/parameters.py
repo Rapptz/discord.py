@@ -30,13 +30,12 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
 
 from discord.utils import MISSING, maybe_coroutine
 
-from . import converter
 from .errors import MissingRequiredArgument
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from discord import Guild, Member, TextChannel, User
+    from discord import Guild
 
     from .context import Context
 
@@ -216,16 +215,14 @@ An alias for :func:`parameter`.
 """
 
 # some handy defaults
-Author: Union[Member, User] = parameter(
+Author = parameter(
     default=attrgetter('author'),
     displayed_default='<you>',
-    converter=Union[converter.MemberConverter, converter.UserConverter],
 )
 
-CurrentChannel: TextChannel = parameter(
+CurrentChannel = parameter(
     default=attrgetter('channel'),
     displayed_default='<this channel>',
-    converter=converter.TextChannelConverter,
 )
 
 
@@ -235,10 +232,9 @@ def default_guild(ctx: Context) -> Guild:
     raise MissingRequiredArgument(ctx.current_parameter)  # type: ignore  # this is never going to be None
 
 
-CurrentGuild: Guild = parameter(
+CurrentGuild = parameter(
     default=default_guild,
     displayed_default='<this server>',
-    converter=converter.GuildConverter,
 )
 
 
