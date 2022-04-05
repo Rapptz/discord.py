@@ -137,7 +137,9 @@ def get_signature_parameters(
     for name, parameter in iterator:
         default = parameter.default
         if isinstance(default, Parameter):  # update from the default
-            parameter._annotation = default.annotation
+            if default.annotation is not Parameter.empty:
+                parameter._annotation = default.annotation
+
             parameter._default = default.default
             parameter._displayed_default = default._displayed_default
 
