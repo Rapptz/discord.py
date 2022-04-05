@@ -470,7 +470,7 @@ class HTTPClient:
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason)
 
-        if payload := kwargs.pop('json', None) is not None:
+        if (payload := kwargs.pop('json', None)) is not None:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = utils._to_json(payload)
 
