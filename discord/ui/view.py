@@ -158,16 +158,16 @@ class View:
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
-        children: List[ItemCallbackType[Any, Any]] = []
+        children: Dict[str, ItemCallbackType[Any, Any]] = {}
         for base in reversed(cls.__mro__):
-            for member in base.__dict__.values():
+            for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
-                    children.append(member)
+                    children[name] = member
 
         if len(children) > 25:
             raise TypeError('View cannot have more than 25 children')
 
-        cls.__view_children_items__ = children
+        cls.__view_children_items__ = list(children.values())
 
     def _init_children(self) -> List[Item[Self]]:
         children = []
