@@ -138,7 +138,16 @@ def get_signature_parameters(
         default = parameter.default
         if isinstance(default, Parameter):  # update from the default
             if default.annotation is not Parameter.empty:
-                parameter._annotation = default.annotation
+                # There are a few cases to care about here.
+                # x: TextChannel = commands.CurrentChannel
+                # x = commands.CurrentChannel
+                # In both of these cases, the default parameter has an explicit annotation
+                # but in the second case it's only used as the fallback.
+                if default._fallback:
+                    if parameter.annotation is Parameter.empty:
+                        parameter._annotation = default.annotation
+                else:
+                    parameter._annotation = default.annotation
 
             parameter._default = default.default
             parameter._displayed_default = default._displayed_default

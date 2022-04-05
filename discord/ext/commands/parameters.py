@@ -31,6 +31,16 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
 from discord.utils import MISSING, maybe_coroutine
 
 from .errors import NoPrivateMessage
+from .converter import GuildConverter
+
+from discord import (
+    Member,
+    User,
+    TextChannel,
+    VoiceChannel,
+    DMChannel,
+    Thread,
+)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -77,7 +87,7 @@ class Parameter(inspect.Parameter):
     .. versionadded:: 2.0
     """
 
-    __slots__ = ('_displayed_default',)
+    __slots__ = ('_displayed_default', '_fallback')
 
     def __init__(
         self,
@@ -93,6 +103,7 @@ class Parameter(inspect.Parameter):
         self._default = default
         self._annotation = annotation
         self._displayed_default = displayed_default
+        self._fallback = False
 
     def replace(
         self,
@@ -218,12 +229,16 @@ An alias for :func:`parameter`.
 Author = parameter(
     default=attrgetter('author'),
     displayed_default='<you>',
+    converter=Union[Member, User],
 )
+Author._fallback = True
 
 CurrentChannel = parameter(
     default=attrgetter('channel'),
     displayed_default='<this channel>',
+    converter=Union[TextChannel, DMChannel, Thread, VoiceChannel],
 )
+CurrentChannel._fallback = True
 
 
 def default_guild(ctx: Context) -> Guild:
@@ -235,6 +250,7 @@ def default_guild(ctx: Context) -> Guild:
 CurrentGuild = parameter(
     default=default_guild,
     displayed_default='<this server>',
+    converter=GuildConverter,
 )
 
 
