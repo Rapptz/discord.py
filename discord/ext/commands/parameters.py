@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
 
 from discord.utils import MISSING, maybe_coroutine
 
-from .errors import MissingRequiredArgument
+from .errors import NoPrivateMessage
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -229,7 +229,7 @@ CurrentChannel = parameter(
 def default_guild(ctx: Context) -> Guild:
     if ctx.guild is not None:
         return ctx.guild
-    raise MissingRequiredArgument(ctx.current_parameter)  # type: ignore  # this is never going to be None
+    raise NoPrivateMessage()
 
 
 CurrentGuild = parameter(

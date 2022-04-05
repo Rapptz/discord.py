@@ -454,7 +454,7 @@ Defaults
 
 .. data:: discord.ext.commands.CurrentGuild
 
-    A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``.
+    A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers.
 
     .. versionadded:: 2.0
 
