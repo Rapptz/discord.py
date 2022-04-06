@@ -94,7 +94,7 @@ class MockCommandInteraction(discord.Interaction):
         super().__init__(data=data, state=client._connection)
 
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.default())
 
 
 class MockTree(discord.app_commands.CommandTree):
