@@ -115,6 +115,29 @@ With this change, constructor of :class:`Client` no longer accepts ``connector``
 In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs,
 see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
 
+Intents Are Now Required
+--------------------------
+
+In earlier versions, the ``intents`` keyword argument was optional and defaulted to :meth:`Intents.default`. In order to better educate users on their intents and to also make it more explicit, this parameter is now required to pass in.
+
+For example:
+
+.. code-block:: python3
+
+    # before
+    client = discord.Client()
+
+    # after
+    intents = discord.Intents.default()
+    client = discord.Client(intents=intents)
+
+This change applies to **all** subclasses of :class:`Client`.
+
+- :class:`AutoShardedClient`
+- :class:`~discord.ext.commands.Bot`
+- :class:`~discord.ext.commands.AutoShardedBot`
+
+
 Abstract Base Classes Changes
 -------------------------------
 
