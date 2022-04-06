@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import inspect
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union, Protocol
 
 from discord.utils import MISSING, maybe_coroutine
 
@@ -160,7 +160,7 @@ class Parameter(inspect.Parameter):
 
         return None if self.required else str(self.default)
 
-    async def get_default(self, ctx: Context) -> Any:
+    async def get_default(self, ctx: Context[Any]) -> Any:
         """|coro|
 
         Gets this parameter's default value.
@@ -217,7 +217,18 @@ def parameter(
     )
 
 
-param = parameter
+class ParameterAlias(Protocol):
+    def __call__(
+        self,
+        *,
+        converter: Any = empty,
+        default: Any = empty,
+        displayed_default: str = empty,
+    ) -> Any:
+        ...
+
+
+param: ParameterAlias = parameter
 r"""param(\*, converter=..., default=..., displayed_default=...)
 
 An alias for :func:`parameter`.
@@ -241,7 +252,7 @@ CurrentChannel = parameter(
 CurrentChannel._fallback = True
 
 
-def default_guild(ctx: Context) -> Guild:
+def default_guild(ctx: Context[Any]) -> Guild:
     if ctx.guild is not None:
         return ctx.guild
     raise NoPrivateMessage()
