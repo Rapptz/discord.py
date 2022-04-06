@@ -148,7 +148,7 @@ def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
         raise ValueError(
-            'names must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
+            f'{name!r} must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
         )
 
     # Ideally, name.islower() would work instead but since certain characters
@@ -156,7 +156,7 @@ def validate_name(name: str) -> str:
     # well, but chances are the server-side check is probably something similar to
     # this code anyway.
     if name.lower() != name:
-        raise ValueError('names must be all lower-case')
+        raise ValueError(f'{name!r} must be all lower-case')
     return name
 
 
@@ -183,7 +183,7 @@ def _validate_auto_complete_callback(
     required_parameters = 2 + requires_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
-        raise TypeError('autocomplete callback requires either 2 or 3 parameters to be passed')
+        raise TypeError(f'autocomplete callback {callback.__qualname__!r} requires either 2 or 3 parameters to be passed')
 
     return callback
 
@@ -308,7 +308,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     cache = {}
     required_params = is_inside_class(func) + 1
     if len(params) < required_params:
-        raise TypeError(f'callback must have more than {required_params - 1} parameter(s)')
+        raise TypeError(f'callback {func.__qualname__!r} must have more than {required_params - 1} parameter(s)')
 
     iterator = iter(params.values())
     for _ in range(0, required_params):
@@ -317,7 +317,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     parameters: List[CommandParameter] = []
     for parameter in iterator:
         if parameter.annotation is parameter.empty:
-            raise TypeError(f'annotation for {parameter.name} must be given')
+            raise TypeError(f'annotation for {parameter.name} must be given in callback {func.__qualname__!r}')
 
         resolved = resolve_annotation(parameter.annotation, globalns, globalns, cache)
         param = annotation_to_parameter(resolved, parameter)
@@ -363,8 +363,9 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     params = inspect.signature(func).parameters
     if len(params) != 2:
         msg = (
-            'context menu callbacks require 2 parameters, the first one being the annotation and the '
-            'other one explicitly annotated with either discord.Message, discord.User, discord.Member, '
+            f'context menu callback {func.__qualname__!r} requires 2 parameters, '
+            'the first one being the annotation and the other one explicitly '
+            'annotated with either discord.Message, discord.User, discord.Member, '
             'or a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
@@ -374,8 +375,9 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     parameter = next(iterator)
     if parameter.annotation is parameter.empty:
         msg = (
-            'second parameter of context menu callback must be explicitly annotated with either discord.Message, '
-            'discord.User, discord.Member, or a typing.Union of discord.Member and discord.User'
+            f'second parameter of context menu callback {func.__qualname__!r} must be explicitly '
+            'annotated with either discord.Message, discord.User, discord.Member, or '
+            'a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
 
