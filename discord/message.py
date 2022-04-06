@@ -1814,7 +1814,9 @@ class Message(PartialMessage, Hashable):
                 return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return f'{self.author.name} has added {self.content} to this channel'
+            return (
+                f'{self.author.name} has added {self.content} to this channel. Its most important updates will show up here.'
+            )
 
         if self.type is MessageType.guild_stream:
             # the author will be a Member
