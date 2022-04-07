@@ -31,6 +31,7 @@ from .mixins import Hashable
 from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException
+from .flags import ChannelFlags
 from .utils import MISSING, parse_time, _get_as_snowflake
 
 __all__ = (
@@ -49,7 +50,7 @@ if TYPE_CHECKING:
     )
     from .types.snowflake import SnowflakeList
     from .guild import Guild
-    from .channel import TextChannel, CategoryChannel
+    from .channel import TextChannel, CategoryChannel, ForumChannel
     from .member import Member
     from .message import Message, PartialMessage
     from .abc import Snowflake, SnowflakeTime
@@ -145,6 +146,7 @@ class Thread(Messageable, Hashable):
         'auto_archive_duration',
         'archive_timestamp',
         '_created_at',
+        '_flags',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload) -> None:
@@ -175,6 +177,7 @@ class Thread(Messageable, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
+        self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
 
         self.me: Optional[ThreadMember]
@@ -213,9 +216,14 @@ class Thread(Messageable, Hashable):
         return self._type
 
     @property
-    def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to."""
+    def parent(self) -> Optional[Union[ForumChannel, TextChannel]]:
+        """Optional[Union[:class:`ForumChannel`, :class:`TextChannel`]]: The parent channel this thread belongs to."""
         return self.guild.get_channel(self.parent_id)  # type: ignore
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this thread."""
+        return ChannelFlags._from_value(self._flags)
 
     @property
     def owner(self) -> Optional[Member]:

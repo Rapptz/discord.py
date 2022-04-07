@@ -1310,6 +1310,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: forum
+
+        A forum channel.
+
+        .. versionadded:: 2.0
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -3736,6 +3742,15 @@ TextChannel
     .. automethod:: typing
         :async-with:
 
+ForumChannel
+~~~~~~~~~~~~~
+
+.. attributetable:: ForumChannel
+
+.. autoclass:: ForumChannel()
+    :members:
+    :inherited-members:
+
 Thread
 ~~~~~~~~
 
@@ -4068,6 +4083,15 @@ ApplicationFlags
 
 .. autoclass:: ApplicationFlags
     :members:
+
+ChannelFlags
+~~~~~~~~~~~~~~
+
+.. attributetable:: ChannelFlags
+
+.. autoclass:: ChannelFlags
+    :members:
+
 
 File
 ~~~~~

@@ -40,7 +40,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15]
 ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
@@ -116,9 +116,14 @@ class ThreadChannel(_BaseChannel):
     rate_limit_per_user: NotRequired[int]
     last_message_id: NotRequired[Optional[Snowflake]]
     last_pin_timestamp: NotRequired[str]
+    flags: NotRequired[int]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel]
+class ForumChannel(_BaseTextChannel):
+    type: Literal[15]
+
+
+GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
 
 
 class DMChannel(_BaseChannel):

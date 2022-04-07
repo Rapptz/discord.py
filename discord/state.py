@@ -851,6 +851,9 @@ class ConnectionState:
         guild._add_thread(thread)
         if not has_thread:
             if data.get('newly_created'):
+                if thread.parent.__class__ is ForumChannel:
+                    thread.parent.last_message_id = thread.id  # type: ignore
+
                 self.dispatch('thread_create', thread)
             else:
                 self.dispatch('thread_join', thread)

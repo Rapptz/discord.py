@@ -147,6 +147,7 @@ def handle_message_parameters(
     stickers: Optional[SnowflakeList] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
     mention_author: Optional[bool] = None,
+    extras: Dict[str, Any] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -233,6 +234,9 @@ def handle_message_parameters(
                 attachments_payload.append(attachment.to_dict())
 
         payload['attachments'] = attachments_payload
+
+    if extras is not MISSING:
+        payload.update(extras)
 
     multipart = []
     if files:
@@ -975,6 +979,19 @@ class HTTPClient:
 
         route = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
         return self.request(route, json=payload, reason=reason)
+
+    def start_thread_in_forum(
+        self,
+        channel_id: Snowflake,
+        *,
+        params: MultipartParameters,
+        reason: Optional[str] = None,
+    ) -> Response[threads.Thread]:
+        r = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
+        if params.files:
+            return self.request(r, files=params.files, form=params.multipart, reason=reason)
+        else:
+            return self.request(r, json=params.payload, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
