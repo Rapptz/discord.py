@@ -1628,7 +1628,7 @@ class Client:
 
         .. note::
 
-            This method is an API call. If you have :attr:`discord.Intents.members` and member cache enabled, consider :meth:`get_user` instead.
+            This method is an API call. If you have :attr:`Intents.members` and member cache enabled, consider :meth:`get_user` instead.
 
         .. versionchanged:: 2.0
 
