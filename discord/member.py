@@ -942,7 +942,7 @@ class Member(discord.abc.Messageable, _UserTag):
         Raises
         -------
         TypeError
-            The ``until`` parameter was the wrong type of the datetime was not timezone-aware.
+            The ``until`` parameter was the wrong type or the datetime was not timezone-aware.
         """
 
         if until is None:
