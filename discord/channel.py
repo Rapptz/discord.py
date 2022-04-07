@@ -2225,6 +2225,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             'name': name,
             'auto_archive_duration': auto_archive_duration or self.default_auto_archive_duration,
             'rate_limit_per_user': slowmode_delay,
+            'type': 11,  # Private threads don't seem to be allowed
         }
 
         with handle_message_parameters(
