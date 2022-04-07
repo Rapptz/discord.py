@@ -255,7 +255,7 @@ class Permissions(BaseFlags):
     @classmethod
     def elevated(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all permissions
-        that Discord calls elevated set to ``True``. These permissions are currently:
+        that require 2FA set to ``True``. These permissions are currently:
 
         - :attr:`kick_members`
         - :attr:`ban_members`
