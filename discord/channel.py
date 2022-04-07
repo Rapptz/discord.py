@@ -238,7 +238,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @property
     def last_message(self) -> Optional[Message]:
-        """Fetches the last message from this channel in cache.
+        """Retrieves the last message from this channel in cache.
 
         The message might not be valid or point to an existing message.
 
@@ -1038,7 +1038,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
 
     @property
     def last_message(self) -> Optional[Message]:
-        """Fetches the last message from this channel in cache.
+        """Retrieves the last message from this channel in cache.
 
         The message might not be valid or point to an existing message.
 
