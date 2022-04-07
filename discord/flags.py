@@ -1210,5 +1210,5 @@ class ChannelFlags(BaseFlags):
 
     @flag_value
     def pinned(self):
-        """:class:`bool`: Returns ``True`` if the"""
+        """:class:`bool`: Returns ``True`` if the thread is pinned to the forum channel."""
         return 1 << 1
