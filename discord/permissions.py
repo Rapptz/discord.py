@@ -253,6 +253,27 @@ class Permissions(BaseFlags):
         return cls(0b1010000000000000000010000)
 
     @classmethod
+    def elevated(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all permissions
+        that require 2FA set to ``True``. These permissions are currently:
+
+        - :attr:`kick_members`
+        - :attr:`ban_members`
+        - :attr:`administrator`
+        - :attr:`manage_channels`
+        - :attr:`manage_guild`
+        - :attr:`manage_messages`
+        - :attr:`manage_roles`
+        - :attr:`manage_webhooks`
+        - :attr:`manage_emojis_and_stickers`
+        - :attr:`manage_threads`
+        - :attr:`moderate_members`
+
+        .. versionadded:: 2.0
+        """
+        return cls(0b10000010001110000000000000010000000111110)
+
+    @classmethod
     def advanced(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
