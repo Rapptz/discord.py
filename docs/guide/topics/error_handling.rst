@@ -13,21 +13,33 @@ to denote that the error ocurred. If you wish to handle errors a different way, 
 In :ref:`Commands <discord_ext_commands>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-All errors that are raised by a command derive from :exc:`~.ext.commands.CommandError`. If an error that occurs during a command does
-not inherit from :exc:`~.ext.commands.CommandError`, it will automatically get wrapped in a :exc:`~.ext.commands.CommandInvokeError`, 
-to retrieve/unwrap this error we need to access the error's ``.original`` attribute.
+All errors that are during the execution of a command, it's checks, it's converters, etc. inherit from :exc:`~.ext.commands.CommandError`. 
+If an error that occurs during the execution of a command does not inherit from :exc:`~.ext.commands.CommandError`, it will automatically 
+get wrapped in a :exc:`~.ext.commands.CommandInvokeError`, to retrieve/unwrap this error we need to access the error's ``.original`` attribute.
 
 **Example**
 
 .. code-block:: python3
 
-    if isinstance(error, commands.CommandInvokeError):
-         error = error.original
+    @bot.event
+    async def on_command_error(ctx, error):
+        """ a CommandInvokeError example """
+
+        # if the error is a CommandInvokeError, we re-assign 
+        # the "error" to the original error. 
+        if isinstance(error, commands.CommandInvokeError):
+            error = error.original
+        
+        # Then, our actual logic goes here...
+
+\* *example using a global error handler*
+
+.. _eh_commands_global:
 
 Global Error handlers
 ^^^^^^^^^^^^^^^^^^^^^
 
-You can create global error handlers by creating :func:`.on_command_error` events, which work like any other event in 
+You can create global error handlers by creating :func:`.on_command_error` events or listeners, which work like any other event in 
 the :ref:`discord-api-events`, these are called for every exception that occurs in a command, before invoke hooks, command
 converters, etc.
 
@@ -45,7 +57,6 @@ converters, etc.
             error = error.original
 
         # Then we continue with our actual logic:
-
         # We use isinstance() to check which error ocurred:
         if isinstance(error, commansd.CommandNotFound):
             await ctx.send("I couldn't find that command, sorry!")
@@ -53,7 +64,9 @@ converters, etc.
         elif isinstance(error, commands.NotOwner):
             await ctx.send("This command can only be used by my owner!")
 
-        else:  # Important!
+        else:
+            # Important! We don't want our error handle to ignore the rest of the errors silently, without
+            # telling us, so we add an `else` statement, and print unhandled errors in it.
             print(f"Ignoring unhandled exception in command {ctx.command!r}")
             traceback.print_exception(type(error), error, error.__traceback__)
             
@@ -65,11 +78,13 @@ converters, etc.
 Local Error Handlers
 ^^^^^^^^^^^^^^^^^^^^
 
-In :class:`Cogs <~ext.commands.Cog>`
+.. _eh_cog_local:
+
+In a :class:`~.ext.commands.Cog`
 
 +++++++++++++++++++++++++++++++++++
 
-To handle errors in only a single :class:`~ext.commands.Cog` you override it's :meth:`~ext.commands.Cog.cog_command_error` method,
+To handle errors that occur in a specific :class:`~ext.commands.Cog` you override it's :meth:`~ext.commands.Cog.cog_command_error` method,
 which gets called when an error occurs inside of this Cog.
 
 **Example**
@@ -89,14 +104,16 @@ which gets called when an error occurs inside of this Cog.
 
             if isinstance(error, commands.DisabledCommand):
                 await ctx.send(f"The command {ctx.command!r} cannot be used in this server!")
-      
+
+.. _eh_command_local:
+
 In a :class:`~.ext.commands.Command`
 
 +++++++++++++++++++++++++++++++++++
 
 
-To handle errors for a specific command, we decorate the function with :meth:`~ext.commands.Command.error`, which will 
-only get called for that specific command.
+To handle errors that occur in a specific command, we decorate a function with :meth:`~ext.commands.Command.error`, which will get
+called when an error occurs in said command.
 
 You can use the same function for multiple commands too, simply by adding multiple decorators on top of it.
 
@@ -126,54 +143,30 @@ You can use the same function for multiple commands too, simply by adding multip
     async def kick_error(ctx, error):
         """ This error handler is only for the `kick` and `ban` commands """
 
-        if isinstance(error, commands.MissingPermissions):
+        if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
             formatted_perms = ', '.join(error.missing_perms)
-            await ctx.send(f'You are missing the following permissions: {perms}')
-
-        elif isinstance(error, commands.BotMissingPermissions):
-            formatted_perms = ', '.join(error.missing_perms)
-            await ctx.send(f'I am missing the following permissions: {perms}')
+            fmt = 'You are' if isinstance(error, commands.MissingPermissions) else 'I am'
+            await ctx.send(f'{fmt} missing the following permissions: {perms}')
 
 
-.. warning::
-    After the local error handlers get called, the global error handler gets called too. If you're handling unhandled errors 
-    in it, do not handle them in local error handlers, as this may cause them to be handled twice or more.
+.. note::
+    After the local error handlers get called, the global error handler gets called too. This can cause errors to be handled more than 
+    once, which you may not want to happen. See :ref:`the next section <eh_combining_error_handlers>` for a more detailed explanation.
+
+.. _eh_combining_error_handlers:
 
 Using Global and Local Error Handlers Together
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sometimes, you may want or need to use local and global error handlers, in these cases, there are multiple ways of checking if 
-the error has already been handled before. There are many approaches on how to do this:
+Sometimes, you may want or need to use per-command, per-cog and/or global error handlers together, in these cases, there are multiple 
+ways of checking if the error has already been handled before. There are many approaches on how to do this:
 
 - Using the :meth:`Cog.has_error_handler <discord.ext.commands.Cog.has_error_handler>`
   and :meth:`Command.has_error_handler <discord.ext.commands.Command.has_error_handler>`
   methods in your global error handler.
-
-**Example**
-
-.. code-block:: python3
-
-    @bot.listen()
-    async def on_command_error(ctx, error):
-        """ Global error handler that ignores local error handlers. """
-
-        if ctx.cog and ctx.cog.has_error_handler():
-            # If the cog has an error handler, we return,
-            # ignoring the error.
-            return
-        
-        if ctx.command and ctx.command.has_error_handler():
-            # We do the same for the command.
-            return
-        
-        # Simpler way to handle CommandInvokeError using getattr
-        error = getattr(error, 'original', error)
-
-        # Then we continue with our error handling as normal...
-        print(f"Ignoring unhandled exception in command {ctx.command!r}")
-        traceback.print_exception(type(error), error, error.__traceback__)
-
-- Attaching flags to the :class:`Context <~.ext.commands.Context>` to denote the error has been handled.
+- Attaching flags to the :class:`~.ext.commands.Context` to denote the error has been handled, taking advantage of order in which
+  the error handlers are called: :ref:`Command-local <eh_command_local>` error handlers are run first, then :ref:`cog-local <eh_cog_local>`, 
+  and at last :ref:`global <eh_commands_global>` error handlers.
 
 **Example**
 
@@ -193,10 +186,7 @@ the error has already been handled before. There are many approaches on how to d
             # Then we do the rest
             await ctx.send(f'Please mention the person to ban using `{ctx.clean_prefix}ban @member`')
 
-*2. Then, in our error handler, we use ``getattr()`` to check for the custom attribute we just set:*
-
-..
-    Note, I couldn't get to reference getattr() to the python docs... >_<
+*2. Then, in our error handler, we use* :func:`getattr` *or* :func:`hasattr` *to check for the custom attribute we just set:*
 
 .. code-block:: python3
 
@@ -206,7 +196,11 @@ the error has already been handled before. There are many approaches on how to d
 
         # Check if `ctx.ignore_error` is True
         if getattr(ctx, 'ignore_error', False) is True:
+            # getattr is used here, instead of hasattr in case we set
+            # the attached flag to `False` later on.
+
             return  # we ignore the error
+
 
         # Simpler way to handle CommandInvokeError using getattr
         error = getattr(error, 'original', error)
@@ -215,11 +209,101 @@ the error has already been handled before. There are many approaches on how to d
         print(f"Ignoring unhandled exception in command {ctx.command!r}")
         traceback.print_exception(type(error), error, error.__traceback__)
 
+.. note::
+
+    To further customize the behaviour of :class:`~.ext.commands.Context`, you can subclass it, and override 
+    :meth:`~.ext.commands.Bot.get_context` in your :class:`~.ext.commands.Bot` subclass.
+
+    ..
+        HTML tags :skull: It works tho...
+
+        Should this whole example be here about subclassing context... ?
+        I made it inside the details thing because it's too big...
+
+    .. details:: <b>Example</b>
+    
+        .. code-block:: python3
+
+            class MyCustomContext(commands.Context):
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+
+                    # setting our custom flag/variable
+                    self.ignore_error = False
+            
+            class MyCustomBot(commands.Bot):
+
+                # overwrite the get_context method of Bot, so it uses
+                # our custom Context class with our flag.
+                async def get_context(self, message, *, cls = None):
+                    #using our custom context if no class is given
+                    cls = cls or MyCustomContext
+                    return await super().get_context(message, cls=cls)
+            
+            intents = discord.Intents.default()
+            intents.message_content = True
+            bot = MyCustomBot(command_prefix='!', intents=intents)
+
+            # A simple command that can raise an error if the 
+            # user has DMs closed, or it failed to send.
+            @bot.command(name='dm-me')
+            async def dm_me(ctx: MyCustomContext, *, message: str):
+                await ctx.author.send(message)
+
+            # simple command-local error handler
+            @dm_me.error
+            async def dm_error(ctx: MyCustomContext, error: commands.CommandError):
+
+                # checking if the message failed to send.
+                if isinstance(error, discord.HTTPException):
+                    await ctx.send('I couldn\'t DM you!')
+
+                    # Set our custom context flag
+                    ctx.ignore_error = True
+                
+                # checking if no message was given.
+                elif isinstance(error, commands.MissingRequiredArgument):
+                    await ctx.send('You must tell me something to send you, using `!dm-me <message>`')
+
+                    # Set our custom context flag
+                    ctx.ignore_error = True
+            
+            # Simple global error handler.
+            @bot.listen('on_command_error')
+            async def global_error_handler(ctx: MyCustomContext, error: commands.CommandError):
+
+                # Check for our custom context flag.
+                if ctx.ignore_error is True:
+                    return
+                
+                # then our actual logic:
+                elif isinstance(erorr, commands.BadArgument):
+                    # errors inheriting BadArgument generally have a
+                    # decent text when you str() them, so we send them
+                    # as-is. But you can do something else here.
+                    await ctx.send(str(error))
+                
+                else:
+                    # Important! We don't want our error handle to ignore the rest of the errors silently, without
+                    # telling us, so we add an `else` statement, and print unhandled errors in it.
+                    print(f"Ignoring unhandled exception in application command {command!r}")
+                    traceback.print_exception(type(error), error, error.__traceback__)
+            
+            bot.run('TOKEN')
+                
+
 In :ref:`Events <discord-api-events>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If an error ocurrs in an event, it does not go to any command error handler, as it is not a command. These errors are instead
 propagated to :meth:`~Client.on_error`, and can be retrieved with a standard call to :func:`sys.exc_info`. 
+
+.. note::
+
+    ``on_error`` will only be dispatched to :meth:`Client.event`.
+
+    It will not be received by :meth:`Client.wait_for`, or, if used, :ref:`ext_commands_api_bot` listeners such as
+    :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
 
 **Example**
 
@@ -242,13 +326,6 @@ propagated to :meth:`~Client.on_error`, and can be retrieved with a standard cal
         # Then we can do whatever with these, for example, printing them to console,
         # or even sending them to some log channel to keep track of them!
         print(f"Ignoring unhandled exception in event {event!r}\n{err_text}")
-
-.. note::
-
-    ``on_error`` will only be dispatched to :meth:`Client.event`.
-
-    It will not be received by :meth:`Client.wait_for`, or, if used, :ref:`ext_commands_api_bot` listeners such as
-    :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
 
 In :ref:`Interactions <interactions_api>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -299,7 +376,6 @@ to retrieve/unwrap this error we need to access the error's ``.original`` attrib
             error = error.original
 
         # Then we continue with our actual logic:
-
         needs_syncing = (
             app_commands.CommandSignatureMismatch, 
             app_commands.CommandNotFound,
@@ -311,7 +387,9 @@ to retrieve/unwrap this error we need to access the error's ``.original`` attrib
                 "Please try again later...", ephemeral=True)
             await tree.sync()
         
-        else:  # important!
+        else:
+            # Important! We don't want our error handle to ignore the rest of the errors silently, without
+            # telling us, so we add an `else` statement, and print unhandled errors in it.
             print(f"Ignoring unhandled exception in application command {command!r}")
             traceback.print_exception(type(error), error, error.__traceback__)
 
