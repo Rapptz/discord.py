@@ -85,7 +85,6 @@ if TYPE_CHECKING:
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
     )
-    from .types.snowflake import SnowflakeList
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):

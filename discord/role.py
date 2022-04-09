@@ -30,7 +30,6 @@ from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _get_as_snowflake, MISSING, _bytes_to_base64_data
-from .partial_emoji import PartialEmoji
 
 __all__ = (
     'RoleTags',
