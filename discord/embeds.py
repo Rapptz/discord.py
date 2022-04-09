@@ -544,7 +544,7 @@ class Embed:
         """Adds a field to the embed object.
 
         This function returns the class instance to allow for fluent-style
-        chaining.
+        chaining. Can only be up to 25 fields.
 
         Parameters
         -----------
@@ -573,7 +573,7 @@ class Embed:
         """Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
-        chaining.
+        chaining. Can only be up to 25 fields.
 
         .. versionadded:: 1.2
 
@@ -633,7 +633,7 @@ class Embed:
     def set_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
         """Modifies a field to the embed object.
 
-        The index must point to a valid pre-existing field.
+        The index must point to a valid pre-existing field. Can only be up to 25 fields.
 
         This function returns the class instance to allow for fluent-style
         chaining.
