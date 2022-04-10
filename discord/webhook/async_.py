@@ -43,6 +43,7 @@ from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
+from ..partial_emoji import PartialEmoji
 from ..http import Route, handle_message_parameters, HTTPClient
 from ..mixins import Hashable
 from ..channel import PartialMessageable
@@ -67,6 +68,7 @@ if TYPE_CHECKING:
     from ..state import ConnectionState
     from ..http import Response
     from ..guild import Guild
+    from ..emoji import Emoji
     from ..channel import TextChannel
     from ..abc import Snowflake
     import datetime
@@ -84,6 +86,7 @@ if TYPE_CHECKING:
     from ..types.channel import (
         PartialChannel as PartialChannelPayload,
     )
+    from ..types.emoji import PartialEmoji as PartialEmojiPayload
 
     BE = TypeVar('BE', bound=BaseException)
     _State = Union[ConnectionState, '_WebhookState']
@@ -467,6 +470,18 @@ class _WebhookState:
         # state parameter is artificial
         return BaseUser(state=self, data=data)  # type: ignore
 
+    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[PartialEmoji, Emoji, str]:
+        if self._parent is not None:
+            return self._parent.get_reaction_emoji(data)
+
+        emoji_id = utils._get_as_snowflake(data, 'id')
+
+        if not emoji_id:
+            # the name key will be a str
+            return data['name']  # type: ignore
+
+        return PartialEmoji(animated=data.get('animated', False), id=emoji_id, name=data['name'])  # type: ignore
+
     @property
     def http(self) -> Union[HTTPClient, _FriendlyHttpAttributeErrorHelper]:
         if self._parent is not None:
@@ -781,9 +796,10 @@ class Webhook(BaseWebhook):
     bot user or authentication.
 
     There are two main ways to use Webhooks. The first is through the ones
-    received by the library such as :meth:`.Guild.webhooks` and
-    :meth:`.TextChannel.webhooks`. The ones received by the library will
-    automatically be bound using the library's internal HTTP session.
+    received by the library such as :meth:`.Guild.webhooks`,
+    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`.
+    The ones received by the library will automatically be
+    bound using the library's internal HTTP session.
 
     The second form involves creating a webhook object manually using the
     :meth:`~.Webhook.from_url` or :meth:`~.Webhook.partial` classmethods.

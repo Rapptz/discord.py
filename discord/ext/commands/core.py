@@ -23,54 +23,44 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import asyncio
+import datetime
+import functools
+import inspect
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     Generator,
     Generic,
-    Literal,
     List,
+    Literal,
     Optional,
-    Union,
     Set,
     Tuple,
-    TypeVar,
     Type,
-    TYPE_CHECKING,
+    TypeVar,
+    Union,
     overload,
 )
-import asyncio
-import functools
-import inspect
-import datetime
 
 import discord
 
-from .errors import *
-from .cooldowns import Cooldown, BucketType, CooldownMapping, MaxConcurrency, DynamicCooldownMapping
-from .converter import run_converters, get_converter, Greedy
 from ._types import _BaseCommand
 from .cog import Cog
 from .context import Context
-
+from .converter import Greedy, run_converters
+from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
+from .errors import *
+from .parameters import Parameter, Signature
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, TypeGuard, Self
+    from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
 
     from discord.message import Message
 
-    from ._types import (
-        BotT,
-        ContextT,
-        Coro,
-        CoroFunc,
-        Check,
-        Hook,
-        Error,
-        ErrorT,
-        HookT,
-    )
+    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, ErrorT, Hook, HookT
 
 
 __all__ = (
@@ -131,9 +121,9 @@ def get_signature_parameters(
     /,
     *,
     skip_parameters: Optional[int] = None,
-) -> Dict[str, inspect.Parameter]:
-    signature = inspect.signature(function)
-    params = {}
+) -> Dict[str, Parameter]:
+    signature = Signature.from_callable(function)
+    params: Dict[str, Parameter] = {}
     cache: Dict[str, Any] = {}
     eval_annotation = discord.utils.evaluate_annotation
     required_params = discord.utils.is_inside_class(function) + 1 if skip_parameters is None else skip_parameters
@@ -145,10 +135,25 @@ def get_signature_parameters(
         next(iterator)
 
     for name, parameter in iterator:
+        default = parameter.default
+        if isinstance(default, Parameter):  # update from the default
+            if default.annotation is not Parameter.empty:
+                # There are a few cases to care about here.
+                # x: TextChannel = commands.CurrentChannel
+                # x = commands.CurrentChannel
+                # In both of these cases, the default parameter has an explicit annotation
+                # but in the second case it's only used as the fallback.
+                if default._fallback:
+                    if parameter.annotation is Parameter.empty:
+                        parameter._annotation = default.annotation
+                else:
+                    parameter._annotation = default.annotation
+
+            parameter._default = default.default
+            parameter._displayed_default = default._displayed_default
+
         annotation = parameter.annotation
-        if annotation is parameter.empty:
-            params[name] = parameter
-            continue
+
         if annotation is None:
             params[name] = parameter.replace(annotation=type(None))
             continue
@@ -435,7 +440,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             globalns = {}
 
-        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(function, globalns)
+        self.params: Dict[str, Parameter] = get_signature_parameters(function, globalns)
 
     def add_check(self, func: Check[ContextT], /) -> None:
         """Adds a check to the command.
@@ -571,9 +576,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context[BotT], param: inspect.Parameter, /) -> Any:
-        required = param.default is param.empty
-        converter = get_converter(param)
+    async def transform(self, ctx: Context[BotT], param: Parameter, /) -> Any:
+        converter = param.converter
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
         view.skip_ws()
@@ -582,7 +586,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # it undos the view ready for the next parameter to use instead
         if isinstance(converter, Greedy):
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
-                return await self._transform_greedy_pos(ctx, param, required, converter.converter)
+                return await self._transform_greedy_pos(ctx, param, param.required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
                 return await self._transform_greedy_var_pos(ctx, param, converter.converter)
             else:
@@ -594,13 +598,13 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
                 raise RuntimeError()  # break the loop
-            if required:
+            if param.required:
                 if self._is_typing_optional(param.annotation):
                     return None
                 if hasattr(converter, '__commands_is_flag__') and converter._can_be_constructible():
                     return await converter._construct_default(ctx)
                 raise MissingRequiredArgument(param)
-            return param.default
+            return await param.get_default(ctx)
 
         previous = view.index
         if consume_rest_is_special:
@@ -619,9 +623,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # type-checker fails to narrow argument
         return await run_converters(ctx, converter, argument, param)  # type: ignore
 
-    async def _transform_greedy_pos(
-        self, ctx: Context[BotT], param: inspect.Parameter, required: bool, converter: Any
-    ) -> Any:
+    async def _transform_greedy_pos(self, ctx: Context[BotT], param: Parameter, required: bool, converter: Any) -> Any:
         view = ctx.view
         result = []
         while not view.eof:
@@ -639,10 +641,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(value)
 
         if not result and not required:
-            return param.default
+            return await param.get_default(ctx)
         return result
 
-    async def _transform_greedy_var_pos(self, ctx: Context[BotT], param: inspect.Parameter, converter: Any) -> Any:
+    async def _transform_greedy_var_pos(self, ctx: Context[BotT], param: Parameter, converter: Any) -> Any:
         view = ctx.view
         previous = view.index
         try:
@@ -655,8 +657,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return value
 
     @property
-    def clean_params(self) -> Dict[str, inspect.Parameter]:
-        """Dict[:class:`str`, :class:`inspect.Parameter`]:
+    def clean_params(self) -> Dict[str, Parameter]:
+        """Dict[:class:`str`, :class:`Parameter`]:
         Retrieves the parameter dictionary without the context or self parameters.
 
         Useful for inspecting signature.
@@ -753,9 +755,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
                 if self.rest_is_raw:
-                    converter = get_converter(param)
                     ctx.current_argument = argument = view.read_rest()
-                    kwargs[name] = await run_converters(ctx, converter, argument, param)
+                    kwargs[name] = await run_converters(ctx, param.converter, argument, param)
                 else:
                     kwargs[name] = await self.transform(ctx, param)
                 break
@@ -1078,29 +1079,31 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         result = []
         for name, param in params.items():
-            greedy = isinstance(param.annotation, Greedy)
+            greedy = isinstance(param.converter, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
-            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
-            # parameter signature is a literal list of it's values
-            annotation = param.annotation.converter if greedy else param.annotation
+            annotation = param.converter.converter if greedy else param.converter  # type: ignore  # needs conditional types
             origin = getattr(annotation, '__origin__', None)
             if not greedy and origin is Union:
                 none_cls = type(None)
-                union_args = annotation.__args__
+                union_args = annotation.__args__  # type: ignore  # this is safe
                 optional = union_args[-1] is none_cls
                 if len(union_args) == 2 and optional:
                     annotation = union_args[0]
                     origin = getattr(annotation, '__origin__', None)
 
+            # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
+            # parameter signature is a literal list of it's values
             if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
-            if param.default is not param.empty:
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)  # type: ignore  # this is safe
+            if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
                 should_print = param.default if isinstance(param.default, str) else param.default is not None
                 if should_print:
-                    result.append(f'[{name}={param.default}]' if not greedy else f'[{name}={param.default}]...')
+                    result.append(
+                        f'[{name}={param.displayed_default}]' if not greedy else f'[{name}={param.displayed_default}]...'
+                    )
                     continue
                 else:
                     result.append(f'[{name}]')

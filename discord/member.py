@@ -554,8 +554,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the member."""
-        if self.nick:
-            return f'<@!{self._user.id}>'
         return f'<@{self._user.id}>'
 
     @property
@@ -968,7 +966,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         Raises
         -------
         TypeError
-            The ``until`` parameter was the wrong type of the datetime was not timezone-aware.
+            The ``until`` parameter was the wrong type or the datetime was not timezone-aware.
         """
 
         if until is None:

@@ -72,7 +72,7 @@ _log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel
+    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel
     from .handlers import CaptchaHandler
     from .threads import Thread
     from .file import File
@@ -110,7 +110,7 @@ if TYPE_CHECKING:
     T = TypeVar('T')
     BE = TypeVar('BE', bound=BaseException)
     Response = Coroutine[Any, Any, T]
-    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel]
+    MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel]
 
 
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
@@ -162,6 +162,7 @@ def handle_message_parameters(
     stickers: Optional[SnowflakeList] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
     mention_author: Optional[bool] = None,
+    extras: Dict[str, Any] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -241,6 +242,9 @@ def handle_message_parameters(
                 attachments_payload.append(attachment.to_dict())
 
         payload['attachments'] = attachments_payload
+
+    if extras is not MISSING:
+        payload.update(extras)
 
     multipart = []
     if files:
@@ -1017,6 +1021,7 @@ class HTTPClient:
             'locked',
             'invitable',
             'default_auto_archive_duration',
+            'flags',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
@@ -1081,15 +1086,12 @@ class HTTPClient:
         )
         payload = {
             'name': name,
+            'location': location if location is not MISSING else choice(('Message', 'Reply Chain Nudge')),
             'auto_archive_duration': auto_archive_duration,
-            'rate_limit_per_user': rate_limit_per_user,
             'type': 11,
         }
-
-        if location is MISSING:
-            payload['location'] = choice(('Message', 'Reply Chain Nudge'))
-        else:
-            payload['location'] = location
+        if rate_limit_per_user is not None:
+            payload['rate_limit_per_user'] = rate_limit_per_user
 
         return self.request(route, json=payload, reason=reason)
 
@@ -1107,19 +1109,33 @@ class HTTPClient:
         r = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
         payload = {
             'auto_archive_duration': auto_archive_duration,
-            'location': None,
+            'location': choice(('Plus Button', 'Thread Browser Toolbar')),
             'name': name,
             'type': type,
-            'rate_limit_per_user': rate_limit_per_user,
         }
         if invitable is not MISSING:
             payload['invitable'] = invitable
+        if rate_limit_per_user is not None:
+            payload['rate_limit_per_user'] = rate_limit_per_user
 
         return self.request(r, json=payload, reason=reason)
 
+    def start_thread_in_forum(
+        self,
+        channel_id: Snowflake,
+        *,
+        params: MultipartParameters,
+        reason: Optional[str] = None,
+    ) -> Response[threads.Thread]:
+        r = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
+        if params.files:
+            return self.request(r, files=params.files, form=params.multipart, reason=reason)
+        else:
+            return self.request(r, json=params.payload, reason=reason)
+
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         r = Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id)
-        params = {'location': choice(('Banner', 'Toolbar Overflow', 'Context Menu'))}
+        params = {'location': choice(('Banner', 'Toolbar Overflow', 'Sidebar Overflow', 'Context Menu'))}
 
         return self.request(r, params=params)
 
@@ -1131,7 +1147,7 @@ class HTTPClient:
 
     def leave_thread(self, channel_id: Snowflake) -> Response[None]:
         r = Route('DELETE', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id)
-        params = {'location': choice(('Toolbar Overflow', 'Context Menu'))}
+        params = {'location': choice(('Toolbar Overflow', 'Context Menu', 'Sidebar Overflow'))}
 
         return self.request(r, params=params)
 

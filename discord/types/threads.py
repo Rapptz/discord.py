@@ -65,6 +65,8 @@ class Thread(TypedDict):
     member: NotRequired[ThreadMember]
     last_message_id: NotRequired[Optional[Snowflake]]
     last_pin_timestamp: NotRequired[Optional[Snowflake]]
+    newly_created: NotRequired[bool]
+    flags: NotRequired[int]
 
 
 class ThreadPaginationPayload(TypedDict):

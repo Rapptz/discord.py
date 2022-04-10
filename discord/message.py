@@ -538,6 +538,7 @@ class PartialMessage(Hashable):
     the constructor itself, and the second is via the following:
 
     - :meth:`TextChannel.get_partial_message`
+    - :meth:`VoiceChannel.get_partial_message`
     - :meth:`Thread.get_partial_message`
     - :meth:`DMChannel.get_partial_message`
 
@@ -561,7 +562,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
+    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1159,7 +1160,7 @@ class Message(PartialMessage, Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
+    channel: Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     call: Optional[:class:`CallMessage`]
@@ -1771,7 +1772,9 @@ class Message(PartialMessage, Hashable):
                 return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return f'{self.author.name} has added **{self.content}** to this channel. Its most important updates will show up here.'
+            return (
+                f'{self.author.name} has added {self.content} to this channel. Its most important updates will show up here.'
+            )
 
         if self.type is MessageType.guild_stream:
             # The author will be a Member

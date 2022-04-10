@@ -93,8 +93,7 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
 
-    PartialMessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable]
-    MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
+    MessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING

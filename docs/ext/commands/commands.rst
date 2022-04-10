@@ -768,6 +768,58 @@ A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` e
 given as a :class:`dict` rather than a :class:`list`.
 
 
+.. _ext_commands_parameter:
+
+Parameter Metadata
+-------------------
+
+:func:`~ext.commands.parameter` assigns custom metadata to a :class:`~ext.commands.Command`'s parameter.
+
+This is useful for:
+
+- Custom converters as annotating a parameter with a custom converter works at runtime, type checkers don't like it
+  because they can't understand what's going on.
+
+  .. code-block:: python3
+
+      class SomeType:
+          foo: int
+
+      class MyVeryCoolConverter(commands.Converter[SomeType]):
+          ...  # implementation left as an exercise for the reader
+
+      @bot.command()
+      async def bar(ctx, cool_value: MyVeryCoolConverter):
+          cool_value.foo  # type checker warns MyVeryCoolConverter has no value foo (uh-oh)
+
+  However, fear not we can use :func:`~ext.commands.parameter` to tell type checkers what's going on.
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoolConverter)):
+          cool_value.foo  # no error (hurray)
+
+- Late binding behaviour
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
+          await ctx.send(f'Hello {to.mention} :wave:')
+
+  Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and
+  :obj:`~.ext.commands.CurrentGuild`, armed with this we can simplify ``wave`` to:
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def wave(to: discord.User = commands.Author):
+          await ctx.send(f'Hello {to.mention} :wave:')
+
+  :obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled.
+
+
 .. _ext_commands_error_handler:
 
 Error Handling

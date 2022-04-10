@@ -114,7 +114,7 @@ if TYPE_CHECKING:
     )
     from .types.voice import GuildVoiceState
     from .permissions import Permissions
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
     from .state import ConnectionState
@@ -132,7 +132,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel]
+    GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
 
 
@@ -2061,7 +2061,7 @@ class Guild(Hashable):
         if before is not MISSING and after is not MISSING:
             raise TypeError('bans pagination does not support both before and after')
 
-        # This endpoint paginates in ascending order.
+        # This endpoint paginates in ascending order
         endpoint = self._state.http.get_bans
 
         async def _before_strategy(retrieve, before, limit):

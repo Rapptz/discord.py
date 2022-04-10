@@ -33,6 +33,7 @@ from .mixins import Hashable
 from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException, InvalidData
+from .flags import ChannelFlags
 from .utils import MISSING, parse_time, snowflake_time, _get_as_snowflake
 
 __all__ = (
@@ -51,7 +52,7 @@ if TYPE_CHECKING:
         ThreadArchiveDuration,
     )
     from .guild import Guild
-    from .channel import TextChannel, CategoryChannel
+    from .channel import TextChannel, CategoryChannel, ForumChannel
     from .member import Member
     from .message import Message, PartialMessage
     from .abc import Snowflake, SnowflakeTime
@@ -141,6 +142,7 @@ class Thread(Messageable, Hashable):
         'archive_timestamp',
         '_member_ids',
         '_created_at',
+        '_flags',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload) -> None:
@@ -172,6 +174,7 @@ class Thread(Messageable, Hashable):
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
         self._member_ids: List[Union[str, int]] = data['member_ids_preview']
+        self._flags: int = data.get('flags', 0)
         self._unroll_metadata(data['thread_metadata'])
 
     def _unroll_metadata(self, data: ThreadMetadata):
@@ -210,20 +213,25 @@ class Thread(Messageable, Hashable):
         return self._type
 
     @property
-    def parent(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to.
+    def parent(self) -> Optional[Union[TextChannel, ForumChannel]]:
+        """Optional[Union[:class:`ForumChannel`, :class:`TextChannel`]]: The parent channel this thread belongs to.
 
         There is an alias for this named :attr:`channel`.
         """
         return self.guild.get_channel(self.parent_id)  # type: ignore
 
     @property
-    def channel(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The parent channel this thread belongs to.
+    def channel(self) -> Optional[Union[TextChannel, ForumChannel]]:
+        """Optional[Union[:class:`ForumChannel`, :class:`TextChannel`]]: The parent channel this thread belongs to.
 
         This is an alias of :attr:`parent`.
         """
         return self.parent
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this thread."""
+        return ChannelFlags._from_value(self._flags)
 
     @property
     def owner(self) -> Optional[Member]:
@@ -499,6 +507,7 @@ class Thread(Messageable, Hashable):
         archived: bool = MISSING,
         locked: bool = MISSING,
         invitable: bool = MISSING,
+        pinned: bool = MISSING,
         slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
         reason: Optional[str] = None,
@@ -522,6 +531,8 @@ class Thread(Messageable, Hashable):
             Whether to archive the thread or not.
         locked: :class:`bool`
             Whether to lock the thread or not.
+        pinned: :class:`bool`
+            Whether to pin the thread or not. This only works if the thread is part of a forum.
         invitable: :class:`bool`
             Whether non-moderators can add other non-moderators to this thread.
             Only available for private threads.
@@ -559,6 +570,10 @@ class Thread(Messageable, Hashable):
             payload['invitable'] = invitable
         if slowmode_delay is not MISSING:
             payload['rate_limit_per_user'] = slowmode_delay
+        if pinned is not MISSING:
+            flags = self.flags
+            flags.pinned = pinned
+            payload['flags'] = flags.value
 
         data = await self._state.http.edit_channel(self.id, **payload, reason=reason)
         # The data payload will always be a Thread payload

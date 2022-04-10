@@ -51,13 +51,13 @@ from .errors import CommandError
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-    import inspect
 
     import discord.abc
 
     from .bot import BotBase
     from .context import Context
     from .cog import Cog
+    from .parameters import Parameter
 
     from ._types import (
         Check,
@@ -224,9 +224,7 @@ class _HelpCommandImpl(Command):
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original: HelpCommand = inject
         self._injected: HelpCommand = inject
-        self.params: Dict[str, inspect.Parameter] = get_signature_parameters(
-            inject.command_callback, globals(), skip_parameters=1
-        )
+        self.params: Dict[str, Parameter] = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
 
     async def prepare(self, ctx: Context[Any]) -> None:
         self._injected = injected = self._original.copy()
@@ -1021,7 +1019,7 @@ class DefaultHelpCommand(HelpCommand):
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.commands_heading: str = options.pop('commands_heading', "Commands:")
+        self.commands_heading: str = options.pop('commands_heading', 'Commands:')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
 
@@ -1045,8 +1043,8 @@ class DefaultHelpCommand(HelpCommand):
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
         return (
-            f"Type {self.context.clean_prefix}{command_name} command for more info on a command.\n"
-            f"You can also type {self.context.clean_prefix}{command_name} category for more info on a category."
+            f'Type {self.context.clean_prefix}{command_name} command for more info on a command.\n'
+            f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
         )
 
     def add_indented_commands(
@@ -1235,10 +1233,10 @@ class MinimalHelpCommand(HelpCommand):
 
     def __init__(self, **options: Any) -> None:
         self.sort_commands: bool = options.pop('sort_commands', True)
-        self.commands_heading: str = options.pop('commands_heading', "Commands")
+        self.commands_heading: str = options.pop('commands_heading', 'Commands')
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
-        self.aliases_heading: str = options.pop('aliases_heading', "Aliases:")
+        self.aliases_heading: str = options.pop('aliases_heading', 'Aliases:')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
 
@@ -1268,8 +1266,8 @@ class MinimalHelpCommand(HelpCommand):
         """
         command_name = self.invoked_with
         return (
-            f"Use `{self.context.clean_prefix}{command_name} [command]` for more info on a command.\n"
-            f"You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category."
+            f'Use `{self.context.clean_prefix}{command_name} [command]` for more info on a command.\n'
+            f'You can also use `{self.context.clean_prefix}{command_name} [category]` for more info on a category.'
         )
 
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:

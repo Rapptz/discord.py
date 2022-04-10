@@ -618,4 +618,3 @@ class GuildSettings:
         data = await self._state.http.edit_guild_settings(self._guild_id, payload)
 
         return GuildSettings(data=data, state=self._state)
-
