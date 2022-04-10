@@ -1066,6 +1066,13 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
+
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
 
@@ -2028,6 +2035,13 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def threads(self) -> List[Thread]:
         """List[:class:`Thread`]: Returns all the threads that you can see."""
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
