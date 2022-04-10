@@ -499,7 +499,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.chat_input] = ...,
+        type: Literal[AppCommandType.chat_input],
     ) -> List[Union[Command[Any, ..., Any], Group]]:
         ...
 
