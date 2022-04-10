@@ -48,7 +48,7 @@ Client
 CaptchaHandler
 ~~~~~~~~~~~~~~
 
-.. attribute:: CaptchaHandler
+.. attributetable:: CaptchaHandler
 
 .. autoclass:: CaptchaHandler
     :members:
@@ -371,7 +371,7 @@ Client
 
 .. function:: on_settings_update(before, after)
 
-    Called when your :class:`Settings` updates, for example:
+    Called when your :class:`UserSettings` updates, for example:
 
     - Changed theme
     - Changed custom activity
@@ -381,19 +381,19 @@ Client
     .. versionadded:: 2.0
 
     :param before: The settings prior to being updated.
-    :type before: :class:`Settings`
+    :type before: :class:`UserSettings`
     :param after: The settings after being updated.
-    :type after: :class:`Settings`
+    :type after: :class:`SettiUserSettingsngs`
 
 .. function:: on_guild_settings_update(before, after)
 
-    Called when a :class:`.Guild`'s :class:`.GuildSettings` updates, for example:
+    Called when a :class:`.Guild`'s :class:`GuildSettings` updates, for example:
 
-    - Muted guild
-    - Changed guild notification settings
+    - Muted guild or channel
+    - Changed notification settings
     - etc
 
-    Note that you can get the guild from :attr:`.GuildSettings.guild`.
+    Note that you can get the guild from :attr:`GuildSettings.guild`.
 
     .. versionadded:: 2.0
 
@@ -414,7 +414,7 @@ Client
 .. function:: on_connections_update()
 
     Called when your account connections are updated.
-    The updated connections are not provided and must be fetched by :func:`.Client.connections`.
+    The updated connections are not provided and must be fetched by :meth:`Client.connections`.
 
     .. versionadded:: 2.0
 
@@ -2408,30 +2408,30 @@ of :class:`enum.Enum`.
 
     Represents the membership state of a :class:`TeamMember`.
 
-    .. container:: operations
-
-        .. versionadded:: 2.0
-
-        .. describe:: x == y
-
-            Checks if two membership states are equal.
-        .. describe:: x != y
-
-            Checks if two membership states are not equal.
-        .. describe:: x > y
-
-            Checks if a membership state is higher than another.
-        .. describe:: x < y
-
-            Checks if a membership state is lower than another.
-        .. describe:: x >= y
-
-            Checks if a membership state is higher or equal to another.
-        .. describe:: x <= y
-
-            Checks if a membership state is lower or equal to another.
-
     .. versionadded:: 1.3
+
+    .. container:: operations
+
+      .. versionadded:: 2.0
+
+      .. describe:: x == y
+
+          Checks if two application states are equal.
+      .. describe:: x != y
+
+          Checks if two application states are not equal.
+      .. describe:: x > y
+
+          Checks if a application state is higher than another.
+      .. describe:: x < y
+
+          Checks if a application state is lower than another.
+      .. describe:: x >= y
+
+          Checks if a application state is higher or equal to another.
+      .. describe:: x <= y
+
+          Checks if a application state is lower or equal to another.
 
     .. attribute:: invited
 
@@ -2467,30 +2467,28 @@ of :class:`enum.Enum`.
 
     Represents the verification application state of a :class:`Application`.
 
-    .. container:: operations
-
-        .. versionadded:: 2.0
-
-        .. describe:: x == y
-
-            Checks if two application states are equal.
-        .. describe:: x != y
-
-            Checks if two application states are not equal.
-        .. describe:: x > y
-
-            Checks if a application state is higher than another.
-        .. describe:: x < y
-
-            Checks if a application state is lower than another.
-        .. describe:: x >= y
-
-            Checks if a application state is higher or equal to another.
-        .. describe:: x <= y
-
-            Checks if a application state is lower or equal to another.
-
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+      .. describe:: x == y
+
+          Checks if two application states are equal.
+      .. describe:: x != y
+
+          Checks if two application states are not equal.
+      .. describe:: x > y
+
+          Checks if a application state is higher than another.
+      .. describe:: x < y
+
+          Checks if a application state is lower than another.
+      .. describe:: x >= y
+
+          Checks if a application state is higher or equal to another.
+      .. describe:: x <= y
+
+          Checks if a application state is lower or equal to another.
 
     .. attribute:: ineligible
 
@@ -2512,30 +2510,28 @@ of :class:`enum.Enum`.
 
     Represents the commerce application state of a :class:`Application`.
 
-    .. container:: operations
-
-        .. versionadded:: 2.0
-
-        .. describe:: x == y
-
-            Checks if two application states are equal.
-        .. describe:: x != y
-
-            Checks if two application states are not equal.
-        .. describe:: x > y
-
-            Checks if a application state is higher than another.
-        .. describe:: x < y
-
-            Checks if a application state is lower than another.
-        .. describe:: x >= y
-
-            Checks if a application state is higher or equal to another.
-        .. describe:: x <= y
-
-            Checks if a application state is lower or equal to another.
-
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+      .. describe:: x == y
+
+          Checks if two application states are equal.
+      .. describe:: x != y
+
+          Checks if two application states are not equal.
+      .. describe:: x > y
+
+          Checks if a application state is higher than another.
+      .. describe:: x < y
+
+          Checks if a application state is lower than another.
+      .. describe:: x >= y
+
+          Checks if a application state is higher or equal to another.
+      .. describe:: x <= y
+
+          Checks if a application state is lower or equal to another.
 
     .. attribute:: none
 
@@ -2565,30 +2561,28 @@ of :class:`enum.Enum`.
 
     Represents the RPC application state of a :class:`Application`.
 
-    .. container:: operations
-
-        .. versionadded:: 2.0
-
-        .. describe:: x == y
-
-            Checks if two application states are equal.
-        .. describe:: x != y
-
-            Checks if two application states are not equal.
-        .. describe:: x > y
-
-            Checks if a application state is higher than another.
-        .. describe:: x < y
-
-            Checks if a application state is lower than another.
-        .. describe:: x >= y
-
-            Checks if a application state is higher or equal to another.
-        .. describe:: x <= y
-
-            Checks if a application state is lower or equal to another.
-
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+      .. describe:: x == y
+
+          Checks if two application states are equal.
+      .. describe:: x != y
+
+          Checks if two application states are not equal.
+      .. describe:: x > y
+
+          Checks if a application state is higher than another.
+      .. describe:: x < y
+
+          Checks if a application state is lower than another.
+      .. describe:: x >= y
+
+          Checks if a application state is higher or equal to another.
+      .. describe:: x <= y
+
+          Checks if a application state is lower or equal to another.
 
     .. attribute:: disabled
 
@@ -4492,6 +4486,42 @@ Modal
 .. autoclass:: Modal()
     :members:
 
+Component
+~~~~~~~~~~
+
+.. attributetable:: Component
+
+.. autoclass:: Component()
+    :members:
+
+.. attributetable:: ActionRow
+
+.. autoclass:: ActionRow()
+    :members:
+
+.. attributetable:: Button
+
+.. autoclass:: Button()
+    :members:
+    :inherited-members:
+
+.. attributetable:: SelectMenu
+
+.. autoclass:: SelectMenu()
+    :members:
+    :inherited-members:
+
+.. attributetable:: SelectOption
+
+.. autoclass:: SelectOption()
+    :members:
+
+.. attributetable:: TextInput
+
+.. autoclass:: TextInput()
+    :members:
+    :inherited-members:
+
 ApplicationCommand
 ~~~~~~~~~~~~~~~~~~
 
@@ -4580,7 +4610,20 @@ Widget
     :members:
     :inherited-members:
 
-Raw events
+WelcomeScreen
+~~~~~~~~~~~~~~
+
+.. attributetable:: WelcomeScreen
+
+.. autoclass:: WelcomeScreen()
+    :members:
+
+.. attributetable:: WelcomeChannel
+
+.. autoclass:: WelcomeChannel()
+    :members:
+
+Raw Events
 ~~~~~~~~~~~
 
 .. attributetable:: RawMessageDeleteEvent

@@ -93,7 +93,7 @@ class CallMessage:
 
     @property
     def channel(self) -> _PrivateChannel:
-        r""":class:`PrivateChannel`\: The private channel associated with this message."""
+        """:class:`.abc.PrivateChannel`: The private channel associated with this message."""
         return self.message.channel  # type: ignore # Can only be a private channel here
 
     @property

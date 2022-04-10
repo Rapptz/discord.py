@@ -51,7 +51,7 @@ __all__ = (
 
 @runtime_checkable
 class ApplicationCommand(Protocol):
-    """An ABC that represents a useable application command.
+    """An ABC that represents a usable application command.
 
     The following implement this ABC:
 
@@ -67,7 +67,7 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`AppCommandType`
+    type: :class:`.enums.AppCommandType`
         The type of application command.
     """
 

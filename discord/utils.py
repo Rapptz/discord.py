@@ -1182,7 +1182,7 @@ def set_target(
         The channel to target.
     message: Optional[:class:`.Message`]
         The message to target.
-    user: Optional[:class:`~abc.Snowflake`]
+    user: Optional[:class:`~discord.abc.Snowflake`]
         The user to target.
     """
     attrs = {}

@@ -72,7 +72,7 @@ Additionally, while you can subscribe to 5 channels/request, the channels need t
 
 You may have already noticed a few problems with this:
 
-1. You'll get spammed with ``member_add/remove``s whenever someone changes position in the member sidebar.
+1. You'll get spammed with ``member_add/remove`` s whenever someone changes position in the member sidebar.
 2. For guilds with >1,000 members you don't receive offline members. So, you won't know if an offline member is kicked, or an invisible member joins/leaves. You also won't know if someone came online or joined. Or, if someone went offline or left.
 
 | #1 is mostly solveable with a bit of parsing, but #2 is a huge problem.

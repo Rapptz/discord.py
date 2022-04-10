@@ -342,6 +342,7 @@ class Guild(Hashable):
 
     def __init__(self, *, data: Union[GuildPayload, GuildPreviewPayload], state: ConnectionState) -> None:
         self._chunked = False
+        self._cs_joined = None
         self._roles: Dict[int, Role] = {}
         self._channels: Dict[int, GuildChannel] = {}
         self._members: Dict[int, Member] = {}
@@ -612,14 +613,20 @@ class Guild(Hashable):
         self_id = self._state.self_id
         return self.get_member(self_id)  # type: ignore # The self member is *always* cached
 
-    @utils.cached_slot_property('_cs_joined')
-    def joined(self) -> bool:
-        """:class:`bool`: Returns whether you are a member of this guild.
+    def is_joined(self) -> bool:
+        """Returns whether you are a member of this guild.
 
-        May not be accurate for :class:`Guild`s fetched over HTTP.
+        May not be accurate for :class:`Guild` s fetched over HTTP.
 
         .. versionadded:: 2.0
+
+        Returns
+        -------
+        :class:`bool`
+            Whether you are a member of this guild.
         """
+        if self._cs_joined is not None:
+            return self._cs_joined
         if (self.me and self.me.joined_at) or self.joined_at:
             return True
         return self._state.is_guild_evicted(self)
@@ -1544,7 +1551,7 @@ class Guild(Hashable):
         HTTPException
             Leaving the guild failed.
         """
-        await self._state.http.leave_guild(self.id, lurking=not self.joined)
+        await self._state.http.leave_guild(self.id, lurking=not self.is_joined())
 
     async def delete(self) -> None:
         """|coro|
@@ -1894,7 +1901,7 @@ class Guild(Hashable):
             The ID of the member to fetch their profile for.
         with_mutuals: :class:`bool`
             Whether to fetch mutual guilds and friends.
-            This fills in :attr:`MemberProfile.mutual_guilds` & :attr:`MemberProfile.mutual_friends`.
+            This fills in :attr:`.MemberProfile.mutual_guilds` & :attr:`.MemberProfile.mutual_friends`.
         fetch_note: :class:`bool`
             Whether to pre-fetch the user's note.
 
@@ -3566,7 +3573,7 @@ class Guild(Hashable):
 
         Raises
         -------
-        ClientException:
+        ClientException
             This guild cannot be chunked or chunking failed.
             Guild is no longer available.
 
@@ -3603,7 +3610,7 @@ class Guild(Hashable):
         .. versionadded:: 2.0
 
         .. note::
-            If you are the owner, have either of :attr:`~Permissions.adminstrator`,
+            If you are the owner, have either of :attr:`~Permissions.administrator`,
             :attr:`~Permissions.kick_members`, :attr:`~Permissions.ban_members`, or :attr:`~Permissions.manage_roles`,
             permissions will be fetched through OPcode 8 (this includes offline members).
             Else, they will be scraped from the member sidebar.

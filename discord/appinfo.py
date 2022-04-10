@@ -560,7 +560,7 @@ class InteractionApplication(Hashable):
         Only available from :attr:`~Modal.application`.
     command_count: Optional[:class:`int`]
         The number of commands the application has.
-        Only available from :attr:`~abc.ApplicationCommand.application`.
+        Only available from :attr:`~discord.abc.ApplicationCommand.application`.
     """
 
     __slots__ = (

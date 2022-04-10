@@ -24,7 +24,7 @@ Is this your first time using the library? This is the place to get started!
 - **Migrating from discord.py:** :doc:`migrating_from_dpy`
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
 - **Working with Discord:** :doc:`token`
-- **Examples:** Many examples are available in the :resource:`repository <examples>`.
+- **Examples:** Many examples are available in the :resource:`repository <examples>`
 
 | **Obligatory note:**
 | Automating user accounts is against the Discord ToS. If what you are trying to do is accomplishable with a bot account, please use one.

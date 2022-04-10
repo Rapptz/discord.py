@@ -1083,7 +1083,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         ------------
         with_mutuals: :class:`bool`
             Whether to fetch mutual guilds and friends.
-            This fills in :attr:`mutual_guilds` & :attr:`mutual_friends`.
+            This fills in :attr:`.UserProfile.mutual_guilds` & :attr:`.UserProfile.mutual_friends`.
         fetch_note: :class:`bool`
             Whether to pre-fetch the user's note.
 

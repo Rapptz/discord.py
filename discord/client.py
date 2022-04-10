@@ -573,9 +573,6 @@ class Client:
 
         Raises
         -------
-        GatewayNotFound
-            If the gateway to connect to Discord is not found. Usually if this
-            is thrown then there is a Discord API outage.
         ConnectionClosed
             The websocket connection has been terminated.
         """
@@ -1675,7 +1672,7 @@ class Client:
             if attr is not MISSING:
                 lurking = not attr
             elif (new_guild := self._connection._get_guild(guild.id)) is not None:
-                lurking = not new_guild.joined
+                lurking = not new_guild.is_joined()
 
         await self.http.leave_guild(guild.id, lurking=lurking)
 
@@ -1961,7 +1958,7 @@ class Client:
             The ID of the user to fetch their profile for.
         with_mutuals: :class:`bool`
             Whether to fetch mutual guilds and friends.
-            This fills in :attr:`UserProfile.mutual_guilds` & :attr:`UserProfile.mutual_friends`.
+            This fills in :attr:`.UserProfile.mutual_guilds` & :attr:`.UserProfile.mutual_friends`.
         fetch_note: :class:`bool`
             Whether to pre-fetch the user's note.
 
