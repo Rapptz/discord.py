@@ -1344,7 +1344,16 @@ class Webhook(BaseWebhook):
     def _create_message(self, data, *, thread: Snowflake):
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
-        channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        if thread is MISSING:
+            channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        else:
+            channel = self.channel
+            if isinstance(channel, TextChannel):
+                channel = channel.get_thread(thread.id)
+
+            if channel is None:
+                channel = PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+
         # state is artificial
         return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 
