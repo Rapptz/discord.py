@@ -41,6 +41,24 @@ class PartialConnection:
 
     This is the info you get for other people's connections.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two connections are equal.
+
+        .. describe:: x != y
+
+            Checks if two connections are not equal.
+
+        .. describe:: hash(x)
+
+            Return the connection's hash.
+
+        .. describe:: str(x)
+
+            Returns the connection's name.
+
     Attributes
     ----------
     id: :class:`str`
@@ -61,6 +79,25 @@ class PartialConnection:
 
     def __init__(self, data: dict):
         self._update(data)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r} visible={self.visible}>'
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.id))
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, PartialConnection):
+            return self.id == other.id and self.name == other.name
+        return False
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, PartialConnection):
+            return self.id != other.id or self.name != other.name
+        return True
 
     def _update(self, data: dict):
         self.id: str = data['id']
@@ -115,6 +152,8 @@ class Connection(PartialConnection):
         ----------
         visible: :class:`bool`
             Whether the connection is visible on your profile.
+        show_activity: :class:`bool`
+            Whether activities from this connection will be shown in presences.
 
         Raises
         ------

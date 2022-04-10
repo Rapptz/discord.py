@@ -29,6 +29,7 @@ from .appinfo import InteractionApplication
 from .components import _component_factory
 from .enums import InteractionType
 from .errors import InvalidData
+from .mixins import Hashable
 from .utils import time_snowflake, utcnow
 
 if TYPE_CHECKING:
@@ -42,10 +43,28 @@ __all__ = (
 # fmt: on
 
 
-class Modal:
+class Modal(Hashable):
     """Represents a modal from the Discord Bot UI Kit.
 
     .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two modals are equal.
+
+        .. describe:: x != y
+
+            Checks if two modals are not equal.
+
+        .. describe:: hash(x)
+
+            Return the modal's hash.
+
+        .. describe:: str(x)
+
+            Returns the modal's title.
 
     Attributes
     -----------
@@ -75,6 +94,9 @@ class Modal:
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
         self.application: InteractionApplication = InteractionApplication(state=interaction._state, data=data['application'])
 
+    def __str__(self) -> str:
+        return self.title
+
     def to_dict(self) -> dict:
         return {
             'id': str(self.id),
@@ -87,7 +109,7 @@ class Modal:
 
         Submits the modal.
 
-        The individual components must be already answered (if applicable).
+        All required components must be already answered.
 
         Raises
         -------

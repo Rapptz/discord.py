@@ -25,9 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from . import utils
-from .user import BaseUser
 from .asset import Asset
 from .enums import TeamMembershipState, try_enum
+from .mixins import Hashable
+from .user import BaseUser
 
 from typing import TYPE_CHECKING, Optional, overload, List, Union
 
@@ -49,15 +50,33 @@ __all__ = (
 )
 
 
-class Team:
+class Team(Hashable):
     """Represents an application team.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two teams are equal.
+
+        .. describe:: x != y
+
+            Checks if two teams are not equal.
+
+        .. describe:: hash(x)
+
+            Return the team's hash.
+
+        .. describe:: str(x)
+
+            Returns the team's name.
 
     Attributes
     -------------
     id: :class:`int`
         The team ID.
     name: :class:`str`
-        The team name
+        The team name.
     owner_id: :class:`int`
         The team's owner ID.
     members: List[:class:`TeamMember`]
@@ -75,6 +94,12 @@ class Team:
         self._state: ConnectionState = state
         self._update(data)
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+
+    def __str__(self) -> str:
+        return self.name
+
     def _update(self, data: TeamPayload):
         self.id: int = int(data['id'])
         self.name: str = data['name']
@@ -90,9 +115,6 @@ class Team:
                 'permissions': ['*'],
             }
             members.append(TeamMember(self, self._state, member))
-
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
 
     @property
     def icon(self) -> Optional[Asset]:

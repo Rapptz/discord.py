@@ -66,8 +66,7 @@ class Component:
     - :class:`ActionRow`
     - :class:`Button`
     - :class:`SelectMenu`
-
-    This class is abstract and cannot be instantiated.
+    - :class:`TextInput`
 
     .. versionadded:: 2.0
 
@@ -161,7 +160,7 @@ class Button(Component):
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
     message: :class:`Message`
-        The originating message, if any.
+        The originating message.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -260,8 +259,6 @@ class SelectMenu(Component):
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    hash: :class:`str`
-        Unknown.
     message: :class:`Message`
         The originating message, if any.
     """
@@ -291,7 +288,7 @@ class SelectMenu(Component):
 
     def to_dict(self, options: Tuple[SelectOption]) -> dict:
         return {
-            'compontent_type': self.type.value,
+            'component_type': self.type.value,
             'custom_id': self.custom_id,
             'values': [option.value for option in options],
         }

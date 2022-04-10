@@ -44,9 +44,23 @@ class Relationship:
 
     A relationship is like a friendship, a person who is blocked, etc.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two relationships are equal.
+
+        .. describe:: x != y
+
+            Checks if two relationships are not equal.
+
+        .. describe:: hash(x)
+
+            Return the relationship's hash.
+
     Attributes
     -----------
-    nickname: :class:`str`
+    nickname: Optional[:class:`str`]
         The user's friend nickname (if applicable).
     user: :class:`User`
         The user you have the relationship with.
@@ -64,6 +78,17 @@ class Relationship:
 
     def __repr__(self) -> str:
         return f'<Relationship user={self.user!r} type={self.type!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Relationship) and other.user.id == self.user.id
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, Relationship):
+            return other.user.id != self.user.id
+        return True
+
+    def __hash__(self) -> int:
+        return self.user.__hash__()
 
     async def delete(self) -> None:
         """|coro|
@@ -103,6 +128,8 @@ class Relationship:
         Changes a relationship's nickname. Only applicable for
         type :class:`RelationshipType.friend`.
 
+        .. versionadded:: 1.9
+
         Parameters
         ----------
         nick: Optional[:class:`str`]
@@ -112,8 +139,6 @@ class Relationship:
         -------
         HTTPException
             Changing the nickname failed.
-
-        .. versionadded:: 1.9
         """
         await self._state.http.change_friend_nickname(self.user.id, nick)
         self.nickname = nick

@@ -1170,7 +1170,6 @@ class GuildChannel:
         -------
         ~discord.HTTPException
             Invite creation failed.
-
         ~discord.NotFound
             The channel that was passed is a category or an invalid channel.
 
@@ -1462,7 +1461,6 @@ class Messageable:
 
         *Typing* indicator will go away after 10 seconds, or after a message is sent.
         """
-
         channel = await self._get_channel()
         await self._state.http.send_typing(channel.id)
 
@@ -1508,7 +1506,6 @@ class Messageable:
         :class:`~discord.Message`
             The message asked for.
         """
-
         channel = await self._get_channel()
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
@@ -1520,8 +1517,8 @@ class Messageable:
 
         Raises
         -------
-        HTTPException
-            Acking failed.
+        ~discord.HTTPException
+            Acking the channel failed.
         """
         channel = await self._get_channel()
         await self._state.http.ack_message(channel.id, channel.last_message_id or utils.time_snowflake(utils.utcnow()))
@@ -1560,7 +1557,6 @@ class Messageable:
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
-
         channel = await self._get_channel()
         state = self._state
         data = await state.http.pins_from(channel.id)

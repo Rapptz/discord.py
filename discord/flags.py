@@ -479,23 +479,6 @@ class PrivateUserFlags(PublicUserFlags):
     .. note::
         These are only available on your own user flags.
 
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two UserFlags are equal.
-        .. describe:: x != y
-
-            Checks if two UserFlags are not equal.
-        .. describe:: hash(x)
-
-            Return the flag's hash.
-        .. describe:: iter(x)
-
-            Returns an iterator of ``(name, value)`` pairs. This allows it
-            to be, for example, constructed as a dict or a list of pairs.
-            Note that aliases are not shown.
-
     .. versionadded:: 2.0
 
     Attributes

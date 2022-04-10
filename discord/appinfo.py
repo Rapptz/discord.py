@@ -135,6 +135,24 @@ class PartialApplication(Hashable):
 
     .. versionadded:: 2.0
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two applications are equal.
+
+        .. describe:: x != y
+
+            Checks if two applications are not equal.
+
+        .. describe:: hash(x)
+
+            Return the application's hash.
+
+        .. describe:: str(x)
+
+            Returns the application's name.
+
     Attributes
     -------------
     id: :class:`int`
@@ -195,6 +213,9 @@ class PartialApplication(Hashable):
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
         self._state: ConnectionState = state
         self._update(data)
+
+    def __str__(self) -> str:
+        return self.name
 
     def _update(self, data: PartialAppInfoPayload) -> None:
         self.id: int = int(data['id'])
@@ -504,6 +525,24 @@ class InteractionApplication(Hashable):
 
     .. versionadded:: 2.0
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two applications are equal.
+
+        .. describe:: x != y
+
+            Checks if two applications are not equal.
+
+        .. describe:: hash(x)
+
+            Return the application's hash.
+
+        .. describe:: str(x)
+
+            Returns the application's name.
+
     Attributes
     -------------
     id: :class:`int`
@@ -536,6 +575,9 @@ class InteractionApplication(Hashable):
     def __init__(self, *, state: ConnectionState, data: dict):
         self._state: ConnectionState = state
         self._update(data)
+
+    def __str__(self) -> str:
+        return self.name
 
     def _update(self, data: dict) -> None:
         self.id: int = int(data['id'])

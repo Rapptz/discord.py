@@ -48,6 +48,28 @@ class GuildFolder:
         Guilds not in folders *are* actually in folders API wise, with them being the only member.
         Because Discord.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two guild folders are equal.
+
+        .. describe:: x != y
+
+            Checks if two guild folders are not equal.
+
+        .. describe:: hash(x)
+
+            Return the folder's hash.
+
+        .. describe:: str(x)
+
+            Returns the folder's name.
+
+        .. describe:: len(x)
+
+            Returns the number of guilds in the folder.
+
     Attributes
     ----------
     id: Union[:class:`str`, :class:`int`]
@@ -66,6 +88,26 @@ class GuildFolder:
         self.name: str = data['name']
         self._colour: int = data['color']
         self.guilds: List[Guild] = list(filter(None, map(self._get_guild, data['guild_ids'])))  # type: ignore # Lying for better developer UX
+
+    def __str__(self) -> str:
+        return self.name or 'None'
+
+    def __repr__(self) -> str:
+        return f'<GuildFolder id={self.id} name={self.name} guilds={self.guilds!r}>'
+
+    def __eq__(self, other) -> bool:
+        return isinstance(other, GuildFolder) and self.id == other.id
+
+    def __ne__(self, other) -> bool:
+        if isinstance(other, GuildFolder):
+            return self.id != other.id
+        return True
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __len__(self) -> int:
+        return len(self.guilds)
 
     def _get_guild(self, id):
         return self._state._get_guild(int(id)) or Object(id=int(id))
@@ -86,18 +128,3 @@ class GuildFolder:
         This is an alias for :attr:`colour`.
         """
         return self.colour
-
-    def __str__(self) -> str:
-        return self.name or 'None'
-
-    def __repr__(self) -> str:
-        return f'<GuildFolder id={self.id} name={self.name} guilds={self.guilds!r}>'
-
-    def __len__(self) -> int:
-        return len(self.name)
-
-    def __eq__(self, other) -> bool:
-        return isinstance(other, GuildFolder) and self.id == other.id
-
-    def __ne__(self, other) -> bool:
-        return not self.__eq__(other)

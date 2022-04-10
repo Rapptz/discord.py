@@ -76,7 +76,29 @@ __all__ = (
 
 
 class Note:
-    """Represents a Discord note."""
+    """Represents a Discord note.
+
+    .. container:: operations
+
+        .. describe:: x == y
+            Checks if two notes are equal.
+
+        .. describe:: x != y
+            Checks if two notes are not equal.
+
+        .. describe:: hash(x)
+            Returns the note's hash.
+
+        .. describe:: str(x)
+            Returns the note's content.
+            Raises :exc:`ClientException` if the note is not fetched.
+
+        .. describe:: bool(x)
+            Returns the note's content as a boolean.
+
+        .. describe:: len(x)
+            Returns the note's length.
+    """
 
     __slots__ = ('_state', '_note', '_user_id', '_user')
 
@@ -175,6 +197,14 @@ class Note:
         """
         await self.edit(None)
 
+    def __repr__(self) -> str:
+        base = f'<Note user={self.user!r}'
+        note = self._note
+        if note is not MISSING:
+            note = note or ''
+            base += f' note={note!r}'
+        return base + '>'
+
     def __str__(self) -> str:
         note = self._note
         if note is MISSING:
@@ -184,33 +214,27 @@ class Note:
         else:
             return note
 
-    def __repr__(self) -> str:
-        base = f'<Note user={self.user!r}'
-        note = self._note
-        if note is not MISSING:
-            note = note or ''
-            base += f' note={note!r}'
-        return base + '>'
-
-    def __len__(self) -> int:
-        if note := self._note:
-            return len(note)
-        return 0
-
-    def __eq__(self, other: Note) -> bool:
-        try:
-            return isinstance(other, Note) and self._note == other._note and self._user_id == other._user_id
-        except TypeError:
-            return False
-
-    def __ne__(self, other: Note) -> bool:
-        return not self.__eq__(other)
-
     def __bool__(self) -> bool:
         try:
             return bool(self._note)
         except TypeError:
             return False
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Note) and self._note == other._note and self._user_id == other._user_id
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, Note):
+            return self._note != other._note or self._user_id != other._user_id
+        return True
+
+    def __hash__(self) -> int:
+        return hash((self._note, self._user_id))
+
+    def __len__(self) -> int:
+        if note := self._note:
+            return len(note)
+        return 0
 
 
 class _UserTag:
@@ -301,6 +325,7 @@ class BaseUser(_UserTag):
             'discriminator': self.discriminator,
             'bot': self.bot,
             'system': self.system,
+            'public_flags': self._public_flags,
         }
 
     @property
@@ -501,6 +526,8 @@ class ClientUser(BaseUser):
         Specifies the type of premium a user has (i.e. Nitro or Nitro Classic). Could be None if the user is not premium.
     note: :class:`Note`
         The user's note. Not pre-fetched.
+
+        .. versionadded:: 1.9
     nsfw_allowed: :class:`bool`
         Specifies if the user should be allowed to access NSFW content.
 

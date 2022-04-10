@@ -58,6 +58,8 @@ __all__ = (
 class UserSettings:
     """Represents the Discord client settings.
 
+    .. versionadded:: 1.9
+
     Attributes
     ----------
     afk_timeout: :class:`int`
@@ -341,6 +343,36 @@ class UserSettings:
 
 
 class MuteConfig:
+    """An object representing an object's mute status.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two items are muted.
+
+        .. describe:: x != y
+
+            Checks if two items are not muted.
+
+        .. describe:: str(x)
+
+            Returns the mute status as a string.
+
+        .. describe:: int(x)
+
+            Returns the mute status as an int.
+
+    Attributes
+    ----------
+    muted: :class:`bool`
+        Indicates if the object is muted.
+    until: Optional[:class:`datetime.datetime`]
+        When the mute will expire.
+    """
+
     def __init__(self, muted: bool, config: Dict[str, str]) -> None:
         until = parse_time(config.get('end_time'))
         if until is not None:
@@ -357,18 +389,24 @@ class MuteConfig:
     def __repr__(self) -> str:
         return f'<MuteConfig muted={self.muted} until={self.until}>'
 
+    def __str__(self) -> str:
+        return str(self.muted)
+
+    def __int__(self) -> int:
+        return int(self.muted)
+
     def __bool__(self) -> bool:
-        return bool(self.muted)
+        return self.muted
 
-    def __eq__(self, other) -> bool:
-        return self.muted == other
+    def __eq__(self, other: object) -> bool:
+        return self.muted == bool(other)
 
-    def __ne__(self, other) -> bool:
-        return not self.muted == other
+    def __ne__(self, other: object) -> bool:
+        return not self.muted == bool(other)
 
 
 class ChannelSettings:
-    """Represents a channel's notification settings"""
+    """Represents a channel's notification settings."""
 
     if TYPE_CHECKING:
         _channel_id: int
@@ -431,7 +469,6 @@ class ChannelSettings:
             The new notification settings.
         """
         payload = {}
-        data = None
 
         if muted is not MISSING:
             payload['muted'] = muted
@@ -453,14 +490,10 @@ class ChannelSettings:
         if level is not MISSING:
             payload['message_notifications'] = level.value
 
-        if payload:
-            fields = {'channel_overrides': {str(self._channel_id): payload}}
-            data = await self._state.http.edit_guild_settings(self._guild_id, fields)
+        fields = {'channel_overrides': {str(self._channel_id): payload}}
+        data = await self._state.http.edit_guild_settings(self._guild_id, fields)
 
-        if data:
-            return ChannelSettings(self._guild_id, data=data['channel_overrides'][str(self._channel_id)], state=self._state)
-        else:
-            return self
+        return ChannelSettings(self._guild_id, data=data['channel_overrides'][str(self._channel_id)], state=self._state)
 
 
 class GuildSettings:
@@ -552,7 +585,6 @@ class GuildSettings:
             The new notification settings.
         """
         payload = {}
-        data = None
 
         if muted is not MISSING:
             payload['muted'] = muted
@@ -583,10 +615,7 @@ class GuildSettings:
         if hide_muted_channels is not MISSING:
             payload['hide_muted_channels'] = hide_muted_channels
 
-        if payload:
-            data = await self._state.http.edit_guild_settings(self._guild_id, payload)
+        data = await self._state.http.edit_guild_settings(self._guild_id, payload)
 
-        if data:
-            return GuildSettings(data=data, state=self._state)
-        else:
-            return self
+        return GuildSettings(data=data, state=self._state)
+

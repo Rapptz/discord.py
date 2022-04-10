@@ -55,6 +55,20 @@ class Interaction(Hashable):
 
     .. versionadded:: 2.0
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two interactions are equal.
+
+        .. describe:: x != y
+
+            Checks if two interactions are not equal.
+
+        .. describe:: hash(x)
+
+            Return the interaction's hash.
+
     Attributes
     ------------
     id: :class:`int`

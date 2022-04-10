@@ -88,6 +88,9 @@ class ApplicationCommand(Protocol):
         target_channel: Optional[Messageable]
         default_permission: bool
 
+    def __str__(self) -> str:
+        return self.name
+
     async def __call__(self, data, channel: Optional[Messageable] = None) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
@@ -116,6 +119,24 @@ class ApplicationCommand(Protocol):
 
 class BaseCommand(ApplicationCommand, Hashable):
     """Represents a base command.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two commands are equal.
+
+        .. describe:: x != y
+
+            Checks if two commands are not equal.
+
+        .. describe:: hash(x)
+
+            Return the command's hash.
+
+        .. describe:: str(x)
+
+            Returns the command's name.
 
     Attributes
     ----------
@@ -163,7 +184,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         self._default_member_permissions = data['default_member_permissions']
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     def is_group(self) -> bool:
         """Query whether this command is a group.
@@ -451,7 +472,7 @@ class SlashCommand(BaseCommand, SlashMixin):
         return await super().__call__(self._parse_kwargs(kwargs), channel)
 
     def __repr__(self) -> str:
-        BASE = f'<SlashCommand id={self.id} name={self.name}'
+        BASE = f'<SlashCommand id={self.id} name={self.name!r}'
         if self.options:
             BASE += f' options={len(self.options)}'
         if self.children:
@@ -473,6 +494,12 @@ class SubCommand(SlashMixin):
     """Represents a slash command child.
 
     This could be a subcommand, or a subgroup.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the command's name.
 
     Attributes
     ----------
@@ -505,6 +532,9 @@ class SubCommand(SlashMixin):
         self.type = AppCommandType.chat_input  # Avoid confusion I guess
         self._type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
         self._unwrap_options(data.get('options', []))
+
+    def __str__(self) -> str:
+        return self.name
 
     def _walk_parents(self):
         parent = self.parent
@@ -554,7 +584,7 @@ class SubCommand(SlashMixin):
         return await super().__call__(options, channel)
 
     def __repr__(self) -> str:
-        BASE = f'<SubCommand name={self.name}'
+        BASE = f'<SubCommand name={self.name!r}'
         if self.options:
             BASE += f' options={len(self.options)}'
         if self.children:
@@ -606,6 +636,12 @@ class SubCommand(SlashMixin):
 class Option:  # TODO: Add validation
     """Represents a command option.
 
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the option's name.
+
     Attributes
     ----------
     name: :class:`str`
@@ -653,8 +689,11 @@ class Option:  # TODO: Add validation
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, c) for c in data.get('channel_types', [])]
         self.autocomplete: bool = data.get('autocomplete', False)
 
+    def __str__(self) -> str:
+        return self.name
+
     def __repr__(self) -> str:
-        return f'<Option name={self.name} type={self.type} required={self.required}>'
+        return f'<Option name={self.name!r} type={self.type!r} required={self.required}>'
 
     def _convert(self, value):
         for choice in self.choices:
@@ -665,6 +704,12 @@ class Option:  # TODO: Add validation
 
 class OptionChoice:
     """Represents a choice for an option.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the choice's name.
 
     Attributes
     ----------
@@ -686,8 +731,11 @@ class OptionChoice:
         elif type is AppCommandOptionType.number:
             self.value = float(data['value'])
 
+    def __str__(self) -> str:
+        return self.name
+
     def __repr__(self) -> str:
-        return f'<OptionChoice name={self.name} value={self.value}>'
+        return f'<OptionChoice name={self.name!r} value={self.value!r}>'
 
     def _convert(self, value):
         if value == self.name:

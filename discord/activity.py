@@ -754,7 +754,7 @@ class CustomActivity(BaseActivity):
         Technically, the name of custom activities is hardcoded to "Custom Status",
         and the state parameter has the actual custom text.
         This is confusing, so here, the name represents the actual custom text.
-        However, the "correct" way still works.
+        However, the "correct" way of initialization still works.
 
     Attributes
     -----------

@@ -171,7 +171,7 @@ class DiscordServerError(HTTPException):
 
 
 class CaptchaRequired(HTTPException):
-    """Exception that's raised when a captcha is required and no handler exists.
+    """Exception that's raised when a captcha is required and isn't handled.
 
     Subclass of :exc:`HTTPException`.
 

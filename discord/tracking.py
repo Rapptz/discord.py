@@ -49,6 +49,31 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
     """Represents the Discord X-Context-Properties header.
 
     This header is essential for certain actions (e.g. joining guilds, friend requesting).
+
+    .. versionadded:: 1.9
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two context properties are equal.
+
+        .. describe:: x != y
+
+            Checks if two context properties are not equal.
+
+        .. describe:: hash(x)
+
+            Return the context property's hash.
+
+        .. describe:: str(x)
+
+            Returns the context property's name.
+
+    Attributes
+    ----------
+    value: :class:`str`
+        The encoded header value.
     """
 
     __slots__ = ('_data', 'value')
@@ -240,9 +265,6 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         if data is not None:
             return int(data)
 
-    def __bool__(self) -> bool:
-        return self.value is not None
-
     def __str__(self) -> str:
         return self.target or 'None'
 
@@ -253,7 +275,12 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return isinstance(other, ContextProperties) and self.value == other.value
 
     def __ne__(self, other) -> bool:
-        return not self.__eq__(other)
+        if isinstance(other, ContextProperties):
+            return self.value != other.value
+        return True
+
+    def __hash__(self) -> int:
+        return hash(self.value)
 
 
 class Tracking:
