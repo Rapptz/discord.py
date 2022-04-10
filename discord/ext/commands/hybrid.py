@@ -197,10 +197,9 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         # If someone doesn't inherit this to replace it with their custom class
         # then this doesn't work.
         interaction._baton = ctx = await bot.get_context(interaction)
-
-        exc: CommandError
+        command = self.wrapped
         try:
-            await self.wrapped.prepare(ctx)
+            await command.prepare(ctx)
             # This lies and just always passes a Context instead of an Interaction.
             return await self._do_call(ctx, ctx.kwargs)  # type: ignore
         except app_commands.CommandSignatureMismatch:
@@ -211,13 +210,18 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             else:
                 exc = HybridCommandError(e)
                 exc.__cause__ = e
+            await command.dispatch_error(ctx, exc)
         except app_commands.AppCommandError as e:
             exc = HybridCommandError(e)
             exc.__cause__ = e
+            await command.dispatch_error(ctx, exc)
         except CommandError as e:
-            exc = e
+            await command.dispatch_error(ctx, e)
+        finally:
+            if command._max_concurrency is not None:
+                await command._max_concurrency.release(ctx.message)
 
-        await self.wrapped.dispatch_error(ctx, exc)
+            await command.call_after_hooks(ctx)
 
 
 class HybridCommand(Command[CogT, P, T]):
