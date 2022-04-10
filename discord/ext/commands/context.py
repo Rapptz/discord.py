@@ -111,7 +111,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         This is only of use for within converters.
 
         .. versionadded:: 2.0
-    interaction: Optional[:class:`Interaction`]
+    interaction: Optional[:class:`~discord.Interaction`]
         The interaction associated with this context.
 
         .. versionadded:: 2.0
