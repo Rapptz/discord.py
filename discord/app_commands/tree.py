@@ -544,7 +544,7 @@ class CommandTree(Generic[ClientT]):
 
         Returns
         ---------
-        Union[List[:class:`ContextMenu`], List[Union[:class:`Command`, :class:`Group`], List[:class:`Command`, :class:`Group`, :class:`ContextMenu`]]
+        List[Union[:class:`ContextMenu`, :class:`Command`, :class:`Group`]]
             The application commands from the tree.
         """
         if type is None:
