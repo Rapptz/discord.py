@@ -1092,6 +1092,9 @@ class ConnectionState:
         required_action = try_enum(RequiredActionType, data['required_action'])
         self.dispatch('required_action_update', required_action)
 
+    def parse_user_connections_update(self, data: gw.ResumedEvent) -> None:
+        self.dispatch('connections_update')
+
     def parse_sessions_replace(self, data: List[Dict[str, Any]]) -> None:
         overall = MISSING
         this = MISSING
