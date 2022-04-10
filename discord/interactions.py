@@ -624,8 +624,6 @@ class InteractionResponse:
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
 
-            .. versionadded:: 2.0
-
         Raises
         -------
         HTTPException
