@@ -6,7 +6,7 @@
 Frequently Asked Questions
 ===========================
 
-This is a list of Frequently Asked Questions regarding using ``discord.py`` and its extension modules. Feel free to suggest a
+This is a list of Frequently Asked Questions regarding using ``discord.py-self`` and its extension modules. Feel free to suggest a
 new question or submit one via pull requests.
 
 .. contents:: Questions
@@ -81,7 +81,7 @@ General questions regarding library usage belong here.
 Where can I find usage examples?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
+Example code can be found in the `examples folder <https://github.com/dolfies/discord.py-self/tree/master/examples>`_
 in the repository.
 
 How do I set the "Playing" status?
@@ -94,8 +94,6 @@ The constructor may be used for static activities, while :meth:`Client.change_pr
 .. warning::
 
     It is highly discouraged to use :meth:`Client.change_presence` or API calls in :func:`on_ready` as this event may be called many times while running, not just once.
-
-    There is a high chance of disconnecting if presences are changed right after connecting.
 
 The status type (playing, listening, streaming, watching) can be set using the :class:`ActivityType` enum.
 For memory optimisation purposes, some activities are offered in slimmed-down versions:

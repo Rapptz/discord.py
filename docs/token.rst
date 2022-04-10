@@ -26,11 +26,18 @@ Regular (and bot) tokens have this format:
       - HMAC
 
 
-MFA tokens, however, are just the HMAC prefixed with **mfa.**
+MFA tokens, however, are just the HMAC prefixed with ``mfa.``.
 
 How do I obtain mine?
 ----------------------
-To obtain your token from the Discord client, the easiest way is as follows:
+To obtain your token from the Discord client, the easiest way is pasting this into the developer console (CTRL+SHIFT+I):
+
+.. code:: js
+
+    (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m => m?.exports?.default?.getToken).exports.default.getToken()
+
+
+Or, you can do it manually:
 
 1. Open developer tools (CTRL+SHIFT+I).
 2. Click the Network tab.

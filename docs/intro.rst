@@ -110,4 +110,3 @@ A quick example to showcase how events work:
 
     client = MyClient()
     client.run('token')
-

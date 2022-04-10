@@ -14,18 +14,20 @@ for the Discord user APIs.
 - Command extension to aid with bot creation
 - Easy to use with an object oriented design
 - Optimised for both speed and memory
+- Selfbot detection prevention
 
 Getting started
 -----------------
 
 Is this your first time using the library? This is the place to get started!
 
+- **Migrating from discord.py:** :doc:`migrating_from_dpy`
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
 - **Working with Discord:** :doc:`token`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`.
 
-**Obligatory note:**
-Automating user accounts is against the Discord ToS. If what you are trying to do is accomplishable with a bot account, please use one.
+| **Obligatory note:**
+| Automating user accounts is against the Discord ToS. If what you are trying to do is accomplishable with a bot account, please use one.
 
 Getting help
 --------------
@@ -57,7 +59,6 @@ These pages go into great detail about everything the API can do.
   :maxdepth: 1
 
   api
-  interactions/api
   discord.ext.commands API Reference <ext/commands/api.rst>
   discord.ext.tasks API Reference <ext/tasks/index.rst>
 

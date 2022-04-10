@@ -19,14 +19,9 @@ It looks something like this:
 
 .. code-block:: python3
 
-    # This example requires the 'message_content' intent.
-
     import discord
 
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    client = discord.Client(intents=intents)
+    client = discord.Client()
 
     @client.event
     async def on_ready():
@@ -34,7 +29,7 @@ It looks something like this:
 
     @client.event
     async def on_message(message):
-        if message.author == client.user:
+        if message.author != client.user:
             return
 
         if message.content.startswith('$hello'):

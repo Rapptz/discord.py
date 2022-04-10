@@ -45,43 +45,6 @@ Client
     .. automethod:: Client.event()
         :decorator:
 
-
-Application Info
-------------------
-
-AppInfo
-~~~~~~~~
-
-.. attributetable:: AppInfo
-
-.. autoclass:: AppInfo()
-    :members:
-
-PartialAppInfo
-~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialAppInfo
-
-.. autoclass:: PartialAppInfo()
-    :members:
-
-Team
-~~~~~
-
-.. attributetable:: Team
-
-.. autoclass:: Team()
-    :members:
-
-TeamMember
-~~~~~~~~~~~
-
-.. attributetable:: TeamMember
-
-.. autoclass:: TeamMember()
-    :members:
-    :inherited-members:
-
 Voice Related
 ---------------
 
@@ -172,7 +135,7 @@ overriding the specific events. For example: ::
 
     class MyClient(discord.Client):
         async def on_message(self, message):
-            if message.author == self.user:
+            if message.author != self.user:
                 return
 
             if message.content.startswith('$hello'):
@@ -197,8 +160,6 @@ Channels
 
     Note that you can get the guild from :attr:`~abc.GuildChannel.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     :param channel: The guild channel that got created or deleted.
     :type channel: :class:`abc.GuildChannel`
 
@@ -206,12 +167,45 @@ Channels
 
     Called whenever a guild channel is updated. e.g. changed name, topic, permissions.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     :param before: The updated guild channel's old info.
     :type before: :class:`abc.GuildChannel`
     :param after: The updated guild channel's new info.
     :type after: :class:`abc.GuildChannel`
+
+.. function:: on_guild_channel_pins_update(channel, last_pin)
+
+    Called whenever a message is pinned or unpinned from a guild channel.
+
+    :param channel: The guild channel that had its pins updated.
+    :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
+    :type last_pin: Optional[:class:`datetime.datetime`]
+
+.. function:: on_private_channel_delete(channel)
+              on_private_channel_create(channel)
+
+    Called whenever a private channel is deleted or created.
+
+    :param channel: The private channel that got created or deleted.
+    :type channel: :class:`abc.PrivateChannel`
+
+.. function:: on_private_channel_update(before, after)
+
+    Called whenever a private channel is updated. e.g. changed name or topic.
+
+    :param before: The updated private channel's old info.
+    :type before: :class:`abc.PrivateChannel`
+    :param after: The updated private channel's new info.
+    :type after: :class:`abc.PrivateChannel`
+
+.. function:: on_private_channel_pins_update(channel, last_pin)
+
+    Called whenever a message is pinned or unpinned from a private channel.
+
+    :param channel: The private channel that had its pins updated.
+    :type channel: :class:`abc.PrivateChannel`
+    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
+    :type last_pin: Optional[:class:`datetime.datetime`]
 
 .. function:: on_group_join(channel, user)
               on_group_remove(channel, user)
@@ -223,37 +217,6 @@ Channels
     :param user: The user that joined or left.
     :type user: :class:`User`
 
-.. function:: on_guild_channel_pins_update(channel, last_pin)
-
-    Called whenever a message is pinned or unpinned from a guild channel.
-
-    This requires :attr:`Intents.guilds` to be enabled.
-
-    :param channel: The guild channel that had its pins updated.
-    :type channel: Union[:class:`abc.GuildChannel`, :class:`Thread`]
-    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
-    :type last_pin: Optional[:class:`datetime.datetime`]
-
-.. function:: on_private_channel_update(before, after)
-
-    Called whenever a private group DM is updated. e.g. changed name or topic.
-
-    This requires :attr:`Intents.messages` to be enabled.
-
-    :param before: The updated group channel's old info.
-    :type before: :class:`GroupChannel`
-    :param after: The updated group channel's new info.
-    :type after: :class:`GroupChannel`
-
-.. function:: on_private_channel_pins_update(channel, last_pin)
-
-    Called whenever a message is pinned or unpinned from a private channel.
-
-    :param channel: The private channel that had its pins updated.
-    :type channel: :class:`abc.PrivateChannel`
-    :param last_pin: The latest message that was pinned as an aware datetime in UTC. Could be ``None``.
-    :type last_pin: Optional[:class:`datetime.datetime`]
-
 .. function:: on_typing(channel, user, when)
 
     Called when someone begins typing a message.
@@ -264,8 +227,6 @@ Channels
 
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
-
-    This requires :attr:`Intents.typing` to be enabled.
 
     :param channel: The location where the typing originated from.
     :type channel: :class:`abc.Messageable`
@@ -378,7 +339,6 @@ Debug
                     WebSocket library. It can be :class:`bytes` to denote a binary
                     message or :class:`str` to denote a regular text message.
 
-
 Gateway
 ~~~~~~~~
 
@@ -398,6 +358,101 @@ Gateway
 
     Called when the client has resumed a session.
 
+Client
+~~~~~~
+
+.. function:: on_settings_update(before, after)
+
+    Called when your :class:`Settings` updates, for example:
+
+    - Changed theme
+    - Changed custom activity
+    - Changed locale
+    - etc
+
+    .. versionadded:: 2.0
+
+    :param before: The settings prior to being updated.
+    :type before: :class:`Settings`
+    :param after: The settings after being updated.
+    :type after: :class:`Settings`
+
+.. function:: on_guild_settings_update(before, after)
+
+    Called when a :class:`Guild`'s :class:`GuildSettings` updates, for example:
+
+    - Muted guild
+    - Changed guild notification settings
+    - etc
+
+    Note that you can get the guild from :attr:`GuildSettings.guild`.
+
+    .. versionadded:: 2.0
+
+    :param before: The guild settings prior to being updated.
+    :type before: :class:`GuildSettings`
+    :param after: The guild settings after being updated.
+    :type after: :class:`GuildSettings`
+
+.. function:: on_required_action_update(action)
+
+    Called when Discord requires you to do something to verify ypur account.
+
+    .. versionadded:: 2.0
+
+    :param action: The action required.
+    :type action: :class:`RequiredActionType`
+
+.. function:: on_connections_update()
+
+    Called when your account connections are updated.
+    The updated connections are not provided and must be fetched by :func:`Client.connections`.
+
+    .. versionadded:: 2.0
+
+Relationships
+~~~~~~~~~~~~~
+
+.. function:: on_relationship_add(relationship)
+              on_relationship_remove(relationship)
+
+    Called when a :class:`Relationship` is added or removed from the
+    :class:`ClientUser`.
+
+    :param relationship: The relationship that was added or removed.
+    :type relationship: :class:`Relationship`
+
+.. function:: on_relationship_update(before, after)
+
+    Called when a :class:`Relationship` is updated, e.g. when you
+    block a friend or a friendship is accepted.
+
+    :param before: The previous relationship.
+    :type before: :class:`Relationship`
+    :param after: The updated relationship.
+    :type after: :class:`Relationship`
+
+Calls
+~~~~~
+
+.. function:: on_call_create(call)
+              on_call_delete(call)
+
+    Called when a call is created in a :class:`abc.PrivateChannel`.
+
+    :param call: The call that was created or deleted.
+    :type call: Union[:class:`PrivateCall`, :class:`GroupCall`]
+
+.. function:: on_call_update(before, after)
+
+    Called when a :class:`Call` is updated, e.g. when a member is added
+    or another person is rung.
+
+    :param before: The previous call.
+    :type before: :class:`Relationship`
+    :param after: The updated call.
+    :type after: :class:`Relationship`
+
 Guilds
 ~~~~~~~
 
@@ -407,16 +462,12 @@ Guilds
     Called when a guild becomes available or unavailable. The guild must have
     existed in the :attr:`Client.guilds` cache.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     :param guild: The :class:`Guild` that has changed availability.
 
 .. function:: on_guild_join(guild)
 
     Called when a :class:`Guild` is either created by the :class:`Client` or when the
     :class:`Client` joins a guild.
-
-
 
     :param guild: The guild that was joined.
     :type guild: :class:`Guild`
@@ -435,8 +486,6 @@ Guilds
     In order for this event to be invoked then the :class:`Client` must have
     been part of the guild to begin with. (i.e. it is part of :attr:`Client.guilds`)
 
-
-
     :param guild: The guild that got removed.
     :type guild: :class:`Guild`
 
@@ -449,8 +498,6 @@ Guilds
     - Changed AFK timeout
     - etc
 
-
-
     :param before: The guild prior to being updated.
     :type before: :class:`Guild`
     :param after: The guild after being updated.
@@ -459,8 +506,6 @@ Guilds
 .. function:: on_guild_emojis_update(guild, before, after)
 
     Called when a :class:`Guild` adds or removes :class:`Emoji`.
-
-
 
     :param guild: The guild who got their emojis updated.
     :type guild: :class:`Guild`
@@ -472,8 +517,6 @@ Guilds
 .. function:: on_guild_stickers_update(guild, before, after)
 
     Called when a :class:`Guild` updates its stickers.
-
-
 
     .. versionadded:: 2.0
 
@@ -496,8 +539,6 @@ Guilds
         There is a rare possibility that the :attr:`Invite.guild` and :attr:`Invite.channel`
         attributes will be of :class:`Object` rather than the respective models.
 
-    This requires :attr:`Intents.invites` to be enabled.
-
     :param invite: The invite that was created.
     :type invite: :class:`Invite`
 
@@ -516,8 +557,6 @@ Guilds
         Outside of those two attributes, the only other attribute guaranteed to be
         filled by the Discord gateway for this event is :attr:`Invite.code`.
 
-    This requires :attr:`Intents.invites` to be enabled.
-
     :param invite: The invite that was deleted.
     :type invite: :class:`Invite`
 
@@ -529,8 +568,6 @@ Integrations
 
     Called when an integration is created.
 
-    This requires :attr:`Intents.integrations` to be enabled.
-
     .. versionadded:: 2.0
 
     :param integration: The integration that was created.
@@ -539,8 +576,6 @@ Integrations
 .. function:: on_integration_update(integration)
 
     Called when an integration is updated.
-
-    This requires :attr:`Intents.integrations` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -551,8 +586,6 @@ Integrations
 
     Called whenever an integration is created, modified, or removed from a guild.
 
-    This requires :attr:`Intents.integrations` to be enabled.
-
     .. versionadded:: 1.4
 
     :param guild: The guild that had its integrations updated.
@@ -562,16 +595,12 @@ Integrations
 
     Called whenever a webhook is created, modified, or removed from a guild channel.
 
-    This requires :attr:`Intents.webhooks` to be enabled.
-
     :param channel: The channel that had its webhooks updated.
     :type channel: :class:`abc.GuildChannel`
 
 .. function:: on_raw_integration_delete(payload)
 
     Called when an integration is deleted.
-
-    This requires :attr:`Intents.integrations` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -583,20 +612,34 @@ Interactions
 
 .. function:: on_interaction(interaction)
 
-    Called when an interaction happened.
+    Called when an interaction happens.
 
-    This currently happens due to slash command invocations or components being used.
-
-    .. warning::
-
-        This is a low level function that is not generally meant to be used.
-        If you are working with components, consider using the callbacks associated
-        with the :class:`~discord.ui.View` instead as it provides a nicer user experience.
+    This currently happens when an application command or component is used.
 
     .. versionadded:: 2.0
 
     :param interaction: The interaction data.
     :type interaction: :class:`Interaction`
+
+.. function:: on_interaction_finish(interaction)
+
+    Called when an interaction's result is finalized.
+
+    .. versionadded:: 2.0
+
+    :param interaction: The interaction data with :attr:`Interaction.successful` filled.
+    :type interaction: :class:`Interaction`
+
+.. function:: on_modal(modal)
+
+    Called when a modal is sent.
+
+    This currently happens when an application command or component responds with a modal.
+
+    .. versionadded:: 2.0
+
+    :param modal: The modal data.
+    :type modal: :class:`Modal`
 
 Members
 ~~~~~~~~
@@ -605,8 +648,6 @@ Members
               on_member_remove(member)
 
     Called when a :class:`Member` join or leaves a :class:`Guild`.
-
-    This requires :attr:`Intents.members` to be enabled.
 
     :param member: The member who joined or left.
     :type member: :class:`Member`
@@ -620,8 +661,6 @@ Members
     - nickname
     - roles
     - pending
-
-    This requires :attr:`Intents.members` to be enabled.
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
@@ -638,8 +677,6 @@ Members
     - username
     - discriminator
 
-    This requires :attr:`Intents.members` to be enabled.
-
     :param before: The updated user's old info.
     :type before: :class:`User`
     :param after: The updated user's updated info.
@@ -648,8 +685,6 @@ Members
 .. function:: on_member_ban(guild, user)
 
     Called when user gets banned from a :class:`Guild`.
-
-    This requires :attr:`Intents.bans` to be enabled.
 
     :param guild: The guild the user got banned from.
     :type guild: :class:`Guild`
@@ -661,8 +696,6 @@ Members
 .. function:: on_member_unban(guild, user)
 
     Called when a :class:`User` gets unbanned from a :class:`Guild`.
-
-    This requires :attr:`Intents.bans` to be enabled.
 
     :param guild: The guild the user got unbanned from.
     :type guild: :class:`Guild`
@@ -678,8 +711,6 @@ Members
     - status
     - activity
 
-    This requires :attr:`Intents.presences` and :attr:`Intents.members` to be enabled.
-
     .. versionadded:: 2.0
 
     :param before: The updated member's old info.
@@ -687,14 +718,21 @@ Members
     :param after: The updated member's updated info.
     :type after: :class:`Member`
 
+.. function:: on_raw_member_list_update(data)
+
+    Called when a member list update is received and parsed.
+
+    .. versionadded:: 2.0
+
+    :param data: The raw member list update data.
+    :type data: :class:`dict`
+
 Messages
 ~~~~~~~~~
 
 .. function:: on_message(message)
 
     Called when a :class:`Message` is created and sent.
-
-    This requires :attr:`Intents.messages` to be enabled.
 
     .. warning::
 
@@ -728,8 +766,6 @@ Messages
     - The message's embeds were suppressed or unsuppressed.
     - A call message has received an update to its participants or ending time.
 
-    This requires :attr:`Intents.messages` to be enabled.
-
     :param before: The previous version of the message.
     :type before: :class:`Message`
     :param after: The current version of the message.
@@ -745,8 +781,6 @@ Messages
     If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_message_delete` event instead.
 
-    This requires :attr:`Intents.messages` to be enabled.
-
     :param message: The deleted message.
     :type message: :class:`Message`
 
@@ -761,8 +795,6 @@ Messages
 
     If this occurs increase the :class:`max_messages <Client>` parameter
     or use the :func:`on_raw_bulk_message_delete` event instead.
-
-    This requires :attr:`Intents.messages` to be enabled.
 
     :param messages: The messages that have been deleted.
     :type messages: List[:class:`Message`]
@@ -786,11 +818,8 @@ Messages
     denotes an "embed" only edit, which is an edit in which only the embeds are updated by the Discord
     embed server.
 
-    This requires :attr:`Intents.messages` to be enabled.
-
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageUpdateEvent`
-
 
 .. function:: on_raw_message_delete(payload)
 
@@ -799,8 +828,6 @@ Messages
 
     If the message is found in the message cache,
     it can be accessed via :attr:`RawMessageDeleteEvent.cached_message`
-
-    This requires :attr:`Intents.messages` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawMessageDeleteEvent`
@@ -812,8 +839,6 @@ Messages
 
     If the messages are found in the message cache,
     they can be accessed via :attr:`RawBulkMessageDeleteEvent.cached_messages`
-
-    This requires :attr:`Intents.messages` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
@@ -830,8 +855,6 @@ Reactions
     .. note::
 
         To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
-
-    This requires :attr:`Intents.reactions` to be enabled.
 
     .. note::
 
@@ -874,8 +897,6 @@ Reactions
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear` instead.
 
-    This requires :attr:`Intents.reactions` to be enabled.
-
     :param message: The message that had its reactions cleared.
     :type message: :class:`Message`
     :param reactions: The reactions that were removed.
@@ -887,20 +908,15 @@ Reactions
     if the message is not found in the internal message cache, then this event
     will not be called. Consider using :func:`on_raw_reaction_clear_emoji` instead.
 
-    This requires :attr:`Intents.reactions` to be enabled.
-
     .. versionadded:: 1.3
 
     :param reaction: The reaction that got cleared.
     :type reaction: :class:`Reaction`
 
-
 .. function:: on_raw_reaction_add(payload)
 
     Called when a message has a reaction added. Unlike :func:`on_reaction_add`, this is
     called regardless of the state of the internal message cache.
-
-    This requires :attr:`Intents.reactions` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
@@ -910,8 +926,6 @@ Reactions
     Called when a message has a reaction removed. Unlike :func:`on_reaction_remove`, this is
     called regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
-
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionActionEvent`
 
@@ -919,8 +933,6 @@ Reactions
 
     Called when a message has all its reactions removed. Unlike :func:`on_reaction_clear`,
     this is called regardless of the state of the internal message cache.
-
-    This requires :attr:`Intents.reactions` to be enabled.
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEvent`
@@ -930,13 +942,10 @@ Reactions
     Called when a message has a specific reaction removed from it. Unlike :func:`on_reaction_clear_emoji` this is called
     regardless of the state of the internal message cache.
 
-    This requires :attr:`Intents.reactions` to be enabled.
-
     .. versionadded:: 1.3
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawReactionClearEmojiEvent`
-
 
 Roles
 ~~~~~~
@@ -948,16 +957,12 @@ Roles
 
     To get the guild it belongs to, use :attr:`Role.guild`.
 
-
-
     :param role: The role that was created or deleted.
     :type role: :class:`Role`
 
 .. function:: on_guild_role_update(before, after)
 
     Called when a :class:`Role` is changed guild-wide.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     :param before: The updated role's old info.
     :type before: :class:`Role`
@@ -973,8 +978,6 @@ Scheduled Events
 
     Called when a :class:`ScheduledEvent` is created or deleted.
 
-    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
-
     .. versionadded:: 2.0
 
     :param event: The scheduled event that was created or deleted.
@@ -983,8 +986,6 @@ Scheduled Events
 .. function:: on_scheduled_event_update(before, after)
 
     Called when a :class:`ScheduledEvent` is updated.
-
-    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
 
     The following, but not limited to, examples illustrate when this event is called:
 
@@ -1006,15 +1007,12 @@ Scheduled Events
 
     Called when a user is added or removed from a :class:`ScheduledEvent`.
 
-    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
-
     .. versionadded:: 2.0
 
     :param event: The scheduled event that the user was added or removed from.
     :type event: :class:`ScheduledEvent`
     :param user: The user that was added or removed.
     :type user: :class:`User`
-
 
 Stages
 ~~~~~~~
@@ -1048,33 +1046,22 @@ Stages
 Threads
 ~~~~~~~~
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/master
-=======
 .. function:: on_thread_create(thread)
 
     Called whenever a thread is created.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     .. versionadded:: 2.0
 
     :param thread: The thread that was created.
     :type thread: :class:`Thread`
->>>>>>> 95deb553328d4d1c3e8b6b50239b67c56c4576fa
 
 .. function:: on_thread_join(thread)
 
     Called whenever a thread is joined.
 
     Note that you can get the guild from :attr:`Thread.guild`.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -1083,13 +1070,7 @@ Threads
 
 .. function:: on_thread_update(before, after)
 
-<<<<<<< HEAD
-
-=======
     Called whenever a thread is updated.
->>>>>>> upstream/master
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -1103,8 +1084,6 @@ Threads
     Called whenever a thread is removed. This is different from a thread being deleted.
 
     Note that you can get the guild from :attr:`Thread.guild`.
-
-    This requires :attr:`Intents.guilds` to be enabled.
 
     .. warning::
 
@@ -1124,8 +1103,6 @@ Threads
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     .. versionadded:: 2.0
 
     :param thread: The thread that got deleted.
@@ -1137,8 +1114,6 @@ Threads
     Called when a :class:`ThreadMember` leaves or joins a :class:`Thread`.
 
     You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
-
-    This requires :attr:`Intents.members` to be enabled.
 
     .. versionadded:: 2.0
 
@@ -1159,8 +1134,6 @@ Voice
     - A member is muted or deafened by their own accord.
     - A member is muted or deafened by a guild administrator.
 
-    This requires :attr:`Intents.voice_states` to be enabled.
-
     :param member: The member whose voice states changed.
     :type member: :class:`Member`
     :param before: The voice state prior to the changes.
@@ -1178,6 +1151,8 @@ Utility Functions
 .. autofunction:: discord.utils.get
 
 .. autofunction:: discord.utils.snowflake_time
+
+.. autofunction:: discord.utils.time_snowflake
 
 .. autofunction:: discord.utils.oauth_url
 
@@ -1214,6 +1189,8 @@ Utility Functions
 .. autofunction:: discord.utils.format_dt
 
 .. autofunction:: discord.utils.as_chunks
+
+.. autofunction:: discord.utils.set_target
 
 .. _discord-api-enums:
 
@@ -1421,6 +1398,11 @@ of :class:`enum.Enum`.
     .. attribute:: bug_hunter
 
         The user is a Bug Hunter.
+    .. attribute:: bug_hunter_level_1
+
+        The user is a Bug Hunter.
+
+        .. versionadded:: 2.0
     .. attribute:: mfa_sms
 
         The user has SMS recovery for Multi Factor Authentication enabled.
@@ -1442,15 +1424,25 @@ of :class:`enum.Enum`.
     .. attribute:: team_user
 
         The user is a Team User.
+    .. attribute:: partner_or_verification_application
+
+        The user has a partner or verification application.
     .. attribute:: system
 
         The user is a system user (i.e. represents Discord officially).
+
+        .. versionadded:: 2.0
     .. attribute:: has_unread_urgent_messages
 
         The user has an unread system message.
     .. attribute:: bug_hunter_level_2
 
         The user is a Bug Hunter Level 2.
+    .. attribute:: underage_deleted
+
+        The user has been flagged for deletion for being underage.
+
+        .. versionadded:: 2.0
     .. attribute:: verified_bot
 
         The user is a Verified Bot.
@@ -1468,6 +1460,11 @@ of :class:`enum.Enum`.
     .. attribute:: spammer
 
         The user is flagged as a spammer by Discord.
+
+        .. versionadded:: 2.0
+    .. attribute:: disable_premium
+
+        The user bought premium but has it manually disabled.
 
         .. versionadded:: 2.0
 
@@ -2383,7 +2380,30 @@ of :class:`enum.Enum`.
 
 .. class:: TeamMembershipState
 
-    Represents the membership state of a team member retrieved through :func:`Client.application_info`.
+    Represents the membership state of a :class:`TeamMember`.
+
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two membership states are equal.
+        .. describe:: x != y
+
+            Checks if two membership states are not equal.
+        .. describe:: x > y
+
+            Checks if a membership state is higher than another.
+        .. describe:: x < y
+
+            Checks if a membership state is lower than another.
+        .. describe:: x >= y
+
+            Checks if a membership state is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a membership state is lower or equal to another.
 
     .. versionadded:: 1.3
 
@@ -2394,6 +2414,183 @@ of :class:`enum.Enum`.
     .. attribute:: accepted
 
         Represents a member currently in the team.
+
+.. class:: ApplicationType
+
+    Represents the type of an application.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: none
+
+        The application does not have a special type.
+
+    .. attribute:: game
+
+        The application is a game.
+
+    .. attribute:: music
+    
+        The application is music-related.
+
+    .. attribute:: ticketed_events
+
+        The application can use ticketed event.
+
+.. class:: ApplicationVerificationState
+
+    Represents the verification application state of a :class:`Application`.
+
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two application states are equal.
+        .. describe:: x != y
+
+            Checks if two application states are not equal.
+        .. describe:: x > y
+
+            Checks if a application state is higher than another.
+        .. describe:: x < y
+
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
+
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a application state is lower or equal to another.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: ineligible
+
+        The application is ineligible for verification.
+
+    .. attribute:: unsubmitted
+
+        The application is has not submitted a verification request.
+
+    .. attribute:: submitted
+            
+        The application has submitted a verification request and is pending a response.
+
+    .. attribute:: succeeded
+
+        The application has been verified.
+
+.. class:: StoreApplicationState
+
+    Represents the commerce application state of a :class:`Application`.
+
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two application states are equal.
+        .. describe:: x != y
+
+            Checks if two application states are not equal.
+        .. describe:: x > y
+
+            Checks if a application state is higher than another.
+        .. describe:: x < y
+
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
+
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a application state is lower or equal to another.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: none
+
+        The application has not applied for commerce features.
+
+    .. attribute:: paid
+
+        The application has paid the commerce feature fee.
+
+    .. attribute:: submitted
+            
+        The application has submitted a commerce application and is pending a response.
+
+    .. attribute:: approved
+
+        The application has been approved for commerce features.
+
+    .. attribute:: rejected
+
+        The application has not been approved for commerce features.
+
+    .. attribute:: blocked
+
+        The application has been blocked from using commerce features.
+
+.. class:: RPCApplicationState
+
+    Represents the RPC application state of a :class:`Application`.
+
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two application states are equal.
+        .. describe:: x != y
+
+            Checks if two application states are not equal.
+        .. describe:: x > y
+
+            Checks if a application state is higher than another.
+        .. describe:: x < y
+
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
+
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a application state is lower or equal to another.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: disabled
+
+        The application has not applied for RPC functionality and cannot use the feature.
+
+    .. attribute:: none
+
+        The application has not applied for RPC functionality and cannot use the feature.
+
+    .. attribute:: unsubmitted
+
+        The application has not submitted a RPC application.
+
+    .. attribute:: submitted
+            
+        The application has submitted a RPC application and is pending a response.
+
+    .. attribute:: approved
+
+        The application has been approved for RPC funcionality.
+
+    .. attribute:: rejected
+
+        The application has not been approved for RPC funcionality.
+
+    .. attribute:: blocked
+
+        The application has been blocked from using commerce features.
 
 .. class:: WebhookType
 
@@ -2582,6 +2779,115 @@ of :class:`enum.Enum`.
     .. attribute:: age_restricted
 
         The guild may contain NSFW content.
+
+.. class:: RelationshipType
+
+    Specifies the type of :class:`Relationship`.
+
+    .. attribute:: friend
+
+        You are friends with this user.
+
+    .. attribute:: blocked
+
+        You have blocked this user.
+
+    .. attribute:: incoming_request
+
+        The user has sent you a friend request.
+
+    .. attribute:: outgoing_request
+
+        You have sent a friend request to this user.
+
+.. class:: UserContentFilter
+
+    Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
+    in the Discord client.
+
+    .. attribute:: all_messages
+
+        Scan all direct messages from everyone.
+
+    .. attribute:: non_friends
+
+        Scan all direct messages that aren't from friends.
+
+    .. attribute:: disabled
+
+        Don't scan any direct messages.
+
+.. class:: FriendFlags
+
+    Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
+    in the Discord client.
+
+    .. attribute:: noone
+
+        This allows no-one to add you as a friend.
+
+    .. attribute:: mutual_guilds
+
+        This allows guild members to add you as a friend.
+
+    .. attribute:: mutual_friends
+
+        This allows friends of friends to add you as a friend.
+
+    .. attribute:: guild_and_friends
+
+        This is a superset of :attr:`mutual_guilds` and :attr:`mutual_friends`.
+
+    .. attribute:: everyone
+
+        This allows everyone to add you as a friend.
+
+.. class:: PremiumType
+
+    Represents the user's Discord Nitro subscription type.
+
+    .. container:: operations
+
+        .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two premium types are equal.
+        .. describe:: x != y
+
+            Checks if two premium types are not equal.
+        .. describe:: x > y
+
+            Checks if a premium level is higher than another.
+        .. describe:: x < y
+
+            Checks if a premium level is lower than another.
+        .. describe:: x >= y
+
+            Checks if a premium level is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a premium level is lower or equal to another.
+
+    .. attribute:: nitro
+
+        Represents the Discord Nitro with Nitro-exclusive games.
+
+    .. attribute:: nitro_classic
+
+        Represents the Discord Nitro with no Nitro-exclusive games.
+
+.. class:: Theme
+
+    Represents the theme synced across all Discord clients.
+
+    .. attribute:: light
+
+        Represents the Light theme on Discord.
+
+    .. attribute:: dark
+
+        Represents the Dark theme on Discord.
 
 .. class:: Locale
 
@@ -2788,6 +3094,181 @@ of :class:`enum.Enum`.
     .. attribute:: canceled
 
         An alias for :attr:`cancelled`.
+
+.. class:: RequiredActionType
+
+    Represents an action Discord requires the user to take.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: verify_phone
+
+        The user must verify their phone number.
+
+    .. attribute:: verify_email
+
+        The user must verify their email address.
+
+    .. attribute:: complete_captcha
+
+        The user must complete a captcha.
+
+    .. attribute:: accept_terms
+
+        The user must accept Discord's terms of service.
+
+.. class:: InteractionType
+
+    Specifies the type of :class:`Interaction`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: application_command
+
+        Represents a slash command interaction.
+    .. attribute:: component
+
+        Represents a component based interaction, i.e. clicking a button.
+    .. attribute:: autocomplete
+
+        Represents an autocomplete interaction.
+    .. attribute:: modal_submit
+
+        Represents submission of a modal interaction.
+
+.. class:: ComponentType
+
+    Represents the component type of a component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: action_row
+
+        Represents the group component which holds different components in a row.
+    .. attribute:: button
+
+        Represents a button component.
+    .. attribute:: select
+
+        Represents a select component.
+
+    .. attribute:: text_input
+
+        Represents a text box component.
+
+.. class:: ButtonStyle
+
+    Represents the style of the button component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: primary
+
+        Represents a blurple button for the primary action.
+    .. attribute:: secondary
+
+        Represents a grey button for the secondary action.
+    .. attribute:: success
+
+        Represents a green button for a successful action.
+    .. attribute:: danger
+
+        Represents a red button for a dangerous action.
+    .. attribute:: link
+
+        Represents a link button.
+
+    .. attribute:: blurple
+
+        An alias for :attr:`primary`.
+    .. attribute:: grey
+
+        An alias for :attr:`secondary`.
+    .. attribute:: gray
+
+        An alias for :attr:`secondary`.
+    .. attribute:: green
+
+        An alias for :attr:`success`.
+    .. attribute:: red
+
+        An alias for :attr:`danger`.
+    .. attribute:: url
+
+        An alias for :attr:`link`.
+
+.. class:: TextStyle
+
+    Represents the style of the text box component.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: short
+
+        Represents a short text box.
+    .. attribute:: paragraph
+
+        Represents a long form text box.
+    .. attribute:: long
+
+        An alias for :attr:`paragraph`.
+
+.. class:: AppCommandOptionType
+
+    The application command's option type. This is usually the type of parameter an application command takes.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: subcommand
+
+        A subcommand.
+    .. attribute:: subcommand_group
+
+        A subcommand group.
+    .. attribute:: string
+
+        A string parameter.
+    .. attribute:: integer
+
+        A integer parameter.
+    .. attribute:: boolean
+
+        A boolean parameter.
+    .. attribute:: user
+
+        A user parameter.
+    .. attribute:: channel
+
+        A channel parameter.
+    .. attribute:: role
+
+        A role parameter.
+    .. attribute:: mentionable
+
+        A mentionable parameter.
+    .. attribute:: number
+
+        A number parameter.
+    .. attribute:: attachment
+
+        An attachment parameter.
+
+.. class:: AppCommandType
+
+    The type of application command.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: chat_input
+
+        A slash command.
+    .. attribute:: user
+
+        A user context menu command.
+    .. attribute:: message
+
+        A message context menu command.
+
 
 .. _discord-api-audit-logs:
 
@@ -3382,7 +3863,7 @@ AuditLogDiff
 Webhook Support
 ------------------
 
-discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
+discord.py-self offers support for creating, editing, and executing webhooks through the :class:`Webhook` class.
 
 Webhook
 ~~~~~~~~~
@@ -3416,6 +3897,22 @@ SyncWebhookMessage
 .. attributetable:: SyncWebhookMessage
 
 .. autoclass:: SyncWebhookMessage()
+    :members:
+
+PartialWebhookGuild
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookGuild
+
+.. autoclass:: PartialWebhookGuild()
+    :members:
+
+PartialWebhookChannel
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialWebhookChannel
+
+.. autoclass:: PartialWebhookChannel()
     :members:
 
 .. _discord_api_abcs:
@@ -3482,6 +3979,14 @@ Connectable
 .. autoclass:: discord.abc.Connectable()
     :members:
 
+ApplicationCommand
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.abc.ApplicationCommand
+
+.. autoclass:: discord.abc.ApplicationCommand()
+    :members:
+
 .. _discord_api_models:
 
 Discord Models
@@ -3508,27 +4013,14 @@ the user of the library.
     Nearly all classes here have :ref:`py:slots` defined which means that it is
     impossible to have dynamic attributes to the data classes.
 
-
-ClientUser
-~~~~~~~~~~~~
+User
+~~~~~
 
 .. attributetable:: ClientUser
 
 .. autoclass:: ClientUser()
     :members:
     :inherited-members:
-
-UserSettings
-~~~~~~~~~~~~~
-
-.. attributetable:: UserSettings
-
-.. autoclass:: UserSettings()
-    :members:
-    :inherited-members:
-
-User
-~~~~~
 
 .. attributetable:: User
 
@@ -3540,21 +4032,67 @@ User
     .. automethod:: typing
         :async-with:
 
-Profile
-~~~~~~~~
+.. attributetable:: UserProfile
 
-.. attributetable:: Profile
-
-.. autoclass:: Profile()
+.. autoclass:: UserProfile()
     :members:
     :inherited-members:
-
-Note
-~~~~~
 
 .. attributetable:: Note
 
 .. autoclass:: Note()
+    :members:
+
+Connection
+~~~~~~~~~~
+
+.. attributetable:: Connection
+
+.. autoclass:: Connection()
+    :members:
+    :inherited-members:
+
+.. attributetable:: PartialConnection
+
+.. autoclass:: PartialConnection()
+    :members:
+
+Application
+~~~~~~~~~~~
+
+.. attributetable:: Application
+
+.. autoclass:: Application()
+    :members:
+    :inherited-members:
+
+.. attributetable:: ApplicationBot
+
+.. autoclass:: ApplicationBot()
+    :members:
+    :inherited-members:
+
+.. attributetable:: PartialApplication
+
+.. autoclass:: PartialApplication()
+    :members:
+
+.. attributetable:: InteractionApplication
+
+.. autoclass:: InteractionApplication()
+    :members:
+
+Team
+~~~~~
+
+.. attributetable:: Team
+
+.. autoclass:: Team()
+    :members:
+
+.. attributetable:: TeamMember
+
+.. autoclass:: TeamMember()
     :members:
     :inherited-members:
 
@@ -3565,14 +4103,33 @@ Relationship
 
 .. autoclass:: Relationship()
     :members:
-    :inherited-members:
 
-Attachment
-~~~~~~~~~~~
+Settings
+~~~~~~~~
 
-.. attributetable:: Attachment
+.. attributetable:: UserSettings
 
-.. autoclass:: Attachment()
+.. autoclass:: UserSettings()
+    :members:
+
+.. attributetable:: GuildSettings
+
+.. autoclass:: GuildSettings()
+    :members:
+
+.. attributetable:: ChannelSettings
+
+.. autoclass:: ChannelSettings()
+    :members:
+
+.. attributetable:: GuildFolder
+
+.. autoclass:: GuildFolder()
+    :members:
+
+.. attributetable:: MuteConfig
+
+.. autoclass:: MuteConfig()
     :members:
 
 Asset
@@ -3584,32 +4141,6 @@ Asset
     :members:
     :inherited-members:
 
-Message
-~~~~~~~
-
-.. attributetable:: Message
-
-.. autoclass:: Message()
-    :members:
-    :inherited-members:
-
-DeletedReferencedMessage
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: DeletedReferencedMessage
-
-.. autoclass:: DeletedReferencedMessage()
-    :members:
-
-
-Reaction
-~~~~~~~~~
-
-.. attributetable:: Reaction
-
-.. autoclass:: Reaction()
-    :members:
-
 Guild
 ~~~~~~
 
@@ -3617,6 +4148,7 @@ Guild
 
 .. autoclass:: Guild()
     :members:
+    :inherited-members:
 
 .. class:: BanEntry
 
@@ -3633,33 +4165,18 @@ Guild
 
         :type: :class:`User`
 
-GuildSettings
-~~~~~~~~~~~~~~
+Role
+~~~~~
 
-.. attributetable:: GuildSettings
+.. attributetable:: Role
 
-.. autoclass:: GuildSettings()
+.. autoclass:: Role()
     :members:
-    :inherited-members:
 
-GuildFolder
-~~~~~~~~~~~~
+.. attributetable:: RoleTags
 
-.. attributetable:: GuildFolder
-
-.. autoclass:: GuildFolder()
+.. autoclass:: RoleTags()
     :members:
-    :inherited-members:
-
-GuildSubscriptionOptions
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: GuildSubscriptionOptions
-
-.. autoclass:: GuildSubscriptionOptions()
-    :members:
-    :inherited-members:
-
 
 ScheduledEvent
 ~~~~~~~~~~~~~~
@@ -3668,7 +4185,6 @@ ScheduledEvent
 
 .. autoclass:: ScheduledEvent()
     :members:
-
 
 Integration
 ~~~~~~~~~~~~
@@ -3679,10 +4195,10 @@ Integration
 .. autoclass:: IntegrationAccount()
     :members:
 
-.. autoclass:: BotIntegration()
+.. autoclass:: IntegrationApplication()
     :members:
 
-.. autoclass:: IntegrationApplication()
+.. autoclass:: BotIntegration()
     :members:
 
 .. autoclass:: StreamIntegration()
@@ -3701,13 +4217,11 @@ Member
     .. automethod:: typing
         :async-with:
 
-Spotify
-~~~~~~~~
+.. attributetable:: MemberProfile
 
-.. attributetable:: Spotify
-
-.. autoclass:: Spotify()
+.. autoclass:: MemberProfile()
     :members:
+    :inherited-members:
 
 VoiceState
 ~~~~~~~~~~~
@@ -3726,42 +4240,48 @@ Emoji
     :members:
     :inherited-members:
 
-PartialEmoji
-~~~~~~~~~~~~~~~~~~~~~~
-
 .. attributetable:: PartialEmoji
 
 .. autoclass:: PartialEmoji()
     :members:
     :inherited-members:
 
-Role
-~~~~~
+Sticker
+~~~~~~~~
 
-.. attributetable:: Role
+.. attributetable:: Sticker
 
-.. autoclass:: Role()
+.. autoclass:: Sticker()
     :members:
 
-RoleTags
-~~~~~~~~~~
+.. attributetable:: StickerItem
 
-.. attributetable:: RoleTags
-
-.. autoclass:: RoleTags()
+.. autoclass:: StickerItem()
     :members:
 
-PartialMessageable
-~~~~~~~~~~~~~~~~~~~~
+.. attributetable:: StickerPack
 
-.. attributetable:: PartialMessageable
+.. autoclass:: StickerPack()
+    :members:
 
-.. autoclass:: PartialMessageable()
+.. attributetable:: StandardSticker
+
+.. autoclass:: StandardSticker()
+    :members:
+
+.. attributetable:: GuildSticker
+
+.. autoclass:: GuildSticker()
+    :members:
+
+GuildChannel
+~~~~~~~~~~~~~~
+
+.. attributetable:: CategoryChannel
+
+.. autoclass:: CategoryChannel()
     :members:
     :inherited-members:
-
-TextChannel
-~~~~~~~~~~~~
 
 .. attributetable:: TextChannel
 
@@ -3773,35 +4293,9 @@ TextChannel
     .. automethod:: typing
         :async-with:
 
-<<<<<<< HEAD
+.. attributetable:: VoiceChannel
 
-ChannelSettings
-~~~~~~~~~~~~~~~~
-
-.. attributetable:: ChannelSettings
-
-.. autoclass:: ChannelSettings()
-    :members:
-    :inherited-members:
-
-
-=======
-ForumChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: ForumChannel
-
-.. autoclass:: ForumChannel()
-    :members:
-    :inherited-members:
-
->>>>>>> 95deb553328d4d1c3e8b6b50239b67c56c4576fa
-Thread
-~~~~~~~~
-
-.. attributetable:: Thread
-
-.. autoclass:: Thread()
+.. autoclass:: VoiceChannel()
     :members:
     :inherited-members:
     :exclude-members: typing
@@ -3809,52 +4303,20 @@ Thread
     .. automethod:: typing
         :async-with:
 
-ThreadMember
-~~~~~~~~~~~~~
-
-.. attributetable:: ThreadMember
-
-.. autoclass:: ThreadMember()
-    :members:
-
-VoiceChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: VoiceChannel
-
-.. autoclass:: VoiceChannel()
-    :members:
-    :inherited-members:
-
-StageChannel
-~~~~~~~~~~~~~
-
 .. attributetable:: StageChannel
 
 .. autoclass:: StageChannel()
     :members:
     :inherited-members:
 
+.. attributetable:: ForumChannel
 
-StageInstance
-~~~~~~~~~~~~~~
-
-.. attributetable:: StageInstance
-
-.. autoclass:: StageInstance()
-    :members:
-
-CategoryChannel
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: CategoryChannel
-
-.. autoclass:: CategoryChannel()
+.. autoclass:: ForumChannel()
     :members:
     :inherited-members:
 
-DMChannel
-~~~~~~~~~
+PrivateChannel
+~~~~~~~~~~~~~~~~
 
 .. attributetable:: DMChannel
 
@@ -3866,9 +4328,6 @@ DMChannel
     .. automethod:: typing
         :async-with:
 
-GroupChannel
-~~~~~~~~~~~~
-
 .. attributetable:: GroupChannel
 
 .. autoclass:: GroupChannel()
@@ -3879,20 +4338,119 @@ GroupChannel
     .. automethod:: typing
         :async-with:
 
-PartialInviteGuild
-~~~~~~~~~~~~~~~~~~~
+PartialMessageable
+~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: PartialInviteGuild
+.. attributetable:: PartialMessageable
 
-.. autoclass:: PartialInviteGuild()
+.. autoclass:: PartialMessageable()
+    :members:
+    :inherited-members:
+
+Thread
+~~~~~~~
+
+.. attributetable:: Thread
+
+.. autoclass:: Thread()
+    :members:
+    :inherited-members:
+    :exclude-members: typing
+
+    .. automethod:: typing
+        :async-with:
+
+.. attributetable:: ThreadMember
+
+.. autoclass:: ThreadMember()
     :members:
 
-PartialInviteChannel
-~~~~~~~~~~~~~~~~~~~~~
+StageInstance
+~~~~~~~~~~~~~~
 
-.. attributetable:: PartialInviteChannel
+.. attributetable:: StageInstance
 
-.. autoclass:: PartialInviteChannel()
+.. autoclass:: StageInstance()
+    :members:
+
+Message
+~~~~~~~~
+
+.. attributetable:: Message
+
+.. autoclass:: Message()
+    :members:
+    :inherited-members:
+
+.. attributetable:: PartialMessage
+
+.. autoclass:: PartialMessage
+    :members:
+
+.. attributetable:: Attachment
+
+.. autoclass:: Attachment()
+    :members:
+
+.. attributetable:: MessageReference
+
+.. autoclass:: MessageReference()
+    :members:
+
+.. attributetable:: DeletedReferencedMessage
+
+.. autoclass:: DeletedReferencedMessage()
+    :members:
+
+Reaction
+~~~~~~~~
+
+.. attributetable:: Reaction
+
+.. autoclass:: Reaction()
+    :members:
+
+ApplicationCommand
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: BaseCommand
+
+.. autoclass:: BaseCommand()
+    :members:
+    :inherited-members:
+
+.. attributetable:: UserCommand
+
+.. autoclass:: UserCommand()
+    :members:
+    :inherited-members:
+
+.. attributetable:: MessageCommand
+
+.. autoclass:: MessageCommand()
+    :members:
+    :inherited-members:
+
+.. attributetable:: SlashCommand
+
+.. autoclass:: SlashCommand()
+    :members:
+    :inherited-members:
+
+.. attributetable:: SubCommand
+
+.. autoclass:: SubCommand()
+    :members:
+    :inherited-members:
+
+.. attributetable:: Option
+
+.. autoclass:: Option()
+    :members:
+
+.. attributetable:: OptionChoice
+
+.. autoclass:: OptionChoice()
     :members:
 
 Invite
@@ -3903,6 +4461,16 @@ Invite
 .. autoclass:: Invite()
     :members:
 
+.. attributetable:: PartialInviteGuild
+
+.. autoclass:: PartialInviteGuild()
+    :members:
+
+.. attributetable:: PartialInviteChannel
+
+.. autoclass:: PartialInviteChannel()
+    :members:
+
 Template
 ~~~~~~~~~
 
@@ -3910,23 +4478,6 @@ Template
 
 .. autoclass:: Template()
     :members:
-
-WidgetChannel
-~~~~~~~~~~~~~~~
-
-.. attributetable:: WidgetChannel
-
-.. autoclass:: WidgetChannel()
-    :members:
-
-WidgetMember
-~~~~~~~~~~~~~
-
-.. attributetable:: WidgetMember
-
-.. autoclass:: WidgetMember()
-    :members:
-    :inherited-members:
 
 Widget
 ~~~~~~~
@@ -3936,116 +4487,53 @@ Widget
 .. autoclass:: Widget()
     :members:
 
-StickerPack
-~~~~~~~~~~~~~
+.. attributetable:: WidgetChannel
 
-.. attributetable:: StickerPack
-
-.. autoclass:: StickerPack()
+.. autoclass:: WidgetChannel()
     :members:
 
-StickerItem
-~~~~~~~~~~~~~
+.. attributetable:: WidgetMember
 
-.. attributetable:: StickerItem
-
-.. autoclass:: StickerItem()
+.. autoclass:: WidgetMember()
     :members:
+    :inherited-members:
 
-Sticker
-~~~~~~~~~~~~~~~
-
-.. attributetable:: Sticker
-
-.. autoclass:: Sticker()
-    :members:
-
-StandardSticker
-~~~~~~~~~~~~~~~~
-
-.. attributetable:: StandardSticker
-
-.. autoclass:: StandardSticker()
-    :members:
-
-GuildSticker
-~~~~~~~~~~~~~
-
-.. attributetable:: GuildSticker
-
-.. autoclass:: GuildSticker()
-    :members:
-
-RawMessageDeleteEvent
-~~~~~~~~~~~~~~~~~~~~~~~
+Raw events
+~~~~~~~~~~~
 
 .. attributetable:: RawMessageDeleteEvent
 
 .. autoclass:: RawMessageDeleteEvent()
     :members:
 
-RawBulkMessageDeleteEvent
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. attributetable:: RawBulkMessageDeleteEvent
 
 .. autoclass:: RawBulkMessageDeleteEvent()
     :members:
-
-RawMessageUpdateEvent
-~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: RawMessageUpdateEvent
 
 .. autoclass:: RawMessageUpdateEvent()
     :members:
 
-RawReactionActionEvent
-~~~~~~~~~~~~~~~~~~~~~~~
-
 .. attributetable:: RawReactionActionEvent
 
 .. autoclass:: RawReactionActionEvent()
     :members:
-
-RawReactionClearEvent
-~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: RawReactionClearEvent
 
 .. autoclass:: RawReactionClearEvent()
     :members:
 
-RawReactionClearEmojiEvent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. attributetable:: RawReactionClearEmojiEvent
 
 .. autoclass:: RawReactionClearEmojiEvent()
     :members:
 
-RawIntegrationDeleteEvent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 .. attributetable:: RawIntegrationDeleteEvent
 
 .. autoclass:: RawIntegrationDeleteEvent()
-    :members:
-
-PartialWebhookGuild
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialWebhookGuild
-
-.. autoclass:: PartialWebhookGuild()
-    :members:
-
-PartialWebhookChannel
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialWebhookChannel
-
-.. autoclass:: PartialWebhookChannel()
     :members:
 
 .. _discord_api_data:
@@ -4064,13 +4552,12 @@ impossible to have dynamic attributes to the data classes.
 The only exception to this rule is :class:`Object`, which is made with
 dynamic attributes in mind.
 
-
 Object
 ~~~~~~~
 
 .. attributetable:: Object
 
-.. autoclass:: Object
+.. autoclass:: Object()
     :members:
 
 Embed
@@ -4078,7 +4565,7 @@ Embed
 
 .. attributetable:: Embed
 
-.. autoclass:: Embed
+.. autoclass:: Embed()
     :members:
 
 AllowedMentions
@@ -4086,64 +4573,15 @@ AllowedMentions
 
 .. attributetable:: AllowedMentions
 
-.. autoclass:: AllowedMentions
+.. autoclass:: AllowedMentions()
     :members:
-
-MessageReference
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: MessageReference
-
-.. autoclass:: MessageReference
-    :members:
-
-PartialMessage
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialMessage
-
-.. autoclass:: PartialMessage
-    :members:
-
-SelectOption
-~~~~~~~~~~~~~
-
-.. attributetable:: SelectOption
-
-.. autoclass:: SelectOption
-    :members:
-
-MemberCacheFlags
-~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: MemberCacheFlags
-
-.. autoclass:: MemberCacheFlags
-    :members:
-
-ApplicationFlags
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: ApplicationFlags
-
-.. autoclass:: ApplicationFlags
-    :members:
-
-ChannelFlags
-~~~~~~~~~~~~~~
-
-.. attributetable:: ChannelFlags
-
-.. autoclass:: ChannelFlags
-    :members:
-
 
 File
 ~~~~~
 
 .. attributetable:: File
 
-.. autoclass:: File
+.. autoclass:: File()
     :members:
 
 Colour
@@ -4151,47 +4589,40 @@ Colour
 
 .. attributetable:: Colour
 
-.. autoclass:: Colour
-    :members:
-
-BaseActivity
-~~~~~~~~~~~~~~
-
-.. attributetable:: BaseActivity
-
-.. autoclass:: BaseActivity
+.. autoclass:: Colour()
     :members:
 
 Activity
 ~~~~~~~~~
 
-.. attributetable:: Activity
+.. attributetable:: BaseActivity
 
-.. autoclass:: Activity
+.. autoclass:: BaseActivity()
     :members:
 
-Game
-~~~~~
+.. attributetable:: Activity
+
+.. autoclass:: Activity()
+    :members:
 
 .. attributetable:: Game
 
-.. autoclass:: Game
+.. autoclass:: Game()
     :members:
-
-Streaming
-~~~~~~~~~~~
 
 .. attributetable:: Streaming
 
-.. autoclass:: Streaming
+.. autoclass:: Streaming()
     :members:
 
-CustomActivity
-~~~~~~~~~~~~~~~
+.. attributetable:: Spotify
+
+.. autoclass:: Spotify()
+    :members:
 
 .. attributetable:: CustomActivity
 
-.. autoclass:: CustomActivity
+.. autoclass:: CustomActivity()
     :members:
 
 Permissions
@@ -4199,39 +4630,51 @@ Permissions
 
 .. attributetable:: Permissions
 
-.. autoclass:: Permissions
+.. autoclass:: Permissions()
     :members:
-
-PermissionOverwrite
-~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: PermissionOverwrite
 
-.. autoclass:: PermissionOverwrite
+.. autoclass:: PermissionOverwrite()
     :members:
 
-SystemChannelFlags
-~~~~~~~~~~~~~~~~~~~~
+Flags
+~~~~~~
+
+.. attributetable:: ApplicationFlags
+
+.. autoclass:: ApplicationFlags()
+    :members:
+
+.. attributetable:: ChannelFlags
+
+.. autoclass:: ChannelFlags()
+    :members:
 
 .. attributetable:: SystemChannelFlags
 
 .. autoclass:: SystemChannelFlags()
     :members:
 
-MessageFlags
-~~~~~~~~~~~~
-
 .. attributetable:: MessageFlags
 
 .. autoclass:: MessageFlags()
     :members:
 
-PublicUserFlags
-~~~~~~~~~~~~~~~
-
 .. attributetable:: PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
+    :members:
+
+.. attributetable:: PrivateUserFlags
+
+.. autoclass:: PrivateUserFlags()
+    :members:
+    :inherited-members:
+
+.. attributetable:: MemberCacheFlags
+
+.. autoclass:: MemberCacheFlags()
     :members:
 
 Exceptions
@@ -4252,11 +4695,13 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: NotFound
 
+.. autoexception:: CaptchaRequired
+    :members:
+    :inherited-members:
+
 .. autoexception:: DiscordServerError
 
 .. autoexception:: InvalidData
-
-.. autoexception:: GatewayNotFound
 
 .. autoexception:: ConnectionClosed
 
@@ -4275,8 +4720,8 @@ Exception Hierarchy
                 - :exc:`InvalidData`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
-            - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
                 - :exc:`DiscordServerError`
+                - :exc:`CaptchaRequired`

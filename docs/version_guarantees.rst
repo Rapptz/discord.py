@@ -29,4 +29,3 @@ Examples of Non-Breaking Changes
 - Changes in the documentation.
 - Modifying the internal HTTP handling.
 - Upgrading the dependencies to a new version, major or otherwise.
-
