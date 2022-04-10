@@ -1293,7 +1293,8 @@ class ConnectionState:
             _log.debug('WEBHOOKS_UPDATE referencing an unknown guild ID: %s. Discarding', data['guild_id'])
             return
 
-        channel = guild.get_channel(int(data['channel_id']))
+        channel_id = utils._get_as_snowflake(data, 'channel_id')
+        channel = guild.get_channel(channel_id)  # type: ignore # None is okay here
         if channel is not None:
             self.dispatch('webhooks_update', channel)
         else:
