@@ -502,8 +502,6 @@ class ClientUser(BaseUser):
         The user's discriminator.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
-    avatar: Optional[:class:`str`]
-        The avatar hash the user has. Could be ``None``.
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`

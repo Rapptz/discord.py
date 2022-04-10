@@ -46,6 +46,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'Application',
+    'ApplicationBot',
     'PartialApplication',
     'InteractionApplication',
 )
@@ -340,8 +341,8 @@ class Application(PartialApplication):
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
 
         self.verification_state = try_enum(ApplicationVerificationState, data['verification_state'])
-        self.store_application_state = try_enum(StoreApplicationState, data['store_application_state'])
-        self.rpc_application_state = try_enum(RPCApplicationState, data['rpc_application_state'])
+        self.store_application_state = try_enum(StoreApplicationState, data.get('store_application_state', 1))
+        self.rpc_application_state = try_enum(RPCApplicationState, data.get('rpc_application_state', 0))
 
         state = self._state
         team: Optional[TeamPayload] = data.get('team')

@@ -36,6 +36,7 @@ __all__ = (
     'SystemChannelFlags',
     'MessageFlags',
     'PublicUserFlags',
+    'PrivateUserFlags',
     'MemberCacheFlags',
     'ApplicationFlags',
     'ChannelFlags',

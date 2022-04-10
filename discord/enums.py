@@ -286,15 +286,15 @@ class ContentFilter(Enum, comparable=True):
 
 
 class UserContentFilter(Enum):
-    always = 0
-    on_interaction = 1
-    never = 2
+    disabled = 0
+    non_friends = 1
+    all_messages = 2
 
 
 class StickerAnimationOptions(Enum):
-    disabled = 2
-    friends = 1
-    all_messages = 0
+    always = 0
+    on_interaction = 1
+    never = 2
 
 
 class FriendFlags(Enum):
@@ -364,7 +364,7 @@ class DefaultAvatar(Enum):
         return self.name
 
 
-class RelationshipType(Enum, comparable=True):
+class RelationshipType(Enum):
     friend = 1
     blocked = 2
     incoming_request = 3
@@ -581,7 +581,7 @@ class PremiumType(Enum, comparable=True):
     nitro = 2
 
 
-class TeamMembershipState(Enum):
+class TeamMembershipState(Enum, comparable=True):
     invited = 1
     accepted = 2
 

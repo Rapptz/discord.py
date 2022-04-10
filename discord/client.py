@@ -2319,6 +2319,7 @@ class Client:
             # Passing a username and discriminator:
             await client.send_friend_request('Jake', '0001')
 
+
         Parameters
         -----------
         user: Union[:class:`User`, :class:`str`]
@@ -2328,14 +2329,14 @@ class Client:
         discriminator: :class:`str`
             The discriminator of the user to send the friend request to.
 
-        More than 2 parameters or less than 1 parameter raises a :exc:`TypeError`.
-
         Raises
         -------
         Forbidden
             Not allowed to send a friend request to this user.
         HTTPException
             Sending the friend request failed.
+        TypeError
+            More than 2 parameters or less than 1 parameter was passed.
 
         Returns
         -------

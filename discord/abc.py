@@ -58,6 +58,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from .settings import ChannelSettings
+from .commands import ApplicationCommand
 from . import utils
 
 __all__ = (
@@ -67,6 +68,7 @@ __all__ = (
     'GuildChannel',
     'Messageable',
     'Connectable',
+    'ApplicationCommand',
 )
 
 T = TypeVar('T', bound=VoiceProtocol)

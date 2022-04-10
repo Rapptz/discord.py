@@ -230,14 +230,14 @@ class Team(Hashable):
         discriminator: :class:`str`
             The discriminator of the user to invite.
 
-        More than 2 parameters or less than 1 parameter raises a :exc:`TypeError`.
-
         Raises
         -------
         Forbidden
             You do not have permissions to invite the user.
-        :exc:`.HTTPException`
+        HTTPException
             Inviting the user failed.
+        TypeError
+            More than 2 parameters or less than 1 parameter were passed.
 
         Returns
         -------

@@ -223,7 +223,10 @@ class PrivateCall:
             The message associated with this call.
         """
         message = await self.channel.fetch_message(self._message_id)
+        state = self._state
         if message is not None and self.message is None:
+            if self._state._messages is not None:
+                self._state._messages.append(message)
             self.message = message
         return message
 

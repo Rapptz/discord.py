@@ -52,6 +52,7 @@ __all__ = (
     'ChannelSettings',
     'GuildSettings',
     'UserSettings',
+    'MuteConfig',
 )
 
 
@@ -232,6 +233,8 @@ class UserSettings:
         native_phone_integration_enabled: :class:`bool`
             Whether or not to enable the new Discord mobile phone number friend
             requesting features.
+        passwordless: :class:`bool`
+            Unknown.
         render_embeds: :class:`bool`
             Whether or not to render embeds that are sent in the chat.
         render_reactions: :class:`bool`
@@ -291,13 +294,13 @@ class UserSettings:
 
     @property
     def custom_activity(self) -> Optional[CustomActivity]:
-        """Optional[:class:`CustomActivity]: The set custom activity."""
+        """Optional[:class:`CustomActivity`]: The set custom activity."""
         return create_settings_activity(data=getattr(self, '_custom_status', None), state=self._state)
 
     @property
     def explicit_content_filter(self) -> UserContentFilter:
         """:class:`UserContentFilter`: The filter for explicit content in all messages."""
-        return try_enum(UserContentFilter, getattr(self, '_explicit_content_filter', 1))
+        return try_enum(UserContentFilter, getattr(self, '_explicit_content_filter', 0))
 
     @property
     def friend_source_flags(self) -> FriendFlags:
@@ -323,7 +326,7 @@ class UserSettings:
 
     @property
     def passwordless(self) -> bool:
-        """:class:`bool`: Whether the account is passwordless."""
+        """:class:`bool`: Unknown."""
         return getattr(self, '_passwordless', False)
 
     @property

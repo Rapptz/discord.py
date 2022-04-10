@@ -39,7 +39,6 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
 __all__ = (
-    'ApplicationCommand',
     'BaseCommand',
     'UserCommand',
     'MessageCommand',
@@ -68,12 +67,8 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    version: :class:`int`
-        The command's version.
     type: :class:`AppCommandType`
         The type of application command.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     """
 
     __slots__ = ()
@@ -142,14 +137,8 @@ class BaseCommand(ApplicationCommand, Hashable):
     ----------
     id: :class:`int`
         The command's ID.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
     version: :class:`int`
         The command's version.
-    type: :class:`AppCommandType`
-        The type of application command.
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
     """
@@ -351,21 +340,7 @@ class UserCommand(BaseCommand):
 
 
 class MessageCommand(BaseCommand):
-    """Represents a message command.
-
-    Attributes
-    ----------
-    id: :class:`int`
-        The command's ID.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. Always :class:`AppCommandType.message`.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
-    """
+    """Represents a message command."""
 
     __slots__ = ('_message',)
 
@@ -425,16 +400,6 @@ class SlashCommand(BaseCommand, SlashMixin):
 
     Attributes
     ----------
-    id: :class:`int`
-        The command's ID.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. Always :class:`AppCommandType.chat_input`.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     options: List[:class:`Option`]
         The command's options.
     children: List[:class:`SubCommand`]
@@ -505,12 +470,11 @@ class SubCommand(SlashMixin):
     ----------
     parent: :class:`SlashCommand`
         The parent command.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. Always :class:`AppCommandType.chat_input`.
+    options: List[:class:`Option`]
+        The subcommand's options.
+    children: List[:class:`SubCommand`]
+        The subcommand's subcommands. If a subcommand has subcommands, it is a group and cannot be used.
+        You can access (and use) subcommands directly as attributes of the class.
     """
 
     __slots__ = (

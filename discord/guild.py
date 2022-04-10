@@ -615,6 +615,7 @@ class Guild(Hashable):
     @utils.cached_slot_property('_cs_joined')
     def joined(self) -> bool:
         """:class:`bool`: Returns whether you are a member of this guild.
+
         May not be accurate for :class:`Guild`s fetched over HTTP.
         """
         if self.me or self.joined_at:

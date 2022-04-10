@@ -1192,21 +1192,28 @@ class ConnectionState:
             _log.debug('CHANNEL_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_channel_create(self, data: gw.ChannelCreateEvent) -> None:
-        factory, _ = _channel_factory(data['type'])
+        factory, ch_type = _channel_factory(data['type'])
         if factory is None:
             _log.debug('CHANNEL_CREATE referencing an unknown channel type %s. Discarding.', data['type'])
             return
 
-        guild_id = utils._get_as_snowflake(data, 'guild_id')
-        guild = self._get_guild(guild_id)
-        if guild is not None:
-            # The factory can't be a DMChannel or GroupChannel here
-            channel = factory(guild=guild, state=self, data=data)  # type: ignore
-            guild._add_channel(channel)  # type: ignore
-            self.dispatch('guild_channel_create', channel)
+        if ch_type in (ChannelType.group, ChannelType.private):
+            channel_id = int(data['id'])
+            if self._get_private_channel(channel_id) is None:
+                channel = factory(me=self.user, data=data, state=self)  # type: ignore # user is always present when logged in
+                self._add_private_channel(channel)  # type: ignore # channel will always be a private channel
+                self.dispatch('private_channel_create', channel)
         else:
-            _log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
-            return
+            guild_id = utils._get_as_snowflake(data, 'guild_id')
+            guild = self._get_guild(guild_id)
+            if guild is not None:
+                # The factory can't be a DMChannel or GroupChannel here
+                channel = factory(guild=guild, state=self, data=data)  # type: ignore
+                guild._add_channel(channel)  # type: ignore
+                self.dispatch('guild_channel_create', channel)
+            else:
+                _log.debug('CHANNEL_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+                return
 
     def parse_channel_pins_update(self, data: gw.ChannelPinsUpdateEvent) -> None:
         channel_id = int(data['channel_id'])
@@ -2100,8 +2107,9 @@ class ConnectionState:
         if call is None:
             _log.debug('CALL_UPDATE referencing unknown call (channel ID: %s). Discarding.', data['channel_id'])
             return
+        old_call = copy.copy(call)
         call._update(**data)
-        self.dispatch('call_update', call)
+        self.dispatch('call_update', old_call, call)
 
     def parse_call_delete(self, data) -> None:
         call = self._calls.pop(int(data['channel_id']), None)
