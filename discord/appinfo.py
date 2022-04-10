@@ -423,7 +423,7 @@ class Application(PartialApplication):
             Whether the application requires a code grant or not.
         flags: :class:`ApplicationFlags`
             The flags of the application.
-        team: :class:`Snowflake`
+        team: :class:`~abc.Snowflake`
             The team to transfer the application to.
 
         Raises
@@ -560,7 +560,7 @@ class InteractionApplication(Hashable):
         Only available from :attr:`~Modal.application`.
     command_count: Optional[:class:`int`]
         The number of commands the application has.
-        Only available from :attr:`~ApplicationCommand.application`.
+        Only available from :attr:`~abc.ApplicationCommand.application`.
     """
 
     __slots__ = (

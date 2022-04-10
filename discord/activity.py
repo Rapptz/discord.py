@@ -763,7 +763,7 @@ class CustomActivity(BaseActivity):
     emoji: Optional[:class:`PartialEmoji`]
         The emoji to pass to the activity, if any.
     expires_at: Optional[:class:`datetime.datetime`]
-        When the custom activity will expire. This is only available from :attr:`discord.Settings.custom_activity`
+        When the custom activity will expire. This is only available from :attr:`UserSettings.custom_activity`
     """
 
     __slots__ = ('name', 'emoji', 'expires_at')

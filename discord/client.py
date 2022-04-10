@@ -1935,7 +1935,7 @@ class Client:
 
         Returns
         --------
-        :class:`~discord.User`
+        :class:`.User`
             The user you requested.
         """
         data = await self.http.get_user(user_id)
@@ -1961,7 +1961,7 @@ class Client:
             The ID of the user to fetch their profile for.
         with_mutuals: :class:`bool`
             Whether to fetch mutual guilds and friends.
-            This fills in :attr:`mutual_guilds` & :attr:`mutual_friends`.
+            This fills in :attr:`UserProfile.mutual_guilds` & :attr:`UserProfile.mutual_friends`.
         fetch_note: :class:`bool`
             Whether to pre-fetch the user's note.
 
@@ -1976,7 +1976,7 @@ class Client:
 
         Returns
         --------
-        :class:`.Profile`
+        :class:`.UserProfile`
             The profile of the user.
         """
         state = self._connection
@@ -2220,7 +2220,7 @@ class Client:
 
         Returns
         --------
-        List[:class:`PrivateChannel`]
+        List[:class:`.abc.PrivateChannel`]
             All your private channels.
         """
         state = self._connection
@@ -2260,13 +2260,13 @@ class Client:
 
         Creates a group direct message with the recipients
         provided. These recipients must be have a relationship
-        of type :attr:`RelationshipType.friend`.
+        of type :attr:`.RelationshipType.friend`.
 
         .. versionadded:: 2.0
 
         Parameters
         -----------
-        \*recipients: :class:`~abc.Snowflake`
+        \*recipients: :class:`~discord.abc.Snowflake`
             An argument :class:`list` of :class:`User` to have in
             your group.
 

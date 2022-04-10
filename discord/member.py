@@ -1147,7 +1147,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             List of command IDs to search for. If the command doesn't exist it won't be returned.
         applications: :class:`bool`
             Whether to include applications in the response. This defaults to ``False``.
-        application: Optional[:class:`Snowflake`]
+        application: Optional[:class:`~abc.Snowflake`]
             Query commands only for this application.
 
         Raises

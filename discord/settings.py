@@ -409,7 +409,17 @@ class MuteConfig:
 
 
 class ChannelSettings:
-    """Represents a channel's notification settings."""
+    """Represents a channel's notification settings.
+
+    Attributes
+    ----------
+    level: :class:`NotificationLevel`
+        The notification level for the channel.
+    muted: :class:`MuteConfig`
+        The mute configuration for the channel.
+    collapsed: :class:`bool`
+        Unknown.
+    """
 
     if TYPE_CHECKING:
         _channel_id: int
@@ -431,7 +441,7 @@ class ChannelSettings:
 
     @property
     def channel(self) -> Optional[GuildChannel]:
-        """Optional[:class:`GuildChannel`]: Returns the channel these settings are for."""
+        """Optional[:class:`.abc.GuildChannel`]: Returns the channel these settings are for."""
         guild = self._state._get_guild(self._guild_id)
         return guild and guild.get_channel(self._channel_id)
 
@@ -500,7 +510,25 @@ class ChannelSettings:
 
 
 class GuildSettings:
-    """Represents a guild's notification settings."""
+    """Represents a guild's notification settings.
+
+    Attributes
+    ----------
+    level: :class:`NotificationLevel`
+        The notification level for the guild.
+    muted: :class:`MuteConfig`
+        The mute configuration for the guild.
+    suppress_everyone: :class:`bool`
+        Whether to suppress @everyone/@here notifications.
+    suppress_roles: :class:`bool`
+        Whether to suppress role notifications.
+    hide_muted_channels: :class:`bool`
+        Whether to hide muted channels.
+    mobile_push_notifications: :class:`bool`
+        Whether to enable mobile push notifications.
+    version: :class:`int`
+        The version of the guild's settings.
+    """
 
     if TYPE_CHECKING:
         _channel_overrides: Dict[int, ChannelSettings]

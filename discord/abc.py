@@ -458,7 +458,10 @@ class GuildChannel:
 
     @property
     def notification_settings(self) -> ChannelSettings:
-        """:class:`ChannelSettings`: Returns the notification settings for this channel"""
+        """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
+
+        .. versionadded:: 2.0
+        """
         guild = self.guild
         # guild.notification_settings will always be present at this point
         return guild.notification_settings._channel_overrides.get(self.id) or ChannelSettings(guild.id, state=self._state)  # type: ignore
@@ -1768,7 +1771,7 @@ class Messageable:
             List of command IDs to search for. If the command doesn't exist it won't be returned.
         applications: :class:`bool`
             Whether to include applications in the response. This defaults to ``False``.
-        application: Optional[:class:`Snowflake`]
+        application: Optional[:class:`~abc.Snowflake`]
             Query commands only for this application.
 
         Raises

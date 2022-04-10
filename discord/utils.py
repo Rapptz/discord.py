@@ -1176,11 +1176,11 @@ def set_target(
 
     Parameters
     -----------
-    items: Iterable[:class:`ApplicationCommand`]
+    items: Iterable[:class:`.abc.ApplicationCommand`]
         A list of items to set the target for.
-    channel: Optional[:class:`Messageable`]
+    channel: Optional[:class:`.abc.Messageable`]
         The channel to target.
-    message: Optional[:class:`Message`]
+    message: Optional[:class:`.Message`]
         The message to target.
     user: Optional[:class:`~abc.Snowflake`]
         The user to target.

@@ -45,6 +45,14 @@ Client
     .. automethod:: Client.event()
         :decorator:
 
+CaptchaHandler
+~~~~~~~~~~~~~~
+
+.. attribute:: CaptchaHandler
+
+.. autoclass:: CaptchaHandler
+    :members:
+
 Voice Related
 ---------------
 
@@ -379,13 +387,13 @@ Client
 
 .. function:: on_guild_settings_update(before, after)
 
-    Called when a :class:`Guild`'s :class:`GuildSettings` updates, for example:
+    Called when a :class:`.Guild`'s :class:`.GuildSettings` updates, for example:
 
     - Muted guild
     - Changed guild notification settings
     - etc
 
-    Note that you can get the guild from :attr:`GuildSettings.guild`.
+    Note that you can get the guild from :attr:`.GuildSettings.guild`.
 
     .. versionadded:: 2.0
 
@@ -406,7 +414,7 @@ Client
 .. function:: on_connections_update()
 
     Called when your account connections are updated.
-    The updated connections are not provided and must be fetched by :func:`Client.connections`.
+    The updated connections are not provided and must be fetched by :func:`.Client.connections`.
 
     .. versionadded:: 2.0
 
@@ -445,8 +453,8 @@ Calls
 
 .. function:: on_call_update(before, after)
 
-    Called when a :class:`Call` is updated, e.g. when a member is added
-    or another person is rung.
+    Called when a :class:`PrivateCall` or :class:`GroupCall` is updated,
+    e.g. when a member is added or another person is rung.
 
     :param before: The previous call.
     :type before: :class:`Relationship`
@@ -856,14 +864,6 @@ Reactions
 
         To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
 
-    .. note::
-
-        This doesn't require :attr:`Intents.members` within a guild context,
-        but due to Discord not providing updated user information in a direct message
-        it's required for direct messages to receive this event.
-        Consider using :func:`on_raw_reaction_add` if you need this and do not otherwise want
-        to enable the members intent.
-
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -878,8 +878,6 @@ Reactions
     .. note::
 
         To get the message being reacted, access it via :attr:`Reaction.message`.
-
-    This requires both :attr:`Intents.reactions` and :attr:`Intents.members` to be enabled.
 
     .. note::
 
@@ -1382,6 +1380,20 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+.. class:: InviteType
+
+    Specifies the type of :class:`Invite`.
+
+    .. attribute:: guild
+
+        A guild invite.
+    .. attribute:: group_dm
+
+        A group DM invite.
+    .. attribute:: friend
+
+        A friend invite.
+
 .. class:: UserFlags
 
     Represents Discord User flags.
@@ -1496,6 +1508,20 @@ of :class:`enum.Enum`.
         A competing activity type.
 
         .. versionadded:: 1.5
+
+.. class:: HypeSquadHouse
+
+    Specifies the HypeSquad house a user belongs to.
+
+    .. attribute:: bravery
+
+        The "Bravery" house.
+    .. attribute:: brilliance
+
+        The "Brilliance" house.
+    .. attribute:: balance
+
+        The "Balance" house.
 
 .. class:: VerificationLevel
 
@@ -2877,6 +2903,22 @@ of :class:`enum.Enum`.
 
         Represents the Discord Nitro with no Nitro-exclusive games.
 
+.. class:: StickerAnimationOptions
+
+    Represents the options found in ``Settings > Accessibility > Stickers`` in the Discord client.
+
+    .. attribute:: always
+
+        Always animate stickers.
+
+    .. attribute:: on_interaction
+
+        Animate stickers when they are interacted with.
+
+    .. attribute:: never
+
+        Never animate stickers.
+
 .. class:: Theme
 
     Represents the theme synced across all Discord clients.
@@ -4122,6 +4164,11 @@ Settings
 .. autoclass:: ChannelSettings()
     :members:
 
+.. attributetable:: Tracking
+
+.. autoclass:: Tracking()
+    :members:
+
 .. attributetable:: GuildFolder
 
 .. autoclass:: GuildFolder()
@@ -4275,7 +4322,7 @@ Sticker
     :members:
 
 GuildChannel
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. attributetable:: CategoryChannel
 
@@ -4316,7 +4363,7 @@ GuildChannel
     :inherited-members:
 
 PrivateChannel
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. attributetable:: DMChannel
 
@@ -4339,7 +4386,7 @@ PrivateChannel
         :async-with:
 
 PartialMessageable
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: PartialMessageable
 
@@ -4371,6 +4418,25 @@ StageInstance
 .. attributetable:: StageInstance
 
 .. autoclass:: StageInstance()
+    :members:
+
+Call
+~~~~
+
+.. attributetable:: PrivateCall
+
+.. autoclass:: PrivateCall()
+    :members:
+
+.. attributetable:: GroupCall
+
+.. autoclass:: GroupCall()
+    :members:
+    :inherited-members:
+
+.. attributetable:: CallMessage
+
+.. autoclass:: CallMessage()
     :members:
 
 Message
@@ -4408,6 +4474,22 @@ Reaction
 .. attributetable:: Reaction
 
 .. autoclass:: Reaction()
+    :members:
+
+Interaction
+~~~~~~~~~~~~
+
+.. attributetable:: Interaction
+
+.. autoclass:: Interaction()
+    :members:
+
+Modal
+~~~~~
+
+.. attributetable:: Modal
+
+.. autoclass:: Modal()
     :members:
 
 ApplicationCommand

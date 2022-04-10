@@ -123,7 +123,7 @@ class GuildFolder:
 
     @property
     def color(self) -> Optional[Colour]:
-        """Optional[:class:`Color`] The color of the folder.
+        """Optional[:class:`Colour`] The color of the folder.
 
         This is an alias for :attr:`colour`.
         """

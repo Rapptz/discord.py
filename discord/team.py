@@ -145,7 +145,7 @@ class Team(Hashable):
             The name of the team.
         icon: Optional[:class:`bytes`]
             The icon of the team.
-        owner: :class:`Snowflake`
+        owner: :class:`~abc.Snowflake`
             The team's owner.
 
         Raises

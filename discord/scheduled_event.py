@@ -481,9 +481,6 @@ class ScheduledEvent(Hashable):
 
         Retrieves all :class:`User` that are subscribed to this event.
 
-        This requires :attr:`Intents.members` to get information about members
-        other than yourself.
-
         Raises
         -------
         HTTPException

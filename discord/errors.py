@@ -191,7 +191,7 @@ class InvalidData(ClientException):
     pass
 
 
-class AuthFailure(ClientException):
+class LoginFailure(ClientException):
     """Exception that's raised when the :meth:`Client.login` function
     fails to log you in from improper credentials or some other misc.
     failure.
@@ -200,7 +200,7 @@ class AuthFailure(ClientException):
     pass
 
 
-LoginFailure = AuthFailure
+AuthFailure = LoginFailure
 
 
 class ConnectionClosed(ClientException):

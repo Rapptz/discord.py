@@ -617,14 +617,19 @@ class Guild(Hashable):
         """:class:`bool`: Returns whether you are a member of this guild.
 
         May not be accurate for :class:`Guild`s fetched over HTTP.
+
+        .. versionadded:: 2.0
         """
-        if self.me or self.joined_at:
+        if (self.me and self.me.joined_at) or self.joined_at:
             return True
         return self._state.is_guild_evicted(self)
 
     @property
     def joined_at(self) -> Optional[datetime]:
-        """:class:`datetime.datetime`: Returns when you joined the guild."""
+        """:class:`datetime.datetime`: Returns when you joined the guild.
+
+        .. versionadded:: 2.0
+        """
         return utils.parse_time(self._joined_at)
 
     @property
@@ -1889,7 +1894,7 @@ class Guild(Hashable):
             The ID of the member to fetch their profile for.
         with_mutuals: :class:`bool`
             Whether to fetch mutual guilds and friends.
-            This fills in :attr:`mutual_guilds` & :attr:`mutual_friends`.
+            This fills in :attr:`MemberProfile.mutual_guilds` & :attr:`MemberProfile.mutual_friends`.
         fetch_note: :class:`bool`
             Whether to pre-fetch the user's note.
 
@@ -3556,7 +3561,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        channel: :abc.Snowflake`
+        channel: :class:`~abc.Snowflake`
             The channel to request members from.
 
         Raises
@@ -3598,14 +3603,14 @@ class Guild(Hashable):
         .. versionadded:: 2.0
 
         .. note::
-            If you are the owner, have either of :attr:`Permissions.adminstrator`,
-            :attr:`Permission.kick_members`, :attr:`Permission.ban_members`, or :attr:`Permission.manage_roles`,
+            If you are the owner, have either of :attr:`~Permissions.adminstrator`,
+            :attr:`~Permissions.kick_members`, :attr:`~Permissions.ban_members`, or :attr:`~Permissions.manage_roles`,
             permissions will be fetched through OPcode 8 (this includes offline members).
             Else, they will be scraped from the member sidebar.
 
         Parameters
         -----------
-        channels: List[:abc.Snowflake`]
+        channels: List[:class:`~abc.Snowflake`]
             A list of up to 5 channels to request members from. More channels make it faster.
             This only applies when scraping from the member sidebar.
         cache: :class:`bool`
@@ -3684,7 +3689,7 @@ class Guild(Hashable):
             .. versionadded:: 1.4
         subscribe: :class:`bool`
             Whether to subscribe to the resulting members. This will keep their info and presence updated.
-            This defaults to ``False``.
+            This requires another request, and defaults to ``False``.
 
             .. versionadded:: 2.0
 
