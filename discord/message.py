@@ -1239,6 +1239,8 @@ class Message(PartialMessage, Hashable):
         private channel or the user has the left the guild, then it is a :class:`User` instead.
     content: :class:`str`
         The actual contents of the message.
+    url: :class:`str`
+        The url of the message.
     nonce: Optional[Union[:class:`str`, :class:`int`]]
         The value used by the discord guild and the client to verify that the message is successfully sent.
         This is not stored long term within Discord's servers and is only used ephemerally.
@@ -1403,6 +1405,8 @@ class Message(PartialMessage, Hashable):
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
+        self.url = f"https://discord.com/channels/{self.guild.id}/{self.channel.id}/{self.id}"    
+        
         self.interaction: Optional[MessageInteraction] = None
 
         try:
