@@ -511,13 +511,26 @@ class CommandTree(Generic[ClientT]):
         type: AppCommandType,
     ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         ...
+        
+    @overload
+    def get_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = ...,
+        type: Optional[AppCommandType] = ...,
+    ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
+        ...
 
     def get_commands(
         self,
         *,
         guild: Optional[Snowflake] = None,
-        type: AppCommandType = AppCommandType.chat_input,
-    ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
+        type: Optional[AppCommandType] = None,
+    ) -> Union[
+        List[ContextMenu],
+        List[Union[Command[Any, ..., Any], Group]], 
+        List[Union[Command[Any, ..., Any], Group, ContextMenu]],
+    ]:
         """Gets all application commands from the tree.
 
         Parameters
@@ -525,15 +538,17 @@ class CommandTree(Generic[ClientT]):
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to get the commands from, not including global commands.
             If not given or ``None`` then only global commands are returned.
-        type: :class:`~discord.AppCommandType`
-            The type of commands to get. Defaults to :attr:`~discord.AppCommandType.chat_input`,
-            i.e. slash commands.
+        type: Optional[:class:`~discord.AppCommandType`]
+            The type of commands to get. When not given or ``None``, then all
+            the commands are returned.
 
         Returns
         ---------
-        Union[List[:class:`ContextMenu`], List[Union[:class:`Command`, :class:`Group`]]
+        Union[List[:class:`ContextMenu`], List[Union[:class:`Command`, :class:`Group`], List[:class:`Command`, :class:`Group`, :class:`ContextMenu`]]
             The application commands from the tree.
         """
+        if type is None:
+            return self._get_all_commands(guild=guild)
 
         if type is AppCommandType.chat_input:
             if guild is None:
