@@ -34,7 +34,7 @@ messages through these webhooks.
 **Application webhooks** are used for creating interaction responses. The management of
 this type of webhooks are handled internally by the library and is not in scope of this guide.
 
-This guide will primarily focus on the first type i.e Incoming webhooks.
+This guide will primarily focus on the first type, incoming webhooks.
 
 Creating a webhook
 ~~~~~~~~~~~~~~~~~~
