@@ -511,7 +511,7 @@ class CommandTree(Generic[ClientT]):
         type: AppCommandType,
     ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         ...
-        
+
     @overload
     def get_commands(
         self,
@@ -528,7 +528,7 @@ class CommandTree(Generic[ClientT]):
         type: Optional[AppCommandType] = None,
     ) -> Union[
         List[ContextMenu],
-        List[Union[Command[Any, ..., Any], Group]], 
+        List[Union[Command[Any, ..., Any], Group]],
         List[Union[Command[Any, ..., Any], Group, ContextMenu]],
     ]:
         """Gets all application commands from the tree.
