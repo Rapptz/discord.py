@@ -540,7 +540,7 @@ class CommandTree(Generic[ClientT]):
             If not given or ``None`` then only global commands are returned.
         type: Optional[:class:`~discord.AppCommandType`]
             The type of commands to get. When not given or ``None``, then all
-            the commands for the given guild are returned.
+            command types are returned.
 
         Returns
         ---------
