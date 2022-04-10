@@ -1009,6 +1009,8 @@ class DefaultHelpCommand(HelpCommand):
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
+    ending_note: :class:`str`
+        Overrides the default ending note returned by ``get_ending_note()``. Defaults to ``None``.
     paginator: :class:`Paginator`
         The paginator used to paginate the help command output.
     """
@@ -1021,6 +1023,7 @@ class DefaultHelpCommand(HelpCommand):
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
         self.no_category: str = options.pop('no_category', 'No Category')
+        self.ending_note: str = options.pop('ending_note', None)
         self.paginator: Paginator = options.pop('paginator', None)
 
         if self.paginator is None:
@@ -1042,10 +1045,13 @@ class DefaultHelpCommand(HelpCommand):
     def get_ending_note(self) -> str:
         """:class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."""
         command_name = self.invoked_with
-        return (
-            f'Type {self.context.clean_prefix}{command_name} command for more info on a command.\n'
-            f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
-        )
+        if self.ending_note is None:
+            return (
+                f'Type {self.context.clean_prefix}{command_name} command for more info on a command.\n'
+                f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
+            )
+        else:
+            return self.ending_note
 
     def add_indented_commands(
         self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
