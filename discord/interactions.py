@@ -132,6 +132,7 @@ class Interaction:
         '_state',
         '_client',
         '_session',
+        '_baton',
         '_original_message',
         '_cs_response',
         '_cs_followup',
@@ -145,6 +146,9 @@ class Interaction:
         self._client: Client = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
+        # This baton is used for extra data that might be useful for the lifecycle of
+        # an interaction. This is mainly for internal purposes and it gives it a free-for-all slot.
+        self._baton: Any = MISSING
         self._from_data(data)
 
     def _from_data(self, data: InteractionPayload):

@@ -578,10 +578,7 @@ class Command(Generic[GroupT, P, T]):
 
         return False
 
-    async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
-        if not await self._check_can_run(interaction):
-            raise CheckFailure(f'The check functions for command {self.name!r} failed.')
-
+    async def _transform_arguments(self, interaction: Interaction, namespace: Namespace) -> Dict[str, Any]:
         values = namespace.__dict__
         transformed_values = {}
 
@@ -596,12 +593,15 @@ class Command(Generic[GroupT, P, T]):
             else:
                 transformed_values[param.name] = await param.transform(interaction, value)
 
+        return transformed_values
+
+    async def _do_call(self, interaction: Interaction, params: Dict[str, Any]) -> T:
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
-            return await self._callback(interaction, **transformed_values)  # type: ignore
+                return await self._callback(self.binding, interaction, **params)  # type: ignore
+            return await self._callback(interaction, **params)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
@@ -620,6 +620,13 @@ class Command(Generic[GroupT, P, T]):
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
+
+    async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
+        if not await self._check_can_run(interaction):
+            raise CheckFailure(f'The check functions for command {self.name!r} failed.')
+
+        transformed_values = await self._transform_arguments(interaction, namespace)
+        return await self._do_call(interaction, transformed_values)
 
     async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
         # The namespace contains the Discord provided names so this will be fine
@@ -1234,7 +1241,7 @@ class Group:
             #   <self>
             #     <group>
             # this needs to be forbidden
-            raise ValueError('groups can only be nested at most one level')
+            raise ValueError(f'{command.name!r} is too nested, groups can only be nested at most one level')
 
         if not override and command.name in self._children:
             raise CommandAlreadyRegistered(command.name, guild_id=None)

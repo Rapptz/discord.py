@@ -395,7 +395,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.require_var_positional: bool = kwargs.get('require_var_positional', False)
         self.ignore_extra: bool = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)
-        self.cog: CogT = None
+        self._cog: CogT = None
 
         # bandaid for the fact that sometimes parent can be the bot instance
         parent: Optional[GroupMixin[Any]] = kwargs.get('parent')
@@ -416,6 +416,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
+
+    @property
+    def cog(self) -> CogT:
+        return self._cog
+
+    @cog.setter
+    def cog(self, value: CogT) -> None:
+        self._cog = value
 
     @property
     def callback(
