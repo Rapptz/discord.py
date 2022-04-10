@@ -1010,7 +1010,8 @@ class DefaultHelpCommand(HelpCommand):
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
     ending_note: :class:`str`
-        Overrides the default ending note returned by ``get_ending_note()``. Defaults to ``None``.
+        Overrides the default ending note returned by ``get_ending_note()``.
+        Defaults to ``None``, in which case the help command will display the default ending note.
     paginator: :class:`Paginator`
         The paginator used to paginate the help command output.
     """
