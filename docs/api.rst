@@ -3249,6 +3249,22 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`paragraph`.
 
+.. class:: AppCommandType
+
+    The type of application command.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: chat_input
+
+        A slash command.
+    .. attribute:: user
+
+        A user context menu command.
+    .. attribute:: message
+
+        A message context menu command.
+
 .. class:: AppCommandOptionType
 
     The application command's option type. This is usually the type of parameter an application command takes.
@@ -3288,23 +3304,6 @@ of :class:`enum.Enum`.
     .. attribute:: attachment
 
         An attachment parameter.
-
-.. class:: AppCommandType
-
-    The type of application command.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: chat_input
-
-        A slash command.
-    .. attribute:: user
-
-        A user context menu command.
-    .. attribute:: message
-
-        A message context menu command.
-
 
 .. _discord-api-audit-logs:
 

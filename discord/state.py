@@ -103,7 +103,7 @@ if TYPE_CHECKING:
     from .types.voice import GuildVoiceState
 
     T = TypeVar('T')
-    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
+    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable, ForumChannel]
 
 MISSING = utils.MISSING
 _log = logging.getLogger(__name__)
