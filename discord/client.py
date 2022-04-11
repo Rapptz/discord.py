@@ -724,7 +724,7 @@ class Client:
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
-        """Optional[:class:`.VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with private calls, if any."""
+        """Optional[:class:`.VoiceProtocol`]: Returns the :class:`.VoiceProtocol` associated with private calls, if any."""
         return self._connection._get_voice_client(self._connection.self_id)
 
     @property
@@ -869,7 +869,7 @@ class Client:
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
-        """Optional[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the primary
+        """Optional[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the primary
         activity the client is currently doing. Could be ``None`` if no activity is being done.
 
         .. versionadded:: 2.0
@@ -1324,7 +1324,7 @@ class Client:
         ----------
         activity: Optional[:class:`.BaseActivity`]
             The activity being done. ``None`` if no activity is done.
-        activities: Optional[List[:class:`BaseActivity`]]
+        activities: Optional[List[:class:`.BaseActivity`]]
             A list of the activities being done. ``None`` if no activities
             are done. Cannot be sent with ``activity``.
         status: Optional[:class:`.Status`]
@@ -2134,7 +2134,7 @@ class Client:
     async def notes(self) -> List[Note]:
         """|coro|
 
-        Retrieves a list of :class:`Note` objects representing all your notes.
+        Retrieves a list of :class:`.Note` objects representing all your notes.
 
         .. versionadded:: 1.9
 
@@ -2264,7 +2264,7 @@ class Client:
         Parameters
         -----------
         \*recipients: :class:`~discord.abc.Snowflake`
-            An argument :class:`list` of :class:`.User` to have in
+            An argument :class:`list` of :class:`discord.User` to have in
             your group.
 
         Raises

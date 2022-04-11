@@ -560,7 +560,7 @@ class InteractionApplication(Hashable):
         Only available from :attr:`~Modal.application`.
     command_count: Optional[:class:`int`]
         The number of commands the application has.
-        Only available from :attr:`~abc.BaseCommand.application`.
+        Only available from :attr:`~BaseCommand.application`.
     """
 
     __slots__ = (

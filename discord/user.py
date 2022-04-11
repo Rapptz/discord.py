@@ -141,7 +141,7 @@ class Note:
 
     @cached_slot_property('_user')
     def user(self) -> _Snowflake:
-        """:class:`Snowflake`: Returns the :class:`User` or :class:`Object` the note belongs to."""
+        """:class:`~abc.Snowflake`: Returns the :class:`User` or :class:`Object` the note belongs to."""
         user_id = self._user_id
 
         user = self._state.get_user(user_id)
@@ -899,6 +899,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
 
     @property
     def call(self) -> Optional[PrivateCall]:
+        """Optional[:class:`PrivateCall`]: Returns the call associated with this user if it exists."""
         return getattr(self.dm_channel, 'call', None)
 
     @property
