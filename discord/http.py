@@ -595,6 +595,8 @@ class HTTPClient:
                     else:
                         previous = payload or {}
                         previous['captcha_key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
+                        if (rqtoken := e.json.get('captcha_rqtoken')) is not None:
+                            previous['captcha_rqtoken'] = rqtoken
                         kwargs['headers']['Content-Type'] = 'application/json'
                         kwargs['data'] = utils._to_json(previous)
 
