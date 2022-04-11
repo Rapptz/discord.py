@@ -1180,6 +1180,7 @@ class Guild(Hashable):
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+        default_auto_archive_duration: int = MISSING,
     ) -> TextChannel:
         """|coro|
 
@@ -1245,6 +1246,10 @@ class Guild(Hashable):
             The maximum value possible is `21600`.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        default_auto_archive_duration: :class:`int`
+            The default auto archive duration for threads created in the text channel (in minutes).
+
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1275,6 +1280,9 @@ class Guild(Hashable):
 
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
+
+        if default_auto_archive_duration is not MISSING:
+            options["default_auto_archive_duration"] = default_auto_archive_duration
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.text, category=category, reason=reason, **options
