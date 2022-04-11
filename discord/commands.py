@@ -67,7 +67,7 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`AppCommandType`
+    type: :class:`.AppCommandType`
         The type of application command.
     """
 
@@ -141,6 +141,12 @@ class BaseCommand(ApplicationCommand, Hashable):
         The command's version.
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    type: :class:`AppCommandType`
+        The type of application command.
     """
 
     __slots__ = (
@@ -468,6 +474,12 @@ class SubCommand(SlashMixin):
 
     Attributes
     ----------
+    name: :class:`str`
+        The subcommand's name.
+    description: :class:`str`
+        The subcommand's description, if any.
+    type: :class:`AppCommandType`
+        The type of application command. Always :attr:`AppCommandType.chat_input`.
     parent: :class:`SlashCommand`
         The parent command.
     options: List[:class:`Option`]

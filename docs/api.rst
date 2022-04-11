@@ -4528,7 +4528,6 @@ ApplicationCommand
 
 .. autoclass:: BaseCommand()
     :members:
-    :inherited-members:
 
 .. attributetable:: UserCommand
 
