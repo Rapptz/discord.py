@@ -2019,7 +2019,7 @@ class Message(PartialMessage, Hashable):
             List of command IDs to search for. If the command doesn't exist it won't be returned.
         applications: :class:`bool`
             Whether to include applications in the response. This defaults to ``False``.
-        application: Optional[:class:`~abc.Snowflake`]
+        application: Optional[:class:`~discord.abc.Snowflake`]
             Query commands only for this application.
 
         Raises

@@ -724,7 +724,7 @@ class Client:
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
-        """Optional[:class:`VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with private calls, if any."""
+        """Optional[:class:`.VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with private calls, if any."""
         return self._connection._get_voice_client(self._connection.self_id)
 
     @property
@@ -783,7 +783,7 @@ class Client:
 
     @property
     def status(self) -> Status:
-        """:class:`Status`: The user's overall status.
+        """:class:`.Status`: The user's overall status.
 
         .. versionadded:: 2.0
         """
@@ -807,7 +807,7 @@ class Client:
 
     @property
     def mobile_status(self) -> Status:
-        """:class:`Status`: The user's status on a mobile device, if applicable.
+        """:class:`.Status`: The user's status on a mobile device, if applicable.
 
         .. versionadded:: 2.0
         """
@@ -815,7 +815,7 @@ class Client:
 
     @property
     def desktop_status(self) -> Status:
-        """:class:`Status`: The user's status on the desktop client, if applicable.
+        """:class:`.Status`: The user's status on the desktop client, if applicable.
 
         .. versionadded:: 2.0
         """
@@ -823,7 +823,7 @@ class Client:
 
     @property
     def web_status(self) -> Status:
-        """:class:`Status`: The user's status on the web client, if applicable.
+        """:class:`.Status`: The user's status on the web client, if applicable.
 
         .. versionadded:: 2.0
         """
@@ -831,7 +831,7 @@ class Client:
 
     @property
     def client_status(self) -> Status:
-        """:class:`Status`: The library's status.
+        """:class:`.Status`: The library's status.
 
         .. versionadded:: 2.0
         """
@@ -849,7 +849,7 @@ class Client:
 
     @property
     def activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities
+        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing.
 
         .. versionadded:: 2.0
@@ -889,7 +889,7 @@ class Client:
 
     @property
     def mobile_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities
+        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing on a mobile device, if applicable.
 
         .. versionadded:: 2.0
@@ -899,7 +899,7 @@ class Client:
 
     @property
     def desktop_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities
+        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing on the desktop client, if applicable.
 
         .. versionadded:: 2.0
@@ -909,7 +909,7 @@ class Client:
 
     @property
     def web_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities
+        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing on the web client, if applicable.
 
         .. versionadded:: 2.0
@@ -919,7 +919,7 @@ class Client:
 
     @property
     def client_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: Returns the activities
+        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing through this library, if applicable.
 
         .. versionadded:: 2.0
@@ -1401,7 +1401,7 @@ class Client:
 
         Parameters
         -----------
-        channel: Optional[:class:`abc.Snowflake`]
+        channel: Optional[:class:`~discord.abc.Snowflake`]
             Channel the client wants to join (must be a private channel). Use ``None`` to disconnect.
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
@@ -1650,13 +1650,13 @@ class Client:
     async def leave_guild(self, guild: Snowflake, /, lurking: bool = MISSING) -> None:
         """|coro|
 
-        Leaves a guild. Equivalent to :meth:`Guild.leave`.
+        Leaves a guild. Equivalent to :meth:`.Guild.leave`.
 
         .. versionadded:: 2.0
 
         Parameters
         -----------
-        guild: :class:`abc.Snowflake`
+        guild: :class:`~discord.abc.Snowflake`
             The guild to leave.
         lurking: :class:`bool`
             Whether you are lurking the guild.
@@ -1901,7 +1901,7 @@ class Client:
     async def fetch_user(self, user_id: int, /) -> User:
         """|coro|
 
-        Retrieves a :class:`~discord.User` based on their ID.
+        Retrieves a :class:`discord.User` based on their ID.
         You do not have to share any guilds with the user to get
         this information, however many operations do require that you do.
 
@@ -1932,7 +1932,7 @@ class Client:
 
         Returns
         --------
-        :class:`.User`
+        :class:`discord.User`
             The user you requested.
         """
         data = await self.http.get_user(user_id)
@@ -2145,7 +2145,7 @@ class Client:
 
         Returns
         --------
-        List[:class:`Note`]
+        List[:class:`.Note`]
             All your notes.
         """
         state = self._connection
@@ -2155,7 +2155,7 @@ class Client:
     async def fetch_note(self, user_id: int, /) -> Note:
         """|coro|
 
-        Retrieves a :class:`Note` for the specified user ID.
+        Retrieves a :class:`.Note` for the specified user ID.
 
         .. versionadded:: 1.9
 
@@ -2175,7 +2175,7 @@ class Client:
 
         Returns
         --------
-        :class:`Note`
+        :class:`.Note`
             The note you requested.
         """
         note = Note(self._connection, int(user_id))
@@ -2196,7 +2196,7 @@ class Client:
 
         Returns
         -------
-        List[:class:`Connection`]
+        List[:class:`.Connection`]
             All your connections.
         """
         state = self._connection
@@ -2264,7 +2264,7 @@ class Client:
         Parameters
         -----------
         \*recipients: :class:`~discord.abc.Snowflake`
-            An argument :class:`list` of :class:`User` to have in
+            An argument :class:`list` of :class:`.User` to have in
             your group.
 
         Raises
@@ -2319,7 +2319,7 @@ class Client:
 
         Parameters
         -----------
-        user: Union[:class:`User`, :class:`str`]
+        user: Union[:class:`discord.User`, :class:`str`]
             The user to send the friend request to.
         username: :class:`str`
             The username of the user to send the friend request to.

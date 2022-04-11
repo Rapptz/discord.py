@@ -433,8 +433,6 @@ class TextInput(Component):
         The style of the text input.
     placeholder: Optional[:class:`str`]
         The placeholder text to display when the text input is empty.
-    value: Optional[:class:`str`]
-        The default value of the text input.
     required: :class:`bool`
         Whether the text input is required.
     min_length: Optional[:class:`int`]
@@ -477,7 +475,7 @@ class TextInput(Component):
 
     @property
     def value(self) -> Optional[str]:
-        """Optional[:class:`str]`: The current value of the text input. Defaults to :attr:`default`.
+        """Optional[:class:`str`]: The current value of the text input. Defaults to :attr:`default`.
 
         This can be set to change the answer to the text input.
         """

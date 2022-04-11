@@ -383,7 +383,7 @@ Client
     :param before: The settings prior to being updated.
     :type before: :class:`UserSettings`
     :param after: The settings after being updated.
-    :type after: :class:`SettiUserSettingsngs`
+    :type after: :class:`UserSettings`
 
 .. function:: on_guild_settings_update(before, after)
 
@@ -2412,26 +2412,26 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
-      .. versionadded:: 2.0
+        .. versionadded:: 2.0
 
-      .. describe:: x == y
+        .. describe:: x == y
 
-          Checks if two application states are equal.
-      .. describe:: x != y
+            Checks if two application states are equal.
+        .. describe:: x != y
 
-          Checks if two application states are not equal.
-      .. describe:: x > y
+            Checks if two application states are not equal.
+        .. describe:: x > y
 
-          Checks if a application state is higher than another.
-      .. describe:: x < y
+            Checks if a application state is higher than another.
+        .. describe:: x < y
 
-          Checks if a application state is lower than another.
-      .. describe:: x >= y
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
 
-          Checks if a application state is higher or equal to another.
-      .. describe:: x <= y
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
 
-          Checks if a application state is lower or equal to another.
+            Checks if a application state is lower or equal to another.
 
     .. attribute:: invited
 
@@ -2471,24 +2471,24 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
-      .. describe:: x == y
+        .. describe:: x == y
 
-          Checks if two application states are equal.
-      .. describe:: x != y
+            Checks if two application states are equal.
+        .. describe:: x != y
 
-          Checks if two application states are not equal.
-      .. describe:: x > y
+            Checks if two application states are not equal.
+        .. describe:: x > y
 
-          Checks if a application state is higher than another.
-      .. describe:: x < y
+            Checks if a application state is higher than another.
+        .. describe:: x < y
 
-          Checks if a application state is lower than another.
-      .. describe:: x >= y
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
 
-          Checks if a application state is higher or equal to another.
-      .. describe:: x <= y
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
 
-          Checks if a application state is lower or equal to another.
+            Checks if a application state is lower or equal to another.
 
     .. attribute:: ineligible
 
@@ -2514,24 +2514,24 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
-      .. describe:: x == y
+        .. describe:: x == y
 
-          Checks if two application states are equal.
-      .. describe:: x != y
+            Checks if two application states are equal.
+        .. describe:: x != y
 
-          Checks if two application states are not equal.
-      .. describe:: x > y
+            Checks if two application states are not equal.
+        .. describe:: x > y
 
-          Checks if a application state is higher than another.
-      .. describe:: x < y
+            Checks if a application state is higher than another.
+        .. describe:: x < y
 
-          Checks if a application state is lower than another.
-      .. describe:: x >= y
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
 
-          Checks if a application state is higher or equal to another.
-      .. describe:: x <= y
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
 
-          Checks if a application state is lower or equal to another.
+            Checks if a application state is lower or equal to another.
 
     .. attribute:: none
 
@@ -2565,24 +2565,24 @@ of :class:`enum.Enum`.
 
     .. container:: operations
 
-      .. describe:: x == y
+        .. describe:: x == y
 
-          Checks if two application states are equal.
-      .. describe:: x != y
+            Checks if two application states are equal.
+        .. describe:: x != y
 
-          Checks if two application states are not equal.
-      .. describe:: x > y
+            Checks if two application states are not equal.
+        .. describe:: x > y
 
-          Checks if a application state is higher than another.
-      .. describe:: x < y
+            Checks if a application state is higher than another.
+        .. describe:: x < y
 
-          Checks if a application state is lower than another.
-      .. describe:: x >= y
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
 
-          Checks if a application state is higher or equal to another.
-      .. describe:: x <= y
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
 
-          Checks if a application state is lower or equal to another.
+            Checks if a application state is lower or equal to another.
 
     .. attribute:: disabled
 

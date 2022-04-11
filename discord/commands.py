@@ -67,7 +67,7 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`.enums.AppCommandType`
+    type: :class:`AppCommandType`
         The type of application command.
     """
 

@@ -47,34 +47,7 @@ __all__ = (
 
 
 class Profile:
-    """Represents a Discord profile.
-
-    .. versionadded:: 2.0
-
-    Attributes
-    ----------
-    application_id: Optional[:class:`int`]
-        The ID of the application that this user is attached to, if applicable.
-    install_url: Optional[:class:`str`]
-        The URL to invite the application to your guild with.
-    bio: Optional[:class:`str`]
-        The user's "about me" field. Could be ``None``.
-    premium_since: Optional[:class:`datetime.datetime`]
-        An aware datetime object that specifies how long a user has been premium (had Nitro).
-        ``None`` if the user is not a premium user.
-    boosting_since: Optional[:class:`datetime.datetime`]
-        An aware datetime object that specifies when a user first boosted a guild.
-    connections: Optional[List[:class:`PartialConnection`]]
-        The connected accounts that show up on the profile.
-    note: :class:`Note`
-        Represents the note on the profile.
-    mutual_guilds: Optional[List[:class:`Guild`]]
-        A list of guilds that you share with the user.
-        ``None`` if you didn't fetch mutuals.
-    mutual_friends: Optional[List[:class:`User`]]
-        A list of friends that you share with the user.
-        ``None`` if you didn't fetch mutuals.
-    """
+    """Represents a Discord profile."""
 
     if TYPE_CHECKING:
         id: int
@@ -150,14 +123,64 @@ class Profile:
 
 
 class UserProfile(Profile, User):
-    """Represents a Discord user's profile. This is a :class:`User` with extended attributes."""
+    """Represents a Discord user's profile. This is a :class:`User` with extended attributes.
+
+    Attributes
+    -----------
+    application_id: Optional[:class:`int`]
+        The ID of the application that this user is attached to, if applicable.
+    install_url: Optional[:class:`str`]
+        The URL to invite the application to your guild with.
+    bio: Optional[:class:`str`]
+        The user's "about me" field. Could be ``None``.
+    premium_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies how long a user has been premium (had Nitro).
+        ``None`` if the user is not a premium user.
+    boosting_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies when a user first boosted a guild.
+    connections: Optional[List[:class:`PartialConnection`]]
+        The connected accounts that show up on the profile.
+    note: :class:`Note`
+        Represents the note on the profile.
+    mutual_guilds: Optional[List[:class:`Guild`]]
+        A list of guilds that you share with the user.
+        ``None`` if you didn't fetch mutuals.
+    mutual_friends: Optional[List[:class:`User`]]
+        A list of friends that you share with the user.
+        ``None`` if you didn't fetch mutuals.
+    """
 
     def __repr__(self) -> str:
         return f'<UserProfile id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system} premium={self.premium}>'
 
 
 class MemberProfile(Profile, Member):
-    """Represents a Discord member's profile. This is a :class:`Member` with extended attributes."""
+    """Represents a Discord member's profile. This is a :class:`Member` with extended attributes.
+
+    Attributes
+    -----------
+    application_id: Optional[:class:`int`]
+        The ID of the application that this user is attached to, if applicable.
+    install_url: Optional[:class:`str`]
+        The URL to invite the application to your guild with.
+    bio: Optional[:class:`str`]
+        The user's "about me" field. Could be ``None``.
+    premium_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies how long a user has been premium (had Nitro).
+        ``None`` if the user is not a premium user.
+    boosting_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies when a user first boosted a guild.
+    connections: Optional[List[:class:`PartialConnection`]]
+        The connected accounts that show up on the profile.
+    note: :class:`Note`
+        Represents the note on the profile.
+    mutual_guilds: Optional[List[:class:`Guild`]]
+        A list of guilds that you share with the user.
+        ``None`` if you didn't fetch mutuals.
+    mutual_friends: Optional[List[:class:`User`]]
+        A list of friends that you share with the user.
+        ``None`` if you didn't fetch mutuals.
+    """
 
     def __repr__(self) -> str:
         return (
