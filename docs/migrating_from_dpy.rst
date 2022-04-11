@@ -2,7 +2,7 @@
 
 .. _migrating_from_dpy:
 
-Migrating to this library
+Migrating to This Library
 ==========================
 
 | This library is designed to be compatible with discord.py.
