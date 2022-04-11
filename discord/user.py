@@ -32,7 +32,6 @@ from .colour import Colour
 from .enums import (
     Locale,
     AppCommandType,
-    DefaultAvatar,
     HypeSquadHouse,
     PremiumType,
     RelationshipAction,
@@ -352,7 +351,7 @@ class BaseUser(_UserTag):
     @property
     def default_avatar(self) -> Asset:
         """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
-        return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+        return Asset._from_default_avatar(self._state, int(self.discriminator) % 4)
 
     @property
     def display_avatar(self) -> Asset:
