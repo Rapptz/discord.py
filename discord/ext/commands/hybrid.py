@@ -136,11 +136,21 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
     params = signature.parameters.copy()
     for name, parameter in parameters.items():
         is_transformer = hasattr(parameter.converter, '__discord_app_commands_transformer__')
+        origin = getattr(parameter.converter, '__origin__', None)
         if is_converter(parameter.converter) and not is_transformer:
             params[name] = params[name].replace(annotation=make_converter_transformer(parameter.converter))
-        if callable(parameter.converter) and not inspect.isclass(parameter.converter) and not is_transformer:
+
+        # Special case Optional[X] where X is a single type that can optionally be a converter
+        elif origin is Union and len(parameter.converter.__args__) == 2 and parameter.converter.__args__[-1] is _NoneType:
+            inner = parameter.converter.__args__[0]
+            is_inner_tranformer = hasattr(inner, '__discord_app_commands_transformer__')
+            if is_converter(inner) and not is_inner_tranformer:
+                params[name] = params[name].replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
+
+        elif callable(parameter.converter) and not inspect.isclass(parameter.converter) and not is_transformer:
             params[name] = params[name].replace(annotation=make_callable_transformer(parameter.converter))
-        if callable(parameter.default):
+
+        if parameter.default is not parameter.empty and callable(parameter.default):
             params[name] = params[name].replace(default=_CallableDefault(parameter.default))
 
         if isinstance(params[name].default, Parameter):
