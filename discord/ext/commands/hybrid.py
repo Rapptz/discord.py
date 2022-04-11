@@ -52,7 +52,11 @@ if TYPE_CHECKING:
     from .bot import Bot
     from .context import Context
     from .parameters import Parameter
-    from discord.app_commands.commands import Check as AppCommandCheck
+    from discord.app_commands.commands import (
+        Check as AppCommandCheck,
+        AutocompleteCallback,
+        ChoiceT,
+    )
 
 
 __all__ = (
@@ -281,6 +285,34 @@ class HybridCommand(Command[CogT, P, T]):
         copy = super()._ensure_assignment_on_copy(other)
         copy.app_command = self.app_command.copy()
         return copy
+
+    def autocomplete(
+        self, name: str
+    ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
+        """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
+
+        This is the same as :meth:`~discord.app_commands.Command.autocomplete`. It is only
+        applicable for the application command and doesn't do anything if the command is
+        a regular command.
+
+        .. note::
+
+            Similar to the :meth:`~discord.app_commands.Command.autocomplete` method, this
+            takes :class:`~discord.Interaction` as a parameter rather than a :class:`Context`.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The parameter name to register as autocomplete.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine or
+            the parameter is not found or of an invalid type.
+        """
+        return self.app_command.autocomplete(name)
+
 
 class HybridGroup(Group[CogT, P, T]):
     r"""A class that is both an application command group and a regular text group.
