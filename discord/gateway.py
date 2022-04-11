@@ -40,7 +40,6 @@ from . import utils
 from .activity import BaseActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed
-from .recorder import SSRC
 
 _log = logging.getLogger(__name__)
 
@@ -835,10 +834,10 @@ class DiscordVoiceWebSocket:
         Receive only. Tells the websocket that the initial connection has completed.
     HEARTBEAT
         Send only. Keeps your websocket connection alive.
-    SELECT_PROTOCOL_ACK
+    SESSION_DESCRIPTION
         Receive only. Gives you the secret key required for voice.
     SPEAKING
-        Send and receive. Notifies the client if anyone begins speaking.
+        Send only. Notifies the client if you are currently speaking.
     HEARTBEAT_ACK
         Receive only. Tells you your heartbeat has been acknowledged.
     RESUME
@@ -847,8 +846,10 @@ class DiscordVoiceWebSocket:
         Receive only. Tells you that your websocket connection was acknowledged.
     RESUMED
         Sent only. Tells you that your RESUME request has succeeded.
+    CLIENT_CONNECT
+        Indicates a user has connected to voice.
     CLIENT_DISCONNECT
-        Receive only. Indicates a user has disconnected from voice.
+        Receive only.  Indicates a user has disconnected from voice.
     """
 
     if TYPE_CHECKING:
@@ -858,21 +859,18 @@ class DiscordVoiceWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
-    IDENTIFY              = 0
-    SELECT_PROTOCOL       = 1
-    READY                 = 2
-    HEARTBEAT             = 3
-    SELECT_PROTOCOL_ACK   = 4
-    SPEAKING              = 5
-    HEARTBEAT_ACK         = 6
-    RESUME                = 7
-    HELLO                 = 8
-    RESUMED               = 9
-    VIDEO                 = 12
-    CLIENT_DISCONNECT     = 13
-    SESSION_UPDATE        = 14
-    MEDIA_SINK_WANTS      = 15
-    VOICE_BACKEND_VERSION = 16
+    IDENTIFY            = 0
+    SELECT_PROTOCOL     = 1
+    READY               = 2
+    HEARTBEAT           = 3
+    SESSION_DESCRIPTION = 4
+    SPEAKING            = 5
+    HEARTBEAT_ACK       = 6
+    RESUME              = 7
+    HELLO               = 8
+    RESUMED             = 9
+    CLIENT_CONNECT      = 12
+    CLIENT_DISCONNECT   = 13
     # fmt: on
 
     def __init__(
@@ -931,7 +929,7 @@ class DiscordVoiceWebSocket:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'
         http = client._state.http
-        socket = await http.ws_connect(gateway, compress=15, host=client.endpoint)
+        socket = await http.ws_connect(gateway, compress=15)
         ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
         ws._connection = client
@@ -962,7 +960,7 @@ class DiscordVoiceWebSocket:
 
     async def client_connect(self) -> None:
         payload = {
-            'op': self.VIDEO,
+            'op': self.CLIENT_CONNECT,
             'd': {
                 'audio_ssrc': self._connection.ssrc,
             },
@@ -993,26 +991,13 @@ class DiscordVoiceWebSocket:
                 self._keep_alive.ack()
         elif op == self.RESUMED:
             _log.info('Voice RESUME succeeded.')
-            self.secret_key = self._connection.secret_key
-        elif op == self.SELECT_PROTOCOL_ACK:
+        elif op == self.SESSION_DESCRIPTION:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
         elif op == self.HELLO:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
-        elif op == self.SPEAKING:
-            state = self._connection
-            user_id = int(data['user_id'])
-            speaking = data['speaking']
-            ssrc = state._flip_ssrc(user_id)
-            if ssrc is None:
-                state._set_ssrc(user_id, SSRC(data['ssrc'], speaking))
-            else:
-                ssrc.speaking = speaking
-
-            # item = state.guild or state._state
-            # item._update_speaking_status(user_id, speaking)
 
         await self._hook(self, msg)
 
@@ -1030,15 +1015,15 @@ class DiscordVoiceWebSocket:
         recv = await self.loop.sock_recv(state.socket, 70)
         _log.debug('Received packet in initial_connection: %s.', recv)
 
-        # The IP is ascii starting at the 4th byte and ending at the first null
+        # the ip is ascii starting at the 4th byte and ending at the first null
         ip_start = 4
         ip_end = recv.index(0, ip_start)
         state.ip = recv[ip_start:ip_end].decode('ascii')
 
         state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        _log.debug('detected ip: %s port: %s', state.ip, state.port)
+        _log.debug('Detected ip: %s, port: %s.', state.ip, state.port)
 
-        # There *should* always be at least one supported mode (xsalsa20_poly1305)
+        # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         _log.debug('Received supported encryption modes: %s.', ", ".join(modes))
 

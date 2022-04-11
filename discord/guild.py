@@ -342,7 +342,7 @@ class Guild(Hashable):
 
     def __init__(self, *, data: Union[GuildPayload, GuildPreviewPayload], state: ConnectionState) -> None:
         self._chunked = False
-        self._cs_joined = None
+        self._cs_joined: Optional[bool] = None
         self._roles: Dict[int, Role] = {}
         self._channels: Dict[int, GuildChannel] = {}
         self._members: Dict[int, Member] = {}

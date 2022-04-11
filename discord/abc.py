@@ -1876,10 +1876,10 @@ class Connectable(Protocol):
             raise ClientException('Already connected to a voice channel')
 
         if cls is MISSING:
-            cls = VoiceClient
+            cls = VoiceClient  # type: ignore
 
         # The type checker doesn't understand that VoiceClient *is* T here.
-        voice: T = cls(state.client, channel)  # type: ignore
+        voice: T = cls(state.client, channel)
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class')

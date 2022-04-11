@@ -47,7 +47,7 @@ from .utils import MISSING
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .voice_client import Player
+    from .voice_client import VoiceClient
 
 
 AT = TypeVar('AT', bound='AudioSource')
@@ -637,21 +637,21 @@ class AudioPlayer(threading.Thread):
     def __init__(
         self,
         source: AudioSource,
-        client: Player,
+        client: VoiceClient,
         *,
         after: Optional[Callable[[Optional[Exception]], Any]] = None,
     ) -> None:
         threading.Thread.__init__(self)
         self.daemon: bool = True
         self.source: AudioSource = source
-        self.client: Player = client
+        self.client: VoiceClient = client
         self.after: Optional[Callable[[Optional[Exception]], Any]] = after
 
         self._end: threading.Event = threading.Event()
         self._resumed: threading.Event = threading.Event()
-        self._resumed.set()  # We are not paused
+        self._resumed.set()  # we are not paused
         self._current_error: Optional[Exception] = None
-        self._connected: threading.Event = client.client._connected
+        self._connected: threading.Event = client._connected
         self._lock: threading.Lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -662,7 +662,7 @@ class AudioPlayer(threading.Thread):
         self._start = time.perf_counter()
 
         # getattr lookup speed ups
-        play_audio = self.client.send
+        play_audio = self.client.send_audio_packet
         self._speak(SpeakingState.voice)
 
         while not self._end.is_set():
