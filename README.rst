@@ -10,13 +10,16 @@ discord.py-self
 .. image:: https://img.shields.io/pypi/pyversions/discord.py.svg
    :target: https://pypi.python.org/pypi/discord.py-self
    :alt: PyPI supported Python versions
+.. image:: https://img.shields.io/pypi/dm/discord.py-self.svg
+   :target: https://pypi.python.org/pypi/discord.py-self
+   :alt: PyPI downloads per month
 
 A modern, easy to use, feature-rich, and async ready API wrapper for Discord's user API written in Python.
 
 Fork Changes
 ------------
 
-This has been moved `here <https://dolfies.github.io/discord.py-self/changes/>`_. Proper docs hosted on ReadTheDocs are a work-in-progress.
+These changes have become too numerous to mention, so check out our `docs <https://discordpy-self.readthedocs.io/en/latest/index.html>`_.
 
 | **Credits:**
 | - `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for Discord API help.
@@ -122,6 +125,6 @@ You can find more examples in the examples directory.
 Links
 ------
 
-- `Documentation (WIP) <https://discordpy-self.readthedocs.io/en/latest/index.html>`_
+- `Documentation <https://discordpy-self.readthedocs.io/en/latest/index.html>`_
 - `Project updates <https://t.me/dpy_self>`_
 - `Discussion & support <https://t.me/dpy_self_discussions>`_
