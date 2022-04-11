@@ -136,6 +136,12 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         copy.wrapped = self.wrapped
         return copy
 
+    def copy(self) -> Self:
+        bindings = {
+            self.binding: self.binding,
+        }
+        return self._copy_with(parent=self.parent, binding=self.binding, bindings=bindings)
+
     async def _check_can_run(self, interaction: discord.Interaction) -> bool:
         # Hybrid checks must run like so:
         # - Bot global check once
@@ -271,6 +277,10 @@ class HybridCommand(Command[CogT, P, T]):
         else:
             ctx.kwargs = await self.app_command._transform_arguments(interaction, interaction.namespace)
 
+    def _ensure_assignment_on_copy(self, other: Self) -> Self:
+        copy = super()._ensure_assignment_on_copy(other)
+        copy.app_command = self.app_command.copy()
+        return copy
 
 class HybridGroup(Group[CogT, P, T]):
     r"""A class that is both an application command group and a regular text group.
