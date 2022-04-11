@@ -42,7 +42,8 @@ Creating a webhook
 In order to create incoming webhooks in a channel, the member needs the
 :attr:`~Permissions.manage_webhooks` permission in the given guild or text channel.
 
-To create a webhook, Navigate to "Server Settings > Integrations" page.
+To create a webhook in a server, Navigate to "Server Settings > Integrations" page. Alternatively, webhooks
+can also be created from the "Integrations" page in a channel's settings.
 
 .. image:: /images/guide/webhooks/guild_settings_integrations.png
     :alt: Integrations Settings
@@ -121,9 +122,13 @@ information, you can fetch them. Use the :meth:`Webhook.fetch` method to do so.
     webhook = await partial_webhook.fetch()
     print(webhook.is_partial()) # False
 
-Fetched webhook will include webhook information like username, avatar etc. Fetching isn't
-necessary when you just want to do HTTP operations and don't need webhook information.
+When you have a :meth:`Client` instance available, you can use it's :meth:`~Client.fetch_webhook` method to
+fetch the webhook using the ID. It is worth noting that this method does not require you to create a separate 
+HTTP session. The library's internal session is automatically bound to the webhook and is managed by the library.
 
+Fetched webhook will include the complete webhook information like username, avatar etc. Fetching the webhook isn't
+necessary when you just want to perform simple HTTP operations such as sending messages, editing or deleting them.
+Only fetch the webhook when you need this information, avoid making unnecessary API calls.
 
 Sending messages
 ~~~~~~~~~~~~~~~~
