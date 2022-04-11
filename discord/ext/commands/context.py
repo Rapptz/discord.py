@@ -508,9 +508,37 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
 
-    @discord.utils.copy_doc(Message.reply)
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
-        return await self.message.reply(content, **kwargs)
+        """|coro|
+
+        A shortcut method to :meth:`send` to reply to the
+        :class:`~discord.Message` referenced by this context.
+
+        For interaction based contexts, this is the same as :meth:`send`.
+
+        .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ValueError
+            The ``files`` list is not of the appropriate size
+        TypeError
+            You specified both ``file`` and ``files``.
+
+        Returns
+        ---------
+        :class:`~discord.Message`
+            The message that was sent.
+        """
+        return await self.send(content, reference=self.message, **kwargs)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
