@@ -175,7 +175,7 @@ def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
     # Extract the arguments
     # Note: These are loose regexes, but they are good enough for our purposes
     # For Google-style, look only at the lines that are indented
-    section_lines = inspect.cleandoc("\n".join(line for line in docstring.splitlines() if line.startswith(("  "))))
+    section_lines = inspect.cleandoc("\n".join(line for line in docstring.splitlines() if line.startswith("  ")))
     docstring_styles = (
         GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
         SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
