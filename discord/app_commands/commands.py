@@ -164,7 +164,7 @@ def _shorten(
     return _wrapper.fill(' '.join(input.strip().split()))
 
 
-def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
+def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, CommandParameter]) -> Dict[str, str]:
     docstring = inspect.getdoc(func)
 
     if docstring is None:
@@ -182,9 +182,8 @@ def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
 
     # Choose the style with the largest number of arguments matched
     matched_args = []
-    actual_args = inspect.signature(func).parameters.keys()
     for matches in docstring_styles:
-        style_matched_args = [match for match in matches if match.group("name") in actual_args]
+        style_matched_args = [match for match in matches if match.group("name") in params]
         if len(style_matched_args) > len(matched_args):
             matched_args = style_matched_args
 
@@ -366,7 +365,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     values = sorted(parameters, key=lambda a: a.required, reverse=True)
     result = {v.name: v for v in values}
 
-    descriptions = _parse_args_from_docstring(func)
+    descriptions = _parse_args_from_docstring(func, result)
 
     try:
         descriptions.update(func.__discord_app_commands_param_description__)
