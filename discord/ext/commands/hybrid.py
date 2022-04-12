@@ -294,7 +294,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             return await self._do_call(ctx, ctx.kwargs)  # type: ignore
         except app_commands.CommandSignatureMismatch:
             raise
-        except app_commands.TransformerError as e:
+        except (app_commands.TransformerError, app_commands.CommandInvokeError) as e:
             if isinstance(e.__cause__, CommandError):
                 exc = e.__cause__
             else:
