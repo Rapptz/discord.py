@@ -43,9 +43,10 @@ from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
 from .core import Command, Group
 from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
-from .converter import Converter, Range
+from .converter import Converter, Range, Greedy, run_converters
 from .parameters import Parameter
 from .cog import Cog
+from .view import StringView
 
 if TYPE_CHECKING:
     from typing_extensions import Self, ParamSpec, Concatenate
@@ -137,6 +138,24 @@ def make_callable_transformer(func: Callable[[str], Any]) -> Type[app_commands.T
     return type('CallableTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
 
 
+def make_greedy_transformer(converter: Any, parameter: Parameter) -> Type[app_commands.Transformer]:
+    async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
+        view = StringView(value)
+        result = []
+        while True:
+            arg = view.get_quoted_word()
+            if arg is None:
+                break
+
+            # This propagates the exception
+            converted = await run_converters(interaction._baton, converter, arg, parameter)
+            result.append(converted)
+
+        return result
+
+    return type('GreedyTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
+
+
 def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Signature) -> List[inspect.Parameter]:
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
@@ -152,6 +171,12 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
             if isinstance(parameter.converter, Range):
                 r = parameter.converter
                 param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
+            elif isinstance(parameter.converter, Greedy):
+                # Greedy is "optional" in ext.commands
+                # However, in here, it probably makes sense to make it required.
+                # I'm unsure how to allow the user to choose right now.
+                inner = parameter.converter.converter
+                param = param.replace(annotation=make_greedy_transformer(inner, parameter))
             elif is_converter(parameter.converter):
                 param = param.replace(annotation=make_converter_transformer(parameter.converter))
             elif origin is Union and len(args) == 2 and args[-1] is _NoneType:

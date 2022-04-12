@@ -1021,6 +1021,12 @@ class Greedy(List[T]):
     ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
 
     For more information, check :ref:`ext_commands_special_converters`.
+
+    .. note::
+
+        For interaction based contexts the conversion error is propagated
+        rather than swallowed due to the difference in user experience with
+        application commands.
     """
 
     __slots__ = ('converter',)
