@@ -468,6 +468,8 @@ Converters
 
 .. autoclass:: discord.ext.commands.Greedy()
 
+.. autoclass:: discord.ext.commands.Range()
+
 .. autofunction:: discord.ext.commands.run_converters
 
 Flag Converter
@@ -626,6 +628,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
+.. autoexception:: discord.ext.commands.RangeError
+    :members:
+
 .. autoexception:: discord.ext.commands.MissingPermissions
     :members:
 
@@ -713,6 +718,7 @@ Exception Hierarchy
                     - :exc:`~.commands.ScheduledEventNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.RangeError`
                     - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`

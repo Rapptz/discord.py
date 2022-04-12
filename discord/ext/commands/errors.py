@@ -102,6 +102,7 @@ __all__ = (
     'TooManyFlags',
     'MissingRequiredFlag',
     'HybridCommandError',
+    'RangeError',
 )
 
 
@@ -553,6 +554,44 @@ class BadBoolArgument(BadArgument):
     def __init__(self, argument: str) -> None:
         self.argument: str = argument
         super().__init__(f'{argument} is not a recognised boolean option')
+
+
+class RangeError(BadArgument):
+    """Exception raised when an argument is out of range.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    minimum: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum value expected or ``None`` if there wasn't one
+    maximum: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum value expected or ``None`` if there wasn't one
+    value: Union[:class:`int`, :class:`float`]
+        The value that was out of range.
+    """
+
+    def __init__(
+        self,
+        value: Union[int, float],
+        minimum: Optional[Union[int, float]],
+        maximum: Optional[Union[int, float]],
+    ) -> None:
+        self.value: Union[int, float] = value
+        self.minimum: Optional[Union[int, float]] = minimum
+        self.maximum: Optional[Union[int, float]] = maximum
+
+        label: str = ''
+        if minimum is None and maximum is not None:
+            label = f'no more than {maximum}'
+        elif minimum is not None and maximum is None:
+            label = f'not less than {minimum}'
+        elif maximum is not None and minimum is not None:
+            label = f'between {minimum} and {maximum}'
+
+        super().__init__(f'value must be {label} but received {value}')
 
 
 class DisabledCommand(CommandError):

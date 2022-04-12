@@ -43,7 +43,7 @@ from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
 from .core import Command, Group
 from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
-from .converter import Converter
+from .converter import Converter, Range
 from .parameters import Parameter
 from .cog import Cog
 
@@ -143,16 +143,17 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
     for name, parameter in parameters.items():
         _is_transformer = is_transformer(parameter.converter)
         origin = getattr(parameter.converter, '__origin__', None)
-        if is_converter(parameter.converter) and not _is_transformer:
+        if isinstance(parameter.converter, Range):
+            r = parameter.converter
+            params[name] = params[name].replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
+        elif is_converter(parameter.converter) and not _is_transformer:
             params[name] = params[name].replace(annotation=make_converter_transformer(parameter.converter))
-
-        # Special case Optional[X] where X is a single type that can optionally be a converter
         elif origin is Union and len(parameter.converter.__args__) == 2 and parameter.converter.__args__[-1] is _NoneType:
+            # Special case Optional[X] where X is a single type that can optionally be a converter
             inner = parameter.converter.__args__[0]
             is_inner_tranformer = is_transformer(inner)
             if is_converter(inner) and not is_inner_tranformer:
                 params[name] = params[name].replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
-
         elif callable(parameter.converter) and not inspect.isclass(parameter.converter) and not _is_transformer:
             params[name] = params[name].replace(annotation=make_callable_transformer(parameter.converter))
 

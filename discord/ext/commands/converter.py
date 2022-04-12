@@ -81,6 +81,7 @@ __all__ = (
     'ScheduledEventConverter',
     'clean_content',
     'Greedy',
+    'Range',
     'run_converters',
 )
 
@@ -1051,6 +1052,84 @@ class Greedy(List[T]):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
         return cls(converter=converter)
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Annotated as Range
+else:
+
+    class Range:
+        """A special converter that can be applied to a parameter to require a numeric type
+        to fit within the range provided.
+
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
+        the intent of the code.
+
+        Some example ranges:
+
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+
+        Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ----------
+
+        .. code-block:: python3
+
+            @bot.command()
+            async def range(ctx: commands.Context, value: commands.Range[int, 10, 12]):
+                await ctx.send(f'Your value is {value}')
+        """
+
+        def __init__(
+            self,
+            *,
+            annotation: Any,
+            min: Optional[Union[int, float]] = None,
+            max: Optional[Union[int, float]] = None,
+        ) -> None:
+            self.annotation: Any = annotation
+            self.min: Optional[Union[int, float]] = min
+            self.max: Optional[Union[int, float]] = max
+
+        async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
+            converted = self.annotation(value)
+            if (self.min is not None and converted < self.min) or (self.max is not None and converted > self.max):
+                raise RangeError(converted, minimum=self.min, maximum=self.max)
+
+            return converted
+
+        def __class_getitem__(cls, obj) -> Range:
+            if not isinstance(obj, tuple):
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+
+            if len(obj) == 2:
+                obj = (*obj, None)
+            elif len(obj) != 3:
+                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+
+            annotation, min, max = obj
+
+            if min is None and max is None:
+                raise TypeError('Range must not be empty')
+
+            if min is not None and max is not None:
+                # At this point max and min are both not none
+                if type(min) != type(max):
+                    raise TypeError('Both min and max in Range must be the same type')
+
+            if annotation not in (int, float):
+                raise TypeError(f'expected int or float as range type, received {annotation!r} instead')
+
+            return cls(
+                annotation=annotation,
+                min=annotation(min) if min is not None else None,
+                max=annotation(max) if max is not None else None,
+            )
 
 
 def _convert_to_bool(argument: str) -> bool:
