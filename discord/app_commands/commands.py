@@ -166,30 +166,34 @@ def _shorten(
 
 def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
     args: Dict[str, str] = {}
+    
+    docstring = inspect.getdoc(func)
 
-    if docstring := inspect.cleandoc(inspect.getdoc(func) or "").strip():
-        # Extract the arguments
-        # Note: These are loose regexes, but they are good enough for our purposes
-        # For Google-style, look only at the lines that are indented
-        section_lines = inspect.cleandoc("\n".join(line for line in docstring.splitlines() if line.startswith(("\t", "  "))))
-        docstring_styles = (
-            GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
-            SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
-            NUMPY_DOCSTRING_ARG_REGEX.finditer(docstring),
-        )
+    if docstring is None:
+        return args
 
-        # Choose the style with the largest number of arguments matched
-        matched_args = []
-        actual_args = inspect.signature(func).parameters.keys()
-        for matches in docstring_styles:
-            style_matched_args = [match for match in matches if match.group("name") in actual_args]
-            if len(style_matched_args) > len(matched_args):
-                matched_args = style_matched_args
+    # Extract the arguments
+    # Note: These are loose regexes, but they are good enough for our purposes
+    # For Google-style, look only at the lines that are indented
+    section_lines = inspect.cleandoc("\n".join(line for line in docstring.splitlines() if line.startswith(("  "))))
+    docstring_styles = (
+        GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
+        SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
+        NUMPY_DOCSTRING_ARG_REGEX.finditer(docstring),
+    )
 
-        # Parse the arguments
-        for arg in matched_args:
-            arg_description = re.sub(r"\n\s*", " ", arg.group("description")).strip()
-            args[arg.group("name")] = arg_description
+    # Choose the style with the largest number of arguments matched
+    matched_args = []
+    actual_args = inspect.signature(func).parameters.keys()
+    for matches in docstring_styles:
+        style_matched_args = [match for match in matches if match.group("name") in actual_args]
+        if len(style_matched_args) > len(matched_args):
+            matched_args = style_matched_args
+
+    # Parse the arguments
+    for arg in matched_args:
+        arg_description = re.sub(r"\n\s*", " ", arg.group("description")).strip()
+        args[arg.group("name")] = arg_description
 
     return args
 
