@@ -260,14 +260,6 @@ class PrivateChannel(Snowflake, Protocol):
 
     me: ClientUser
 
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/@me/{self.id}'
-
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
