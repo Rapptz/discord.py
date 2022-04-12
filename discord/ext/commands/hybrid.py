@@ -163,8 +163,9 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
             elif callable(parameter.converter) and not inspect.isclass(parameter.converter):
                 param = param.replace(annotation=make_callable_transformer(parameter.converter))
 
-        if parameter.default is not parameter.empty and callable(parameter.default):
-            param = param.replace(default=_CallableDefault(parameter.default))
+        if parameter.default is not parameter.empty:
+            default = _CallableDefault(parameter.default) if callable(parameter.default) else parameter.default
+            param = param.replace(default=default)
 
         if isinstance(param.default, Parameter):
             # If we're here, then then it hasn't been handled yet so it should be removed completely
