@@ -165,12 +165,10 @@ def _shorten(
 
 
 def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
-    args: Dict[str, str] = {}
-
     docstring = inspect.getdoc(func)
 
     if docstring is None:
-        return args
+        return {}
 
     # Extract the arguments
     # Note: These are loose regexes, but they are good enough for our purposes
@@ -190,12 +188,7 @@ def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
         if len(style_matched_args) > len(matched_args):
             matched_args = style_matched_args
 
-    # Parse the arguments
-    for arg in matched_args:
-        arg_description = re.sub(r"\n\s*", " ", arg.group("description")).strip()
-        args[arg.group("name")] = arg_description
-
-    return args
+    return {match.group("name"): match.group("description") for match in matched_args}
 
 
 def _to_kebab_case(text: str) -> str:
