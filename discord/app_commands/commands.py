@@ -180,14 +180,9 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
         NUMPY_DOCSTRING_ARG_REGEX.finditer(docstring),
     )
 
-    # Choose the style with the largest number of arguments matched
-    matched_args = []
-    for matches in docstring_styles:
-        style_matched_args = [match for match in matches if match.group('name') in params]
-        if len(style_matched_args) > len(matched_args):
-            matched_args = style_matched_args
-
-    return {match.group('name'): match.group('description') for match in matched_args}
+    return {
+        m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
+    }
 
 
 def _to_kebab_case(text: str) -> str:
