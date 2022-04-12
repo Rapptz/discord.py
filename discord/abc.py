@@ -260,6 +260,14 @@ class PrivateChannel(Snowflake, Protocol):
 
     me: ClientUser
 
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
+
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
@@ -500,6 +508,14 @@ class GuildChannel:
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
     def created_at(self) -> datetime:
