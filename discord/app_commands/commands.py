@@ -166,7 +166,7 @@ def _shorten(
 
 def _parse_args_from_docstring(func: Callable[..., Any]) -> Dict[str, str]:
     args: Dict[str, str] = {}
-    
+
     docstring = inspect.getdoc(func)
 
     if docstring is None:
