@@ -101,6 +101,12 @@ def is_converter(converter: Any) -> bool:
     return (inspect.isclass(converter) and issubclass(converter, Converter)) or isinstance(converter, Converter)
 
 
+def is_transformer(converter: Any) -> bool:
+    return hasattr(converter, '__discord_app_commands_transformer__') or hasattr(
+        converter, '__discord_app_commands_transform__'
+    )
+
+
 def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]:
     async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
         try:
@@ -135,19 +141,19 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
     for name, parameter in parameters.items():
-        is_transformer = hasattr(parameter.converter, '__discord_app_commands_transformer__')
+        _is_transformer = is_transformer(parameter.converter)
         origin = getattr(parameter.converter, '__origin__', None)
-        if is_converter(parameter.converter) and not is_transformer:
+        if is_converter(parameter.converter) and not _is_transformer:
             params[name] = params[name].replace(annotation=make_converter_transformer(parameter.converter))
 
         # Special case Optional[X] where X is a single type that can optionally be a converter
         elif origin is Union and len(parameter.converter.__args__) == 2 and parameter.converter.__args__[-1] is _NoneType:
             inner = parameter.converter.__args__[0]
-            is_inner_tranformer = hasattr(inner, '__discord_app_commands_transformer__')
+            is_inner_tranformer = is_transformer(inner)
             if is_converter(inner) and not is_inner_tranformer:
                 params[name] = params[name].replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
 
-        elif callable(parameter.converter) and not inspect.isclass(parameter.converter) and not is_transformer:
+        elif callable(parameter.converter) and not inspect.isclass(parameter.converter) and not _is_transformer:
             params[name] = params[name].replace(annotation=make_callable_transformer(parameter.converter))
 
         if parameter.default is not parameter.empty and callable(parameter.default):
