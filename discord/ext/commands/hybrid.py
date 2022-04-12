@@ -141,28 +141,36 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
     for name, parameter in parameters.items():
-        _is_transformer = is_transformer(parameter.converter)
-        origin = getattr(parameter.converter, '__origin__', None)
-        if isinstance(parameter.converter, Range):
-            r = parameter.converter
-            params[name] = params[name].replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
-        elif is_converter(parameter.converter) and not _is_transformer:
-            params[name] = params[name].replace(annotation=make_converter_transformer(parameter.converter))
-        elif origin is Union and len(parameter.converter.__args__) == 2 and parameter.converter.__args__[-1] is _NoneType:
-            # Special case Optional[X] where X is a single type that can optionally be a converter
-            inner = parameter.converter.__args__[0]
-            is_inner_tranformer = is_transformer(inner)
-            if is_converter(inner) and not is_inner_tranformer:
-                params[name] = params[name].replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
-        elif callable(parameter.converter) and not inspect.isclass(parameter.converter) and not _is_transformer:
-            params[name] = params[name].replace(annotation=make_callable_transformer(parameter.converter))
+        param = params[name]
+        try:
+            # If it's a supported annotation (i.e. a transformer) just let it pass as-is.
+            app_commands.transformers.get_supported_annotation(parameter.converter)
+        except TypeError:
+            # Fallback to see if the behaviour needs changing
+            origin = getattr(parameter.converter, '__origin__', None)
+            args = getattr(parameter.converter, '__args__', [])
+            if isinstance(parameter.converter, Range):
+                r = parameter.converter
+                param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
+            elif is_converter(parameter.converter):
+                param = param.replace(annotation=make_converter_transformer(parameter.converter))
+            elif origin is Union and len(args) == 2 and args[-1] is _NoneType:
+                # Special case Optional[X] where X is a single type that can optionally be a converter
+                inner = args[0]
+                is_inner_tranformer = is_transformer(inner)
+                if is_converter(inner) and not is_inner_tranformer:
+                    param = param.replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
+            elif callable(parameter.converter) and not inspect.isclass(parameter.converter):
+                param = param.replace(annotation=make_callable_transformer(parameter.converter))
 
         if parameter.default is not parameter.empty and callable(parameter.default):
-            params[name] = params[name].replace(default=_CallableDefault(parameter.default))
+            param = param.replace(default=_CallableDefault(parameter.default))
 
-        if isinstance(params[name].default, Parameter):
+        if isinstance(param.default, Parameter):
             # If we're here, then then it hasn't been handled yet so it should be removed completely
-            params[name] = params[name].replace(default=parameter.empty)
+            param = param.replace(default=parameter.empty)
+
+        params[name] = param
 
     return list(params.values())
 
