@@ -129,7 +129,7 @@ CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCall
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
-ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>[^\s:\-]+)'
+ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
 
 ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
 
