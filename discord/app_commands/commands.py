@@ -173,7 +173,7 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
     # Extract the arguments
     # Note: These are loose regexes, but they are good enough for our purposes
     # For Google-style, look only at the lines that are indented
-    section_lines = inspect.cleandoc("\n".join(line for line in docstring.splitlines() if line.startswith("  ")))
+    section_lines = inspect.cleandoc('\n'.join(line for line in docstring.splitlines() if line.startswith('  ')))
     docstring_styles = (
         GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
         SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
@@ -183,11 +183,11 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
     # Choose the style with the largest number of arguments matched
     matched_args = []
     for matches in docstring_styles:
-        style_matched_args = [match for match in matches if match.group("name") in params]
+        style_matched_args = [match for match in matches if match.group('name') in params]
         if len(style_matched_args) > len(matched_args):
             matched_args = style_matched_args
 
-    return {match.group("name"): match.group("description") for match in matched_args}
+    return {match.group('name'): match.group('description') for match in matched_args}
 
 
 def _to_kebab_case(text: str) -> str:
