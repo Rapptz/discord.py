@@ -390,6 +390,7 @@ class HybridCommand(Command[CogT, P, T]):
     def _ensure_assignment_on_copy(self, other: Self) -> Self:
         copy = super()._ensure_assignment_on_copy(other)
         copy.app_command = self.app_command.copy()
+        copy.app_command.wrapped = copy
         return copy
 
     def autocomplete(
