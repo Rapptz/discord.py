@@ -12,7 +12,7 @@ Embeds
 
 Embeds are a fundamental part of Discord's message format.
 
-They allow you to embed rich content into your messages.
+They allow you to add additional content into your messages.
 
 Discord typically uses embeds to display information related to links:
 
@@ -118,8 +118,8 @@ Markdown
 An embed's description and fields allow you to use markdown, so
 that includes **this**, *that*, and even ``this`` -- read more about it at :ref:`_guide_topic_markdown`.
 
-Usually, in a message's content it is not possible to send hyperlinks.
-However, embeds allow you to include them! So you can do little tricks like:
+Usually, in a message's content it is not possible to send masked links, but with
+embeds allow you to include them! So you can do little tricks like:
 
 .. code-block:: python3
 
@@ -164,7 +164,7 @@ We'll start off with the simple stuff, a colour, a title and a description.
         description="Clear with a high of 59 degrees Fahrenheit.",
     )
 
-That should look like this:
+That will look like this:
 
 .. image:: /images/guide/topics/embeds/field_weather_embed_1.png
     :scale: 38%
@@ -240,7 +240,7 @@ We'll use :meth:`my_weather_embed.set_author() <Embed.set_author>` to set these 
         url="https://goo.gl/search/Weather+In+San+Francisco",
     )
 
-That should look a lot like this:
+That will like this:
 
 .. image:: /images/guide/topics/embeds/author_embed_1.png
     :scale: 38%
