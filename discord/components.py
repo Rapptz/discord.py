@@ -29,7 +29,7 @@ from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Un
 
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, InteractionType
 from .errors import InvalidData
-from .utils import get_slots, MISSING, time_snowflake, utcnow
+from .utils import _generate_nonce, get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
@@ -219,7 +219,7 @@ class Button(Component):
 
         message = self.message
         state = message._state
-        nonce = str(time_snowflake(utcnow()))
+        nonce = _generate_nonce()
         type = InteractionType.component
 
         state._interaction_cache[nonce] = (int(type), None, message.channel)
@@ -315,7 +315,7 @@ class SelectMenu(Component):
         """
         message = self.message
         state = message._state
-        nonce = str(time_snowflake(utcnow()))
+        nonce = _generate_nonce()
         type = InteractionType.component
 
         state._interaction_cache[nonce] = (int(type), None, message.channel)

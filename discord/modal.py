@@ -30,7 +30,7 @@ from .components import _component_factory
 from .enums import InteractionType
 from .errors import InvalidData
 from .mixins import Hashable
-from .utils import time_snowflake, utcnow
+from .utils import _generate_nonce
 
 if TYPE_CHECKING:
     from .components import Component
@@ -128,7 +128,7 @@ class Modal(Hashable):
         """
         interaction = self.interaction
         state = self._state
-        nonce = str(time_snowflake(utcnow()))
+        nonce = _generate_nonce()
         type = InteractionType.modal_submit
 
         state._interaction_cache[nonce] = (int(type), None, interaction.channel)

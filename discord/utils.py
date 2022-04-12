@@ -1206,6 +1206,10 @@ def _generate_session_id() -> str:
     return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
 
+def _generate_nonce() -> str:
+    return str(time_snowflake(utcnow()))
+
+
 class ExpiringString(collections.UserString):
     def __init__(self, data: str, timeout: int) -> None:
         super().__init__(data)

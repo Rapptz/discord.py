@@ -1415,7 +1415,7 @@ class Messageable:
         previous_allowed_mention = state.allowed_mentions
 
         if nonce is MISSING:
-            nonce = str(utils.time_snowflake(datetime.utcnow()))
+            nonce = utils._generate_nonce()
 
         if stickers is not None:
             sticker_ids: SnowflakeList = [sticker.id for sticker in stickers]

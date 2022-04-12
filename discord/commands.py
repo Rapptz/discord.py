@@ -24,13 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_checkable, TYPE_CHECKING, Union
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
 from .mixins import Hashable
-from .utils import time_snowflake
+from .utils import _generate_nonce
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
@@ -92,7 +91,7 @@ class ApplicationCommand(Protocol):
             raise TypeError('__call__() missing 1 required argument: \'channel\'')
         state = self._state
         acc_channel = await channel._get_channel()
-        nonce = str(time_snowflake(datetime.utcnow()))
+        nonce = _generate_nonce()
         type = InteractionType.application_command
 
         state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)

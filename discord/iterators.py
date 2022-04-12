@@ -28,7 +28,7 @@ import asyncio
 from typing import Awaitable, TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union, List, Tuple, AsyncIterator, Dict
 
 from .errors import InvalidData
-from .utils import time_snowflake, utcnow
+from .utils import _generate_nonce
 from .object import Object
 from .commands import _command_factory
 from .enums import AppCommandType
@@ -163,7 +163,7 @@ class CommandIterator:
         state = self.state
         kwargs = self.kwargs
         retrieve = self.retrieve
-        nonce = str(time_snowflake(utcnow()))
+        nonce = _generate_nonce()
 
         def predicate(d):
             return d.get('nonce') == nonce

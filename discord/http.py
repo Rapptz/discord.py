@@ -150,7 +150,7 @@ def handle_message_parameters(
     username: str = MISSING,
     avatar_url: Any = MISSING,
     tts: bool = False,
-    nonce: Optional[Union[int, str]] = None,
+    nonce: Optional[Union[int, str]] = MISSING,
     flags: MessageFlags = MISSING,
     file: File = MISSING,
     files: Sequence[File] = MISSING,
@@ -193,8 +193,10 @@ def handle_message_parameters(
         else:
             payload['content'] = None
 
-    if nonce is not None:
-        payload['nonce'] = str(nonce)
+    if nonce is MISSING:
+        payload['nonce'] = utils._generate_nonce()
+    elif nonce:
+        payload['nonce'] = nonce
 
     if message_reference is not MISSING:
         payload['message_reference'] = message_reference
@@ -597,6 +599,8 @@ class HTTPClient:
                         previous['captcha_key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
                         if (rqtoken := e.json.get('captcha_rqtoken')) is not None:
                             previous['captcha_rqtoken'] = rqtoken
+                        if 'nonce' in previous:
+                            previous['nonce'] = utils._generate_nonce()
                         kwargs['headers']['Content-Type'] = 'application/json'
                         kwargs['data'] = utils._to_json(previous)
 
@@ -2361,7 +2365,7 @@ class HTTPClient:
             'application_id': str((message.application_id or message.author.id) if message else application_id),
             'channel_id': str(channel.id),
             'data': data,
-            'nonce': nonce if nonce is not MISSING else str(utils.time_snowflake(utils.utcnow())),
+            'nonce': nonce if nonce is not MISSING else utils._generate_nonce(),
             'session_id': state.session_id or utils._generate_session_id(),
             'type': type.value,
         }
