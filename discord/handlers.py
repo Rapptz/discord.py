@@ -80,8 +80,8 @@ class CaptchaHandler:
     async def fetch_token(
         self,
         data: Dict[str, Any],
-        proxy: Optional[str] = None,
-        proxy_auth: Optional[BasicAuth] = None,
+        proxy: Optional[str],
+        proxy_auth: Optional[BasicAuth],
         /,
     ) -> str:
         """|coro|
