@@ -231,6 +231,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
@@ -1069,6 +1070,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
@@ -1518,6 +1520,7 @@ class StageChannel(VocalGuildChannel):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
@@ -2046,6 +2049,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
@@ -2350,6 +2354,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/@me/{self.id}'
@@ -2510,6 +2515,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
         .. versionadded:: 2.0
         """
         return f'https://discord.com/channels/@me/{self.id}'
