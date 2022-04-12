@@ -131,13 +131,60 @@ CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCall
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
+ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
+
+ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
+
+ARG_TYPE_SUBREGEX = r'(?:.+)'
+
+GOOGLE_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^{ARG_NAME_SUBREGEX}[ \t]*(?:\({ARG_TYPE_SUBREGEX}\))?[ \t]*:[ \t]*{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
+SPHINX_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^:param {ARG_NAME_SUBREGEX}:[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
+NUMPY_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^{ARG_NAME_SUBREGEX}(?:[ \t]*:)?(?:[ \t]+{ARG_TYPE_SUBREGEX})?[ \t]*\r?\n[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
 
 def _shorten(
     input: str,
     *,
     _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
 ) -> str:
+    try:
+        # split on the first double newline since arguments may appear after that
+        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
+    except ValueError:
+        pass
     return _wrapper.fill(' '.join(input.strip().split()))
+
+
+def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, CommandParameter]) -> Dict[str, str]:
+    docstring = inspect.getdoc(func)
+
+    if docstring is None:
+        return {}
+
+    # Extract the arguments
+    # Note: These are loose regexes, but they are good enough for our purposes
+    # For Google-style, look only at the lines that are indented
+    section_lines = inspect.cleandoc('\n'.join(line for line in docstring.splitlines() if line.startswith('  ')))
+    docstring_styles = (
+        GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
+        SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
+        NUMPY_DOCSTRING_ARG_REGEX.finditer(docstring),
+    )
+
+    return {
+        m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
+    }
 
 
 def _to_kebab_case(text: str) -> str:
@@ -223,7 +270,7 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
         if not isinstance(description, str):
             raise TypeError('description must be a string')
 
-        param.description = description
+        param.description = _shorten(description)
 
     if descriptions:
         first = next(iter(descriptions))
@@ -326,13 +373,15 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     values = sorted(parameters, key=lambda a: a.required, reverse=True)
     result = {v.name: v for v in values}
 
+    descriptions = _parse_args_from_docstring(func, result)
+
     try:
-        descriptions = func.__discord_app_commands_param_description__
+        descriptions.update(func.__discord_app_commands_param_description__)
     except AttributeError:
         for param in values:
             if param.description is MISSING:
                 param.description = '…'
-    else:
+    if descriptions:
         _populate_descriptions(result, descriptions)
 
     try:
