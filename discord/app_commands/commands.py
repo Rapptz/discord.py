@@ -129,24 +129,24 @@ CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCall
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
-ARG_NAME_SUBREGEX = r"(?:\\?\*)*(?P<name>[^\s:\-]+)"
+ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>[^\s:\-]+)'
 
-ARG_DESCRIPTION_SUBREGEX = r"(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))"
+ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
 
-ARG_TYPE_SUBREGEX = r"(?P<type>.+)"
+ARG_TYPE_SUBREGEX = r'(?:.+)'
 
 GOOGLE_DOCSTRING_ARG_REGEX = re.compile(
-    rf"^{ARG_NAME_SUBREGEX}[ \t]*(?:\({ARG_TYPE_SUBREGEX}\))?[ \t]*:[ \t]*{ARG_DESCRIPTION_SUBREGEX}",
+    rf'^{ARG_NAME_SUBREGEX}[ \t]*(?:\({ARG_TYPE_SUBREGEX}\))?[ \t]*:[ \t]*{ARG_DESCRIPTION_SUBREGEX}',
     re.MULTILINE,
 )
 
 SPHINX_DOCSTRING_ARG_REGEX = re.compile(
-    rf"^:param {ARG_NAME_SUBREGEX}:[ \t]+{ARG_DESCRIPTION_SUBREGEX}[ \t]*(?::type [^\s:]+:[ \t]+{ARG_TYPE_SUBREGEX})?",
+    rf'^:param {ARG_NAME_SUBREGEX}:[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
     re.MULTILINE,
 )
 
 NUMPY_DOCSTRING_ARG_REGEX = re.compile(
-    rf"^{ARG_NAME_SUBREGEX}(?:[ \t]*:)?(?:[ \t]+{ARG_TYPE_SUBREGEX})?[ \t]*\r?\n[ \t]+{ARG_DESCRIPTION_SUBREGEX}",
+    rf'^{ARG_NAME_SUBREGEX}(?:[ \t]*:)?(?:[ \t]+{ARG_TYPE_SUBREGEX})?[ \t]*\r?\n[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
     re.MULTILINE,
 )
 
