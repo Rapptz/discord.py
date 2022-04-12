@@ -47,7 +47,7 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
-from ..enums import AppCommandOptionType, ChannelType
+from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
 from ..utils import MISSING, maybe_coroutine
 from ..user import User
 from ..role import Role
@@ -610,7 +610,7 @@ def get_supported_annotation(
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
             return (annotation, MISSING)
-        if issubclass(annotation, Enum):
+        if issubclass(annotation, (Enum, InternalEnum)):
             return (_make_enum_transformer(annotation), MISSING)
         if annotation is Choice:
             raise TypeError(f'Choice requires a type argument of int, str, or float')
