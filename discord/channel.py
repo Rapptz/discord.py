@@ -228,14 +228,6 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
 
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
-
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the channel is NSFW."""
         return self.nsfw
@@ -1067,14 +1059,6 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
-
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
 
@@ -1516,14 +1500,6 @@ class StageChannel(VocalGuildChannel):
     def type(self) -> ChannelType:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.stage_voice
-
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> StageChannel:
@@ -2046,14 +2022,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         """List[:class:`Thread`]: Returns all the threads that you can see."""
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
 
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
-
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
         return self.nsfw
@@ -2351,14 +2319,6 @@ class DMChannel(discord.abc.Messageable, Hashable):
         """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/@me/{self.id}'
-
     def permissions_for(self, obj: Any = None, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
 
@@ -2511,14 +2471,6 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
-
-    @property
-    def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the channel.
-
-        .. versionadded:: 2.0
-        """
-        return f'https://discord.com/channels/@me/{self.id}'
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
