@@ -248,9 +248,18 @@ class Thread(Messageable, Hashable):
         """:class:`datetime.datetime`: Returns the thread's creation time in UTC.
 
         .. note::
+
             This may be inaccurate for threads created before January 9th, 2022.
         """
         return self._created_at or snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: The string that allows you to mention the thread.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
     def members(self) -> List[ThreadMember]:
