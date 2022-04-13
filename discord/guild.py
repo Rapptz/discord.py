@@ -632,6 +632,16 @@ class Guild(Hashable):
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
+    @property
+    def forums(self) -> List[ForumChannel]:
+        """List[:class:`ForumChannel`]: A list of forum channels that belongs to this guild.
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, ForumChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
     def by_category(self) -> List[ByCategoryItem]:
         """Returns every :class:`CategoryChannel` and their associated channels.
 
