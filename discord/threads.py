@@ -237,7 +237,7 @@ class Thread(Messageable, Hashable):
 
     @property
     def jump_url(self) -> str:
-        """:class:`str`: The string that allows you to mention the thread.
+        """:class:`str`: Returns a URL that allows the client to jump to the thread.
 
         .. versionadded:: 2.0
         """
