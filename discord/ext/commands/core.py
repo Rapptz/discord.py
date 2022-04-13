@@ -47,7 +47,7 @@ from typing import (
 
 import discord
 
-from ._types import _BaseCommand
+from ._types import _BaseCommand, CogT
 from .cog import Cog
 from .context import Context
 from .converter import Greedy, run_converters
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 
     from discord.message import Message
 
-    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, ErrorT, Hook, HookT
+    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook
 
 
 __all__ = (
@@ -93,7 +93,6 @@ __all__ = (
 MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
-CogT = TypeVar('CogT', bound='Optional[Cog]')
 CommandT = TypeVar('CommandT', bound='Command')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
@@ -956,7 +955,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: ErrorT, /) -> ErrorT:
+    def error(self, coro: Error[CogT, ContextT], /) -> Error[CogT, ContextT]:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
@@ -991,7 +990,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: HookT, /) -> HookT:
+    def before_invoke(self, coro: Hook[CogT, ContextT], /) -> Hook[CogT, ContextT]:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -1022,7 +1021,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: HookT, /) -> HookT:
+    def after_invoke(self, coro: Hook[CogT, ContextT], /) -> Hook[CogT, ContextT]:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -2385,7 +2384,7 @@ def max_concurrency(number: int, per: BucketType = BucketType.default, *, wait: 
     return decorator  # type: ignore
 
 
-def before_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
+def before_invoke(coro: Hook[CogT, ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
@@ -2437,7 +2436,7 @@ def before_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def after_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
+def after_invoke(coro: Hook[CogT, ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
