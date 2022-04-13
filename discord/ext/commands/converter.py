@@ -1196,6 +1196,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
+    discord.ForumChannel: ForumChannelConverter,
 }
 
 
