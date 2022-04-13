@@ -381,7 +381,7 @@ class View:
         """
         pass
 
-    async def on_error(self, error: Exception, item: Item[Any], interaction: Interaction) -> None:
+    async def on_error(self, interaction: Interaction, error: Exception, item: Item[Any]) -> None:
         """|coro|
 
         A callback that is called when an item's callback or :meth:`interaction_check`
@@ -391,12 +391,12 @@ class View:
 
         Parameters
         -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that led to the failure.
         error: :class:`Exception`
             The exception that was raised.
         item: :class:`Item`
             The item that failed the dispatch.
-        interaction: :class:`~discord.Interaction`
-            The interaction that led to the failure.
         """
         print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
@@ -412,7 +412,7 @@ class View:
 
             await item.callback(interaction)
         except Exception as e:
-            return await self.on_error(e, item, interaction)
+            return await self.on_error(interaction, e, item)
 
     def _start_listening_from_store(self, store: ViewStore) -> None:
         self.__cancel_callback = partial(store.remove_view)
