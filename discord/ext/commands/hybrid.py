@@ -429,7 +429,7 @@ class HybridGroup(Group[CogT, P, T]):
     Note that application commands groups cannot have callbacks associated with them, so the callback
     is only called if it's not invoked as an application command.
 
-    Hybrid groups will always have :attr:`invoke_without_command` set to ``True``.
+    Hybrid groups will always have :attr:`Group.invoke_without_command` set to ``True``.
 
     These are not created manually, instead they are created via the
     decorator or functional interface.
