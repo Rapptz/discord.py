@@ -429,6 +429,8 @@ class HybridGroup(Group[CogT, P, T]):
     Note that application commands groups cannot have callbacks associated with them, so the callback
     is only called if it's not invoked as an application command.
 
+    Hybrid groups will always have :attr:`invoke_without_command` set to ``True``.
+
     These are not created manually, instead they are created via the
     decorator or functional interface.
 
@@ -439,6 +441,7 @@ class HybridGroup(Group[CogT, P, T]):
 
     def __init__(self, *args: Any, **attrs: Any) -> None:
         super().__init__(*args, **attrs)
+        self.invoke_without_command = True
         parent = None
         if self.parent is not None:
             if isinstance(self.parent, HybridGroup):
