@@ -510,7 +510,7 @@ class HybridGroup(Group[CogT, P, T]):
 
         Returns
         --------
-        Callable[..., :class:`Command`]
+        Callable[..., :class:`HybridCommand`]
             A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
         """
 
@@ -528,12 +528,12 @@ class HybridGroup(Group[CogT, P, T]):
         *args: Any,
         **kwargs: Any,
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, T]], HybridGroup[CogT, P2, T]]:
-        """A shortcut decorator that invokes :func:`.group` and adds it to
+        """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
         Returns
         --------
-        Callable[..., :class:`Group`]
+        Callable[..., :class:`HybridGroup`]
             A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
         """
 

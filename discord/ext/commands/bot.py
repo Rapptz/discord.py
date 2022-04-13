@@ -60,6 +60,7 @@ from .context import Context
 from . import errors
 from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
+from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -78,6 +79,7 @@ if TYPE_CHECKING:
         MaybeAwaitableFunc,
     )
     from .core import Command
+    from .hybrid import CommandCallback, ContextT, P
 
     _Prefix = Union[Iterable[str], str]
     _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
@@ -246,6 +248,52 @@ class BotBase(GroupMixin[None]):
                     self.__tree.remove_command(name, guild=discord.Object(id=guild_id))
 
         return cmd
+
+    def hybrid_command(
+        self,
+        name: str = MISSING,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridCommand[Any, P, T]]:
+        """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
+        the internal command list via :meth:`add_command`.
+
+        Returns
+        --------
+        Callable[..., :class:`HybridCommand`]
+            A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
+        """
+
+        def decorator(func: CommandCallback[Any, ContextT, P, T]):
+            kwargs.setdefault('parent', self)
+            result = hybrid_command(name=name, *args, **kwargs)(func)
+            self.add_command(result)
+            return result
+
+        return decorator
+
+    def hybrid_group(
+        self,
+        name: str = MISSING,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridGroup[Any, P, T]]:
+        """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
+        the internal command list via :meth:`add_command`.
+
+        Returns
+        --------
+        Callable[..., :class:`HybridGroup`]
+            A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
+        """
+
+        def decorator(func: CommandCallback[Any, ContextT, P, T]):
+            kwargs.setdefault('parent', self)
+            result = hybrid_group(name=name, *args, **kwargs)(func)
+            self.add_command(result)
+            return result
+
+        return decorator
 
     # Error handler
 
