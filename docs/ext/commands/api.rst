@@ -390,6 +390,9 @@ Converters
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
     :members:
 
+.. autoclass:: discord.ext.commands.ForumChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
 
