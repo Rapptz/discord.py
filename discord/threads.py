@@ -236,6 +236,14 @@ class Thread(Messageable, Hashable):
         return f'<#{self.id}>'
 
     @property
+    def jump_url(self) -> str:
+        """:class:`str`: The string that allows you to mention the thread.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
+
+    @property
     def members(self) -> List[ThreadMember]:
         """List[:class:`ThreadMember`]: A list of thread members in this thread.
 
