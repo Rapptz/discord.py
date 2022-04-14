@@ -409,6 +409,47 @@ class CommandTree(Generic[ClientT]):
             key = (command, guild_id, type.value)
             return self._context_menus.pop(key, None)
 
+    def clear_commands(self, *, guild: Optional[Snowflake], type: Optional[AppCommandType] = None) -> None:
+        """Clears all application commands from the tree.
+
+        This only removes the commands locally -- in order to sync the commands
+        and remove them in the client, :meth:`sync` must be called.
+
+        Parameters
+        -----------
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to remove the commands from. If ``None`` then it
+            removes all global commands instead.
+        type: :class:`~discord.AppCommandType`
+            The type of command to clear. If not given or ``None`` then it removes all commands
+            regardless of the type.
+        """
+
+        if type is None or type is AppCommandType.chat_input:
+            if guild is None:
+                self._global_commands.clear()
+            else:
+                try:
+                    commands = self._guild_commands[guild.id]
+                except KeyError:
+                    pass
+                else:
+                    commands.clear()
+
+        guild_id = None if guild is None else guild.id
+        if type is None:
+            self._context_menus = {
+                (name, _guild_id, value): cmd
+                for (name, _guild_id, value), cmd in self._context_menus.items()
+                if _guild_id != guild_id
+            }
+        elif type in (AppCommandType.user, AppCommandType.message):
+            self._context_menus = {
+                (name, _guild_id, value): cmd
+                for (name, _guild_id, value), cmd in self._context_menus.items()
+                if _guild_id != guild_id or value != type.value
+            }
+
     @overload
     def get_command(
         self,
