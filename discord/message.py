@@ -306,8 +306,8 @@ class Attachment(Hashable):
     async def to_file(
         self,
         *,
-        filename: Optional[str] = None,
-        description: Optional[str] = None,
+        filename: Optional[str] = MISSING,
+        description: Optional[str] = MISSING,
         use_cached: bool = False,
         spoiler: bool = False,
     ) -> File:
@@ -321,13 +321,13 @@ class Attachment(Hashable):
         Parameters
         -----------
         filename: Optional[:class:`str`]
-            The filename of the attachment. If not specified, then the filename
-            from the attachment will be used.
+            The filename to use for the file. If not specified then the filename
+            of the attachment is used instead.
 
             .. versionadded:: 2.0
         description: Optional[:class:`str`]
-            The description of the attachment. If not specified, then the
-            description from the attachment will be used.
+            The description to use for the file. If not specified then the
+            description of the attachment is used instead.
 
             .. versionadded:: 2.0
         use_cached: :class:`bool`
@@ -360,9 +360,9 @@ class Attachment(Hashable):
         """
 
         data = await self.read(use_cached=use_cached)
-        filename = filename or self.filename
-        description = description or self.description
-        return File(io.BytesIO(data), filename=filename, description=description, spoiler=spoiler)
+        file_filename = filename if filename is not MISSING else self.filename
+        file_description = description if description is not MISSING else self.description
+        return File(io.BytesIO(data), filename=file_filename, description=file_description, spoiler=spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {

@@ -128,7 +128,7 @@ class AssetMixin:
     async def to_file(
         self,
         *,
-        filename: Optional[str] = None,
+        filename: Optional[str] = MISSING,
         description: Optional[str] = None,
         spoiler: bool = False,
     ) -> File:
@@ -169,8 +169,8 @@ class AssetMixin:
         """
 
         data = await self.read()
-        filename = filename or yarl.URL(self.url).name
-        return File(io.BytesIO(data), filename=filename, description=description, spoiler=spoiler)
+        file_filename = filename or yarl.URL(self.url).name
+        return File(io.BytesIO(data), filename=file_filename, description=description, spoiler=spoiler)
 
 
 class Asset(AssetMixin):
