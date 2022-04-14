@@ -171,8 +171,12 @@ class VoiceProtocol:
             Whether reconnection is expected.
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
+
+            .. versionadded: 2.0
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
+
+            .. versionadded: 2.0
         """
         raise NotImplementedError
 
