@@ -68,6 +68,7 @@ __all__ = (
 )
 
 T = TypeVar('T')
+U = TypeVar('U')
 CogT = TypeVar('CogT', bound='Cog')
 CommandT = TypeVar('CommandT', bound='Command')
 # CHT = TypeVar('CHT', bound='Check')
@@ -592,7 +593,7 @@ class HybridGroup(Group[CogT, P, T]):
         name: str = MISSING,
         *args: Any,
         **kwargs: Any,
-    ) -> Callable[[CommandCallback[CogT, ContextT, P2, T]], HybridCommand[CogT, P2, T]]:
+    ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridCommand[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
 
@@ -602,7 +603,7 @@ class HybridGroup(Group[CogT, P, T]):
             A decorator that converts the provided method into a Command, adds it to the bot, then returns it.
         """
 
-        def decorator(func: CommandCallback[CogT, ContextT, P2, T]):
+        def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
             kwargs.setdefault('parent', self)
             result = hybrid_command(name=name, *args, **kwargs)(func)
             self.add_command(result)
@@ -615,7 +616,7 @@ class HybridGroup(Group[CogT, P, T]):
         name: str = MISSING,
         *args: Any,
         **kwargs: Any,
-    ) -> Callable[[CommandCallback[CogT, ContextT, P2, T]], HybridGroup[CogT, P2, T]]:
+    ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridGroup[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
 
@@ -625,7 +626,7 @@ class HybridGroup(Group[CogT, P, T]):
             A decorator that converts the provided method into a Group, adds it to the bot, then returns it.
         """
 
-        def decorator(func: CommandCallback[CogT, ContextT, P2, T]):
+        def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
             kwargs.setdefault('parent', self)
             result = hybrid_group(name=name, *args, **kwargs)(func)
             self.add_command(result)
