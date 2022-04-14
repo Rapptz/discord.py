@@ -1212,6 +1212,11 @@ The following changes have been made:
 
 - :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
 
+:meth:`VoiceProtocol.connect` signature changes.
+--------------------------------------------------
+
+:meth:`VoiceProtocol.connect` will now be passed 2 keyword only arguments, ``self_deaf`` and ``self_mute``. These indicate
+whether or not the client should join the voice chat being deafened or muted.
 
 .. _migrating_2_0_commands:
 
