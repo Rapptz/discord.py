@@ -69,11 +69,7 @@ if TYPE_CHECKING:
     from .commands import ContextMenuCallback, CommandCallback, P, T
 
     ErrorFunc = Callable[
-        [
-            Interaction,
-            Optional[Union[ContextMenu, Command[Any, ..., Any]]],
-            AppCommandError,
-        ],
+        [Interaction, AppCommandError],
         Coroutine[Any, Any, Any],
     ]
 
@@ -724,12 +720,7 @@ class CommandTree(Generic[ClientT]):
             for key in remove:
                 del mapping[key]
 
-    async def on_error(
-        self,
-        interaction: Interaction,
-        command: Optional[Union[ContextMenu, Command[Any, ..., Any]]],
-        error: AppCommandError,
-    ) -> None:
+    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
         """|coro|
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
@@ -737,16 +728,18 @@ class CommandTree(Generic[ClientT]):
         The default implementation prints the traceback to stderr if the command does
         not have any error handlers attached to it.
 
+        To get the command that failed, :attr:`discord.Interaction.command` should
+        be used.
+
         Parameters
         -----------
         interaction: :class:`~discord.Interaction`
             The interaction that is being handled.
-        command: Optional[Union[:class:`~discord.app_commands.Command`, :class:`~discord.app_commands.ContextMenu`]]
-            The command that failed, if any.
         error: :exc:`AppCommandError`
             The exception that was raised.
         """
 
+        command = interaction.command
         if command is not None:
             if command._has_any_error_handlers():
                 return
@@ -938,7 +931,7 @@ class CommandTree(Generic[ClientT]):
             try:
                 await self.call(interaction)
             except AppCommandError as e:
-                await self.on_error(interaction, None, e)
+                await self.on_error(interaction, e)
 
         self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
@@ -1029,7 +1022,7 @@ class CommandTree(Generic[ClientT]):
         except AppCommandError as e:
             if ctx_menu.on_error is not None:
                 await ctx_menu.on_error(interaction, e)
-            await self.on_error(interaction, ctx_menu, e)
+            await self.on_error(interaction, e)
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
@@ -1099,4 +1092,4 @@ class CommandTree(Generic[ClientT]):
             await command._invoke_with_namespace(interaction, namespace)
         except AppCommandError as e:
             await command._invoke_error_handler(interaction, e)
-            await self.on_error(interaction, command, e)
+            await self.on_error(interaction, e)
