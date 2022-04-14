@@ -389,21 +389,21 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     except AttributeError:
         pass
     else:
-        _populate_renames(result, renames)
+        _populate_renames(result, renames.copy())
 
     try:
         choices = func.__discord_app_commands_param_choices__
     except AttributeError:
         pass
     else:
-        _populate_choices(result, choices)
+        _populate_choices(result, choices.copy())
 
     try:
         autocomplete = func.__discord_app_commands_param_autocomplete__
     except AttributeError:
         pass
     else:
-        _populate_autocomplete(result, autocomplete)
+        _populate_autocomplete(result, autocomplete.copy())
 
     return result
 
