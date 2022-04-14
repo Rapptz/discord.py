@@ -303,7 +303,14 @@ class Attachment(Hashable):
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, *, use_cached: bool = False, spoiler: bool = False) -> File:
+    async def to_file(
+        self,
+        *,
+        filename: Optional[str] = None,
+        description: Optional[str] = None,
+        use_cached: bool = False,
+        spoiler: bool = False,
+    ) -> File:
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -313,6 +320,16 @@ class Attachment(Hashable):
 
         Parameters
         -----------
+        filename: Optional[:class:`str`]
+            The filename of the attachment. If not specified, then the filename
+            from the attachment will be used.
+
+            .. versionadded:: 2.0
+        description: Optional[:class:`str`]
+            The description of the attachment. If not specified, then the
+            description from the attachment will be used.
+
+            .. versionadded:: 2.0
         use_cached: :class:`bool`
             Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
             the attachment. This will allow attachments to be saved after deletion
@@ -343,7 +360,9 @@ class Attachment(Hashable):
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename, description=self.description, spoiler=spoiler)
+        filename = filename or self.filename
+        description = description or self.description
+        return File(io.BytesIO(data), filename=filename, description=description, spoiler=spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {

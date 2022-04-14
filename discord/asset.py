@@ -125,7 +125,13 @@ class AssetMixin:
             with open(fp, 'wb') as f:
                 return f.write(data)
 
-    async def to_file(self, *, spoiler: bool = False) -> File:
+    async def to_file(
+        self,
+        *,
+        filename: Optional[str] = None,
+        description: Optional[str] = None,
+        spoiler: bool = False,
+    ) -> File:
         """|coro|
 
         Converts the asset into a :class:`File` suitable for sending via
@@ -135,6 +141,11 @@ class AssetMixin:
 
         Parameters
         -----------
+        filename: Optional[:class:`str`]
+            The filename of the file. If not provided, then the filename from
+            the asset's URL is used.
+        description: Optional[:class:`str`]
+            The description for the file.
         spoiler: :class:`bool`
             Whether the file is a spoiler.
 
@@ -142,12 +153,12 @@ class AssetMixin:
         ------
         DiscordException
             The asset does not have an associated state.
+        InvalidArgument
+            The asset is a unicode emoji.
         TypeError
             The asset is a sticker with lottie type.
         HTTPException
             Downloading the asset failed.
-        Forbidden
-            You do not have permissions to access this asset.
         NotFound
             The asset was deleted.
 
@@ -158,9 +169,8 @@ class AssetMixin:
         """
 
         data = await self.read()
-        url = yarl.URL(self.url)
-        _, _, filename = url.path.rpartition('/')
-        return File(io.BytesIO(data), filename=filename, spoiler=spoiler)
+        filename = filename or yarl.URL(self.url).name
+        return File(io.BytesIO(data), filename=filename, description=description, spoiler=spoiler)
 
 
 class Asset(AssetMixin):
