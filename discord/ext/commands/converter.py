@@ -1129,6 +1129,10 @@ else:
 
             return converted
 
+        def __call__(self) -> None:
+            # Trick to allow it inside typing.Union
+            pass
+
         def __class_getitem__(cls, obj) -> Range:
             if not isinstance(obj, tuple):
                 raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
