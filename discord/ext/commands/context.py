@@ -116,7 +116,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         .. versionadded:: 2.0
     prefix: Optional[:class:`str`]
-        The prefix that was used to invoke the command.
+        The prefix that was used to invoke the command. For interaction based contexts,
+        this is ``/`` for slash commands and ``\u200b`` for context menu commands.
     command: Optional[:class:`Command`]
         The command that is being invoked currently.
     invoked_with: Optional[:class:`str`]
@@ -250,12 +251,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         else:
             message = interaction.message
 
+        prefix = '/' if data.get('type', 1) == 1 else '\u200b'  # Mock the prefix
         return cls(
             message=message,
             bot=bot,
             view=StringView(''),
             args=[],
             kwargs={},
+            prefix=prefix,
             interaction=interaction,
             invoked_with=command.name,
             command=command,  # type: ignore # this will be a hybrid command, technically
