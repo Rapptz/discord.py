@@ -202,7 +202,7 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
-    def __init__(self, wrapped: HybridCommand[CogT, Any, T]) -> None:
+    def __init__(self, wrapped: Command[CogT, Any, T]) -> None:
         signature = inspect.signature(wrapped.callback)
         params = replace_parameters(wrapped.params, signature)
         wrapped.callback.__signature__ = signature.replace(parameters=params)
@@ -216,7 +216,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         finally:
             del wrapped.callback.__signature__
 
-        self.wrapped: HybridCommand[CogT, Any, T] = wrapped
+        self.wrapped: Command[CogT, Any, T] = wrapped
         self.binding = wrapped.cog
 
     def _copy_with(self, **kwargs) -> Self:
@@ -435,11 +435,19 @@ class HybridGroup(Group[CogT, P, T]):
     decorator or functional interface.
 
     .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    fallback: Optional[:class:`str`]
+        The command name to use as a fallback for the application command. Since
+        application command groups cannot be invoked, this creates a subcommand within
+        the group that can be invoked with the given group callback. If ``None``
+        then no fallback command is given. Defaults to ``None``.
     """
 
     __commands_is_hybrid__: ClassVar[bool] = True
 
-    def __init__(self, *args: Any, **attrs: Any) -> None:
+    def __init__(self, *args: Any, fallback: Optional[str] = None, **attrs: Any) -> None:
         super().__init__(*args, **attrs)
         self.invoke_without_command = True
         parent = None
@@ -458,6 +466,83 @@ class HybridGroup(Group[CogT, P, T]):
 
         # This prevents the group from re-adding the command at __init__
         self.app_command.parent = parent
+        self.fallback: Optional[str] = fallback
+
+        if fallback is not None:
+            command = HybridAppCommand(self)
+            command.name = fallback
+            self.app_command.add_command(command)
+
+    @property
+    def _fallback_command(self) -> Optional[HybridAppCommand[CogT, ..., T]]:
+        return self.app_command.get_command(self.fallback)  # type: ignore
+
+    @property
+    def cog(self) -> CogT:
+        return self._cog
+
+    @cog.setter
+    def cog(self, value: CogT) -> None:
+        self._cog = value
+        fallback = self._fallback_command
+        if fallback:
+            fallback.binding = value
+
+    async def can_run(self, ctx: Context[BotT], /) -> bool:
+        fallback = self._fallback_command
+        if ctx.interaction is not None and fallback:
+            return await fallback._check_can_run(ctx.interaction)
+        else:
+            return await super().can_run(ctx)
+
+    async def _parse_arguments(self, ctx: Context[BotT]) -> None:
+        interaction = ctx.interaction
+        fallback = self._fallback_command
+        if interaction is not None and fallback:
+            ctx.kwargs = await fallback._transform_arguments(interaction, interaction.namespace)
+        else:
+            return await super()._parse_arguments(ctx)
+
+    def _ensure_assignment_on_copy(self, other: Self) -> Self:
+        copy = super()._ensure_assignment_on_copy(other)
+        copy.fallback = self.fallback
+        return copy
+
+    def autocomplete(
+        self, name: str
+    ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
+        """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
+
+        This is the same as :meth:`~discord.app_commands.Command.autocomplete`. It is only
+        applicable for the application command and doesn't do anything if the command is
+        a regular command.
+
+        This is only available if the group has a fallback application command registered.
+
+        .. note::
+
+            Similar to the :meth:`~discord.app_commands.Command.autocomplete` method, this
+            takes :class:`~discord.Interaction` as a parameter rather than a :class:`Context`.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The parameter name to register as autocomplete.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine or
+            the parameter is not found or of an invalid type.
+        """
+        if self._fallback_command:
+            return self._fallback_command.autocomplete(name)
+        else:
+
+            def decorator(func: AutocompleteCallback[CogT, ChoiceT]) -> AutocompleteCallback[CogT, ChoiceT]:
+                return func
+
+            return decorator
 
     def add_command(self, command: Union[HybridGroup[CogT, ..., Any], HybridCommand[CogT, ..., Any]], /) -> None:
         """Adds a :class:`.HybridCommand` into the internal list of commands.
