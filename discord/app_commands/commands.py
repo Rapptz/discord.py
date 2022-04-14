@@ -556,10 +556,10 @@ class Command(Generic[GroupT, P, T]):
 
         parent = self.parent
         if parent is not None:
-            await parent.on_error(interaction, self, error)
+            await parent.on_error(interaction, error)
 
             if parent.parent is not None:
-                await parent.parent.on_error(interaction, self, error)
+                await parent.parent.on_error(interaction, error)
 
     def _has_any_error_handlers(self) -> bool:
         if self.on_error is not None:
@@ -1159,10 +1159,12 @@ class Group:
             if isinstance(command, Group):
                 yield from command.walk_commands()
 
-    async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
+    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
+
+        To get the command that failed, :attr:`discord.Interaction.command` should be used.
 
         The default implementation does nothing.
 
@@ -1170,8 +1172,6 @@ class Group:
         -----------
         interaction: :class:`~discord.Interaction`
             The interaction that is being handled.
-        command: :class:`~discord.app_commands.Command`
-            The command that failed.
         error: :exc:`AppCommandError`
             The exception that was raised.
         """
