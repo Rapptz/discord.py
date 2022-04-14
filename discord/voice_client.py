@@ -149,7 +149,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float, reconnect: bool) -> None:
+    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False) -> None:
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -169,6 +169,10 @@ class VoiceProtocol:
             The timeout for the connection.
         reconnect: :class:`bool`
             Whether reconnection is expected.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
         """
         raise NotImplementedError
 
@@ -339,8 +343,8 @@ class VoiceClient(VoiceProtocol):
 
         self._voice_server_complete.set()
 
-    async def voice_connect(self) -> None:
-        await self.channel.guild.change_voice_state(channel=self.channel)
+    async def voice_connect(self, self_deaf: bool = False, self_mute: bool = False) -> None:
+        await self.channel.guild.change_voice_state(channel=self.channel, self_deaf=self_deaf, self_mute=self_mute)
 
     async def voice_disconnect(self) -> None:
         _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id, self.guild.id)
@@ -367,7 +371,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect: bool, timeout: float) -> None:
+    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -381,7 +385,7 @@ class VoiceClient(VoiceProtocol):
             ]
 
             # Start the connection flow
-            await self.voice_connect()
+            await self.voice_connect(self_deaf=self_deaf, self_mute=self_mute)
 
             try:
                 await utils.sane_wait_for(futures, timeout=timeout)
