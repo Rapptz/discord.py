@@ -773,8 +773,8 @@ class CommandTree(Generic[ClientT]):
             raise TypeError('The error handler must be a coroutine.')
 
         params = inspect.signature(coro).parameters
-        if len(params) != 3:
-            raise TypeError('error handler must have 3 parameters')
+        if len(params) != 2:
+            raise TypeError('error handler must have 2 parameters')
 
         # Type checker doesn't like overriding methods like this
         self.on_error = coro  # type: ignore
