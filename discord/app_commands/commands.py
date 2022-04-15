@@ -873,7 +873,7 @@ class ContextMenu:
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
-        self._guild_ids = guild_ids
+        self._guild_ids = guild_ids or getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.on_error: Optional[UnboundError] = None
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
