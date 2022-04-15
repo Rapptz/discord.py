@@ -40,6 +40,8 @@ __all__ = (
     'MemberCacheFlags',
     'ApplicationFlags',
     'ChannelFlags',
+    'PremiumUsageFlags',
+    'PurchasedFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -478,6 +480,23 @@ class PublicUserFlags(BaseFlags):
 class PrivateUserFlags(PublicUserFlags):
     r"""Wraps up the Discord User flags.
 
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two PrivateUserFlags are equal.
+        .. describe:: x != y
+
+            Checks if two PrivateUserFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
     .. note::
         These are only available on your own user flags.
 
@@ -522,6 +541,104 @@ class PrivateUserFlags(PublicUserFlags):
     def disable_premium(self):
         """:class:`bool`: Returns ``True`` if the user bought premium but has it manually disabled."""
         return UserFlags.disable_premium.value
+
+
+@fill_with_flags()
+class PremiumUsageFlags(BaseFlags):
+    r"""Wraps up the Discord premium usage flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two PremiumUsageFlags are equal.
+        .. describe:: x != y
+
+            Checks if two PremiumUsageFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def premium_discriminator(self):
+        """:class:`bool`: Returns ``True`` if the user utilized premium discriminators."""
+        return 1 << 0
+
+    @flag_value
+    def animated_avatar(self):
+        """:class:`bool`: Returns ``True`` if the user utilized animated avatars."""
+        return 1 << 1
+
+    @flag_value
+    def profile_banner(self):
+        """:class:`bool`: Returns ``True`` if the user utilized profile banners."""
+        return 1 << 2
+
+
+@fill_with_flags()
+class PurchasedFlags(BaseFlags):
+    r"""Wraps up the Discord purchased flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two PurchasedFlags are equal.
+        .. describe:: x != y
+
+            Checks if two PurchasedFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def nitro_classic(self):
+        """:class:`bool`: Returns ``True`` if the user has previously purchased Nitro classic."""
+        return 1 << 0
+
+    @flag_value
+    def nitro(self):
+        """:class:`bool`: Returns ``True`` if the user has previously purchased Nitro."""
+        return 1 << 1
+
+    @flag_value
+    def guild_boost(self):
+        """:class:`bool`: Returns ``True`` if the user has previously purchased a guild boost."""
+        return 1 << 2
 
 
 @fill_with_flags()

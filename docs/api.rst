@@ -4795,6 +4795,16 @@ Flags
     :members:
     :inherited-members:
 
+.. attributetable:: PremiumUsageFlags
+
+.. autoclass:: PremiumUsageFlags()
+    :members:
+
+.. attributetable:: PurchasedFlags
+
+.. autoclass:: PurchasedFlags()
+    :members:
+
 .. attributetable:: MemberCacheFlags
 
 .. autoclass:: MemberCacheFlags()

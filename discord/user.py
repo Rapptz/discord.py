@@ -39,7 +39,7 @@ from .enums import (
     try_enum,
 )
 from .errors import ClientException, NotFound
-from .flags import PublicUserFlags
+from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .iterators import FakeCommandIterator
 from .object import Object
 from .relationship import Relationship
@@ -543,6 +543,8 @@ class ClientUser(BaseUser):
         'note',
         'bio',
         'nsfw_allowed',
+        '_purchased_flags',
+        '_premium_usage_flags',
     )
 
     if TYPE_CHECKING:
@@ -573,6 +575,8 @@ class ClientUser(BaseUser):
         self.phone = _get_as_snowflake(data, 'phone')
         self.locale = try_enum(Locale, data.get('locale', 'en-US'))
         self._flags = data.get('flags', 0)
+        self._purchased_flags = data.get('purchased_flags', 0)
+        self._premium_usage_flags = data.get('premium_usage_flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium_type = try_enum(PremiumType, data['premium_type']) if 'premium_type' in data else None
         self.bio = data.get('bio')
@@ -602,23 +606,62 @@ class ClientUser(BaseUser):
 
     @property
     def relationships(self) -> List[Relationship]:
-        """List[:class:`User`]: Returns all the relationships that the user has."""
+        """List[:class:`Relationship`]: Returns all the relationships that the user has.
+
+        .. versionchanged:: 2.0
+            This now returns a :class:`Relationship`.
+        """
         return list(self._state._relationships.values())
 
     @property
     def friends(self) -> List[Relationship]:
-        r"""List[:class:`User`]: Returns all the users that the user is friends with."""
+        r"""List[:class:`Relationship`]: Returns all the users that the user is friends with.
+
+        .. versionchanged:: 2.0
+            This now returns a :class:`Relationship`.
+        """
         return [r for r in self._state._relationships.values() if r.type is RelationshipType.friend]
 
     @property
     def blocked(self) -> List[Relationship]:
-        r"""List[:class:`User`]: Returns all the users that the user has blocked."""
+        r"""List[:class:`Relationship`]: Returns all the users that the user has blocked.
+
+        .. versionchanged:: 2.0
+            This now returns a :class:`Relationship`.
+        """
         return [r for r in self._state._relationships.values() if r.type is RelationshipType.blocked]
 
     @property
     def settings(self) -> Optional[UserSettings]:
-        """Optional[:class:`UserSettings`]: Returns the user's settings."""
+        """Optional[:class:`UserSettings`]: Returns the user's settings.
+
+        .. versionadded:: 1.9
+        """
         return self._state.settings
+
+    @property
+    def flags(self) -> PrivateUserFlags:
+        """:class:`PrivateUserFlags`: Returns the user's flags (including private).
+
+        .. versionadded:: 2.0
+        """
+        return PrivateUserFlags._from_value(self._flags)
+
+    @property
+    def premium_usage_flags(self) -> PremiumUsageFlags:
+        """:class:`PremiumUsageFlags`: Returns the user's premium usage flags.
+
+        .. versionadded:: 2.0
+        """
+        return PremiumUsageFlags._from_value(self._premium_usage_flags)
+
+    @property
+    def purchased_flags(self) -> PurchasedFlags:
+        """:class:`PurchasedFlags`: Returns the user's purchased flags.
+
+        .. versionadded:: 2.0
+        """
+        return PurchasedFlags._from_value(self._purchased_flags)
 
     async def edit(
         self,
