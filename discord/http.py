@@ -1852,6 +1852,9 @@ class HTTPClient:
     ) -> Response[member.MemberWithUser]:
         return self.edit_member(guild_id=guild_id, user_id=user_id, channel_id=channel_id, reason=reason)
 
+    def get_ringability(self, channel_id: Snowflake):
+        return self.request(Route('GET', '/channels/{channel_id}/call', channel_id=channel_id))
+
     def ring(self, channel_id: Snowflake, *recipients: Snowflake) -> Response[None]:
         payload = {'recipients': recipients or None}
 

@@ -51,7 +51,7 @@ from .backoff import ExponentialBackoff
 from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
-from .utils import MISSING
+from .utils import _get_as_snowflake, MISSING
 
 if TYPE_CHECKING:
     from .client import Client
@@ -311,7 +311,7 @@ class VoiceClient(VoiceProtocol):
             return
 
         self.token = data['token']
-        self.server_id = int(data['guild_id'])
+        self.server_id = _get_as_snowflake(data, 'guild_id') or int(data['channel_id'])
         endpoint = data.get('endpoint')
 
         if endpoint is None or self.token is None:
@@ -386,7 +386,7 @@ class VoiceClient(VoiceProtocol):
         for i in range(5):
             self.prepare_handshake()
 
-            # This has to be created before we start the flow.
+            # This has to be created before we start the flow
             futures = [
                 self._voice_state_complete.wait(),
                 self._voice_server_complete.wait(),

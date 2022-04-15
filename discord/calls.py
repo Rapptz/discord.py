@@ -24,21 +24,19 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, Set, TYPE_CHECKING, Union
 
 from . import utils
 from .errors import ClientException
-from .utils import MISSING
+from .utils import cached_slot_property, MISSING
 
 if TYPE_CHECKING:
-    from .abc import Connectable, PrivateChannel, User as abcUser, T as ConnectReturn
+    from .abc import Connectable, PrivateChannel, User as abcUser, Snowflake as abcSnowflake, T as ConnectReturn
     from .channel import DMChannel, GroupChannel
     from .client import Client
     from .member import VoiceState
     from .message import Message
     from .state import ConnectionState
-    from .types.snowflake import Snowflake, SnowflakeList
-    from .types.voice import GuildVoiceState
     from .user import User
 
     _PrivateChannel = Union[DMChannel, GroupChannel]
@@ -69,7 +67,7 @@ class CallMessage:
     Attributes
     -----------
     ended_timestamp: Optional[:class:`datetime.datetime`]
-        A naive UTC datetime object that represents the time that the call has ended.
+        An aware UTC datetime object that represents the time that the call has ended.
     participants: List[:class:`User`]
         A list of users that participated in the call.
     message: :class:`Message`
@@ -88,7 +86,7 @@ class CallMessage:
 
     @property
     def initiator(self) -> User:
-        """:class:`User`: Returns the user that started the call."""
+        """:class:`.abc.User`: Returns the user that started the call."""
         return self.message.author  # type: ignore # Cannot be a Member in private messages
 
     @property
@@ -119,16 +117,14 @@ class PrivateCall:
 
     This is accompanied with a :class:`CallMessage` denoting the information.
 
+    .. versionadded:: 1.9
+
     Attributes
     -----------
     channel: :class:`DMChannel`
         The channel the call is in.
-    message: Optional[:class:`Message`]
-        The message associated with this call (if available).
     unavailable: :class:`bool`
         Denotes if this call is unavailable.
-    ringing: List[:class:`~discord.abc.User`]
-        A list of users that are currently being rung to join the call.
     region: :class:`str`
         The region the call is being hosted at.
 
@@ -136,78 +132,89 @@ class PrivateCall:
             The type of this attribute has changed to :class:`str`.
     """
 
+    __slots__ = ('_state', '_ended', 'channel', '_cs_message', '_ringing', '_message_id', 'region', 'unavailable')
+
     if TYPE_CHECKING:
         channel: DMChannel
-        ringing: List[abcUser]
-        region: str
 
     def __init__(
         self,
-        state: ConnectionState,
         *,
-        message_id: Snowflake,
-        channel_id: Snowflake,
-        message: Optional[Message] = None,
+        data: dict,
+        state: ConnectionState,
+        message: Optional[Message],
         channel: PrivateChannel,
-        unavailable: bool,
-        voice_states: List[GuildVoiceState] = [],
-        **kwargs,
     ) -> None:
         self._state = state
-        self._message_id: int = int(message_id)
-        self._channel_id: int = int(channel_id)
-        self.message: Optional[Message] = message
-        self.channel = channel  # type: ignore
-        self.unavailable: bool = unavailable
+        self._cs_message = message
+        self.channel = channel  # type: ignore # Will always be a DMChannel here
         self._ended: bool = False
 
-        for vs in voice_states:
-            state._update_voice_state(vs, int(channel_id))
+        self._update(data)
 
-        self._update(**kwargs)
-
-    def _deleteup(self) -> None:
-        self.ringing = []
+    def _delete(self) -> None:
+        self._ringing = tuple()
         self._ended = True
+
+    def _get_recipients(self) -> Set[abcUser]:
+        channel = self.channel
+        return {channel.me, channel.recipient}
 
     def _is_participating(self, user: abcUser) -> bool:
         state = self.voice_state_for(user)
-        return bool(state and state.channel and state.channel.id == self._channel_id)
+        return bool(state and state.channel and state.channel.id == self.channel.id)
 
-    def _update(self, *, ringing: SnowflakeList = [], region: str = MISSING) -> None:
-        if region is not MISSING:
-            self.region = region
+    def _update(self, data) -> None:
+        self._message_id = int(data['message_id'])
+        self.unavailable = data.get('unavailable', False)
+        try:
+            self.region: str = data['region']
+        except KeyError:
+            pass
+
         channel = self.channel
-        recipients = {channel.me, channel.recipient}
+        recipients = self._get_recipients()
         lookup = {u.id: u for u in recipients}
-        self.ringing = list(filter(None, map(lookup.get, ringing)))
+        self._ringing = tuple(filter(None, map(lookup.get, data.get('ringing', []))))
+
+        for vs in data.get('voice_states', []):
+            self._state._update_voice_state(vs, channel.id)
 
     @property
-    def initiator(self) -> Optional[User]:
-        """Optional[:class:`User`]: Returns the user that started the call. The call message must be available to obtain this information."""
-        if self.message:
-            return self.message.author  # type: ignore # Cannot be a Member in private messages
+    def ringing(self) -> List[abcUser]:
+        """List[:class:`.abc.User`]: A list of users that are currently being rung to join the call."""
+        return list(self._ringing)
+
+    @property
+    def initiator(self) -> User:
+        """:class:`User`: Returns the user that started the call."""
+        return getattr(self.message, 'author', None)
 
     @property
     def connected(self) -> bool:
-        """:class:`bool`: Returns whether you're in the call (this does not mean you're in the call through the lib)."""
+        """:class:`bool`: Returns whether you're in the call (this does not mean you're in the call through the library)."""
         return self._is_participating(self.channel.me)
 
     @property
-    def members(self) -> List[User]:
-        """List[:class:`User`]: Returns all users that are currently in this call."""
-        channel = self.channel
-        recipients = {channel.me, channel.recipient}
+    def members(self) -> List[abcUser]:
+        """List[:class:`.abc.User`]: Returns all users that are currently in this call."""
+        recipients = self._get_recipients()
         return [u for u in recipients if self._is_participating(u)]
 
     @property
     def voice_states(self) -> Dict[int, VoiceState]:
         """Mapping[:class:`int`, :class:`VoiceState`]: Returns a mapping of user IDs who have voice states in this call."""
         return {
-            k: v for k, v in self._state._voice_states.items() if bool(v and v.channel and v.channel.id == self._channel_id)
+            k: v for k, v in self._state._voice_states.items() if bool(v and v.channel and v.channel.id == self.channel.id)
         }
 
-    async def fetch_message(self) -> Optional[Message]:
+    @cached_slot_property('_cs_message')
+    def message(self) -> Message:
+        """:class:`Message`: The message associated with this call."""
+        # Lying to the type checker for better developer UX, very unlikely for the message to not be received
+        return self._state._get_message(self._message_id)  # type: ignore
+
+    async def fetch_message(self) -> Message:
         """|coro|
 
         Fetches and caches the message associated with this call.
@@ -219,15 +226,15 @@ class PrivateCall:
 
         Returns
         -------
-        Optional[:class:`Message`]
+        :class:`Message`
             The message associated with this call.
         """
         message = await self.channel.fetch_message(self._message_id)
         state = self._state
-        if message is not None and self.message is None:
-            if self._state._messages is not None:
-                self._state._messages.append(message)
-            self.message = message
+        if self.message is None:
+            if state._messages is not None:
+                state._messages.append(message)
+            self._cs_message = message
         return message
 
     async def change_region(self, region: str) -> None:
@@ -248,7 +255,7 @@ class PrivateCall:
         HTTPException
             Failed to change the channel's voice region.
         """
-        await self._state.http.change_call_voice_region(self._channel_id, str(region))
+        await self._state.http.change_call_voice_region(self.channel.id, region)
 
     @_running_only
     async def ring(self) -> None:
@@ -258,6 +265,8 @@ class PrivateCall:
 
         Raises
         -------
+        Forbidden
+            Not allowed to ring the other recipient.
         HTTPException
             Ringing failed.
         ClientException
@@ -289,7 +298,6 @@ class PrivateCall:
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], ConnectReturn] = MISSING,
-        ring: bool = True,
     ) -> ConnectReturn:
         """|coro|
 
@@ -309,8 +317,6 @@ class PrivateCall:
         cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
-        ring: :class:`bool`
-            Whether to ring the other user.
 
         Raises
         -------
@@ -326,7 +332,7 @@ class PrivateCall:
         :class:`~discord.VoiceProtocol`
             A voice client that is fully connected to the voice server.
         """
-        return await self.channel.connect(timeout=timeout, reconnect=reconnect, cls=cls, ring=ring)
+        return await self.channel.connect(timeout=timeout, reconnect=reconnect, cls=cls, ring=False)
 
     @_running_only
     async def join(
@@ -335,7 +341,6 @@ class PrivateCall:
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], ConnectReturn] = MISSING,
-        ring: bool = True,
     ) -> ConnectReturn:
         """|coro|
 
@@ -355,8 +360,6 @@ class PrivateCall:
         cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
-        ring: :class:`bool`
-            Whether to ring the other user.
 
         Raises
         -------
@@ -372,10 +375,10 @@ class PrivateCall:
         :class:`~discord.VoiceProtocol`
             A voice client that is fully connected to the voice server.
         """
-        return await self.connect(timeout=timeout, reconnect=reconnect, cls=cls, ring=ring)
+        return await self.connect(timeout=timeout, reconnect=reconnect, cls=cls)
 
     @_running_only
-    async def disconnect(self, **kwargs) -> None:
+    async def disconnect(self, force: bool = False) -> None:
         """|coro|
 
         Disconnects this voice client from voice.
@@ -386,19 +389,19 @@ class PrivateCall:
         if not (client := state._get_voice_client(self.channel.me.id)):
             return
 
-        return await client.disconnect(**kwargs)
+        return await client.disconnect(force=force)
 
     @_running_only
-    async def leave(self, **kwargs) -> None:
+    async def leave(self, force: bool = False) -> None:
         """|coro|
 
         Disconnects this voice client from voice.
 
         This is an alias of :attr:`disconnect`.
         """
-        return await self.disconnect(**kwargs)
+        return await self.disconnect(force=force)
 
-    def voice_state_for(self, user) -> Optional[VoiceState]:
+    def voice_state_for(self, user: abcSnowflake) -> Optional[VoiceState]:
         """Retrieves the :class:`VoiceState` for a specified :class:`User`.
 
         If the :class:`User` has no voice state then this function returns
@@ -406,7 +409,7 @@ class PrivateCall:
 
         Parameters
         ------------
-        user: :class:`User`
+        user: :class:`~discord.abc.Snowflake`
             The user to retrieve the voice state for.
 
         Returns
@@ -426,11 +429,9 @@ class GroupCall(PrivateCall):
     -----------
     channel: :class:`GroupChannel`
         The channel the group call is in.
-    message: Optional[:class:`Message`]
-        The message associated with this group call (if available).
     unavailable: :class:`bool`
         Denotes if this group call is unavailable.
-    ringing: List[:class:`~discord.abc.User`]
+    ringing: List[:class:`.abc.User`]
         A list of users that are currently being rung to join the call.
     region: :class:`str`
         The region the group call is being hosted in.
@@ -439,35 +440,56 @@ class GroupCall(PrivateCall):
             The type of this attribute has changed to :class:`str`.
     """
 
+    __slots__ = tuple()
+
     if TYPE_CHECKING:
         channel: GroupChannel
 
-    def _update(self, *, ringing: List[int] = [], region: str = MISSING) -> None:
-        if region is not MISSING:
-            self.region = region
-
-        lookup: Dict[int, abcUser] = {u.id: u for u in self.channel.recipients}
-        me = self.channel.me
-        lookup[me.id] = me
-        self.ringing = list(filter(None, map(lookup.get, ringing)))
-
-    @property
-    def members(self) -> List[abcUser]:
-        """List[:class:`User`]: Returns all users that are currently in this call."""
-        ret: List[abcUser] = [u for u in self.channel.recipients if self._is_participating(u)]
-        me = self.channel.me
-        if self._is_participating(me):
-            ret.append(me)
-
+    def _get_recipients(self) -> Set[abcUser]:
+        channel = self.channel
+        ret: Set[abcUser] = set(channel.recipients)
+        ret.add(channel.me)
         return ret
 
     @_running_only
-    async def ring(self, *recipients) -> None:
-        await self._state.http.ring(self._channel_id, *{r.id for r in recipients})
+    async def ring(self, *recipients: abcSnowflake) -> None:
+        r"""|coro|
+
+        Rings the specified recipients.
+
+        Parameters
+        -----------
+        \*recipients: :class:`~discord.abc.Snowflake`
+            The recipients to ring. The default is to ring all recipients.
+
+        Raises
+        -------
+        HTTPException
+            Stopping the ringing failed.
+        ClientException
+            The call has ended.
+        """
+        await self._state.http.ring(self.channel.id, *{r.id for r in recipients})
 
     @_running_only
-    async def stop_ringing(self, *recipients) -> None:
-        await self._state.http.stop_ringing(self._channel_id, *{r.id for r in recipients})
+    async def stop_ringing(self, *recipients: abcSnowflake) -> None:
+        r"""|coro|
+
+        Stops ringing the specified recipients.
+
+        Parameters
+        -----------
+        \*recipients: :class:`~discord.abc.Snowflake`
+            The recipients to stop ringing.
+
+        Raises
+        -------
+        HTTPException
+            Ringing failed.
+        ClientException
+            The call has ended.
+        """
+        await self._state.http.stop_ringing(self.channel.id, *{r.id for r in recipients})
 
 
 Call = Union[PrivateCall, GroupCall]

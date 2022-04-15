@@ -2249,8 +2249,14 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         await self._state.access_private_channel(self.id)
         return self
 
-    def _initial_ring(self):
-        return self._state.http.ring(self.id)
+    async def _initial_ring(self) -> None:
+        ring = self.recipient.is_friend()
+        if not ring:
+            data = await self._state.http.get_ringability(self.id)
+            ring = data['ringable']
+
+        if ring:
+            await self._state.http.ring(self.id)
 
     def __str__(self) -> str:
         if self.recipient:
@@ -2322,7 +2328,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Parameters
         -----------
-        obj: :class:`User`
+        obj: :class:`~discord.abc.Snowflake`
             The user to check permissions for. This parameter is ignored
             but kept for compatibility with other ``permissions_for`` methods.
 
@@ -2380,7 +2386,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         """
         await self._state.http.delete_channel(self.id)
 
-    @utils.copy_doc(discord.abc.Connectable.connect)
     async def connect(
         self,
         *,
@@ -2389,6 +2394,40 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
         ring: bool = True,
     ) -> ConnectReturn:
+        """|coro|
+
+        Connects to voice and creates a :class:`~discord.VoiceClient` to establish
+        your connection to the voice server.
+
+        Parameters
+        -----------
+        timeout: :class:`float`
+            The timeout in seconds to wait for the voice endpoint.
+        reconnect: :class:`bool`
+            Whether the bot should automatically attempt
+            a reconnect if a part of the handshake fails
+            or the gateway goes down.
+        cls: Type[:class:`~discord.VoiceProtocol`]
+            A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
+            Defaults to :class:`~discord.VoiceClient`.
+        ring: :class:`bool`
+            Whether to ring the other member(s) to join the call, if starting a new call.
+            Defaults to ``True``.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            Could not connect to the voice channel in time.
+        ~discord.ClientException
+            You are already connected to a voice channel.
+        ~discord.opus.OpusNotLoaded
+            The opus library has not been loaded.
+
+        Returns
+        --------
+        :class:`~discord.VoiceProtocol`
+            A voice client that is fully connected to the voice server.
+        """
         await self._get_channel()
         call = self.call
         if call is None and ring:
@@ -2591,7 +2630,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Parameters
         -----------
-        \*recipients: :class:`User`
+        \*recipients: :class:`~discord.abc.Snowflake`
             An argument list of users to add to this group.
 
         Raises
@@ -2612,7 +2651,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Parameters
         -----------
-        \*recipients: :class:`User`
+        \*recipients: :class:`~discord.abc.Snowflake`
             An argument list of users to remove from this group.
 
         Raises
@@ -2683,12 +2722,30 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         If you are the only one in the group, this deletes it as well.
 
+        There is an alias for this called :func:`close`.
+
         Raises
         -------
         HTTPException
             Leaving the group failed.
         """
         await self._state.http.delete_channel(self.id)
+
+    async def close(self) -> None:
+        """|coro|
+
+        Leave the group.
+
+        If you are the only one in the group, this deletes it as well.
+
+        This is an alias of :func:`leave`.
+
+        Raises
+        -------
+        HTTPException
+            Leaving the group failed.
+        """
+        await self.leave()
 
     async def create_invite(self, *, max_age: int = 86400) -> Invite:
         """|coro|
@@ -2714,7 +2771,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         data = await self._state.http.create_group_invite(self.id, max_age=max_age)
         return Invite.from_incomplete(data=data, state=self._state)
 
-    @utils.copy_doc(discord.abc.Connectable.connect)
+    @utils.copy_doc(DMChannel.connect)
     async def connect(
         self,
         *,

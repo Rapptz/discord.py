@@ -79,6 +79,7 @@ from .interactions import Interaction
 from .permissions import Permissions, PermissionOverwrite
 from .member import _ClientStatus
 from .modal import Modal
+from .member import VoiceState
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel, Snowflake as abcSnowflake
@@ -89,7 +90,6 @@ if TYPE_CHECKING:
     from .client import Client
     from .gateway import DiscordWebSocket
     from .calls import Call
-    from .member import VoiceState
 
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
@@ -2098,8 +2098,8 @@ class ConnectionState:
         if channel is None:
             _log.debug('CALL_CREATE referencing unknown channel ID: %s. Discarding.', data['channel_id'])
             return
-        message = self._call_message_cache.pop((int(data['message_id'])), None)
-        call = channel._add_call(state=self, message=message, channel=channel, **data)
+        message = self._get_message(int(data['message_id']))
+        call = channel._add_call(data=data, state=self, message=message, channel=channel)
         self._calls[channel.id] = call
         self.dispatch('call_create', call)
 
@@ -2109,14 +2109,15 @@ class ConnectionState:
             _log.debug('CALL_UPDATE referencing unknown call (channel ID: %s). Discarding.', data['channel_id'])
             return
         old_call = copy.copy(call)
-        call._update(**data)
+        call._update(data)
         self.dispatch('call_update', old_call, call)
 
     def parse_call_delete(self, data) -> None:
         call = self._calls.pop(int(data['channel_id']), None)
         if call is not None:
-            call._deleteup()
-        self.dispatch('call_delete', call)
+            call._delete()
+            self._call_message_cache.pop(call._message_id, None)
+            self.dispatch('call_delete', call)
 
     def parse_voice_state_update(self, data: gw.VoiceStateUpdateEvent) -> None:
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
@@ -2146,7 +2147,7 @@ class ConnectionState:
             user, before, after = self._update_voice_state(data, channel_id)
             self.dispatch('voice_state_update', user, before, after)
 
-    def parse_voice_server_update(self, data) -> None:
+    def parse_voice_server_update(self, data: gw.VoiceServerUpdateEvent) -> None:
         key_id = utils._get_as_snowflake(data, 'guild_id')
         if key_id is None:
             key_id = self.self_id

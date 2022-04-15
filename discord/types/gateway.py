@@ -328,6 +328,7 @@ VoiceStateUpdateEvent = GuildVoiceState
 class VoiceServerUpdateEvent(TypedDict):
     token: str
     guild_id: Snowflake
+    channel_id: Snowflake
     endpoint: Optional[str]
 
 
