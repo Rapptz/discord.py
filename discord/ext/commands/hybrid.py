@@ -144,6 +144,7 @@ def make_greedy_transformer(converter: Any, parameter: Parameter) -> Type[app_co
         view = StringView(value)
         result = []
         while True:
+            view.skip_ws()
             arg = view.get_quoted_word()
             if arg is None:
                 break
