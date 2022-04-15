@@ -46,8 +46,6 @@ from typing import (
 )
 import weakref
 import inspect
-import time
-import random
 from math import ceil
 
 from .errors import NotFound
@@ -472,7 +470,6 @@ class ConnectionState:
         self._relationships: Dict[int, Relationship] = {}
         self._private_channels: Dict[int, PrivateChannel] = {}
         self._private_channels_by_user: Dict[int, DMChannel] = {}
-        self._last_private_channel: tuple = (None, None)
 
         if self.max_messages is not None:
             self._messages: Optional[Deque[Message]] = deque(maxlen=self.max_messages)
@@ -655,11 +652,6 @@ class ConnectionState:
         return list(self._private_channels.values())
 
     async def access_private_channel(self, channel_id: int) -> None:
-        if not self._get_accessed_private_channel(channel_id):
-            await self._access_private_channel(channel_id)
-            self._set_accessed_private_channel(channel_id)
-
-    async def _access_private_channel(self, channel_id: int) -> None:
         if (ws := self.ws) is None:
             return
 
@@ -667,13 +659,6 @@ class ConnectionState:
             await ws.access_dm(channel_id)
         except Exception as exc:
             _log.warning('Sending ACCESS_DM failed for channel %s, (%s).', channel_id, exc)
-
-    def _set_accessed_private_channel(self, channel_id):
-        self._last_private_channel = (channel_id, time.time())
-
-    def _get_accessed_private_channel(self, channel_id):
-        timestamp, existing_id = self._last_private_channel
-        return existing_id == channel_id and int(time.time() - timestamp) < random.randrange(120000, 420000)
 
     def _get_private_channel(self, channel_id: Optional[int]) -> Optional[PrivateChannel]:
         # The keys of self._private_channels are ints

@@ -2227,7 +2227,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The direct message channel ID.
     """
 
-    __slots__ = ('id', 'recipient', 'me', 'last_message_id', '_state')
+    __slots__ = ('id', 'recipient', 'me', 'last_message_id', '_state', '_accessed')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
@@ -2235,6 +2235,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self.recipient: User = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
+        self._accessed: bool = False
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
@@ -2246,7 +2247,9 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         return PrivateCall(**kwargs)
 
     async def _get_channel(self) -> Self:
-        await self._state.access_private_channel(self.id)
+        if not self._accessed:
+            await self._state.access_private_channel(self.id)
+            self._accessed = True
         return self
 
     async def _initial_ring(self) -> None:
@@ -2479,7 +2482,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The group channel's name if provided.
     """
 
-    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state')
+    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state', '_accessed')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -2493,6 +2496,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self._accessed: bool = False
 
         self.owner: Optional[BaseUser]
         if self.owner_id == self.me.id:
@@ -2507,7 +2511,9 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         return self.me.id, self.id
 
     async def _get_channel(self) -> Self:
-        await self._state.access_private_channel(self.id)
+        if not self._accessed:
+            await self._state.access_private_channel(self.id)
+            self._accessed = True
         return self
 
     def _initial_ring(self):
