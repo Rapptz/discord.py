@@ -189,7 +189,7 @@ class PrivateCall:
 
     @property
     def initiator(self) -> User:
-        """:class:`User`: Returns the user that started the call."""
+        """:class:`.abc.User`: Returns the user that started the call."""
         return getattr(self.message, 'author', None)
 
     @property
@@ -250,7 +250,7 @@ class PrivateCall:
             A region to change the voice region to.
 
             .. versionchanged:: 2.0
-                The type of this paramter has changed to :class:`str`.
+                The type of this parameter has changed to :class:`str`.
 
         Raises
         -------
@@ -433,8 +433,6 @@ class GroupCall(PrivateCall):
         The channel the group call is in.
     unavailable: :class:`bool`
         Denotes if this group call is unavailable.
-    ringing: List[:class:`.abc.User`]
-        A list of users that are currently being rung to join the call.
     region: :class:`str`
         The region the group call is being hosted in.
 
