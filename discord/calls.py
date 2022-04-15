@@ -74,6 +74,8 @@ class CallMessage:
         The message associated with this call message.
     """
 
+    __slots__ = ('message', 'ended_timestamp', 'participants')
+
     def __init__(self, message: Message, *, participants: List[User], ended_timestamp: str) -> None:
         self.message = message
         self.ended_timestamp = utils.parse_time(ended_timestamp)
