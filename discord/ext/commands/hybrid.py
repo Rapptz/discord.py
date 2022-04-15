@@ -437,7 +437,7 @@ class HybridGroup(Group[CogT, P, T]):
 
     .. versionadded:: 2.0
 
-    Parameters
+    Attributes
     -----------
     fallback: Optional[:class:`str`]
         The command name to use as a fallback for the application command. Since
