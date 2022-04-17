@@ -1244,7 +1244,9 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
 
 
 @overload
-async def run_converters(ctx: Context[BotT], converter: Converter[T], argument: str, param: Parameter) -> T:
+async def run_converters(
+    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+) -> T:
     ...
 
 
