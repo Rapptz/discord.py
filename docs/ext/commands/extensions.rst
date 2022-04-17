@@ -10,7 +10,7 @@ There comes a time in the bot development when you want to extend the bot functi
 Primer
 --------
 
-An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
+An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python coroutine. It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
 
 An example extension looks like this:
 
@@ -25,7 +25,7 @@ An example extension looks like this:
         await ctx.send(f'Hello {ctx.author.display_name}.')
 
     async def setup(bot):
-        bot.add_command(hello)
+        await bot.add_command(hello)
 
 In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``await bot.load_extension('hello')``.
 
