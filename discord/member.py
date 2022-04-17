@@ -549,6 +549,22 @@ class Member(discord.abc.Messageable, _UserTag):
         return result
 
     @property
+    def display_icon(self) -> Optional[Union[str, Asset]]:
+        """Optional[Union[:class:`str`, :class:`Asset`]]: A property that returns the role icon that is rendered for
+        this member. If no icon is shown then ``None`` is returned.
+
+        .. versionadded:: 2.0
+        """
+
+        roles = self.roles[1:]  # remove @everyone
+        for role in reversed(roles):
+            icon = role.display_icon
+            if icon:
+                return icon
+
+        return None
+
+    @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the member."""
         return f'<@{self._user.id}>'
