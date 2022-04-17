@@ -3198,6 +3198,8 @@ class Guild(Hashable):
 
         Raises
         -------
+        NotFound
+            The requested unban was not found.
         Forbidden
             You do not have the proper permissions to unban.
         HTTPException
