@@ -51,6 +51,7 @@ class Item(Generic[V]):
 
     - :class:`discord.ui.Button`
     - :class:`discord.ui.Select`
+    - :class:`discord.ui.TextInput`
 
     .. versionadded:: 2.0
     """
