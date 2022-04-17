@@ -35,6 +35,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    overload,
     Protocol,
     Tuple,
     Type,
@@ -1240,6 +1241,18 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
             name = converter.__class__.__name__  # type: ignore
 
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
+
+
+@overload
+async def run_converters(
+    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+) -> T:
+    ...
+
+
+@overload
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
+    ...
 
 
 async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
