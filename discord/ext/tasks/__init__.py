@@ -53,7 +53,7 @@ from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, Self
+    from typing_extensions import Concatenate, ParamSpec, Self
 
 _log = logging.getLogger(__name__)
 
@@ -147,9 +147,22 @@ class Loop(Generic[C, P, T]):
     The main interface to create this is through :func:`loop`.
     """
 
+    if TYPE_CHECKING:
+
+        @overload
+        def coro(self: Loop[None, ..., Any], *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+            ...
+
+        @overload
+        def coro(self: Loop[C, ..., Any], __self: C, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+            ...
+
+        def coro(self, *args: Any, **Kwargs: Any) -> Awaitable[Any]:
+            ...
+
     def __init__(
         self,
-        coro: Callable[P, Awaitable[T]],
+        coro: Union[Callable[Concatenate[C, P], Awaitable[T]], Callable[P, Awaitable[T]]],
         seconds: float,
         hours: float,
         minutes: float,
@@ -157,7 +170,7 @@ class Loop(Generic[C, P, T]):
         count: Optional[int],
         reconnect: bool,
     ) -> None:
-        self.coro: Callable[P, Awaitable[T]] = coro
+        self.coro = coro  # type: ignore
         self.reconnect: bool = reconnect
         self.count: Optional[int] = count
         self._current_loop = 0
@@ -550,11 +563,11 @@ class Loop(Generic[C, P, T]):
         traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
 
     @overload
-    def before_loop(self: Loop[None, Any, Any], coro: Callable[[], OT]) -> Callable[[], OT]:
+    def before_loop(self: Loop[None, ..., Any], coro: Callable[[], OT]) -> Callable[[], OT]:
         ...
 
     @overload
-    def before_loop(self: Loop[C, Any, Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
+    def before_loop(self: Loop[C, ..., Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
         ...
 
     def before_loop(self, coro: OT) -> OT:
@@ -586,11 +599,11 @@ class Loop(Generic[C, P, T]):
         return coro
 
     @overload
-    def after_loop(self: Loop[None, Any, Any], coro: Callable[[], OT]) -> Callable[[], OT]:
+    def after_loop(self: Loop[None, ..., Any], coro: Callable[[], OT]) -> Callable[[], OT]:
         ...
 
     @overload
-    def after_loop(self: Loop[C, Any, Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
+    def after_loop(self: Loop[C, ..., Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
         ...
 
     def after_loop(self, coro: OT) -> OT:
@@ -622,11 +635,11 @@ class Loop(Generic[C, P, T]):
         return coro
 
     @overload
-    def error(self: Loop[None, Any, Any], coro: Callable[[ET], OT]) -> Callable[[ET], OT]:
+    def error(self: Loop[None, ..., Any], coro: Callable[[ET], OT]) -> Callable[[ET], OT]:
         ...
 
     @overload
-    def error(self: Loop[C, Any, Any], coro: Callable[[C, ET], OT]) -> Callable[[C, ET], OT]:
+    def error(self: Loop[C, ..., Any], coro: Callable[[C, ET], OT]) -> Callable[[C, ET], OT]:
         ...
 
     def error(self, coro: OT) -> OT:
