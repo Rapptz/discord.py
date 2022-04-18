@@ -408,9 +408,9 @@ Example: ::
 This could then be used as ``?git push origin master``.
 
 Application Commands
---------------
+--------------------
 
-Questions regarding discord's new Application Commands.
+Questions regarding Discord's new Application Commands.
 
 My bot's commands are not showing up!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
