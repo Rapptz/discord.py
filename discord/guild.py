@@ -1957,6 +1957,8 @@ class Guild(Hashable):
             You do not have access to the guild.
         HTTPException
             Fetching the member failed.
+        NotFound
+            The member could not be found.
 
         Returns
         --------
