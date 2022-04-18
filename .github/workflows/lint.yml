@@ -3,7 +3,7 @@ name: lint
 on:
   push:
   pull_request:
-    types: [ opened, synchronize ]
+    types: [ opened, reopened, synchronize ]
 
 jobs:
   check:

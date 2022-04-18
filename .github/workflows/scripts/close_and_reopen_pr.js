@@ -7,22 +7,16 @@ module.exports = (async function ({github, context}) {
         return;
     }
 
-    // Close the PR
-    github.issues.update({
-        issue_number: pr_number,
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        state: 'closed'
-    });
+    for (const state of ['closed', 'open']) {
+        // Wait a moment for GitHub to process the previous action..
+        await new Promise(r => setTimeout(r, 5000));
 
-    // Wait a moment for GitHub to process it...
-    await new Promise(r => setTimeout(r, 2000));
-
-    // Then reopen the PR so it runs CI
-    github.issues.update({
-        issue_number: pr_number,
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        state: 'open'
-    });
+        // Close the PR
+        github.issues.update({
+            issue_number: pr_number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state
+        });
+    }
 })
