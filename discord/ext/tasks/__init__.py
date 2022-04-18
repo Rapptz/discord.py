@@ -798,7 +798,6 @@ if TYPE_CHECKING:
     # Using a class to emulate a function allows for overloading the inner function in the decorator.
 
     class _Method(Protocol[C, P, T]):  # type: ignore # C can't be covariant
-
         @staticmethod
         def __call__(self: C, *args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore # this is a crime
             ...
