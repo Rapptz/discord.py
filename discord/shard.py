@@ -48,6 +48,7 @@ from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Di
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
+    from .flags import Intents
 
 __all__ = (
     'AutoShardedClient',
@@ -316,10 +317,10 @@ class AutoShardedClient(Client):
     if TYPE_CHECKING:
         _connection: AutoShardedConnectionState
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, intents: Intents, **kwargs: Any) -> None:
         kwargs.pop('shard_id', None)
         self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, intents=intents, **kwargs)
 
         if self.shard_ids is not None:
             if self.shard_count is None:

@@ -43,9 +43,10 @@ from ..enums import try_enum, WebhookType
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
+from ..partial_emoji import PartialEmoji
 from ..http import Route, handle_message_parameters, MultipartParameters, HTTPClient
 from ..mixins import Hashable
-from ..channel import PartialMessageable
+from ..channel import TextChannel, PartialMessageable
 from ..file import File
 
 __all__ = (
@@ -67,7 +68,8 @@ if TYPE_CHECKING:
     from ..state import ConnectionState
     from ..http import Response
     from ..guild import Guild
-    from ..channel import TextChannel
+    from ..emoji import Emoji
+    from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
     import datetime
@@ -85,6 +87,7 @@ if TYPE_CHECKING:
     from ..types.channel import (
         PartialChannel as PartialChannelPayload,
     )
+    from ..types.emoji import PartialEmoji as PartialEmojiPayload
 
     BE = TypeVar('BE', bound=BaseException)
     _State = Union[ConnectionState, '_WebhookState']
@@ -648,6 +651,18 @@ class _WebhookState:
         # state parameter is artificial
         return BaseUser(state=self, data=data)  # type: ignore
 
+    def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[PartialEmoji, Emoji, str]:
+        if self._parent is not None:
+            return self._parent.get_reaction_emoji(data)
+
+        emoji_id = utils._get_as_snowflake(data, 'id')
+
+        if not emoji_id:
+            # the name key will be a str
+            return data['name']  # type: ignore
+
+        return PartialEmoji(animated=data.get('animated', False), id=emoji_id, name=data['name'])  # type: ignore
+
     @property
     def http(self) -> Union[HTTPClient, _FriendlyHttpAttributeErrorHelper]:
         if self._parent is not None:
@@ -917,8 +932,8 @@ class BaseWebhook(Hashable):
         return self._state and self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
+    def channel(self) -> Optional[Union[VoiceChannel, TextChannel]]:
+        """Optional[Union[:class:`VoiceChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
@@ -969,9 +984,10 @@ class Webhook(BaseWebhook):
     bot user or authentication.
 
     There are two main ways to use Webhooks. The first is through the ones
-    received by the library such as :meth:`.Guild.webhooks` and
-    :meth:`.TextChannel.webhooks`. The ones received by the library will
-    automatically be bound using the library's internal HTTP session.
+    received by the library such as :meth:`.Guild.webhooks`,
+    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`.
+    The ones received by the library will automatically be
+    bound using the library's internal HTTP session.
 
     The second form involves creating a webhook object manually using the
     :meth:`~.Webhook.from_url` or :meth:`~.Webhook.partial` classmethods.
@@ -1328,7 +1344,16 @@ class Webhook(BaseWebhook):
     def _create_message(self, data, *, thread: Snowflake):
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
-        channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        if thread is MISSING:
+            channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        else:
+            channel = self.channel
+            if isinstance(channel, TextChannel):
+                channel = channel.get_thread(thread.id)
+
+            if channel is None:
+                channel = PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+
         # state is artificial
         return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 

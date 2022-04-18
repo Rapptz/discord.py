@@ -112,8 +112,31 @@ Quick example:
 
 With this change, constructor of :class:`Client` no longer accepts ``connector`` and ``loop`` parameters.
 
-In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, 
+In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs,
 see :ref:`migrating_2_0_commands_extension_cog_async` for more information.
+
+Intents Are Now Required
+--------------------------
+
+In earlier versions, the ``intents`` keyword argument was optional and defaulted to :meth:`Intents.default`. In order to better educate users on their intents and to also make it more explicit, this parameter is now required to pass in.
+
+For example:
+
+.. code-block:: python3
+
+    # before
+    client = discord.Client()
+
+    # after
+    intents = discord.Intents.default()
+    client = discord.Client(intents=intents)
+
+This change applies to **all** subclasses of :class:`Client`.
+
+- :class:`AutoShardedClient`
+- :class:`~discord.ext.commands.Bot`
+- :class:`~discord.ext.commands.AutoShardedBot`
+
 
 Abstract Base Classes Changes
 -------------------------------
@@ -1189,6 +1212,11 @@ The following changes have been made:
 
 - :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
 
+:meth:`VoiceProtocol.connect` signature changes.
+--------------------------------------------------
+
+:meth:`VoiceProtocol.connect` will now be passed 2 keyword only arguments, ``self_deaf`` and ``self_mute``. These indicate
+whether or not the client should join the voice chat being deafened or muted.
 
 .. _migrating_2_0_commands:
 
@@ -1240,7 +1268,7 @@ Quick example of loading an extension:
         async with bot:
             await bot.load_extension('my_extension')
             await bot.start(TOKEN)
-    
+
     asyncio.run(main())
 
 
@@ -1422,6 +1450,7 @@ Miscellaneous Changes
 - ``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`.
 - :meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 - :meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes.
+- :attr:`ext.commands.Command.clean_params` type now uses a custom :class:`inspect.Parameter` to handle defaults.
 
 .. _migrating_2_0_tasks:
 

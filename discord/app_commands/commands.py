@@ -131,13 +131,60 @@ CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCall
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
+ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
+
+ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
+
+ARG_TYPE_SUBREGEX = r'(?:.+)'
+
+GOOGLE_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^{ARG_NAME_SUBREGEX}[ \t]*(?:\({ARG_TYPE_SUBREGEX}\))?[ \t]*:[ \t]*{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
+SPHINX_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^:param {ARG_NAME_SUBREGEX}:[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
+NUMPY_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^{ARG_NAME_SUBREGEX}(?:[ \t]*:)?(?:[ \t]+{ARG_TYPE_SUBREGEX})?[ \t]*\r?\n[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
+
 
 def _shorten(
     input: str,
     *,
     _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
 ) -> str:
+    try:
+        # split on the first double newline since arguments may appear after that
+        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
+    except ValueError:
+        pass
     return _wrapper.fill(' '.join(input.strip().split()))
+
+
+def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, CommandParameter]) -> Dict[str, str]:
+    docstring = inspect.getdoc(func)
+
+    if docstring is None:
+        return {}
+
+    # Extract the arguments
+    # Note: These are loose regexes, but they are good enough for our purposes
+    # For Google-style, look only at the lines that are indented
+    section_lines = inspect.cleandoc('\n'.join(line for line in docstring.splitlines() if line.startswith('  ')))
+    docstring_styles = (
+        GOOGLE_DOCSTRING_ARG_REGEX.finditer(section_lines),
+        SPHINX_DOCSTRING_ARG_REGEX.finditer(docstring),
+        NUMPY_DOCSTRING_ARG_REGEX.finditer(docstring),
+    )
+
+    return {
+        m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
+    }
 
 
 def _to_kebab_case(text: str) -> str:
@@ -148,7 +195,7 @@ def validate_name(name: str) -> str:
     match = VALID_SLASH_COMMAND_NAME.match(name)
     if match is None:
         raise ValueError(
-            'names must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
+            f'{name!r} must be between 1-32 characters and contain only lower-case letters, numbers, hyphens, or underscores.'
         )
 
     # Ideally, name.islower() would work instead but since certain characters
@@ -156,7 +203,7 @@ def validate_name(name: str) -> str:
     # well, but chances are the server-side check is probably something similar to
     # this code anyway.
     if name.lower() != name:
-        raise ValueError('names must be all lower-case')
+        raise ValueError(f'{name!r} must be all lower-case')
     return name
 
 
@@ -167,15 +214,23 @@ def validate_context_menu_name(name: str) -> str:
 
 
 def _validate_auto_complete_callback(
-    callback: AutocompleteCallback[GroupT, ChoiceT]
+    callback: AutocompleteCallback[GroupT, ChoiceT],
+    skip_binding: bool = False,
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
 
-    requires_binding = is_inside_class(callback)
-    required_parameters = 2 + requires_binding
+    binding = getattr(callback, '__self__', None)
+    if binding is not None:
+        callback = callback.__func__
+
+    requires_binding = (binding is None and is_inside_class(callback)) or skip_binding
+
     callback.requires_binding = requires_binding
+    callback.binding = binding
+
+    required_parameters = 2 + requires_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
-        raise TypeError('autocomplete callback requires either 2 or 3 parameters to be passed')
+        raise TypeError(f'autocomplete callback {callback.__qualname__!r} requires either 2 or 3 parameters to be passed')
 
     return callback
 
@@ -215,7 +270,7 @@ def _populate_descriptions(params: Dict[str, CommandParameter], descriptions: Di
         if not isinstance(description, str):
             raise TypeError('description must be a string')
 
-        param.description = description
+        param.description = _shorten(description)
 
     if descriptions:
         first = next(iter(descriptions))
@@ -300,7 +355,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     cache = {}
     required_params = is_inside_class(func) + 1
     if len(params) < required_params:
-        raise TypeError(f'callback must have more than {required_params - 1} parameter(s)')
+        raise TypeError(f'callback {func.__qualname__!r} must have more than {required_params - 1} parameter(s)')
 
     iterator = iter(params.values())
     for _ in range(0, required_params):
@@ -309,7 +364,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     parameters: List[CommandParameter] = []
     for parameter in iterator:
         if parameter.annotation is parameter.empty:
-            raise TypeError(f'annotation for {parameter.name} must be given')
+            raise TypeError(f'annotation for {parameter.name} must be given in callback {func.__qualname__!r}')
 
         resolved = resolve_annotation(parameter.annotation, globalns, globalns, cache)
         param = annotation_to_parameter(resolved, parameter)
@@ -318,13 +373,15 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     values = sorted(parameters, key=lambda a: a.required, reverse=True)
     result = {v.name: v for v in values}
 
+    descriptions = _parse_args_from_docstring(func, result)
+
     try:
-        descriptions = func.__discord_app_commands_param_description__
+        descriptions.update(func.__discord_app_commands_param_description__)
     except AttributeError:
         for param in values:
             if param.description is MISSING:
                 param.description = '…'
-    else:
+    if descriptions:
         _populate_descriptions(result, descriptions)
 
     try:
@@ -332,21 +389,21 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     except AttributeError:
         pass
     else:
-        _populate_renames(result, renames)
+        _populate_renames(result, renames.copy())
 
     try:
         choices = func.__discord_app_commands_param_choices__
     except AttributeError:
         pass
     else:
-        _populate_choices(result, choices)
+        _populate_choices(result, choices.copy())
 
     try:
         autocomplete = func.__discord_app_commands_param_autocomplete__
     except AttributeError:
         pass
     else:
-        _populate_autocomplete(result, autocomplete)
+        _populate_autocomplete(result, autocomplete.copy())
 
     return result
 
@@ -355,8 +412,9 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     params = inspect.signature(func).parameters
     if len(params) != 2:
         msg = (
-            'context menu callbacks require 2 parameters, the first one being the annotation and the '
-            'other one explicitly annotated with either discord.Message, discord.User, discord.Member, '
+            f'context menu callback {func.__qualname__!r} requires 2 parameters, '
+            'the first one being the annotation and the other one explicitly '
+            'annotated with either discord.Message, discord.User, discord.Member, '
             'or a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
@@ -366,8 +424,9 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     parameter = next(iterator)
     if parameter.annotation is parameter.empty:
         msg = (
-            'second parameter of context menu callback must be explicitly annotated with either discord.Message, '
-            'discord.User, discord.Member, or a typing.Union of discord.Member and discord.User'
+            f'second parameter of context menu callback {func.__qualname__!r} must be explicitly '
+            'annotated with either discord.Message, discord.User, discord.Member, or '
+            'a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
 
@@ -497,10 +556,10 @@ class Command(Generic[GroupT, P, T]):
 
         parent = self.parent
         if parent is not None:
-            await parent.on_error(interaction, self, error)
+            await parent.on_error(interaction, error)
 
             if parent.parent is not None:
-                await parent.parent.on_error(interaction, self, error)
+                await parent.parent.on_error(interaction, error)
 
     def _has_any_error_handlers(self) -> bool:
         if self.on_error is not None:
@@ -519,10 +578,7 @@ class Command(Generic[GroupT, P, T]):
 
         return False
 
-    async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
-        if not await self._check_can_run(interaction):
-            raise CheckFailure(f'The check functions for command {self.name!r} failed.')
-
+    async def _transform_arguments(self, interaction: Interaction, namespace: Namespace) -> Dict[str, Any]:
         values = namespace.__dict__
         transformed_values = {}
 
@@ -537,12 +593,15 @@ class Command(Generic[GroupT, P, T]):
             else:
                 transformed_values[param.name] = await param.transform(interaction, value)
 
+        return transformed_values
+
+    async def _do_call(self, interaction: Interaction, params: Dict[str, Any]) -> T:
         # These type ignores are because the type checker doesn't quite understand the narrowing here
         # Likewise, it thinks we're missing positional arguments when there aren't any.
         try:
             if self.binding is not None:
-                return await self._callback(self.binding, interaction, **transformed_values)  # type: ignore
-            return await self._callback(interaction, **transformed_values)  # type: ignore
+                return await self._callback(self.binding, interaction, **params)  # type: ignore
+            return await self._callback(interaction, **params)  # type: ignore
         except TypeError as e:
             # In order to detect mismatch from the provided signature and the Discord data,
             # there are many ways it can go wrong yet all of them eventually lead to a TypeError
@@ -561,6 +620,13 @@ class Command(Generic[GroupT, P, T]):
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
+
+    async def _invoke_with_namespace(self, interaction: Interaction, namespace: Namespace) -> T:
+        if not await self._check_can_run(interaction):
+            raise CheckFailure(f'The check functions for command {self.name!r} failed.')
+
+        transformed_values = await self._transform_arguments(interaction, namespace)
+        return await self._do_call(interaction, transformed_values)
 
     async def _invoke_autocomplete(self, interaction: Interaction, name: str, namespace: Namespace):
         # The namespace contains the Discord provided names so this will be fine
@@ -581,8 +647,9 @@ class Command(Generic[GroupT, P, T]):
             raise CommandSignatureMismatch(self)
 
         if param.autocomplete.requires_binding:
-            if self.binding is not None:
-                choices = await param.autocomplete(self.binding, interaction, value)
+            binding = param.autocomplete.binding or self.binding
+            if binding is not None:
+                choices = await param.autocomplete(binding, interaction, value)
             else:
                 raise TypeError('autocomplete parameter expected a bound self parameter but one was not provided')
         else:
@@ -806,7 +873,7 @@ class ContextMenu:
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
-        self._guild_ids = guild_ids
+        self._guild_ids = guild_ids or getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.on_error: Optional[UnboundError] = None
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
@@ -1092,10 +1159,12 @@ class Group:
             if isinstance(command, Group):
                 yield from command.walk_commands()
 
-    async def on_error(self, interaction: Interaction, command: Command[Any, ..., Any], error: AppCommandError) -> None:
+    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
+
+        To get the command that failed, :attr:`discord.Interaction.command` should be used.
 
         The default implementation does nothing.
 
@@ -1103,8 +1172,6 @@ class Group:
         -----------
         interaction: :class:`~discord.Interaction`
             The interaction that is being handled.
-        command: :class:`~discord.app_commands.Command`
-            The command that failed.
         error: :exc:`AppCommandError`
             The exception that was raised.
         """
@@ -1174,7 +1241,7 @@ class Group:
             #   <self>
             #     <group>
             # this needs to be forbidden
-            raise ValueError('groups can only be nested at most one level')
+            raise ValueError(f'{command.name!r} is too nested, groups can only be nested at most one level')
 
         if not override and command.name in self._children:
             raise CommandAlreadyRegistered(command.name, guild_id=None)
@@ -1301,7 +1368,7 @@ def command(
 
 
 def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], ContextMenu]:
-    """Creates a application command context menu from a regular function.
+    """Creates an application command context menu from a regular function.
 
     This function must have a signature of :class:`~discord.Interaction` as its first parameter
     and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`,

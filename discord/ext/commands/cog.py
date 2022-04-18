@@ -162,6 +162,10 @@ class CogMeta(type):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
                 elif isinstance(value, (app_commands.Group, app_commands.Command)) and value.parent is None:
+                    if is_static_method:
+                        raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
+                    if elem.startswith(('cog_', 'bot_')):
+                        raise TypeError(no_bot_cog.format(base, elem))
                     cog_app_commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
@@ -235,6 +239,9 @@ class Cog(metaclass=CogMeta):
 
         lookup = {cmd.qualified_name: cmd for cmd in self.__cog_commands__}
 
+        # Register the application commands
+        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
+
         # Update the Command instances dynamically as well
         for command in self.__cog_commands__:
             setattr(self, command.callback.__name__, command)
@@ -246,9 +253,12 @@ class Cog(metaclass=CogMeta):
                 # Update our parent's reference to our self
                 parent.remove_command(command.name)  # type: ignore
                 parent.add_command(command)  # type: ignore
+            elif cls.__cog_is_app_commands_group__:
+                if hasattr(command, '__commands_is_hybrid__') and command.parent is None:
+                    # In both of these, the type checker does not see the app_command attribute even though it exists
+                    command.app_command = command.app_command._copy_with(parent=self, binding=self)  # type: ignore
+                    children.append(command.app_command)  # type: ignore
 
-        # Register the application commands
-        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
         for command in cls.__cog_app_commands__:
             copy = command._copy_with(
                 # Type checker doesn't understand this type of narrowing.

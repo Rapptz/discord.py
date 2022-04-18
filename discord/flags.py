@@ -39,6 +39,7 @@ __all__ = (
     'Intents',
     'MemberCacheFlags',
     'ApplicationFlags',
+    'ChannelFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -552,6 +553,10 @@ class Intents(BaseFlags):
         - :func:`on_guild_channel_create`
         - :func:`on_guild_channel_delete`
         - :func:`on_guild_channel_pins_update`
+        - :func:`on_thread_create`
+        - :func:`on_thread_join`
+        - :func:`on_thread_update`
+        - :func:`on_thread_delete`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -574,6 +579,8 @@ class Intents(BaseFlags):
         - :func:`on_member_remove`
         - :func:`on_member_update`
         - :func:`on_user_update`
+        - :func:`on_thread_member_join`
+        - :func:`on_thread_member_remove`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -1169,3 +1176,39 @@ class ApplicationFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application is unverified and is allowed to
         read message content in guilds."""
         return 1 << 19
+
+
+@fill_with_flags()
+class ChannelFlags(BaseFlags):
+    r"""Wraps up the Discord :class:`~discord.abc.GuildChannel` or :class:`Thread` flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channel flags are equal.
+        .. describe:: x != y
+
+            Checks if two channel flags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def pinned(self):
+        """:class:`bool`: Returns ``True`` if the thread is pinned to the forum channel."""
+        return 1 << 1

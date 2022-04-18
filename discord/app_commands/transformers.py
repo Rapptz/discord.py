@@ -47,7 +47,7 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
-from ..enums import AppCommandOptionType, ChannelType
+from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
 from ..utils import MISSING, maybe_coroutine
 from ..user import User
 from ..role import Role
@@ -61,6 +61,8 @@ __all__ = (
 )
 
 T = TypeVar('T')
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 NoneType = type(None)
 
 if TYPE_CHECKING:
@@ -248,6 +250,35 @@ class Transformer:
             for how certain option types correspond to certain values.
         """
         raise NotImplementedError('Derived classes need to implement this.')
+
+    @classmethod
+    async def autocomplete(
+        cls, interaction: Interaction, value: Union[int, float, str]
+    ) -> List[Choice[Union[int, float, str]]]:
+        """|coro|
+
+        An autocomplete prompt handler to be automatically used by options using this transformer.
+
+        .. note::
+
+            Autocomplete is only supported for options with a :meth:`~discord.app_commands.Transformer.type`
+            of :attr:`~discord.AppCommandOptionType.string`, :attr:`~discord.AppCommandOptionType.integer`,
+            or :attr:`~discord.AppCommandOptionType.number`.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The autocomplete interaction being handled.
+        value: Union[:class:`str`, :class:`int`, :class:`float`]
+            The current value entered by the user.
+
+        Returns
+        --------
+        List[:class:`~discord.app_commands.Choice`]
+            A list of choices to be displayed to the user, a maximum of 25.
+
+        """
+        raise NotImplementedError('Derived classes can implement this.')
 
 
 class _TransformMetadata:
@@ -579,7 +610,7 @@ def get_supported_annotation(
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
             return (annotation, MISSING)
-        if issubclass(annotation, Enum):
+        if issubclass(annotation, (Enum, InternalEnum)):
             return (_make_enum_transformer(annotation), MISSING)
         if annotation is Choice:
             raise TypeError(f'Choice requires a type argument of int, str, or float')
@@ -678,5 +709,11 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
         raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
+
+    autocomplete_func = getattr(inner.autocomplete, '__func__', inner.autocomplete)
+    if autocomplete_func is not Transformer.autocomplete.__func__:
+        from .commands import _validate_auto_complete_callback
+
+        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
 
     return result

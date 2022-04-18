@@ -24,22 +24,22 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Any, TYPE_CHECKING, List, Callable, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
 
 from discord.errors import ClientException, DiscordException
 
 if TYPE_CHECKING:
-    from inspect import Parameter
-
-    from .converter import Converter
-    from .context import Context
-    from .cooldowns import Cooldown, BucketType
-    from .flags import Flag
     from discord.abc import GuildChannel
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
+    from discord.app_commands import AppCommandError
 
     from ._types import BotT
+    from .context import Context
+    from .converter import Converter
+    from .cooldowns import BucketType, Cooldown
+    from .flags import Flag
+    from .parameters import Parameter
 
 
 __all__ = (
@@ -101,6 +101,8 @@ __all__ = (
     'MissingFlagArgument',
     'TooManyFlags',
     'MissingRequiredFlag',
+    'HybridCommandError',
+    'RangeError',
 )
 
 
@@ -173,7 +175,7 @@ class MissingRequiredArgument(UserInputError):
 
     Attributes
     -----------
-    param: :class:`inspect.Parameter`
+    param: :class:`Parameter`
         The argument that is missing.
     """
 
@@ -554,6 +556,44 @@ class BadBoolArgument(BadArgument):
         super().__init__(f'{argument} is not a recognised boolean option')
 
 
+class RangeError(BadArgument):
+    """Exception raised when an argument is out of range.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    minimum: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum value expected or ``None`` if there wasn't one
+    maximum: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum value expected or ``None`` if there wasn't one
+    value: Union[:class:`int`, :class:`float`]
+        The value that was out of range.
+    """
+
+    def __init__(
+        self,
+        value: Union[int, float],
+        minimum: Optional[Union[int, float]],
+        maximum: Optional[Union[int, float]],
+    ) -> None:
+        self.value: Union[int, float] = value
+        self.minimum: Optional[Union[int, float]] = minimum
+        self.maximum: Optional[Union[int, float]] = maximum
+
+        label: str = ''
+        if minimum is None and maximum is not None:
+            label = f'no more than {maximum}'
+        elif minimum is not None and maximum is None:
+            label = f'not less than {minimum}'
+        elif maximum is not None and minimum is not None:
+            label = f'between {minimum} and {maximum}'
+
+        super().__init__(f'value must be {label} but received {value}')
+
+
 class DisabledCommand(CommandError):
     """Exception raised when the command being invoked is disabled.
 
@@ -687,11 +727,11 @@ class MissingAnyRole(CheckFailure):
         missing = [f"'{role}'" for role in missing_roles]
 
         if len(missing) > 2:
-            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
         else:
             fmt = ' or '.join(missing)
 
-        message = f"You are missing at least one of the required roles: {fmt}"
+        message = f'You are missing at least one of the required roles: {fmt}'
         super().__init__(message)
 
 
@@ -717,11 +757,11 @@ class BotMissingAnyRole(CheckFailure):
         missing = [f"'{role}'" for role in missing_roles]
 
         if len(missing) > 2:
-            fmt = '{}, or {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
         else:
             fmt = ' or '.join(missing)
 
-        message = f"Bot is missing at least one of the required roles: {fmt}"
+        message = f'Bot is missing at least one of the required roles: {fmt}'
         super().__init__(message)
 
 
@@ -761,7 +801,7 @@ class MissingPermissions(CheckFailure):
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, and {}'.format(', '.join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
         message = f'You are missing {fmt} permission(s) to run this command.'
@@ -786,7 +826,7 @@ class BotMissingPermissions(CheckFailure):
         missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
 
         if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = '{}, and {}'.format(', '.join(missing[:-1]), missing[-1])
         else:
             fmt = ' and '.join(missing)
         message = f'Bot requires {fmt} permission(s) to run this command.'
@@ -1124,3 +1164,22 @@ class MissingFlagArgument(FlagError):
     def __init__(self, flag: Flag) -> None:
         self.flag: Flag = flag
         super().__init__(f'Flag {flag.name!r} does not have an argument')
+
+
+class HybridCommandError(CommandError):
+    """An exception raised when a :class:`~discord.ext.commands.HybridCommand` raises
+    an :exc:`~discord.app_commands.AppCommandError` derived exception that could not be
+    sufficiently converted to an equivalent :exc:`CommandError` exception.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    original: :exc:`~discord.app_commands.AppCommandError`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+
+    def __init__(self, original: AppCommandError) -> None:
+        self.original: AppCommandError = original
+        super().__init__(f'Hybrid command raised an error: {original}')

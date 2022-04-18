@@ -114,6 +114,13 @@ Decorators
 .. autofunction:: discord.ext.commands.group
     :decorator:
 
+.. autofunction:: discord.ext.commands.hybrid_command
+    :decorator:
+
+.. autofunction:: discord.ext.commands.hybrid_group
+    :decorator:
+
+
 Command
 ~~~~~~~~~
 
@@ -172,6 +179,51 @@ GroupMixin
 
     .. automethod:: GroupMixin.group(*args, **kwargs)
         :decorator:
+
+HybridCommand
+~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.HybridCommand
+
+.. autoclass:: discord.ext.commands.HybridCommand
+    :members:
+    :special-members: __call__
+    :exclude-members: after_invoke, before_invoke, error
+
+    .. automethod:: HybridCommand.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridCommand.before_invoke()
+        :decorator:
+
+    .. automethod:: HybridCommand.error()
+        :decorator:
+
+HybridGroup
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.HybridGroup
+
+.. autoclass:: discord.ext.commands.HybridGroup
+    :members:
+    :inherited-members:
+    :exclude-members: after_invoke, before_invoke, command, error, group
+
+    .. automethod:: HybridGroup.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridGroup.before_invoke()
+        :decorator:
+
+    .. automethod:: HybridGroup.command(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: HybridGroup.error()
+        :decorator:
+
+    .. automethod:: HybridGroup.group(*args, **kwargs)
+        :decorator:
+
 
 .. _ext_commands_api_cogs:
 
@@ -381,6 +433,9 @@ Converters
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
     :members:
 
+.. autoclass:: discord.ext.commands.ForumChannelConverter
+    :members:
+
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
 
@@ -416,6 +471,8 @@ Converters
 
 .. autoclass:: discord.ext.commands.Greedy()
 
+.. autoclass:: discord.ext.commands.Range()
+
 .. autofunction:: discord.ext.commands.run_converters
 
 Flag Converter
@@ -428,6 +485,35 @@ Flag Converter
     :members:
 
 .. autofunction:: discord.ext.commands.flag
+
+
+Defaults
+--------
+
+.. autoclass:: discord.ext.commands.Parameter()
+    :members:
+
+.. autofunction:: discord.ext.commands.parameter
+
+.. autofunction:: discord.ext.commands.param
+
+.. data:: discord.ext.commands.Author
+
+    A default :class:`.Parameter` which returns the :attr:`~.Context.author` for this context.
+
+    .. versionadded:: 2.0
+
+.. data:: discord.ext.commands.CurrentChannel
+
+    A default :class:`.Parameter` which returns the :attr:`~.Context.channel` for this context.
+
+    .. versionadded:: 2.0
+
+.. data:: discord.ext.commands.CurrentGuild
+
+    A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers.
+
+    .. versionadded:: 2.0
 
 .. _ext_commands_api_errors:
 
@@ -545,6 +631,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
+.. autoexception:: discord.ext.commands.RangeError
+    :members:
+
 .. autoexception:: discord.ext.commands.MissingPermissions
     :members:
 
@@ -602,6 +691,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.CommandRegistrationError
     :members:
 
+.. autoexception:: discord.ext.commands.HybridCommandError
+    :members:
+
 
 Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~
@@ -629,6 +721,7 @@ Exception Hierarchy
                     - :exc:`~.commands.ScheduledEventNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.RangeError`
                     - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`
@@ -658,6 +751,7 @@ Exception Hierarchy
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`
             - :exc:`~.commands.MaxConcurrencyReached`
+            - :exc:`~.commands.HybridCommandError`
         - :exc:`~.commands.ExtensionError`
             - :exc:`~.commands.ExtensionAlreadyLoaded`
             - :exc:`~.commands.ExtensionNotLoaded`

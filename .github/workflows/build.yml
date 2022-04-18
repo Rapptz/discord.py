@@ -3,7 +3,7 @@ name: build
 on:
   push:
   pull_request:
-    types: [ opened, synchronize ]
+    types: [ opened, reopened, synchronize ]
 
 jobs:
   dists-and-docs:
@@ -12,8 +12,9 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ '3.8', '3.x' ]
+        language: [ 'en', 'ja' ]
 
-    name: dists & docs ${{ matrix.python-version }}
+    name: dists & docs (${{ matrix.python-version }}/${{ matrix.language }})
     steps:
       - uses: actions/checkout@v2
         with:
@@ -47,25 +48,13 @@ jobs:
         shell: bash
         run: |
           cd docs
+          sphinx-build -b html -D language=${DOCS_LANGUAGE} -a -n -T -W --keep-going . _build/html
+        env:
+          DOCS_LANGUAGE: ${{ matrix.language }}
 
-          EXIT_STATUS=0
-          # Build English docs
-          sphinx-build -b html -D language=en -a -n -T -W --keep-going . _build_en || EXIT_STATUS=$?
-          # Build Japanese docs
-          sphinx-build -b html -D language=ja -a -n -T -W --keep-going . _build_ja || EXIT_STATUS=$?
-
-          exit ${EXIT_STATUS}
-
-      # - name: Upload EN docs
+      # - name: Upload docs
       #   uses: actions/upload-artifact@v2
       #   if: always()
       #   with:
-      #     name: docs-en
-      #     path: docs/_build_en/*
-
-      # - name: Upload JA docs
-      #   uses: actions/upload-artifact@v2
-      #   if: always()
-      #   with:
-      #     name: docs-ja
-      #     path: docs/_build_ja/*
+      #     name: docs-${{ matrix.language }}
+      #     path: docs/_build/html/*

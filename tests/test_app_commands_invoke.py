@@ -94,7 +94,7 @@ class MockCommandInteraction(discord.Interaction):
         super().__init__(data=data, state=client._connection)
 
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.default())
 
 
 class MockTree(discord.app_commands.CommandTree):
@@ -105,7 +105,7 @@ class MockTree(discord.app_commands.CommandTree):
         return await super().call(interaction)
 
     async def on_error(
-        self, interaction: discord.Interaction, command: Any, error: discord.app_commands.AppCommandError
+        self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError
     ) -> None:
         self.last_exception = error
 

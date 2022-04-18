@@ -3,7 +3,7 @@ name: lint
 on:
   push:
   pull_request:
-    types: [ opened, synchronize ]
+    types: [ opened, reopened, synchronize ]
 
 jobs:
   check:
@@ -35,15 +35,14 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install pyright
-        run: |
-          npm install -g pyright
-
-      - name: Run pyright
-        run: |
-          pyright
+      - name: Run Pyright
+        uses: jakebailey/pyright-action@v1
+        with:
+          version: '1.1.237'
+          warnings: false
+          no-comments: ${{ matrix.python-version != '3.x' }}
 
       - name: Run black
         if: ${{ always() && steps.install-deps.outcome == 'success' }}
         run: |
-          black --check --verbose discord examples
+          black --check discord examples

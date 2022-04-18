@@ -29,5 +29,5 @@ class MyClient(discord.Client):
         await self.wait_until_ready()  # wait until the bot logs in
 
 
-client = MyClient()
+client = MyClient(intents=discord.Intents.default())
 client.run('token')

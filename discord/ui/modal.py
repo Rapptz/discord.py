@@ -77,20 +77,19 @@ class Modal(View):
     Parameters
     -----------
     title: :class:`str`
-        The title of the modal.
+        The title of the modal. Can only be up to 45 characters.
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
     custom_id: :class:`str`
         The ID of the modal that gets received during an interaction.
         If not given then one is generated for you.
+        Can only be up to 100 characters.
 
     Attributes
     ------------
     title: :class:`str`
         The title of the modal.
-    children: List[:class:`Item`]
-        The list of children attached to this view.
     custom_id: :class:`str`
         The ID of the modal that gets received during an interaction.
     """
@@ -172,7 +171,7 @@ class Modal(View):
             if component['type'] == 1:
                 self._refresh(component['components'])
             else:
-                item = find(lambda i: i.custom_id == component['custom_id'], self.children)  # type: ignore
+                item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue

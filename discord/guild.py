@@ -109,7 +109,7 @@ if TYPE_CHECKING:
     )
     from .types.voice import GuildVoiceState
     from .permissions import Permissions
-    from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
     from .state import ConnectionState
@@ -127,7 +127,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VocalGuildChannel, TextChannel, CategoryChannel]
+    GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
 
 
@@ -629,6 +629,16 @@ class Guild(Hashable):
         This is sorted by the position and are in UI order from top to bottom.
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, CategoryChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def forums(self) -> List[ForumChannel]:
+        """List[:class:`ForumChannel`]: A list of forum channels that belongs to this guild.
+
+        This is sorted by the position and are in UI order from top to bottom.
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, ForumChannel)]
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
@@ -1180,6 +1190,7 @@ class Guild(Hashable):
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+        default_auto_archive_duration: int = MISSING,
     ) -> TextChannel:
         """|coro|
 
@@ -1245,6 +1256,10 @@ class Guild(Hashable):
             The maximum value possible is `21600`.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        default_auto_archive_duration: :class:`int`
+            The default auto archive duration for threads created in the text channel (in minutes).
+
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1275,6 +1290,9 @@ class Guild(Hashable):
 
         if nsfw is not MISSING:
             options['nsfw'] = nsfw
+
+        if default_auto_archive_duration is not MISSING:
+            options["default_auto_archive_duration"] = default_auto_archive_duration
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.text, category=category, reason=reason, **options
@@ -1939,6 +1957,8 @@ class Guild(Hashable):
             You do not have access to the guild.
         HTTPException
             Fetching the member failed.
+        NotFound
+            The member could not be found.
 
         Returns
         --------
@@ -3154,6 +3174,8 @@ class Guild(Hashable):
 
         Raises
         -------
+        NotFound
+            The requested user was not found.
         Forbidden
             You do not have the proper permissions to ban.
         HTTPException
@@ -3180,6 +3202,8 @@ class Guild(Hashable):
 
         Raises
         -------
+        NotFound
+            The requested unban was not found.
         Forbidden
             You do not have the proper permissions to unban.
         HTTPException
@@ -3547,12 +3571,11 @@ class Guild(Hashable):
         if presences and not self._state._intents.presences:
             raise ClientException('Intents.presences must be enabled to use this.')
 
-        if query is None:
-            if query == '':
-                raise ValueError('Cannot pass empty query string.')
+        if query == '':
+            raise ValueError('Cannot pass empty query string.')
 
-            if user_ids is None:
-                raise ValueError('Must pass either query or user_ids')
+        if query is None and user_ids is None:
+            raise ValueError('Must pass either query or user_ids')
 
         if user_ids is not None and query is not None:
             raise ValueError('Cannot pass both query and user_ids')

@@ -24,35 +24,37 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import re
 import inspect
+import re
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Generic,
     Iterable,
+    List,
     Literal,
     Optional,
-    TYPE_CHECKING,
-    List,
+    overload,
     Protocol,
+    Tuple,
     Type,
     TypeVar,
-    Tuple,
     Union,
     runtime_checkable,
 )
 
 import discord
+
 from .errors import *
 
 if TYPE_CHECKING:
-    from .context import Context
     from discord.state import Channel
     from discord.threads import Thread
 
+    from .parameters import Parameter
     from ._types import BotT, _Bot
-
+    from .context import Context
 
 __all__ = (
     'Converter',
@@ -73,6 +75,7 @@ __all__ = (
     'EmojiConverter',
     'PartialEmojiConverter',
     'CategoryChannelConverter',
+    'ForumChannelConverter',
     'IDConverter',
     'ThreadConverter',
     'GuildChannelConverter',
@@ -80,6 +83,7 @@ __all__ = (
     'ScheduledEventConverter',
     'clean_content',
     'Greedy',
+    'Range',
     'run_converters',
 )
 
@@ -578,6 +582,25 @@ class ThreadConverter(IDConverter[discord.Thread]):
         return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
 
 
+class ForumChannelConverter(IDConverter[discord.ForumChannel]):
+    """Converts to a :class:`~discord.ForumChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+
+    .. versionadded:: 2.0
+    """
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> discord.ForumChannel:
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'forums', discord.ForumChannel)
+
+
 class ColourConverter(Converter[discord.Colour]):
     """Converts to a :class:`~discord.Colour`.
 
@@ -1019,6 +1042,12 @@ class Greedy(List[T]):
     ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
 
     For more information, check :ref:`ext_commands_special_converters`.
+
+    .. note::
+
+        For interaction based contexts the conversion error is propagated
+        rather than swallowed due to the difference in user experience with
+        application commands.
     """
 
     __slots__ = ('converter',)
@@ -1052,6 +1081,88 @@ class Greedy(List[T]):
         return cls(converter=converter)
 
 
+if TYPE_CHECKING:
+    from typing_extensions import Annotated as Range
+else:
+
+    class Range:
+        """A special converter that can be applied to a parameter to require a numeric type
+        to fit within the range provided.
+
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
+        the intent of the code.
+
+        Some example ranges:
+
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+
+        Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ----------
+
+        .. code-block:: python3
+
+            @bot.command()
+            async def range(ctx: commands.Context, value: commands.Range[int, 10, 12]):
+                await ctx.send(f'Your value is {value}')
+        """
+
+        def __init__(
+            self,
+            *,
+            annotation: Any,
+            min: Optional[Union[int, float]] = None,
+            max: Optional[Union[int, float]] = None,
+        ) -> None:
+            self.annotation: Any = annotation
+            self.min: Optional[Union[int, float]] = min
+            self.max: Optional[Union[int, float]] = max
+
+        async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
+            converted = self.annotation(value)
+            if (self.min is not None and converted < self.min) or (self.max is not None and converted > self.max):
+                raise RangeError(converted, minimum=self.min, maximum=self.max)
+
+            return converted
+
+        def __call__(self) -> None:
+            # Trick to allow it inside typing.Union
+            pass
+
+        def __class_getitem__(cls, obj) -> Range:
+            if not isinstance(obj, tuple):
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+
+            if len(obj) == 2:
+                obj = (*obj, None)
+            elif len(obj) != 3:
+                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+
+            annotation, min, max = obj
+
+            if min is None and max is None:
+                raise TypeError('Range must not be empty')
+
+            if min is not None and max is not None:
+                # At this point max and min are both not none
+                if type(min) != type(max):
+                    raise TypeError('Both min and max in Range must be the same type')
+
+            if annotation not in (int, float):
+                raise TypeError(f'expected int or float as range type, received {annotation!r} instead')
+
+            return cls(
+                annotation=annotation,
+                min=annotation(min) if min is not None else None,
+                max=annotation(max) if max is not None else None,
+            )
+
+
 def _convert_to_bool(argument: str) -> bool:
     lowered = argument.lower()
     if lowered in ('yes', 'y', 'true', 't', '1', 'enable', 'on'):
@@ -1060,16 +1171,6 @@ def _convert_to_bool(argument: str) -> bool:
         return False
     else:
         raise BadBoolArgument(lowered)
-
-
-def get_converter(param: inspect.Parameter) -> Any:
-    converter = param.annotation
-    if converter is param.empty:
-        if param.default is not param.empty:
-            converter = str if param.default is None else type(param.default)
-        else:
-            converter = str
-    return converter
 
 
 _GenericAlias = type(List[T])
@@ -1100,6 +1201,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
+    discord.ForumChannel: ForumChannelConverter,
 }
 
 
@@ -1141,7 +1243,19 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 
 
-async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter) -> Any:
+@overload
+async def run_converters(
+    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+) -> T:
+    ...
+
+
+@overload
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
+    ...
+
+
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
     """|coro|
 
     Runs converters for a given converter, argument, and parameter.
@@ -1158,7 +1272,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
         The converter to run, this corresponds to the annotation in the function.
     argument: :class:`str`
         The argument to convert to.
-    param: :class:`inspect.Parameter`
+    param: :class:`Parameter`
         The parameter being converted. This is mainly for error reporting.
 
     Raises
@@ -1183,7 +1297,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
             # with the other parameters
             if conv is _NoneType and param.kind != param.VAR_POSITIONAL:
                 ctx.view.undo()
-                return None if param.default is param.empty else param.default
+                return None if param.required else await param.get_default(ctx)
 
             try:
                 value = await run_converters(ctx, conv, argument, param)

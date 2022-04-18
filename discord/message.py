@@ -303,7 +303,14 @@ class Attachment(Hashable):
         data = await self._http.get_from_cdn(url)
         return data
 
-    async def to_file(self, *, use_cached: bool = False, spoiler: bool = False) -> File:
+    async def to_file(
+        self,
+        *,
+        filename: Optional[str] = MISSING,
+        description: Optional[str] = MISSING,
+        use_cached: bool = False,
+        spoiler: bool = False,
+    ) -> File:
         """|coro|
 
         Converts the attachment into a :class:`File` suitable for sending via
@@ -313,6 +320,16 @@ class Attachment(Hashable):
 
         Parameters
         -----------
+        filename: Optional[:class:`str`]
+            The filename to use for the file. If not specified then the filename
+            of the attachment is used instead.
+
+            .. versionadded:: 2.0
+        description: Optional[:class:`str`]
+            The description to use for the file. If not specified then the
+            description of the attachment is used instead.
+
+            .. versionadded:: 2.0
         use_cached: :class:`bool`
             Whether to use :attr:`proxy_url` rather than :attr:`url` when downloading
             the attachment. This will allow attachments to be saved after deletion
@@ -343,7 +360,9 @@ class Attachment(Hashable):
         """
 
         data = await self.read(use_cached=use_cached)
-        return File(io.BytesIO(data), filename=self.filename, description=self.description, spoiler=spoiler)
+        file_filename = filename if filename is not MISSING else self.filename
+        file_description = description if description is not MISSING else self.description
+        return File(io.BytesIO(data), filename=file_filename, description=file_description, spoiler=spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {
@@ -598,6 +617,7 @@ class PartialMessage(Hashable):
     the constructor itself, and the second is via the following:
 
     - :meth:`TextChannel.get_partial_message`
+    - :meth:`VoiceChannel.get_partial_message`
     - :meth:`Thread.get_partial_message`
     - :meth:`DMChannel.get_partial_message`
 
@@ -621,7 +641,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`Thread`, :class:`DMChannel`]
+    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -1243,7 +1263,7 @@ class Message(PartialMessage, Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
-    channel: Union[:class:`TextChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
+    channel: Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -1813,7 +1833,9 @@ class Message(PartialMessage, Hashable):
                 return f'{self.author.name} just boosted the server **{self.content}** times! {self.guild} has achieved **Level 3!**'
 
         if self.type is MessageType.channel_follow_add:
-            return f'{self.author.name} has added {self.content} to this channel'
+            return (
+                f'{self.author.name} has added {self.content} to this channel. Its most important updates will show up here.'
+            )
 
         if self.type is MessageType.guild_stream:
             # the author will be a Member

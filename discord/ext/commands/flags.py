@@ -24,37 +24,17 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .errors import (
-    BadFlagArgument,
-    CommandError,
-    MissingFlagArgument,
-    TooManyFlags,
-    MissingRequiredFlag,
-)
-
-from discord.utils import resolve_annotation
-from .view import StringView
-from .converter import run_converters
-
-from discord.utils import maybe_coroutine, MISSING
-from dataclasses import dataclass, field
-from typing import (
-    Dict,
-    Iterator,
-    Literal,
-    Optional,
-    Pattern,
-    Set,
-    TYPE_CHECKING,
-    Tuple,
-    List,
-    Any,
-    Union,
-)
-
 import inspect
-import sys
 import re
+import sys
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Pattern, Set, Tuple, Union
+
+from discord.utils import MISSING, maybe_coroutine, resolve_annotation
+
+from .converter import run_converters
+from .errors import BadFlagArgument, CommandError, MissingFlagArgument, MissingRequiredFlag, TooManyFlags
+from .view import StringView
 
 __all__ = (
     'Flag',
@@ -66,9 +46,9 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .context import Context
-
     from ._types import BotT
+    from .context import Context
+    from .parameters import Parameter
 
 
 @dataclass
@@ -123,6 +103,7 @@ def flag(
     default: Any = MISSING,
     max_args: int = MISSING,
     override: bool = MISSING,
+    converter: Any = MISSING,
 ) -> Any:
     """Override default functionality and parameters of the underlying :class:`FlagConverter`
     class attributes.
@@ -144,8 +125,11 @@ def flag(
     override: :class:`bool`
         Whether multiple given values overrides the previous value. The default
         value depends on the annotation given.
+    converter: Any
+        The converter to use for this flag. This replaces the annotation at
+        runtime which is transparent to type checkers.
     """
-    return Flag(name=name, aliases=aliases, default=default, max_args=max_args, override=override)
+    return Flag(name=name, aliases=aliases, default=default, max_args=max_args, override=override, annotation=converter)
 
 
 def validate_flag_name(name: str, forbidden: Set[str]) -> None:
@@ -170,7 +154,8 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
     for name, annotation in annotations.items():
         flag = namespace.pop(name, MISSING)
         if isinstance(flag, Flag):
-            flag.annotation = annotation
+            if flag.annotation is MISSING:
+                flag.annotation = annotation
         else:
             flag = Flag(name=name, annotation=annotation, default=flag)
 
@@ -351,7 +336,7 @@ class FlagsMeta(type):
 async def tuple_convert_all(ctx: Context[BotT], argument: str, flag: Flag, converter: Any) -> Tuple[Any, ...]:
     view = StringView(argument)
     results = []
-    param: inspect.Parameter = ctx.current_parameter  # type: ignore
+    param: Parameter = ctx.current_parameter  # type: ignore
     while not view.eof:
         view.skip_ws()
         if view.eof:
@@ -376,7 +361,7 @@ async def tuple_convert_all(ctx: Context[BotT], argument: str, flag: Flag, conve
 async def tuple_convert_flag(ctx: Context[BotT], argument: str, flag: Flag, converters: Any) -> Tuple[Any, ...]:
     view = StringView(argument)
     results = []
-    param: inspect.Parameter = ctx.current_parameter  # type: ignore
+    param: Parameter = ctx.current_parameter  # type: ignore
     for converter in converters:
         view.skip_ws()
         if view.eof:
@@ -402,7 +387,7 @@ async def tuple_convert_flag(ctx: Context[BotT], argument: str, flag: Flag, conv
 
 
 async def convert_flag(ctx: Context[BotT], argument: str, flag: Flag, annotation: Any = None) -> Any:
-    param: inspect.Parameter = ctx.current_parameter  # type: ignore
+    param: Parameter = ctx.current_parameter  # type: ignore
     annotation = annotation or flag.annotation
     try:
         origin = annotation.__origin__

@@ -297,6 +297,7 @@ class GuildChannel:
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.CategoryChannel`
     - :class:`~discord.StageChannel`
+    - :class:`~discord.ForumChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 
@@ -500,6 +501,14 @@ class GuildChannel:
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
     def created_at(self) -> datetime:
@@ -1238,6 +1247,7 @@ class Messageable:
     The following implement this ABC:
 
     - :class:`~discord.TextChannel`
+    - :class:`~discord.VoiceChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
     - :class:`~discord.User`
@@ -1376,6 +1386,10 @@ class Messageable:
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`~discord.Embed`
             The rich embed for the content.
+        embeds: List[:class:`~discord.Embed`]
+            A list of embeds to upload. Must be a maximum of 10.
+
+            .. versionadded:: 2.0
         file: :class:`~discord.File`
             The file to upload.
         files: List[:class:`~discord.File`]
@@ -1411,8 +1425,6 @@ class Messageable:
             .. versionadded:: 1.6
         view: :class:`discord.ui.View`
             A Discord UI View to add to the message.
-        embeds: List[:class:`~discord.Embed`]
-            A list of embeds to upload. Must be a maximum of 10.
 
             .. versionadded:: 2.0
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
@@ -1431,7 +1443,7 @@ class Messageable:
         ~discord.Forbidden
             You do not have the proper permissions to send the message.
         ValueError
-            The ``files`` list is not of the appropriate size.
+            The ``files`` or ``embeds`` list is not of the appropriate size.
         TypeError
             You specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
@@ -1771,6 +1783,8 @@ class Connectable(Protocol):
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = MISSING,
+        self_deaf: bool = False,
+        self_mute: bool = False,
     ) -> T:
         """|coro|
 
@@ -1790,6 +1804,14 @@ class Connectable(Protocol):
         cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+
+            .. versionadded: 2.0
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
+
+            .. versionadded: 2.0
 
         Raises
         -------
@@ -1826,7 +1848,7 @@ class Connectable(Protocol):
         state._add_voice_client(key_id, voice)
 
         try:
-            await voice.connect(timeout=timeout, reconnect=reconnect)
+            await voice.connect(timeout=timeout, reconnect=reconnect, self_deaf=self_deaf, self_mute=self_mute)
         except asyncio.TimeoutError:
             try:
                 await voice.disconnect(force=True)
