@@ -1958,7 +1958,7 @@ class Guild(Hashable):
         HTTPException
             Fetching the member failed.
         NotFound
-            Invalid Member ID.
+            The member could not be found.
 
         Returns
         --------
