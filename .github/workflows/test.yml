@@ -3,7 +3,7 @@ name: test
 on:
   push:
   pull_request:
-    types: [ opened, synchronize ]
+    types: [ opened, reopened, synchronize ]
 
 jobs:
   pytest:
