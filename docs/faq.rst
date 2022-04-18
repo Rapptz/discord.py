@@ -410,7 +410,7 @@ This could then be used as ``?git push origin master``.
 Application Commands
 --------------------
 
-Questions regarding Discord's new Application Commands.
+Questions regarding Discord's new application commands, commonly known as "slash commands" or "context menu commands".
 
 My bot's commands are not showing up!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
