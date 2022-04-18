@@ -3174,6 +3174,8 @@ class Guild(Hashable):
 
         Raises
         -------
+        NotFound
+            The requested user was not found.
         Forbidden
             You do not have the proper permissions to ban.
         HTTPException
