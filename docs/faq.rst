@@ -407,7 +407,7 @@ Example: ::
 
 This could then be used as ``?git push origin master``.
 
-Slash Commands
+Application Commands
 --------------
 
 Questions regarding discord's new Slash Commands.
