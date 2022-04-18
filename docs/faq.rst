@@ -419,3 +419,5 @@ My bot's commands are not showing up!
 2. Did you invite your bot with the correct permissions? Bots need to be invited with the ``application.commands``
    scope in addition to the ``bot`` scope. For example, invite the bot with the following URL:
    ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``
+   Alternatively, if you use func:`~.oauth_url`, you can call the function as such: 
+   ``oauth_url(<other options>, scopes=("bot", "application.commands"))``. 
