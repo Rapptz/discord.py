@@ -36,6 +36,7 @@ from typing import (
     List,
     Optional,
     Protocol,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -154,7 +155,7 @@ class Loop(Generic[C, P, T]):
             ...
 
         @overload
-        def coro(self: Loop[C, ..., Any], __self: C, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+        def coro(self, __self: C, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
             ...
 
         def coro(self, *args: Any, **Kwargs: Any) -> Awaitable[Any]:
@@ -177,7 +178,7 @@ class Loop(Generic[C, P, T]):
         self._handle: Optional[SleepHandle] = None
         self._task: Optional[asyncio.Task[None]] = None
         self._injected: C = None
-        self._valid_exception = (
+        self._valid_exception: Tuple[Type[BaseException], ...] = (
             OSError,
             discord.GatewayNotFound,
             discord.ConnectionClosed,
@@ -567,7 +568,7 @@ class Loop(Generic[C, P, T]):
         ...
 
     @overload
-    def before_loop(self: Loop[C, ..., Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
+    def before_loop(self, coro: Callable[[C], OT]) -> Callable[[C], OT]:
         ...
 
     def before_loop(self, coro: OT) -> OT:
@@ -603,7 +604,7 @@ class Loop(Generic[C, P, T]):
         ...
 
     @overload
-    def after_loop(self: Loop[C, ..., Any], coro: Callable[[C], OT]) -> Callable[[C], OT]:
+    def after_loop(self, coro: Callable[[C], OT]) -> Callable[[C], OT]:
         ...
 
     def after_loop(self, coro: OT) -> OT:
@@ -639,7 +640,7 @@ class Loop(Generic[C, P, T]):
         ...
 
     @overload
-    def error(self: Loop[C, ..., Any], coro: Callable[[C, ET], OT]) -> Callable[[C, ET], OT]:
+    def error(self, coro: Callable[[C, ET], OT]) -> Callable[[C, ET], OT]:
         ...
 
     def error(self, coro: OT) -> OT:
