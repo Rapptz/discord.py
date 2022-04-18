@@ -410,7 +410,7 @@ This could then be used as ``?git push origin master``.
 Application Commands
 --------------
 
-Questions regarding discord's new Slash Commands.
+Questions regarding discord's new Application Commands.
 
 My bot's commands are not showing up!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
