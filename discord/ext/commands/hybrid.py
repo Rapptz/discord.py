@@ -316,10 +316,12 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         # then this doesn't work.
         interaction._baton = ctx = await bot.get_context(interaction)
         command = self.wrapped
+        bot.dispatch('command', ctx)
+        value = None
         try:
             await command.prepare(ctx)
             # This lies and just always passes a Context instead of an Interaction.
-            return await self._do_call(ctx, ctx.kwargs)  # type: ignore
+            value = await self._do_call(ctx, ctx.kwargs)  # type: ignore
         except app_commands.CommandSignatureMismatch:
             raise
         except (app_commands.TransformerError, app_commands.CommandInvokeError) as e:
@@ -340,6 +342,11 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
                 await command._max_concurrency.release(ctx.message)
 
             await command.call_after_hooks(ctx)
+
+        if not ctx.command_failed:
+            bot.dispatch('command_completion', ctx)
+
+        return value
 
 
 class HybridCommand(Command[CogT, P, T]):
