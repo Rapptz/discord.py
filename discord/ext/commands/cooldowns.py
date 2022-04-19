@@ -148,11 +148,11 @@ class CooldownMapping:
 class DynamicCooldownMapping(CooldownMapping):
     def __init__(
         self,
-        factory: Callable[[Message], Cooldown],
+        factory: Callable[[Message], Optional[Cooldown]],
         type: Callable[[Message], Any],
     ) -> None:
         super().__init__(None, type)
-        self._factory: Callable[[Message], Cooldown] = factory
+        self._factory: Callable[[Message], Optional[Cooldown]] = factory
 
     def copy(self) -> DynamicCooldownMapping:
         ret = DynamicCooldownMapping(self._factory, self._type)
@@ -163,7 +163,7 @@ class DynamicCooldownMapping(CooldownMapping):
     def valid(self) -> bool:
         return True
 
-    def create_bucket(self, message: Message) -> Cooldown:
+    def create_bucket(self, message: Message) -> Optional[Cooldown]:
         return self._factory(message)
 
 
