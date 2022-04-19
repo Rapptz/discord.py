@@ -661,7 +661,8 @@ class Client:
 
         _log.info('Logging in using static token.')
 
-        await self._async_setup_hook()
+        if self.loop is _loop:
+            await self._async_setup_hook()
 
         state = self._connection
         data = await state.http.static_login(token.strip())
