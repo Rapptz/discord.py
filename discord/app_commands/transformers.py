@@ -378,6 +378,24 @@ def _make_enum_transformer(enum) -> Type[Transformer]:
     return type(f'{enum.__name__}EnumTransformer', (Transformer,), ns)
 
 
+def _make_complex_enum_transformer(enum) -> Type[Transformer]:
+    values = list(enum)
+    if len(values) < 2:
+        raise TypeError(f'enum.Enum requires at least two values.')
+
+    async def transform(cls, interaction: Interaction, value: Any) -> Any:
+        return enum[value]
+
+    ns = {
+        'type': classmethod(lambda _: AppCommandOptionType.string),
+        'transform': classmethod(transform),
+        '__discord_app_commands_transformer_enum__': enum,
+        '__discord_app_commands_transformer_choices__': [Choice(name=v.name, value=v.name) for v in values],
+    }
+
+    return type(f'{enum.__name__}ComplexEnumTransformer', (Transformer,), ns)
+
+
 if TYPE_CHECKING:
     from typing_extensions import Annotated as Transform
     from typing_extensions import Annotated as Range
@@ -611,7 +629,10 @@ def get_supported_annotation(
         if issubclass(annotation, Transformer):
             return (annotation, MISSING)
         if issubclass(annotation, (Enum, InternalEnum)):
-            return (_make_enum_transformer(annotation), MISSING)
+            if all(isinstance(v.value, (str, int, float)) for v in annotation):
+                return (_make_enum_transformer(annotation), MISSING)
+            else:
+                return (_make_complex_enum_transformer(annotation), MISSING)
         if annotation is Choice:
             raise TypeError(f'Choice requires a type argument of int, str, or float')
 
