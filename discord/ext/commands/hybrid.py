@@ -162,33 +162,36 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
     for name, parameter in parameters.items():
-        param = params[name]
+        converter = parameter.converter
+        # Parameter.converter properly infers from the default and has a str default
+        # This allows the actual signature to inherit this property
+        param = params[name].replace(annotation=converter)
         try:
             # If it's a supported annotation (i.e. a transformer) just let it pass as-is.
-            app_commands.transformers.get_supported_annotation(parameter.converter)
+            app_commands.transformers.get_supported_annotation(converter)
         except TypeError:
             # Fallback to see if the behaviour needs changing
-            origin = getattr(parameter.converter, '__origin__', None)
-            args = getattr(parameter.converter, '__args__', [])
-            if isinstance(parameter.converter, Range):
-                r = parameter.converter
+            origin = getattr(converter, '__origin__', None)
+            args = getattr(converter, '__args__', [])
+            if isinstance(converter, Range):
+                r = converter
                 param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
-            elif isinstance(parameter.converter, Greedy):
+            elif isinstance(converter, Greedy):
                 # Greedy is "optional" in ext.commands
                 # However, in here, it probably makes sense to make it required.
                 # I'm unsure how to allow the user to choose right now.
-                inner = parameter.converter.converter
+                inner = converter.converter
                 param = param.replace(annotation=make_greedy_transformer(inner, parameter))
-            elif is_converter(parameter.converter):
-                param = param.replace(annotation=make_converter_transformer(parameter.converter))
+            elif is_converter(converter):
+                param = param.replace(annotation=make_converter_transformer(converter))
             elif origin is Union and len(args) == 2 and args[-1] is _NoneType:
                 # Special case Optional[X] where X is a single type that can optionally be a converter
                 inner = args[0]
                 is_inner_tranformer = is_transformer(inner)
                 if is_converter(inner) and not is_inner_tranformer:
                     param = param.replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
-            elif callable(parameter.converter) and not inspect.isclass(parameter.converter):
-                param = param.replace(annotation=make_callable_transformer(parameter.converter))
+            elif callable(converter) and not inspect.isclass(converter):
+                param = param.replace(annotation=make_callable_transformer(converter))
 
         if parameter.default is not parameter.empty:
             default = _CallableDefault(parameter.default) if callable(parameter.default) else parameter.default
