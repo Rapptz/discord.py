@@ -301,7 +301,7 @@ class RawThreadDeleteEvent(_RawReprMixin):
     guild_id: :class:`int`
         The ID of the guild the thread was deleted in.
     parent_id: :class:`int`
-        The ID of the channel the thread was belonged to.
+        The ID of the channel the thread belonged to.
     thread: Optional[:class:`discord.Thread`]
         The thread, if it could be found in the internal cache.
     """
