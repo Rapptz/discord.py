@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import colorsys
 import random
+import re
 
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
@@ -35,6 +36,44 @@ __all__ = (
     'Colour',
     'Color',
 )
+
+RGB_REGEX = re.compile(r'rgb\s*\((?P<r>[0-9.]+%?)\s*,\s*(?P<g>[0-9.]+%?)\s*,\s*(?P<b>[0-9.]+%?)\s*\)')
+
+
+def parse_hex_number(argument: str) -> Colour:
+    arg = ''.join(i * 2 for i in argument) if len(argument) == 3 else argument
+    try:
+        value = int(arg, base=16)
+        if not (0 <= value <= 0xFFFFFF):
+            raise ValueError('hex number out of range for 24-bit colour')
+    except ValueError:
+        raise ValueError('invalid hex digit given') from None
+    else:
+        return Color(value=value)
+
+
+def parse_rgb_number(number: str) -> int:
+    if number[-1] == '%':
+        value = float(number[:-1])
+        if not (0 <= value <= 100):
+            raise ValueError('rgb percentage can only be between 0 to 100')
+        return round(255 * (value / 100))
+
+    value = int(number)
+    if not (0 <= value <= 255):
+        raise ValueError('rgb number can only be between 0 to 255')
+    return value
+
+
+def parse_rgb(argument: str, *, regex: re.Pattern[str] = RGB_REGEX) -> Colour:
+    match = regex.match(argument)
+    if match is None:
+        raise ValueError('invalid rgb syntax found')
+
+    red = parse_rgb_number(match.group('r'))
+    green = parse_rgb_number(match.group('g'))
+    blue = parse_rgb_number(match.group('b'))
+    return Color.from_rgb(red, green, blue)
 
 
 class Colour:
@@ -129,6 +168,44 @@ class Colour:
         """Constructs a :class:`Colour` from an HSV tuple."""
         rgb = colorsys.hsv_to_rgb(h, s, v)
         return cls.from_rgb(*(int(x * 255) for x in rgb))
+
+    @classmethod
+    def from_str(cls, value: str) -> Self:
+        """Constructs a :class:`Colour` from a string.
+
+        The following formats are accepted:
+
+        - ``0x<hex>``
+        - ``#<hex>``
+        - ``0x#<hex>``
+        - ``rgb(<number>, <number>, <number>)``
+
+        Like CSS, ``<number>`` can be either 0-255 or 0-100% and ``<hex>`` can be
+        either a 6 digit hex number or a 3 digit hex shortcut (e.g. #fff).
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        ValueError
+            The string could not be converted into a colour.
+        """
+
+        if value[0] == '#':
+            return parse_hex_number(value[1:])
+
+        if value[0:2] == '0x':
+            rest = value[2:]
+            # Legacy backwards compatible syntax
+            if rest.startswith('#'):
+                return parse_hex_number(rest[1:])
+            return parse_hex_number(rest)
+
+        arg = value.lower()
+        if arg[0:3] == 'rgb':
+            return parse_rgb(arg)
+
+        raise ValueError('unknown colour format given')
 
     @classmethod
     def default(cls) -> Self:
