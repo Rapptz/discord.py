@@ -564,6 +564,14 @@ class Guild(Hashable):
         return list(self._threads.values())
 
     @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the guild.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.id}'
+
+    @property
     def large(self) -> bool:
         """:class:`bool`: Indicates if the guild is a 'large' guild.
 
