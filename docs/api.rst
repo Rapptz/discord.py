@@ -4004,7 +4004,7 @@ RawIntegrationDeleteEvent
     :members:
 
 RawThreadDeleteEvent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: RawThreadDeleteEvent
 
