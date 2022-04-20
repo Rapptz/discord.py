@@ -289,7 +289,9 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
 
 class RawThreadDeleteEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_thread_delete` event.
+
     .. versionadded:: 2.0
+
     Attributes
     ----------
     thread_id: :class:`int`
