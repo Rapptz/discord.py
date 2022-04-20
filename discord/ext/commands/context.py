@@ -541,7 +541,10 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         :class:`~discord.Message`
             The message that was sent.
         """
-        return await self.send(content, reference=self.message, **kwargs)
+        if self.interaction is None:
+            return await self.send(content, reference=self.message, **kwargs)
+        else:
+            return await self.send(content, **kwargs)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
