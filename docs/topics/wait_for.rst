@@ -39,7 +39,7 @@ While the example above allows us to wait for an event, this will pass as soon a
     await msg.reply('hello!')
 
 In this example, ``wait_for`` will only accept the incoming event and move on when the check returns ``True``, in this case when the message author is equal to the original author.
-The check function takes the same arguments the event would take, in this case a paramter named ``m``, which represents a ``discord.Message`` instance. This is similar to `:meth:`Client.on_message`.
+The check function takes the same arguments the event would take, in this case a parameter named ``m``, which represents a ``discord.Message`` instance. This is similar to `:meth:`Client.on_message`.
 
 Sometimes, we only want to wait for a specific amount of time, before timing out the wait_for and allowing the code to continue. 
 
@@ -72,8 +72,8 @@ Wait for reaction
     reaction: discord.Reaction, user: discord.User = await client.wait_for('reaction_add', check = check)
     await message.channel.send(f'You reacted with {reaction.emoji}!')
 
-Notive the ``reaction`` event, unlike the ``message`` event, takes 2 arguments. Thus, the check function takes the same arguments as that, ``reaction, user``.
-Additionally, the wait_for will now return a tuple of the arguments the event recieved, which we are unwraping when recieving. 
+Notice the ``reaction_add`` event, unlike the ``message`` event, takes 2 arguments. Thus, the check function takes the same arguments as that, ``reaction, user``.
+Additionally, the wait_for will now return a tuple of the arguments the event received, which we are unwrapping when receiving. 
 This is how it works for *any* event that takes more than one argument, a few examples being ``typing`` or ``message_edit``.
 
 Inline check
@@ -83,7 +83,7 @@ Inline check
 
     await client.wait_for('message', check = lambda m: m.author == message.author)
 
-As the check kwarg simply takes a function, we can make it inline by making use of a lambda function
+As the ``check`` kwarg simply takes a function, we can make it inline by making use of a lambda function.
 
 Closing Remarks
 ~~~~~~~~~~~~~~~~~~~~
