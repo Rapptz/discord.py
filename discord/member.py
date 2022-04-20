@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type, overload
 
 import discord.abc
 
@@ -731,6 +731,25 @@ class Member(discord.abc.Messageable, _UserTag):
         Kicks this member. Equivalent to :meth:`Guild.kick`.
         """
         await self.guild.kick(self, reason=reason)
+
+    @overload
+    async def edit(self, *, reason: Optional[str] = None) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        nick: Optional[str] = MISSING,
+        mute: bool = MISSING,
+        deafen: bool = MISSING,
+        suppress: bool = MISSING,
+        roles: Collection[discord.abc.Snowflake] = MISSING,
+        voice_channel: Optional[VocalGuildChannel] = MISSING,
+        timed_out_until: Optional[datetime.datetime] = MISSING,
+        reason: Optional[str] = None,
+    ) -> Member:
+        ...
 
     async def edit(
         self,

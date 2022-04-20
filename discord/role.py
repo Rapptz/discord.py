@@ -389,7 +389,7 @@ class Role(Hashable):
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
-    ) -> Optional[Role]:
+    ) -> Role:
         """|coro|
 
         Edits the role.
