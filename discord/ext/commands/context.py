@@ -732,6 +732,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             await self.interaction.response.send_message(**kwargs)
             msg = await self.interaction.original_message()
 
-        if delete_after is not None:
+        if delete_after is not None and not (ephemeral and self.interaction is not None):
             await msg.delete(delay=delete_after)
         return msg
