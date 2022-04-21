@@ -109,6 +109,11 @@ def is_transformer(converter: Any) -> bool:
     )
 
 
+def required_pos_arguments(func: Callable[..., Any]) -> int:
+    sig = inspect.signature(func)
+    return sum(p.default is p.empty for p in sig.parameters.values())
+
+
 def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]:
     async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
         try:
@@ -184,13 +189,19 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
                 param = param.replace(annotation=make_greedy_transformer(inner, parameter))
             elif is_converter(converter):
                 param = param.replace(annotation=make_converter_transformer(converter))
-            elif origin is Union and len(args) == 2 and args[-1] is _NoneType:
-                # Special case Optional[X] where X is a single type that can optionally be a converter
-                inner = args[0]
-                is_inner_tranformer = is_transformer(inner)
-                if is_converter(inner) and not is_inner_tranformer:
-                    param = param.replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
+            elif origin is Union:
+                if len(args) == 2 and args[-1] is _NoneType:
+                    # Special case Optional[X] where X is a single type that can optionally be a converter
+                    inner = args[0]
+                    is_inner_tranformer = is_transformer(inner)
+                    if is_converter(inner) and not is_inner_tranformer:
+                        param = param.replace(annotation=Optional[make_converter_transformer(inner)])  # type: ignore
+                else:
+                    raise
             elif callable(converter) and not inspect.isclass(converter):
+                param_count = required_pos_arguments(converter)
+                if param_count != 1:
+                    raise
                 param = param.replace(annotation=make_callable_transformer(converter))
 
         if parameter.default is not parameter.empty:
