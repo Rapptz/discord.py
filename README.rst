@@ -85,7 +85,7 @@ Quick Example
                 await message.channel.send('pong')
 
     intents = discord.Intents.default()
-    intents.message_content = True
+    intents.message_content = True #As of the latest discord.py version 1.7.3, intents no longer has attribute message_content. 
     client = MyClient(intents=intents)
     client.run('token')
 
@@ -98,7 +98,7 @@ Bot Example
     from discord.ext import commands
 
     intents = discord.Intents.default()
-    intents.message_content = True
+    intents.message_content = True #As of the latest discord.py version 1.7.3, intents no longer has attribute message_content.
     bot = commands.Bot(command_prefix='>', intents=intents)
 
     @bot.command()
