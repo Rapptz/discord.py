@@ -112,7 +112,8 @@ class Cooldown:
         if not current:
             current = time.time()
 
-        tokens = self._tokens
+        # the calculated tokens should be non-negative
+        tokens = max(self._tokens, 0)
 
         if current > self._window + self.per:
             tokens = self.rate
