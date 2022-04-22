@@ -161,6 +161,12 @@ def get_signature_parameters(
         if annotation is Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
 
+        if hasattr(annotation, '__metadata__'):
+            # Annotated[X, Y] can access Y via __metadata__
+            metadata = annotation.__metadata__
+            if len(metadata) >= 1:
+                annotation = metadata[0]
+
         if isinstance(annotation, discord.app_commands.transformers._TransformMetadata):
             annotation = annotation.metadata
 
