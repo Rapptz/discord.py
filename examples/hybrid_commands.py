@@ -62,20 +62,21 @@ async def dice(ctx: commands.Context, fmt: str = "1d6") -> None:
 
     result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
     await ctx.send(result)
-    
-@bot.hybrid_group(invoke_without_command=True) 
+
+
+@bot.hybrid_group(invoke_without_command=True)
 async def cool(ctx: commands.Context, user: discord.Member = None) -> None:
     """This doesn't say if a user is cool, but rather checks if a subcommand is being invoked"""
     if ctx.invoked_subcommand is None and user is None:
         await ctx.send(f"No, {ctx.subcommand_passed} is not cool")
     elif user is not None:
         await ctx.send(f"Yes, {user.mention} is cool")
-        
+
+
 @cool.command(name="bot")
 async def _bot(ctx: commands.Context) -> None:
     """Is the bot cool?"""
     await ctx.send("Yes, the bot is cool. :^)")
-
 
 
 # IMPORTANT: You mustn't hard code your token in a production bot
