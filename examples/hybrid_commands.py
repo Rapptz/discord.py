@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import random
 from discord.ext import commands
 
 description = """Example bot to show the use of hybrid commands.
