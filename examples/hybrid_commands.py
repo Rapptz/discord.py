@@ -72,7 +72,7 @@ async def cool(ctx: commands.Context, user: discord.Member = None) -> None:
         await ctx.send(f"Yes, {user.mention} is cool")
         
 @cool.command(name="bot")
-async def bot(ctx: commands.Context) -> None:
+async def _bot(ctx: commands.Context) -> None:
     """Is the bot cool?"""
     await ctx.send("Yes, the bot is cool. :^)")
 
