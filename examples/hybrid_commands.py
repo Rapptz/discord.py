@@ -43,7 +43,7 @@ async def hello(ctx: commands.Context) -> None:
         await ctx.send("Hello from prefix commands!")
 
 
-@bot.hybrid_command(aliases=["say", "repeat"])
+@bot.hybrid_command(aliases=["repeat", "echo"])
 async def say(ctx: commands.Context, *, msg: str) -> None:
     """Repeat the given message"""
     await ctx.send(msg)
