@@ -21,17 +21,15 @@ async def on_ready():
 
 @bot.hybrid_command()
 @commands.is_owner()
-async def synctree(ctx: commands.Context, guild_ids: str = None):
+async def synctree(ctx: commands.Context, guild_id: int = None):
     """
     Sync the application commands tree
     This must also be done with hybrid commands, to ensure that the application commands also work
-    Due to a Discord limitation, we cannot use *args with application commands
     """
-    if not guild_ids:
+    if not guild_id:
         await bot.tree.sync()  # sync global commands
     else:
-        for g in map(int, guild_ids.split()):
-            await bot.tree.sync(guild=discord.Object(id=g))
+        await bot.tree.sync(guild=discord.Object(id=guild_id))
     await ctx.send("Synced the application commands tree!")
 
 
