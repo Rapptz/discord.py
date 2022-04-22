@@ -4753,6 +4753,10 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`cancelled`.
 
+    .. attribute:: ended
+
+        An alias for :attr:`completed`.
+
 .. class:: RequiredActionType
 
     Represents an action Discord requires the user to take.
