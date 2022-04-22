@@ -293,28 +293,28 @@ class Activity(BaseActivity):
     @property
     def large_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
         try:
             large_image = self.assets['large_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{large_image}.png'
+            return self._image_url(large_image)
 
     @property
     def small_image_url(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
         try:
             small_image = self.assets['small_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{small_image}.png'
+            return self._image_url(small_image)
+
+    def _image_url(self, image: str) -> Optional[str]:
+        if image.startswith('mp:'):
+            return f'https://media.discordapp.net/{image[3:]}'
+        elif self.application_id is not None:
+            return Asset.BASE + f'/app-assets/{self.application_id}/{image}.png'
 
     @property
     def large_image_text(self) -> Optional[str]:
