@@ -2821,6 +2821,10 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`cancelled`.
 
+    .. attribute:: ended
+
+        An alias for :attr:`completed`.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
