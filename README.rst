@@ -11,7 +11,7 @@ discord.py
    :target: https://pypi.python.org/pypi/discord.py
    :alt: PyPI supported Python versions
 
-A modern, easy to use, feature-rich, and async ready API wrapper for Discord written in Python.
+A modern, easy-to-use, feature-rich, and async-ready API wrapper for Discord written in Python.
 
 Key Features
 -------------
