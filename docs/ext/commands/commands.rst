@@ -530,6 +530,8 @@ resumes handling, which in this case would be to pass it into the ``liquid`` par
 typing.Literal
 ^^^^^^^^^^^^^^^^
 
+.. versionadded:: 2.0
+
 A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
 after being converted to the same type. For example, given the following:
 
@@ -547,6 +549,30 @@ The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sel
 :exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
 
 Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
+
+typing.Annotated
+^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+A :data:`typing.Annotated` is a special type introduced in Python 3.9 that allows the type checker to see one type, but allows the library to see another type. This is useful for appeasing the type checker for complicated converters. The second parameter of ``Annotated`` must be the converter that the library should use.
+
+For example, given the following:
+
+.. code-block:: python3
+
+    from typing import Annotated
+
+    @bot.command()
+    async def fun(ctx, arg: Annotated[str, lambda s: s.upper()]):
+        await ctx.send(arg)
+
+The type checker will see ``arg`` as a regular :class:`str` but the library will know you wanted to change the input into all upper-case.
+
+.. note::
+
+    For Python versions below 3.9, it is recommended to install the ``typing_extensions`` library and import ``Annotated`` from there.
+
 
 Greedy
 ^^^^^^^^

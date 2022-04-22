@@ -625,6 +625,9 @@ def get_supported_annotation(
     if hasattr(annotation, '__discord_app_commands_transform__'):
         return (annotation.metadata, MISSING)
 
+    if hasattr(annotation, '__metadata__'):
+        return get_supported_annotation(annotation.__metadata__[0])
+
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
             return (annotation, MISSING)
