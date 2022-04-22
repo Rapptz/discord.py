@@ -20,7 +20,7 @@ async def on_ready():
 
 
 @bot.hybrid_command()
-@bot.is_owner()
+@commands.is_owner()
 async def synctree(ctx: commands.Context, *guild_ids: int):
     """
     Sync the application commands tree
