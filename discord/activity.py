@@ -74,9 +74,7 @@ type: int
 sync_id: str
 session_id: str
 flags: int
-buttons: list[dict]
-    label: str (max: 32)
-    url: str (max: 512)
+buttons: list[str (max: 32)]
 
 There are also activity flags which are mostly uninteresting for the library atm.
 
@@ -96,7 +94,6 @@ if TYPE_CHECKING:
         ActivityTimestamps,
         ActivityParty,
         ActivityAssets,
-        ActivityButton,
     )
 
     from .state import ConnectionState
@@ -187,12 +184,8 @@ class Activity(BaseActivity):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
-    buttons: List[:class:`dict`]
-        An list of dictionaries representing custom buttons shown in a rich presence.
-        Each dictionary contains the following keys:
-
-        - ``label``: A string representing the text shown on the button.
-        - ``url``: A string representing the URL opened upon clicking the button.
+    buttons: List[:class:`str`]
+        An list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
 
@@ -231,7 +224,7 @@ class Activity(BaseActivity):
         self.flags: int = kwargs.pop('flags', 0)
         self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
-        self.buttons: List[ActivityButton] = kwargs.pop('buttons', [])
+        self.buttons: List[str] = kwargs.pop('buttons', [])
 
         activity_type = kwargs.pop('type', -1)
         self.type: ActivityType = (
