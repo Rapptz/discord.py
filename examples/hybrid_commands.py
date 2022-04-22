@@ -80,7 +80,7 @@ async def _bot(ctx: commands.Context) -> None:
 @cool.command(name="member")
 async def _member(ctx: commands.Context, member: discord.Member = None) -> None:
     """Is a member cool?"""
-    m = m or ctx.author  # default to command invoker
+    m = member or ctx.author  # default to command invoker
     await ctx.send(f"Yes, {member.mention} is cool")
 
 
