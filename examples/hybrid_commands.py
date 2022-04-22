@@ -81,7 +81,10 @@ async def _bot(ctx: commands.Context) -> None:
 async def _member(ctx: commands.Context, m: discord.Member = None) -> None:
     """Is a member cool?"""
     m = m or ctx.author  # default to command invoker
-    await ctx.send(f"Yes, {m.mention} is cool")
+    try:
+        await ctx.send(f"Yes, {m.mention} is cool")
+    except commands.MemberNotFound:
+        await ctx.send(f"No, '{m}' is not cool")
 
 
 # IMPORTANT: You mustn't hard code your token in a production bot
