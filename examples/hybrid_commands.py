@@ -43,19 +43,19 @@ async def hello(ctx: commands.Context) -> None:
 
 
 @bot.hybrid_command(aliases=["repeat", "echo"])
-async def say(ctx: commands.Context, *, msg: str) -> None:
+async def say(ctx: commands.Context, *, message: str) -> None:
     """Repeat the given message"""
-    await ctx.send(msg)
+    await ctx.send(message)
 
 
 @bot.hybrid_command()
-async def dice(ctx: commands.Context, fmt: str = "1d6") -> None:
+async def dice(ctx: commands.Context, die: str = "1d6") -> None:
     """
     Rolls a dice in NdN format
     Example of optional arguments (fmt defaults to 1d6)
     """
     try:
-        rolls, limit = map(int, fmt.lower().split("d"))
+        rolls, limit = map(int, die.lower().split("d"))
     except Exception:
         await ctx.send("Format has to be in NdN!")
         return
@@ -78,16 +78,16 @@ async def _bot(ctx: commands.Context) -> None:
 
 
 @cool.command(name="member")
-async def _member(ctx: commands.Context, m: discord.Member = None) -> None:
+async def _member(ctx: commands.Context, member: discord.Member = None) -> None:
     """Is a member cool?"""
     m = m or ctx.author  # default to command invoker
-    await ctx.send(f"Yes, {m.mention} is cool")
+    await ctx.send(f"Yes, {member.mention} is cool")
 
 
 # IMPORTANT: You mustn't hard code your token in a production bot
 # Treat it like a password - if someone gets hold of it, they can use it to access your bot and do potentially harmful things with it
 # It's recommended to either use a .env file (python-dotenv) or a config.json file under .gitignore
-TOKEN = "..."
+TOKEN = "OTE0MTM5OTQ1MzE1MjMzODEz.YaItKg.kyaU9L8VOEOTSBWRAjXyjrn-h14"
 
 
 async def main() -> None:
