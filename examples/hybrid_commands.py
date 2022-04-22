@@ -87,7 +87,7 @@ async def _member(ctx: commands.Context, member: discord.Member = None) -> None:
 # IMPORTANT: You mustn't hard code your token in a production bot
 # Treat it like a password - if someone gets hold of it, they can use it to access your bot and do potentially harmful things with it
 # It's recommended to either use a .env file (python-dotenv) or a config.json file under .gitignore
-TOKEN = "OTE0MTM5OTQ1MzE1MjMzODEz.YaItKg.kyaU9L8VOEOTSBWRAjXyjrn-h14"
+TOKEN = ".."
 
 
 async def main() -> None:
