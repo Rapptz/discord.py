@@ -1194,7 +1194,7 @@ class Client:
     async def fetch_guilds(
         self,
         *,
-        limit: Optional[int] = 100,
+        limit: Optional[int] = 200,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
     ) -> AsyncIterator[Guild]:
@@ -1230,7 +1230,12 @@ class Client:
             The number of guilds to retrieve.
             If ``None``, it retrieves every guild you have access to. Note, however,
             that this would make it a slow operation.
-            Defaults to ``100``.
+            Defaults to ``200``.
+
+            .. versionchanged:: 2.0
+
+                The default has been changed to 200.
+
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
@@ -1259,7 +1264,7 @@ class Client:
                 if limit is not None:
                     limit -= len(data)
 
-                before = Object(id=int(data[-1]['id']))
+                before = Object(id=int(data[0]['id']))
 
             return data, before, limit
 
@@ -1271,7 +1276,7 @@ class Client:
                 if limit is not None:
                     limit -= len(data)
 
-                after = Object(id=int(data[0]['id']))
+                after = Object(id=int(data[-1]['id']))
 
             return data, after, limit
 
@@ -1281,22 +1286,23 @@ class Client:
             after = Object(id=time_snowflake(after, high=True))
 
         predicate: Optional[Callable[[GuildPayload], bool]] = None
-        strategy, state = _before_strategy, before
+        strategy, state = _after_strategy, after
+
+        if before:
+            strategy, state = _before_strategy, before
 
         if before and after:
             predicate = lambda m: int(m['id']) > after.id
-        elif after:
-            strategy, state = _after_strategy, after
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = min(200 if limit is None else limit, 200)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
+            if len(data) < 200:
                 limit = 0
 
             if predicate:
