@@ -215,6 +215,8 @@ class User(Snowflake, Protocol):
         The user's discriminator.
     bot: :class:`bool`
         If the user is a bot account.
+    system: :class:`bool`
+        If the user is a system account.
     """
 
     __slots__ = ()
@@ -222,6 +224,7 @@ class User(Snowflake, Protocol):
     name: str
     discriminator: str
     bot: bool
+    system: bool
 
     @property
     def display_name(self) -> str:
@@ -236,6 +239,36 @@ class User(Snowflake, Protocol):
     @property
     def avatar(self) -> Optional[Asset]:
         """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
+        raise NotImplementedError
+
+    @property
+    def default_avatar(self) -> Asset:
+        """:class:`~discord.Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        raise NotImplementedError
+
+    @property
+    def display_avatar(self) -> Asset:
+        """:class:`~discord.Asset`: Returns the user's display avatar.
+
+        For regular users this is just their default avatar or uploaded avatar.
+
+        .. versionadded:: 2.0
+        """
+        raise NotImplementedError
+
+    def mentioned_in(self, message: Message) -> bool:
+        """Checks if the user is mentioned in the specified message.
+
+        Parameters
+        -----------
+        message: :class:`~discord.Message`
+            The message to check if you're mentioned in.
+
+        Returns
+        -------
+        :class:`bool`
+            Indicates if the user is mentioned in the message.
+        """
         raise NotImplementedError
 
 
