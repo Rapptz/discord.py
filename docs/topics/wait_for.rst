@@ -87,6 +87,6 @@ As the ``check`` kwarg simply takes a function, we can make it inline by making 
 
 Closing Remarks
 ~~~~~~~~~~~~~~~~~~~~
-``wait_for`` is a powerful tool used often to wait for responses in code. The examples above only shows 2 types of ``wait_for``, reactions and messages, but you can wait for any event! A full list of events can be seen here: :ref:`event reference <discord-api-events>`. 
+``wait_for`` is a powerful tool used often to wait for responses in code. The examples above show only 2 types of ``wait_for``, reactions and messages, but you can wait for any event! A full list of events can be seen here: :ref:`event reference <discord-api-events>`. 
 
 
