@@ -51,11 +51,11 @@ You will need a bot application before being able to run a bot. A step-by-step t
 A Simple Bot
 -------------
 
-This step-by-step walkthrough will show you how to make a bot using the commands framework.
+This step-by-step walk-through will show you how to make a bot using the commands framework.
 
 .. note::
 
-    This walkthrough does not cover application commands (slash commands). For a detailed walkthrough of application commands, see [insert guide here].
+    This walk-through does not cover application commands (slash commands). For a detailed walk-through of application commands, see [insert guide here].
 
 1. Create a new Python file in the folder you want to work in.
 
@@ -90,6 +90,7 @@ You will need to specify a ``command_prefix`` here, we use ``!``, but you can us
 
 .. note::
 
+    As of 2.0, the ``intents`` argument is required.
     ``Intents`` are the method to specify which gateway events you wish to receive. ``Intents.default()`` means you will receive all events that are not locked behind bot verification.
     For more information, see :ref:`intents_primer`.
 
@@ -97,7 +98,7 @@ You will need to specify a ``command_prefix`` here, we use ``!``, but you can us
 
     @bot.listen()
     async def on_ready():
-        print("Ready! I am", bot.user, "and my ID is", bot.user.id)
+        print(f"Ready! I am {bot.user} and my ID is {bot.user.id}")
 
 This is the ``ready`` event. It is called when the bot has finished loading and everything is cached.
 We use the :meth:`@bot.listen() <ext.commands.Bot.listen>` decorator as to not override the main event.
@@ -120,7 +121,7 @@ For a list of available events, see :ref:`discord-api-events`.
 
 .. warning::
 
-    ``on_ready`` can and will be called multiple times throughout your bots uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
+    ``on_ready`` can and will be called multiple times throughout your bot's uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
 
 .. code-block:: python
 
@@ -181,6 +182,63 @@ And run your bot!
 .. image:: /images/discord_echo_example.png
     :scale: 100 %
 
+
+Securing your bot's token
+--------------------------
+
+The token to your bot is **very important**. If an unauthorized user obtains it, they can do very malicious tasks that can delete your private guilds or get you and your bot banned.
+This short sub-guide will go over a couple of basic ways to secure your token so that it is not obtainable in a public environment.
+
+.. note::
+
+    This will not go over securing your bot's host system (i.e. VPS). Make sure your system is private and only you and authorized users can access it.
+
+1. Create a config file.
+
+    There are a few options for this, and you can choose whichever you prefer:
+
+    - JSON, YAML, TOML
+    - Python (you can import the config!)
+    - Environment Variable (either on your system, or a ``.env`` file)
+  
+    (For this example, we will use a Python file.)
+
+2. Store your token and other secrets here.
+
+    .. code-block:: python
+
+        my_token = "123"
+        database_password = "hello_world"
+
+3. Import your config data into your main bot file
+
+    .. code-block:: python
+
+        import config
+
+        bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
+        bot.run(config.my_token)
+    
+4. If you store your bot's code on a public repository (e.g. GitHub), you can create a ``.gitignore`` file to prevent pushing the config file:
+
+    .. code-block:: python
+
+        # file: .gitignore
+        config.py
+
+    .. code-block:: shell
+
+        $ git add .gitignore
+        $ git commit -m "Add .gitignore"
+        $ git status
+        # notice how there is no more ``config.py``!
+        On branch master
+        no changes to commit, working tree clean
+
+    .. note::
+
+        By doing this, the config file will not exist on the repository. If you wish to ever move your bot, you should copy the config file from your old system to your new one, or create a new config file.
+
 Common Issues
 --------------
 
@@ -194,17 +252,17 @@ If you get a traceback similar to:
 .. code-block:: python
 
     Traceback (most recent call last):
-        File "G:\Programming\Python\discord.py-2.0\bot.py", line 17, in <module>
+        File "bot.py", line 17, in <module>
             bot.run(INVALID_TOKEN)
-        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 704, in run
+        File "venv\Lib\discord\client.py", line 704, in run
             return future.result()
-        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 683, in runner
+        File "venv\Lib\discord\client.py", line 683, in runner
             await self.start(*args, **kwargs)
-        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 646, in start
+        File "venv\Lib\discord\client.py", line 646, in start
             await self.login(token)
-        File "G:\Programming\Python\discord.py-2.0\discord\client.py", line 512, in login
+        File "venv\Lib\discord\client.py", line 512, in login
             data = await self.http.static_login(token.strip())
-        File "G:\Programming\Python\discord.py-2.0\discord\http.py", line 537, in static_login
+        File "venv\Lib\discord\http.py", line 537, in static_login
             raise LoginFailure('Improper token has been passed.') from exc
     discord.errors.LoginFailure: Improper token has been passed.
 

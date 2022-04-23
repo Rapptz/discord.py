@@ -62,7 +62,7 @@ Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
 Global Python environments get cluttered with dependencies very easily - virtual environments can help separate your projects into clean, organized folders.
-Virtual environment (or "venv") is a concept introduced by Python 3.3 used to help separate project dependencies from the global Python installation, thereby not polluting
+Virtual environment (or "venv") is a concept introduced in Python 3.3 used to help separate project dependencies from the global Python installation, thereby not polluting
 other projects using the same Python version. They also allow you to install libraries that you may not have permission to install globally.
 
 To quickly get a virtual environment working in your project folder:
@@ -88,7 +88,7 @@ To quickly get a virtual environment working in your project folder:
 
         $ .\.venv\Scripts\activate
 
-3. You can then use ``pip`` and ``python`` without interferring with other projects:
+3. You can then use ``pip`` and ``python`` without interfering with other projects:
 
     .. code-block:: shell
 
