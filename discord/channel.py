@@ -258,6 +258,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     @overload
+    async def edit(self) -> Optional[TextChannel]:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -272,11 +280,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
-    ) -> Optional[TextChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[TextChannel]:
+    ) -> TextChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
@@ -1289,6 +1293,14 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1303,11 +1315,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[VoiceChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[VoiceChannel]:
+    ) -> VoiceChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
@@ -1583,6 +1591,14 @@ class StageChannel(VocalGuildChannel):
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1595,11 +1611,7 @@ class StageChannel(VocalGuildChannel):
         rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[StageChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[StageChannel]:
+    ) -> StageChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
@@ -1750,6 +1762,14 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1758,11 +1778,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         nsfw: bool = ...,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[CategoryChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[CategoryChannel]:
+    ) -> CategoryChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
@@ -2033,6 +2049,14 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         )
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -2047,11 +2071,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
-    ) -> Optional[ForumChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[ForumChannel]:
+    ) -> ForumChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[ForumChannel]:

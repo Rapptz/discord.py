@@ -88,11 +88,10 @@ from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 
 
-# fmt: off
 __all__ = (
     'Guild',
+    'BanEntry',
 )
-# fmt: on
 
 MISSING = utils.MISSING
 

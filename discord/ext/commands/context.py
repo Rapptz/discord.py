@@ -541,7 +541,10 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         :class:`~discord.Message`
             The message that was sent.
         """
-        return await self.send(content, reference=self.message, **kwargs)
+        if self.interaction is None:
+            return await self.send(content, reference=self.message, **kwargs)
+        else:
+            return await self.send(content, **kwargs)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
@@ -724,7 +727,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         }
 
         if self.interaction.response.is_done():
-            return await self.interaction.followup.send(**kwargs, wait=True)
+            msg = await self.interaction.followup.send(**kwargs, wait=True)
+        else:
+            await self.interaction.response.send_message(**kwargs)
+            msg = await self.interaction.original_message()
 
-        await self.interaction.response.send_message(**kwargs)
-        return await self.interaction.original_message()
+        if delete_after is not None and not (ephemeral and self.interaction is not None):
+            await msg.delete(delay=delete_after)
+        return msg

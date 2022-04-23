@@ -76,11 +76,6 @@ class ActivityEmoji(TypedDict):
     animated: NotRequired[bool]
 
 
-class ActivityButton(TypedDict):
-    label: str
-    url: str
-
-
 ActivityType = Literal[0, 1, 2, 4, 5]
 
 
@@ -106,5 +101,5 @@ class Activity(_BaseActivity, total=False):
     secrets: ActivitySecrets
     session_id: Optional[str]
     instance: bool
-    buttons: List[ActivityButton]
+    buttons: List[str]
     sync_id: str
