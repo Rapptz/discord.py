@@ -1448,7 +1448,7 @@ class ConnectionState:
             member = None
             user_id = int(data['user_id'])
             if isinstance(channel, DMChannel):
-                member = channel.recipient
+                member = channel.recipient = self.get_user(user_id)
 
             elif isinstance(channel, (Thread, TextChannel)) and guild is not None:
                 member = guild.get_member(user_id)
