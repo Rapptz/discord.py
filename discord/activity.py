@@ -185,7 +185,7 @@ class Activity(BaseActivity):
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
     buttons: List[:class:`str`]
-        An list of strings representing the labels of custom buttons shown in a rich presence.
+        A list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
 
@@ -285,7 +285,7 @@ class Activity(BaseActivity):
 
     @property
     def large_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
+        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
             large_image = self.assets['large_image']
         except KeyError:
@@ -295,7 +295,7 @@ class Activity(BaseActivity):
 
     @property
     def small_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
+        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
             small_image = self.assets['small_image']
         except KeyError:
@@ -311,12 +311,12 @@ class Activity(BaseActivity):
 
     @property
     def large_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the large image asset hover text of this activity, if applicable."""
         return self.assets.get('large_text', None)
 
     @property
     def small_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the small image asset hover text of this activity, if applicable."""
         return self.assets.get('small_text', None)
 
 
@@ -705,7 +705,7 @@ class Spotify:
 
 
 class CustomActivity(BaseActivity):
-    """Represents a Custom activity from Discord.
+    """Represents a custom activity from Discord.
 
     .. container:: operations
 
