@@ -330,7 +330,7 @@ class RawTypingEvent(_RawReprMixin):
     ----------
     channel_id: :class:`int`
         The ID of the channel the user started typing in.
-    user_id: :class:`int:
+    user_id: :class:`int`
         The ID of the user that started typing.
     user: Optional[Union[:class:`discord.User`, :class:`discord.Member`]]
         The user that started typing, if they could be found in the internal cache.
