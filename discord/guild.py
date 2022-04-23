@@ -94,11 +94,10 @@ from .guild_premium import PremiumGuildSubscription
 from .entitlements import Entitlement
 
 
-# fmt: off
 __all__ = (
     'Guild',
+    'BanEntry',
 )
-# fmt: on
 
 MISSING = utils.MISSING
 
