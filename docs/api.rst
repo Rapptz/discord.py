@@ -4030,6 +4030,14 @@ RawThreadDeleteEvent
 .. autoclass:: RawThreadDeleteEvent()
     :members:
 
+RawTypingEvent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawTypingEvent
+
+.. autoclass:: RawTypingEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 

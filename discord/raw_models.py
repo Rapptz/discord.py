@@ -332,7 +332,7 @@ class RawTypingEvent(_RawReprMixin):
         The ID of the channel the user started typing in.
     user_id: :class:`int:
         The ID of the user that started typing.
-    user: Union[:class:`discord.User`, :class:`discord.Member`]
+    user: Optional[Union[:class:`discord.User`, :class:`discord.Member`]]
         The user that started typing, if they could be found in the internal cache.
     timestamp: :class:`datetime.datetime`
         When the typing started as an aware datetime in UTC.
