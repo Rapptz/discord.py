@@ -273,6 +273,9 @@ Channels
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
+    If the channel or user could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_typing` instead.
+
     This requires :attr:`Intents.typing` to be enabled.
 
     :param channel: The location where the typing originated from.
@@ -281,6 +284,18 @@ Channels
     :type user: Union[:class:`User`, :class:`Member`]
     :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
+
+.. function:: on_raw_typing(payload)
+
+    Called when someone begins typing a message. Unlike :func:`on_typing` this
+    is called regardless of the channel and user being in the internal cache.
+
+    This requires :attr:`Intents.typing` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawTypingEvent`
 
 Connection
 ~~~~~~~~~~~
