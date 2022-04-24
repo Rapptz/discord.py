@@ -27,7 +27,6 @@ from __future__ import annotations
 import asyncio
 from collections import deque, OrderedDict
 import copy
-import datetime
 import itertools
 import logging
 from typing import (
@@ -1443,27 +1442,25 @@ class ConnectionState:
             asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data: gw.TypingStartEvent) -> None:
+        raw = RawTypingEvent(data)
+        raw.user = self.get_user(raw.user_id)
         channel, guild = self._get_guild_channel(data)
+
         if channel is not None:
-            member = None
-            user_id = int(data['user_id'])
             if isinstance(channel, DMChannel):
-                member = channel.recipient
+                channel.recipient = raw.user
+            elif guild is not None:
+                raw.user = guild.get_member(raw.user_id)
 
-            elif isinstance(channel, (Thread, TextChannel)) and guild is not None:
-                member = guild.get_member(user_id)
-
-                if member is None:
+                if raw.user is None:
                     member_data = data.get('member')
                     if member_data:
-                        member = Member(data=member_data, state=self, guild=guild)
+                        raw.user = Member(data=member_data, state=self, guild=guild)
 
-            elif isinstance(channel, GroupChannel):
-                member = utils.find(lambda x: x.id == user_id, channel.recipients)
+            if raw.user is not None:
+                self.dispatch('typing', channel, raw.user, raw.timestamp)
 
-            if member is not None:
-                timestamp = datetime.datetime.fromtimestamp(data['timestamp'], tz=datetime.timezone.utc)
-                self.dispatch('typing', channel, member, timestamp)
+        self.dispatch('raw_typing', raw)
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, TextChannel):

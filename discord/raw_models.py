@@ -24,9 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
 
 from .enums import ChannelType, try_enum
+from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -39,11 +41,13 @@ if TYPE_CHECKING:
         MessageUpdateEvent,
         IntegrationDeleteEvent,
         ThreadDeleteEvent,
+        TypingStartEvent,
     )
     from .message import Message
     from .partial_emoji import PartialEmoji
     from .member import Member
     from .threads import Thread
+    from .user import User
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -57,6 +61,7 @@ __all__ = (
     'RawReactionClearEmojiEvent',
     'RawIntegrationDeleteEvent',
     'RawThreadDeleteEvent',
+    'RawTypingEvent',
 )
 
 
@@ -314,3 +319,32 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+
+class RawTypingEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_typing` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    channel_id: :class:`int`
+        The ID of the channel the user started typing in.
+    user_id: :class:`int`
+        The ID of the user that started typing.
+    user: Optional[Union[:class:`discord.User`, :class:`discord.Member`]]
+        The user that started typing, if they could be found in the internal cache.
+    timestamp: :class:`datetime.datetime`
+        When the typing started as an aware datetime in UTC.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild the user started typing in, if applicable.
+    """
+
+    __slots__ = ('channel_id', 'user_id', 'user', 'timestamp', 'guild_id')
+
+    def __init__(self, data: TypingStartEvent, /) -> None:
+        self.channel_id: int = int(data['channel_id'])
+        self.user_id: int = int(data['user_id'])
+        self.user: Optional[Union[User, Member]] = None
+        self.timestamp: datetime.datetime = datetime.datetime.fromtimestamp(data['timestamp'], tz=datetime.timezone.utc)
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
