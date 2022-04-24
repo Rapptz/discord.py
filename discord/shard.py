@@ -423,8 +423,6 @@ class AutoShardedClient(Client):
             initial = shard_id == shard_ids[0]
             await self.launch_shard(gateway, shard_id, initial=initial)
 
-        self._connection.shards_launched.set()
-
     async def _async_setup_hook(self) -> None:
         await super()._async_setup_hook()
         self.__queue = asyncio.PriorityQueue()
