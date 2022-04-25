@@ -528,8 +528,10 @@ class ConnectionState:
                             self.dispatch('guild_join', guild)
 
             for guild, future in states:
+                timeout = self._chunk_timeout(guild)
+
                 try:
-                    await asyncio.wait_for(future, timeout=5.0)
+                    await asyncio.wait_for(future, timeout=timeout)
                 except asyncio.TimeoutError:
                     _log.warning('Shard ID %s timed out waiting for chunks for guild_id %s.', guild.shard_id, guild.id)
 
@@ -1096,9 +1098,14 @@ class ConnectionState:
             return await request.wait()
         return request.get_future()
 
+    def _chunk_timeout(self, guild: Guild) -> float:
+        return max(5.0, (guild.member_count or 0) / 10000)
+
     async def _chunk_and_dispatch(self, guild, unavailable):
+        timeout = self._chunk_timeout(guild)
+
         try:
-            await asyncio.wait_for(self.chunk_guild(guild), timeout=60.0)
+            await asyncio.wait_for(self.chunk_guild(guild), timeout=timeout)
         except asyncio.TimeoutError:
             _log.info('Somehow timed out waiting for chunks.')
 
@@ -1582,8 +1589,10 @@ class AutoShardedConnectionState(ConnectionState):
                             self.dispatch('guild_join', guild)
 
             for guild, future in states:
+                timeout = self._chunk_timeout(guild)
+
                 try:
-                    await asyncio.wait_for(future, timeout=5.0)
+                    await asyncio.wait_for(future, timeout=timeout)
                 except asyncio.TimeoutError:
                     _log.warning('Shard ID %s timed out waiting for chunks for guild_id %s.', guild.shard_id, guild.id)
 
