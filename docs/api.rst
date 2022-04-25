@@ -5720,6 +5720,7 @@ WebhookMessage
 
 .. autoclass:: WebhookMessage()
     :members:
+    :inherited-members:
 
 SyncWebhook
 ~~~~~~~~~~~~
