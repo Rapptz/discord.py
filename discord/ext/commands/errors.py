@@ -587,7 +587,7 @@ class RangeError(BadArgument):
         if minimum is None and maximum is not None:
             label = f'no more than {maximum}'
         elif minimum is not None and maximum is None:
-            label = f'not less than {minimum}'
+            label = f'no less than {minimum}'
         elif maximum is not None and minimum is not None:
             label = f'between {minimum} and {maximum}'
 
