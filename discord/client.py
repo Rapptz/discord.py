@@ -484,7 +484,6 @@ class Client:
         self.loop = loop
         self.http.loop = loop
         self._connection.loop = loop
-        await self._connection.async_setup()
 
         self._ready = asyncio.Event()
 
