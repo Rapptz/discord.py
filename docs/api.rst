@@ -382,7 +382,7 @@ Debug
 
     :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
     :type event_type: :class:`str`
-    
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is completely received from the WebSocket, before
@@ -3467,6 +3467,7 @@ WebhookMessage
 
 .. autoclass:: WebhookMessage()
     :members:
+    :inherited-members:
 
 SyncWebhook
 ~~~~~~~~~~~~
