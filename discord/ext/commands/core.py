@@ -85,6 +85,7 @@ __all__ = (
     'dm_only',
     'guild_only',
     'is_owner',
+    'is_guild_owner',
     'is_nsfw',
     'has_guild_permissions',
     'bot_has_guild_permissions',
@@ -2246,6 +2247,22 @@ def is_owner() -> Callable[[T], T]:
     async def predicate(ctx: Context[BotT]) -> bool:
         if not await ctx.bot.is_owner(ctx.author):
             raise NotOwner('You do not own this bot.')
+        return True
+
+    return check(predicate)
+
+
+def is_guild_owner() -> Callable[[T], T]:
+    """A :func:`.check` that checks if the person invoking this command is the
+    owner of the guild.
+
+    This check raises a special exception, :exc:`.NotGuildOwner` that is derived
+    from :exc:`.CheckFailure`.
+    """
+
+    async def predicate(ctx: Context[BotT]) -> bool:
+        if ctx.author.id != ctx.guild.owner_id:
+            raise NotGuildOwner('You do not own this guild.')
         return True
 
     return check(predicate)
