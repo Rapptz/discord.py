@@ -852,6 +852,9 @@ Members
     - nickname
     - roles
     - pending
+    - timeout
+
+    Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
     :param before: The updated member's old info.
     :type before: :class:`Member`
