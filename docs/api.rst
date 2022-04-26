@@ -683,6 +683,7 @@ Members
     - nickname
     - roles
     - pending
+    - timeout
 
     This requires :attr:`Intents.members` to be enabled.
 
