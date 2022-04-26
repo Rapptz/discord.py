@@ -30,7 +30,21 @@ import copy
 import datetime
 import itertools
 import logging
-from typing import Dict, Optional, TYPE_CHECKING, Union, Callable, Any, List, TypeVar, Coroutine, Sequence, Tuple, Deque
+from typing import (
+    Dict,
+    Generic,
+    Optional,
+    TYPE_CHECKING,
+    Union,
+    Callable,
+    Any,
+    List,
+    TypeVar,
+    Coroutine,
+    Sequence,
+    Tuple,
+    Deque,
+)
 import weakref
 import inspect
 
@@ -56,6 +70,7 @@ from .invite import Invite
 from .integrations import _integration_factory
 from .interactions import Interaction
 from .ui.view import ViewStore, View
+from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
@@ -68,6 +83,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .client import Client
     from .gateway import DiscordWebSocket
+    from .app_commands import CommandTree
 
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
@@ -80,7 +96,6 @@ if TYPE_CHECKING:
     from .types import gateway as gw
 
     T = TypeVar('T')
-    CS = TypeVar('CS', bound='ConnectionState')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
 
 
@@ -226,6 +241,7 @@ class ConnectionState:
         self._activity: Optional[ActivityPayload] = activity
         self._status: Optional[str] = status
         self._intents: Intents = intents
+        self._command_tree: Optional[CommandTree] = None
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents  # type: ignore - This reassignment is on purpose
@@ -689,7 +705,9 @@ class ConnectionState:
 
     def parse_interaction_create(self, data: gw.InteractionCreateEvent) -> None:
         interaction = Interaction(data=data, state=self)
-        if data['type'] == 3:  # interaction component
+        if data['type'] in (2, 4) and self._command_tree:  # application command and auto complete
+            self._command_tree._from_interaction(interaction)
+        elif data['type'] == 3:  # interaction component
             # These keys are always there for this interaction type
             custom_id = interaction.data['custom_id']  # type: ignore
             component_type = interaction.data['component_type']  # type: ignore
@@ -743,6 +761,12 @@ class ConnectionState:
             if channel is not None:
                 guild._remove_channel(channel)
                 self.dispatch('guild_channel_delete', channel)
+
+                if channel.type in (ChannelType.voice, ChannelType.stage_voice):
+                    for s in guild.scheduled_events:
+                        if s.channel_id == channel.id:
+                            guild._scheduled_events.pop(s.id)
+                            self.dispatch('scheduled_event_delete', guild, s)
 
     def parse_channel_update(self, data: gw.ChannelUpdateEvent) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -1285,6 +1309,80 @@ class ConnectionState:
                 self.dispatch('stage_instance_delete', stage_instance)
         else:
             _log.debug('STAGE_INSTANCE_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_create(self, data: gw.GuildScheduledEventCreateEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            scheduled_event = ScheduledEvent(state=self, data=data)
+            guild._scheduled_events[scheduled_event.id] = scheduled_event
+            self.dispatch('scheduled_event_create', guild, scheduled_event)
+        else:
+            _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_update(self, data: gw.GuildScheduledEventUpdateEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            scheduled_event = guild._scheduled_events.get(int(data['id']))
+            if scheduled_event is not None:
+                old_scheduled_event = copy.copy(scheduled_event)
+                scheduled_event._update(data)
+                self.dispatch('scheduled_event_update', guild, old_scheduled_event, scheduled_event)
+            else:
+                _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown scheduled event ID: %s. Discarding.', data['id'])
+        else:
+            _log.debug('SCHEDULED_EVENT_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_delete(self, data: gw.GuildScheduledEventDeleteEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            try:
+                scheduled_event = guild._scheduled_events.pop(int(data['id']))
+            except KeyError:
+                pass
+            else:
+                self.dispatch('scheduled_event_delete', guild, scheduled_event)
+        else:
+            _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_user_add(self, data: gw.GuildScheduledEventUserAdd) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            scheduled_event = guild._scheduled_events.get(int(data['guild_scheduled_event_id']))
+            if scheduled_event is not None:
+                user = self.get_user(int(data['user_id']))
+                if user is not None:
+                    scheduled_event._add_user(user)
+                    self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
+                else:
+                    _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown user ID: %s. Discarding.', data['user_id'])
+                self.dispatch('scheduled_event_user_add', guild, scheduled_event, user)
+            else:
+                _log.debug(
+                    'SCHEDULED_EVENT_USER_ADD referencing unknown scheduled event ID: %s. Discarding.',
+                    data['guild_scheduled_event_id'],
+                )
+        else:
+            _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_scheduled_event_user_remove(self, data: gw.GuildScheduledEventUserRemove) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            scheduled_event = guild._scheduled_events.get(int(data['guild_scheduled_event_id']))
+            if scheduled_event is not None:
+                user = self.get_user(int(data['user_id']))
+                if user is not None:
+                    scheduled_event._pop_user(user.id)
+                    self.dispatch('scheduled_event_user_remove', scheduled_event, user)
+                else:
+                    _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
+                self.dispatch('scheduled_event_user_remove', scheduled_event, user)
+            else:
+                _log.debug(
+                    'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',
+                    data['guild_scheduled_event_id'],
+                )
+        else:
+            _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_voice_state_update(self, data: gw.VoiceStateUpdateEvent) -> None:
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))

@@ -56,7 +56,7 @@ from .context import Context
 
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, TypeGuard
+    from typing_extensions import Concatenate, ParamSpec, TypeGuard, Self
 
     from discord.message import Message
 
@@ -292,7 +292,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     """
     __original_kwargs__: Dict[str, Any]
 
-    def __new__(cls: Type[CommandT], *args: Any, **kwargs: Any) -> CommandT:
+    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         # if you're wondering why this is done, it's because we need to ensure
         # we have a complete original copy of **kwargs even for classes that
         # mess with it by popping before delegating to the subclass __init__.
@@ -498,7 +498,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         else:
             return await self.callback(context, *args, **kwargs)  # type: ignore
 
-    def _ensure_assignment_on_copy(self, other: CommandT) -> CommandT:
+    def _ensure_assignment_on_copy(self, other: Self) -> Self:
         other._before_invoke = self._before_invoke
         other._after_invoke = self._after_invoke
         if self.checks != other.checks:
@@ -515,7 +515,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         return other
 
-    def copy(self: CommandT) -> CommandT:
+    def copy(self) -> Self:
         """Creates a copy of this command.
 
         Returns
@@ -526,7 +526,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         ret = self.__class__(self.callback, **self.__original_kwargs__)
         return self._ensure_assignment_on_copy(ret)
 
-    def _update_copy(self: CommandT, kwargs: Dict[str, Any]) -> CommandT:
+    def _update_copy(self, kwargs: Dict[str, Any]) -> Self:
         if kwargs:
             kw = kwargs.copy()
             kw.update(self.__original_kwargs__)
@@ -1446,7 +1446,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 
-    def copy(self: GroupT) -> GroupT:
+    def copy(self) -> Self:
         """Creates a copy of this :class:`Group`.
 
         Returns

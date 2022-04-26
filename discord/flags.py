@@ -24,9 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Dict, Generic, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
 
 __all__ = (
     'SystemChannelFlags',
@@ -37,7 +41,6 @@ __all__ = (
     'ApplicationFlags',
 )
 
-FV = TypeVar('FV', bound='flag_value')
 BF = TypeVar('BF', bound='BaseFlags')
 
 
@@ -47,7 +50,7 @@ class flag_value:
         self.__doc__ = func.__doc__
 
     @overload
-    def __get__(self: FV, instance: None, owner: Type[BF]) -> FV:
+    def __get__(self, instance: None, owner: Type[BF]) -> Self:
         ...
 
     @overload
@@ -303,6 +306,24 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.0
         """
         return 64
+
+    @flag_value
+    def loading(self):
+        """:class:`bool`: Returns ``True`` if the message is an interaction response and the bot
+        is "thinking".
+
+        .. versionadded:: 2.0
+        """
+        return 128
+
+    @flag_value
+    def failed_to_mention_some_roles_in_thread(self):
+        """:class:`bool`: Returns ``True`` if the message failed to mention some roles in a thread
+        and add their members to the thread.
+
+        .. versionadded:: 2.0
+        """
+        return 256
 
 
 @fill_with_flags()
@@ -919,6 +940,22 @@ class Intents(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 15
+
+    @flag_value
+    def guild_scheduled_events(self):
+        """:class:`bool`: Whether guild scheduled event related events are enabled.
+
+        This corresponds to the following events:
+
+        - :func:`on_scheduled_event_create`
+        - :func:`on_scheduled_event_update`
+        - :func:`on_scheduled_event_delete`
+        - :func:`on_scheduled_event_user_add`
+        - :func:`on_scheduled_event_user_remove`
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 16
 
 
 @fill_with_flags()

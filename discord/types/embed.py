@@ -43,11 +43,14 @@ class EmbedField(_EmbedFieldOptional):
     value: str
 
 
-class EmbedThumbnail(TypedDict, total=False):
-    url: str
+class _EmbedThumbnailOptional(TypedDict, total=False):
     proxy_url: str
     height: int
     width: int
+
+
+class EmbedThumbnail(_EmbedThumbnailOptional):
+    url: str
 
 
 class EmbedVideo(TypedDict, total=False):
@@ -57,11 +60,14 @@ class EmbedVideo(TypedDict, total=False):
     width: int
 
 
-class EmbedImage(TypedDict, total=False):
-    url: str
+class _EmbedImageOptional(TypedDict, total=False):
     proxy_url: str
     height: int
     width: int
+
+
+class EmbedImage(_EmbedImageOptional):
+    url: str
 
 
 class EmbedProvider(TypedDict, total=False):
@@ -69,11 +75,14 @@ class EmbedProvider(TypedDict, total=False):
     url: str
 
 
-class EmbedAuthor(TypedDict, total=False):
-    name: str
+class _EmbedAuthorOptional(TypedDict, total=False):
     url: str
     icon_url: str
     proxy_icon_url: str
+
+
+class EmbedAuthor(_EmbedAuthorOptional):
+    name: str
 
 
 EmbedType = Literal['rich', 'image', 'video', 'gifv', 'article', 'link']

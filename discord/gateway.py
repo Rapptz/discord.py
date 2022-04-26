@@ -241,7 +241,7 @@ DWS = TypeVar('DWS', bound='DiscordWebSocket')
 
 
 class DiscordWebSocket:
-    """Implements a WebSocket for Discord's gateway v6.
+    """Implements a WebSocket for Discord's gateway v10.
 
     Attributes
     -----------

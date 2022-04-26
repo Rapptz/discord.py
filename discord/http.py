@@ -59,6 +59,8 @@ from .utils import MISSING
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .ui.view import View
     from .embeds import Embed
     from .mentions import AllowedMentions
@@ -100,7 +102,6 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
     BE = TypeVar('BE', bound=BaseException)
-    MU = TypeVar('MU', bound='MaybeUnlock')
     Response = Coroutine[Any, Any, T]
 
 
@@ -287,7 +288,7 @@ class MaybeUnlock:
         self.lock: asyncio.Lock = lock
         self._unlock: bool = True
 
-    def __enter__(self: MU) -> MU:
+    def __enter__(self) -> Self:
         return self
 
     def defer(self) -> None:
@@ -1426,12 +1427,21 @@ class HTTPClient:
         return self.request(r, reason=reason, json=payload)
 
     def get_invite(
-        self, invite_id: str, *, with_counts: bool = True, with_expiration: bool = True
+        self,
+        invite_id: str,
+        *,
+        with_counts: bool = True,
+        with_expiration: bool = True,
+        guild_scheduled_event_id: Optional[Snowflake] = None,
     ) -> Response[invite.Invite]:
-        params = {
+        params: Dict[str, Any] = {
             'with_counts': int(with_counts),
             'with_expiration': int(with_expiration),
         }
+
+        if guild_scheduled_event_id:
+            params['guild_scheduled_event_id'] = guild_scheduled_event_id
+
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
     def invites_from(self, guild_id: Snowflake) -> Response[List[invite.Invite]]:
@@ -1583,8 +1593,16 @@ class HTTPClient:
     ) -> Response[List[scheduled_event.GuildScheduledEvent]]:
         ...
 
+    @overload
+    def get_scheduled_events(
+        self, guild_id: Snowflake, with_user_count: bool
+    ) -> Union[
+        Response[List[scheduled_event.GuildScheduledEventWithUserCount]], Response[List[scheduled_event.GuildScheduledEvent]]
+    ]:
+        ...
+
     def get_scheduled_events(self, guild_id: Snowflake, with_user_count: bool) -> Response[Any]:
-        params = {'with_user_count': with_user_count}
+        params = {'with_user_count': int(with_user_count)}
         return self.request(Route('GET', '/guilds/{guild_id}/scheduled-events', guild_id=guild_id), params=params)
 
     def create_guild_scheduled_event(
@@ -1619,10 +1637,16 @@ class HTTPClient:
     ) -> Response[scheduled_event.GuildScheduledEvent]:
         ...
 
+    @overload
+    def get_scheduled_event(
+        self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: bool
+    ) -> Union[Response[scheduled_event.GuildScheduledEventWithUserCount], Response[scheduled_event.GuildScheduledEvent]]:
+        ...
+
     def get_scheduled_event(
         self, guild_id: Snowflake, guild_scheduled_event_id: Snowflake, with_user_count: bool
     ) -> Response[Any]:
-        params = {'with_user_count': with_user_count}
+        params = {'with_user_count': int(with_user_count)}
         return self.request(
             Route(
                 'GET',
@@ -1643,6 +1667,7 @@ class HTTPClient:
             'privacy_level',
             'scheduled_start_time',
             'scheduled_end_time',
+            'status',
             'description',
             'entity_type',
             'image',
@@ -1664,6 +1689,8 @@ class HTTPClient:
         self,
         guild_id: Snowflake,
         guild_scheduled_event_id: Snowflake,
+        *,
+        reason: Optional[str] = None,
     ) -> Response[None]:
         return self.request(
             Route(
@@ -1672,10 +1699,11 @@ class HTTPClient:
                 guild_id=guild_id,
                 guild_scheduled_event_id=guild_scheduled_event_id,
             ),
+            reason=reason,
         )
 
     @overload
-    def get_scheduled_users(
+    def get_scheduled_event_users(
         self,
         guild_id: Snowflake,
         guild_scheduled_event_id: Snowflake,
@@ -1683,11 +1711,11 @@ class HTTPClient:
         with_member: Literal[True],
         before: Optional[Snowflake] = ...,
         after: Optional[Snowflake] = ...,
-    ) -> Response[scheduled_event.ScheduledEventUserWithMember]:
+    ) -> Response[scheduled_event.ScheduledEventUsersWithMember]:
         ...
 
     @overload
-    def get_scheduled_users(
+    def get_scheduled_event_users(
         self,
         guild_id: Snowflake,
         guild_scheduled_event_id: Snowflake,
@@ -1695,10 +1723,22 @@ class HTTPClient:
         with_member: Literal[False],
         before: Optional[Snowflake] = ...,
         after: Optional[Snowflake] = ...,
-    ) -> Response[scheduled_event.ScheduledEventUser]:
+    ) -> Response[scheduled_event.ScheduledEventUsers]:
         ...
 
-    def get_scheduled_users(
+    @overload
+    def get_scheduled_event_users(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        limit: int,
+        with_member: bool,
+        before: Optional[Snowflake] = ...,
+        after: Optional[Snowflake] = ...,
+    ) -> Union[Response[scheduled_event.ScheduledEventUsersWithMember], Response[scheduled_event.ScheduledEventUsers]]:
+        ...
+
+    def get_scheduled_event_users(
         self,
         guild_id: Snowflake,
         guild_scheduled_event_id: Snowflake,
@@ -1709,7 +1749,7 @@ class HTTPClient:
     ) -> Response[Any]:
         params: Dict[str, Any] = {
             'limit': limit,
-            'with_member': with_member,
+            'with_member': int(with_member),
         }
 
         if before is not None:

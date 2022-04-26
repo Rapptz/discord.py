@@ -45,6 +45,8 @@ from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     import importlib.machinery
 
     from discord.message import Message
@@ -934,14 +936,27 @@ class BotBase(GroupMixin):
         return ret
 
     @overload
-    async def get_context(self: BT, message: Message) -> Context[BT]:
+    async def get_context(
+        self,
+        message: Message,
+    ) -> Context[Self]:  # type: ignore
         ...
 
     @overload
-    async def get_context(self, message: Message, *, cls: Type[CXT] = ...) -> CXT:
+    async def get_context(
+        self,
+        message: Message,
+        *,
+        cls: Type[CXT] = ...,
+    ) -> CXT:  # type: ignore
         ...
 
-    async def get_context(self, message: Message, *, cls: Type[Context] = Context) -> Any:
+    async def get_context(
+        self,
+        message: Message,
+        *,
+        cls: Type[CXT] = MISSING,
+    ) -> Any:
         r"""|coro|
 
         Returns the invocation context from the message.
@@ -970,6 +985,8 @@ class BotBase(GroupMixin):
             The invocation context. The type of this can change via the
             ``cls`` parameter.
         """
+        if cls is MISSING:
+            cls = Context  # type: ignore
 
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)

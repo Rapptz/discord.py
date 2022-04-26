@@ -24,12 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
+from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.components import (
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
@@ -49,8 +51,6 @@ __all__ = (
     'SelectOption',
     'TextInput',
 )
-
-C = TypeVar('C', bound='Component')
 
 
 class Component:
@@ -82,8 +82,8 @@ class Component:
         return f'<{self.__class__.__name__} {attrs}>'
 
     @classmethod
-    def _raw_construct(cls: Type[C], **kwargs) -> C:
-        self: C = cls.__new__(cls)
+    def _raw_construct(cls, **kwargs) -> Self:
+        self = cls.__new__(cls)
         for slot in get_slots(cls):
             try:
                 value = kwargs[slot]

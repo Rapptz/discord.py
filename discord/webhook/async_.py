@@ -46,6 +46,7 @@ from ..asset import Asset
 from ..http import Route, handle_message_parameters, MultipartParameters
 from ..mixins import Hashable
 from ..channel import PartialMessageable
+from ..file import File
 
 __all__ = (
     'Webhook',
@@ -57,7 +58,6 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from ..file import File
     from ..embeds import Embed
     from ..mentions import AllowedMentions
     from ..message import Attachment
@@ -406,9 +406,9 @@ class AsyncWebhookAdapter:
     ) -> Response[None]:
         r = Route(
             'DELETE',
-            '/webhooks/{webhook_id}/{wehook_token}/messages/@original',
+            '/webhooks/{webhook_id}/{webhook_token}/messages/@original',
             webhook_id=application_id,
-            wehook_token=token,
+            webhook_token=token,
         )
         return self.request(r, session=session)
 

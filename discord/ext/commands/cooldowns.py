@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import Any, Callable, Deque, Dict, Optional, Type, TypeVar, TYPE_CHECKING
+from typing import Any, Callable, Deque, Dict, Optional, TYPE_CHECKING
 from discord.enums import Enum
 import time
 import asyncio
@@ -35,6 +35,8 @@ from ...abc import PrivateChannel
 from .errors import MaxConcurrencyReached
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from ...message import Message
 
 __all__ = (
@@ -44,9 +46,6 @@ __all__ = (
     'DynamicCooldownMapping',
     'MaxConcurrency',
 )
-
-C = TypeVar('C', bound='CooldownMapping')
-MC = TypeVar('MC', bound='MaxConcurrency')
 
 
 class BucketType(Enum):
@@ -73,7 +72,7 @@ class BucketType(Enum):
             # we return the channel id of a private-channel as there are only roles in guilds
             # and that yields the same result as for a guild with only the @everyone role
             # NOTE: PrivateChannel doesn't actually have an id attribute but we assume we are
-            # recieving a DMChannel or GroupChannel which inherit from PrivateChannel and do
+            # receiving a DMChannel or GroupChannel which inherit from PrivateChannel and do
             return (msg.channel if isinstance(msg.channel, PrivateChannel) else msg.author.top_role).id  # type: ignore
 
     def __call__(self, msg: Message) -> Any:
@@ -221,7 +220,7 @@ class CooldownMapping:
         return self._type
 
     @classmethod
-    def from_cooldown(cls: Type[C], rate, per, type) -> C:
+    def from_cooldown(cls, rate, per, type) -> Self:
         return cls(Cooldown(rate, per), type)
 
     def _bucket_key(self, msg: Message) -> Any:
@@ -356,7 +355,7 @@ class MaxConcurrency:
         if not isinstance(per, BucketType):
             raise TypeError(f'max_concurrency \'per\' must be of type BucketType not {type(per)!r}')
 
-    def copy(self: MC) -> MC:
+    def copy(self) -> Self:
         return self.__class__(self.number, per=self.per, wait=self.wait)
 
     def __repr__(self) -> str:

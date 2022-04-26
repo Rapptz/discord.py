@@ -25,13 +25,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
+
 from .webhook import Webhook
 from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
 from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
+from .scheduled_event import EntityType, EventStatus, GuildScheduledEvent
 from .snowflake import Snowflake
 from .role import Role
-from .channel import ChannelType, VideoQualityMode, PermissionOverwrite
+from .channel import ChannelType, PrivacyLevel, VideoQualityMode, PermissionOverwrite
 from .threads import Thread
 
 AuditLogEvent = Literal[
@@ -76,6 +78,9 @@ AuditLogEvent = Literal[
     90,
     91,
     92,
+    100,
+    101,
+    102,
     110,
     111,
     112,
@@ -158,6 +163,7 @@ class _AuditLogChange_Int(TypedDict):
         'user_limit',
         'auto_archive_duration',
         'default_auto_archive_duration',
+        'communication_disabled_until',
     ]
     new_value: int
     old_value: int
@@ -217,6 +223,24 @@ class _AuditLogChange_Overwrites(TypedDict):
     old_value: List[PermissionOverwrite]
 
 
+class _AuditLogChange_PrivacyLevel(TypedDict):
+    key: Literal['privacy_level']
+    new_value: PrivacyLevel
+    old_value: PrivacyLevel
+
+
+class _AuditLogChange_Status(TypedDict):
+    key: Literal['status']
+    new_value: EventStatus
+    old_value: EventStatus
+
+
+class _AuditLogChange_EntityType(TypedDict):
+    key: Literal['entity_type']
+    new_value: EntityType
+    old_value: EntityType
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
@@ -232,6 +256,9 @@ AuditLogChange = Union[
     _AuditLogChange_IntegrationExpireBehaviour,
     _AuditLogChange_VideoQualityMode,
     _AuditLogChange_Overwrites,
+    _AuditLogChange_PrivacyLevel,
+    _AuditLogChange_Status,
+    _AuditLogChange_EntityType,
 ]
 
 
@@ -265,3 +292,4 @@ class AuditLog(TypedDict):
     audit_log_entries: List[AuditLogEntry]
     integrations: List[PartialIntegration]
     threads: List[Thread]
+    guild_scheduled_events: List[GuildScheduledEvent]
