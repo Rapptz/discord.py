@@ -10,7 +10,7 @@ For bots in a large number of guilds, sharding may be required. Sharding is wher
 Client vs AutoShardedClient
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Both :class:`~Client` and :class:`~ext.commands.AutoShardedClient` have auto sharded variants, :class:`~AutoShardedClient` and :class:`~ext.commands.AutoShardedBot` respectively.
+Both :class:`~Client` and :class:`~ext.commands.Bot` have auto sharded variants, :class:`~AutoShardedClient` and :class:`~ext.commands.AutoShardedBot` respectively.
 
 The key difference between the two is that the former can only support one connection (one shard), while the auto sharded variants can handle multiple gateway connections. If you are running multiple shards, it is recommended to use the auto sharded variants and have multiple connections in each process.
 
