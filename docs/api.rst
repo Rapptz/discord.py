@@ -687,7 +687,6 @@ Members
 
     Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
-
     This requires :attr:`Intents.members` to be enabled.
 
     :param before: The updated member's old info.
