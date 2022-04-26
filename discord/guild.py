@@ -236,8 +236,6 @@ class Guild(Hashable):
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
         - ``PRIVATE_THREADS``: Guild has access to create private threads.
         - ``ROLE_ICONS``: Guild is able to set role icons.
-        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
-        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
         - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
         - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
         - ``VERIFIED``: Guild is a verified server.
