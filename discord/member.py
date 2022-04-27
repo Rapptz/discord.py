@@ -820,7 +820,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         """
         http = self._state.http
         guild_id = self.guild.id
-        me = self._state.self_id == self.id
+        me = self._self
         payload: Dict[str, Any] = {}
         data = None
 
@@ -831,7 +831,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
 
         if me and payload:
-            data = await http.edit_me(**payload)
+            data = await http.edit_me(self.guild.id, **payload)
             payload = {}
 
         if deafen is not MISSING:
