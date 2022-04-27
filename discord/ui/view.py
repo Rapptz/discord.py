@@ -441,25 +441,26 @@ class View:
         asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
     def _refresh(self, components: List[Component]) -> None:
-        # This is pretty hacky at the moment
         # fmt: off
-        old_state: Dict[Tuple[int, str], Item[Any]] = {
-            (item.type.value, item.custom_id): item  # type: ignore
+        old_state: Dict[str, Item[Any]] = {
+            item.custom_id: item  # type: ignore
             for item in self._children
             if item.is_dispatchable()
         }
         # fmt: on
-        children: List[Item[Any]] = []
+
         for component in _walk_all_components(components):
+            custom_id = getattr(component, 'custom_id', None)
+            if custom_id is None:
+                continue
+
             try:
-                older = old_state[(component.type.value, component.custom_id)]  # type: ignore
-            except (KeyError, AttributeError):
-                children.append(_component_to_item(component))
+                older = old_state[custom_id]
+            except KeyError:
+                _log.debug('View interaction referenced an unknown item custom_id %s. Discarding', custom_id)
+                continue
             else:
                 older._refresh_component(component)
-                children.append(older)
-
-        self._children = children
 
     def stop(self) -> None:
         """Stops listening to interaction events from this view.
