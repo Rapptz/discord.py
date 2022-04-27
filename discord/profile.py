@@ -101,25 +101,12 @@ class Profile:
         return [state.store_user(friend) for friend in mutual_friends]
 
     @property
-    def flags(self) -> PublicUserFlags:
-        """:class:`PublicUserFlags`: The flags the user has."""
-        return PublicUserFlags._from_value(self._flags)
-
-    @property
     def premium(self) -> bool:
         """:class:`bool`: Indicates if the user is a premium user.
 
         There is an alias for this named :attr:`nitro`.
         """
         return self.premium_since is not None
-
-    @property
-    def nitro(self) -> bool:
-        """:class:`bool`: Indicates if the user is a premium user.
-
-        This is an alias for :attr:`premium`.
-        """
-        return self.premium
 
 
 class UserProfile(Profile, User):
