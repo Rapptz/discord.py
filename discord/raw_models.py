@@ -42,6 +42,7 @@ if TYPE_CHECKING:
         IntegrationDeleteEvent,
         ThreadDeleteEvent,
         TypingStartEvent,
+        GuildMemberRemoveEvent,
     )
     from .message import Message
     from .partial_emoji import PartialEmoji
@@ -62,6 +63,7 @@ __all__ = (
     'RawIntegrationDeleteEvent',
     'RawThreadDeleteEvent',
     'RawTypingEvent',
+    'RawMemberRemoveEvent',
 )
 
 
@@ -348,3 +350,23 @@ class RawTypingEvent(_RawReprMixin):
         self.user: Optional[Union[User, Member]] = None
         self.timestamp: datetime.datetime = datetime.datetime.fromtimestamp(data['timestamp'], tz=datetime.timezone.utc)
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
+
+
+class RawMemberRemoveEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    user: Union[:class:`discord.User`, :class:`discord.Member`]
+        The user that left the guild.
+    guild_id: :class:`int`
+        The ID of the guild the user left.
+    """
+
+    __slots__ = ('user', 'guild_id')
+
+    def __init__(self, data: GuildMemberRemoveEvent, user: User, /) -> None:
+        self.user: Union[User, Member] = user
+        self.guild_id: int = int(data['guild_id'])

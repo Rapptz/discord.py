@@ -991,18 +991,23 @@ class ConnectionState:
         self.dispatch('member_join', member)
 
     def parse_guild_member_remove(self, data: gw.GuildMemberRemoveEvent) -> None:
-        guild = self._get_guild(int(data['guild_id']))
+        user = self.store_user(data['user'])
+        raw = RawMemberRemoveEvent(data, user)
+
+        guild = self._get_guild(raw.guild_id)
         if guild is not None:
             if guild._member_count is not None:
                 guild._member_count -= 1
 
-            user_id = int(data['user']['id'])
-            member = guild.get_member(user_id)
+            member = guild.get_member(user.id)
             if member is not None:
+                raw.user = member
                 guild._remove_member(member)
                 self.dispatch('member_remove', member)
         else:
             _log.debug('GUILD_MEMBER_REMOVE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+
+        self.dispatch('raw_member_remove', raw)
 
     def parse_guild_member_update(self, data: gw.GuildMemberUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
