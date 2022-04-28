@@ -1740,7 +1740,6 @@ class HTTPClient:
             'with_counts': str(with_counts).lower(),
             'with_expiration': str(with_expiration).lower(),
         }
-
         if guild_scheduled_event_id:
             params['guild_scheduled_event_id'] = guild_scheduled_event_id
 
@@ -1819,6 +1818,22 @@ class HTTPClient:
             role_id=role_id,
         )
         return self.request(r, reason=reason)
+
+    def get_role_members(self, guild_id: Snowflake, role_id: Snowflake) -> Response[List[Snowflake]]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/roles/{role_id}/member-ids', guild_id=guild_id, role_id=role_id)
+        )
+
+    def add_members_to_role(
+        self, guild_id: Snowflake, role_id: Snowflake, member_ids: List[Snowflake], *, reason: Optional[str]
+    ) -> Response[Dict[Snowflake, member.MemberWithUser]]:
+        payload = {'member_ids': member_ids}
+
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/roles/{role_id}/members', guild_id=guild_id, role_id=role_id),
+            json=payload,
+            reason=reason,
+        )
 
     def edit_channel_permissions(
         self,

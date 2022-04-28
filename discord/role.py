@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .state import ConnectionState
+    from .abc import Snowflake
 
 
 class RoleTags:
@@ -378,6 +379,121 @@ class Role(Hashable):
 
         payload: List[RolePositionUpdate] = [{"id": z[0], "position": z[1]} for z in zip(roles, change_range)]
         await http.move_role_position(self.guild.id, payload, reason=reason)
+
+    async def fetch_members(self, *, subscribe: bool = False) -> List[Member]:
+        """|coro|
+
+        Retrieves all members with this role.
+        This is a partial websocket operation.
+
+        .. versionadded:: 2.0
+
+        .. note::
+            This can only return up to 100 of the first members, and cannot be used on the default role.
+
+        Parameters
+        ----------
+        subscribe: :class:`bool`
+            Whether to subscribe to the resulting members. This will keep their info and presence updated.
+            This requires another request, and defaults to ``False``.
+
+        Raises
+        ------
+        HTTPException
+            Fetching the members failed.
+        TypeError
+            This role is the default role.
+        asyncio.TimeoutError
+            The operation timed out.
+
+        Returns
+        -------
+        List[:class:`Member`]
+            The members with this role.
+        """
+        if self.is_default():
+            raise TypeError('Cannot fetch the default role\'s members')
+
+        guild = self.guild
+        data = await self._state.http.get_role_members(guild.id, self.id)
+        return await guild.query_members(user_ids=data, subscribe=subscribe)  # type: ignore # user_ids is cast to str anyway
+
+    async def add_members(self, *members: Snowflake, reason: Optional[str] = None) -> List[Member]:
+        r"""|coro|
+
+        Adds a number of :class:`Member`\s to this role.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        use this, and the current :class:`Role` must appear lower in the list
+        of roles than the highest role of the member.
+
+        Parameters
+        -----------
+        \*members: :class:`abc.Snowflake`
+            An argument list of :class:`abc.Snowflake` representing a :class:`Member`
+            to add to the role.
+        reason: Optional[:class:`str`]
+            The reason for adding these members. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add these members.
+        HTTPException
+            Adding members failed.
+        TypeError
+            The role is the default role.
+
+        Returns
+        --------
+        List[:class:`Member`]
+            The list of members that were added to the role.
+        """
+        if self.is_default():
+            raise TypeError('Cannot add members to the default role')
+
+        from .member import Member  # Circular import
+
+        state = self._state
+        guild = self.guild
+
+        data = await state.http.add_members_to_role(guild.id, self.id, [m.id for m in members], reason=reason)
+        return [Member(data=m, state=state, guild=guild) for m in data.values()]
+
+    async def remove_roles(self, *members: Snowflake, reason: Optional[str] = None) -> None:
+        r"""|coro|
+
+        Removes :class:`Member`\s from this role.
+
+        You must have the :attr:`~Permissions.manage_roles` permission to
+        use this, and the current :class:`Role` must appear lower in the list
+        of roles than the highest role of the member.
+
+        Parameters
+        -----------
+        \*members: :class:`abc.Snowflake`
+            An argument list of :class:`abc.Snowflake` representing a :class:`Member`
+            to remove from the role.
+        reason: Optional[:class:`str`]
+            The reason for adding these members. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove these members.
+        HTTPException
+            Removing the members failed.
+        TypeError
+            The role is the default role.
+        """
+        if self.is_default():
+            raise TypeError('Cannot remove members from the default role')
+
+        req = self._state.http.remove_role
+        guild_id = self.guild.id
+        role_id = self.id
+        for member in members:
+            await req(guild_id, member.id, role_id, reason=reason)
 
     async def edit(
         self,
