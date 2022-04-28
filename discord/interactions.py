@@ -454,7 +454,7 @@ class Interaction:
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
-            self._state.store_view(view, message.id)
+            self._state.store_view(view, message.id, interaction_id=self.id)
         return message
 
     async def delete_original_message(self) -> None:
@@ -682,7 +682,10 @@ class InteractionResponse:
             if ephemeral and view.timeout is None:
                 view.timeout = 15 * 60.0
 
-            self._parent._state.store_view(view)
+            # If the interaction type isn't an application command then there's no way
+            # to obtain this interaction_id again, so just default to None
+            entity_id = parent.id if parent.type is InteractionType.application_command else None
+            self._parent._state.store_view(view, entity_id)
 
         self._responded = True
 

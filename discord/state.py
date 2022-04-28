@@ -361,7 +361,9 @@ class ConnectionState:
         self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker
 
-    def store_view(self, view: View, message_id: Optional[int] = None) -> None:
+    def store_view(self, view: View, message_id: Optional[int] = None, interaction_id: Optional[int] = None) -> None:
+        if interaction_id is not None:
+            self._view_store.remove_interaction_mapping(interaction_id)
         self._view_store.add_view(view, message_id)
 
     def prevent_view_updates_for(self, message_id: int) -> Optional[View]:
@@ -631,8 +633,14 @@ class ConnectionState:
         else:
             self.dispatch('raw_message_edit', raw)
 
-        if 'components' in data and self._view_store.is_message_tracked(raw.message_id):
-            self._view_store.update_from_message(raw.message_id, data['components'])
+        if 'components' in data:
+            try:
+                entity_id = int(data['interaction']['id'])
+            except (KeyError, ValueError):
+                entity_id = raw.message_id
+
+            if self._view_store.is_message_tracked(entity_id):
+                self._view_store.update_from_message(entity_id, data['components'])
 
     def parse_message_reaction_add(self, data: gw.MessageReactionAddEvent) -> None:
         emoji = PartialEmoji.from_dict(data['emoji'])
