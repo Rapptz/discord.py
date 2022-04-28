@@ -113,6 +113,10 @@ class Interaction:
         The locale of the user invoking the interaction.
     guild_locale: Optional[:class:`Locale`]
         The preferred locale of the guild the interaction was sent from, if any.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data for use during
+        interaction processing. The library will not touch any values or keys
+        within this dictionary.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -128,6 +132,7 @@ class Interaction:
         'version',
         'locale',
         'guild_locale',
+        'extras',
         '_permissions',
         '_state',
         '_client',
@@ -149,6 +154,7 @@ class Interaction:
         # This baton is used for extra data that might be useful for the lifecycle of
         # an interaction. This is mainly for internal purposes and it gives it a free-for-all slot.
         self._baton: Any = MISSING
+        self.extras: Dict[Any, Any] = {}
         self._from_data(data)
 
     def _from_data(self, data: InteractionPayload):
