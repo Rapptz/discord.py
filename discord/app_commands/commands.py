@@ -42,6 +42,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 from textwrap import TextWrapper
 
@@ -54,6 +55,7 @@ from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSi
 from ..message import Message
 from ..user import User
 from ..member import Member
+from ..permissions import Permissions
 from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
 
 if TYPE_CHECKING:
@@ -80,6 +82,8 @@ __all__ = (
     'choices',
     'autocomplete',
     'guilds',
+    'guild_only',
+    'default_permissions',
 )
 
 if TYPE_CHECKING:
@@ -88,6 +92,7 @@ else:
     P = TypeVar('P')
 
 T = TypeVar('T')
+F = TypeVar('F', bound=Callable[..., Any])
 GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
 UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
@@ -460,6 +465,16 @@ class Command(Generic[GroupT, P, T]):
         is necessary to be thrown to signal failure, then one inherited from
         :exc:`AppCommandError` should be used. If all the checks fail without
         propagating an exception, :exc:`CheckFailure` is raised.
+    default_permissions: Optional[:class:`Permissions`]
+        The default permissions that can execute this command on Discord. Note
+        that server administrators can override this value in the client.
+
+        Due to a Discord limitation, this does not work on subcommands.
+    guild_only: :class:`bool`
+        Whether the command should only be usable in guild contexts.
+        Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
     """
@@ -494,6 +509,10 @@ class Command(Generic[GroupT, P, T]):
         self._guild_ids: Optional[List[int]] = guild_ids or getattr(
             callback, '__discord_app_commands_default_guilds__', None
         )
+        self.default_permissions: Optional[Permissions] = getattr(
+            callback, '__discord_app_commands_default_permissions__', None
+        )
+        self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
@@ -522,6 +541,8 @@ class Command(Generic[GroupT, P, T]):
         copy._guild_ids = self._guild_ids
         copy.checks = self.checks
         copy.description = self.description
+        copy.default_permissions = self.default_permissions
+        copy.guild_only = self.guild_only
         copy._attr = self._attr
         copy._callback = self._callback
         copy.on_error = self.on_error
@@ -539,12 +560,18 @@ class Command(Generic[GroupT, P, T]):
         # If we have a parent then our type is a subcommand
         # Otherwise, the type falls back to the specific command type (e.g. slash command or context menu)
         option_type = AppCommandType.chat_input.value if self.parent is None else AppCommandOptionType.subcommand.value
-        return {
+        base: Dict[str, Any] = {
             'name': self.name,
             'description': self.description,
             'type': option_type,
             'options': [param.to_dict() for param in self._params.values()],
         }
+
+        if self.parent is None:
+            base['dm_permissions'] = not self.guild_only
+            base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
+
+        return base
 
     async def _invoke_error_handler(self, interaction: Interaction, error: AppCommandError) -> None:
         # These type ignores are because the type checker can't narrow this type properly.
@@ -844,6 +871,12 @@ class ContextMenu:
     type: :class:`.AppCommandType`
         The type of context menu application command. By default, this is inferred
         by the parameter of the callback.
+    default_permissions: Optional[:class:`Permissions`]
+        The default permissions that can execute this command on Discord. Note
+        that server administrators can override this value in the client.
+    guild_only: :class:`bool`
+        Whether the command should only be usable in guild contexts.
+        Defaults to ``False``.
     checks
         A list of predicates that take a :class:`~discord.Interaction` parameter
         to indicate whether the command callback should be executed. If an exception
@@ -875,6 +908,10 @@ class ContextMenu:
         self.module: Optional[str] = callback.__module__
         self._guild_ids = guild_ids or getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.on_error: Optional[UnboundError] = None
+        self.default_permissions: Optional[Permissions] = getattr(
+            callback, '__discord_app_commands_default_permissions__', None
+        )
+        self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
     @property
@@ -886,6 +923,8 @@ class ContextMenu:
         return {
             'name': self.name,
             'type': self.type.value,
+            'dm_permissions': not self.guild_only,
+            'default_member_permissions': self.default_permissions and self.default_permissions.value,
         }
 
     async def _check_can_run(self, interaction: Interaction) -> bool:
@@ -983,6 +1022,16 @@ class Group:
         The description of the group. This shows up in the UI to describe
         the group. If not given, it defaults to the docstring of the
         class shortened to 100 characters.
+    default_permissions: Optional[:class:`Permissions`]
+        The default permissions that can execute this group on Discord. Note
+        that server administrators can override this value in the client.
+
+        Due to a Discord limitation, this does not work on subcommands.
+    guild_only: :class:`bool`
+        Whether the group should only be usable in guild contexts.
+        Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent group. ``None`` if there isn't one.
     """
@@ -1033,6 +1082,8 @@ class Group:
         description: str = MISSING,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
+        guild_only: bool = False,
+        default_permissions: Optional[Permissions] = None,
     ):
         cls = self.__class__
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
@@ -1040,6 +1091,8 @@ class Group:
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
+        self.default_permissions: Optional[Permissions] = default_permissions
+        self.guild_only: bool = guild_only
 
         if not self.description:
             raise TypeError('groups must have a description')
@@ -1099,6 +1152,8 @@ class Group:
         copy.description = self.description
         copy.parent = parent
         copy.module = self.module
+        copy.default_permissions = self.default_permissions
+        copy.guild_only = self.guild_only
         copy._attr = self._attr
         copy._owner_cls = self._owner_cls
         copy._children = {}
@@ -1125,12 +1180,18 @@ class Group:
         # If this has a parent command then it's part of a subcommand group
         # Otherwise, it's just a regular command
         option_type = 1 if self.parent is None else AppCommandOptionType.subcommand_group.value
-        return {
+        base: Dict[str, Any] = {
             'name': self.name,
             'description': self.description,
             'type': option_type,
             'options': [child.to_dict() for child in self._children.values()],
         }
+
+        if self.parent is None:
+            base['dm_permissions'] = not self.guild_only
+            base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
+
+        return base
 
     @property
     def root_parent(self) -> Optional[Group]:
@@ -1712,3 +1773,95 @@ def check(predicate: Check) -> Callable[[T], T]:
         return func
 
     return decorator  # type: ignore
+
+
+@overload
+def guild_only(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def guild_only(func: T) -> T:
+    ...
+
+
+def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command can only be used in a guild context.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+    Therefore, there is no error handler called when a command is used within a private message.
+
+    This decorator can be called with or without parentheses.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.guild_only()
+        async def my_guild_only_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am only available in guilds!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            f.guild_only = True
+        else:
+            f.__discord_app_commands_guild_only__ = True  # type: ignore # Runtime attribute assignment
+        return f
+
+    # Check if called with parentheses or not
+    if func is None:
+        # Called with parentheses
+        return inner
+    else:
+        return inner(func)
+
+
+def default_permissions(**perms: bool) -> Callable[[T], T]:
+    r"""A decorator that sets the default permissions needed to execute this command.
+
+    When this decorator is used, by default users must have these permissions to execute the command.
+    However, an administrator can change the permissions needed to execute this command using the official
+    client. Therefore, this only serves as a hint.
+
+    This is sent to Discord server side, and is not a :func:`check`. Therefore, error handlers are not called.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. warning::
+
+        This serves as a *hint* and members are *not* required to have the permissions given to actually
+        execute this command. If you want to ensure that members have the permissions needed, consider using
+        :func:`~discord.app_commands.checks.has_permissions` instead.
+
+    Parameters
+    -----------
+    \*\*perms: :class:`bool`
+        Keyword arguments denoting the permissions to set as the default.
+
+    Example
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.default_permissions(manage_messages=True)
+        async def test(interaction: discord.Interaction):
+            await interaction.response.send_message('You may or may not have manage messages.')
+    """
+
+    permissions = Permissions(**perms)
+
+    def decorator(func: T) -> T:
+        if isinstance(func, (Command, Group, ContextMenu)):
+            func.default_permissions = permissions
+        else:
+            func.__discord_app_commands_default_permissions__ = permissions  # type: ignore # Runtime attribute assignment
+
+        return func
+
+    return decorator

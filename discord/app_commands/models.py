@@ -108,6 +108,10 @@ class AppCommand(Hashable):
         The application command's name.
     description: :class:`str`
         The application command's description.
+    default_member_permissions: Optional[:class:`~discord.Permissions`]
+        The default member permissions that can run this command.
+    dm_permissions: :class:`bool`
+        A boolean that indicates whether this command can be run in direct messages.
     """
 
     __slots__ = (
@@ -117,6 +121,8 @@ class AppCommand(Hashable):
         'name',
         'description',
         'options',
+        'default_member_permissions',
+        'dm_permissions',
         '_state',
     )
 
@@ -133,6 +139,19 @@ class AppCommand(Hashable):
         self.options: List[Union[Argument, AppCommandGroup]] = [
             app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
         ]
+        self.default_member_permissions: Optional[Permissions]
+        permissions = data.get('default_member_permissions')
+        if permissions is None:
+            self.default_member_permissions = None
+        else:
+            self.default_member_permissions = Permissions(int(permissions))
+
+        dm_permissions = data.get('dm_permissions')
+        # For some reason this field can be explicit null and mean True
+        if dm_permissions is None:
+            dm_permissions = True
+
+        self.dm_permissions: bool = dm_permissions
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
