@@ -468,6 +468,8 @@ class Command(Generic[GroupT, P, T]):
     default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this command on Discord. Note
         that server administrators can override this value in the client.
+        Setting an empty permissions field will disallow anyone except server
+        administrators from using the command in a guild.
 
         Due to a Discord limitation, this does not work on subcommands.
     guild_only: :class:`bool`
@@ -874,6 +876,8 @@ class ContextMenu:
     default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this command on Discord. Note
         that server administrators can override this value in the client.
+        Setting an empty permissions field will disallow anyone except server
+        administrators from using the command in a guild.
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
@@ -1025,6 +1029,8 @@ class Group:
     default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this group on Discord. Note
         that server administrators can override this value in the client.
+        Setting an empty permissions field will disallow anyone except server
+        administrators from using the command in a guild.
 
         Due to a Discord limitation, this does not work on subcommands.
     guild_only: :class:`bool`
@@ -1827,6 +1833,9 @@ def default_permissions(**perms: bool) -> Callable[[T], T]:
     When this decorator is used, by default users must have these permissions to execute the command.
     However, an administrator can change the permissions needed to execute this command using the official
     client. Therefore, this only serves as a hint.
+
+    Setting an empty permissions field, including via calling this with no arguments, will disallow anyone
+    except server administrators from using the command in a guild.
 
     This is sent to Discord server side, and is not a :func:`check`. Therefore, error handlers are not called.
 
