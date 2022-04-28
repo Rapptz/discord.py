@@ -1413,7 +1413,7 @@ Utility Functions
 
 .. autofunction:: discord.utils.set_target
 
-.. data:: MISSING
+.. data:: discord.utils.MISSING
 
     A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values.
 
