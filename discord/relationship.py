@@ -24,9 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import copy
 from typing import Optional, TYPE_CHECKING
 
 from .enums import RelationshipAction, RelationshipType, try_enum
+from .object import Object
+from .utils import MISSING
 
 if TYPE_CHECKING:
     from .state import ConnectionState
@@ -60,24 +63,38 @@ class Relationship:
 
     Attributes
     -----------
-    nickname: Optional[:class:`str`]
+    nick: Optional[:class:`str`]
         The user's friend nickname (if applicable).
+
+        .. versionchanged:: 2.0
+            Renamed ``nickname`` to :attr:`nick`.
     user: :class:`User`
         The user you have the relationship with.
     type: :class:`RelationshipType`
         The type of relationship you have.
     """
 
-    __slots__ = ('nickname', 'type', 'user', '_state')
+    __slots__ = ('nick', 'type', 'user', '_state')
 
     def __init__(self, *, state: ConnectionState, data) -> None:  # TODO: type data
         self._state = state
+        self._update(data)
+
+    def _update(self, data: dict) -> None:
         self.type: RelationshipType = try_enum(RelationshipType, data['type'])
-        self.user: User = state.store_user(data['user'])
-        self.nickname: Optional[str] = data.get('nickname', None)
+        self.nick: Optional[str] = data.get('nickname')
+
+        self.user: User
+        if (user := data.get('user')) is not None:
+            self.user = self._state.store_user(user)
+        elif self.user:
+            return
+        else:
+            user_id = int(data['id'])
+            self.user = self._state.get_user(user_id) or Object(id=user_id)  # type: ignore # Lying for better developer UX
 
     def __repr__(self) -> str:
-        return f'<Relationship user={self.user!r} type={self.type!r}>'
+        return f'<Relationship user={self.user!r} type={self.type!r} nick={self.nick!r}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Relationship) and other.user.id == self.user.id
@@ -95,50 +112,81 @@ class Relationship:
 
         Deletes the relationship.
 
+        Depending on the type, this could mean unfriending or unblocking the user,
+        denying an incoming friend request, or discarding an outgoing friend request.
+
         Raises
         ------
         HTTPException
             Deleting the relationship failed.
         """
+        action = RelationshipAction.deny_request
         if self.type is RelationshipType.friend:
-            await self._state.http.remove_relationship(self.user.id, action=RelationshipAction.unfriend)
+            action = RelationshipAction.unfriend
         elif self.type is RelationshipType.blocked:
-            await self._state.http.remove_relationship(self.user.id, action=RelationshipAction.unblock)
+            action = RelationshipAction.unblock
         elif self.type is RelationshipType.incoming_request:
-            await self._state.http.remove_relationship(self.user.id, action=RelationshipAction.deny_request)
+            action = RelationshipAction.deny_request
         elif self.type is RelationshipType.outgoing_request:
-            await self._state.http.remove_relationship(self.user.id, action=RelationshipAction.remove_pending_request)
+            action = RelationshipAction.remove_pending_request
 
-    async def accept(self) -> None:
+        await self._state.http.remove_relationship(self.user.id, action=action)
+
+    async def accept(self) -> Relationship:
         """|coro|
 
         Accepts the relationship request. Only applicable for
         type :class:`RelationshipType.incoming_request`.
 
+        .. versionchanged:: 2.0
+            Changed the return type to :class:`Relationship`.
+
         Raises
         -------
         HTTPException
             Accepting the relationship failed.
-        """
-        await self._state.http.add_relationship(self.user.id, action=RelationshipAction.accept_request)
 
-    async def change_nickname(self, nick: Optional[str]) -> None:
+        Returns
+        -------
+        :class:`Relationship`
+            The new relationship.
+        """
+        data = await self._state.http.add_relationship(self.user.id, action=RelationshipAction.accept_request)
+        return Relationship(state=self._state, data=data)
+
+    async def edit(self, nick: Optional[str] = MISSING) -> Relationship:
         """|coro|
 
-        Changes a relationship's nickname. Only applicable for
-        type :class:`RelationshipType.friend`.
+        Edits the relationship.
 
         .. versionadded:: 1.9
+
+        .. versionchanged:: 2.0
+            Changed the name of the method to :meth:`edit`.
+            The edit is no longer in-place.
 
         Parameters
         ----------
         nick: Optional[:class:`str`]
-            The nickname to change to.
+            The nickname to change to. Can be ``None`` to denote no nickname.
 
         Raises
         -------
         HTTPException
             Changing the nickname failed.
+
+        Returns
+        -------
+        :class:`Relationship`
+            The new relationship.
         """
-        await self._state.http.change_friend_nickname(self.user.id, nick)
-        self.nickname = nick
+        payload = {}
+        if nick is not MISSING:
+            payload['nick'] = nick
+
+        await self._state.http.edit_relationship(self.user.id, **payload)
+
+        # Emulate the return for consistency
+        new = copy.copy(self)
+        new.nick = nick if nick is not MISSING else self.nick
+        return new

@@ -2167,9 +2167,7 @@ class HTTPClient:
 
         return self.request(r, json=payload, context_properties=props)
 
-    def change_friend_nickname(self, user_id, nickname):
-        payload = {'nickname': nickname}
-
+    def edit_relationship(self, user_id, **payload):  # TODO: return type
         return self.request(Route('PATCH', '/users/@me/relationships/{user_id}', user_id=user_id), json=payload)
 
     # Connections

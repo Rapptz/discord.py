@@ -2167,22 +2167,35 @@ class ConnectionState:
 
     def parse_relationship_add(self, data) -> None:
         key = int(data['id'])
-        old = self.user.get_relationship(key)  # type: ignore # self.user is always present here
-        new = Relationship(state=self, data=data)
-        self._relationships[key] = new
-        if old is not None:
-            self.dispatch('relationship_update', old, new)
+        new = self._relationships.get(key)
+        if new is None:
+            relationship = Relationship(state=self, data=data)
+            self._relationships[key] = relationship
+            self.dispatch('relationship_add', relationship)
         else:
-            self.dispatch('relationship_add', new)
+            old = copy.copy(new)
+            new._update(data)
+            self.dispatch('relationship_update', old, new)
 
     def parse_relationship_remove(self, data) -> None:
         key = int(data['id'])
         try:
             old = self._relationships.pop(key)
         except KeyError:
-            pass
+            _log.warning('Relationship_remove referencing unknown relationship ID: %s. Discarding.', key)
         else:
             self.dispatch('relationship_remove', old)
+
+    def parse_relationship_update(self, data) -> None:
+        key = int(data['id'])
+        new = self._relationships.get(key)
+        if new is None:
+            relationship = Relationship(state=self, data=data)
+            self._relationships[key] = relationship
+        else:
+            old = copy.copy(new)
+            new._update(data)
+            self.dispatch('relationship_update', old, new)
 
     def parse_interaction_create(self, data) -> None:
         type, name, channel = self._interaction_cache.pop(data['nonce'], (0, None, None))
