@@ -440,7 +440,7 @@ class GroupCall(PrivateCall):
             The type of this attribute has changed to :class:`str`.
     """
 
-    __slots__ = tuple()
+    __slots__ = ()
 
     if TYPE_CHECKING:
         channel: GroupChannel

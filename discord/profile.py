@@ -27,7 +27,6 @@ from __future__ import annotations
 from typing import List, Optional, TYPE_CHECKING
 
 from .connections import PartialConnection
-from .flags import PublicUserFlags
 from .member import Member
 from .object import Object
 from .permissions import Permissions
