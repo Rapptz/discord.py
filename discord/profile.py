@@ -101,10 +101,7 @@ class Profile:
 
     @property
     def premium(self) -> bool:
-        """:class:`bool`: Indicates if the user is a premium user.
-
-        There is an alias for this named :attr:`nitro`.
-        """
+        """:class:`bool`: Indicates if the user is a premium user."""
         return self.premium_since is not None
 
 
