@@ -1046,9 +1046,18 @@ class Group:
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
+    __discord_app_commands_group_guild_only__: bool = MISSING
+    __discord_app_commands_group_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
 
-    def __init_subclass__(cls, *, name: str = MISSING, description: str = MISSING) -> None:
+    def __init_subclass__(
+        cls,
+        *,
+        name: str = MISSING,
+        description: str = MISSING,
+        guild_only: bool = MISSING,
+        default_permissions: Optional[Permissions] = MISSING,
+    ) -> None:
         if not cls.__discord_app_commands_group_children__:
             children: List[Union[Command[Any, ..., Any], Group]] = [
                 member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
@@ -1078,6 +1087,12 @@ class Group:
         else:
             cls.__discord_app_commands_group_description__ = description
 
+        if guild_only is not MISSING:
+            cls.__discord_app_commands_group_guild_only__ = guild_only
+
+        if default_permissions is not MISSING:
+            cls.__discord_app_commands_group_default_permissions__ = default_permissions
+
         if cls.__module__ != __name__:
             cls.__discord_app_commands_has_module__ = True
 
@@ -1088,8 +1103,8 @@ class Group:
         description: str = MISSING,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
-        guild_only: bool = False,
-        default_permissions: Optional[Permissions] = None,
+        guild_only: bool = MISSING,
+        default_permissions: Optional[Permissions] = MISSING,
     ):
         cls = self.__class__
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
@@ -1097,7 +1112,21 @@ class Group:
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
+
+        if default_permissions is MISSING:
+            if cls.__discord_app_commands_group_default_permissions__ is MISSING:
+                default_permissions = None
+            else:
+                default_permissions = cls.__discord_app_commands_group_default_permissions__
+
         self.default_permissions: Optional[Permissions] = default_permissions
+
+        if guild_only is MISSING:
+            if cls.__discord_app_commands_group_guild_only__ is MISSING:
+                guild_only = False
+            else:
+                guild_only = cls.__discord_app_commands_group_guild_only__
+
         self.guild_only: bool = guild_only
 
         if not self.description:
