@@ -96,6 +96,7 @@ __all__ = (
     'as_chunks',
     'format_dt',
     'set_target',
+    'MISSING',
 )
 
 DISCORD_EPOCH = 1420070400000
@@ -104,6 +105,8 @@ _log = logging.getLogger(__name__)
 
 
 class _MissingSentinel:
+    __slots__ = ()
+
     def __eq__(self, other):
         return False
 
