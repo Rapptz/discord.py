@@ -465,7 +465,7 @@ class Command(Generic[GroupT, P, T]):
         is necessary to be thrown to signal failure, then one inherited from
         :exc:`AppCommandError` should be used. If all the checks fail without
         propagating an exception, :exc:`CheckFailure` is raised.
-    default_permissions: Optional[:class:`Permissions`]
+    default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this command on Discord. Note
         that server administrators can override this value in the client.
 
@@ -871,7 +871,7 @@ class ContextMenu:
     type: :class:`.AppCommandType`
         The type of context menu application command. By default, this is inferred
         by the parameter of the callback.
-    default_permissions: Optional[:class:`Permissions`]
+    default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this command on Discord. Note
         that server administrators can override this value in the client.
     guild_only: :class:`bool`
@@ -1022,7 +1022,7 @@ class Group:
         The description of the group. This shows up in the UI to describe
         the group. If not given, it defaults to the docstring of the
         class shortened to 100 characters.
-    default_permissions: Optional[:class:`Permissions`]
+    default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this group on Discord. Note
         that server administrators can override this value in the client.
 
