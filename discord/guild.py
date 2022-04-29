@@ -1297,7 +1297,7 @@ class Guild(Hashable):
         data = await self._create_channel(
             name,
             overwrites=overwrites,
-            channel_type=ChannelType.text if news is MISSING else ChannelType.news,
+            channel_type=ChannelType.news if news else ChannelType.text,
             category=category,
             reason=reason,
             **options,
