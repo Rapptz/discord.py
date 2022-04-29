@@ -1308,6 +1308,42 @@ class Guild(Hashable):
         self._channels[channel.id] = channel
         return channel
 
+    async def create_forum(
+        self, name: str, *, reason: Optional[str] = None, category: Optional[CategoryChannel] = None
+    ) -> ForumChannel:
+        """|coro|
+
+        Creates a :class:`ForumChannel` for the guild.
+
+        Note that you need the :attr:`~Permissions.manage_channels` permission
+        to create the channel.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The channel's name.
+        reason: Optional[:class:`str`]
+            The reason for creating this channel. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+
+        Returns
+        -------
+        :class:`ForumChannel`
+            The channel that was just created.
+        """
+        data = await self._create_channel(name, channel_type=ChannelType.forum, reason=reason, category=category)
+        channel = ForumChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
     async def create_voice_channel(
         self,
         name: str,
