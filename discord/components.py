@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
@@ -119,7 +119,7 @@ class ActionRow(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ComponentPayload):
-        self.type: ComponentType = try_enum(ComponentType, data['type'])
+        self.type: Literal[ComponentType.action_row] = ComponentType.action_row
         self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
     def to_dict(self) -> ActionRowPayload:
@@ -170,7 +170,7 @@ class Button(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ButtonComponentPayload):
-        self.type: ComponentType = try_enum(ComponentType, data['type'])
+        self.type: Literal[ComponentType.button] = ComponentType.button
         self.style: ButtonStyle = try_enum(ButtonStyle, data['style'])
         self.custom_id: Optional[str] = data.get('custom_id')
         self.url: Optional[str] = data.get('url')
@@ -244,7 +244,7 @@ class SelectMenu(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: SelectMenuPayload):
-        self.type = ComponentType.select
+        self.type: Literal[ComponentType.select] = ComponentType.select
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
