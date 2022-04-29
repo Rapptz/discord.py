@@ -119,7 +119,7 @@ class ActionRow(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ComponentPayload):
-        self.type: ComponentType = try_enum(ComponentType, data['type'])
+        self.type: Literal[ComponentType.action_row] = ComponentType.action_row
         self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
     def to_dict(self) -> ActionRowPayload:
