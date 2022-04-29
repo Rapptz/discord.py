@@ -54,7 +54,7 @@ Examples might include ensuring that a user has administrator privileges:
 .. code-block:: python3
 
     @app_commands.context_menu(name=...)
-    @app_commands.default_permissions(administrator=True)
+    @app_commands.checks.has_permissions(administrator=True)
     async def example(...):
         ...
 
@@ -64,12 +64,12 @@ Or checking for a specific role, or group of roles:
 
     # Single Role Check
     @app_commands.context_menu(name=...)
-    @app_commands.has_role('Moderator')
+    @app_commands.checks.has_role('Moderator')
     async def example(...):
         ...
 
     # Multiple Role Check
     @app_commands.context_menu(name=...)
-    @app_commands.has_any_role('Moderator', 1234567890)
+    @app_commands.checks.has_any_role('Moderator', 1234567890)
     async def example(...):
         ...
