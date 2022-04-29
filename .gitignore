@@ -17,3 +17,4 @@ docs/crowdin.py
 /.coverage
 *test.py
 backup/
+build/*
