@@ -5,14 +5,14 @@ from discord.ext import commands
 class MyBot(commands.Bot):
 
     # In this basic example, we just synchronize the app commands to one guild,
-    # without requiring to set the guild to every command individually by just copying them over.
+    # without requiring to set the guild to every command individually by just coping them over.
     # By doing so we don't have to wait up to 1hr until they are shown for the end-user.
 
     # If you want to synchronize your app commands to every guild your bot is in, 
     # remove the following setup_hook and uncomment the one below.
     async def setup_hook(self):
         # Replace ... with the guild id you want your commands to be synced with.
-        guild = discord.Object(...)
+        guild = discord.Object(923577732141563935)
         self.tree.copy_global_to(guild=guild)
         synced_app_commands = await self.tree.sync(guild=guild)
         print(f'Synced the following commands to {guild.id}: {[c.name for c in synced_app_commands]}')
@@ -25,7 +25,7 @@ intents = discord.Intents.default()
 
 # In order to use a basic synchronization of the app commands in the setup_hook, 
 # you have replace ... with your bots application_id you find in the developer portal.
-bot = MyBot(command_prefix='?', intents=intents, application_id=...)
+bot = MyBot(command_prefix='?', intents=intents, application_id=949738920814469181)
 
 
 @bot.event
@@ -55,4 +55,4 @@ async def joined(interaction: discord.Interaction, member: discord.Member = None
 
     await interaction.response.send_message(f'{member} joined in {member.joined_at}')
 
-bot.run('token')
+bot.run('OTQ5NzM4OTIwODE0NDY5MTgx.GkZGvL.hX6e4ECkbzpef0Ys52KcT5S1rc5yXqGGenJC-8')
