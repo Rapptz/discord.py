@@ -201,7 +201,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @property
     def type(self) -> Literal[ChannelType.text, ChannelType.news]:
         """:class:`ChannelType`: The channel's Discord type."""
-        if self.type == 0:
+        if self._type == 0:
             return ChannelType.text
         return ChannelType.news
 
