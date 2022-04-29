@@ -1188,7 +1188,6 @@ class Guild(Hashable):
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
-        news: bool = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         default_auto_archive_duration: int = MISSING,
     ) -> TextChannel:
@@ -1295,12 +1294,7 @@ class Guild(Hashable):
             options["default_auto_archive_duration"] = default_auto_archive_duration
 
         data = await self._create_channel(
-            name,
-            overwrites=overwrites,
-            channel_type=ChannelType.text if news is MISSING else ChannelType.news,
-            category=category,
-            reason=reason,
-            **options,
+            name, overwrites=overwrites, channel_type=ChannelType.text, category=category, reason=reason, **options
         )
         channel = TextChannel(state=self._state, guild=self, data=data)
 
