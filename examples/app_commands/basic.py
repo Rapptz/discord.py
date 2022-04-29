@@ -44,7 +44,8 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
     """Adds two numbers together."""
     await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
 
-# To make an argument optional, you can make it a default argument
+# To make an argument optional, you can either give it a supported default argument
+# or you can mark it as Optional from the typing library. This example does both.
 @bot.tree.command()
 @app_commands.describe(member='The member you want to get the joined date from, defaults to the user who uses the command')
 async def joined(interaction: discord.Interaction, member: discord.Member = None):
