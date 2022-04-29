@@ -48,7 +48,7 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
 # or you can mark it as Optional from the typing library. This example does both.
 @bot.tree.command()
 @app_commands.describe(member='The member you want to get the joined date from, defaults to the user who uses the command')
-async def joined(interaction: discord.Interaction, member: discord.Member = None):
+async def joined(interaction: discord.Interaction, member: Optional[discord.Member] = None):
     """Says when a member joined."""
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
