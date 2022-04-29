@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
 import inspect
 import os
 
@@ -288,7 +288,7 @@ class Select(Item[V]):
         )
 
     @property
-    def type(self) -> ComponentType:
+    def type(self) -> Literal[ComponentType.select]:
         return self._underlying.type
 
     def is_dispatchable(self) -> bool:
