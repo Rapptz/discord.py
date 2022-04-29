@@ -16,3 +16,4 @@ docs/crowdin.py
 *.mo
 /.coverage
 *test.py
+backup/
