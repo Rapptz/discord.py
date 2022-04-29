@@ -2,6 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+MY_GUILD = discord.Object(id=0) # replace with your guild id
+
 class MyBot(commands.Bot):
 
     # In this basic example, we just synchronize the app commands to one guild,
