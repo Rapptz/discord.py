@@ -2185,7 +2185,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         content = str(content) if content else MISSING
 
-        extras = {
+        channel_payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration or self.default_auto_archive_duration,
             'location': 'Forum Channel',
@@ -2204,7 +2204,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             mention_author=None if mention_author is MISSING else mention_author,
             stickers=sticker_ids,
             flags=flags,
-            extras=extras,
+            channel_payload=channel_payload,
         ) as params:
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             return Thread(guild=self.guild, state=self._state, data=data)
