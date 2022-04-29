@@ -38,6 +38,10 @@ The ``Message Context`` menu produces an option that looks like the following:
 
 .. image:: /images/guide/interactions/message_context_menu.png
 
+
+..
+    TODO: Move checks into separate guide.
+
 Checks
 ~~~~~~~
 
