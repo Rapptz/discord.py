@@ -6,7 +6,7 @@ class MyBot(commands.Bot):
 
     # In this basic example, we just synchronize the app commands to one guild,
     # without requiring to set the guild to every command individually by just copying them over.
-    # By doing so we don't have to wait up to 1hr until they are shown for the end-user.
+    # By doing so we don't have to wait up to an hour until they are shown to the end-user.
 
     # If you want to synchronize your app commands to every guild your bot is in, 
     # remove the following setup_hook and uncomment the one below.
