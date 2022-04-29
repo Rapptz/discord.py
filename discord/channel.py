@@ -2244,7 +2244,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         content = str(content) if content else MISSING
 
-        extras = {
+        channel_payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration or self.default_auto_archive_duration,
             'rate_limit_per_user': slowmode_delay,
@@ -2264,7 +2264,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             stickers=sticker_ids,
             view=view,
             flags=flags,
-            extras=extras,
+            channel_payload=channel_payload,
         ) as params:
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             return Thread(guild=self.guild, state=self._state, data=data)
