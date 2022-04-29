@@ -27,6 +27,7 @@ intents = discord.Intents.default()
 # you have replace ... with your bots application_id you find in the developer portal.
 client = MyClient(intents=intents, application_id=0)
 
+
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
@@ -46,6 +47,7 @@ async def hello(interaction: discord.Interaction):
 async def add(interaction: discord.Interaction, first_value: int, second_value: int):
     """Adds two numbers together."""
     await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
+
 
 # To make an argument optional, you can either give it a supported default argument
 # or you can mark it as Optional from the typing library. This example does both.
