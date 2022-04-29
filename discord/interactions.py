@@ -113,6 +113,10 @@ class Interaction:
         The locale of the user invoking the interaction.
     guild_locale: Optional[:class:`Locale`]
         The preferred locale of the guild the interaction was sent from, if any.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data for use during
+        interaction processing. The library will not touch any values or keys
+        within this dictionary.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -128,6 +132,7 @@ class Interaction:
         'version',
         'locale',
         'guild_locale',
+        'extras',
         '_permissions',
         '_state',
         '_client',
@@ -149,6 +154,7 @@ class Interaction:
         # This baton is used for extra data that might be useful for the lifecycle of
         # an interaction. This is mainly for internal purposes and it gives it a free-for-all slot.
         self._baton: Any = MISSING
+        self.extras: Dict[Any, Any] = {}
         self._from_data(data)
 
     def _from_data(self, data: InteractionPayload):
@@ -448,7 +454,7 @@ class Interaction:
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
         if view and not view.is_finished():
-            self._state.store_view(view, message.id)
+            self._state.store_view(view, message.id, interaction_id=self.id)
         return message
 
     async def delete_original_message(self) -> None:
@@ -676,7 +682,10 @@ class InteractionResponse:
             if ephemeral and view.timeout is None:
                 view.timeout = 15 * 60.0
 
-            self._parent._state.store_view(view)
+            # If the interaction type isn't an application command then there's no way
+            # to obtain this interaction_id again, so just default to None
+            entity_id = parent.id if parent.type is InteractionType.application_command else None
+            self._parent._state.store_view(view, entity_id)
 
         self._responded = True
 

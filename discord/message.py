@@ -882,7 +882,11 @@ class PartialMessage(Hashable):
         message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
-            self._state.store_view(view, self.id)
+            interaction: Optional[MessageInteraction] = getattr(self, 'interaction', None)
+            if interaction is not None:
+                self._state.store_view(view, self.id, interaction_id=interaction.id)
+            else:
+                self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)

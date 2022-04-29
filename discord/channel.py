@@ -31,6 +31,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     Optional,
     TYPE_CHECKING,
@@ -165,7 +166,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
-        self._type: int = data['type']
+        self._type: Literal[0, 5] = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
@@ -190,7 +191,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
-        self._type: int = data.get('type', self._type)
+        self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
@@ -198,9 +199,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.text, ChannelType.news]:
         """:class:`ChannelType`: The channel's Discord type."""
-        return try_enum(ChannelType, self._type)
+        if self._type == 0:
+            return ChannelType.text
+        return ChannelType.news
 
     @property
     def _sorting_bucket(self) -> int:
@@ -1036,7 +1039,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
 
@@ -1505,7 +1508,7 @@ class StageChannel(VocalGuildChannel):
         return [member for member in self.members if self.permissions_for(member) >= required_permissions]
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.stage_voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.stage_voice
 
@@ -1749,7 +1752,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.category]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.category
 
@@ -2016,7 +2019,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.forum]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.forum
 
@@ -2330,7 +2333,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.private]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.private
 
@@ -2484,7 +2487,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return f'<GroupChannel id={self.id} name={self.name!r}>'
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.group]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.group
 

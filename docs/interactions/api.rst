@@ -482,6 +482,12 @@ Decorators
 .. autofunction:: discord.app_commands.guilds
     :decorator:
 
+.. autofunction:: discord.app_commands.guild_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.default_permissions
+    :decorator:
+
 Checks
 ~~~~~~~
 
