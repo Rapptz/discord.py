@@ -1188,7 +1188,7 @@ class Guild(Hashable):
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
-        news: bool = MISSING,
+        news: bool = False,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         default_auto_archive_duration: int = MISSING,
     ) -> TextChannel:
