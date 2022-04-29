@@ -49,8 +49,7 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
 @app_commands.describe(member='The member you want to get the joined date from, defaults to the user who uses the command')
 async def joined(interaction: discord.Interaction, member: discord.Member = None):
     """Says when a member joined."""
-    # By doing this we use the member that was provided, 
-    # tho if this is None we use the user that has invoked the command
+    # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
 
     await interaction.response.send_message(f'{member} joined in {member.joined_at}')
