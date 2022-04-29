@@ -9,7 +9,13 @@ MY_GUILD = discord.Object(id=0)  # replace with your guild id
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents, application_id: int):
         super().__init__(intents=intents, application_id=application_id)
-
+        # A CommandTree is a special type that holds all the application command
+        # state required to make it work. This is a separate class because it
+        # allows all the extra state to be opt-in.
+        # Whenever you want to work with application commands, your tree is used
+        # to store it and work with it.
+        # Note: When using commands.Bot instead of discord.Client, the bot will
+        # maintain its own tree instead.
         self.tree = app_commands.CommandTree(self)
 
     # In this basic example, we just synchronize the app commands to one guild,
