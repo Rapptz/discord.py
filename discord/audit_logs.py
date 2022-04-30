@@ -337,7 +337,7 @@ class _AuditLogProxyMemberPrune(_AuditLogProxy):
 
 
 class _AuditLogProxyMemberMoveOrMessageDelete(_AuditLogProxy):
-    channel: abc.GuildChannel
+    channel: Union[abc.GuildChannel, Thread]
     count: int
 
 
@@ -346,7 +346,7 @@ class _AuditLogProxyMemberDisconnect(_AuditLogProxy):
 
 
 class _AuditLogProxyPinAction(_AuditLogProxy):
-    channel: abc.GuildChannel
+    channel: Union[abc.GuildChannel, Thread]
     message_id: int
 
 
@@ -434,7 +434,7 @@ class AuditLogEntry(Hashable):
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyMemberMoveOrMessageDelete(
                     count=int(extra['count']),
-                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                 )
             elif self.action is enums.AuditLogAction.member_disconnect:
                 # The member disconnect action has a dict with some information
@@ -443,7 +443,7 @@ class AuditLogEntry(Hashable):
                 # the pin actions have a dict with some information
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyPinAction(
-                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
             elif self.action.name.startswith('overwrite_'):
