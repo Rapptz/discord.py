@@ -61,16 +61,6 @@ class Exchanger:
     async def __aexit__(self, *args, **kwargs) -> None:
         await self.__session.close()
 
-    def expired(self, token: Token, /) -> bool:
-        """Checks if the provided token is expired.
-
-        Parameters
-        ----------
-        token: :class:`Token`
-            The token to check if it is expired.
-        """
-        return token.expired
-
     @asynccontextmanager
     async def exchange(self, code: str, /) -> AsyncIterator[Token]:
         """Exchange a code for an access token.
