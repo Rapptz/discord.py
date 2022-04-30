@@ -1257,7 +1257,9 @@ class Guild(Hashable):
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
         news: :class:`bool`
-            Whether to mark the channel as a news channel or not.
+            Whether to create the text channel as a news channel.
+
+            .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the text channel (in minutes).
 
