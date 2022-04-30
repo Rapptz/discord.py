@@ -1262,6 +1262,7 @@ class Group:
 
     async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
         """|coro|
+
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
 
         To get the command that failed, :attr:`discord.Interaction.command` should be used.
