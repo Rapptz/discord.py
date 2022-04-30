@@ -65,7 +65,8 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
 
-    await interaction.response.send_message(f'{member} joined in {member.joined_at}')
+    # The format_dt function formats the date time into a human readable representation in the official client
+    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
 
 
 # A Context Menu command is an app command that can be run on a member or on a message by 
