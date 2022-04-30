@@ -1296,7 +1296,7 @@ class Group:
         Raises
         -------
         TypeError
-            The coroutine passed is not actually a coroutine.
+            The coroutine passed is not actually a coroutine, or is an invalid coroutine.
         """
 
         if not inspect.iscoroutinefunction(coro):
