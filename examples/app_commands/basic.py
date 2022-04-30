@@ -74,13 +74,13 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 # This context menu only works for members
 @client.tree.context_menu(name='Joindate')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
-    # We're sending this message as ephemeral, so only the command executor can see it
-    await interaction.response.send_message(f'{member} joined in {member.joined_at}', ephemeral=True)
+    await interaction.response.send_message(f'{member} joined in {member.joined_at}')
 
 
 # This context menu only works for messages
 @client.tree.context_menu(name='Report to mods')
 async def report_message(interaction: discord.Interaction, message: discord.Message):
+    # We're sending this response message with ephemeral=True, so only the command executor can see it
     await interaction.response.send_message(
         f'Thanks for reporting this message by {message.author.mention} to our mods.', ephemeral=True
     )
