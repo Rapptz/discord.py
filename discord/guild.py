@@ -1127,11 +1127,11 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
-        channel_type: Literal[ChannelType.text],
+        channel_type: Literal[ChannelType.news, ChannelType.text],
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, GuildChannelPayload]:
+    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]:
         ...
 
     @overload
@@ -1184,6 +1184,7 @@ class Guild(Hashable):
         *,
         reason: Optional[str] = None,
         category: Optional[CategoryChannel] = None,
+        news: bool = False,
         position: int = MISSING,
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
@@ -1257,7 +1258,11 @@ class Guild(Hashable):
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
         news: :class:`bool`
+<<<<<<< HEAD
             Whether to create the text channel as a news channel.
+=======
+             Whether to create the text channel as a news channel.
+>>>>>>> 498cf3acd986171b2b6fb0cd1fe02d26f8f20717
 
             .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
