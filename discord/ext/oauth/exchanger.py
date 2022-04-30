@@ -61,14 +61,14 @@ class Exchanger:
         await self.__session.close()
 
     def expired(self, token: Token, /) -> bool:
-        """Checks if the token is expired.
+        """Checks if the provided token is expired.
 
         Parameters
         ----------
         token: :class:`Token`
-            The token to check.
+            The token to check if it is expired.
         """
-        return token.expires_in >= datetime.datetime.utcnow()
+        return token.expired
 
     @asynccontextmanager
     async def exchange(self, code: str, /) -> AsyncIterator[Token]:
