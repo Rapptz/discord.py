@@ -75,7 +75,8 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
-    await interaction.response.send_message(f'{member} joined in {member.joined_at}')
+    # The format_dt function formats the date time into a human readable representation in the official client
+    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
 
 
 # This context menu command only works on messages
