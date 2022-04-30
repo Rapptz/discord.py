@@ -30,7 +30,7 @@ class MyClient(discord.Client):
 intents = discord.Intents.default()
 
 # In order to use a basic synchronization of the app commands in the setup_hook,
-# you have replace ... with your bots application_id you find in the developer portal.
+# you have replace the 0 with your bots application_id you find in the developer portal.
 client = MyClient(intents=intents, application_id=0)
 
 
