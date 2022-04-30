@@ -69,7 +69,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
 
 
-# A Context Menu command is an app command that can be run on a member or on a message by 
+# A Context Menu command is an app command that can be run on a member or on a message by
 # accessing a menu within the client, usually via right clicking.
 # It always takes an interaction as its first parameter and a Member or Message as its second parameter.
 
