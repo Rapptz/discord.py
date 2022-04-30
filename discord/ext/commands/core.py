@@ -566,11 +566,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             pass
         else:
-            injected = wrap_callback(coro)
+            injected = wrap_callback(coro)  # type: ignore
             if cog is not None:
-                await injected(cog, ctx, error)  # type: ignore
+                await injected(cog, ctx, error)
             else:
-                await injected(ctx, error)
+                await injected(ctx, error)  # type: ignore
 
         try:
             if cog is not None:
@@ -933,7 +933,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # the invoked subcommand is None.
         ctx.invoked_subcommand = None
         ctx.subcommand_passed = None
-        injected = hooked_wrapped_callback(self, ctx, self.callback)
+        injected = hooked_wrapped_callback(self, ctx, self.callback)  # type: ignore
         await injected(*ctx.args, **ctx.kwargs)  # type: ignore
 
     async def reinvoke(self, ctx: Context[BotT], /, *, call_hooks: bool = False) -> None:
@@ -1087,11 +1087,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             greedy = isinstance(param.converter, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 
-            annotation = param.converter.converter if greedy else param.converter  # type: ignore  # needs conditional types
+            annotation: Any = param.converter.converter if greedy else param.converter
             origin = getattr(annotation, '__origin__', None)
             if not greedy and origin is Union:
                 none_cls = type(None)
-                union_args = annotation.__args__  # type: ignore  # this is safe
+                union_args = annotation.__args__
                 optional = union_args[-1] is none_cls
                 if len(union_args) == 2 and optional:
                     annotation = union_args[0]
@@ -1100,7 +1100,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
             if origin is Literal:
-                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)  # type: ignore  # this is safe
+                name = '|'.join(f'"{v}"' if isinstance(v, str) else str(v) for v in annotation.__args__)
             if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
@@ -1536,7 +1536,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
             ctx.invoked_subcommand = self.all_commands.get(trigger, None)
 
         if early_invoke:
-            injected = hooked_wrapped_callback(self, ctx, self.callback)
+            injected = hooked_wrapped_callback(self, ctx, self.callback)  # type: ignore
             await injected(*ctx.args, **ctx.kwargs)  # type: ignore
 
         ctx.invoked_parents.append(ctx.invoked_with)  # type: ignore
@@ -1826,8 +1826,8 @@ def check(predicate: Check[ContextT], /) -> Callable[[T], T]:
     else:
 
         @functools.wraps(predicate)
-        async def wrapper(ctx):
-            return predicate(ctx)  # type: ignore
+        async def wrapper(ctx: ContextT):
+            return predicate(ctx)
 
         decorator.predicate = wrapper
 

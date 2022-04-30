@@ -33,7 +33,11 @@ jobs:
       - name: Run Pyright
         uses: jakebailey/pyright-action@v1
         with:
+<<<<<<< HEAD
           version: '1.1.235'
+=======
+          version: '1.1.242'
+>>>>>>> 5536ef1e (Update to pyright 1.1.242)
           warnings: false
           no-comments: ${{ matrix.python-version != '3.x' }}
 

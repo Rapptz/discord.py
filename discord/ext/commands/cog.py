@@ -453,8 +453,7 @@ class Cog(metaclass=CogMeta):
             command.cog = self
             if command.parent is None:
                 try:
-                    # Type checker does not understand the generic bounds here
-                    bot.add_command(command)  # type: ignore
+                    bot.add_command(command)
                 except Exception as e:
                     # undo our additions
                     for to_undo in self.__cog_commands__[:index]:
