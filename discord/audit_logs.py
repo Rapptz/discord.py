@@ -456,7 +456,7 @@ class AuditLogEntry(Hashable):
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')  # type: ignore # Object doesn't usually have name
+                        role.name = extra.get('role_name')  # type: ignore # Object doesn't usually have name
                     self.extra = role
             elif self.action.name.startswith('stage_instance'):
                 channel_id = int(extra['channel_id'])
