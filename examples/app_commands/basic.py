@@ -79,7 +79,7 @@ async def show_join_date(interaction: discord.Interaction, member: discord.Membe
 
 
 # This context menu only works for messages
-@client.tree.context_menu(name='Report to mods')
+@client.tree.context_menu(name='Report to Moderators')
 async def report_message(interaction: discord.Interaction, message: discord.Message):
     # We're sending this response message with ephemeral=True, so only the command executor can see it
     await interaction.response.send_message(
