@@ -72,7 +72,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 # It always takes an interaction as its first parameter and a Member, Message or Union of both as its second parameter.
 
 # This context menu only works for members
-@client.tree.context_menu(name='Joindate')
+@client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     await interaction.response.send_message(f'{member} joined in {member.joined_at}')
 
