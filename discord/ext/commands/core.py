@@ -2315,7 +2315,7 @@ def cooldown(
 
 def dynamic_cooldown(
     cooldown: Union[BucketType, Callable[[Message], Any]],
-    type: BucketType = BucketType.default,
+    type: BucketType,
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
@@ -2347,6 +2347,9 @@ def dynamic_cooldown(
     """
     if not callable(cooldown):
         raise TypeError("A callable must be provided")
+
+    if type is BucketType.default:
+        raise ValueError('BucketType.default cannot be used in dynamic cooldowns')
 
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
         if isinstance(func, Command):
