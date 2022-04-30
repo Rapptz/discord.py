@@ -83,7 +83,7 @@ async def show_join_date(interaction: discord.Interaction, member: discord.Membe
 async def report_message(interaction: discord.Interaction, message: discord.Message):
     # We're sending this response message with ephemeral=True, so only the command executor can see it
     await interaction.response.send_message(
-        f'Thanks for reporting this message by {message.author.mention} to our mods.', ephemeral=True
+        f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True
     )
 
     # Handle report by sending it into a log channel
