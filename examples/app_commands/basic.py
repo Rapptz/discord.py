@@ -68,20 +68,30 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     await interaction.response.send_message(f'{member} joined in {member.joined_at}')
 
 
-# A Context Menu is an app that can be run on a member or on a message by rightclicking.
+# A Context Menu is an app command that can be run on a member or on a message by rightclicking.
 # It always takes an interaction as its first parameter and a Member, Message or Union of both as its second parameter.
 
 # This context menu only works for members
 @client.tree.context_menu(name='Joindate')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
-    # We're sending this message as ephemeral, so only the command user can see it
+    # We're sending this message as ephemeral, so only the command executor can see it
     await interaction.response.send_message(f'{member} joined in {member.joined_at}', ephemeral=True)
 
 
 # This context menu only works for messages
-@client.tree.context_menu(name='Wrong channel')
-async def wrong_channel(interaction: discord.Interaction, message: discord.Message):
-    await interaction.response.send_message(f'{message.author.mention} To talk about this, please move to #off-topic')
+@client.tree.context_menu(name='Report to mods')
+async def report_message(interaction: discord.Interaction, message: discord.Message):
+    await interaction.response.send_message(
+        f'Thanks for reporting this message by {message.author.mention} to our mods.', ephemeral=True
+    )
+
+    # Handle report by sending it into a log channel
+    log_channel = interaction.guild.get_channel(0)  # replace with your channel id
+
+    url_view = discord.ui.View()
+    url_view.add_item(discord.ui.Button(label='Go to message', style=discord.ButtonStyle.url, url=message.jump_url))
+
+    await log_channel.send(f'New report by {interaction.user.mention}:', view=url_view)
 
 
 client.run('token')
