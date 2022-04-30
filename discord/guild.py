@@ -1175,11 +1175,11 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
-        channel_type: Literal[ChannelType.text],
+        channel_type: Literal[ChannelType.news, ChannelType.text],
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, GuildChannelPayload]:
+    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]:
         ...
 
     @overload
@@ -1232,6 +1232,7 @@ class Guild(Hashable):
         *,
         reason: Optional[str] = None,
         category: Optional[CategoryChannel] = None,
+        news: bool = False,
         position: int = MISSING,
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
@@ -1303,6 +1304,10 @@ class Guild(Hashable):
             The maximum value possible is `21600`.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        news: :class:`bool`
+             Whether to create the text channel as a news channel.
+
+            .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the text channel (in minutes).
 
@@ -1342,7 +1347,12 @@ class Guild(Hashable):
             options["default_auto_archive_duration"] = default_auto_archive_duration
 
         data = await self._create_channel(
-            name, overwrites=overwrites, channel_type=ChannelType.text, category=category, reason=reason, **options
+            name,
+            overwrites=overwrites,
+            channel_type=ChannelType.news if news else ChannelType.text,
+            category=category,
+            reason=reason,
+            **options,
         )
         channel = TextChannel(state=self._state, guild=self, data=data)
 

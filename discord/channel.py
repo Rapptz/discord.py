@@ -86,6 +86,7 @@ if TYPE_CHECKING:
     from .settings import ChannelSettings
     from .types.channel import (
         TextChannel as TextChannelPayload,
+        NewsChannel as NewsChannelPayload,
         VoiceChannel as VoiceChannelPayload,
         StageChannel as StageChannelPayload,
         DMChannel as DMChannelPayload,
@@ -165,7 +166,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         'default_auto_archive_duration',
     )
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self._type: int = data['type']
@@ -183,7 +184,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def _update(self, guild: Guild, data: TextChannelPayload) -> None:
+    def _update(self, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]) -> None:
         self.guild: Guild = guild
         self.name: str = data['name']
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
