@@ -30,6 +30,7 @@ from typing import Any, AsyncIterator, Dict
 import aiohttp
 
 from ...http import HTTPClient
+from ...utils import utcnow
 from .token import Token
 
 
@@ -90,7 +91,7 @@ class Exchanger:
             data = await resp.json()
         expires_in = data.get('expires_in')
         if expires_in is not None:
-            data['expires_in'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires_in)
+            data['expires_in'] = utcnow() + datetime.timedelta(seconds=expires_in)
         token = Token(**data)
         await self.http_client.static_login(str(token))
         yield token
@@ -114,7 +115,7 @@ class Exchanger:
             data = await resp.json()
         expires_in = data.get('expires_in')
         if expires_in is not None:
-            data['expires_in'] = datetime.datetime.utcnow() + datetime.timedelta(seconds=expires_in)
+            data['expires_in'] = utcnow() + datetime.timedelta(seconds=expires_in)
         token = Token(**data)
         await self.http_client.static_login(str(token))
         yield token

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from ...utils import utcnow
+
 
 @dataclass
 class Token:
@@ -15,4 +17,4 @@ class Token:
 
     @property
     def expired(self) -> bool:
-        return self.expires_in >= datetime.utcnow()
+        return self.expires_in >= utcnow()
