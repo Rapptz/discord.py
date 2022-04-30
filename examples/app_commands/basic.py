@@ -90,7 +90,7 @@ async def report_message(interaction: discord.Interaction, message: discord.Mess
     log_channel = interaction.guild.get_channel(0)  # replace with your channel id
 
     url_view = discord.ui.View()
-    url_view.add_item(discord.ui.Button(label='Go to message', style=discord.ButtonStyle.url, url=message.jump_url))
+    url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
 
     await log_channel.send(f'New report by {interaction.user.mention}:', view=url_view)
 
