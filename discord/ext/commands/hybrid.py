@@ -233,7 +233,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             del wrapped.callback.__signature__
 
         self.wrapped: Command[CogT, Any, T] = wrapped
-        self.binding = wrapped.cog
+        self.binding: Optional[CogT] = wrapped.cog
 
     def _copy_with(self, **kwargs) -> Self:
         copy: Self = super()._copy_with(**kwargs)  # type: ignore
@@ -383,7 +383,7 @@ class HybridCommand(Command[CogT, P, T]):
         self,
         func: CommandCallback[CogT, ContextT, P, T],
         /,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(func, **kwargs)
         self.app_command: HybridAppCommand[CogT, Any, T] = HybridAppCommand(self)
