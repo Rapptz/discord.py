@@ -56,6 +56,14 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
     await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
 
 
+@client.tree.command()
+@app_commands.rename(text_to_send='text')
+@app_commands.describe(text_to_send='Text to send in the current channel')
+async def send(interaction: discord.Interaction, text_to_send: str):
+    """Sends the text into the current channel."""
+    await interaction.response.send_message(text_to_send)
+
+
 # To make an argument optional, you can either give it a supported default argument
 # or you can mark it as Optional from the typing library. This example does both.
 @client.tree.command()
