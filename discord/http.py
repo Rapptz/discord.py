@@ -335,6 +335,7 @@ class HTTPClient:
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
         http_trace: Optional[aiohttp.TraceConfig] = None,
+        access_token: bool = False,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
         self.connector: aiohttp.BaseConnector = connector or MISSING
@@ -346,6 +347,7 @@ class HTTPClient:
         self.proxy: Optional[str] = proxy
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
+        self.access_token: bool = access_token
         self.use_clock: bool = not unsync_clock
 
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
@@ -396,7 +398,7 @@ class HTTPClient:
         }
 
         if self.token is not None:
-            headers['Authorization'] = 'Bot ' + self.token
+            headers['Authorization'] = 'Bot ' + self.token if not self.access_token else 'Bearer' + self.token
         # some checking if it's a JSON request
         if 'json' in kwargs:
             headers['Content-Type'] = 'application/json'
