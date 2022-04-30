@@ -711,12 +711,8 @@ class Command(Generic[GroupT, P, T]):
                 return False
 
         if self.binding is not None:
-            try:
-                # Type checker does not like runtime attribute retrieval
-                check: Check = self.binding.interaction_check  # type: ignore
-            except AttributeError:
-                pass
-            else:
+            check: Optional[Check] = getattr(self.binding, 'interaction_check', None)
+            if check:
                 ret = await maybe_coroutine(check, interaction)
                 if not ret:
                     return False

@@ -1004,7 +1004,8 @@ class CommandTree(Generic[ClientT]):
 
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
 
-        target_id = data.get('target_id')
+        # This is annotated as str | int but realistically this will always be str
+        target_id: Optional[Union[str, int]] = data.get('target_id')
         # Right now, the only types are message and user
         # Therefore, there's no conflict with snowflakes
 
