@@ -584,10 +584,10 @@ class Command(Generic[GroupT, P, T]):
                 await self.on_error(interaction, error)  # type: ignore
 
         parent = self.parent
-        if parent is not None:
+        if parent is not None and parent._has_error_handler():
             await parent.on_error(interaction, error)
 
-            if parent.parent is not None:
+            if parent.parent is not None and parent.parent._has_error_handler():
                 await parent.parent.on_error(interaction, error)
 
     def _has_any_error_handlers(self) -> bool:
@@ -1112,6 +1112,7 @@ class Group:
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
         self._guild_ids: Optional[List[int]] = guild_ids
+        self.on_error: Optional[UnboundError] = None
 
         if default_permissions is MISSING:
             if cls.__discord_app_commands_group_default_permissions__ is MISSING:
@@ -1211,6 +1212,9 @@ class Group:
 
         return copy
 
+    def _has_error_handler(self) -> bool:
+        return self.on_error is not None
+
     def to_dict(self) -> Dict[str, Any]:
         # If this has a parent command then it's part of a subcommand group
         # Otherwise, it's just a regular command
@@ -1255,24 +1259,31 @@ class Group:
             if isinstance(command, Group):
                 yield from command.walk_commands()
 
-    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
-        """|coro|
+    def error(self, coro: UnboundError) -> UnboundError:
+        """A decorator that registers a coroutine as a local error handler.
 
-        A callback that is called when a child's command raises an :exc:`AppCommandError`.
+        The local error handler is called whenever an exception is raised in the body
+        of the command or during handling of the command. The error handler must take
+        2 parameters, the interaction and the error.
 
-        To get the command that failed, :attr:`discord.Interaction.command` should be used.
-
-        The default implementation does nothing.
+        The error passed will be derived from :exc:`AppCommandError`.
 
         Parameters
         -----------
-        interaction: :class:`~discord.Interaction`
-            The interaction that is being handled.
-        error: :exc:`AppCommandError`
-            The exception that was raised.
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine.
         """
 
-        pass
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        self.on_error = coro
+        return coro
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|
