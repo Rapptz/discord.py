@@ -67,7 +67,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     member = member or interaction.user
 
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined on {discord.utils.format_dt(member.joined_at)}')
+    await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
 
 # A Context Menu command is an app command that can be run on a member or on a message by
@@ -78,7 +78,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 @client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined on {discord.utils.format_dt(member.joined_at)}')
+    await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
 
 # This context menu command only works on messages
