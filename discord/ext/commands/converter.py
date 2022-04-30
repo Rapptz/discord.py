@@ -35,6 +35,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    overload,
     Protocol,
     Tuple,
     Type,
@@ -74,6 +75,7 @@ __all__ = (
     'EmojiConverter',
     'PartialEmojiConverter',
     'CategoryChannelConverter',
+    'ForumChannelConverter',
     'IDConverter',
     'ThreadConverter',
     'GuildChannelConverter',
@@ -81,6 +83,7 @@ __all__ = (
     'ScheduledEventConverter',
     'clean_content',
     'Greedy',
+    'Range',
     'run_converters',
 )
 
@@ -579,6 +582,25 @@ class ThreadConverter(IDConverter[discord.Thread]):
         return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
 
 
+class ForumChannelConverter(IDConverter[discord.ForumChannel]):
+    """Converts to a :class:`~discord.ForumChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+
+    .. versionadded:: 2.0
+    """
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> discord.ForumChannel:
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'forums', discord.ForumChannel)
+
+
 class ColourConverter(Converter[discord.Colour]):
     """Converts to a :class:`~discord.Colour`.
 
@@ -605,61 +627,15 @@ class ColourConverter(Converter[discord.Colour]):
         Added support for ``rgb`` function and 3-digit hex shortcuts
     """
 
-    RGB_REGEX = re.compile(r'rgb\s*\((?P<r>[0-9]{1,3}%?)\s*,\s*(?P<g>[0-9]{1,3}%?)\s*,\s*(?P<b>[0-9]{1,3}%?)\s*\)')
-
-    def parse_hex_number(self, argument: str) -> discord.Colour:
-        arg = ''.join(i * 2 for i in argument) if len(argument) == 3 else argument
-        try:
-            value = int(arg, base=16)
-            if not (0 <= value <= 0xFFFFFF):
-                raise BadColourArgument(argument)
-        except ValueError:
-            raise BadColourArgument(argument)
-        else:
-            return discord.Color(value=value)
-
-    def parse_rgb_number(self, argument: str, number: str) -> int:
-        if number[-1] == '%':
-            value = int(number[:-1])
-            if not (0 <= value <= 100):
-                raise BadColourArgument(argument)
-            return round(255 * (value / 100))
-
-        value = int(number)
-        if not (0 <= value <= 255):
-            raise BadColourArgument(argument)
-        return value
-
-    def parse_rgb(self, argument: str, *, regex: re.Pattern[str] = RGB_REGEX) -> discord.Colour:
-        match = regex.match(argument)
-        if match is None:
-            raise BadColourArgument(argument)
-
-        red = self.parse_rgb_number(argument, match.group('r'))
-        green = self.parse_rgb_number(argument, match.group('g'))
-        blue = self.parse_rgb_number(argument, match.group('b'))
-        return discord.Color.from_rgb(red, green, blue)
-
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Colour:
-        if argument[0] == '#':
-            return self.parse_hex_number(argument[1:])
-
-        if argument[0:2] == '0x':
-            rest = argument[2:]
-            # Legacy backwards compatible syntax
-            if rest.startswith('#'):
-                return self.parse_hex_number(rest[1:])
-            return self.parse_hex_number(rest)
-
-        arg = argument.lower()
-        if arg[0:3] == 'rgb':
-            return self.parse_rgb(arg)
-
-        arg = arg.replace(' ', '_')
-        method = getattr(discord.Colour, arg, None)
-        if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-            raise BadColourArgument(arg)
-        return method()
+        try:
+            return discord.Colour.from_str(argument)
+        except ValueError:
+            arg = argument.lower().replace(' ', '_')
+            method = getattr(discord.Colour, arg, None)
+            if arg.startswith('from_') or method is None or not inspect.ismethod(method):
+                raise BadColourArgument(arg)
+            return method()
 
 
 ColorConverter = ColourConverter
@@ -1020,6 +996,12 @@ class Greedy(List[T]):
     ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
 
     For more information, check :ref:`ext_commands_special_converters`.
+
+    .. note::
+
+        For interaction based contexts the conversion error is propagated
+        rather than swallowed due to the difference in user experience with
+        application commands.
     """
 
     __slots__ = ('converter',)
@@ -1051,6 +1033,88 @@ class Greedy(List[T]):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
         return cls(converter=converter)
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Annotated as Range
+else:
+
+    class Range:
+        """A special converter that can be applied to a parameter to require a numeric type
+        to fit within the range provided.
+
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
+        the intent of the code.
+
+        Some example ranges:
+
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+
+        Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ----------
+
+        .. code-block:: python3
+
+            @bot.command()
+            async def range(ctx: commands.Context, value: commands.Range[int, 10, 12]):
+                await ctx.send(f'Your value is {value}')
+        """
+
+        def __init__(
+            self,
+            *,
+            annotation: Any,
+            min: Optional[Union[int, float]] = None,
+            max: Optional[Union[int, float]] = None,
+        ) -> None:
+            self.annotation: Any = annotation
+            self.min: Optional[Union[int, float]] = min
+            self.max: Optional[Union[int, float]] = max
+
+        async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
+            converted = self.annotation(value)
+            if (self.min is not None and converted < self.min) or (self.max is not None and converted > self.max):
+                raise RangeError(converted, minimum=self.min, maximum=self.max)
+
+            return converted
+
+        def __call__(self) -> None:
+            # Trick to allow it inside typing.Union
+            pass
+
+        def __class_getitem__(cls, obj) -> Range:
+            if not isinstance(obj, tuple):
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+
+            if len(obj) == 2:
+                obj = (*obj, None)
+            elif len(obj) != 3:
+                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+
+            annotation, min, max = obj
+
+            if min is None and max is None:
+                raise TypeError('Range must not be empty')
+
+            if min is not None and max is not None:
+                # At this point max and min are both not none
+                if type(min) != type(max):
+                    raise TypeError('Both min and max in Range must be the same type')
+
+            if annotation not in (int, float):
+                raise TypeError(f'expected int or float as range type, received {annotation!r} instead')
+
+            return cls(
+                annotation=annotation,
+                min=annotation(min) if min is not None else None,
+                max=annotation(max) if max is not None else None,
+            )
 
 
 def _convert_to_bool(argument: str) -> bool:
@@ -1091,6 +1155,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
+    discord.ForumChannel: ForumChannelConverter,
 }
 
 
@@ -1130,6 +1195,18 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
             name = converter.__class__.__name__  # type: ignore
 
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
+
+
+@overload
+async def run_converters(
+    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+) -> T:
+    ...
+
+
+@overload
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
+    ...
 
 
 async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:

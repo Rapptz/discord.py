@@ -46,7 +46,7 @@ from ..asset import Asset
 from ..partial_emoji import PartialEmoji
 from ..http import Route, handle_message_parameters, MultipartParameters, HTTPClient
 from ..mixins import Hashable
-from ..channel import PartialMessageable
+from ..channel import TextChannel, PartialMessageable
 from ..file import File
 
 __all__ = (
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from ..http import Response
     from ..guild import Guild
     from ..emoji import Emoji
-    from ..channel import TextChannel
+    from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
     import datetime
@@ -932,8 +932,8 @@ class BaseWebhook(Hashable):
         return self._state and self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: The text channel this webhook belongs to.
+    def channel(self) -> Optional[Union[VoiceChannel, TextChannel]]:
+        """Optional[Union[:class:`VoiceChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
@@ -1344,7 +1344,16 @@ class Webhook(BaseWebhook):
     def _create_message(self, data, *, thread: Snowflake):
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
-        channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        if thread is MISSING:
+            channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        else:
+            channel = self.channel
+            if isinstance(channel, TextChannel):
+                channel = channel.get_thread(thread.id)
+
+            if channel is None:
+                channel = PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+
         # state is artificial
         return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 

@@ -74,9 +74,7 @@ type: int
 sync_id: str
 session_id: str
 flags: int
-buttons: list[dict]
-    label: str (max: 32)
-    url: str (max: 512)
+buttons: list[str (max: 32)]
 
 There are also activity flags which are mostly uninteresting for the library atm.
 
@@ -96,7 +94,6 @@ if TYPE_CHECKING:
         ActivityTimestamps,
         ActivityParty,
         ActivityAssets,
-        ActivityButton,
     )
 
     from .state import ConnectionState
@@ -187,12 +184,8 @@ class Activity(BaseActivity):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
-    buttons: List[:class:`dict`]
-        An list of dictionaries representing custom buttons shown in a rich presence.
-        Each dictionary contains the following keys:
-
-        - ``label``: A string representing the text shown on the button.
-        - ``url``: A string representing the URL opened upon clicking the button.
+    buttons: List[:class:`str`]
+        A list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
 
@@ -231,7 +224,7 @@ class Activity(BaseActivity):
         self.flags: int = kwargs.pop('flags', 0)
         self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
-        self.buttons: List[ActivityButton] = kwargs.pop('buttons', [])
+        self.buttons: List[str] = kwargs.pop('buttons', [])
 
         activity_type = kwargs.pop('type', -1)
         self.type: ActivityType = (
@@ -292,38 +285,38 @@ class Activity(BaseActivity):
 
     @property
     def large_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
             large_image = self.assets['large_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{large_image}.png'
+            return self._image_url(large_image)
 
     @property
     def small_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
             small_image = self.assets['small_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{small_image}.png'
+            return self._image_url(small_image)
+
+    def _image_url(self, image: str) -> Optional[str]:
+        if image.startswith('mp:'):
+            return f'https://media.discordapp.net/{image[3:]}'
+        elif self.application_id is not None:
+            return Asset.BASE + f'/app-assets/{self.application_id}/{image}.png'
 
     @property
     def large_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the large image asset hover text of this activity, if applicable."""
         return self.assets.get('large_text', None)
 
     @property
     def small_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the small image asset hover text of this activity, if applicable."""
         return self.assets.get('small_text', None)
 
 
@@ -712,7 +705,7 @@ class Spotify:
 
 
 class CustomActivity(BaseActivity):
-    """Represents a Custom activity from Discord.
+    """Represents a custom activity from Discord.
 
     .. container:: operations
 

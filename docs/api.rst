@@ -273,6 +273,9 @@ Channels
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
+    If the channel or user could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_typing` instead.
+
     This requires :attr:`Intents.typing` to be enabled.
 
     :param channel: The location where the typing originated from.
@@ -281,6 +284,18 @@ Channels
     :type user: Union[:class:`User`, :class:`Member`]
     :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
+
+.. function:: on_raw_typing(payload)
+
+    Called when someone begins typing a message. Unlike :func:`on_typing` this
+    is called regardless of the channel and user being in the internal cache.
+
+    This requires :attr:`Intents.typing` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawTypingEvent`
 
 Connection
 ~~~~~~~~~~~
@@ -367,7 +382,7 @@ Debug
 
     :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
     :type event_type: :class:`str`
-    
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is completely received from the WebSocket, before
@@ -650,14 +665,39 @@ Members
 ~~~~~~~~
 
 .. function:: on_member_join(member)
-              on_member_remove(member)
 
-    Called when a :class:`Member` join or leaves a :class:`Guild`.
+    Called when a :class:`Member` joins a :class:`Guild`.
 
     This requires :attr:`Intents.members` to be enabled.
 
-    :param member: The member who joined or left.
+    :param member: The member who joined.
     :type member: :class:`Member`
+
+.. function:: on_member_remove(member)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    If the guild or member could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_member_remove` instead.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who left.
+    :type member: :class:`Member`
+
+.. function:: on_raw_member_remove(payload)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    Unlike :func:`on_member_remove`
+    this is called regardless of the guild or member being in the internal cache.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMemberRemoveEvent`
 
 .. function:: on_member_update(before, after)
 
@@ -668,6 +708,9 @@ Members
     - nickname
     - roles
     - pending
+    - timeout
+
+    Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
     This requires :attr:`Intents.members` to be enabled.
 
@@ -1157,7 +1200,11 @@ Threads
 
 .. function:: on_thread_delete(thread)
 
-    Called whenever a thread is deleted.
+    Called whenever a thread is deleted. If the thread could
+    not be found in the internal cache this event will not be called.
+    Threads will not be in the cache if they are archived.
+
+    If you need this information use :func:`on_raw_thread_delete` instead.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
@@ -1167,6 +1214,18 @@ Threads
 
     :param thread: The thread that got deleted.
     :type thread: :class:`Thread`
+
+.. function:: on_raw_thread_delete(payload)
+
+    Called whenever a thread is deleted. Unlike :func:`on_thread_delete` this
+    is called regardless of the thread being in the internal thread cache or not.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawThreadDeleteEvent`
 
 .. function:: on_thread_member_join(member)
               on_thread_member_remove(member)
@@ -1251,6 +1310,12 @@ Utility Functions
 .. autofunction:: discord.utils.format_dt
 
 .. autofunction:: discord.utils.as_chunks
+
+.. data:: discord.utils.MISSING
+
+    A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values.
+
+    .. versionadded:: 2.0
 
 .. _discord-api-enums:
 
@@ -2821,6 +2886,10 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`cancelled`.
 
+    .. attribute:: ended
+
+        An alias for :attr:`completed`.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -3432,6 +3501,7 @@ WebhookMessage
 
 .. autoclass:: WebhookMessage()
     :members:
+    :inherited-members:
 
 SyncWebhook
 ~~~~~~~~~~~~
@@ -3985,6 +4055,30 @@ RawIntegrationDeleteEvent
 .. attributetable:: RawIntegrationDeleteEvent
 
 .. autoclass:: RawIntegrationDeleteEvent()
+    :members:
+
+RawThreadDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawThreadDeleteEvent
+
+.. autoclass:: RawThreadDeleteEvent()
+    :members:
+
+RawTypingEvent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawTypingEvent
+
+.. autoclass:: RawTypingEvent()
+    :members:
+
+RawMemberRemoveEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMemberRemoveEvent
+
+.. autoclass:: RawMemberRemoveEvent()
     :members:
 
 PartialWebhookGuild

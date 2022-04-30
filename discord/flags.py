@@ -505,8 +505,8 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool) -> None:
-        self.value: int = self.DEFAULT_VALUE
+    def __init__(self, value: int = 0, **kwargs: bool) -> None:
+        self.value: int = value
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')

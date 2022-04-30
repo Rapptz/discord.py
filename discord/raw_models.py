@@ -24,7 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
+
+from .enums import ChannelType, try_enum
+from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -36,10 +40,15 @@ if TYPE_CHECKING:
         MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
         MessageUpdateEvent,
         IntegrationDeleteEvent,
+        ThreadDeleteEvent,
+        TypingStartEvent,
+        GuildMemberRemoveEvent,
     )
     from .message import Message
     from .partial_emoji import PartialEmoji
     from .member import Member
+    from .threads import Thread
+    from .user import User
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -52,6 +61,9 @@ __all__ = (
     'RawReactionClearEvent',
     'RawReactionClearEmojiEvent',
     'RawIntegrationDeleteEvent',
+    'RawThreadDeleteEvent',
+    'RawTypingEvent',
+    'RawMemberRemoveEvent',
 )
 
 
@@ -280,3 +292,81 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
             self.application_id: Optional[int] = int(data['application_id'])
         except KeyError:
             self.application_id: Optional[int] = None
+
+
+class RawThreadDeleteEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_delete` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was deleted.
+    thread_type: :class:`discord.ChannelType`
+        The channel type of the deleted thread.
+    guild_id: :class:`int`
+        The ID of the guild the thread was deleted in.
+    parent_id: :class:`int`
+        The ID of the channel the thread belonged to.
+    thread: Optional[:class:`discord.Thread`]
+        The thread, if it could be found in the internal cache.
+    """
+
+    __slots__ = ('thread_id', 'thread_type', 'parent_id', 'guild_id', 'thread')
+
+    def __init__(self, data: ThreadDeleteEvent) -> None:
+        self.thread_id: int = int(data['id'])
+        self.thread_type: ChannelType = try_enum(ChannelType, data['type'])
+        self.guild_id: int = int(data['guild_id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.thread: Optional[Thread] = None
+
+
+class RawTypingEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_typing` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    channel_id: :class:`int`
+        The ID of the channel the user started typing in.
+    user_id: :class:`int`
+        The ID of the user that started typing.
+    user: Optional[Union[:class:`discord.User`, :class:`discord.Member`]]
+        The user that started typing, if they could be found in the internal cache.
+    timestamp: :class:`datetime.datetime`
+        When the typing started as an aware datetime in UTC.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild the user started typing in, if applicable.
+    """
+
+    __slots__ = ('channel_id', 'user_id', 'user', 'timestamp', 'guild_id')
+
+    def __init__(self, data: TypingStartEvent, /) -> None:
+        self.channel_id: int = int(data['channel_id'])
+        self.user_id: int = int(data['user_id'])
+        self.user: Optional[Union[User, Member]] = None
+        self.timestamp: datetime.datetime = datetime.datetime.fromtimestamp(data['timestamp'], tz=datetime.timezone.utc)
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
+
+
+class RawMemberRemoveEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    user: Union[:class:`discord.User`, :class:`discord.Member`]
+        The user that left the guild.
+    guild_id: :class:`int`
+        The ID of the guild the user left.
+    """
+
+    __slots__ = ('user', 'guild_id')
+
+    def __init__(self, data: GuildMemberRemoveEvent, user: User, /) -> None:
+        self.user: Union[User, Member] = user
+        self.guild_id: int = int(data['guild_id'])

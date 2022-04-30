@@ -103,6 +103,7 @@ def flag(
     default: Any = MISSING,
     max_args: int = MISSING,
     override: bool = MISSING,
+    converter: Any = MISSING,
 ) -> Any:
     """Override default functionality and parameters of the underlying :class:`FlagConverter`
     class attributes.
@@ -124,8 +125,11 @@ def flag(
     override: :class:`bool`
         Whether multiple given values overrides the previous value. The default
         value depends on the annotation given.
+    converter: Any
+        The converter to use for this flag. This replaces the annotation at
+        runtime which is transparent to type checkers.
     """
-    return Flag(name=name, aliases=aliases, default=default, max_args=max_args, override=override)
+    return Flag(name=name, aliases=aliases, default=default, max_args=max_args, override=override, annotation=converter)
 
 
 def validate_flag_name(name: str, forbidden: Set[str]) -> None:
@@ -150,7 +154,8 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
     for name, annotation in annotations.items():
         flag = namespace.pop(name, MISSING)
         if isinstance(flag, Flag):
-            flag.annotation = annotation
+            if flag.annotation is MISSING:
+                flag.annotation = annotation
         else:
             flag = Flag(name=name, annotation=annotation, default=flag)
 

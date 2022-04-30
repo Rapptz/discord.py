@@ -24,28 +24,35 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, Sequence
 
 import discord.abc
 import discord.utils
-from discord.message import Message
+from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable
+from .view import StringView
 
 from ._types import BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec
+    from typing_extensions import Self, ParamSpec
 
     from discord.abc import MessageableChannel
     from discord.guild import Guild
     from discord.member import Member
     from discord.state import ConnectionState
-    from discord.user import ClientUser, User
+    from discord.user import ClientUser
     from discord.voice_client import VoiceProtocol
+    from discord.embeds import Embed
+    from discord.file import File
+    from discord.mentions import AllowedMentions
+    from discord.sticker import GuildSticker, StickerItem
+    from discord.message import MessageReference, PartialMessage
+    from discord.ui import View
+    from discord.types.interactions import ApplicationCommandInteractionData
 
     from .cog import Cog
     from .core import Command
     from .parameters import Parameter
-    from .view import StringView
 
 # fmt: off
 __all__ = (
@@ -78,6 +85,12 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     -----------
     message: :class:`.Message`
         The message that triggered the command being executed.
+
+        .. note::
+
+            In the case of an interaction based context, this message is "synthetic"
+            and does not actually exist. Therefore, the ID on it is invalid similar
+            to ephemeral messages.
     bot: :class:`.Bot`
         The bot that contains the command being executed.
     args: :class:`list`
@@ -98,8 +111,13 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         This is only of use for within converters.
 
         .. versionadded:: 2.0
+    interaction: Optional[:class:`~discord.Interaction`]
+        The interaction associated with this context.
+
+        .. versionadded:: 2.0
     prefix: Optional[:class:`str`]
-        The prefix that was used to invoke the command.
+        The prefix that was used to invoke the command. For interaction based contexts,
+        this is ``/`` for slash commands and ``\u200b`` for context menu commands.
     command: Optional[:class:`Command`]
         The command that is being invoked currently.
     invoked_with: Optional[:class:`str`]
@@ -143,6 +161,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         command_failed: bool = False,
         current_parameter: Optional[Parameter] = None,
         current_argument: Optional[str] = None,
+        interaction: Optional[Interaction] = None,
     ):
         self.message: Message = message
         self.bot: BotT = bot
@@ -158,7 +177,92 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         self.command_failed: bool = command_failed
         self.current_parameter: Optional[Parameter] = current_parameter
         self.current_argument: Optional[str] = current_argument
+        self.interaction: Optional[Interaction] = interaction
         self._state: ConnectionState = self.message._state
+
+    @classmethod
+    async def from_interaction(cls, interaction: Interaction, /) -> Self:
+        """|coro|
+
+        Creates a context from a :class:`discord.Interaction`. This only
+        works on application command based interactions, such as slash commands
+        or context menus.
+
+        On slash command based interactions this creates a synthetic :class:`~discord.Message`
+        that points to an ephemeral message that the command invoker has executed. This means
+        that :attr:`Context.author` returns the member that invoked the command.
+
+        In a message context menu based interaction, the :attr:`Context.message` attribute
+        is the message that the command is being executed on. This means that :attr:`Context.author`
+        returns the author of the message being targetted. To get the member that invoked
+        the command then :attr:`discord.Interaction.user` should be used instead.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        interaction: :class:`discord.Interaction`
+            The interaction to create a context with.
+
+        Raises
+        -------
+        ValueError
+            The interaction does not have a valid command.
+        TypeError
+            The interaction client is not derived from :class:`Bot` or :class:`AutoShardedBot`.
+        """
+
+        # Circular import
+        from .bot import BotBase
+
+        if not isinstance(interaction.client, BotBase):
+            raise TypeError('Interaction client is not derived from commands.Bot or commands.AutoShardedBot')
+
+        command = interaction.command
+        if command is None:
+            raise ValueError('interaction does not have command data')
+
+        bot: BotT = interaction.client  # type: ignore
+        data: ApplicationCommandInteractionData = interaction.data  # type: ignore
+        if interaction.message is None:
+            synthetic_payload = {
+                'id': interaction.id,
+                'reactions': [],
+                'embeds': [],
+                'mention_everyone': False,
+                'tts': False,
+                'pinned': False,
+                'edited_timestamp': None,
+                'type': MessageType.chat_input_command if data.get('type', 1) == 1 else MessageType.context_menu_command,
+                'flags': 64,
+                'content': '',
+                'mentions': [],
+                'mention_roles': [],
+                'attachments': [],
+            }
+
+            if interaction.channel_id is None:
+                raise RuntimeError('interaction channel ID is null, this is probably a Discord bug')
+
+            channel = interaction.channel or PartialMessageable(state=interaction._state, id=interaction.channel_id)
+            message = Message(state=interaction._state, channel=channel, data=synthetic_payload)  # type: ignore
+            message.author = interaction.user
+            message.attachments = [a for _, a in interaction.namespace if isinstance(a, Attachment)]
+        else:
+            message = interaction.message
+
+        prefix = '/' if data.get('type', 1) == 1 else '\u200b'  # Mock the prefix
+        return cls(
+            message=message,
+            bot=bot,
+            view=StringView(''),
+            args=[],
+            kwargs={},
+            prefix=prefix,
+            interaction=interaction,
+            invoked_with=command.name,
+            command=command,  # type: ignore # this will be a hybrid command, technically
+        )
 
     async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         r"""|coro|
@@ -407,6 +511,227 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
 
-    @discord.utils.copy_doc(Message.reply)
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
-        return await self.message.reply(content, **kwargs)
+        """|coro|
+
+        A shortcut method to :meth:`send` to reply to the
+        :class:`~discord.Message` referenced by this context.
+
+        For interaction based contexts, this is the same as :meth:`send`.
+
+        .. versionadded:: 1.6
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ValueError
+            The ``files`` list is not of the appropriate size
+        TypeError
+            You specified both ``file`` and ``files``.
+
+        Returns
+        ---------
+        :class:`~discord.Message`
+            The message that was sent.
+        """
+        if self.interaction is None:
+            return await self.send(content, reference=self.message, **kwargs)
+        else:
+            return await self.send(content, **kwargs)
+
+    async def defer(self, *, ephemeral: bool = False) -> None:
+        """|coro|
+
+        Defers the interaction based contexts.
+
+        This is typically used when the interaction is acknowledged
+        and a secondary action will be done later.
+
+        If this isn't an interaction based context then it does nothing.
+
+        Parameters
+        -----------
+        ephemeral: :class:`bool`
+            Indicates whether the deferred message will eventually be ephemeral.
+
+        Raises
+        -------
+        HTTPException
+            Deferring the interaction failed.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+
+        if self.interaction:
+            await self.interaction.response.defer(ephemeral=ephemeral)
+
+    async def send(
+        self,
+        content: Optional[str] = None,
+        *,
+        tts: bool = False,
+        embed: Optional[Embed] = None,
+        embeds: Optional[Sequence[Embed]] = None,
+        file: Optional[File] = None,
+        files: Optional[Sequence[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = None,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        view: Optional[View] = None,
+        suppress_embeds: bool = False,
+        ephemeral: bool = False,
+    ) -> Message:
+        """|coro|
+
+        Sends a message to the destination with the content given.
+
+        This works similarly to :meth:`~discord.abc.Messageable.send` for non-interaction contexts.
+
+        For interaction based contexts this does one of the following:
+
+        - :meth:`discord.InteractionResponse.send_message` if no response has been given.
+        - A followup message if a response has been given.
+        - Regular send if the interaction has expired
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` or
+            :exc:`ValueError` instead of ``InvalidArgument``.
+
+        Parameters
+        ------------
+        content: Optional[:class:`str`]
+            The content of the message to send.
+        tts: :class:`bool`
+            Indicates if the message should be sent using text-to-speech.
+        embed: :class:`~discord.Embed`
+            The rich embed for the content.
+        file: :class:`~discord.File`
+            The file to upload.
+        files: List[:class:`~discord.File`]
+            A list of files to upload. Must be a maximum of 10.
+        nonce: :class:`int`
+            The nonce to use for sending this message. If the message was successfully sent,
+            then the message will have a nonce with this value.
+        delete_after: :class:`float`
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just sent. If the deletion fails,
+            then it is silently ignored. This is ignored for interaction based contexts.
+        allowed_mentions: :class:`~discord.AllowedMentions`
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead.
+
+            .. versionadded:: 1.4
+
+        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`, :class:`~discord.PartialMessage`]
+            A reference to the :class:`~discord.Message` to which you are replying, this can be created using
+            :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
+            whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
+            attribute of ``allowed_mentions`` or by setting ``mention_author``.
+
+            This is ignored for interaction based contexts.
+
+            .. versionadded:: 1.6
+
+        mention_author: Optional[:class:`bool`]
+            If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
+            This is ignored for interaction based contexts.
+
+            .. versionadded:: 1.6
+        view: :class:`discord.ui.View`
+            A Discord UI View to add to the message.
+
+            .. versionadded:: 2.0
+        embeds: List[:class:`~discord.Embed`]
+            A list of embeds to upload. Must be a maximum of 10.
+
+            .. versionadded:: 2.0
+        stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
+            A list of stickers to upload. Must be a maximum of 3. This is ignored for interaction based contexts.
+
+            .. versionadded:: 2.0
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+
+            .. versionadded:: 2.0
+        ephemeral: :class:`bool`
+            Indicates if the message should only be visible to the user who started the interaction.
+            If a view is sent with an ephemeral message and it has no timeout set then the timeout
+            is set to 15 minutes. **This is only applicable in contexts with an interaction**.
+
+            .. versionadded:: 2.0
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ValueError
+            The ``files`` list is not of the appropriate size.
+        TypeError
+            You specified both ``file`` and ``files``,
+            or you specified both ``embed`` and ``embeds``,
+            or the ``reference`` object is not a :class:`~discord.Message`,
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
+
+        Returns
+        ---------
+        :class:`~discord.Message`
+            The message that was sent.
+        """
+
+        if self.interaction is None or self.interaction.is_expired():
+            return await super().send(
+                content=content,
+                tts=tts,
+                embed=embed,
+                embeds=embeds,
+                file=file,
+                files=files,
+                stickers=stickers,
+                delete_after=delete_after,
+                nonce=nonce,
+                allowed_mentions=allowed_mentions,
+                reference=reference,
+                mention_author=mention_author,
+                view=view,
+                suppress_embeds=suppress_embeds,
+            )  # type: ignore # The overloads don't support Optional but the implementation does
+
+        # Convert the kwargs from None to MISSING to appease the remaining implementations
+        kwargs = {
+            'content': content,
+            'tts': tts,
+            'embed': MISSING if embed is None else embed,
+            'embeds': MISSING if embeds is None else embeds,
+            'file': MISSING if file is None else file,
+            'files': MISSING if files is None else files,
+            'allowed_mentions': MISSING if allowed_mentions is None else allowed_mentions,
+            'view': MISSING if view is None else view,
+            'suppress_embeds': suppress_embeds,
+            'ephemeral': ephemeral,
+        }
+
+        if self.interaction.response.is_done():
+            msg = await self.interaction.followup.send(**kwargs, wait=True)
+        else:
+            await self.interaction.response.send_message(**kwargs)
+            msg = await self.interaction.original_message()
+
+        if delete_after is not None and not (ephemeral and self.interaction is not None):
+            await msg.delete(delay=delete_after)
+        return msg

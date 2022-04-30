@@ -215,6 +215,8 @@ class User(Snowflake, Protocol):
         The user's discriminator.
     bot: :class:`bool`
         If the user is a bot account.
+    system: :class:`bool`
+        If the user is a system account.
     """
 
     __slots__ = ()
@@ -222,6 +224,7 @@ class User(Snowflake, Protocol):
     name: str
     discriminator: str
     bot: bool
+    system: bool
 
     @property
     def display_name(self) -> str:
@@ -236,6 +239,36 @@ class User(Snowflake, Protocol):
     @property
     def avatar(self) -> Optional[Asset]:
         """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
+        raise NotImplementedError
+
+    @property
+    def default_avatar(self) -> Asset:
+        """:class:`~discord.Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        raise NotImplementedError
+
+    @property
+    def display_avatar(self) -> Asset:
+        """:class:`~discord.Asset`: Returns the user's display avatar.
+
+        For regular users this is just their default avatar or uploaded avatar.
+
+        .. versionadded:: 2.0
+        """
+        raise NotImplementedError
+
+    def mentioned_in(self, message: Message) -> bool:
+        """Checks if the user is mentioned in the specified message.
+
+        Parameters
+        -----------
+        message: :class:`~discord.Message`
+            The message to check if you're mentioned in.
+
+        Returns
+        -------
+        :class:`bool`
+            Indicates if the user is mentioned in the message.
+        """
         raise NotImplementedError
 
 
@@ -267,7 +300,7 @@ class _Overwrites:
     ROLE = 0
     MEMBER = 1
 
-    def __init__(self, data: PermissionOverwritePayload):
+    def __init__(self, data: PermissionOverwritePayload) -> None:
         self.id: int = int(data['id'])
         self.allow: int = int(data.get('allow', 0))
         self.deny: int = int(data.get('deny', 0))
@@ -297,6 +330,7 @@ class GuildChannel:
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.CategoryChannel`
     - :class:`~discord.StageChannel`
+    - :class:`~discord.ForumChannel`
 
     This ABC must also implement :class:`~discord.abc.Snowflake`.
 
@@ -500,6 +534,14 @@ class GuildChannel:
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
     def created_at(self) -> datetime:
@@ -779,7 +821,7 @@ class GuildChannel:
         target: Union[Member, Role],
         *,
         reason: Optional[str] = ...,
-        **permissions: bool,
+        **permissions: Optional[bool],
     ) -> None:
         ...
 
@@ -789,7 +831,7 @@ class GuildChannel:
         *,
         overwrite: Any = _undefined,
         reason: Optional[str] = None,
-        **permissions: bool,
+        **permissions: Optional[bool],
     ) -> None:
         r"""|coro|
 
@@ -1416,6 +1458,8 @@ class Messageable:
             .. versionadded:: 1.6
         view: :class:`discord.ui.View`
             A Discord UI View to add to the message.
+
+            .. versionadded:: 2.0
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
@@ -1772,6 +1816,8 @@ class Connectable(Protocol):
         timeout: float = 60.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = MISSING,
+        self_deaf: bool = False,
+        self_mute: bool = False,
     ) -> T:
         """|coro|
 
@@ -1791,6 +1837,14 @@ class Connectable(Protocol):
         cls: Type[:class:`~discord.VoiceProtocol`]
             A type that subclasses :class:`~discord.VoiceProtocol` to connect with.
             Defaults to :class:`~discord.VoiceClient`.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+
+            .. versionadded: 2.0
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
+
+            .. versionadded: 2.0
 
         Raises
         -------
@@ -1827,7 +1881,7 @@ class Connectable(Protocol):
         state._add_voice_client(key_id, voice)
 
         try:
-            await voice.connect(timeout=timeout, reconnect=reconnect)
+            await voice.connect(timeout=timeout, reconnect=reconnect, self_deaf=self_deaf, self_mute=self_mute)
         except asyncio.TimeoutError:
             try:
                 await voice.disconnect(force=True)

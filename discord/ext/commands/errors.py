@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from discord.abc import GuildChannel
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
+    from discord.app_commands import AppCommandError
 
     from ._types import BotT
     from .context import Context
@@ -100,6 +101,8 @@ __all__ = (
     'MissingFlagArgument',
     'TooManyFlags',
     'MissingRequiredFlag',
+    'HybridCommandError',
+    'RangeError',
 )
 
 
@@ -551,6 +554,44 @@ class BadBoolArgument(BadArgument):
     def __init__(self, argument: str) -> None:
         self.argument: str = argument
         super().__init__(f'{argument} is not a recognised boolean option')
+
+
+class RangeError(BadArgument):
+    """Exception raised when an argument is out of range.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    minimum: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum value expected or ``None`` if there wasn't one
+    maximum: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum value expected or ``None`` if there wasn't one
+    value: Union[:class:`int`, :class:`float`]
+        The value that was out of range.
+    """
+
+    def __init__(
+        self,
+        value: Union[int, float],
+        minimum: Optional[Union[int, float]],
+        maximum: Optional[Union[int, float]],
+    ) -> None:
+        self.value: Union[int, float] = value
+        self.minimum: Optional[Union[int, float]] = minimum
+        self.maximum: Optional[Union[int, float]] = maximum
+
+        label: str = ''
+        if minimum is None and maximum is not None:
+            label = f'no more than {maximum}'
+        elif minimum is not None and maximum is None:
+            label = f'not less than {minimum}'
+        elif maximum is not None and minimum is not None:
+            label = f'between {minimum} and {maximum}'
+
+        super().__init__(f'value must be {label} but received {value}')
 
 
 class DisabledCommand(CommandError):
@@ -1123,3 +1164,22 @@ class MissingFlagArgument(FlagError):
     def __init__(self, flag: Flag) -> None:
         self.flag: Flag = flag
         super().__init__(f'Flag {flag.name!r} does not have an argument')
+
+
+class HybridCommandError(CommandError):
+    """An exception raised when a :class:`~discord.ext.commands.HybridCommand` raises
+    an :exc:`~discord.app_commands.AppCommandError` derived exception that could not be
+    sufficiently converted to an equivalent :exc:`CommandError` exception.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    original: :exc:`~discord.app_commands.AppCommandError`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
+    """
+
+    def __init__(self, original: AppCommandError) -> None:
+        self.original: AppCommandError = original
+        super().__init__(f'Hybrid command raised an error: {original}')

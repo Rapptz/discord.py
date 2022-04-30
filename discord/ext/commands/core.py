@@ -47,7 +47,7 @@ from typing import (
 
 import discord
 
-from ._types import _BaseCommand
+from ._types import _BaseCommand, CogT
 from .cog import Cog
 from .context import Context
 from .converter import Greedy, run_converters
@@ -60,7 +60,7 @@ if TYPE_CHECKING:
 
     from discord.message import Message
 
-    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, ErrorT, Hook, HookT
+    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook
 
 
 __all__ = (
@@ -93,7 +93,6 @@ __all__ = (
 MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
-CogT = TypeVar('CogT', bound='Optional[Cog]')
 CommandT = TypeVar('CommandT', bound='Command')
 # CHT = TypeVar('CHT', bound='Check')
 GroupT = TypeVar('GroupT', bound='Group')
@@ -161,6 +160,15 @@ def get_signature_parameters(
         annotation = eval_annotation(annotation, globalns, globalns, cache)
         if annotation is Greedy:
             raise TypeError('Unparameterized Greedy[...] is disallowed in signature.')
+
+        if hasattr(annotation, '__metadata__'):
+            # Annotated[X, Y] can access Y via __metadata__
+            metadata = annotation.__metadata__
+            if len(metadata) >= 1:
+                annotation = metadata[0]
+
+        if isinstance(annotation, discord.app_commands.transformers._TransformMetadata):
+            annotation = annotation.metadata
 
         params[name] = parameter.replace(annotation=annotation)
 
@@ -395,7 +403,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.require_var_positional: bool = kwargs.get('require_var_positional', False)
         self.ignore_extra: bool = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)
-        self.cog: CogT = None
+        self._cog: CogT = None
 
         # bandaid for the fact that sometimes parent can be the bot instance
         parent: Optional[GroupMixin[Any]] = kwargs.get('parent')
@@ -416,6 +424,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             pass
         else:
             self.after_invoke(after_invoke)
+
+    @property
+    def cog(self) -> CogT:
+        return self._cog
+
+    @cog.setter
+    def cog(self, value: CogT) -> None:
+        self._cog = value
 
     @property
     def callback(
@@ -948,7 +964,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if call_hooks:
                 await self.call_after_hooks(ctx)
 
-    def error(self, coro: ErrorT, /) -> ErrorT:
+    def error(self, coro: Error[CogT, ContextT], /) -> Error[CogT, ContextT]:
         """A decorator that registers a coroutine as a local error handler.
 
         A local error handler is an :func:`.on_command_error` event limited to
@@ -983,7 +999,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         return hasattr(self, 'on_error')
 
-    def before_invoke(self, coro: HookT, /) -> HookT:
+    def before_invoke(self, coro: Hook[CogT, ContextT], /) -> Hook[CogT, ContextT]:
         """A decorator that registers a coroutine as a pre-invoke hook.
 
         A pre-invoke hook is called directly before the command is
@@ -1014,7 +1030,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self._before_invoke = coro
         return coro
 
-    def after_invoke(self, coro: HookT, /) -> HookT:
+    def after_invoke(self, coro: Hook[CogT, ContextT], /) -> Hook[CogT, ContextT]:
         """A decorator that registers a coroutine as a post-invoke hook.
 
         A post-invoke hook is called directly after the command is
@@ -2377,7 +2393,7 @@ def max_concurrency(number: int, per: BucketType = BucketType.default, *, wait: 
     return decorator  # type: ignore
 
 
-def before_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
+def before_invoke(coro: Hook[CogT, ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
@@ -2429,7 +2445,7 @@ def before_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def after_invoke(coro: Hook[ContextT], /) -> Callable[[T], T]:
+def after_invoke(coro: Hook[CogT, ContextT], /) -> Callable[[T], T]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that

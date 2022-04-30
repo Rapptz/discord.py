@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
+from typing import Callable, Dict, Iterable, List, Literal, Optional, Union, TYPE_CHECKING
 from datetime import datetime
 
 from .mixins import Hashable
@@ -57,6 +57,8 @@ if TYPE_CHECKING:
     from .role import Role
     from .permissions import Permissions
     from .state import ConnectionState
+
+    ThreadChannelType = Literal[ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread]
 
 
 class Thread(Messageable, Hashable):
@@ -91,7 +93,7 @@ class Thread(Messageable, Hashable):
     id: :class:`int`
         The thread ID.
     parent_id: :class:`int`
-        The parent :class:`TextChannel` ID this thread belongs to.
+        The parent :class:`TextChannel` or :class:`ForumChannel` ID this thread belongs to.
     owner_id: :class:`int`
         The user's ID that created this thread.
     last_message_id: Optional[:class:`int`]
@@ -172,7 +174,7 @@ class Thread(Messageable, Hashable):
         self.parent_id: int = int(data['parent_id'])
         self.owner_id: int = int(data['owner_id'])
         self.name: str = data['name']
-        self._type: ChannelType = try_enum(ChannelType, data['type'])
+        self._type: ThreadChannelType = try_enum(ChannelType, data['type'])  # type: ignore
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
@@ -211,7 +213,7 @@ class Thread(Messageable, Hashable):
             pass
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> ThreadChannelType:
         """:class:`ChannelType`: The channel's Discord type."""
         return self._type
 
@@ -234,6 +236,14 @@ class Thread(Messageable, Hashable):
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the thread."""
         return f'<#{self.id}>'
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the thread.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
     def members(self) -> List[ThreadMember]:
@@ -517,6 +527,7 @@ class Thread(Messageable, Hashable):
         pinned: bool = MISSING,
         slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
+        reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
 
@@ -548,6 +559,8 @@ class Thread(Messageable, Hashable):
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this thread, in seconds.
             A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
+        reason: Optional[:class:`str`]
+            The reason for editing this thread. Shows up on the audit log.
 
         Raises
         -------
@@ -579,7 +592,7 @@ class Thread(Messageable, Hashable):
             flags.pinned = pinned
             payload['flags'] = flags.value
 
-        data = await self._state.http.edit_channel(self.id, **payload)
+        data = await self._state.http.edit_channel(self.id, **payload, reason=reason)
         # The data payload will always be a Thread payload
         return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
 

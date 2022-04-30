@@ -221,7 +221,7 @@ def _not_overridden(f: FuncT) -> FuncT:
 
 class _HelpCommandImpl(Command):
     def __init__(self, inject: HelpCommand, *args: Any, **kwargs: Any) -> None:
-        super().__init__(inject.command_callback, *args, **kwargs)
+        super().__init__(inject.command_callback, *args, **kwargs)  # type: ignore
         self._original: HelpCommand = inject
         self._injected: HelpCommand = inject
         self.params: Dict[str, Parameter] = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
@@ -229,7 +229,7 @@ class _HelpCommandImpl(Command):
     async def prepare(self, ctx: Context[Any]) -> None:
         self._injected = injected = self._original.copy()
         injected.context = ctx
-        self.callback = injected.command_callback
+        self.callback = injected.command_callback  # type: ignore
         self.params = get_signature_parameters(injected.command_callback, globals(), skip_parameters=1)
 
         on_error = injected.on_help_command_error

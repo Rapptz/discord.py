@@ -31,6 +31,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     Optional,
     TYPE_CHECKING,
@@ -165,7 +166,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
-        self._type: int = data['type']
+        self._type: Literal[0, 5] = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
@@ -190,7 +191,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
-        self._type: int = data.get('type', self._type)
+        self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
@@ -198,9 +199,11 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.text, ChannelType.news]:
         """:class:`ChannelType`: The channel's Discord type."""
-        return try_enum(ChannelType, self._type)
+        if self._type == 0:
+            return ChannelType.text
+        return ChannelType.news
 
     @property
     def _sorting_bucket(self) -> int:
@@ -258,6 +261,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     @overload
+    async def edit(self) -> Optional[TextChannel]:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -272,11 +283,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
-    ) -> Optional[TextChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[TextChannel]:
+    ) -> TextChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
@@ -1032,7 +1039,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
 
@@ -1289,6 +1296,14 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1303,11 +1318,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[VoiceChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[VoiceChannel]:
+    ) -> VoiceChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
@@ -1497,7 +1508,7 @@ class StageChannel(VocalGuildChannel):
         return [member for member in self.members if self.permissions_for(member) >= required_permissions]
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.stage_voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.stage_voice
 
@@ -1583,6 +1594,14 @@ class StageChannel(VocalGuildChannel):
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1595,11 +1614,7 @@ class StageChannel(VocalGuildChannel):
         rtc_region: Optional[str] = ...,
         video_quality_mode: VideoQualityMode = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[StageChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[StageChannel]:
+    ) -> StageChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
@@ -1737,7 +1752,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.category]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.category
 
@@ -1750,6 +1765,14 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -1758,11 +1781,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         nsfw: bool = ...,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
-    ) -> Optional[CategoryChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[CategoryChannel]:
+    ) -> CategoryChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
@@ -2000,7 +2019,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.forum]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.forum
 
@@ -2033,6 +2052,14 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         )
 
     @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
     async def edit(
         self,
         *,
@@ -2047,11 +2074,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[Union[Role, Member, Snowflake], PermissionOverwrite] = ...,
-    ) -> Optional[ForumChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[ForumChannel]:
+    ) -> ForumChannel:
         ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[ForumChannel]:
@@ -2221,7 +2244,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         content = str(content) if content else MISSING
 
-        extras = {
+        channel_payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration or self.default_auto_archive_duration,
             'rate_limit_per_user': slowmode_delay,
@@ -2241,7 +2264,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             stickers=sticker_ids,
             view=view,
             flags=flags,
-            extras=extras,
+            channel_payload=channel_payload,
         ) as params:
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             return Thread(guild=self.guild, state=self._state, data=data)
@@ -2310,9 +2333,17 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return self
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.private]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.private
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -2456,7 +2487,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return f'<GroupChannel id={self.id} name={self.name!r}>'
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.group]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.group
 
@@ -2471,6 +2502,14 @@ class GroupChannel(discord.abc.Messageable, Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel.
+
+        .. versionadded:: 2.0
+        """
+        return f'https://discord.com/channels/@me/{self.id}'
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.

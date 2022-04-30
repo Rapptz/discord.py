@@ -60,17 +60,12 @@ class GatewayBot(Gateway):
     session_start_limit: SessionStartLimit
 
 
-class ShardInfo(TypedDict):
-    shard_id: int
-    shard_count: int
-
-
 class ReadyEvent(TypedDict):
     v: int
     user: User
     guilds: List[UnavailableGuild]
     session_id: str
-    shard: ShardInfo
+    shard: List[int]  # shard_id, num_shards
     application: GatewayAppInfo
 
 
