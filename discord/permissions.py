@@ -175,7 +175,7 @@ class Permissions(BaseFlags):
         - :attr:`administrator`
 
         .. versionchanged:: 1.7
-           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
+           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions.
 
         .. versionchanged:: 2.0
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
@@ -213,7 +213,7 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 1.7
            Permission :attr:`read_messages` is no longer part of the text permissions.
-           Added :attr:`use_slash_commands` permission.
+           Added :attr:`use_application_commands` permission.
 
         .. versionchanged:: 2.0
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
@@ -517,7 +517,7 @@ class Permissions(BaseFlags):
         return 1 << 30
 
     @flag_value
-    def use_slash_commands(self) -> int:
+    def use_application_commands(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use slash commands.
 
         .. versionadded:: 1.7
@@ -707,7 +707,7 @@ class PermissionOverwrite:
         manage_webhooks: Optional[bool]
         manage_emojis: Optional[bool]
         manage_emojis_and_stickers: Optional[bool]
-        use_slash_commands: Optional[bool]
+        use_application_commands: Optional[bool]
         request_to_speak: Optional[bool]
         manage_events: Optional[bool]
         manage_threads: Optional[bool]
