@@ -56,7 +56,7 @@ class TextInput(Item[V]):
 
         .. describe:: str(x)
 
-            Returns the value of the text input or ``''`` if the value is ``None``.
+            Returns the value of the text input or an empty string if the value is ``None``.
 
     .. versionadded:: 2.0
 
