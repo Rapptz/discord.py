@@ -65,7 +65,43 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
 
-    await interaction.response.send_message(f'{member} joined in {member.joined_at}')
+    # The format_dt function formats the date time into a human readable representation in the official client
+    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
+
+
+# A Context Menu command is an app command that can be run on a member or on a message by
+# accessing a menu within the client, usually via right clicking.
+# It always takes an interaction as its first parameter and a Member or Message as its second parameter.
+
+# This context menu command only works on members
+@client.tree.context_menu(name='Show Join Date')
+async def show_join_date(interaction: discord.Interaction, member: discord.Member):
+    # The format_dt function formats the date time into a human readable representation in the official client
+    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
+
+
+# This context menu command only works on messages
+@client.tree.context_menu(name='Report to Moderators')
+async def report_message(interaction: discord.Interaction, message: discord.Message):
+    # We're sending this response message with ephemeral=True, so only the command executor can see it
+    await interaction.response.send_message(
+        f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True
+    )
+
+    # Handle report by sending it into a log channel
+    log_channel = interaction.guild.get_channel(0)  # replace with your channel id
+
+    embed = discord.Embed(title='Reported Message')
+    if message.content:
+        embed.description = message.content
+
+    embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar.url)
+    embed.timestamp = message.created_at
+
+    url_view = discord.ui.View()
+    url_view.add_item(discord.ui.Button(label='Go to Message', style=discord.ButtonStyle.url, url=message.jump_url))
+
+    await log_channel.send(embed=embed, view=url_view)
 
 
 client.run('token')
