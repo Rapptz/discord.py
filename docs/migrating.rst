@@ -1095,6 +1095,9 @@ The following deprecated functionality have been removed:
 
     - Use ``chunk_guild_at_startup`` instead.
 
+- ``Permissions.use_slash_commands`` and ``PermissionOverwrite.use_slash_commands``
+    - Use :attr:`Permissions.use_application_commands` and ``PermissionOverwrite.use_application_commands`` instead.
+
 The following have been removed:
 
 - ``MemberCacheFlags.online``

@@ -52,6 +52,12 @@ V = TypeVar('V', bound='View', covariant=True)
 class TextInput(Item[V]):
     """Represents a UI text input.
 
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the value of the text input or an empty string if the value is ``None``.
+
     .. versionadded:: 2.0
 
     Parameters
