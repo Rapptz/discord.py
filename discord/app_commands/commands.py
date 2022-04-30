@@ -1282,8 +1282,7 @@ class Group:
     def error(self, coro: ErrorFunc) -> ErrorFunc:
         """A decorator that registers a coroutine as a local error handler.
 
-        The local error handler is called whenever an exception is raised in the body
-        of the command or during handling of the command. The error handler must take
+        The local error handler is called whenever an exception is raised in a child command. The error handler must take
         2 parameters, the interaction and the error.
 
         The error passed will be derived from :exc:`AppCommandError`.
