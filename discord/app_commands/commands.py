@@ -675,6 +675,19 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
+        try:
+            if not await self._check_can_run(interaction):
+                if not interaction.response.is_done():
+                    await interaction.response.autocomplete([])
+                return
+        except AppCommandError:
+            # Exceptions can't reasonably be handled by the developer at this point
+            # The autocomplete can either fail or return an empty list of options
+            # Both of these are more or less the same UX to the user.
+            if not interaction.response.is_done():
+                await interaction.response.autocomplete([])
+            return
+
         if param.autocomplete.requires_binding:
             binding = param.autocomplete.binding or self.binding
             if binding is not None:
