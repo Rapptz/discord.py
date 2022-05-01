@@ -754,8 +754,8 @@ class BotBase(GroupMixin[None]):
                 raise discord.ClientException(f'Cog named {cog_name!r} already loaded')
             await self.remove_cog(cog_name, guild=guild, guilds=guilds)
 
-        if isinstance(cog, app_commands.Group):
-            self.__tree.add_command(cog, override=override, guild=guild, guilds=guilds)
+        if cog.__cog_app_commands_group__:
+            self.__tree.add_command(cog.__cog_app_commands_group__, override=override, guild=guild, guilds=guilds)
 
         cog = await cog._inject(self, override=override, guild=guild, guilds=guilds)
         self.__cogs[cog_name] = cog
@@ -841,7 +841,7 @@ class BotBase(GroupMixin[None]):
             help_command.cog = None
 
         guild_ids = _retrieve_guild_ids(cog, guild, guilds)
-        if isinstance(cog, app_commands.Group):
+        if cog.__cog_app_commands_group__:
             if guild_ids is None:
                 self.__tree.remove_command(name)
             else:
