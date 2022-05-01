@@ -1277,12 +1277,13 @@ class GuildChannel:
 class Messageable:
     """An ABC that details the common operations on a model that can send messages.
 
-    The following implement this ABC:
+    The following classes implement this ABC:
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
+    - :class:`~discord.PartialMessageable`
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
