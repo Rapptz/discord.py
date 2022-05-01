@@ -361,7 +361,7 @@ class Cog(metaclass=CogMeta):
                     yield from command.walk_commands()
 
     @property
-    def app_command_group(self) -> Optional[app_commands.Group]:
+    def app_command(self) -> Optional[app_commands.Group]:
         """Optional[:class:`discord.app_commands.Group`]: Returns the associated group with this cog.
 
         This is only available if inheriting from :class:`GroupCog`.
