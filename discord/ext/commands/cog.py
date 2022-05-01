@@ -269,7 +269,7 @@ class Cog(metaclass=CogMeta):
                 name=cls.__cog_group_name__,
                 description=cls.__cog_group_description__,
                 parent=None,
-                guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', []),
+                guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
                 guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
                 default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
             )
