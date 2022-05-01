@@ -260,8 +260,8 @@ class AuditLogChanges:
         if entry.action is enums.AuditLogAction.app_command_permission_update:
             # special case entire process since each
             # element in data is a different target
-            self.before.app_command_permissions = {}
-            self.after.app_command_permissions = {}
+            self.before.app_command_permissions = []
+            self.after.app_command_permissions = []
 
             for d in data:
                 self._handle_app_command_permissions(
@@ -361,7 +361,7 @@ class AuditLogChanges:
             # circular import
             from .app_commands import AllChannels
             # all channels
-            target = AllChannels()
+            target = AllChannels(guild)
         else:
             # get type and determine role, user or channel
             _value = old_value or new_value
@@ -383,13 +383,11 @@ class AuditLogChanges:
 
         if old_value is not None:
             old_permission = old_value['permission']
-            if old_permission is not None:
-                before.app_command_permissions[target] = old_permission
+            before.app_command_permissions.append((target, old_permission))
 
         if new_value is not None:
             new_permission = new_value['permission']
-            if new_permission is not None:
-                after.app_command_permissions[target] = new_permission
+            after.app_command_permissions.append((target, new_permission))
 
 class _AuditLogProxy:
     def __init__(self, **kwargs: Any) -> None:
@@ -541,7 +539,7 @@ class AuditLogEntry(Hashable):
                 )
             elif self.action.name.startswith('app_command'):
                 application_id = int(extra['application_id'])
-                self.extra = self._get_application(application_id) or Object(application_id)
+                self.extra = self._get_integration_by_app_id(application_id) or Object(application_id)
 
         # this key is not present when the above is present, typically.
         # It's a list of { new_value: a, old_value: b, key: c }
@@ -566,7 +564,7 @@ class AuditLogEntry(Hashable):
 
         return self._integrations.get(integration_id)
 
-    def _get_application(self, application_id: Optional[int]) -> Optional[PartialIntegration]:
+    def _get_integration_by_app_id(self, application_id: Optional[int]) -> Optional[PartialIntegration]:
         if application_id is None:
             return None
 
@@ -682,7 +680,7 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
         return (
-            self._get_application(target_id) or
+            self._get_integration_by_app_id(target_id) or
             self._get_app_command(target_id) or
             Object(target_id)
         )

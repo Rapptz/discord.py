@@ -381,8 +381,8 @@ class PartialIntegration:
         The integration type (i.e. Twitch).
     account: :class:`IntegrationAccount`
         The account linked to this integration.
-    application_id: :class:`int`
-        The application id this integration belongs to.
+    application_id: Optional[:class:`int`]
+        The id of the application this integration belongs to.
     """
 
     __slots__ = ('guild', '_state', 'id', 'type', 'name', 'account', 'application_id',)
@@ -401,10 +401,9 @@ class PartialIntegration:
         self.name: str = data['name']
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
         application_id = data.get('application_id')
+        self.application_id: Optional[int] = None
         if application_id is not None:
             self.application_id = int(application_id)
-        else:
-            self.application_id = None
 
 
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:

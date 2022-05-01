@@ -75,11 +75,19 @@ class AllChannels:
     """Represents all channels for application command permissions.
 
     .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    guild: :class:`~discord.Guild`
+        The guild the application command permission is for.
     """
-    __slots__ = ()
+    __slots__ = ('guild',)
+
+    def __init__(self, guild: Guild):
+        self.guild = guild
 
     def __repr__(self):
-        return 'All Channels'
+        return f'<All Channels guild={self.guild}>'
 
 
 class AppCommand(Hashable):
