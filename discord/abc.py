@@ -1283,7 +1283,7 @@ class Messageable:
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
-    - :class:`~discord.PartialChannel`
+    - :class:`~discord.PartialMessageable`
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
