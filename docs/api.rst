@@ -2239,7 +2239,8 @@ of :class:`enum.Enum`.
         A guild integration was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was created.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was created.
 
         .. versionadded:: 1.3
 
@@ -2248,7 +2249,8 @@ of :class:`enum.Enum`.
         A guild integration was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was updated.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was updated.
 
         .. versionadded:: 1.3
 
@@ -2257,7 +2259,8 @@ of :class:`enum.Enum`.
         A guild integration was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was deleted.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was deleted.
 
         .. versionadded:: 1.3
 
@@ -2462,6 +2465,27 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
         - :attr:`~AuditLogDiff.invitable`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: app_command_permission_update
+
+        An application command or integrations application command permissions
+        were updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`PartialIntegration` for an integrations general permissions,
+        :class:`~discord.app_commands.AppCommand` for a specific commands permissions,
+        or :class:`Object` with the ID of the command or integration which
+        was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an :class:`PartialIntegration` or :class:`Object` with the ID of
+        application that command or integration belongs to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.app_command_permissions`
 
         .. versionadded:: 2.0
 
@@ -3477,6 +3501,16 @@ AuditLogDiff
 
         :type: :class:`Asset`
 
+    .. attribute:: app_command_permissions
+
+        A list of application command permission tuples that represents a
+        target and a :class:`bool` for said target.
+
+        The first element is the object being targeted, which can either
+        be a :class:`Member`, :class:`abc.GuildChannel`,
+        :class:`~discord.app_commands.AllChannels`, or :class:`Role`.
+        :type: List[Tuple[target, :class:`bool`]]
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
@@ -3725,6 +3759,9 @@ Integration
     :members:
 
 .. autoclass:: StreamIntegration()
+    :members:
+
+.. autoclass:: PartialIntegration()
     :members:
 
 Member

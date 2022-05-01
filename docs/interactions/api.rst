@@ -129,6 +129,14 @@ Argument
 .. autoclass:: discord.app_commands.Argument()
     :members:
 
+AllChannels
+~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AllChannels
+
+.. autoclass:: discord.app_commands.AllChannels()
+    :members:
+
 Data Classes
 --------------
 

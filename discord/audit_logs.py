@@ -61,10 +61,13 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
+    from .types.command import ApplicationCommandPermissions
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
     from .threads import Thread
+    from .integrations import PartialIntegration
+    from .app_commands import AppCommand
 
     TargetType = Union[
         Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None
@@ -253,6 +256,24 @@ class AuditLogChanges:
         self.before: AuditLogDiff = AuditLogDiff()
         self.after: AuditLogDiff = AuditLogDiff()
 
+        if entry.action is enums.AuditLogAction.app_command_permission_update:
+            # special case entire process since each
+            # element in data is a different target
+            self.before.app_command_permissions = []
+            self.after.app_command_permissions = []
+
+            for d in data:
+
+                self._handle_app_command_permissions(
+                    self.before,
+                    self.after,
+                    entry,
+                    int(d['key']),
+                    d.get('old_value'),  # type: ignore # old value will be an ApplicationCommandPermissions if present
+                    d.get('new_value'),  # type: ignore # new value will be an ApplicationCommandPermissions if present
+                )
+            return
+
         for elem in data:
             attr = elem['key']
 
@@ -323,6 +344,52 @@ class AuditLogChanges:
             data.append(role)
 
         setattr(second, 'roles', data)
+
+    def _handle_app_command_permissions(
+        self,
+        before: AuditLogDiff,
+        after: AuditLogDiff,
+        entry: AuditLogEntry,
+        target_id: int,
+        old_value: Optional[ApplicationCommandPermissions],
+        new_value: Optional[ApplicationCommandPermissions],
+    ):
+        guild = entry.guild
+
+        old_permission = new_permission = target = None
+
+        if target_id == (guild.id - 1):
+            # avoid circular import
+            from .app_commands import AllChannels
+
+            # all channels
+            target = AllChannels(guild)
+        else:
+            # get type and determine role, user or channel
+            _value = old_value or new_value
+            if _value is None:
+                return
+            permission_type = _value['type']
+            if permission_type == 1:
+                # role
+                target = guild.get_role(target_id)
+            elif permission_type == 2:
+                # user
+                target = entry._get_member(target_id)
+            elif permission_type == 3:
+                # channel
+                target = guild.get_channel(target_id)
+
+        if target is None:
+            target = Object(target_id)
+
+        if old_value is not None:
+            old_permission = old_value['permission']
+            before.app_command_permissions.append((target, old_permission))
+
+        if new_value is not None:
+            new_permission = new_value['permission']
+            after.app_command_permissions.append((target, new_permission))
 
 
 class _AuditLogProxy:
@@ -397,10 +464,20 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users: Dict[int, User], data: AuditLogEntryPayload, guild: Guild):
+    def __init__(
+        self,
+        *,
+        users: Dict[int, User],
+        integrations: Dict[int, PartialIntegration],
+        app_commands: Dict[int, AppCommand],
+        data: AuditLogEntryPayload,
+        guild: Guild,
+    ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
         self._users: Dict[int, User] = users
+        self._integrations: Dict[int, PartialIntegration] = integrations
+        self._app_commands: Dict[int, AppCommand] = app_commands
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -418,7 +495,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyMemberDisconnect,
             _AuditLogProxyPinAction,
             _AuditLogProxyStageInstanceAction,
-            Member, User, None,
+            Member, User, None, PartialIntegration,
             Role, Object
         ] = None
         # fmt: on
@@ -463,6 +540,9 @@ class AuditLogEntry(Hashable):
                 self.extra = _AuditLogProxyStageInstanceAction(
                     channel=self.guild.get_channel(channel_id) or Object(id=channel_id)
                 )
+            elif self.action.name.startswith('app_command'):
+                application_id = int(extra['application_id'])
+                self.extra = self._get_integration_by_app_id(application_id) or Object(application_id)
 
         # this key is not present when the above is present, typically.
         # It's a list of { new_value: a, old_value: b, key: c }
@@ -480,6 +560,25 @@ class AuditLogEntry(Hashable):
             return None
 
         return self.guild.get_member(user_id) or self._users.get(user_id)
+
+    def _get_integration(self, integration_id: Optional[int]) -> Optional[PartialIntegration]:
+        if integration_id is None:
+            return None
+
+        return self._integrations.get(integration_id)
+
+    def _get_integration_by_app_id(self, application_id: Optional[int]) -> Optional[PartialIntegration]:
+        if application_id is None:
+            return None
+
+        # get PartialIntegration by application id
+        return utils.get(self._integrations.values(), application_id=application_id)
+
+    def _get_app_command(self, app_command_id: Optional[int]) -> Optional[AppCommand]:
+        if app_command_id is None:
+            return None
+
+        return self._app_commands.get(app_command_id)
 
     def __repr__(self) -> str:
         return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
@@ -575,3 +674,12 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
         return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
+
+    def _convert_target_integration(self, target_id: int) -> Union[PartialIntegration, Object]:
+        return self._get_integration(target_id) or Object(target_id)
+
+    def _convert_target_app_command(self, target_id: int) -> Union[AppCommand, Object]:
+        return self._get_app_command(target_id) or Object(target_id)
+
+    def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
+        return self._get_integration_by_app_id(target_id) or self._get_app_command(target_id) or Object(target_id)

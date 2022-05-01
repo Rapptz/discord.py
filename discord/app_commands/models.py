@@ -39,6 +39,7 @@ __all__ = (
     'AppCommandThread',
     'Argument',
     'Choice',
+    'AllChannels',
 )
 
 ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
@@ -68,6 +69,32 @@ if TYPE_CHECKING:
     from ..threads import Thread
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
+
+
+class AllChannels:
+    """Represents all channels for application command permissions.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The guilds id - 1.
+    guild: :class:`~discord.Guild`
+        The guild the application command permission is for.
+    """
+
+    __slots__ = (
+        'id',
+        'guild',
+    )
+
+    def __init__(self, guild: Guild):
+        self.id = guild.id - 1
+        self.guild = guild
+
+    def __repr__(self):
+        return f'<All Channels guild={self.guild}>'
 
 
 class AppCommand(Hashable):
