@@ -3352,7 +3352,6 @@ class Guild(Hashable):
 
             return data, entries, after, limit
 
-
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
             data = await self._state.http.get_audit_logs(
