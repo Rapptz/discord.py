@@ -3408,7 +3408,7 @@ class Guild(Hashable):
             data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
+            if len(raw_entries) < 100:
                 limit = 0
 
             if reverse:
