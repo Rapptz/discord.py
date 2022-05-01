@@ -78,6 +78,8 @@ class AllChannels:
 
     Attributes
     -----------
+    id: :class:`int`
+        The guilds id - 1.
     guild: :class:`~discord.Guild`
         The guild the application command permission is for.
     """
