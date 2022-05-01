@@ -62,7 +62,6 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
-    from .types.command import ApplicationCommandPermissions as ApplicationCommandPermissionsPayload
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
