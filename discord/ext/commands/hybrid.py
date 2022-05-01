@@ -127,7 +127,7 @@ def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]
         except CommandError:
             raise
         except Exception as exc:
-            raise ConversionError(converter, exc) from exc  # type: ignore
+            raise ConversionError(converter, exc) from exc
 
     return type('ConverterTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
 
@@ -233,7 +233,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             del wrapped.callback.__signature__
 
         self.wrapped: Command[CogT, Any, T] = wrapped
-        self.binding = wrapped.cog
+        self.binding: Optional[CogT] = wrapped.cog
 
     def _copy_with(self, **kwargs) -> Self:
         copy: Self = super()._copy_with(**kwargs)  # type: ignore
@@ -383,7 +383,7 @@ class HybridCommand(Command[CogT, P, T]):
         self,
         func: CommandCallback[CogT, ContextT, P, T],
         /,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(func, **kwargs)
         self.app_command: HybridAppCommand[CogT, Any, T] = HybridAppCommand(self)

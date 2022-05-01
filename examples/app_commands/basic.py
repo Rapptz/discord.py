@@ -3,6 +3,7 @@ from typing import Optional
 import discord
 from discord import app_commands
 
+
 MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 
@@ -13,14 +14,14 @@ class MyClient(discord.Client):
         # state required to make it work. This is a separate class because it
         # allows all the extra state to be opt-in.
         # Whenever you want to work with application commands, your tree is used
-        # to store it and work with it.
+        # to store and work with them.
         # Note: When using commands.Bot instead of discord.Client, the bot will
         # maintain its own tree instead.
         self.tree = app_commands.CommandTree(self)
 
     # In this basic example, we just synchronize the app commands to one guild.
     # Instead of specifying a guild to every command, we copy over our global commands instead.
-    # By doing so we don't have to wait up to an hour until they are shown to the end-user.
+    # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
     async def setup_hook(self):
         # This copies the global commands over to your guild.
         self.tree.copy_global_to(guild=MY_GUILD)
@@ -30,7 +31,7 @@ class MyClient(discord.Client):
 intents = discord.Intents.default()
 
 # In order to use a basic synchronization of the app commands in the setup_hook,
-# you have replace the 0 with your bots application_id you find in the developer portal.
+# you have to replace the 0 with your bot's application_id that you find in the developer portal.
 client = MyClient(intents=intents, application_id=0)
 
 
@@ -56,17 +57,28 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
     await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
 
 
-# To make an argument optional, you can either give it a supported default argument
-# or you can mark it as Optional from the typing library. This example does both.
+# The rename decorator allows us to change the display of the parameter on Discord.
+# In this example, even though we use `text_to_send` in the code, the client will use `text` instead.
+# Note that other decorators will still refer to it as `text_to_send` in the code.
 @client.tree.command()
-@app_commands.describe(member='The member you want to get the joined date from, defaults to the user who uses the command')
+@app_commands.rename(text_to_send='text')
+@app_commands.describe(text_to_send='Text to send in the current channel')
+async def send(interaction: discord.Interaction, text_to_send: str):
+    """Sends the text into the current channel."""
+    await interaction.response.send_message(text_to_send)
+
+
+# To make an argument optional, you can either give it a supported default argument
+# or you can mark it as Optional from the typing standard library. This example does both.
+@client.tree.command()
+@app_commands.describe(member='The member you want to get the joined date from; defaults to the user who uses the command')
 async def joined(interaction: discord.Interaction, member: Optional[discord.Member] = None):
     """Says when a member joined."""
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
 
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
+    await interaction.response.send_message(f'{member} joined {discord.utils.format_dt(member.joined_at)}')
 
 
 # A Context Menu command is an app command that can be run on a member or on a message by
@@ -77,7 +89,7 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 @client.tree.context_menu(name='Show Join Date')
 async def show_join_date(interaction: discord.Interaction, member: discord.Member):
     # The format_dt function formats the date time into a human readable representation in the official client
-    await interaction.response.send_message(f'{member} joined in {discord.utils.format_dt(member.joined_at)}')
+    await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
 
 # This context menu command only works on messages

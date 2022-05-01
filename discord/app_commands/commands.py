@@ -70,6 +70,8 @@ if TYPE_CHECKING:
     # reference the other to prevent type checking errors in callbacks
     from discord.ext.commands import Cog
 
+    ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
+
 __all__ = (
     'Command',
     'ContextMenu',
@@ -675,6 +677,19 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
+        try:
+            if not await self._check_can_run(interaction):
+                if not interaction.response.is_done():
+                    await interaction.response.autocomplete([])
+                return
+        except AppCommandError:
+            # Exceptions can't reasonably be handled by the developer at this point
+            # The autocomplete can either fail or return an empty list of options
+            # Both of these are more or less the same UX to the user.
+            if not interaction.response.is_done():
+                await interaction.response.autocomplete([])
+            return
+
         if param.autocomplete.requires_binding:
             binding = param.autocomplete.binding or self.binding
             if binding is not None:
@@ -711,12 +726,8 @@ class Command(Generic[GroupT, P, T]):
                 return False
 
         if self.binding is not None:
-            try:
-                # Type checker does not like runtime attribute retrieval
-                check: Check = self.binding.interaction_check  # type: ignore
-            except AttributeError:
-                pass
-            else:
+            check: Optional[Check] = getattr(self.binding, 'interaction_check', None)
+            if check:
                 ret = await maybe_coroutine(check, interaction)
                 if not ret:
                     return False
@@ -1273,6 +1284,35 @@ class Group:
         """
 
         pass
+
+    def error(self, coro: ErrorFunc) -> ErrorFunc:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in a child command.
+        The error handler must take 2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine, or is an invalid coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        params = inspect.signature(coro).parameters
+        if len(params) != 2:
+            raise TypeError('The error handler must have 2 parameters.')
+
+        self.on_error = coro  # type: ignore
+        return coro
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|
