@@ -54,7 +54,6 @@ if TYPE_CHECKING:
     from .types.audit_log import (
         AuditLogChange as AuditLogChangePayload,
         AuditLogEntry as AuditLogEntryPayload,
-        _AuditLogChange_AppCommandPermissions,
     )
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
@@ -62,6 +61,7 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
+    from .types.command import ApplicationCommandPermissions
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
@@ -263,11 +263,14 @@ class AuditLogChanges:
             self.after.app_command_permissions = []
 
             for d in data:
+
                 self._handle_app_command_permissions(
                     self.before,
                     self.after,
                     entry,
-                    d,  # type: ignore # should only be app command permission update events
+                    int(d['key']),
+                    d.get('old_value'),  # type: ignore # old value will be an ApplicationCommandPermissions if present
+                    d.get('new_value'),  # type: ignore # new value will be an ApplicationCommandPermissions if present
                 )
             return
 
@@ -347,12 +350,11 @@ class AuditLogChanges:
         before: AuditLogDiff,
         after: AuditLogDiff,
         entry: AuditLogEntry,
-        data: _AuditLogChange_AppCommandPermissions
+        target_id: int,
+        old_value: Optional[ApplicationCommandPermissions],
+        new_value: Optional[ApplicationCommandPermissions],
     ):
         guild = entry.guild
-        target_id = int(data['key'])
-        old_value = data.get('old_value')
-        new_value = data.get('new_value')
 
         old_permission = new_permission = target = None
 
