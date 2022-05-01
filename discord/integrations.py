@@ -410,6 +410,7 @@ class PartialIntegration:
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
         self.application_id: Optional[int] = _get_as_snowflake(data, 'application_id')
 
+
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:
     if value == 'discord':
         return BotIntegration, value

@@ -3421,14 +3421,12 @@ class Guild(Hashable):
             user_map = {user.id: user for user in users}
 
             integrations = (
-                PartialIntegration(data=raw_integration, guild=self)
-                for raw_integration in data.get('integrations', [])
+                PartialIntegration(data=raw_i, guild=self) for raw_i in data.get('integrations', [])
             )
             integration_map = {integration.id: integration for integration in integrations}
 
             app_commands = (
-                AppCommand(data=raw_command, state=self._state)
-                for raw_command in data.get('application_commands', [])
+                AppCommand(data=raw_cmd, state=self._state) for raw_cmd in data.get('application_commands', [])
             )
             app_command_map = {app_command.id: app_command for app_command in app_commands}
 

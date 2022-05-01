@@ -82,7 +82,10 @@ class AllChannels:
         The guild the application command permission is for.
     """
 
-    __slots__ = ('id', 'guild',)
+    __slots__ = (
+        'id',
+        'guild',
+    )
 
     def __init__(self, guild: Guild):
         self.id = guild.id - 1
