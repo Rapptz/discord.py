@@ -32,6 +32,7 @@ from typing import (
     Iterable,
     List,
     Mapping,
+    NamedTuple,
     Optional,
     TYPE_CHECKING,
     Sequence,
@@ -96,6 +97,11 @@ if TYPE_CHECKING:
     )
 
     from .types.snowflake import SnowflakeList
+
+
+class ThreadWithMessage(NamedTuple):
+    thread: Thread
+    message: Message
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -2109,7 +2115,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         mention_author: bool = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
-    ) -> Thread:
+    ) -> ThreadWithMessage:
         """|coro|
 
         Creates a thread in this forum.
@@ -2166,8 +2172,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Returns
         --------
-        :class:`Thread`
-            The created thread
+        Tuple[:class:`Thread`, :class:`Message`]
+            The created thread with the created message.
+            This is also accessible as a namedtuple with ``thread`` and ``message`` fields.
         """
 
         state = self._state
@@ -2207,8 +2214,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             flags=flags,
             channel_payload=channel_payload,
         ) as params:
+            # Circular import
+            from .message import Message
+
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
-            return Thread(guild=self.guild, state=self._state, data=data)
+            thread = Thread(guild=self.guild, state=self._state, data=data)
+            message = Message(state=self._state, channel=thread, data=data['message'])
+            if view:
+                self._state.store_view(view, message.id)
+
+            return ThreadWithMessage(thread=thread, message=message)
 
 
 class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
