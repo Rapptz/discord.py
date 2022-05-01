@@ -117,7 +117,7 @@ class Integration:
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     def _from_data(self, data: IntegrationPayload) -> None:
         self.id: int = int(data['id'])
@@ -401,18 +401,14 @@ class PartialIntegration:
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     def _from_data(self, data: PartialIntegrationPayload) -> None:
         self.id: int = int(data['id'])
         self.type: IntegrationType = data['type']
         self.name: str = data['name']
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
-        application_id = data.get('application_id')
-        self.application_id: Optional[int] = None
-        if application_id is not None:
-            self.application_id = int(application_id)
-
+        self.application_id: Optional[int] = _get_as_snowflake(data, 'application_id')
 
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:
     if value == 'discord':

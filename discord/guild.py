@@ -3346,18 +3346,12 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 before = Object(id=int(entries[-1]['id']))
 
-            return (
-                data.get('users', []),
-                data.get('integrations', []),
-                data.get('application_commands', []),
-                entries,
-                after,
-                limit,
-            )
+            return data, entries, after, limit
+
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
@@ -3369,18 +3363,11 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 after = Object(id=int(entries[0]['id']))
 
-            return (
-                data.get('users', []),
-                data.get('integrations', []),
-                data.get('application_commands', []),
-                entries,
-                after,
-                limit,
-            )
+            return data, entries, after, limit
 
         if user is not MISSING:
             user_id = user.id
@@ -3419,33 +3406,43 @@ class Guild(Hashable):
             if retrieve < 1:
                 return
 
-            raw_users, raw_integrations, raw_app_commands, data, state, limit = await strategy(retrieve, state, limit)
+            data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
             if len(data) < 100:
                 limit = 0
 
             if reverse:
-                data = reversed(data)
+                raw_entries = reversed(raw_entries)
             if predicate:
-                data = filter(predicate, data)
+                raw_entries = filter(predicate, raw_entries)
 
-            users = (User(data=raw_user, state=self._state) for raw_user in raw_users)
+            users = (User(data=raw_user, state=self._state) for raw_user in data.get('users', []))
             user_map = {user.id: user for user in users}
 
-            integrations = (PartialIntegration(data=raw_integration, guild=self) for raw_integration in raw_integrations)
+            integrations = (
+                PartialIntegration(data=raw_integration, guild=self)
+                for raw_integration in data.get('integrations', [])
+            )
             integration_map = {integration.id: integration for integration in integrations}
 
-            app_commands = (AppCommand(data=raw_command, state=self._state) for raw_command in raw_app_commands)
+            app_commands = (
+                AppCommand(data=raw_command, state=self._state)
+                for raw_command in data.get('application_commands', [])
+            )
             app_command_map = {app_command.id: app_command for app_command in app_commands}
 
-            for raw_entry in data:
+            for raw_entry in raw_entries:
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
                     continue
 
                 yield AuditLogEntry(
-                    data=raw_entry, users=user_map, integrations=integration_map, app_commands=app_command_map, guild=self
+                    data=raw_entry,
+                    users=user_map,
+                    integrations=integration_map,
+                    app_commands=app_command_map,
+                    guild=self,
                 )
 
     async def widget(self) -> Widget:
