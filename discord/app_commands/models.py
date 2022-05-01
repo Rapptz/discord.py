@@ -78,23 +78,22 @@ class AllChannels:
 
     Attributes
     -----------
-    id: :class:`int`
-        The guilds id - 1.
     guild: :class:`~discord.Guild`
         The guild the application command permission is for.
     """
 
-    __slots__ = (
-        'id',
-        'guild',
-    )
+    __slots__ = 'guild'
 
     def __init__(self, guild: Guild):
-        self.id = guild.id - 1
         self.guild = guild
 
+    @property
+    def id(self) -> int:
+        """:class:`int`: The ID sentinel used to represent all channels. Equivalent to the guild's ID minus 1."""
+        return self.guild.id - 1
+
     def __repr__(self):
-        return f'<All Channels guild={self.guild}>'
+        return f'<AllChannels guild={self.guild}>'
 
 
 class AppCommand(Hashable):
