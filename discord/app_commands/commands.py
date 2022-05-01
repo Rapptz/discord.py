@@ -1039,6 +1039,17 @@ class Group:
 
     These are usually inherited rather than created manually.
 
+    Decorators such as :func:`guild_only`, :func:`guilds`, and :func:`default_permissions`
+    will apply to the group if used on top of a subclass. For example:
+
+    .. code-block:: python3
+
+        from discord import app_commands
+
+        @app_commands.guild_only()
+        class MyGroup(app_commands.Group):
+            pass
+
     .. versionadded:: 2.0
 
     Attributes
@@ -1070,8 +1081,8 @@ class Group:
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
-    __discord_app_commands_group_guild_only__: bool = MISSING
-    __discord_app_commands_group_default_permissions__: Optional[Permissions] = MISSING
+    __discord_app_commands_guild_only__: bool = MISSING
+    __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
 
     def __init_subclass__(
@@ -1112,10 +1123,10 @@ class Group:
             cls.__discord_app_commands_group_description__ = description
 
         if guild_only is not MISSING:
-            cls.__discord_app_commands_group_guild_only__ = guild_only
+            cls.__discord_app_commands_guild_only__ = guild_only
 
         if default_permissions is not MISSING:
-            cls.__discord_app_commands_group_default_permissions__ = default_permissions
+            cls.__discord_app_commands_default_permissions__ = default_permissions
 
         if cls.__module__ != __name__:
             cls.__discord_app_commands_has_module__ = True
@@ -1135,21 +1146,21 @@ class Group:
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
-        self._guild_ids: Optional[List[int]] = guild_ids
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(cls, '__discord_app_commands_default_guilds__', None)
 
         if default_permissions is MISSING:
-            if cls.__discord_app_commands_group_default_permissions__ is MISSING:
+            if cls.__discord_app_commands_default_permissions__ is MISSING:
                 default_permissions = None
             else:
-                default_permissions = cls.__discord_app_commands_group_default_permissions__
+                default_permissions = cls.__discord_app_commands_default_permissions__
 
         self.default_permissions: Optional[Permissions] = default_permissions
 
         if guild_only is MISSING:
-            if cls.__discord_app_commands_group_guild_only__ is MISSING:
+            if cls.__discord_app_commands_guild_only__ is MISSING:
                 guild_only = False
             else:
-                guild_only = cls.__discord_app_commands_group_guild_only__
+                guild_only = cls.__discord_app_commands_guild_only__
 
         self.guild_only: bool = guild_only
 
