@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, TYPE_CHECKING, Sequence, Tuple, Union
+from typing import Any, Dict, Generic, Optional, TYPE_CHECKING, Sequence, Tuple, TypeVar, Union
 import asyncio
 import datetime
 
@@ -78,9 +78,10 @@ if TYPE_CHECKING:
     ]
 
 MISSING: Any = utils.MISSING
+ClientT = TypeVar("ClientT", bound="Client", covariant=True)
 
 
-class Interaction:
+class Interaction(Generic[ClientT]):
     """Represents a Discord interaction.
 
     An interaction happens when a user does an action that needs to
@@ -148,7 +149,7 @@ class Interaction:
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
-        self._client: Client = state._get_client()
+        self._client: ClientT = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         # This baton is used for extra data that might be useful for the lifecycle of
@@ -202,7 +203,7 @@ class Interaction:
                 pass
 
     @property
-    def client(self) -> Client:
+    def client(self) -> ClientT:
         """:class:`Client`: The client that is handling this interaction."""
         return self._client
 
