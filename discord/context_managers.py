@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Coroutine, Generator, Optional, Type, TypeVar, Any
+from typing import TYPE_CHECKING, Generator, Optional, Type, TypeVar
 
 if TYPE_CHECKING:
     from .abc import Messageable, MessageableChannel
@@ -65,9 +65,6 @@ class Typing:
     async def wrapped_typer(self) -> None:
         channel = await self._get_channel()
         await channel._state.http.send_typing(channel.id)
-
-    def __call__(self) -> Coroutine[Any, Any, None]:
-        return self.wrapped_typer()
 
     def __await__(self) -> Generator[None, None, None]:
         return self.wrapped_typer().__await__()
