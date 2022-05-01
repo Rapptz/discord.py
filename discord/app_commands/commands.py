@@ -715,6 +715,27 @@ class Command(Generic[GroupT, P, T]):
         parent = self.parent
         return parent.parent or parent
 
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name.
+
+        The qualified name includes the parent name as well. For example,
+        in a command like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+        # A B C
+        #     ^ self
+        #   ^ parent
+        # ^ grandparent
+        if self.parent is None:
+            return self.name
+
+        names = [self.name, self.parent.name]
+        grandparent = self.parent.parent
+        if grandparent is not None:
+            names.append(grandparent.name)
+
+        return ' '.join(reversed(names))
+
     async def _check_can_run(self, interaction: Interaction) -> bool:
         if self.parent is not None and self.parent is not self.binding:
             # For commands with a parent which isn't the binding, i.e.
@@ -933,6 +954,11 @@ class ContextMenu:
     def callback(self) -> ContextMenuCallback:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
+
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name."""
+        return self.name
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -1243,6 +1269,18 @@ class Group:
     def root_parent(self) -> Optional[Group]:
         """Optional[:class:`Group`]: The parent of this group."""
         return self.parent
+
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified group name.
+
+        The qualified name includes the parent name as well. For example,
+        in a group like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+
+        if self.parent is None:
+            return self.name
+        return f'{self.parent.name} {self.name}'
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
