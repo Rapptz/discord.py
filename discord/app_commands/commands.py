@@ -1302,7 +1302,7 @@ class Group:
         if len(params) != 2:
             raise TypeError('The error handler must have 2 parameters.')
 
-        self.on_error = coro
+        self.on_error = coro  # type: ignore
         return coro
 
     async def interaction_check(self, interaction: Interaction) -> bool:
