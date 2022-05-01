@@ -192,7 +192,7 @@ ApplicationCommand = Union[
 ]
 
 
-ApplicationCommandPermissionType = Literal[1, 2]
+ApplicationCommandPermissionType = Literal[1, 2, 3]
 
 
 class ApplicationCommandPermissions(TypedDict):

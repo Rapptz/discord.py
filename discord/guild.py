@@ -78,7 +78,7 @@ from .invite import Invite
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
-from .integrations import Integration, _integration_factory
+from .integrations import Integration, PartialIntegration, _integration_factory
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
@@ -3350,7 +3350,14 @@ class Guild(Hashable):
 
                 before = Object(id=int(entries[-1]['id']))
 
-            return data.get('users', []), entries, before, limit
+            return (
+                data.get('users', []),
+                data.get('integrations', []),
+                data.get('application_commands', []),
+                entries,
+                after,
+                limit
+            )
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
@@ -3366,7 +3373,14 @@ class Guild(Hashable):
 
                 after = Object(id=int(entries[0]['id']))
 
-            return data.get('users', []), entries, after, limit
+            return (
+                data.get('users', []),
+                data.get('integrations', []),
+                data.get('application_commands', []),
+                entries,
+                after,
+                limit
+            )
 
         if user is not MISSING:
             user_id = user.id
@@ -3402,7 +3416,7 @@ class Guild(Hashable):
             if retrieve < 1:
                 return
 
-            raw_users, data, state, limit = await strategy(retrieve, state, limit)
+            raw_users, raw_integrations, raw_app_commands, data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
             if len(data) < 100:
@@ -3416,12 +3430,26 @@ class Guild(Hashable):
             users = (User(data=raw_user, state=self._state) for raw_user in raw_users)
             user_map = {user.id: user for user in users}
 
+            integrations = (PartialIntegration(data=raw_integration, guild=self) for raw_integration in raw_integrations)
+            integration_map = {integration.id: integration for integration in integrations}
+
+            # fix circular import
+            from .app_commands import AppCommand
+            app_commands = (AppCommand(data=raw_command, state=self._state) for raw_command in raw_app_commands)
+            app_command_map = {app_command.id: app_command for app_command in app_commands}
+
             for raw_entry in data:
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
                     continue
 
-                yield AuditLogEntry(data=raw_entry, users=user_map, guild=self)
+                yield AuditLogEntry(
+                    data=raw_entry,
+                    users=user_map,
+                    integrations=integration_map,
+                    app_commands=app_command_map,
+                    guild=self
+                )
 
     async def widget(self) -> Widget:
         """|coro|

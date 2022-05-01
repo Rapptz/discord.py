@@ -39,6 +39,7 @@ __all__ = (
     'AppCommandThread',
     'Argument',
     'Choice',
+    'AllChannels',
 )
 
 ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
@@ -68,6 +69,17 @@ if TYPE_CHECKING:
     from ..threads import Thread
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
+
+
+class AllChannels:
+    """Represents all channels for application command permissions.
+
+    .. versionadded:: 2.0
+    """
+    __slots__ = ()
+
+    def __repr__(self):
+        return 'All Channels'
 
 
 class AppCommand(Hashable):
