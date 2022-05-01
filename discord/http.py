@@ -990,7 +990,7 @@ class HTTPClient:
         *,
         params: MultipartParameters,
         reason: Optional[str] = None,
-    ) -> Response[threads.Thread]:
+    ) -> Response[threads.ForumThread]:
         query = {'use_nested_fields': 1}
         r = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
         if params.files:
