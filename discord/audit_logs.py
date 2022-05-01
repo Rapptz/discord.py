@@ -359,7 +359,7 @@ class AuditLogChanges:
         old_permission = new_permission = target = None
 
         if target_id == (guild.id - 1):
-            # circular import
+            # avoid circular import
             from .app_commands import AllChannels
 
             # all channels

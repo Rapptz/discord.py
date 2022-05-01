@@ -3411,6 +3411,9 @@ class Guild(Hashable):
             if after and after != OLDEST_OBJECT:
                 predicate = lambda m: int(m['id']) > after.id
 
+        # avoid circular import
+        from .app_commands import AppCommand
+
         while True:
             retrieve = min(100 if limit is None else limit, 100)
             if retrieve < 1:
@@ -3432,9 +3435,6 @@ class Guild(Hashable):
 
             integrations = (PartialIntegration(data=raw_integration, guild=self) for raw_integration in raw_integrations)
             integration_map = {integration.id: integration for integration in integrations}
-
-            # fix circular import
-            from .app_commands import AppCommand
 
             app_commands = (AppCommand(data=raw_command, state=self._state) for raw_command in raw_app_commands)
             app_command_map = {app_command.id: app_command for app_command in app_commands}
