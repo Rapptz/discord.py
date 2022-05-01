@@ -1104,8 +1104,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             if not param.required:
                 # We don't want None or '' to trigger the [name=value] case and instead it should
                 # do [name] since [name=None] or [name=] are not exactly useful for the user.
-                should_print = param.default if isinstance(param.default, str) else param.default is not None
-                if should_print:
+                if param.displayed_default:
                     result.append(
                         f'[{name}={param.displayed_default}]' if not greedy else f'[{name}={param.displayed_default}]...'
                     )
