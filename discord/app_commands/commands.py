@@ -70,10 +70,7 @@ if TYPE_CHECKING:
     # reference the other to prevent type checking errors in callbacks
     from discord.ext.commands import Cog
 
-    ErrorFunc = Callable[
-        [Interaction, AppCommandError],
-        Coroutine[Any, Any, Any],
-    ]
+    ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
 
 __all__ = (
     'Command',
