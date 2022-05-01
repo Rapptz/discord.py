@@ -135,7 +135,12 @@ else:
 
 
 CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
-VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
+
+# The re module doesn't support \p{} so we have to list characters from Thai and Devanagari manually.
+THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
+DEVANAGARI_COMBINING = r'\u0900-\u0903\u093a\u093b\u093c\u093e\u093f\u0940-\u094f\u0955\u0956\u0957\u0962\u0963'
+VALID_SLASH_COMMAND_NAME = re.compile(r'^[-_\w' + THAI_COMBINING + DEVANAGARI_COMBINING + r']{1,32}$')
+
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
