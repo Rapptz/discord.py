@@ -130,7 +130,7 @@ Argument
     :members:
 
 AllChannels
-~~~~~~~~~~
+~~~~~~~~~~~~
 
 .. attributetable:: discord.app_commands.AllChannels
 

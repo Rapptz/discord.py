@@ -2474,13 +2474,13 @@ of :class:`enum.Enum`.
         were updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        a :class:`PartialInteraction` for an integrations general permissions,
+        a :class:`PartialIntegration` for an integrations general permissions,
         :class:`~discord.app_commands.AppCommand` for a specific commands permissions,
         or :class:`Object` with the ID of the command or integration which
         was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
-        set to an :class:`PartialInteraction` or :class:`Object` with the ID of
+        set to an :class:`PartialIntegration` or :class:`Object` with the ID of
         application that command or integration belongs to.
 
         Possible attributes for :class:`AuditLogDiff`:

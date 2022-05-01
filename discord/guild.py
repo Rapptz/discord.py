@@ -3356,7 +3356,7 @@ class Guild(Hashable):
                 data.get('application_commands', []),
                 entries,
                 after,
-                limit
+                limit,
             )
 
         async def _after_strategy(retrieve, after, limit):
@@ -3379,7 +3379,7 @@ class Guild(Hashable):
                 data.get('application_commands', []),
                 entries,
                 after,
-                limit
+                limit,
             )
 
         if user is not MISSING:
@@ -3435,6 +3435,7 @@ class Guild(Hashable):
 
             # fix circular import
             from .app_commands import AppCommand
+
             app_commands = (AppCommand(data=raw_command, state=self._state) for raw_command in raw_app_commands)
             app_command_map = {app_command.id: app_command for app_command in app_commands}
 
@@ -3444,11 +3445,7 @@ class Guild(Hashable):
                     continue
 
                 yield AuditLogEntry(
-                    data=raw_entry,
-                    users=user_map,
-                    integrations=integration_map,
-                    app_commands=app_command_map,
-                    guild=self
+                    data=raw_entry, users=user_map, integrations=integration_map, app_commands=app_command_map, guild=self
                 )
 
     async def widget(self) -> Widget:

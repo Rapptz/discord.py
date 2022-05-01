@@ -385,7 +385,15 @@ class PartialIntegration:
         The id of the application this integration belongs to.
     """
 
-    __slots__ = ('guild', '_state', 'id', 'type', 'name', 'account', 'application_id',)
+    __slots__ = (
+        'guild',
+        '_state',
+        'id',
+        'type',
+        'name',
+        'account',
+        'application_id',
+    )
 
     def __init__(self, *, data: PartialIntegrationPayload, guild: Guild):
         self.guild: Guild = guild

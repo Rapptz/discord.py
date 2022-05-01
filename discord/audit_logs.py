@@ -361,6 +361,7 @@ class AuditLogChanges:
         if target_id == (guild.id - 1):
             # circular import
             from .app_commands import AllChannels
+
             # all channels
             target = AllChannels(guild)
         else:
@@ -389,6 +390,7 @@ class AuditLogChanges:
         if new_value is not None:
             new_permission = new_value['permission']
             after.app_command_permissions.append((target, new_permission))
+
 
 class _AuditLogProxy:
     def __init__(self, **kwargs: Any) -> None:
@@ -469,7 +471,7 @@ class AuditLogEntry(Hashable):
         integrations: Dict[int, PartialIntegration],
         app_commands: Dict[int, AppCommand],
         data: AuditLogEntryPayload,
-        guild: Guild
+        guild: Guild,
     ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
@@ -673,15 +675,11 @@ class AuditLogEntry(Hashable):
     def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
         return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
 
-    def _convert_target_integration(self, target_id: int)-> Union[PartialIntegration, Object]:
+    def _convert_target_integration(self, target_id: int) -> Union[PartialIntegration, Object]:
         return self._get_integration(target_id) or Object(target_id)
 
-    def _convert_target_app_command(self, target_id: int)-> Union[AppCommand, Object]:
+    def _convert_target_app_command(self, target_id: int) -> Union[AppCommand, Object]:
         return self._get_app_command(target_id) or Object(target_id)
 
     def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
-        return (
-            self._get_integration_by_app_id(target_id) or
-            self._get_app_command(target_id) or
-            Object(target_id)
-        )
+        return self._get_integration_by_app_id(target_id) or self._get_app_command(target_id) or Object(target_id)
