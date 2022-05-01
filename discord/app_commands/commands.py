@@ -70,6 +70,8 @@ if TYPE_CHECKING:
     # reference the other to prevent type checking errors in callbacks
     from discord.ext.commands import Cog
 
+    ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
+
 __all__ = (
     'Command',
     'ContextMenu',
@@ -1282,6 +1284,35 @@ class Group:
         """
 
         pass
+
+    def error(self, coro: ErrorFunc) -> ErrorFunc:
+        """A decorator that registers a coroutine as a local error handler.
+
+        The local error handler is called whenever an exception is raised in a child command.
+        The error handler must take 2 parameters, the interaction and the error.
+
+        The error passed will be derived from :exc:`AppCommandError`.
+
+        Parameters
+        -----------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register as the local error handler.
+
+        Raises
+        -------
+        TypeError
+            The coroutine passed is not actually a coroutine, or is an invalid coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError('The error handler must be a coroutine.')
+
+        params = inspect.signature(coro).parameters
+        if len(params) != 2:
+            raise TypeError('The error handler must have 2 parameters.')
+
+        self.on_error = coro  # type: ignore
+        return coro
 
     async def interaction_check(self, interaction: Interaction) -> bool:
         """|coro|
