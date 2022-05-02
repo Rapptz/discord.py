@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from ._types import (
         _Bot,
         BotT,
-        Check,
+        UserCheck,
         CoroFunc,
         ContextT,
         MaybeAwaitableFunc,
@@ -161,8 +161,8 @@ class BotBase(GroupMixin[None]):
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
-        self._checks: List[Check] = []
-        self._check_once: List[Check] = []
+        self._checks: List[UserCheck] = []
+        self._check_once: List[UserCheck] = []
         self._before_invoke: Optional[CoroFunc] = None
         self._after_invoke: Optional[CoroFunc] = None
         self._help_command: Optional[HelpCommand] = None
@@ -282,7 +282,7 @@ class BotBase(GroupMixin[None]):
         self.add_check(func)  # type: ignore
         return func
 
-    def add_check(self, func: Check[ContextT], /, *, call_once: bool = False) -> None:
+    def add_check(self, func: UserCheck[ContextT], /, *, call_once: bool = False) -> None:
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
@@ -306,7 +306,7 @@ class BotBase(GroupMixin[None]):
         else:
             self._checks.append(func)
 
-    def remove_check(self, func: Check[ContextT], /, *, call_once: bool = False) -> None:
+    def remove_check(self, func: UserCheck[ContextT], /, *, call_once: bool = False) -> None:
         """Removes a global check from the bot.
 
         This function is idempotent and will not raise an exception
