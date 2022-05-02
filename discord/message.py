@@ -1408,7 +1408,6 @@ class Message(PartialMessage, Hashable):
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.application: Optional[MessageApplicationPayload] = data.get('application')
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
-        self.channel: MessageableChannel = channel
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.type: MessageType = try_enum(MessageType, data['type'])
         self.pinned: bool = data['pinned']
