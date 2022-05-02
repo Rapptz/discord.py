@@ -1151,7 +1151,7 @@ The following have been removed:
 
 - ``abc.Messageable.trigger_typing``
 
-    - Use :meth:`abc.Messageable.typing` instead.
+    - Use :meth:`abc.Messageable.typing` with ``await`` instead.
 
 Miscellaneous Changes
 ----------------------
