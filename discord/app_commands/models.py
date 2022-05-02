@@ -136,7 +136,7 @@ class AppCommand(Hashable):
         The application command's description.
     default_member_permissions: Optional[:class:`~discord.Permissions`]
         The default member permissions that can run this command.
-    dm_permissions: :class:`bool`
+    dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
     """
 
@@ -148,7 +148,7 @@ class AppCommand(Hashable):
         'description',
         'options',
         'default_member_permissions',
-        'dm_permissions',
+        'dm_permission',
         '_state',
     )
 
@@ -172,12 +172,12 @@ class AppCommand(Hashable):
         else:
             self.default_member_permissions = Permissions(int(permissions))
 
-        dm_permissions = data.get('dm_permissions')
+        dm_permission = data.get('dm_permission')
         # For some reason this field can be explicit null and mean True
-        if dm_permissions is None:
-            dm_permissions = True
+        if dm_permission is None:
+            dm_permission = True
 
-        self.dm_permissions: bool = dm_permissions
+        self.dm_permission: bool = dm_permission
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
