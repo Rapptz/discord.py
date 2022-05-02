@@ -1149,6 +1149,10 @@ The following have been removed:
 
     - Consider using the newer documented :func:`on_socket_event_type` event instead.
 
+- ``abc.Messageable.trigger_typing``
+
+    - Use :meth:`abc.Messageable.typing` instead.
+
 Miscellaneous Changes
 ----------------------
 
