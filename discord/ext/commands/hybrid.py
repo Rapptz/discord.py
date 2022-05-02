@@ -481,10 +481,14 @@ class HybridGroup(Group[CogT, P, T]):
                 raise TypeError(f'HybridGroup parent must be HybridGroup not {self.parent.__class__}')
 
         guild_ids = attrs.pop('guild_ids', None) or getattr(self.callback, '__discord_app_commands_default_guilds__', None)
+        guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
+        default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
         self.app_command: app_commands.Group = app_commands.Group(
             name=self.name,
             description=self.description or self.short_doc or '…',
             guild_ids=guild_ids,
+            guild_only=guild_only,
+            default_permissions=default_permissions,
         )
 
         # This prevents the group from re-adding the command at __init__
