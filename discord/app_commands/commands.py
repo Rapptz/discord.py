@@ -682,6 +682,18 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
+        predicates = getattr(param.autocomplete, '__discord_app_commands_checks__', [])
+        if predicates:
+            try:
+                if not await async_all(f(interaction) for f in predicates):
+                    if not interaction.response.is_done():
+                        await interaction.response.autocomplete([])
+                    return
+            except Exception:
+                if not interaction.response.is_done():
+                    await interaction.response.autocomplete([])
+                return
+
         if param.autocomplete.requires_binding:
             binding = param.autocomplete.binding or self.binding
             if binding is not None:
@@ -790,6 +802,10 @@ class Command(Generic[GroupT, P, T]):
         To get the values from other parameters that may be filled in, accessing
         :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those
         values.
+
+        Parent :func:`checks <check>` are ignored within an autocomplete. However, checks can be added
+        to the autocomplete callback and the ones added will be called. If the checks fail for any reason
+        then an empty list is sent as the interaction response.
 
         The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
         Only up to 25 objects are supported.
@@ -1734,6 +1750,10 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
 
     Autocomplete is only supported on types that have :class:`str`, :class:`int`, or :class:`float`
     values.
+
+    :func:`Checks <check>` are supported, however they must be attached to the autocomplete
+    callback in order to work. Checks attached to the command are ignored when invoking the autocomplete
+    callback.
 
     For more information, see the :meth:`Command.autocomplete` documentation.
 
