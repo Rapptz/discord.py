@@ -3350,7 +3350,7 @@ class Guild(Hashable):
 
                 before = Object(id=int(entries[-1]['id']))
 
-            return data, entries, after, limit
+            return data, entries, before, limit
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
