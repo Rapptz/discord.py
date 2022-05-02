@@ -1053,6 +1053,10 @@ The following have been removed:
 
     - Consider using the newer documented :func:`on_socket_event_type` event instead.
 
+- ``abc.Messageable.trigger_typing``
+
+    - Use :meth:`abc.Messageable.typing` with ``await`` instead.
+
 Miscellaneous Changes
 ----------------------
 
