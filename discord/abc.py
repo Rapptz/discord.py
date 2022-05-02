@@ -1546,7 +1546,7 @@ class Messageable:
     def typing(self) -> Typing:
         """Returns an asynchronous context manager that allows you to send a typing indicator to
         the destination for an indefinite period of time, or 10 seconds if the context manager
-        is ``awaited``.
+        is called using ``await``.
 
         Example Usage: ::
 
