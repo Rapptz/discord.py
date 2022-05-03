@@ -2354,6 +2354,16 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return ChannelType.private
 
     @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this DM channel belongs to. Always ``None``.
+
+        This is mainly provided for compatibility purposes in duck typing.
+
+        .. versionadded:: 2.0
+        """
+        return None
+
+    @property
     def jump_url(self) -> str:
         """:class:`str`: Returns a URL that allows the client to jump to the channel.
 
@@ -2508,6 +2518,16 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return ChannelType.group
 
     @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this group channel belongs to. Always ``None``.
+
+        This is mainly provided for compatibility purposes in duck typing.
+
+        .. versionadded:: 2.0
+        """
+        return None
+
+    @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the channel's icon asset if available."""
         if self._icon is None:
@@ -2628,6 +2648,11 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     async def _get_channel(self) -> PartialMessageable:
         return self
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this partial messageable is in."""
+        return self._state._get_guild(self.guild_id)
 
     @property
     def jump_url(self) -> str:
