@@ -873,7 +873,7 @@ class ConnectionState:
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or PartialMessageable(state=self, id=channel_id), guild
+        return channel or PartialMessageable(state=self, guild_id=guild_id, id=channel_id), guild
 
     async def _delete_messages(self, channel_id, messages, reason: Optional[str] = None) -> None:
         delete_message = self.http.delete_message

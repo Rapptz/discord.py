@@ -1157,14 +1157,14 @@ class Webhook(BaseWebhook):
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
         if thread is MISSING:
-            channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+            channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id, id=int(data['channel_id']))  # type: ignore
         else:
             channel = self.channel
             if isinstance(channel, TextChannel):
                 channel = channel.get_thread(thread.id)
 
             if channel is None:
-                channel = PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+                channel = PartialMessageable(state=self._state, guild_id=self.guild_id, id=int(data['channel_id']))  # type: ignore
 
         # state is artificial
         return WebhookMessage(data=data, state=state, channel=channel)  # type: ignore
