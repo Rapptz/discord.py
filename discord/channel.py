@@ -3084,7 +3084,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     @property
     def created_at(self) -> datetime.datetime:
-        """:class:`datetime.datetime`: Returns the direct message channel's creation time in UTC."""
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
     def permissions_for(self, obj: Any = None, /) -> Permissions:
