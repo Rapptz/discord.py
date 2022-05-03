@@ -223,7 +223,7 @@ class Interaction:
         if channel is None:
             if self.channel_id is not None:
                 type = ChannelType.text if self.guild_id is not None else ChannelType.private
-                return PartialMessageable(state=self._state, id=self.channel_id, type=type)
+                return PartialMessageable(state=self._state, guild_id=self.guild_id, id=self.channel_id, type=type)
             return None
         return channel
 
