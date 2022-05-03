@@ -1057,8 +1057,8 @@ class Client:
             The optional guild ID to create a partial messageable for.
 
             This is not required to actually send messages, but it does allow the
-            :meth:`PartialMessageable.jump_url` and :attr:`PartialMessageable.guild`
-            properties to function properly.
+            :meth:`~discord.PartialMessageable.jump_url` and
+            :attr:`~discord.PartialMessageable.guild` properties to function properly.
         type: Optional[:class:`.ChannelType`]
             The underlying channel type for the partial messageable.
 
