@@ -709,6 +709,7 @@ Members
     - roles
     - pending
     - timeout
+    - guild avatar
 
     Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
