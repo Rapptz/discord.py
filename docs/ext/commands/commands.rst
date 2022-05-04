@@ -179,6 +179,8 @@ know how the command was executed. It contains a lot of useful information:
 The context implements the :class:`abc.Messageable` interface, so anything you can do on a :class:`abc.Messageable` you
 can do on the :class:`~ext.commands.Context`.
 
+.. _ext_commands_converters:
+
 Converters
 ------------
 
@@ -788,6 +790,8 @@ handlers that allow us to do just that. First we decorate an error handler funct
 
 The first parameter of the error handler is the :class:`.Context` while the second one is an exception that is derived from
 :exc:`~ext.commands.CommandError`. A list of errors is found in the :ref:`ext_commands_api_errors` page of the documentation.
+
+.. _ext_commands_checks:
 
 Checks
 -------
