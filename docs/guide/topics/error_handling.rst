@@ -72,7 +72,7 @@ converters, etc.
             
 
 .. note::
-    We don't want our global error handler to 'eat' our unhandled errors without displaying anything in the console, so we add
+    We don't want our global error handler to indirectly silence our unhandled errors without displaying anything in the console, so we add
     an :ref:`else <py:else>` statement at the end of our logic and handle all the remaining 'unhandled' errors.
 
 Local Error Handlers
