@@ -111,7 +111,6 @@ In a :class:`~.ext.commands.Command`
 
 +++++++++++++++++++++++++++++++++++
 
-
 To handle errors that occur in a specific command, we decorate a function with :meth:`~ext.commands.Command.error`, which will get
 called when an error occurs in said command.
 
