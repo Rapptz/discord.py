@@ -389,7 +389,7 @@ to retrieve/unwrap this error we need to access the error's ``.original`` attrib
     so we add an :ref:`else <py:else>` statement at the end of our logic and handle all the remaining 'unhandled' errors.
 
 .. warning::
-    :ref:`ext_commands_api_bot` already have a :attr:`Bot.tre <~ext.commands.Bot.tree>` associated with it, attempting to create a 
+    :ref:`ext_commands_api_bot` already has a :attr:`Bot.tree <~ext.commands.Bot.tree>` associated with it, attempting to create a 
     new one will cause a :class:`~.ClientException` to be raised denoting that there is already a tree associated with that client.
 
 In :ref:`Tasks <discord_ext_tasks>`
