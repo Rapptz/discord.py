@@ -58,7 +58,7 @@ converters, etc.
 
         # Then we continue with our actual logic:
         # We use isinstance() to check which error ocurred:
-        if isinstance(error, commansd.CommandNotFound):
+        if isinstance(error, commands.CommandNotFound):
             await ctx.send("I couldn't find that command, sorry!")
 
         elif isinstance(error, commands.NotOwner):
