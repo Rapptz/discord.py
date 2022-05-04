@@ -94,7 +94,7 @@ which gets called when an error occurs inside of this Cog.
 
     class ExampleCog(commands.Cog):
 
-        async def cog_check(ctx):
+        async def cog_check(self, ctx):
             """ Custom check for this cog only. """
             if ctx.guild and ctx.guild.id != GUILD_ID:
                 raise commands.DisabledCommand
