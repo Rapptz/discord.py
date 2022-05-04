@@ -49,7 +49,7 @@ converters, etc.
     :emphasize-lines: 1, 2
 
     @bot.listen()
-    async def on_command_error(ctx, error):
+    async def on_command_error(ctx: commands.Context, error: commands.CommmandError) -> None:
         """ This is an example global error handler. """
 
         # First we unwrap any error that gets wrapped in a CommandInvokeError
