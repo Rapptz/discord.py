@@ -84,41 +84,45 @@ class StageInstance(Hashable):
     """
 
     __slots__ = (
-        '_state',
-        'id',
-        'guild',
-        'channel_id',
-        'topic',
-        'privacy_level',
-        'discoverable_disabled',
-        'scheduled_event_id',
-        '_cs_channel',
-        '_cs_scheduled_event',
+        "_state",
+        "id",
+        "guild",
+        "channel_id",
+        "topic",
+        "privacy_level",
+        "discoverable_disabled",
+        "scheduled_event_id",
+        "_cs_channel",
+        "_cs_scheduled_event",
     )
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: StageInstancePayload) -> None:
+    def __init__(
+        self, *, state: ConnectionState, guild: Guild, data: StageInstancePayload
+    ) -> None:
         self._state: ConnectionState = state
         self.guild: Guild = guild
         self._update(data)
 
     def _update(self, data: StageInstancePayload) -> None:
-        self.id: int = int(data['id'])
-        self.channel_id: int = int(data['channel_id'])
-        self.topic: str = data['topic']
-        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['privacy_level'])
-        self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
-        self.scheduled_event_id: Optional[int] = _get_as_snowflake(data, 'guild_scheduled_event_id')
+        self.id: int = int(data["id"])
+        self.channel_id: int = int(data["channel_id"])
+        self.topic: str = data["topic"]
+        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data["privacy_level"])
+        self.discoverable_disabled: bool = data.get("discoverable_disabled", False)
+        self.scheduled_event_id: Optional[int] = _get_as_snowflake(
+            data, "guild_scheduled_event_id"
+        )
 
     def __repr__(self) -> str:
-        return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
+        return f"<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>"
 
-    @cached_slot_property('_cs_channel')
+    @cached_slot_property("_cs_channel")
     def channel(self) -> Optional[StageChannel]:
         """Optional[:class:`StageChannel`]: The channel that stage instance is running in."""
         # the returned channel will always be a StageChannel or None
         return self._state.get_channel(self.channel_id)  # type: ignore
 
-    @cached_slot_property('_cs_scheduled_event')
+    @cached_slot_property("_cs_scheduled_event")
     def scheduled_event(self) -> Optional[ScheduledEvent]:
         """Optional[:class:`ScheduledEvent`]: The scheduled event that belongs to the stage instance."""
         # Guild.get_scheduled_event() expects an int, we are passing Optional[int]
@@ -160,16 +164,18 @@ class StageInstance(Hashable):
         payload = {}
 
         if topic is not MISSING:
-            payload['topic'] = topic
+            payload["topic"] = topic
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level field must be of type PrivacyLevel')
+                raise TypeError("privacy_level field must be of type PrivacyLevel")
 
-            payload['privacy_level'] = privacy_level.value
+            payload["privacy_level"] = privacy_level.value
 
         if payload:
-            await self._state.http.edit_stage_instance(self.channel_id, **payload, reason=reason)
+            await self._state.http.edit_stage_instance(
+                self.channel_id, **payload, reason=reason
+            )
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|

@@ -39,7 +39,7 @@ __all__ = (
 
 def _strip_spoiler(filename: str) -> Tuple[str, bool]:
     stripped = filename
-    while stripped.startswith('SPOILER_'):
+    while stripped.startswith("SPOILER_"):
         stripped = stripped[8:]  # len('SPOILER_')
     spoiler = stripped != filename
     return stripped, spoiler
@@ -77,7 +77,15 @@ class File:
         .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
+    __slots__ = (
+        "fp",
+        "_filename",
+        "spoiler",
+        "description",
+        "_original_pos",
+        "_owner",
+        "_closer",
+    )
 
     def __init__(
         self,
@@ -89,12 +97,12 @@ class File:
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):
-                raise ValueError(f'File buffer {fp!r} must be seekable and readable')
+                raise ValueError(f"File buffer {fp!r} must be seekable and readable")
             self.fp: io.BufferedIOBase = fp
             self._original_pos = fp.tell()
             self._owner = False
         else:
-            self.fp = open(fp, 'rb')
+            self.fp = open(fp, "rb")
             self._original_pos = 0
             self._owner = True
 
@@ -109,7 +117,7 @@ class File:
             if isinstance(fp, str):
                 _, filename = os.path.split(fp)
             else:
-                filename = getattr(fp, 'name', 'untitled')
+                filename = getattr(fp, "name", "untitled")
 
         self._filename, filename_spoiler = _strip_spoiler(filename)  # type: ignore # the above getattr doesn't narrow the type
         if spoiler is MISSING:
@@ -124,7 +132,7 @@ class File:
         If this is not given then it defaults to ``fp.name`` or if ``fp`` is
         a string then the ``filename`` will default to the string given.
         """
-        return 'SPOILER_' + self._filename if self.spoiler else self._filename
+        return "SPOILER_" + self._filename if self.spoiler else self._filename
 
     @filename.setter
     def filename(self, value: str) -> None:
@@ -149,11 +157,11 @@ class File:
 
     def to_dict(self, index: int) -> Dict[str, Any]:
         payload = {
-            'id': index,
-            'filename': self.filename,
+            "id": index,
+            "filename": self.filename,
         }
 
         if self.description is not None:
-            payload['description'] = self.description
+            payload["description"] = self.description
 
         return payload

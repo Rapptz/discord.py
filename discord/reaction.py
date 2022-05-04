@@ -81,13 +81,21 @@ class Reaction:
         Message this reaction is for.
     """
 
-    __slots__ = ('message', 'count', 'emoji', 'me')
+    __slots__ = ("message", "count", "emoji", "me")
 
-    def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
+    def __init__(
+        self,
+        *,
+        message: Message,
+        data: ReactionPayload,
+        emoji: Optional[Union[PartialEmoji, Emoji, str]] = None,
+    ):
         self.message: Message = message
-        self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
-        self.count: int = data.get('count', 1)
-        self.me: bool = data['me']
+        self.emoji: Union[
+            PartialEmoji, Emoji, str
+        ] = emoji or message._state.get_reaction_emoji(data["emoji"])
+        self.count: int = data.get("count", 1)
+        self.me: bool = data["me"]
 
     # TODO: typeguard
     def is_custom_emoji(self) -> bool:
@@ -109,7 +117,7 @@ class Reaction:
         return str(self.emoji)
 
     def __repr__(self) -> str:
-        return f'<Reaction emoji={self.emoji!r} me={self.me} count={self.count}>'
+        return f"<Reaction emoji={self.emoji!r} me={self.me} count={self.count}>"
 
     async def remove(self, user: Snowflake) -> None:
         """|coro|
@@ -217,7 +225,7 @@ class Reaction:
         """
 
         if not isinstance(self.emoji, str):
-            emoji = f'{self.emoji.name}:{self.emoji.id}'
+            emoji = f"{self.emoji.name}:{self.emoji.id}"
         else:
             emoji = self.emoji
 
@@ -232,11 +240,13 @@ class Reaction:
             state = message._state
             after_id = after.id if after else None
 
-            data = await state.http.get_reaction_users(message.channel.id, message.id, emoji, retrieve, after=after_id)
+            data = await state.http.get_reaction_users(
+                message.channel.id, message.id, emoji, retrieve, after=after_id
+            )
 
             if data:
                 limit -= len(data)
-                after = Object(id=int(data[-1]['id']))
+                after = Object(id=int(data[-1]["id"]))
 
             if guild is None or isinstance(guild, Object):
                 for raw_user in reversed(data):
@@ -245,7 +255,7 @@ class Reaction:
                 continue
 
             for raw_user in reversed(data):
-                member_id = int(raw_user['id'])
+                member_id = int(raw_user["id"])
                 member = guild.get_member(member_id)
 
                 yield member or User(state=state, data=raw_user)

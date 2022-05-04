@@ -23,8 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 __all__ = (
-    'EqualityComparable',
-    'Hashable',
+    "EqualityComparable",
+    "Hashable",
 )
 
 

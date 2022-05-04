@@ -46,7 +46,9 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .user import User
 
-    GuildScheduledEventPayload = Union[GuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]
+    GuildScheduledEventPayload = Union[
+        GuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload
+    ]
 
 # fmt: off
 __all__ = (
@@ -103,71 +105,79 @@ class ScheduledEvent(Hashable):
     """
 
     __slots__ = (
-        '_state',
-        '_users',
-        'id',
-        'guild_id',
-        'name',
-        'description',
-        'entity_type',
-        'entity_id',
-        'start_time',
-        'end_time',
-        'privacy_level',
-        'status',
-        '_cover_image',
-        'user_count',
-        'creator',
-        'channel_id',
-        'location',
+        "_state",
+        "_users",
+        "id",
+        "guild_id",
+        "name",
+        "description",
+        "entity_type",
+        "entity_id",
+        "start_time",
+        "end_time",
+        "privacy_level",
+        "status",
+        "_cover_image",
+        "user_count",
+        "creator",
+        "channel_id",
+        "location",
     )
 
-    def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
+    def __init__(
+        self, *, state: ConnectionState, data: GuildScheduledEventPayload
+    ) -> None:
         self._state = state
         self._users: Dict[int, User] = {}
         self._update(data)
 
     def _update(self, data: GuildScheduledEventPayload) -> None:
-        self.id: int = int(data['id'])
-        self.guild_id: int = int(data['guild_id'])
-        self.name: str = data['name']
-        self.description: Optional[str] = data.get('description')
-        self.entity_type: EntityType = try_enum(EntityType, data['entity_type'])
-        self.entity_id: Optional[int] = _get_as_snowflake(data, 'entity_id')
-        self.start_time: datetime = parse_time(data['scheduled_start_time'])
-        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['status'])
-        self.status: EventStatus = try_enum(EventStatus, data['status'])
-        self._cover_image: Optional[str] = data.get('image', None)
-        self.user_count: int = data.get('user_count', 0)
+        self.id: int = int(data["id"])
+        self.guild_id: int = int(data["guild_id"])
+        self.name: str = data["name"]
+        self.description: Optional[str] = data.get("description")
+        self.entity_type: EntityType = try_enum(EntityType, data["entity_type"])
+        self.entity_id: Optional[int] = _get_as_snowflake(data, "entity_id")
+        self.start_time: datetime = parse_time(data["scheduled_start_time"])
+        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data["status"])
+        self.status: EventStatus = try_enum(EventStatus, data["status"])
+        self._cover_image: Optional[str] = data.get("image", None)
+        self.user_count: int = data.get("user_count", 0)
 
-        creator = data.get('creator')
-        self.creator: Optional[User] = self._state.store_user(creator) if creator else None
+        creator = data.get("creator")
+        self.creator: Optional[User] = (
+            self._state.store_user(creator) if creator else None
+        )
 
-        self.end_time: Optional[datetime] = parse_time(data.get('scheduled_end_time'))
-        self.channel_id: Optional[int] = _get_as_snowflake(data, 'channel_id')
+        self.end_time: Optional[datetime] = parse_time(data.get("scheduled_end_time"))
+        self.channel_id: Optional[int] = _get_as_snowflake(data, "channel_id")
 
-        metadata = data.get('entity_metadata')
+        metadata = data.get("entity_metadata")
         self._unroll_metadata(metadata)
 
     def _unroll_metadata(self, data: Optional[EntityMetadata]):
-        self.location: Optional[str] = data.get('location') if data else None
+        self.location: Optional[str] = data.get("location") if data else None
 
     @classmethod
-    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
-        creator_id = data.get('creator_id')
+    def from_creation(
+        cls, *, state: ConnectionState, data: GuildScheduledEventPayload
+    ) -> None:
+        creator_id = data.get("creator_id")
         self = cls(state=state, data=data)
         if creator_id:
             self.creator = self._state.get_user(int(creator_id))
 
     def __repr__(self) -> str:
-        return f'<GuildScheduledEvent id={self.id} name={self.name!r} guild_id={self.guild_id!r} creator={self.creator!r}>'
+        return f"<GuildScheduledEvent id={self.id} name={self.name!r} guild_id={self.guild_id!r} creator={self.creator!r}>"
 
     @property
     def cover_image(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: The scheduled event's cover image."""
         if self._cover_image is None:
             return None
-        return Asset._from_scheduled_event_cover_image(self._state, self.id, self._cover_image)
+        return Asset._from_scheduled_event_cover_image(
+            self._state, self.id, self._cover_image
+        )
 
     @property
     def guild(self) -> Optional[Guild]:
@@ -182,7 +192,7 @@ class ScheduledEvent(Hashable):
     @property
     def url(self) -> str:
         """:class:`str`: The url for the scheduled event."""
-        return f'https://discord.com/events/{self.guild_id}/{self.id}'
+        return f"https://discord.com/events/{self.guild_id}/{self.id}"
 
     async def start(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
@@ -215,7 +225,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was started.
         """
         if self.status is not EventStatus.scheduled:
-            raise ValueError('This scheduled event is already running.')
+            raise ValueError("This scheduled event is already running.")
 
         return await self.edit(status=EventStatus.active, reason=reason)
 
@@ -250,7 +260,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was ended.
         """
         if self.status is not EventStatus.active:
-            raise ValueError('This scheduled event is not active.')
+            raise ValueError("This scheduled event is not active.")
 
         return await self.edit(status=EventStatus.ended, reason=reason)
 
@@ -285,7 +295,7 @@ class ScheduledEvent(Hashable):
             The scheduled event that was cancelled.
         """
         if self.status is not EventStatus.scheduled:
-            raise ValueError('This scheduled event is already running.')
+            raise ValueError("This scheduled event is already running.")
 
         return await self.edit(status=EventStatus.cancelled, reason=reason)
 
@@ -372,78 +382,86 @@ class ScheduledEvent(Hashable):
         metadata = {}
 
         if name is not MISSING:
-            payload['name'] = name
+            payload["name"] = name
 
         if start_time is not MISSING:
             if start_time.tzinfo is None:
                 raise ValueError(
-                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    "start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time."
                 )
-            payload['scheduled_start_time'] = start_time.isoformat()
+            payload["scheduled_start_time"] = start_time.isoformat()
 
         if description is not MISSING:
-            payload['description'] = description
+            payload["description"] = description
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level must be of type PrivacyLevel.')
+                raise TypeError("privacy_level must be of type PrivacyLevel.")
 
-            payload['privacy_level'] = privacy_level.value
+            payload["privacy_level"] = privacy_level.value
 
         if status is not MISSING:
             if not isinstance(status, EventStatus):
-                raise TypeError('status must be of type EventStatus')
+                raise TypeError("status must be of type EventStatus")
 
-            payload['status'] = status.value
+            payload["status"] = status.value
 
         if image is not MISSING:
-            image_as_str: Optional[str] = _bytes_to_base64_data(image) if image is not None else image
-            payload['image'] = image_as_str
+            image_as_str: Optional[str] = (
+                _bytes_to_base64_data(image) if image is not None else image
+            )
+            payload["image"] = image_as_str
 
         if entity_type is not MISSING:
             if not isinstance(entity_type, EntityType):
-                raise TypeError('entity_type must be of type EntityType')
+                raise TypeError("entity_type must be of type EntityType")
 
-            payload['entity_type'] = entity_type.value
+            payload["entity_type"] = entity_type.value
 
         _entity_type = entity_type or self.entity_type
 
         if _entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel is MISSING or channel is None:
-                raise TypeError('channel must be set when entity_type is voice or stage_instance')
+                raise TypeError(
+                    "channel must be set when entity_type is voice or stage_instance"
+                )
 
-            payload['channel_id'] = channel.id
+            payload["channel_id"] = channel.id
 
             if location not in (MISSING, None):
-                raise TypeError('location cannot be set when entity_type is voice or stage_instance')
-            payload['entity_metadata'] = None
+                raise TypeError(
+                    "location cannot be set when entity_type is voice or stage_instance"
+                )
+            payload["entity_metadata"] = None
         else:
             if channel not in (MISSING, None):
-                raise TypeError('channel cannot be set when entity_type is external')
-            payload['channel_id'] = None
+                raise TypeError("channel cannot be set when entity_type is external")
+            payload["channel_id"] = None
 
             if location is MISSING or location is None:
-                raise TypeError('location must be set when entity_type is external')
+                raise TypeError("location must be set when entity_type is external")
 
-            metadata['location'] = location
+            metadata["location"] = location
 
             if end_time is MISSING or end_time is None:
-                raise TypeError('end_time must be set when entity_type is external')
+                raise TypeError("end_time must be set when entity_type is external")
 
         if end_time is not MISSING:
             if end_time is not None:
                 if end_time.tzinfo is None:
                     raise ValueError(
-                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                        "end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time."
                     )
-                payload['scheduled_end_time'] = end_time.isoformat()
+                payload["scheduled_end_time"] = end_time.isoformat()
             else:
-                payload['scheduled_end_time'] = end_time
+                payload["scheduled_end_time"] = end_time
 
         if metadata:
-            payload['entity_metadata'] = metadata
+            payload["entity_metadata"] = metadata
 
-        data = await self._state.http.edit_scheduled_event(self.guild_id, self.id, **payload, reason=reason)
+        data = await self._state.http.edit_scheduled_event(
+            self.guild_id, self.id, **payload, reason=reason
+        )
         s = ScheduledEvent(state=self._state, data=data)
         s._users = self._users
         return s
@@ -467,7 +485,9 @@ class ScheduledEvent(Hashable):
         HTTPException
             Deleting the scheduled event failed.
         """
-        await self._state.http.delete_scheduled_event(self.guild_id, self.id, reason=reason)
+        await self._state.http.delete_scheduled_event(
+            self.guild_id, self.id, reason=reason
+        )
 
     async def users(
         self,
@@ -498,28 +518,36 @@ class ScheduledEvent(Hashable):
         async def _before_strategy(retrieve, before, limit):
             before_id = before.id if before else None
             users = await self._state.http.get_scheduled_event_users(
-                self.guild_id, self.id, limit=retrieve, with_member=False, before=before_id
+                self.guild_id,
+                self.id,
+                limit=retrieve,
+                with_member=False,
+                before=before_id,
             )
 
             if users:
                 if limit is not None:
                     limit -= len(users)
 
-                before = Object(id=users[-1]['user']['id'])
+                before = Object(id=users[-1]["user"]["id"])
 
             return users, before, limit
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
             users = await self._state.http.get_scheduled_event_users(
-                self.guild_id, self.id, limit=retrieve, with_member=False, after=after_id
+                self.guild_id,
+                self.id,
+                limit=retrieve,
+                with_member=False,
+                after=after_id,
             )
 
             if users:
                 if limit is not None:
                     limit -= len(users)
 
-                after = Object(id=users[0]['user']['id'])
+                after = Object(id=users[0]["user"]["id"])
 
             return users, after, limit
 
@@ -536,11 +564,11 @@ class ScheduledEvent(Hashable):
         if reverse:
             strategy, state = _after_strategy, after
             if before:
-                predicate = lambda u: u['user']['id'] < before.id
+                predicate = lambda u: u["user"]["id"] < before.id
         else:
             strategy, state = _before_strategy, before
             if after and after != OLDEST_OBJECT:
-                predicate = lambda u: u['user']['id'] > after.id
+                predicate = lambda u: u["user"]["id"] > after.id
 
         while True:
             retrieve = min(100 if limit is None else limit, 100)
@@ -557,7 +585,7 @@ class ScheduledEvent(Hashable):
             if predicate:
                 data = filter(predicate, data)
 
-            users = (self._state.store_user(raw_user['user']) for raw_user in data)
+            users = (self._state.store_user(raw_user["user"]) for raw_user in data)
 
             for user in users:
                 yield user

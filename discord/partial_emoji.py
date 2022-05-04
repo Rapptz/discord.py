@@ -92,9 +92,11 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         The ID of the custom emoji, if applicable.
     """
 
-    __slots__ = ('animated', 'name', 'id', '_state')
+    __slots__ = ("animated", "name", "id", "_state")
 
-    _CUSTOM_EMOJI_RE = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
+    _CUSTOM_EMOJI_RE = re.compile(
+        r"<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?"
+    )
 
     if TYPE_CHECKING:
         id: Optional[int]
@@ -106,11 +108,13 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def from_dict(cls, data: Union[PartialEmojiPayload, ActivityEmoji, Dict[str, Any]]) -> Self:
+    def from_dict(
+        cls, data: Union[PartialEmojiPayload, ActivityEmoji, Dict[str, Any]]
+    ) -> Self:
         return cls(
-            animated=data.get('animated', False),
-            id=utils._get_as_snowflake(data, 'id'),
-            name=data.get('name') or '',
+            animated=data.get("animated", False),
+            id=utils._get_as_snowflake(data, "id"),
+            name=data.get("name") or "",
         )
 
     @classmethod
@@ -141,19 +145,19 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         match = cls._CUSTOM_EMOJI_RE.match(value)
         if match is not None:
             groups = match.groupdict()
-            animated = bool(groups['animated'])
-            emoji_id = int(groups['id'])
-            name = groups['name']
+            animated = bool(groups["animated"])
+            emoji_id = int(groups["id"])
+            name = groups["name"]
             return cls(name=name, animated=animated, id=emoji_id)
 
         return cls(name=value, id=None, animated=False)
 
     def to_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Any] = {'name': self.name}
+        o: Dict[str, Any] = {"name": self.name}
         if self.id:
-            o['id'] = self.id
+            o["id"] = self.id
         if self.animated:
-            o['animated'] = self.animated
+            o["animated"] = self.animated
         return o
 
     def _to_partial(self) -> PartialEmoji:
@@ -176,11 +180,11 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         if self.id is None:
             return self.name
         if self.animated:
-            return f'<a:{self.name}:{self.id}>'
-        return f'<:{self.name}:{self.id}>'
+            return f"<a:{self.name}:{self.id}>"
+        return f"<:{self.name}:{self.id}>"
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
+        return f"<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>"
 
     def __eq__(self, other: object) -> bool:
         if self.is_unicode_emoji():
@@ -207,7 +211,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
     def _as_reaction(self) -> str:
         if self.id is None:
             return self.name
-        return f'{self.name}:{self.id}'
+        return f"{self.name}:{self.id}"
 
     @property
     def created_at(self) -> Optional[datetime]:
@@ -227,10 +231,10 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         If this isn't a custom emoji then an empty string is returned
         """
         if self.is_unicode_emoji():
-            return ''
+            return ""
 
-        fmt = 'gif' if self.animated else 'png'
-        return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
+        fmt = "gif" if self.animated else "png"
+        return f"{Asset.BASE}/emojis/{self.id}.{fmt}"
 
     async def read(self) -> bytes:
         """|coro|
@@ -254,6 +258,6 @@ class PartialEmoji(_EmojiTag, AssetMixin):
             The content of the asset.
         """
         if self.is_unicode_emoji():
-            raise ValueError('PartialEmoji is not a custom emoji')
+            raise ValueError("PartialEmoji is not a custom emoji")
 
         return await super().read()

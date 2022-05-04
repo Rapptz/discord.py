@@ -31,9 +31,9 @@ from typing import TYPE_CHECKING, ClassVar, IO, Generator, Tuple, Optional
 from .errors import DiscordException
 
 __all__ = (
-    'OggError',
-    'OggPage',
-    'OggStream',
+    "OggError",
+    "OggPage",
+    "OggStream",
 )
 
 
@@ -48,7 +48,7 @@ class OggError(DiscordException):
 
 
 class OggPage:
-    _header: ClassVar[struct.Struct] = struct.Struct('<xBQIIIB')
+    _header: ClassVar[struct.Struct] = struct.Struct("<xBQIIIB")
     if TYPE_CHECKING:
         flag: int
         gran_pos: int
@@ -61,13 +61,20 @@ class OggPage:
         try:
             header = stream.read(struct.calcsize(self._header.format))
 
-            self.flag, self.gran_pos, self.serial, self.pagenum, self.crc, self.segnum = self._header.unpack(header)
+            (
+                self.flag,
+                self.gran_pos,
+                self.serial,
+                self.pagenum,
+                self.crc,
+                self.segnum,
+            ) = self._header.unpack(header)
 
             self.segtable: bytes = stream.read(self.segnum)
-            bodylen = sum(struct.unpack('B' * self.segnum, self.segtable))
+            bodylen = sum(struct.unpack("B" * self.segnum, self.segtable))
             self.data: bytes = stream.read(bodylen)
         except Exception:
-            raise OggError('bad data stream') from None
+            raise OggError("bad data stream") from None
 
     def iter_packets(self) -> Generator[Tuple[bytes, bool], None, None]:
         packetlen = offset = 0
@@ -94,12 +101,12 @@ class OggStream:
 
     def _next_page(self) -> Optional[OggPage]:
         head = self.stream.read(4)
-        if head == b'OggS':
+        if head == b"OggS":
             return OggPage(self.stream)
         elif not head:
             return None
         else:
-            raise OggError('invalid header magic')
+            raise OggError("invalid header magic")
 
     def _iter_pages(self) -> Generator[OggPage, None, None]:
         page = self._next_page()
@@ -108,10 +115,10 @@ class OggStream:
             page = self._next_page()
 
     def iter_packets(self) -> Generator[bytes, None, None]:
-        partial = b''
+        partial = b""
         for page in self._iter_pages():
             for data, complete in page.iter_packets():
                 partial += data
                 if complete:
                     yield partial
-                    partial = b''
+                    partial = b""
