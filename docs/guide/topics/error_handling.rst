@@ -85,7 +85,7 @@ In a :class:`~.ext.commands.Cog`
 +++++++++++++++++++++++++++++++++++
 
 To handle errors that occur in a specific :class:`~ext.commands.Cog` you override it's :meth:`~ext.commands.Cog.cog_command_error` method,
-which gets called when an error occurs inside of this Cog.
+which gets called when an error occurs inside of Command defined within this Cog.
 
 **Example**
 
