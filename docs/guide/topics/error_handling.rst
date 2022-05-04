@@ -307,7 +307,7 @@ propagated to :meth:`~Client.on_error`, and can be retrieved with a standard cal
     async def on_error(event, *args, **kwargs):
         """ Handles errors in events. """
 
-        # Firs we get the information of the error:
+        # First we get the information of the error:
         err_type, err_value, err_traceback = sys.exc_info()
 
         # Then we can use it to generate a traceback text:
