@@ -194,12 +194,9 @@ ways of checking if the error has already been handled before. There are many ap
     async def global_error_handler(ctx, error):
         """ Global error handler that handles errors that aren't maked as ignored"""
 
-        # Check if `ctx.ignore_error` is True
-        if getattr(ctx, 'ignore_error', False) is True:
-            # getattr is used here, instead of hasattr in case we set
-            # the attached flag to `False` later on.
-
-            return  # we ignore the error
+        # Check if the `ctx.ignore_error` exists. 
+        if hasattr(ctx, 'ignore_error'):
+            return  # If so, we ignore the error
 
 
         # Simpler way to handle CommandInvokeError using getattr
@@ -213,12 +210,6 @@ ways of checking if the error has already been handled before. There are many ap
 
     To further customize the behaviour of :class:`~.ext.commands.Context`, you can subclass it, and override 
     :meth:`~.ext.commands.Bot.get_context` in your :class:`~.ext.commands.Bot` subclass.
-
-    ..
-        HTML tags :skull: It works tho...
-
-        Should this whole example be here about subclassing context... ?
-        I made it inside the details thing because it's too big...
 
     .. details:: <b>Example</b>
     
