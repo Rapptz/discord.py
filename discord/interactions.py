@@ -892,6 +892,7 @@ class InteractionMessage(Message):
 
     async def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,

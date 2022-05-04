@@ -785,6 +785,7 @@ class PartialMessage(Hashable):
 
     async def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
@@ -1902,6 +1903,7 @@ class Message(PartialMessage, Hashable):
 
     async def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
