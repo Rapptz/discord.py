@@ -604,7 +604,7 @@ class Embed:
 
     def clear_fields(self) -> Self:
         """Removes all fields from this embed.
-        
+
         This function returns the class instance to allow for fluent-style
         chaining.
         """
@@ -620,7 +620,7 @@ class Embed:
 
         If the index is invalid or out of bounds then the error is
         silently swallowed.
-        
+
         This function returns the class instance to allow for fluent-style
         chaining.
 
