@@ -602,18 +602,27 @@ class Embed:
 
         return self
 
-    def clear_fields(self) -> None:
-        """Removes all fields from this embed."""
+    def clear_fields(self) -> Self:
+        """Removes all fields from this embed.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
         try:
             self._fields.clear()
         except AttributeError:
             self._fields = []
+            
+        return self
 
-    def remove_field(self, index: int) -> None:
+    def remove_field(self, index: int) -> Self:
         """Removes a field at a specified index.
 
         If the index is invalid or out of bounds then the error is
         silently swallowed.
+        
+        This function returns the class instance to allow for fluent-style
+        chaining.
 
         .. note::
 
@@ -629,6 +638,8 @@ class Embed:
             del self._fields[index]
         except (AttributeError, IndexError):
             pass
+        
+        return self
 
     def set_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
         """Modifies a field to the embed object.
