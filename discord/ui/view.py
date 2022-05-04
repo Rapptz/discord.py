@@ -123,6 +123,32 @@ class _ViewWeights:
             self.weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
+    def disable_all_items(self, *, exclusions: Optional[List[Item]] = None) -> None:
+        """
+        Disables all items in the view.
+
+        Parameters
+        ----------- 
+        exclusions: Optional[List[:class:`ui.Item`]]
+            A list of items in `self.children` to not disable from the view.
+        """
+        for child in self.children:
+            if exclusions is None or child not in exclusions:
+                child.disabled = True
+    
+    def enable_all_items(self, *, exclusions: Optional[List[Item]] = None) -> None:
+        """
+        Enables all items in the view.
+
+        Parameters
+        ----------- 
+        exclusions: Optional[List[:class:`ui.Item`]]
+            A list of items in `self.children` to not enable from the view.
+        """
+        for child in self.children:
+            if exclusions is None or child not in exclusions:
+                child.disabled = False
+
     def clear(self) -> None:
         self.weights = [0, 0, 0, 0, 0]
 
