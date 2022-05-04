@@ -52,7 +52,7 @@ from ..user import User
 from ..permissions import Permissions
 from ..utils import get as utils_get, MISSING, maybe_coroutine
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -64,12 +64,12 @@ if TYPE_CHECKING:
     ]
 
 __all__ = (
-    'has_role',
-    'has_any_role',
-    'has_permissions',
-    'bot_has_permissions',
-    'cooldown',
-    'dynamic_cooldown',
+    "has_role",
+    "has_any_role",
+    "has_permissions",
+    "bot_has_permissions",
+    "cooldown",
+    "dynamic_cooldown",
 )
 
 
@@ -86,7 +86,7 @@ class Cooldown:
         The length of the cooldown period in seconds.
     """
 
-    __slots__ = ('rate', 'per', '_window', '_tokens', '_last')
+    __slots__ = ("rate", "per", "_window", "_tokens", "_last")
 
     def __init__(self, rate: float, per: float) -> None:
         self.rate: int = int(rate)
@@ -141,7 +141,9 @@ class Cooldown:
 
         return 0.0
 
-    def update_rate_limit(self, current: Optional[float] = None, *, tokens: int = 1) -> Optional[float]:
+    def update_rate_limit(
+        self, current: Optional[float] = None, *, tokens: int = 1
+    ) -> Optional[float]:
         """Updates the cooldown rate limit.
 
         Parameters
@@ -189,7 +191,7 @@ class Cooldown:
         return Cooldown(self.rate, self.per)
 
     def __repr__(self) -> str:
-        return f'<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>'
+        return f"<Cooldown rate: {self.rate} per: {self.per} window: {self._window} tokens: {self._tokens}>"
 
 
 def has_role(item: Union[int, str], /) -> Callable[[T], T]:
@@ -331,7 +333,9 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
     def predicate(interaction: Interaction) -> bool:
         permissions = interaction.permissions
 
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        missing = [
+            perm for perm, value in perms.items() if getattr(permissions, perm) != value
+        ]
 
         if not missing:
             return True
@@ -363,7 +367,9 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
         else:
             permissions = interaction.channel.permissions_for(me)  # type: ignore
 
-        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+        missing = [
+            perm for perm, value in perms.items() if getattr(permissions, perm) != value
+        ]
 
         if not missing:
             return True

@@ -28,7 +28,12 @@ from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .webhook import Webhook
-from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
+from .guild import (
+    MFALevel,
+    VerificationLevel,
+    ExplicitContentFilterLevel,
+    DefaultMessageNotificationLevel,
+)
 from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
 from .scheduled_event import EntityType, EventStatus, GuildScheduledEvent
@@ -92,41 +97,48 @@ AuditLogEvent = Literal[
 
 class _AuditLogChange_Str(TypedDict):
     key: Literal[
-        'name',
-        'description',
-        'preferred_locale',
-        'vanity_url_code',
-        'topic',
-        'code',
-        'allow',
-        'deny',
-        'permissions',
-        'tags',
-        'unicode_emoji',
+        "name",
+        "description",
+        "preferred_locale",
+        "vanity_url_code",
+        "topic",
+        "code",
+        "allow",
+        "deny",
+        "permissions",
+        "tags",
+        "unicode_emoji",
     ]
     new_value: str
     old_value: str
 
 
 class _AuditLogChange_AssetHash(TypedDict):
-    key: Literal['icon_hash', 'splash_hash', 'discovery_splash_hash', 'banner_hash', 'avatar_hash', 'asset']
+    key: Literal[
+        "icon_hash",
+        "splash_hash",
+        "discovery_splash_hash",
+        "banner_hash",
+        "avatar_hash",
+        "asset",
+    ]
     new_value: str
     old_value: str
 
 
 class _AuditLogChange_Snowflake(TypedDict):
     key: Literal[
-        'id',
-        'owner_id',
-        'afk_channel_id',
-        'rules_channel_id',
-        'public_updates_channel_id',
-        'widget_channel_id',
-        'system_channel_id',
-        'application_id',
-        'channel_id',
-        'inviter_id',
-        'guild_id',
+        "id",
+        "owner_id",
+        "afk_channel_id",
+        "rules_channel_id",
+        "public_updates_channel_id",
+        "widget_channel_id",
+        "system_channel_id",
+        "application_id",
+        "channel_id",
+        "inviter_id",
+        "guild_id",
     ]
     new_value: Snowflake
     old_value: Snowflake
@@ -134,20 +146,20 @@ class _AuditLogChange_Snowflake(TypedDict):
 
 class _AuditLogChange_Bool(TypedDict):
     key: Literal[
-        'widget_enabled',
-        'nsfw',
-        'hoist',
-        'mentionable',
-        'temporary',
-        'deaf',
-        'mute',
-        'nick',
-        'enabled_emoticons',
-        'region',
-        'rtc_region',
-        'available',
-        'archived',
-        'locked',
+        "widget_enabled",
+        "nsfw",
+        "hoist",
+        "mentionable",
+        "temporary",
+        "deaf",
+        "mute",
+        "nick",
+        "enabled_emoticons",
+        "region",
+        "rtc_region",
+        "available",
+        "archived",
+        "locked",
     ]
     new_value: bool
     old_value: bool
@@ -155,91 +167,91 @@ class _AuditLogChange_Bool(TypedDict):
 
 class _AuditLogChange_Int(TypedDict):
     key: Literal[
-        'afk_timeout',
-        'prune_delete_days',
-        'position',
-        'bitrate',
-        'rate_limit_per_user',
-        'color',
-        'max_uses',
-        'max_age',
-        'user_limit',
-        'auto_archive_duration',
-        'default_auto_archive_duration',
-        'communication_disabled_until',
+        "afk_timeout",
+        "prune_delete_days",
+        "position",
+        "bitrate",
+        "rate_limit_per_user",
+        "color",
+        "max_uses",
+        "max_age",
+        "user_limit",
+        "auto_archive_duration",
+        "default_auto_archive_duration",
+        "communication_disabled_until",
     ]
     new_value: int
     old_value: int
 
 
 class _AuditLogChange_ListRole(TypedDict):
-    key: Literal['$add', '$remove']
+    key: Literal["$add", "$remove"]
     new_value: List[Role]
     old_value: List[Role]
 
 
 class _AuditLogChange_MFALevel(TypedDict):
-    key: Literal['mfa_level']
+    key: Literal["mfa_level"]
     new_value: MFALevel
     old_value: MFALevel
 
 
 class _AuditLogChange_VerificationLevel(TypedDict):
-    key: Literal['verification_level']
+    key: Literal["verification_level"]
     new_value: VerificationLevel
     old_value: VerificationLevel
 
 
 class _AuditLogChange_ExplicitContentFilter(TypedDict):
-    key: Literal['explicit_content_filter']
+    key: Literal["explicit_content_filter"]
     new_value: ExplicitContentFilterLevel
     old_value: ExplicitContentFilterLevel
 
 
 class _AuditLogChange_DefaultMessageNotificationLevel(TypedDict):
-    key: Literal['default_message_notifications']
+    key: Literal["default_message_notifications"]
     new_value: DefaultMessageNotificationLevel
     old_value: DefaultMessageNotificationLevel
 
 
 class _AuditLogChange_ChannelType(TypedDict):
-    key: Literal['type']
+    key: Literal["type"]
     new_value: ChannelType
     old_value: ChannelType
 
 
 class _AuditLogChange_IntegrationExpireBehaviour(TypedDict):
-    key: Literal['expire_behavior']
+    key: Literal["expire_behavior"]
     new_value: IntegrationExpireBehavior
     old_value: IntegrationExpireBehavior
 
 
 class _AuditLogChange_VideoQualityMode(TypedDict):
-    key: Literal['video_quality_mode']
+    key: Literal["video_quality_mode"]
     new_value: VideoQualityMode
     old_value: VideoQualityMode
 
 
 class _AuditLogChange_Overwrites(TypedDict):
-    key: Literal['permission_overwrites']
+    key: Literal["permission_overwrites"]
     new_value: List[PermissionOverwrite]
     old_value: List[PermissionOverwrite]
 
 
 class _AuditLogChange_PrivacyLevel(TypedDict):
-    key: Literal['privacy_level']
+    key: Literal["privacy_level"]
     new_value: PrivacyLevel
     old_value: PrivacyLevel
 
 
 class _AuditLogChange_Status(TypedDict):
-    key: Literal['status']
+    key: Literal["status"]
     new_value: EventStatus
     old_value: EventStatus
 
 
 class _AuditLogChange_EntityType(TypedDict):
-    key: Literal['entity_type']
+    key: Literal["entity_type"]
     new_value: EntityType
     old_value: EntityType
 
@@ -279,7 +291,7 @@ class AuditEntryInfo(TypedDict):
     message_id: Snowflake
     count: str
     id: Snowflake
-    type: Literal['0', '1']
+    type: Literal["0", "1"]
     role_name: str
     application_id: Snowflake
     guild_id: Snowflake

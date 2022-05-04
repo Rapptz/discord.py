@@ -126,7 +126,7 @@ class Message(PartialMessage):
     components: NotRequired[List[Component]]
 
 
-AllowedMentionType = Literal['roles', 'users', 'everyone']
+AllowedMentionType = Literal["roles", "users", "everyone"]
 
 
 class AllowedMentions(TypedDict):

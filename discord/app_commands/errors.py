@@ -31,20 +31,20 @@ from ..enums import AppCommandOptionType, AppCommandType
 from ..errors import DiscordException
 
 __all__ = (
-    'AppCommandError',
-    'CommandInvokeError',
-    'TransformerError',
-    'CheckFailure',
-    'CommandAlreadyRegistered',
-    'CommandSignatureMismatch',
-    'CommandNotFound',
-    'CommandLimitReached',
-    'NoPrivateMessage',
-    'MissingRole',
-    'MissingAnyRole',
-    'MissingPermissions',
-    'BotMissingPermissions',
-    'CommandOnCooldown',
+    "AppCommandError",
+    "CommandInvokeError",
+    "TransformerError",
+    "CheckFailure",
+    "CommandAlreadyRegistered",
+    "CommandSignatureMismatch",
+    "CommandNotFound",
+    "CommandLimitReached",
+    "NoPrivateMessage",
+    "MissingRole",
+    "MissingAnyRole",
+    "MissingPermissions",
+    "BotMissingPermissions",
+    "CommandOnCooldown",
 )
 
 if TYPE_CHECKING:
@@ -89,10 +89,14 @@ class CommandInvokeError(AppCommandError):
         The command that failed.
     """
 
-    def __init__(self, command: Union[Command[Any, ..., Any], ContextMenu], e: Exception) -> None:
+    def __init__(
+        self, command: Union[Command[Any, ..., Any], ContextMenu], e: Exception
+    ) -> None:
         self.original: Exception = e
         self.command: Union[Command[Any, ..., Any], ContextMenu] = command
-        super().__init__(f'Command {command.name!r} raised an exception: {e.__class__.__name__}: {e}')
+        super().__init__(
+            f"Command {command.name!r} raised an exception: {e.__class__.__name__}: {e}"
+        )
 
 
 class TransformerError(AppCommandError):
@@ -119,16 +123,18 @@ class TransformerError(AppCommandError):
         The transformer that failed the conversion.
     """
 
-    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Type[Transformer]):
+    def __init__(
+        self, value: Any, opt_type: AppCommandOptionType, transformer: Type[Transformer]
+    ):
         self.value: Any = value
         self.type: AppCommandOptionType = opt_type
         self.transformer: Type[Transformer] = transformer
 
         try:
-            result_type = transformer.transform.__annotations__['return']
+            result_type = transformer.transform.__annotations__["return"]
         except KeyError:
             name = transformer.__name__
-            if name.endswith('Transformer'):
+            if name.endswith("Transformer"):
                 result_type = name[:-11]
             else:
                 result_type = name
@@ -136,7 +142,7 @@ class TransformerError(AppCommandError):
             if isinstance(result_type, type):
                 result_type = result_type.__name__
 
-        super().__init__(f'Failed to convert {value} to {result_type!s}')
+        super().__init__(f"Failed to convert {value} to {result_type!s}")
 
 
 class CheckFailure(AppCommandError):
@@ -159,7 +165,7 @@ class NoPrivateMessage(CheckFailure):
     """
 
     def __init__(self, message: Optional[str] = None) -> None:
-        super().__init__(message or 'This command cannot be used in direct messages.')
+        super().__init__(message or "This command cannot be used in direct messages.")
 
 
 class MissingRole(CheckFailure):
@@ -178,7 +184,7 @@ class MissingRole(CheckFailure):
 
     def __init__(self, missing_role: Snowflake) -> None:
         self.missing_role: Snowflake = missing_role
-        message = f'Role {missing_role!r} is required to run this command.'
+        message = f"Role {missing_role!r} is required to run this command."
         super().__init__(message)
 
 
@@ -203,11 +209,11 @@ class MissingAnyRole(CheckFailure):
         missing = [f"'{role}'" for role in missing_roles]
 
         if len(missing) > 2:
-            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
+            fmt = "{}, or {}".format(", ".join(missing[:-1]), missing[-1])
         else:
-            fmt = ' or '.join(missing)
+            fmt = " or ".join(missing)
 
-        message = f'You are missing at least one of the required roles: {fmt}'
+        message = f"You are missing at least one of the required roles: {fmt}"
         super().__init__(message)
 
 
@@ -228,13 +234,16 @@ class MissingPermissions(CheckFailure):
     def __init__(self, missing_permissions: List[str], *args: Any) -> None:
         self.missing_permissions: List[str] = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+        missing = [
+            perm.replace("_", " ").replace("guild", "server").title()
+            for perm in missing_permissions
+        ]
 
         if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])
         else:
-            fmt = ' and '.join(missing)
-        message = f'You are missing {fmt} permission(s) to run this command.'
+            fmt = " and ".join(missing)
+        message = f"You are missing {fmt} permission(s) to run this command."
         super().__init__(message, *args)
 
 
@@ -255,13 +264,16 @@ class BotMissingPermissions(CheckFailure):
     def __init__(self, missing_permissions: List[str], *args: Any) -> None:
         self.missing_permissions: List[str] = missing_permissions
 
-        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+        missing = [
+            perm.replace("_", " ").replace("guild", "server").title()
+            for perm in missing_permissions
+        ]
 
         if len(missing) > 2:
-            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+            fmt = "{}, and {}".format(", ".join(missing[:-1]), missing[-1])
         else:
-            fmt = ' and '.join(missing)
-        message = f'Bot requires {fmt} permission(s) to run this command.'
+            fmt = " and ".join(missing)
+        message = f"Bot requires {fmt} permission(s) to run this command."
         super().__init__(message, *args)
 
 
@@ -283,7 +295,7 @@ class CommandOnCooldown(CheckFailure):
     def __init__(self, cooldown: Cooldown, retry_after: float) -> None:
         self.cooldown: Cooldown = cooldown
         self.retry_after: float = retry_after
-        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
+        super().__init__(f"You are on cooldown. Try again in {retry_after:.2f}s")
 
 
 class CommandAlreadyRegistered(AppCommandError):
@@ -305,7 +317,7 @@ class CommandAlreadyRegistered(AppCommandError):
     def __init__(self, name: str, guild_id: Optional[int]):
         self.name: str = name
         self.guild_id: Optional[int] = guild_id
-        super().__init__(f'Command {name!r} already registered.')
+        super().__init__(f"Command {name!r} already registered.")
 
 
 class CommandNotFound(AppCommandError):
@@ -326,11 +338,16 @@ class CommandNotFound(AppCommandError):
         The type of command that was not found.
     """
 
-    def __init__(self, name: str, parents: List[str], type: AppCommandType = AppCommandType.chat_input):
+    def __init__(
+        self,
+        name: str,
+        parents: List[str],
+        type: AppCommandType = AppCommandType.chat_input,
+    ):
         self.name: str = name
         self.parents: List[str] = parents
         self.type: AppCommandType = type
-        super().__init__(f'Application command {name!r} not found')
+        super().__init__(f"Application command {name!r} not found")
 
 
 class CommandLimitReached(AppCommandError):
@@ -351,19 +368,24 @@ class CommandLimitReached(AppCommandError):
         The limit that was hit.
     """
 
-    def __init__(self, guild_id: Optional[int], limit: int, type: AppCommandType = AppCommandType.chat_input):
+    def __init__(
+        self,
+        guild_id: Optional[int],
+        limit: int,
+        type: AppCommandType = AppCommandType.chat_input,
+    ):
         self.guild_id: Optional[int] = guild_id
         self.limit: int = limit
         self.type: AppCommandType = type
 
         lookup = {
-            AppCommandType.chat_input: 'slash commands',
-            AppCommandType.message: 'message context menu commands',
-            AppCommandType.user: 'user context menu commands',
+            AppCommandType.chat_input: "slash commands",
+            AppCommandType.message: "message context menu commands",
+            AppCommandType.user: "user context menu commands",
         }
-        desc = lookup.get(type, 'application commands')
-        ns = 'globally' if self.guild_id is None else f'for guild ID {self.guild_id}'
-        super().__init__(f'maximum number of {desc} exceeded {limit} {ns}')
+        desc = lookup.get(type, "application commands")
+        ns = "globally" if self.guild_id is None else f"for guild ID {self.guild_id}"
+        super().__init__(f"maximum number of {desc} exceeded {limit} {ns}")
 
 
 class CommandSignatureMismatch(AppCommandError):
@@ -385,9 +407,9 @@ class CommandSignatureMismatch(AppCommandError):
     def __init__(self, command: Union[Command[Any, ..., Any], ContextMenu, Group]):
         self.command: Union[Command[Any, ..., Any], ContextMenu, Group] = command
         msg = (
-            f'The signature for command {command.name!r} is different from the one provided by Discord. '
-            'This can happen because either your code is out of date or you have not synced the '
-            'commands with Discord, causing the mismatch in data. It is recommended to sync the '
-            'command tree to fix this issue.'
+            f"The signature for command {command.name!r} is different from the one provided by Discord. "
+            "This can happen because either your code is out of date or you have not synced the "
+            "commands with Discord, causing the mismatch in data. It is recommended to sync the "
+            "command tree to fix this issue."
         )
         super().__init__(msg)

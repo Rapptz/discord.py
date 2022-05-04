@@ -41,8 +41,8 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
 __all__ = (
-    'AppInfo',
-    'PartialAppInfo',
+    "AppInfo",
+    "PartialAppInfo",
 )
 
 
@@ -111,58 +111,60 @@ class AppInfo:
     """
 
     __slots__ = (
-        '_state',
-        'description',
-        'id',
-        'name',
-        'rpc_origins',
-        'bot_public',
-        'bot_require_code_grant',
-        'owner',
-        '_icon',
-        'verify_key',
-        'team',
-        'guild_id',
-        'primary_sku_id',
-        'slug',
-        '_cover_image',
-        '_flags',
-        'terms_of_service_url',
-        'privacy_policy_url',
+        "_state",
+        "description",
+        "id",
+        "name",
+        "rpc_origins",
+        "bot_public",
+        "bot_require_code_grant",
+        "owner",
+        "_icon",
+        "verify_key",
+        "team",
+        "guild_id",
+        "primary_sku_id",
+        "slug",
+        "_cover_image",
+        "_flags",
+        "terms_of_service_url",
+        "privacy_policy_url",
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
         from .team import Team
 
         self._state: ConnectionState = state
-        self.id: int = int(data['id'])
-        self.name: str = data['name']
-        self.description: str = data['description']
-        self._icon: Optional[str] = data['icon']
-        self.rpc_origins: List[str] = data['rpc_origins']
-        self.bot_public: bool = data['bot_public']
-        self.bot_require_code_grant: bool = data['bot_require_code_grant']
-        self.owner: User = state.create_user(data['owner'])
+        self.id: int = int(data["id"])
+        self.name: str = data["name"]
+        self.description: str = data["description"]
+        self._icon: Optional[str] = data["icon"]
+        self.rpc_origins: List[str] = data["rpc_origins"]
+        self.bot_public: bool = data["bot_public"]
+        self.bot_require_code_grant: bool = data["bot_require_code_grant"]
+        self.owner: User = state.create_user(data["owner"])
 
-        team: Optional[TeamPayload] = data.get('team')
+        team: Optional[TeamPayload] = data.get("team")
         self.team: Optional[Team] = Team(state, team) if team else None
 
-        self.verify_key: str = data['verify_key']
+        self.verify_key: str = data["verify_key"]
 
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, "guild_id")
 
-        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
-        self.slug: Optional[str] = data.get('slug')
-        self._flags: int = data.get('flags', 0)
-        self._cover_image: Optional[str] = data.get('cover_image')
-        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
-        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(
+            data, "primary_sku_id"
+        )
+        self.slug: Optional[str] = data.get("slug")
+        self._flags: int = data.get("flags", 0)
+        self._cover_image: Optional[str] = data.get("cover_image")
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service_url")
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy_url")
 
     def __repr__(self) -> str:
         return (
-            f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
-            f'description={self.description!r} public={self.bot_public} '
-            f'owner={self.owner!r}>'
+            f"<{self.__class__.__name__} id={self.id} name={self.name!r} "
+            f"description={self.description!r} public={self.bot_public} "
+            f"owner={self.owner!r}>"
         )
 
     @property
@@ -170,7 +172,7 @@ class AppInfo:
         """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
         if self._icon is None:
             return None
-        return Asset._from_icon(self._state, self.id, self._icon, path='app')
+        return Asset._from_icon(self._state, self.id, self._icon, path="app")
 
     @property
     def cover_image(self) -> Optional[Asset]:
@@ -225,39 +227,39 @@ class PartialAppInfo:
     """
 
     __slots__ = (
-        '_state',
-        'id',
-        'name',
-        'description',
-        'rpc_origins',
-        'verify_key',
-        'terms_of_service_url',
-        'privacy_policy_url',
-        '_icon',
-        '_flags',
+        "_state",
+        "id",
+        "name",
+        "description",
+        "rpc_origins",
+        "verify_key",
+        "terms_of_service_url",
+        "privacy_policy_url",
+        "_icon",
+        "_flags",
     )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
         self._state: ConnectionState = state
-        self.id: int = int(data['id'])
-        self.name: str = data['name']
-        self._icon: Optional[str] = data.get('icon')
-        self._flags: int = data.get('flags', 0)
-        self.description: str = data['description']
-        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
-        self.verify_key: str = data['verify_key']
-        self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
-        self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.id: int = int(data["id"])
+        self.name: str = data["name"]
+        self._icon: Optional[str] = data.get("icon")
+        self._flags: int = data.get("flags", 0)
+        self.description: str = data["description"]
+        self.rpc_origins: Optional[List[str]] = data.get("rpc_origins")
+        self.verify_key: str = data["verify_key"]
+        self.terms_of_service_url: Optional[str] = data.get("terms_of_service_url")
+        self.privacy_policy_url: Optional[str] = data.get("privacy_policy_url")
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
+        return f"<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>"
 
     @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the application's icon asset, if any."""
         if self._icon is None:
             return None
-        return Asset._from_icon(self._state, self.id, self._icon, path='app')
+        return Asset._from_icon(self._state, self.id, self._icon, path="app")
 
     @property
     def flags(self) -> ApplicationFlags:

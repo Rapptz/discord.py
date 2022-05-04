@@ -28,7 +28,20 @@ import discord
 from discord import app_commands
 from discord.utils import maybe_coroutine
 
-from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from ._types import _BaseCommand, BotT
 
@@ -41,12 +54,12 @@ if TYPE_CHECKING:
     from .core import Command
 
 __all__ = (
-    'CogMeta',
-    'Cog',
-    'GroupCog',
+    "CogMeta",
+    "Cog",
+    "GroupCog",
 )
 
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
 
@@ -128,44 +141,48 @@ class CogMeta(type):
     __cog_group_description__: str
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Any, ..., Any]]
-    __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
+    __cog_app_commands__: List[
+        Union[app_commands.Group, app_commands.Command[Any, ..., Any]]
+    ]
     __cog_listeners__: List[Tuple[str, str]]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         name, bases, attrs = args
         if any(issubclass(base, app_commands.Group) for base in bases):
             raise TypeError(
-                'Cannot inherit from app_commands.Group with commands.Cog, consider using commands.GroupCog instead'
+                "Cannot inherit from app_commands.Group with commands.Cog, consider using commands.GroupCog instead"
             )
 
         # If name='...' is given but not group_name='...' then name='...' is used for both.
         # If neither is given then cog name is the class name but group name is kebab case
         try:
-            cog_name = kwargs.pop('name')
+            cog_name = kwargs.pop("name")
         except KeyError:
             cog_name = name
             try:
-                group_name = kwargs.pop('group_name')
+                group_name = kwargs.pop("group_name")
             except KeyError:
                 group_name = app_commands.commands._to_kebab_case(name)
         else:
-            group_name = kwargs.pop('group_name', cog_name)
+            group_name = kwargs.pop("group_name", cog_name)
 
-        attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
-        attrs['__cog_name__'] = cog_name
-        attrs['__cog_group_name__'] = group_name
+        attrs["__cog_settings__"] = kwargs.pop("command_attrs", {})
+        attrs["__cog_name__"] = cog_name
+        attrs["__cog_group_name__"] = group_name
 
-        description = kwargs.pop('description', None)
+        description = kwargs.pop("description", None)
         if description is None:
-            description = inspect.cleandoc(attrs.get('__doc__', ''))
+            description = inspect.cleandoc(attrs.get("__doc__", ""))
 
-        attrs['__cog_description__'] = description
-        attrs['__cog_group_description__'] = kwargs.pop('group_description', description or '\u2026')
+        attrs["__cog_description__"] = description
+        attrs["__cog_group_description__"] = kwargs.pop(
+            "group_description", description or "\u2026"
+        )
 
         commands = {}
         cog_app_commands = {}
         listeners = {}
-        no_bot_cog = 'Commands or listeners must not start with cog_ or bot_ (in method {0.__name__}.{1})'
+        no_bot_cog = "Commands or listeners must not start with cog_ or bot_ (in method {0.__name__}.{1})"
 
         new_cls = super().__new__(cls, name, bases, attrs, **kwargs)
         for base in reversed(new_cls.__mro__):
@@ -180,27 +197,36 @@ class CogMeta(type):
                     value = value.__func__
                 if isinstance(value, _BaseCommand):
                     if is_static_method:
-                        raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
-                    if elem.startswith(('cog_', 'bot_')):
+                        raise TypeError(
+                            f"Command in method {base}.{elem!r} must not be staticmethod."
+                        )
+                    if elem.startswith(("cog_", "bot_")):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
-                elif isinstance(value, (app_commands.Group, app_commands.Command)) and value.parent is None:
+                elif (
+                    isinstance(value, (app_commands.Group, app_commands.Command))
+                    and value.parent is None
+                ):
                     if is_static_method:
-                        raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
-                    if elem.startswith(('cog_', 'bot_')):
+                        raise TypeError(
+                            f"Command in method {base}.{elem!r} must not be staticmethod."
+                        )
+                    if elem.startswith(("cog_", "bot_")):
                         raise TypeError(no_bot_cog.format(base, elem))
                     cog_app_commands[elem] = value
                 elif inspect.iscoroutinefunction(value):
                     try:
-                        getattr(value, '__cog_listener__')
+                        getattr(value, "__cog_listener__")
                     except AttributeError:
                         continue
                     else:
-                        if elem.startswith(('cog_', 'bot_')):
+                        if elem.startswith(("cog_", "bot_")):
                             raise TypeError(no_bot_cog.format(base, elem))
                         listeners[elem] = value
 
-        new_cls.__cog_commands__ = list(commands.values())  # this will be copied in Cog.__new__
+        new_cls.__cog_commands__ = list(
+            commands.values()
+        )  # this will be copied in Cog.__new__
         new_cls.__cog_app_commands__ = list(cog_app_commands.values())
 
         listeners_as_list = []
@@ -243,7 +269,9 @@ class Cog(metaclass=CogMeta):
     __cog_group_description__: str
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Self, ..., Any]]
-    __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]]
+    __cog_app_commands__: List[
+        Union[app_commands.Group, app_commands.Command[Self, ..., Any]]
+    ]
     __cog_listeners__: List[Tuple[str, str]]
     __cog_is_app_commands_group__: ClassVar[bool] = False
     __cog_app_commands_group__: Optional[app_commands.Group]
@@ -262,16 +290,20 @@ class Cog(metaclass=CogMeta):
         lookup = {cmd.qualified_name: cmd for cmd in self.__cog_commands__}
 
         # Register the application commands
-        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
+        children: List[
+            Union[app_commands.Group, app_commands.Command[Self, ..., Any]]
+        ] = []
 
         if cls.__cog_is_app_commands_group__:
             group = app_commands.Group(
                 name=cls.__cog_group_name__,
                 description=cls.__cog_group_description__,
                 parent=None,
-                guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
-                guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
-                default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
+                guild_ids=getattr(cls, "__discord_app_commands_default_guilds__", None),
+                guild_only=getattr(cls, "__discord_app_commands_guild_only__", False),
+                default_permissions=getattr(
+                    cls, "__discord_app_commands_default_permissions__", None
+                ),
             )
         else:
             group = None
@@ -290,14 +322,19 @@ class Cog(metaclass=CogMeta):
                 parent.remove_command(command.name)  # type: ignore
                 parent.add_command(command)  # type: ignore
             elif self.__cog_app_commands_group__:
-                if hasattr(command, '__commands_is_hybrid__') and command.parent is None:
+                if (
+                    hasattr(command, "__commands_is_hybrid__")
+                    and command.parent is None
+                ):
                     # In both of these, the type checker does not see the app_command attribute even though it exists
                     parent = self.__cog_app_commands_group__
                     command.app_command = command.app_command._copy_with(parent=parent, binding=self)  # type: ignore
                     children.append(command.app_command)  # type: ignore
 
         for command in cls.__cog_app_commands__:
-            copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
+            copy = command._copy_with(
+                parent=self.__cog_app_commands_group__, binding=self
+            )
 
             # Update set bindings
             if copy._attr:
@@ -310,7 +347,9 @@ class Cog(metaclass=CogMeta):
             self.__cog_app_commands_group__.module = cls.__module__
             mapping = {cmd.name: cmd for cmd in children}
             if len(mapping) > 25:
-                raise TypeError('maximum number of application command children exceeded')
+                raise TypeError(
+                    "maximum number of application command children exceeded"
+                )
 
             self.__cog_app_commands_group__._children = mapping  # type: ignore  # Variance issue
 
@@ -376,12 +415,15 @@ class Cog(metaclass=CogMeta):
         List[Tuple[:class:`str`, :ref:`coroutine <coroutine>`]]
             The listeners defined in this cog.
         """
-        return [(name, getattr(self, method_name)) for name, method_name in self.__cog_listeners__]
+        return [
+            (name, getattr(self, method_name))
+            for name, method_name in self.__cog_listeners__
+        ]
 
     @classmethod
     def _get_overridden_method(cls, method: FuncT) -> Optional[FuncT]:
         """Return None if the method is not overridden. Otherwise returns the overridden method."""
-        return getattr(method.__func__, '__cog_special_method__', method)
+        return getattr(method.__func__, "__cog_special_method__", method)
 
     @classmethod
     def listener(cls, name: str = MISSING) -> Callable[[FuncT], FuncT]:
@@ -403,14 +445,16 @@ class Cog(metaclass=CogMeta):
         """
 
         if name is not MISSING and not isinstance(name, str):
-            raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__!r} instead.')
+            raise TypeError(
+                f"Cog.listener expected str but received {name.__class__.__name__!r} instead."
+            )
 
         def decorator(func: FuncT) -> FuncT:
             actual = func
             if isinstance(actual, staticmethod):
                 actual = actual.__func__
             if not inspect.iscoroutinefunction(actual):
-                raise TypeError('Listener function must be a coroutine function.')
+                raise TypeError("Listener function must be a coroutine function.")
             actual.__cog_listener__ = True
             to_assign = name or actual.__name__
             try:
@@ -430,7 +474,7 @@ class Cog(metaclass=CogMeta):
 
         .. versionadded:: 1.7
         """
-        return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
+        return not hasattr(self.cog_command_error.__func__, "__cog_special_method__")
 
     @_cog_special_method
     async def cog_load(self) -> None:
@@ -539,7 +583,13 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
+    async def _inject(
+        self,
+        bot: BotBase,
+        override: bool,
+        guild: Optional[Snowflake],
+        guilds: List[Snowflake],
+    ) -> Self:
         cls = self.__class__
 
         # we'll call this first so that errors can propagate without
@@ -580,7 +630,9 @@ class Cog(metaclass=CogMeta):
         if not self.__cog_app_commands_group__:
             for command in self.__cog_app_commands__:
                 # This is already atomic
-                bot.tree.add_command(command, override=override, guild=guild, guilds=guilds)
+                bot.tree.add_command(
+                    command, override=override, guild=guild, guilds=guilds
+                )
 
         return self
 
@@ -599,7 +651,9 @@ class Cog(metaclass=CogMeta):
                         bot.tree.remove_command(command.name)
                     else:
                         for guild_id in guild_ids:
-                            bot.tree.remove_command(command.name, guild=discord.Object(id=guild_id))
+                            bot.tree.remove_command(
+                                command.name, guild=discord.Object(id=guild_id)
+                            )
 
             for name, method_name in self.__cog_listeners__:
                 bot.remove_listener(getattr(self, method_name), name)

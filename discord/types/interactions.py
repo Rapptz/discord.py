@@ -71,36 +71,50 @@ class _BaseApplicationCommandInteractionDataOption(TypedDict):
     name: str
 
 
-class _CommandGroupApplicationCommandInteractionDataOption(_BaseApplicationCommandInteractionDataOption):
+class _CommandGroupApplicationCommandInteractionDataOption(
+    _BaseApplicationCommandInteractionDataOption
+):
     type: Literal[1, 2]
     options: List[ApplicationCommandInteractionDataOption]
 
 
-class _BaseValueApplicationCommandInteractionDataOption(_BaseApplicationCommandInteractionDataOption, total=False):
+class _BaseValueApplicationCommandInteractionDataOption(
+    _BaseApplicationCommandInteractionDataOption, total=False
+):
     focused: bool
 
 
-class _StringValueApplicationCommandInteractionDataOption(_BaseValueApplicationCommandInteractionDataOption):
+class _StringValueApplicationCommandInteractionDataOption(
+    _BaseValueApplicationCommandInteractionDataOption
+):
     type: Literal[3]
     value: str
 
 
-class _IntegerValueApplicationCommandInteractionDataOption(_BaseValueApplicationCommandInteractionDataOption):
+class _IntegerValueApplicationCommandInteractionDataOption(
+    _BaseValueApplicationCommandInteractionDataOption
+):
     type: Literal[4]
     value: int
 
 
-class _BooleanValueApplicationCommandInteractionDataOption(_BaseValueApplicationCommandInteractionDataOption):
+class _BooleanValueApplicationCommandInteractionDataOption(
+    _BaseValueApplicationCommandInteractionDataOption
+):
     type: Literal[5]
     value: bool
 
 
-class _SnowflakeValueApplicationCommandInteractionDataOption(_BaseValueApplicationCommandInteractionDataOption):
+class _SnowflakeValueApplicationCommandInteractionDataOption(
+    _BaseValueApplicationCommandInteractionDataOption
+):
     type: Literal[6, 7, 8, 9, 11]
     value: Snowflake
 
 
-class _NumberValueApplicationCommandInteractionDataOption(_BaseValueApplicationCommandInteractionDataOption):
+class _NumberValueApplicationCommandInteractionDataOption(
+    _BaseValueApplicationCommandInteractionDataOption
+):
     type: Literal[10]
     value: float
 
@@ -127,20 +141,28 @@ class _BaseApplicationCommandInteractionData(TypedDict):
     guild_id: NotRequired[Snowflake]
 
 
-class ChatInputApplicationCommandInteractionData(_BaseApplicationCommandInteractionData, total=False):
+class ChatInputApplicationCommandInteractionData(
+    _BaseApplicationCommandInteractionData, total=False
+):
     type: Literal[1]
     options: List[ApplicationCommandInteractionDataOption]
 
 
-class _BaseNonChatInputApplicationCommandInteractionData(_BaseApplicationCommandInteractionData):
+class _BaseNonChatInputApplicationCommandInteractionData(
+    _BaseApplicationCommandInteractionData
+):
     target_id: Snowflake
 
 
-class UserApplicationCommandInteractionData(_BaseNonChatInputApplicationCommandInteractionData):
+class UserApplicationCommandInteractionData(
+    _BaseNonChatInputApplicationCommandInteractionData
+):
     type: Literal[2]
 
 
-class MessageApplicationCommandInteractionData(_BaseNonChatInputApplicationCommandInteractionData):
+class MessageApplicationCommandInteractionData(
+    _BaseNonChatInputApplicationCommandInteractionData
+):
     type: Literal[3]
 
 
@@ -164,7 +186,9 @@ class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData
     values: List[str]
 
 
-MessageComponentInteractionData = Union[ButtonMessageComponentInteractionData, SelectMessageComponentInteractionData]
+MessageComponentInteractionData = Union[
+    ButtonMessageComponentInteractionData, SelectMessageComponentInteractionData
+]
 
 
 class ModalSubmitTextInputInteractionData(TypedDict):
@@ -181,7 +205,9 @@ class ModalSubmitActionRowInteractionData(TypedDict):
     components: List[ModalSubmitComponentItemInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData
+]
 
 
 class ModalSubmitInteractionData(TypedDict):
@@ -226,7 +252,12 @@ class ModalSubmitInteraction(_BaseInteraction):
     data: ModalSubmitInteractionData
 
 
-Interaction = Union[PingInteraction, ApplicationCommandInteraction, MessageComponentInteraction, ModalSubmitInteraction]
+Interaction = Union[
+    PingInteraction,
+    ApplicationCommandInteraction,
+    MessageComponentInteraction,
+    ModalSubmitInteraction,
+]
 
 
 class MessageInteraction(TypedDict):

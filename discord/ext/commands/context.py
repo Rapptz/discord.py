@@ -24,11 +24,28 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, Sequence
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+    Sequence,
+)
 
 import discord.abc
 import discord.utils
-from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable
+from discord import (
+    Interaction,
+    Message,
+    Attachment,
+    MessageType,
+    User,
+    PartialMessageable,
+)
 from .view import StringView
 
 from ._types import BotT
@@ -63,13 +80,13 @@ __all__ = (
 MISSING: Any = discord.utils.MISSING
 
 
-T = TypeVar('T')
-CogT = TypeVar('CogT', bound="Cog")
+T = TypeVar("T")
+CogT = TypeVar("CogT", bound="Cog")
 
 if TYPE_CHECKING:
-    P = ParamSpec('P')
+    P = ParamSpec("P")
 else:
-    P = TypeVar('P')
+    P = TypeVar("P")
 
 
 class Context(discord.abc.Messageable, Generic[BotT]):
@@ -216,48 +233,58 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         from .bot import BotBase
 
         if not isinstance(interaction.client, BotBase):
-            raise TypeError('Interaction client is not derived from commands.Bot or commands.AutoShardedBot')
+            raise TypeError(
+                "Interaction client is not derived from commands.Bot or commands.AutoShardedBot"
+            )
 
         command = interaction.command
         if command is None:
-            raise ValueError('interaction does not have command data')
+            raise ValueError("interaction does not have command data")
 
         bot: BotT = interaction.client  # type: ignore
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         if interaction.message is None:
             synthetic_payload = {
-                'id': interaction.id,
-                'reactions': [],
-                'embeds': [],
-                'mention_everyone': False,
-                'tts': False,
-                'pinned': False,
-                'edited_timestamp': None,
-                'type': MessageType.chat_input_command if data.get('type', 1) == 1 else MessageType.context_menu_command,
-                'flags': 64,
-                'content': '',
-                'mentions': [],
-                'mention_roles': [],
-                'attachments': [],
+                "id": interaction.id,
+                "reactions": [],
+                "embeds": [],
+                "mention_everyone": False,
+                "tts": False,
+                "pinned": False,
+                "edited_timestamp": None,
+                "type": MessageType.chat_input_command
+                if data.get("type", 1) == 1
+                else MessageType.context_menu_command,
+                "flags": 64,
+                "content": "",
+                "mentions": [],
+                "mention_roles": [],
+                "attachments": [],
             }
 
             if interaction.channel_id is None:
-                raise RuntimeError('interaction channel ID is null, this is probably a Discord bug')
+                raise RuntimeError(
+                    "interaction channel ID is null, this is probably a Discord bug"
+                )
 
             channel = interaction.channel or PartialMessageable(
-                state=interaction._state, guild_id=interaction.guild_id, id=interaction.channel_id
+                state=interaction._state,
+                guild_id=interaction.guild_id,
+                id=interaction.channel_id,
             )
             message = Message(state=interaction._state, channel=channel, data=synthetic_payload)  # type: ignore
             message.author = interaction.user
-            message.attachments = [a for _, a in interaction.namespace if isinstance(a, Attachment)]
+            message.attachments = [
+                a for _, a in interaction.namespace if isinstance(a, Attachment)
+            ]
         else:
             message = interaction.message
 
-        prefix = '/' if data.get('type', 1) == 1 else '\u200b'  # Mock the prefix
+        prefix = "/" if data.get("type", 1) == 1 else "\u200b"  # Mock the prefix
         return cls(
             message=message,
             bot=bot,
-            view=StringView(''),
+            view=StringView(""),
             args=[],
             kwargs={},
             prefix=prefix,
@@ -266,7 +293,9 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             command=command,  # type: ignore # this will be a hybrid command, technically
         )
 
-    async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def invoke(
+        self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs
+    ) -> T:
         r"""|coro|
 
         Calls a command with the arguments given.
@@ -336,7 +365,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         cmd = self.command
         view = self.view
         if cmd is None:
-            raise ValueError('This context is not valid.')
+            raise ValueError("This context is not valid.")
 
         # some state to revert to when we're done
         index, previous = view.index, view.previous
@@ -347,7 +376,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         if restart:
             to_call = cmd.root_parent or cmd
-            view.index = len(self.prefix or '')
+            view.index = len(self.prefix or "")
             view.previous = 0
             self.invoked_parents = []
             self.invoked_with = view.get_word()  # advance to get the root command
@@ -380,7 +409,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         .. versionadded:: 2.0
         """
         if self.prefix is None:
-            return ''
+            return ""
 
         user = self.me
         # this breaks if the prefix mention is not the bot itself but I
@@ -388,7 +417,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         # for this common use case rather than waste performance for the
         # odd one.
         pattern = re.compile(r"<@!?%s>" % user.id)
-        return pattern.sub("@%s" % user.display_name.replace('\\', r'\\'), self.prefix)
+        return pattern.sub("@%s" % user.display_name.replace("\\", r"\\"), self.prefix)
 
     @property
     def cog(self) -> Optional[Cog]:
@@ -499,7 +528,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         await cmd.prepare_help_command(self, entity.qualified_name)
 
         try:
-            if hasattr(entity, '__cog_commands__'):
+            if hasattr(entity, "__cog_commands__"):
                 injected = wrap_callback(cmd.send_cog_help)
                 return await injected(entity)
             elif isinstance(entity, Group):
@@ -716,16 +745,18 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         # Convert the kwargs from None to MISSING to appease the remaining implementations
         kwargs = {
-            'content': content,
-            'tts': tts,
-            'embed': MISSING if embed is None else embed,
-            'embeds': MISSING if embeds is None else embeds,
-            'file': MISSING if file is None else file,
-            'files': MISSING if files is None else files,
-            'allowed_mentions': MISSING if allowed_mentions is None else allowed_mentions,
-            'view': MISSING if view is None else view,
-            'suppress_embeds': suppress_embeds,
-            'ephemeral': ephemeral,
+            "content": content,
+            "tts": tts,
+            "embed": MISSING if embed is None else embed,
+            "embeds": MISSING if embeds is None else embeds,
+            "file": MISSING if file is None else file,
+            "files": MISSING if files is None else files,
+            "allowed_mentions": MISSING
+            if allowed_mentions is None
+            else allowed_mentions,
+            "view": MISSING if view is None else view,
+            "suppress_embeds": suppress_embeds,
+            "ephemeral": ephemeral,
         }
 
         if self.interaction.response.is_done():
@@ -734,6 +765,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             await self.interaction.response.send_message(**kwargs)
             msg = await self.interaction.original_message()
 
-        if delete_after is not None and not (ephemeral and self.interaction is not None):
+        if delete_after is not None and not (
+            ephemeral and self.interaction is not None
+        ):
             await msg.delete(delay=delete_after)
         return msg

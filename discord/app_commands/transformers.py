@@ -55,14 +55,14 @@ from ..member import Member
 from ..message import Attachment
 
 __all__ = (
-    'Transformer',
-    'Transform',
-    'Range',
+    "Transformer",
+    "Transform",
+    "Range",
 )
 
-T = TypeVar('T')
-FuncT = TypeVar('FuncT', bound=Callable[..., Any])
-ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
+T = TypeVar("T")
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
+ChoiceT = TypeVar("ChoiceT", str, int, float, Union[str, int, float])
 NoneType = type(None)
 
 if TYPE_CHECKING:
@@ -108,30 +108,30 @@ class CommandParameter:
 
     def to_dict(self) -> Dict[str, Any]:
         base = {
-            'type': self.type.value,
-            'name': self.display_name,
-            'description': self.description,
-            'required': self.required,
+            "type": self.type.value,
+            "name": self.display_name,
+            "description": self.description,
+            "required": self.required,
         }
 
         if self.choices:
-            base['choices'] = [choice.to_dict() for choice in self.choices]
+            base["choices"] = [choice.to_dict() for choice in self.choices]
         if self.channel_types:
-            base['channel_types'] = [t.value for t in self.channel_types]
+            base["channel_types"] = [t.value for t in self.channel_types]
         if self.autocomplete:
-            base['autocomplete'] = True
+            base["autocomplete"] = True
         if self.min_value is not None:
-            base['min_value'] = self.min_value
+            base["min_value"] = self.min_value
         if self.max_value is not None:
-            base['max_value'] = self.max_value
+            base["max_value"] = self.max_value
 
         return base
 
     def is_choice_annotation(self) -> bool:
-        return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
+        return getattr(self._annotation, "__discord_app_commands_is_choice__", False)
 
     async def transform(self, interaction: Interaction, value: Any) -> Any:
-        if hasattr(self._annotation, '__discord_app_commands_transformer__'):
+        if hasattr(self._annotation, "__discord_app_commands_transformer__"):
             # This one needs special handling for type safety reasons
             if self._annotation.__discord_app_commands_is_choice__:
                 choice = next((c for c in self.choices if c.value == value), None)
@@ -249,7 +249,7 @@ class Transformer:
             See the :class:`conversion table <discord.app_commands.Namespace>`
             for how certain option types correspond to certain values.
         """
-        raise NotImplementedError('Derived classes need to implement this.')
+        raise NotImplementedError("Derived classes need to implement this.")
 
     @classmethod
     async def autocomplete(
@@ -278,12 +278,12 @@ class Transformer:
             A list of choices to be displayed to the user, a maximum of 25.
 
         """
-        raise NotImplementedError('Derived classes can implement this.')
+        raise NotImplementedError("Derived classes can implement this.")
 
 
 class _TransformMetadata:
     __discord_app_commands_transform__: ClassVar[bool] = True
-    __slots__ = ('metadata',)
+    __slots__ = ("metadata",)
 
     def __init__(self, metadata: Type[Transformer]):
         self.metadata: Type[Transformer] = metadata
@@ -305,12 +305,12 @@ def _make_range_transformer(
     max: Optional[Union[int, float]] = None,
 ) -> Type[Transformer]:
     ns = {
-        'type': classmethod(lambda _: opt_type),
-        'min_value': classmethod(lambda _: min),
-        'max_value': classmethod(lambda _: max),
-        'transform': classmethod(_identity_transform),
+        "type": classmethod(lambda _: opt_type),
+        "min_value": classmethod(lambda _: min),
+        "max_value": classmethod(lambda _: max),
+        "transform": classmethod(_identity_transform),
     }
-    return type('RangeTransformer', (Transformer,), ns)
+    return type("RangeTransformer", (Transformer,), ns)
 
 
 def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
@@ -322,14 +322,16 @@ def _make_literal_transformer(values: Tuple[Any, ...]) -> Type[Transformer]:
     elif first is str:
         opt_type = AppCommandOptionType.string
     else:
-        raise TypeError(f'expected int, str, or float values not {first!r}')
+        raise TypeError(f"expected int, str, or float values not {first!r}")
 
     ns = {
-        'type': classmethod(lambda _: opt_type),
-        'transform': classmethod(_identity_transform),
-        '__discord_app_commands_transformer_choices__': [Choice(name=str(v), value=v) for v in values],
+        "type": classmethod(lambda _: opt_type),
+        "transform": classmethod(_identity_transform),
+        "__discord_app_commands_transformer_choices__": [
+            Choice(name=str(v), value=v) for v in values
+        ],
     }
-    return type('LiteralTransformer', (Transformer,), ns)
+    return type("LiteralTransformer", (Transformer,), ns)
 
 
 def _make_choice_transformer(inner_type: Any) -> Type[Transformer]:
@@ -340,20 +342,20 @@ def _make_choice_transformer(inner_type: Any) -> Type[Transformer]:
     elif inner_type is str:
         opt_type = AppCommandOptionType.string
     else:
-        raise TypeError(f'expected int, str, or float values not {inner_type!r}')
+        raise TypeError(f"expected int, str, or float values not {inner_type!r}")
 
     ns = {
-        'type': classmethod(lambda _: opt_type),
-        'transform': classmethod(_identity_transform),
-        '__discord_app_commands_is_choice__': True,
+        "type": classmethod(lambda _: opt_type),
+        "transform": classmethod(_identity_transform),
+        "__discord_app_commands_is_choice__": True,
     }
-    return type('ChoiceTransformer', (Transformer,), ns)
+    return type("ChoiceTransformer", (Transformer,), ns)
 
 
 def _make_enum_transformer(enum) -> Type[Transformer]:
     values = list(enum)
     if len(values) < 2:
-        raise TypeError(f'enum.Enum requires at least two values.')
+        raise TypeError(f"enum.Enum requires at least two values.")
 
     first = type(values[0].value)
     if first is int:
@@ -363,37 +365,41 @@ def _make_enum_transformer(enum) -> Type[Transformer]:
     elif first is str:
         opt_type = AppCommandOptionType.string
     else:
-        raise TypeError(f'expected int, str, or float values not {first!r}')
+        raise TypeError(f"expected int, str, or float values not {first!r}")
 
     async def transform(cls, interaction: Interaction, value: Any) -> Any:
         return enum(value)
 
     ns = {
-        'type': classmethod(lambda _: opt_type),
-        'transform': classmethod(transform),
-        '__discord_app_commands_transformer_enum__': enum,
-        '__discord_app_commands_transformer_choices__': [Choice(name=v.name, value=v.value) for v in values],
+        "type": classmethod(lambda _: opt_type),
+        "transform": classmethod(transform),
+        "__discord_app_commands_transformer_enum__": enum,
+        "__discord_app_commands_transformer_choices__": [
+            Choice(name=v.name, value=v.value) for v in values
+        ],
     }
 
-    return type(f'{enum.__name__}EnumTransformer', (Transformer,), ns)
+    return type(f"{enum.__name__}EnumTransformer", (Transformer,), ns)
 
 
 def _make_complex_enum_transformer(enum) -> Type[Transformer]:
     values = list(enum)
     if len(values) < 2:
-        raise TypeError(f'enum.Enum requires at least two values.')
+        raise TypeError(f"enum.Enum requires at least two values.")
 
     async def transform(cls, interaction: Interaction, value: Any) -> Any:
         return enum[value]
 
     ns = {
-        'type': classmethod(lambda _: AppCommandOptionType.string),
-        'transform': classmethod(transform),
-        '__discord_app_commands_transformer_enum__': enum,
-        '__discord_app_commands_transformer_choices__': [Choice(name=v.name, value=v.name) for v in values],
+        "type": classmethod(lambda _: AppCommandOptionType.string),
+        "transform": classmethod(transform),
+        "__discord_app_commands_transformer_enum__": enum,
+        "__discord_app_commands_transformer_choices__": [
+            Choice(name=v.name, value=v.name) for v in values
+        ],
     }
 
-    return type(f'{enum.__name__}ComplexEnumTransformer', (Transformer,), ns)
+    return type(f"{enum.__name__}ComplexEnumTransformer", (Transformer,), ns)
 
 
 if TYPE_CHECKING:
@@ -417,16 +423,22 @@ else:
 
         def __class_getitem__(cls, items) -> _TransformMetadata:
             if not isinstance(items, tuple):
-                raise TypeError(f'expected tuple for arguments, received {items.__class__!r} instead')
+                raise TypeError(
+                    f"expected tuple for arguments, received {items.__class__!r} instead"
+                )
 
             if len(items) != 2:
-                raise TypeError(f'Transform only accepts exactly two arguments')
+                raise TypeError(f"Transform only accepts exactly two arguments")
 
             _, transformer = items
 
-            is_valid = inspect.isclass(transformer) and issubclass(transformer, Transformer)
+            is_valid = inspect.isclass(transformer) and issubclass(
+                transformer, Transformer
+            )
             if not is_valid:
-                raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
+                raise TypeError(
+                    f"second argument of Transform must be a Transformer class not {transformer!r}"
+                )
 
             return _TransformMetadata(transformer)
 
@@ -457,29 +469,35 @@ else:
 
         def __class_getitem__(cls, obj) -> _TransformMetadata:
             if not isinstance(obj, tuple):
-                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+                raise TypeError(
+                    f"expected tuple for arguments, received {obj.__class__!r} instead"
+                )
 
             if len(obj) == 2:
                 obj = (*obj, None)
             elif len(obj) != 3:
-                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+                raise TypeError(
+                    "Range accepts either two or three arguments with the first being the type of range."
+                )
 
             obj_type, min, max = obj
 
             if min is None and max is None:
-                raise TypeError('Range must not be empty')
+                raise TypeError("Range must not be empty")
 
             if min is not None and max is not None:
                 # At this point max and min are both not none
                 if type(min) != type(max):
-                    raise TypeError('Both min and max in Range must be the same type')
+                    raise TypeError("Both min and max in Range must be the same type")
 
             if obj_type is int:
                 opt_type = AppCommandOptionType.integer
             elif obj_type is float:
                 opt_type = AppCommandOptionType.number
             else:
-                raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
+                raise TypeError(
+                    f"expected int or float as range type, received {obj_type!r} instead"
+                )
 
             transformer = _make_range_transformer(
                 opt_type,
@@ -514,7 +532,9 @@ class MemberTransformer(Transformer):
         return value
 
 
-def channel_transformer(*channel_types: Type[Any], raw: Optional[bool] = False) -> Type[Transformer]:
+def channel_transformer(
+    *channel_types: Type[Any], raw: Optional[bool] = False
+) -> Type[Transformer]:
     if raw:
 
         async def transform(cls, interaction: Interaction, value: Any):
@@ -545,22 +565,24 @@ def channel_transformer(*channel_types: Type[Any], raw: Optional[bool] = False) 
         name = channel_types[0].__name__
         types = CHANNEL_TO_TYPES[channel_types[0]]
     else:
-        name = 'MultiChannel'
+        name = "MultiChannel"
         types = []
 
         for t in channel_types:
             try:
                 types.extend(CHANNEL_TO_TYPES[t])
             except KeyError:
-                raise TypeError(f'Union type of channels must be entirely made up of channels') from None
+                raise TypeError(
+                    f"Union type of channels must be entirely made up of channels"
+                ) from None
 
     return type(
-        f'{name}Transformer',
+        f"{name}Transformer",
         (Transformer,),
         {
-            'type': classmethod(lambda cls: AppCommandOptionType.channel),
-            'transform': classmethod(transform),
-            'channel_types': classmethod(lambda cls: types),
+            "type": classmethod(lambda cls: AppCommandOptionType.channel),
+            "transform": classmethod(transform),
+            "channel_types": classmethod(lambda cls: types),
         },
     )
 
@@ -573,7 +595,11 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
     ],
-    AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
+    AppCommandThread: [
+        ChannelType.news_thread,
+        ChannelType.private_thread,
+        ChannelType.public_thread,
+    ],
     StageChannel: [ChannelType.stage_voice],
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
@@ -622,10 +648,10 @@ def get_supported_annotation(
     except KeyError:
         pass
 
-    if hasattr(annotation, '__discord_app_commands_transform__'):
+    if hasattr(annotation, "__discord_app_commands_transform__"):
         return (annotation.metadata, MISSING)
 
-    if hasattr(annotation, '__metadata__'):
+    if hasattr(annotation, "__metadata__"):
         return get_supported_annotation(annotation.__metadata__[0])
 
     if inspect.isclass(annotation):
@@ -637,10 +663,10 @@ def get_supported_annotation(
             else:
                 return (_make_complex_enum_transformer(annotation), MISSING)
         if annotation is Choice:
-            raise TypeError(f'Choice requires a type argument of int, str, or float')
+            raise TypeError(f"Choice requires a type argument of int, str, or float")
 
     # Check if there's an origin
-    origin = getattr(annotation, '__origin__', None)
+    origin = getattr(annotation, "__origin__", None)
     if origin is Literal:
         args = annotation.__args__  # type: ignore
         return (_make_literal_transformer(args), MISSING)
@@ -651,7 +677,7 @@ def get_supported_annotation(
 
     if origin is not Union:
         # Only Union/Optional is supported right now so bail early
-        raise TypeError(f'unsupported type annotation {annotation!r}')
+        raise TypeError(f"unsupported type annotation {annotation!r}")
 
     default = MISSING
     args = annotation.__args__  # type: ignore
@@ -660,7 +686,7 @@ def get_supported_annotation(
             underlying = args[0]
             inner, _ = get_supported_annotation(underlying)
             if inner is None:
-                raise TypeError(f'unsupported inner optional type {underlying!r}')
+                raise TypeError(f"unsupported inner optional type {underlying!r}")
             return (inner, None)
         else:
             args = args[:-1]
@@ -677,14 +703,16 @@ def get_supported_annotation(
     # [Member | User, Role] => mentionable
     supported_types: Set[Any] = {Role, Member, User}
     if not all(arg in supported_types for arg in args):
-        raise TypeError(f'unsupported types given inside {annotation!r}')
+        raise TypeError(f"unsupported types given inside {annotation!r}")
     if args == (User, Member) or args == (Member, User):
         return (passthrough_transformer(AppCommandOptionType.user), default)
 
     return (passthrough_transformer(AppCommandOptionType.mentionable), default)
 
 
-def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> CommandParameter:
+def annotation_to_parameter(
+    annotation: Any, parameter: inspect.Parameter
+) -> CommandParameter:
     """Returns the appropriate :class:`CommandParameter` for the given annotation.
 
     The resulting ``_annotation`` attribute might not match the one given here and might
@@ -702,11 +730,13 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     # Verify validity of the default parameter
     if default is not MISSING:
-        enum_type = getattr(inner, '__discord_app_commands_transformer_enum__', None)
+        enum_type = getattr(inner, "__discord_app_commands_transformer_enum__", None)
         if default.__class__ is not enum_type:
             valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
             if not isinstance(default, valid_types):
-                raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
+                raise TypeError(
+                    f"invalid default parameter type given ({default.__class__}), expected {valid_types}"
+                )
 
     result = CommandParameter(
         type=type,
@@ -731,13 +761,19 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     if type is AppCommandOptionType.channel:
         result.channel_types = inner.channel_types()
 
-    if parameter.kind in (parameter.POSITIONAL_ONLY, parameter.VAR_KEYWORD, parameter.VAR_POSITIONAL):
-        raise TypeError(f'unsupported parameter kind in callback: {parameter.kind!s}')
+    if parameter.kind in (
+        parameter.POSITIONAL_ONLY,
+        parameter.VAR_KEYWORD,
+        parameter.VAR_POSITIONAL,
+    ):
+        raise TypeError(f"unsupported parameter kind in callback: {parameter.kind!s}")
 
-    autocomplete_func = getattr(inner.autocomplete, '__func__', inner.autocomplete)
+    autocomplete_func = getattr(inner.autocomplete, "__func__", inner.autocomplete)
     if autocomplete_func is not Transformer.autocomplete.__func__:
         from .commands import _validate_auto_complete_callback
 
-        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
+        result.autocomplete = _validate_auto_complete_callback(
+            inner.autocomplete, skip_binding=True
+        )
 
     return result

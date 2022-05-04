@@ -26,7 +26,18 @@ from __future__ import annotations
 
 from functools import wraps
 import pytest
-from typing import Awaitable, TYPE_CHECKING, Callable, Coroutine, Optional, TypeVar, Any, Type, List, Union
+from typing import (
+    Awaitable,
+    TYPE_CHECKING,
+    Callable,
+    Coroutine,
+    Optional,
+    TypeVar,
+    Any,
+    Type,
+    List,
+    Union,
+)
 
 import discord
 
@@ -39,20 +50,22 @@ if TYPE_CHECKING:
         ApplicationCommandInteractionDataOption as ApplicationCommandInteractionDataOptionPayload,
     )
 
-    P = ParamSpec('P')
+    P = ParamSpec("P")
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class MockCommandInteraction(discord.Interaction):
     @classmethod
-    def _get_command_options(cls, **options: str) -> List[ApplicationCommandInteractionDataOptionPayload]:
+    def _get_command_options(
+        cls, **options: str
+    ) -> List[ApplicationCommandInteractionDataOptionPayload]:
         return [
             {
-                'type': discord.AppCommandOptionType.string.value,
-                'name': name,
-                'value': value,
+                "type": discord.AppCommandOptionType.string.value,
+                "name": name,
+                "value": value,
             }
             for name, value in options.items()
         ]
@@ -60,18 +73,23 @@ class MockCommandInteraction(discord.Interaction):
     @classmethod
     def _get_command_data(
         cls,
-        command: Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group],
+        command: Union[
+            discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group
+        ],
         options: List[ApplicationCommandInteractionDataOptionPayload],
     ) -> ChatInputApplicationCommandInteractionDataPayload:
 
-        data: Union[ChatInputApplicationCommandInteractionDataPayload, ApplicationCommandInteractionDataOptionPayload] = {
-            'type': discord.AppCommandType.chat_input.value,
-            'name': command.name,
-            'options': options,
+        data: Union[
+            ChatInputApplicationCommandInteractionDataPayload,
+            ApplicationCommandInteractionDataOptionPayload,
+        ] = {
+            "type": discord.AppCommandType.chat_input.value,
+            "name": command.name,
+            "options": options,
         }
 
         if command.parent is None:
-            data['id'] = hash(command)  # type: ignore # narrowing isn't possible
+            data["id"] = hash(command)  # type: ignore # narrowing isn't possible
             return data  # type: ignore # see above
         else:
             return cls._get_command_data(command.parent, [data])
@@ -89,7 +107,9 @@ class MockCommandInteraction(discord.Interaction):
             "token": "",
             "version": 1,
             "type": 2,
-            "data": self._get_command_data(command, self._get_command_options(**options)),
+            "data": self._get_command_data(
+                command, self._get_command_options(**options)
+            ),
         }
         super().__init__(data=data, state=client._connection)
 
@@ -105,7 +125,9 @@ class MockTree(discord.app_commands.CommandTree):
         return await super().call(interaction)
 
     async def on_error(
-        self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError
+        self,
+        interaction: discord.Interaction,
+        error: discord.app_commands.AppCommandError,
     ) -> None:
         self.last_exception = error
 
@@ -139,11 +161,13 @@ async def test_command_raises(interaction: discord.Interaction, foo: str) -> Non
 
 @tree.command()
 @wrapper
-async def test_wrapped_command_raises(interaction: discord.Interaction, foo: str) -> None:
+async def test_wrapped_command_raises(
+    interaction: discord.Interaction, foo: str
+) -> None:
     raise TypeError
 
 
-group = discord.app_commands.Group(name='group', description='...')
+group = discord.app_commands.Group(name="group", description="...")
 test_subcommand = group.command()(test_command.callback)
 test_wrapped_subcommand = group.command()(test_wrapped_command.callback)
 test_subcommand_raises = group.command()(test_command_raises.callback)
@@ -152,7 +176,7 @@ tree.add_command(group)
 
 
 @pytest.mark.parametrize(
-    ('command', 'raises'),
+    ("command", "raises"),
     [
         (test_command, None),
         (test_wrapped_command, None),
@@ -166,9 +190,10 @@ tree.add_command(group)
 )
 @pytest.mark.asyncio
 async def test_valid_command_invoke(
-    command: discord.app_commands.Command[Any, ..., Any], raises: Optional[Type[BaseException]]
+    command: discord.app_commands.Command[Any, ..., Any],
+    raises: Optional[Type[BaseException]],
 ):
-    interaction = MockCommandInteraction(client, command, foo='foo')
+    interaction = MockCommandInteraction(client, command, foo="foo")
     await tree.call(interaction)
 
     if raises is None:
@@ -179,7 +204,7 @@ async def test_valid_command_invoke(
 
 
 @pytest.mark.parametrize(
-    ('command',),
+    ("command",),
     [
         (test_command,),
         (test_wrapped_command,),
@@ -192,8 +217,12 @@ async def test_valid_command_invoke(
     ],
 )
 @pytest.mark.asyncio
-async def test_invalid_command_invoke(command: discord.app_commands.Command[Any, ..., Any]):
-    interaction = MockCommandInteraction(client, command, bar='bar')
+async def test_invalid_command_invoke(
+    command: discord.app_commands.Command[Any, ..., Any]
+):
+    interaction = MockCommandInteraction(client, command, bar="bar")
     await tree.call(interaction)
 
-    assert isinstance(tree.last_exception, discord.app_commands.CommandSignatureMismatch)
+    assert isinstance(
+        tree.last_exception, discord.app_commands.CommandSignatureMismatch
+    )

@@ -13,7 +13,7 @@ class MyContext(commands.Context):
         # depending on whether value is True or False
         # if its True, it'll add a green check mark
         # otherwise, it'll add a red cross mark
-        emoji = '\N{WHITE HEAVY CHECK MARK}' if value else '\N{CROSS MARK}'
+        emoji = "\N{WHITE HEAVY CHECK MARK}" if value else "\N{CROSS MARK}"
         try:
             # this will react to the command author's message
             await self.message.add_reaction(emoji)
@@ -35,7 +35,7 @@ class MyBot(commands.Bot):
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = MyBot(command_prefix='!', intents=intents)
+bot = MyBot(command_prefix="!", intents=intents)
 
 
 @bot.command()

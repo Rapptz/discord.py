@@ -40,7 +40,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..interactions import Interaction
-    from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+    from ..types.interactions import (
+        ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload,
+    )
 
 
 # fmt: off
@@ -128,11 +130,13 @@ class Modal(View):
         timeout: Optional[float] = None,
         custom_id: str = MISSING,
     ) -> None:
-        if title is MISSING and getattr(self, 'title', MISSING) is MISSING:
-            raise ValueError('Modal must have a title')
+        if title is MISSING and getattr(self, "title", MISSING) is MISSING:
+            raise ValueError("Modal must have a title")
         elif title is not MISSING:
             self.title = title
-        self.custom_id: str = os.urandom(16).hex() if custom_id is MISSING else custom_id
+        self.custom_id: str = (
+            os.urandom(16).hex() if custom_id is MISSING else custom_id
+        )
 
         super().__init__(timeout=timeout)
 
@@ -163,17 +167,24 @@ class Modal(View):
         interaction: :class:`~discord.Interaction`
             The interaction that led to the failure.
         """
-        print(f'Ignoring exception in modal {self}:', file=sys.stderr)
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        print(f"Ignoring exception in modal {self}:", file=sys.stderr)
+        traceback.print_exception(
+            error.__class__, error, error.__traceback__, file=sys.stderr
+        )
 
-    def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(
+        self, components: Sequence[ModalSubmitComponentInteractionDataPayload]
+    ) -> None:
         for component in components:
-            if component['type'] == 1:
-                self._refresh(component['components'])
+            if component["type"] == 1:
+                self._refresh(component["components"])
             else:
-                item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
+                item = find(lambda i: i.custom_id == component["custom_id"], self._children)  # type: ignore
                 if item is None:
-                    _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
+                    _log.debug(
+                        "Modal interaction referencing unknown item custom_id %s. Discarding",
+                        component["custom_id"],
+                    )
                     continue
                 item._refresh_state(component)  # type: ignore
 
@@ -193,13 +204,16 @@ class Modal(View):
             self.stop()
 
     def _dispatch_submit(self, interaction: Interaction) -> None:
-        asyncio.create_task(self._scheduled_task(interaction), name=f'discord-ui-modal-dispatch-{self.id}')
+        asyncio.create_task(
+            self._scheduled_task(interaction),
+            name=f"discord-ui-modal-dispatch-{self.id}",
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         payload = {
-            'custom_id': self.custom_id,
-            'title': self.title,
-            'components': self.to_components(),
+            "custom_id": self.custom_id,
+            "title": self.title,
+            "components": self.to_components(),
         }
 
         return payload

@@ -41,9 +41,9 @@ if TYPE_CHECKING:
     )
 
 __all__ = (
-    'WidgetChannel',
-    'WidgetMember',
-    'Widget',
+    "WidgetChannel",
+    "WidgetMember",
+    "Widget",
 )
 
 
@@ -78,7 +78,7 @@ class WidgetChannel:
         The channel's position
     """
 
-    __slots__ = ('id', 'name', 'position')
+    __slots__ = ("id", "name", "position")
 
     def __init__(self, id: int, name: str, position: int) -> None:
         self.id: int = id
@@ -89,12 +89,12 @@ class WidgetChannel:
         return self.name
 
     def __repr__(self) -> str:
-        return f'<WidgetChannel id={self.id} name={self.name!r} position={self.position!r}>'
+        return f"<WidgetChannel id={self.id} name={self.name!r} position={self.position!r}>"
 
     @property
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel."""
-        return f'<#{self.id}>'
+        return f"<#{self.id}>"
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -152,18 +152,18 @@ class WidgetMember(BaseUser):
     """
 
     __slots__ = (
-        'name',
-        'status',
-        'nick',
-        'avatar',
-        'discriminator',
-        'id',
-        'bot',
-        'activity',
-        'deafened',
-        'suppress',
-        'muted',
-        'connected_channel',
+        "name",
+        "status",
+        "nick",
+        "avatar",
+        "discriminator",
+        "id",
+        "bot",
+        "activity",
+        "deafened",
+        "suppress",
+        "muted",
+        "connected_channel",
     )
 
     if TYPE_CHECKING:
@@ -177,14 +177,18 @@ class WidgetMember(BaseUser):
         connected_channel: Optional[WidgetChannel] = None,
     ) -> None:
         super().__init__(state=state, data=data)
-        self.nick: Optional[str] = data.get('nick')
-        self.status: Status = try_enum(Status, data.get('status'))
-        self.deafened: Optional[bool] = data.get('deaf', False) or data.get('self_deaf', False)
-        self.muted: Optional[bool] = data.get('mute', False) or data.get('self_mute', False)
-        self.suppress: Optional[bool] = data.get('suppress', False)
+        self.nick: Optional[str] = data.get("nick")
+        self.status: Status = try_enum(Status, data.get("status"))
+        self.deafened: Optional[bool] = data.get("deaf", False) or data.get(
+            "self_deaf", False
+        )
+        self.muted: Optional[bool] = data.get("mute", False) or data.get(
+            "self_mute", False
+        )
+        self.suppress: Optional[bool] = data.get("suppress", False)
 
         try:
-            game = data['game']
+            game = data["game"]
         except KeyError:
             activity = None
         else:
@@ -196,7 +200,8 @@ class WidgetMember(BaseUser):
 
     def __repr__(self) -> str:
         return (
-            f"<WidgetMember name={self.name!r} discriminator={self.discriminator!r}" f" bot={self.bot} nick={self.nick!r}>"
+            f"<WidgetMember name={self.name!r} discriminator={self.discriminator!r}"
+            f" bot={self.bot} nick={self.nick!r}>"
         )
 
     @property
@@ -248,32 +253,50 @@ class Widget:
 
     """
 
-    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name', 'presence_count')
+    __slots__ = (
+        "_state",
+        "channels",
+        "_invite",
+        "id",
+        "members",
+        "name",
+        "presence_count",
+    )
 
     def __init__(self, *, state: ConnectionState, data: WidgetPayload) -> None:
         self._state = state
-        self._invite = data['instant_invite']
-        self.name: str = data['name']
-        self.id: int = int(data['id'])
+        self._invite = data["instant_invite"]
+        self.name: str = data["name"]
+        self.id: int = int(data["id"])
 
         self.channels: List[WidgetChannel] = []
-        for channel in data.get('channels', []):
-            _id = int(channel['id'])
-            self.channels.append(WidgetChannel(id=_id, name=channel['name'], position=channel['position']))
+        for channel in data.get("channels", []):
+            _id = int(channel["id"])
+            self.channels.append(
+                WidgetChannel(
+                    id=_id, name=channel["name"], position=channel["position"]
+                )
+            )
 
         self.members: List[WidgetMember] = []
         channels = {channel.id: channel for channel in self.channels}
-        for member in data.get('members', []):
-            connected_channel = _get_as_snowflake(member, 'channel_id')
+        for member in data.get("members", []):
+            connected_channel = _get_as_snowflake(member, "channel_id")
             if connected_channel is not None:
                 if connected_channel in channels:
                     connected_channel = channels[connected_channel]
                 else:
-                    connected_channel = WidgetChannel(id=connected_channel, name='', position=0)
+                    connected_channel = WidgetChannel(
+                        id=connected_channel, name="", position=0
+                    )
 
-            self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
+            self.members.append(
+                WidgetMember(
+                    state=self._state, data=member, connected_channel=connected_channel
+                )
+            )
 
-        self.presence_count: int = data['presence_count']
+        self.presence_count: int = data["presence_count"]
 
     def __str__(self) -> str:
         return self.json_url
@@ -284,7 +307,9 @@ class Widget:
         return False
 
     def __repr__(self) -> str:
-        return f'<Widget id={self.id} name={self.name!r} invite_url={self.invite_url!r}>'
+        return (
+            f"<Widget id={self.id} name={self.name!r} invite_url={self.invite_url!r}>"
+        )
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -322,6 +347,8 @@ class Widget:
         """
         if self._invite:
             resolved = resolve_invite(self._invite)
-            data = await self._state.http.get_invite(resolved.code, with_counts=with_counts)
+            data = await self._state.http.get_invite(
+                resolved.code, with_counts=with_counts
+            )
             return Invite.from_incomplete(state=self._state, data=data)
         return None

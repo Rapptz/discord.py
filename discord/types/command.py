@@ -86,7 +86,9 @@ class _ChannelApplicationCommandOptionChoice(_BaseApplicationCommandOption):
     channel_types: NotRequired[List[ChannelType]]
 
 
-class _NonChannelSnowflakeApplicationCommandOptionChoice(_BaseValueApplicationCommandOption):
+class _NonChannelSnowflakeApplicationCommandOptionChoice(
+    _BaseValueApplicationCommandOption
+):
     type: Literal[6, 8, 9, 11]
 
 

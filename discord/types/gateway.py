@@ -293,9 +293,13 @@ class WebhooksUpdateEvent(TypedDict):
     channel_id: Snowflake
 
 
-StageInstanceCreateEvent = StageInstanceUpdateEvent = StageInstanceDeleteEvent = StageInstance
+StageInstanceCreateEvent = (
+    StageInstanceUpdateEvent
+) = StageInstanceDeleteEvent = StageInstance
 
-GuildScheduledEventCreateEvent = GuildScheduledEventUpdateEvent = GuildScheduledEventDeleteEvent = GuildScheduledEvent
+GuildScheduledEventCreateEvent = (
+    GuildScheduledEventUpdateEvent
+) = GuildScheduledEventDeleteEvent = GuildScheduledEvent
 
 
 class _GuildScheduledEventUsersEvent(TypedDict):
@@ -304,7 +308,9 @@ class _GuildScheduledEventUsersEvent(TypedDict):
     guild_id: Snowflake
 
 
-GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEventUsersEvent
+GuildScheduledEventUserAdd = (
+    GuildScheduledEventUserRemove
+) = _GuildScheduledEventUsersEvent
 
 VoiceStateUpdateEvent = GuildVoiceState
 

@@ -23,7 +23,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+from typing import (
+    List,
+    Literal,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    TypeVar,
+    Callable,
+    Union,
+)
 import inspect
 import os
 
@@ -38,8 +47,8 @@ from ..components import (
 )
 
 __all__ = (
-    'Select',
-    'select',
+    "Select",
+    "select",
 )
 
 if TYPE_CHECKING:
@@ -51,7 +60,7 @@ if TYPE_CHECKING:
         MessageComponentInteractionData,
     )
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar("V", bound="View", covariant=True)
 
 
 class Select(Item[V]):
@@ -89,11 +98,11 @@ class Select(Item[V]):
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
-        'placeholder',
-        'min_values',
-        'max_values',
-        'options',
-        'disabled',
+        "placeholder",
+        "min_values",
+        "max_values",
+        "options",
+        "disabled",
     )
 
     def __init__(
@@ -112,7 +121,7 @@ class Select(Item[V]):
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
-            raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
+            raise TypeError(f"expected custom_id to be str not {custom_id.__class__!r}")
 
         options = [] if options is MISSING else options
         self._underlying = SelectMenu._raw_construct(
@@ -134,7 +143,7 @@ class Select(Item[V]):
     @custom_id.setter
     def custom_id(self, value: str) -> None:
         if not isinstance(value, str):
-            raise TypeError('custom_id must be None or str')
+            raise TypeError("custom_id must be None or str")
 
         self._underlying.custom_id = value
 
@@ -146,7 +155,7 @@ class Select(Item[V]):
     @placeholder.setter
     def placeholder(self, value: Optional[str]) -> None:
         if value is not None and not isinstance(value, str):
-            raise TypeError('placeholder must be None or str')
+            raise TypeError("placeholder must be None or str")
 
         self._underlying.placeholder = value
 
@@ -176,9 +185,9 @@ class Select(Item[V]):
     @options.setter
     def options(self, value: List[SelectOption]) -> None:
         if not isinstance(value, list):
-            raise TypeError('options must be a list of SelectOption')
+            raise TypeError("options must be a list of SelectOption")
         if not all(isinstance(obj, SelectOption) for obj in value):
-            raise TypeError('all list items must subclass SelectOption')
+            raise TypeError("all list items must subclass SelectOption")
 
         self._underlying.options = value
 
@@ -244,7 +253,7 @@ class Select(Item[V]):
         """
 
         if len(self._underlying.options) > 25:
-            raise ValueError('maximum number of options already provided')
+            raise ValueError("maximum number of options already provided")
 
         self._underlying.options.append(option)
 
@@ -273,7 +282,7 @@ class Select(Item[V]):
         self._underlying = component
 
     def _refresh_state(self, data: MessageComponentInteractionData) -> None:
-        self._selected_values = data.get('values', [])
+        self._selected_values = data.get("values", [])
 
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
@@ -339,19 +348,21 @@ def select(
         Whether the select is disabled or not. Defaults to ``False``.
     """
 
-    def decorator(func: ItemCallbackType[V, Select[V]]) -> ItemCallbackType[V, Select[V]]:
+    def decorator(
+        func: ItemCallbackType[V, Select[V]]
+    ) -> ItemCallbackType[V, Select[V]]:
         if not inspect.iscoroutinefunction(func):
-            raise TypeError('select function must be a coroutine function')
+            raise TypeError("select function must be a coroutine function")
 
         func.__discord_ui_model_type__ = Select
         func.__discord_ui_model_kwargs__ = {
-            'placeholder': placeholder,
-            'custom_id': custom_id,
-            'row': row,
-            'min_values': min_values,
-            'max_values': max_values,
-            'options': options,
-            'disabled': disabled,
+            "placeholder": placeholder,
+            "custom_id": custom_id,
+            "row": row,
+            "min_values": min_values,
+            "max_values": max_values,
+            "options": options,
+            "disabled": disabled,
         }
         return func
 

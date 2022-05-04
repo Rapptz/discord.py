@@ -33,46 +33,48 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 __all__ = (
-    'Colour',
-    'Color',
+    "Colour",
+    "Color",
 )
 
-RGB_REGEX = re.compile(r'rgb\s*\((?P<r>[0-9.]+%?)\s*,\s*(?P<g>[0-9.]+%?)\s*,\s*(?P<b>[0-9.]+%?)\s*\)')
+RGB_REGEX = re.compile(
+    r"rgb\s*\((?P<r>[0-9.]+%?)\s*,\s*(?P<g>[0-9.]+%?)\s*,\s*(?P<b>[0-9.]+%?)\s*\)"
+)
 
 
 def parse_hex_number(argument: str) -> Colour:
-    arg = ''.join(i * 2 for i in argument) if len(argument) == 3 else argument
+    arg = "".join(i * 2 for i in argument) if len(argument) == 3 else argument
     try:
         value = int(arg, base=16)
         if not (0 <= value <= 0xFFFFFF):
-            raise ValueError('hex number out of range for 24-bit colour')
+            raise ValueError("hex number out of range for 24-bit colour")
     except ValueError:
-        raise ValueError('invalid hex digit given') from None
+        raise ValueError("invalid hex digit given") from None
     else:
         return Color(value=value)
 
 
 def parse_rgb_number(number: str) -> int:
-    if number[-1] == '%':
+    if number[-1] == "%":
         value = float(number[:-1])
         if not (0 <= value <= 100):
-            raise ValueError('rgb percentage can only be between 0 to 100')
+            raise ValueError("rgb percentage can only be between 0 to 100")
         return round(255 * (value / 100))
 
     value = int(number)
     if not (0 <= value <= 255):
-        raise ValueError('rgb number can only be between 0 to 255')
+        raise ValueError("rgb number can only be between 0 to 255")
     return value
 
 
 def parse_rgb(argument: str, *, regex: re.Pattern[str] = RGB_REGEX) -> Colour:
     match = regex.match(argument)
     if match is None:
-        raise ValueError('invalid rgb syntax found')
+        raise ValueError("invalid rgb syntax found")
 
-    red = parse_rgb_number(match.group('r'))
-    green = parse_rgb_number(match.group('g'))
-    blue = parse_rgb_number(match.group('b'))
+    red = parse_rgb_number(match.group("r"))
+    green = parse_rgb_number(match.group("g"))
+    blue = parse_rgb_number(match.group("b"))
     return Color.from_rgb(red, green, blue)
 
 
@@ -110,11 +112,13 @@ class Colour:
         The raw integer colour value.
     """
 
-    __slots__ = ('value',)
+    __slots__ = ("value",)
 
     def __init__(self, value: int):
         if not isinstance(value, int):
-            raise TypeError(f'Expected int parameter, received {value.__class__.__name__} instead.')
+            raise TypeError(
+                f"Expected int parameter, received {value.__class__.__name__} instead."
+            )
 
         self.value: int = value
 
@@ -128,13 +132,13 @@ class Colour:
         return not self.__eq__(other)
 
     def __str__(self) -> str:
-        return f'#{self.value:0>6x}'
+        return f"#{self.value:0>6x}"
 
     def __int__(self) -> int:
         return self.value
 
     def __repr__(self) -> str:
-        return f'<Colour value={self.value}>'
+        return f"<Colour value={self.value}>"
 
     def __hash__(self) -> int:
         return hash(self.value)
@@ -191,21 +195,21 @@ class Colour:
             The string could not be converted into a colour.
         """
 
-        if value[0] == '#':
+        if value[0] == "#":
             return parse_hex_number(value[1:])
 
-        if value[0:2] == '0x':
+        if value[0:2] == "0x":
             rest = value[2:]
             # Legacy backwards compatible syntax
-            if rest.startswith('#'):
+            if rest.startswith("#"):
                 return parse_hex_number(rest[1:])
             return parse_hex_number(rest)
 
         arg = value.lower()
-        if arg[0:3] == 'rgb':
+        if arg[0:3] == "rgb":
             return parse_rgb(arg)
 
-        raise ValueError('unknown colour format given')
+        raise ValueError("unknown colour format given")
 
     @classmethod
     def default(cls) -> Self:
@@ -213,7 +217,9 @@ class Colour:
         return cls(0)
 
     @classmethod
-    def random(cls, *, seed: Optional[Union[int, str, float, bytes, bytearray]] = None) -> Self:
+    def random(
+        cls, *, seed: Optional[Union[int, str, float, bytes, bytearray]] = None
+    ) -> Self:
         """A factory method that returns a :class:`Colour` with a random hue.
 
         .. note::

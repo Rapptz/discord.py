@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
     from types import TracebackType
 
-    BE = TypeVar('BE', bound=BaseException)
+    BE = TypeVar("BE", bound=BaseException)
 
 # fmt: off
 __all__ = (

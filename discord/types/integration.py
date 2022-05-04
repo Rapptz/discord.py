@@ -56,7 +56,7 @@ class PartialIntegration(TypedDict):
     application_id: Snowflake
 
 
-IntegrationType = Literal['twitch', 'youtube', 'discord']
+IntegrationType = Literal["twitch", "youtube", "discord"]
 
 
 class BaseIntegration(PartialIntegration):

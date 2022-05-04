@@ -123,7 +123,15 @@ class ForumChannel(_BaseTextChannel):
     type: Literal[15]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
+GuildChannel = Union[
+    TextChannel,
+    NewsChannel,
+    VoiceChannel,
+    CategoryChannel,
+    StageChannel,
+    ThreadChannel,
+    ForumChannel,
+]
 
 
 class DMChannel(_BaseChannel):

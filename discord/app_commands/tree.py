@@ -63,7 +63,10 @@ from ..enums import AppCommandType, InteractionType
 from ..utils import MISSING, _get_as_snowflake, _is_submodule
 
 if TYPE_CHECKING:
-    from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
+    from ..types.interactions import (
+        ApplicationCommandInteractionData,
+        ApplicationCommandInteractionDataOption,
+    )
     from ..interactions import Interaction
     from ..client import Client
     from ..abc import Snowflake
@@ -74,28 +77,30 @@ if TYPE_CHECKING:
         Coroutine[Any, Any, Any],
     ]
 
-__all__ = ('CommandTree',)
+__all__ = ("CommandTree",)
 
-ClientT = TypeVar('ClientT', bound='Client')
+ClientT = TypeVar("ClientT", bound="Client")
 
 APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
+    "Client does not have an application_id set. Either the function was called before on_ready "
+    "was called or application_id was not passed to the Client constructor."
 )
 
 
 def _retrieve_guild_ids(
-    command: Any, guild: Optional[Snowflake] = MISSING, guilds: Sequence[Snowflake] = MISSING
+    command: Any,
+    guild: Optional[Snowflake] = MISSING,
+    guilds: Sequence[Snowflake] = MISSING,
 ) -> Optional[Set[int]]:
     if guild is not MISSING and guilds is not MISSING:
-        raise TypeError('cannot mix guild and guilds keyword arguments')
+        raise TypeError("cannot mix guild and guilds keyword arguments")
 
     # guilds=[] or guilds=[...]
     if guild is MISSING:
         # If no arguments are given then it should default to the ones
         # given to the guilds(...) decorator or None for global.
         if guilds is MISSING:
-            return getattr(command, '_guild_ids', None)
+            return getattr(command, "_guild_ids", None)
 
         # guilds=[] is the same as global
         if len(guilds) == 0:
@@ -125,7 +130,7 @@ class CommandTree(Generic[ClientT]):
         self._state = client._connection
 
         if self._state._command_tree is not None:
-            raise ClientException('This client already has an associated command tree.')
+            raise ClientException("This client already has an associated command tree.")
 
         self._state._command_tree = self
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
@@ -136,7 +141,9 @@ class CommandTree(Generic[ClientT]):
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
 
-    async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
+    async def fetch_commands(
+        self, *, guild: Optional[Snowflake] = None
+    ) -> List[AppCommand]:
         """|coro|
 
         Fetches the application's current commands.
@@ -172,7 +179,9 @@ class CommandTree(Generic[ClientT]):
         if guild is None:
             commands = await self._http.get_global_commands(self.client.application_id)
         else:
-            commands = await self._http.get_guild_commands(self.client.application_id, guild.id)
+            commands = await self._http.get_guild_commands(
+                self.client.application_id, guild.id
+            )
 
         return [AppCommand(data=data, state=self._state) for data in commands]
 
@@ -280,9 +289,13 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
 
-                total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
+                total = sum(
+                    1 for _, g, t in self._context_menus if g == guild_id and t == type
+                )
                 if total + found > 5:
-                    raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
+                    raise CommandLimitReached(
+                        guild_id=guild_id, limit=5, type=AppCommandType(type)
+                    )
                 data[key] = command
 
             if guild_ids is None:
@@ -298,7 +311,9 @@ class CommandTree(Generic[ClientT]):
                 self._context_menus.update(current)
             return
         elif not isinstance(command, (Command, Group)):
-            raise TypeError(f'Expected a application command, received {command.__class__!r} instead')
+            raise TypeError(
+                f"Expected a application command, received {command.__class__!r} instead"
+            )
 
         # todo: validate application command groups having children (required)
 
@@ -406,7 +421,9 @@ class CommandTree(Generic[ClientT]):
             key = (command, guild_id, type.value)
             return self._context_menus.pop(key, None)
 
-    def clear_commands(self, *, guild: Optional[Snowflake], type: Optional[AppCommandType] = None) -> None:
+    def clear_commands(
+        self, *, guild: Optional[Snowflake], type: Optional[AppCommandType] = None
+    ) -> None:
         """Clears all application commands from the tree.
 
         This only removes the commands locally -- in order to sync the commands
@@ -601,7 +618,11 @@ class CommandTree(Generic[ClientT]):
         else:
             guild_id = None if guild is None else guild.id
             value = type.value
-            return [command for ((_, g, t), command) in self._context_menus.items() if g == guild_id and t == value]
+            return [
+                command
+                for ((_, g, t), command) in self._context_menus.items()
+                if g == guild_id and t == value
+            ]
 
     @overload
     def walk_commands(
@@ -627,7 +648,10 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = ...,
         type: AppCommandType,
-    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
+    ) -> Union[
+        Generator[Union[Command[Any, ..., Any], Group], None, None],
+        Generator[ContextMenu, None, None],
+    ]:
         ...
 
     def walk_commands(
@@ -635,7 +659,10 @@ class CommandTree(Generic[ClientT]):
         *,
         guild: Optional[Snowflake] = None,
         type: AppCommandType = AppCommandType.chat_input,
-    ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
+    ) -> Union[
+        Generator[Union[Command[Any, ..., Any], Group], None, None],
+        Generator[ContextMenu, None, None],
+    ]:
         """An iterator that recursively walks through all application commands and child commands from the tree.
 
         Parameters
@@ -680,19 +707,33 @@ class CommandTree(Generic[ClientT]):
         self, *, guild: Optional[Snowflake] = None
     ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
         if guild is None:
-            base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(self._global_commands.values())
-            base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None)
+            base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(
+                self._global_commands.values()
+            )
+            base.extend(
+                cmd for ((_, g, _), cmd) in self._context_menus.items() if g is None
+            )
             return base
         else:
             try:
                 commands = self._guild_commands[guild.id]
             except KeyError:
                 guild_id = guild.id
-                return [cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id]
+                return [
+                    cmd
+                    for ((_, g, _), cmd) in self._context_menus.items()
+                    if g == guild_id
+                ]
             else:
-                base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(commands.values())
+                base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(
+                    commands.values()
+                )
                 guild_id = guild.id
-                base.extend(cmd for ((_, g, _), cmd) in self._context_menus.items() if g == guild_id)
+                base.extend(
+                    cmd
+                    for ((_, g, _), cmd) in self._context_menus.items()
+                    if g == guild_id
+                )
                 return base
 
     def _remove_with_module(self, name: str) -> None:
@@ -745,11 +786,13 @@ class CommandTree(Generic[ClientT]):
             if command._has_any_error_handlers():
                 return
 
-            print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
+            print(f"Ignoring exception in command {command.name!r}:", file=sys.stderr)
         else:
-            print(f'Ignoring exception in command tree:', file=sys.stderr)
+            print(f"Ignoring exception in command tree:", file=sys.stderr)
 
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        traceback.print_exception(
+            error.__class__, error, error.__traceback__, file=sys.stderr
+        )
 
     def error(self, coro: ErrorFunc) -> ErrorFunc:
         """A decorator that registers a coroutine as a local error handler.
@@ -771,11 +814,11 @@ class CommandTree(Generic[ClientT]):
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError('The error handler must be a coroutine.')
+            raise TypeError("The error handler must be a coroutine.")
 
         params = inspect.signature(coro).parameters
         if len(params) != 2:
-            raise TypeError('error handler must have 2 parameters')
+            raise TypeError("error handler must have 2 parameters")
 
         # Type checker doesn't like overriding methods like this
         self.on_error = coro  # type: ignore
@@ -811,11 +854,11 @@ class CommandTree(Generic[ClientT]):
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:
             if not inspect.iscoroutinefunction(func):
-                raise TypeError('command function must be a coroutine function')
+                raise TypeError("command function must be a coroutine function")
 
             if description is MISSING:
                 if func.__doc__ is None:
-                    desc = '…'
+                    desc = "…"
                 else:
                     desc = _shorten(func.__doc__)
             else:
@@ -875,7 +918,7 @@ class CommandTree(Generic[ClientT]):
 
         def decorator(func: ContextMenuCallback) -> ContextMenu:
             if not inspect.iscoroutinefunction(func):
-                raise TypeError('context menu function must be a coroutine function')
+                raise TypeError("context menu function must be a coroutine function")
 
             actual_name = func.__name__.title() if name is MISSING else name
             context_menu = ContextMenu(name=actual_name, callback=func)
@@ -921,9 +964,13 @@ class CommandTree(Generic[ClientT]):
         commands = self._get_all_commands(guild=guild)
         payload = [command.to_dict() for command in commands]
         if guild is None:
-            data = await self._http.bulk_upsert_global_commands(self.client.application_id, payload=payload)
+            data = await self._http.bulk_upsert_global_commands(
+                self.client.application_id, payload=payload
+            )
         else:
-            data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
+            data = await self._http.bulk_upsert_guild_commands(
+                self.client.application_id, guild.id, payload=payload
+            )
 
         return [AppCommand(data=d, state=self._state) for d in data]
 
@@ -934,20 +981,22 @@ class CommandTree(Generic[ClientT]):
             except AppCommandError as e:
                 await self.on_error(interaction, e)
 
-        self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
+        self.client.loop.create_task(wrapper(), name="CommandTree-invoker")
 
-    def _get_context_menu(self, data: ApplicationCommandInteractionData) -> Optional[ContextMenu]:
-        name = data['name']
-        guild_id = _get_as_snowflake(data, 'guild_id')
-        return self._context_menus.get((name, guild_id, data.get('type', 1)))
+    def _get_context_menu(
+        self, data: ApplicationCommandInteractionData
+    ) -> Optional[ContextMenu]:
+        name = data["name"]
+        guild_id = _get_as_snowflake(data, "guild_id")
+        return self._context_menus.get((name, guild_id, data.get("type", 1)))
 
     def _get_app_command_options(
         self, data: ApplicationCommandInteractionData
     ) -> Tuple[Command[Any, ..., Any], List[ApplicationCommandInteractionDataOption]]:
         parents: List[str] = []
-        name = data['name']
+        name = data["name"]
 
-        command_guild_id = _get_as_snowflake(data, 'guild_id')
+        command_guild_id = _get_as_snowflake(data, "guild_id")
         if command_guild_id:
             try:
                 guild_commands = self._guild_commands[command_guild_id]
@@ -966,17 +1015,17 @@ class CommandTree(Generic[ClientT]):
         # to be tracked above like the parents, the actual command type, and the
         # resulting options we care about
         searching = True
-        options: List[ApplicationCommandInteractionDataOption] = data.get('options', [])
+        options: List[ApplicationCommandInteractionDataOption] = data.get("options", [])
         while searching:
             for option in options:
                 # Find subcommands
-                if option.get('type', 0) in (1, 2):
+                if option.get("type", 0) in (1, 2):
                     parents.append(name)
-                    name = option['name']
+                    name = option["name"]
                     command = command._get_internal_command(name)
                     if command is None:
                         raise CommandNotFound(name, parents)
-                    options = option.get('options', [])
+                    options = option.get("options", [])
                     break
                 else:
                     searching = False
@@ -992,9 +1041,14 @@ class CommandTree(Generic[ClientT]):
 
         return (command, options)
 
-    async def _call_context_menu(self, interaction: Interaction, data: ApplicationCommandInteractionData, type: int) -> None:
-        name = data['name']
-        guild_id = _get_as_snowflake(data, 'guild_id')
+    async def _call_context_menu(
+        self,
+        interaction: Interaction,
+        data: ApplicationCommandInteractionData,
+        type: int,
+    ) -> None:
+        name = data["name"]
+        guild_id = _get_as_snowflake(data, "guild_id")
         ctx_menu = self._context_menus.get((name, guild_id, type))
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = ctx_menu
@@ -1002,10 +1056,10 @@ class CommandTree(Generic[ClientT]):
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
-        resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
+        resolved = Namespace._get_resolved_items(interaction, data.get("resolved", {}))
 
         # This is annotated as str | int but realistically this will always be str
-        target_id: Optional[Union[str, int]] = data.get('target_id')
+        target_id: Optional[Union[str, int]] = data.get("target_id")
         # Right now, the only types are message and user
         # Therefore, there's no conflict with snowflakes
 
@@ -1016,7 +1070,9 @@ class CommandTree(Generic[ClientT]):
             raise CommandSignatureMismatch(ctx_menu)
 
         if value is None:
-            raise AppCommandError('This should not happen if Discord sent well-formed data.')
+            raise AppCommandError(
+                "This should not happen if Discord sent well-formed data."
+            )
 
         # I assume I don't have to type check here.
         try:
@@ -1064,7 +1120,7 @@ class CommandTree(Generic[ClientT]):
             return
 
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
-        type = data.get('type', 1)
+        type = data.get("type", 1)
         if type != 1:
             # Context menu command...
             await self._call_context_menu(interaction, data, type)
@@ -1077,16 +1133,18 @@ class CommandTree(Generic[ClientT]):
 
         # At this point options refers to the arguments of the command
         # and command refers to the class type we care about
-        namespace = Namespace(interaction, data.get('resolved', {}), options)
+        namespace = Namespace(interaction, data.get("resolved", {}), options)
 
         # Same pre-fill as above
         interaction._cs_namespace = namespace
 
         # Auto complete handles the namespace differently... so at this point this is where we decide where that is.
         if interaction.type is InteractionType.autocomplete:
-            focused = next((opt['name'] for opt in options if opt.get('focused')), None)
+            focused = next((opt["name"] for opt in options if opt.get("focused")), None)
             if focused is None:
-                raise AppCommandError('This should not happen, but there is no focused element. This is a Discord bug.')
+                raise AppCommandError(
+                    "This should not happen, but there is no focused element. This is a Discord bug."
+                )
             await command._invoke_autocomplete(interaction, focused, namespace)
             return
 

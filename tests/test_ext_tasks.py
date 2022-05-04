@@ -98,7 +98,11 @@ def test_task_regression_issue7659():
     assert loop._get_next_sleep_time(after_midnight) == expected_after_midnight
 
     today = datetime.date.today()
-    minute_before = [datetime.datetime.combine(today, time, tzinfo=jst) - datetime.timedelta(minutes=1) for time in times]
+    minute_before = [
+        datetime.datetime.combine(today, time, tzinfo=jst)
+        - datetime.timedelta(minutes=1)
+        for time in times
+    ]
 
     for before, expected_time in zip(minute_before, times):
         expected = datetime.datetime.combine(today, expected_time, tzinfo=jst)
@@ -120,7 +124,10 @@ def test_task_regression_issue7676():
     now = utils.utcnow()
     today = now.date()
     times_before_in_utc = [
-        datetime.datetime.combine(today, time, tzinfo=jst).astimezone(datetime.timezone.utc) - datetime.timedelta(minutes=1)
+        datetime.datetime.combine(today, time, tzinfo=jst).astimezone(
+            datetime.timezone.utc
+        )
+        - datetime.timedelta(minutes=1)
         for time in times
     ]
 
@@ -134,7 +141,7 @@ def test_task_regression_issue7676():
 def test_task_is_imaginary():
     import zoneinfo
 
-    tz = zoneinfo.ZoneInfo('America/New_York')
+    tz = zoneinfo.ZoneInfo("America/New_York")
 
     # 2:30 AM was skipped
     dt = datetime.datetime(2022, 3, 13, 2, 30, tzinfo=tz)
@@ -149,7 +156,7 @@ def test_task_is_imaginary():
 def test_task_is_ambiguous():
     import zoneinfo
 
-    tz = zoneinfo.ZoneInfo('America/New_York')
+    tz = zoneinfo.ZoneInfo("America/New_York")
 
     # 1:30 AM happened twice
     dt = datetime.datetime(2022, 11, 6, 1, 30, tzinfo=tz)
@@ -162,12 +169,28 @@ def test_task_is_ambiguous():
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason="zoneinfo requires 3.9")
 @pytest.mark.parametrize(
-    ('dt', 'key', 'expected'),
+    ("dt", "key", "expected"),
     [
-        (datetime.datetime(2022, 11, 6, 1, 30), 'America/New_York', datetime.datetime(2022, 11, 6, 1, 30, fold=1)),
-        (datetime.datetime(2022, 3, 13, 2, 30), 'America/New_York', datetime.datetime(2022, 3, 13, 3, 30)),
-        (datetime.datetime(2022, 4, 8, 2, 30), 'America/New_York', datetime.datetime(2022, 4, 8, 2, 30)),
-        (datetime.datetime(2023, 1, 7, 12, 30), 'UTC', datetime.datetime(2023, 1, 7, 12, 30)),
+        (
+            datetime.datetime(2022, 11, 6, 1, 30),
+            "America/New_York",
+            datetime.datetime(2022, 11, 6, 1, 30, fold=1),
+        ),
+        (
+            datetime.datetime(2022, 3, 13, 2, 30),
+            "America/New_York",
+            datetime.datetime(2022, 3, 13, 3, 30),
+        ),
+        (
+            datetime.datetime(2022, 4, 8, 2, 30),
+            "America/New_York",
+            datetime.datetime(2022, 4, 8, 2, 30),
+        ),
+        (
+            datetime.datetime(2023, 1, 7, 12, 30),
+            "UTC",
+            datetime.datetime(2023, 1, 7, 12, 30),
+        ),
     ],
 )
 def test_task_date_resolve(dt, key, expected):

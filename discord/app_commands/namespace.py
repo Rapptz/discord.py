@@ -35,9 +35,12 @@ from .models import AppCommandChannel, AppCommandThread
 
 if TYPE_CHECKING:
     from ..interactions import Interaction
-    from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
+    from ..types.interactions import (
+        ResolvedData,
+        ApplicationCommandInteractionDataOption,
+    )
 
-__all__ = ('Namespace',)
+__all__ = ("Namespace",)
 
 
 class ResolveKey(NamedTuple):
@@ -135,20 +138,20 @@ class Namespace:
     ):
         completed = self._get_resolved_items(interaction, resolved)
         for option in options:
-            opt_type = option['type']
-            name = option['name']
+            opt_type = option["type"]
+            name = option["name"]
             if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore # Key is there
+                value = option["value"]  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
-                value = option['value']  # type: ignore # Key is there
+                value = option["value"]  # type: ignore # Key is there
                 if value is None:
-                    self.__dict__[name] = float('nan')
+                    self.__dict__[name] = float("nan")
                 else:
                     self.__dict__[name] = float(value)
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore # Key is there
+                snowflake: str = option["value"]  # type: ignore # Key is there
                 if opt_type == 9:  # Mentionable
                     # Mentionable is User | Role, these do not cause any conflict
                     key = ResolveKey.any_with(snowflake)
@@ -163,20 +166,28 @@ class Namespace:
                 self.__dict__[name] = value
 
     @classmethod
-    def _get_resolved_items(cls, interaction: Interaction, resolved: ResolvedData) -> Dict[ResolveKey, Any]:
+    def _get_resolved_items(
+        cls, interaction: Interaction, resolved: ResolvedData
+    ) -> Dict[ResolveKey, Any]:
         completed: Dict[ResolveKey, Any] = {}
         state = interaction._state
-        members = resolved.get('members', {})
+        members = resolved.get("members", {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = (
+            (state._get_guild(guild_id) or Object(id=guild_id))
+            if guild_id is not None
+            else None
+        )
         type = AppCommandOptionType.user.value
-        for (user_id, user_data) in resolved.get('users', {}).items():
+        for (user_id, user_data) in resolved.get("users", {}).items():
             try:
                 member_data = members[user_id]
             except KeyError:
-                completed[ResolveKey(id=user_id, type=type)] = state.create_user(user_data)
+                completed[ResolveKey(id=user_id, type=type)] = state.create_user(
+                    user_data
+                )
             else:
-                member_data['user'] = user_data
+                member_data["user"] = user_data
                 # Guild ID can't be None in this case.
                 # There's a type mismatch here that I don't actually care about
                 member = Member(state=state, guild=guild, data=member_data)  # type: ignore
@@ -187,14 +198,14 @@ class Namespace:
             {
                 # The guild ID can't be None in this case.
                 ResolveKey(id=role_id, type=type): Role(guild=guild, state=state, data=role_data)  # type: ignore
-                for role_id, role_data in resolved.get('roles', {}).items()
+                for role_id, role_data in resolved.get("roles", {}).items()
             }
         )
 
         type = AppCommandOptionType.channel.value
-        for (channel_id, channel_data) in resolved.get('channels', {}).items():
+        for (channel_id, channel_data) in resolved.get("channels", {}).items():
             key = ResolveKey(id=channel_id, type=type)
-            if channel_data['type'] in (10, 11, 12):
+            if channel_data["type"] in (10, 11, 12):
                 # The guild ID can't be none in this case
                 completed[key] = AppCommandThread(state=state, data=channel_data, guild_id=guild_id)  # type: ignore
             else:
@@ -204,16 +215,22 @@ class Namespace:
         type = AppCommandOptionType.attachment.value
         completed.update(
             {
-                ResolveKey(id=attachment_id, type=type): Attachment(data=attachment_data, state=state)
-                for attachment_id, attachment_data in resolved.get('attachments', {}).items()
+                ResolveKey(id=attachment_id, type=type): Attachment(
+                    data=attachment_data, state=state
+                )
+                for attachment_id, attachment_data in resolved.get(
+                    "attachments", {}
+                ).items()
             }
         )
 
         guild = state._get_guild(guild_id)
-        for (message_id, message_data) in resolved.get('messages', {}).items():
-            channel_id = int(message_data['channel_id'])
+        for (message_id, message_data) in resolved.get("messages", {}).items():
+            channel_id = int(message_data["channel_id"])
             if guild is None:
-                channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
+                channel = PartialMessageable(
+                    state=state, guild_id=guild_id, id=channel_id
+                )
             else:
                 channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(
                     state=state, guild_id=guild_id, id=channel_id
@@ -227,8 +244,8 @@ class Namespace:
         return completed
 
     def __repr__(self) -> str:
-        items = (f'{k}={v!r}' for k, v in self.__dict__.items())
-        return '<{} {}>'.format(self.__class__.__name__, ' '.join(items))
+        items = (f"{k}={v!r}" for k, v in self.__dict__.items())
+        return "<{} {}>".format(self.__class__.__name__, " ".join(items))
 
     def __eq__(self, other: object) -> bool:
         if isinstance(self, Namespace) and isinstance(other, Namespace):

@@ -42,7 +42,13 @@ import inspect
 from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
 from .core import Command, Group
-from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
+from .errors import (
+    BadArgument,
+    CommandRegistrationError,
+    CommandError,
+    HybridCommandError,
+    ConversionError,
+)
 from .converter import Converter, Range, Greedy, run_converters
 from .parameters import Parameter
 from .cog import Cog
@@ -61,35 +67,35 @@ if TYPE_CHECKING:
 
 
 __all__ = (
-    'HybridCommand',
-    'HybridGroup',
-    'hybrid_command',
-    'hybrid_group',
+    "HybridCommand",
+    "HybridGroup",
+    "hybrid_command",
+    "hybrid_group",
 )
 
-T = TypeVar('T')
-U = TypeVar('U')
-CogT = TypeVar('CogT', bound='Cog')
-CommandT = TypeVar('CommandT', bound='Command')
+T = TypeVar("T")
+U = TypeVar("U")
+CogT = TypeVar("CogT", bound="Cog")
+CommandT = TypeVar("CommandT", bound="Command")
 # CHT = TypeVar('CHT', bound='Check')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar("GroupT", bound="Group")
 _NoneType = type(None)
 
 if TYPE_CHECKING:
-    P = ParamSpec('P')
-    P2 = ParamSpec('P2')
+    P = ParamSpec("P")
+    P2 = ParamSpec("P2")
 
     CommandCallback = Union[
         Callable[Concatenate[CogT, ContextT, P], Coro[T]],
         Callable[Concatenate[ContextT, P], Coro[T]],
     ]
 else:
-    P = TypeVar('P')
-    P2 = TypeVar('P2')
+    P = TypeVar("P")
+    P2 = TypeVar("P2")
 
 
 class _CallableDefault:
-    __slots__ = ('func',)
+    __slots__ = ("func",)
 
     def __init__(self, func: Callable[[Context], Any]) -> None:
         self.func: Callable[[Context], Any] = func
@@ -100,12 +106,14 @@ class _CallableDefault:
 
 
 def is_converter(converter: Any) -> bool:
-    return (inspect.isclass(converter) and issubclass(converter, Converter)) or isinstance(converter, Converter)
+    return (
+        inspect.isclass(converter) and issubclass(converter, Converter)
+    ) or isinstance(converter, Converter)
 
 
 def is_transformer(converter: Any) -> bool:
-    return hasattr(converter, '__discord_app_commands_transformer__') or hasattr(
-        converter, '__discord_app_commands_transform__'
+    return hasattr(converter, "__discord_app_commands_transformer__") or hasattr(
+        converter, "__discord_app_commands_transform__"
     )
 
 
@@ -129,10 +137,16 @@ def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]
         except Exception as exc:
             raise ConversionError(converter, exc) from exc
 
-    return type('ConverterTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
+    return type(
+        "ConverterTransformer",
+        (app_commands.Transformer,),
+        {"transform": classmethod(transform)},
+    )
 
 
-def make_callable_transformer(func: Callable[[str], Any]) -> Type[app_commands.Transformer]:
+def make_callable_transformer(
+    func: Callable[[str], Any]
+) -> Type[app_commands.Transformer]:
     async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
         try:
             return func(value)
@@ -141,10 +155,16 @@ def make_callable_transformer(func: Callable[[str], Any]) -> Type[app_commands.T
         except Exception as exc:
             raise BadArgument(f'Converting to "{func.__name__}" failed') from exc
 
-    return type('CallableTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
+    return type(
+        "CallableTransformer",
+        (app_commands.Transformer,),
+        {"transform": classmethod(transform)},
+    )
 
 
-def make_greedy_transformer(converter: Any, parameter: Parameter) -> Type[app_commands.Transformer]:
+def make_greedy_transformer(
+    converter: Any, parameter: Parameter
+) -> Type[app_commands.Transformer]:
     async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
         view = StringView(value)
         result = []
@@ -155,15 +175,23 @@ def make_greedy_transformer(converter: Any, parameter: Parameter) -> Type[app_co
                 break
 
             # This propagates the exception
-            converted = await run_converters(interaction._baton, converter, arg, parameter)
+            converted = await run_converters(
+                interaction._baton, converter, arg, parameter
+            )
             result.append(converted)
 
         return result
 
-    return type('GreedyTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
+    return type(
+        "GreedyTransformer",
+        (app_commands.Transformer,),
+        {"transform": classmethod(transform)},
+    )
 
 
-def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Signature) -> List[inspect.Parameter]:
+def replace_parameters(
+    parameters: Dict[str, Parameter], signature: inspect.Signature
+) -> List[inspect.Parameter]:
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
     for name, parameter in parameters.items():
@@ -176,8 +204,8 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
             app_commands.transformers.get_supported_annotation(converter)
         except TypeError:
             # Fallback to see if the behaviour needs changing
-            origin = getattr(converter, '__origin__', None)
-            args = getattr(converter, '__args__', [])
+            origin = getattr(converter, "__origin__", None)
+            args = getattr(converter, "__args__", [])
             if isinstance(converter, Range):
                 r = converter
                 param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
@@ -186,7 +214,9 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
                 # However, in here, it probably makes sense to make it required.
                 # I'm unsure how to allow the user to choose right now.
                 inner = converter.converter
-                param = param.replace(annotation=make_greedy_transformer(inner, parameter))
+                param = param.replace(
+                    annotation=make_greedy_transformer(inner, parameter)
+                )
             elif is_converter(converter):
                 param = param.replace(annotation=make_converter_transformer(converter))
             elif origin is Union:
@@ -205,7 +235,11 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
                 param = param.replace(annotation=make_callable_transformer(converter))
 
         if parameter.default is not parameter.empty:
-            default = _CallableDefault(parameter.default) if callable(parameter.default) else parameter.default
+            default = (
+                _CallableDefault(parameter.default)
+                if callable(parameter.default)
+                else parameter.default
+            )
             param = param.replace(default=default)
 
         if isinstance(param.default, Parameter):
@@ -227,7 +261,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             super().__init__(
                 name=wrapped.name,
                 callback=wrapped.callback,  # type: ignore # Signature doesn't match but we're overriding the invoke
-                description=wrapped.description or wrapped.short_doc or '…',
+                description=wrapped.description or wrapped.short_doc or "…",
             )
         finally:
             del wrapped.callback.__signature__
@@ -244,7 +278,9 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         bindings = {
             self.binding: self.binding,
         }
-        return self._copy_with(parent=self.parent, binding=self.binding, bindings=bindings)
+        return self._copy_with(
+            parent=self.parent, binding=self.binding, bindings=bindings
+        )
 
     async def _transform_arguments(
         self, interaction: discord.Interaction, namespace: app_commands.Namespace
@@ -258,13 +294,17 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             except KeyError:
                 if not param.required:
                     if isinstance(param.default, _CallableDefault):
-                        transformed_values[param.name] = await maybe_coroutine(param.default.func, interaction._baton)
+                        transformed_values[param.name] = await maybe_coroutine(
+                            param.default.func, interaction._baton
+                        )
                     else:
                         transformed_values[param.name] = param.default
                 else:
                     raise app_commands.CommandSignatureMismatch(self) from None
             else:
-                transformed_values[param.name] = await param.transform(interaction, value)
+                transformed_values[param.name] = await param.transform(
+                    interaction, value
+                )
 
         return transformed_values
 
@@ -321,7 +361,9 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
 
         return True
 
-    async def _invoke_with_namespace(self, interaction: discord.Interaction, namespace: app_commands.Namespace) -> Any:
+    async def _invoke_with_namespace(
+        self, interaction: discord.Interaction, namespace: app_commands.Namespace
+    ) -> Any:
         # Wrap the interaction into a Context
         bot: Bot = interaction.client  # type: ignore
 
@@ -330,7 +372,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         # then this doesn't work.
         interaction._baton = ctx = await bot.get_context(interaction)
         command = self.wrapped
-        bot.dispatch('command', ctx)
+        bot.dispatch("command", ctx)
         value = None
         try:
             await command.prepare(ctx)
@@ -358,7 +400,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             await command.call_after_hooks(ctx)
 
         if not ctx.command_failed:
-            bot.dispatch('command_completion', ctx)
+            bot.dispatch("command_completion", ctx)
 
         return value
 
@@ -408,7 +450,9 @@ class HybridCommand(Command[CogT, P, T]):
         if interaction is None:
             return await super()._parse_arguments(ctx)
         else:
-            ctx.kwargs = await self.app_command._transform_arguments(interaction, interaction.namespace)
+            ctx.kwargs = await self.app_command._transform_arguments(
+                interaction, interaction.namespace
+            )
 
     def _ensure_assignment_on_copy(self, other: Self) -> Self:
         copy = super()._ensure_assignment_on_copy(other)
@@ -418,7 +462,9 @@ class HybridCommand(Command[CogT, P, T]):
 
     def autocomplete(
         self, name: str
-    ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
+    ) -> Callable[
+        [AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]
+    ]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
         This is the same as :meth:`~discord.app_commands.Command.autocomplete`. It is only
@@ -470,7 +516,9 @@ class HybridGroup(Group[CogT, P, T]):
 
     __commands_is_hybrid__: ClassVar[bool] = True
 
-    def __init__(self, *args: Any, fallback: Optional[str] = None, **attrs: Any) -> None:
+    def __init__(
+        self, *args: Any, fallback: Optional[str] = None, **attrs: Any
+    ) -> None:
         super().__init__(*args, **attrs)
         self.invoke_without_command = True
         parent = None
@@ -478,14 +526,22 @@ class HybridGroup(Group[CogT, P, T]):
             if isinstance(self.parent, HybridGroup):
                 parent = self.parent.app_command
             else:
-                raise TypeError(f'HybridGroup parent must be HybridGroup not {self.parent.__class__}')
+                raise TypeError(
+                    f"HybridGroup parent must be HybridGroup not {self.parent.__class__}"
+                )
 
-        guild_ids = attrs.pop('guild_ids', None) or getattr(self.callback, '__discord_app_commands_default_guilds__', None)
-        guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
-        default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
+        guild_ids = attrs.pop("guild_ids", None) or getattr(
+            self.callback, "__discord_app_commands_default_guilds__", None
+        )
+        guild_only = getattr(
+            self.callback, "__discord_app_commands_guild_only__", False
+        )
+        default_permissions = getattr(
+            self.callback, "__discord_app_commands_default_permissions__", None
+        )
         self.app_command: app_commands.Group = app_commands.Group(
             name=self.name,
-            description=self.description or self.short_doc or '…',
+            description=self.description or self.short_doc or "…",
             guild_ids=guild_ids,
             guild_only=guild_only,
             default_permissions=default_permissions,
@@ -526,7 +582,9 @@ class HybridGroup(Group[CogT, P, T]):
         interaction = ctx.interaction
         fallback = self._fallback_command
         if interaction is not None and fallback:
-            ctx.kwargs = await fallback._transform_arguments(interaction, interaction.namespace)
+            ctx.kwargs = await fallback._transform_arguments(
+                interaction, interaction.namespace
+            )
         else:
             return await super()._parse_arguments(ctx)
 
@@ -537,7 +595,9 @@ class HybridGroup(Group[CogT, P, T]):
 
     def autocomplete(
         self, name: str
-    ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
+    ) -> Callable[
+        [AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]
+    ]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
         This is the same as :meth:`~discord.app_commands.Command.autocomplete`. It is only
@@ -566,12 +626,18 @@ class HybridGroup(Group[CogT, P, T]):
             return self._fallback_command.autocomplete(name)
         else:
 
-            def decorator(func: AutocompleteCallback[CogT, ChoiceT]) -> AutocompleteCallback[CogT, ChoiceT]:
+            def decorator(
+                func: AutocompleteCallback[CogT, ChoiceT]
+            ) -> AutocompleteCallback[CogT, ChoiceT]:
                 return func
 
             return decorator
 
-    def add_command(self, command: Union[HybridGroup[CogT, ..., Any], HybridCommand[CogT, ..., Any]], /) -> None:
+    def add_command(
+        self,
+        command: Union[HybridGroup[CogT, ..., Any], HybridCommand[CogT, ..., Any]],
+        /,
+    ) -> None:
         """Adds a :class:`.HybridCommand` into the internal list of commands.
 
         This is usually not called, instead the :meth:`~.GroupMixin.command` or
@@ -591,10 +657,14 @@ class HybridGroup(Group[CogT, P, T]):
         """
 
         if not isinstance(command, (HybridCommand, HybridGroup)):
-            raise TypeError('The command passed must be a subclass of HybridCommand or HybridGroup')
+            raise TypeError(
+                "The command passed must be a subclass of HybridCommand or HybridGroup"
+            )
 
         if isinstance(command, HybridGroup) and self.parent is not None:
-            raise ValueError(f'{command.qualified_name!r} is too nested, groups can only be nested at most one level')
+            raise ValueError(
+                f"{command.qualified_name!r} is too nested, groups can only be nested at most one level"
+            )
 
         self.app_command.add_command(command.app_command)
         command.parent = self
@@ -630,7 +700,7 @@ class HybridGroup(Group[CogT, P, T]):
         """
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault("parent", self)
             result = hybrid_command(name=name, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -653,7 +723,7 @@ class HybridGroup(Group[CogT, P, T]):
         """
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault("parent", self)
             result = hybrid_group(name=name, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -702,7 +772,7 @@ def hybrid_command(
 
     def decorator(func: CommandCallback[CogT, ContextT, P, T]):
         if isinstance(func, Command):
-            raise TypeError('Callback is already a command.')
+            raise TypeError("Callback is already a command.")
         return HybridCommand(func, name=name, **attrs)
 
     return decorator
@@ -720,7 +790,7 @@ def hybrid_group(
 
     def decorator(func: CommandCallback[CogT, ContextT, P, T]):
         if isinstance(func, Command):
-            raise TypeError('Callback is already a command.')
+            raise TypeError("Callback is already a command.")
         return HybridGroup(func, name=name, **attrs)
 
     return decorator  # type: ignore

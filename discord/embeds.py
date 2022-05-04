@@ -25,7 +25,17 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    List,
+    Mapping,
+    Optional,
+    Protocol,
+    TYPE_CHECKING,
+    TypeVar,
+    Union,
+)
 
 from . import utils
 from .colour import Colour
@@ -45,8 +55,10 @@ class EmbedProxy:
         return len(self.__dict__)
 
     def __repr__(self) -> str:
-        inner = ', '.join((f'{k}={v!r}' for k, v in self.__dict__.items() if not k.startswith('_')))
-        return f'EmbedProxy({inner})'
+        inner = ", ".join(
+            (f"{k}={v!r}" for k, v in self.__dict__.items() if not k.startswith("_"))
+        )
+        return f"EmbedProxy({inner})"
 
     def __getattr__(self, attr: str) -> None:
         return None
@@ -57,7 +69,7 @@ if TYPE_CHECKING:
 
     from .types.embed import Embed as EmbedData, EmbedType
 
-    T = TypeVar('T')
+    T = TypeVar("T")
 
     class _EmbedFooterProxy(Protocol):
         text: Optional[str]
@@ -140,19 +152,19 @@ class Embed:
     """
 
     __slots__ = (
-        'title',
-        'url',
-        'type',
-        '_timestamp',
-        '_colour',
-        '_footer',
-        '_image',
-        '_thumbnail',
-        '_video',
-        '_provider',
-        '_author',
-        '_fields',
-        'description',
+        "title",
+        "url",
+        "type",
+        "_timestamp",
+        "_colour",
+        "_footer",
+        "_image",
+        "_thumbnail",
+        "_video",
+        "_provider",
+        "_author",
+        "_fields",
+        "description",
     )
 
     def __init__(
@@ -161,7 +173,7 @@ class Embed:
         colour: Optional[Union[int, Colour]] = None,
         color: Optional[Union[int, Colour]] = None,
         title: Optional[Any] = None,
-        type: EmbedType = 'rich',
+        type: EmbedType = "rich",
         url: Optional[Any] = None,
         description: Optional[Any] = None,
         timestamp: Optional[datetime.datetime] = None,
@@ -206,10 +218,10 @@ class Embed:
 
         # fill in the basic fields
 
-        self.title = data.get('title', None)
-        self.type = data.get('type', None)
-        self.description = data.get('description', None)
-        self.url = data.get('url', None)
+        self.title = data.get("title", None)
+        self.type = data.get("type", None)
+        self.description = data.get("description", None)
+        self.url = data.get("url", None)
 
         if self.title is not None:
             self.title = str(self.title)
@@ -223,22 +235,30 @@ class Embed:
         # try to fill in the more rich fields
 
         try:
-            self._colour = Colour(value=data['color'])
+            self._colour = Colour(value=data["color"])
         except KeyError:
             pass
 
         try:
-            self._timestamp = utils.parse_time(data['timestamp'])
+            self._timestamp = utils.parse_time(data["timestamp"])
         except KeyError:
             pass
 
-        for attr in ('thumbnail', 'video', 'provider', 'author', 'fields', 'image', 'footer'):
+        for attr in (
+            "thumbnail",
+            "video",
+            "provider",
+            "author",
+            "fields",
+            "image",
+            "footer",
+        ):
             try:
                 value = data[attr]
             except KeyError:
                 continue
             else:
-                setattr(self, '_' + attr, value)
+                setattr(self, "_" + attr, value)
 
         return self
 
@@ -247,12 +267,12 @@ class Embed:
         return self.__class__.from_dict(self.to_dict())
 
     def __len__(self) -> int:
-        total = len(self.title or '') + len(self.description or '')
-        for field in getattr(self, '_fields', []):
-            total += len(field['name']) + len(field['value'])
+        total = len(self.title or "") + len(self.description or "")
+        for field in getattr(self, "_fields", []):
+            total += len(field["name"]) + len(field["value"])
 
         try:
-            footer_text = self._footer['text']
+            footer_text = self._footer["text"]
         except (AttributeError, KeyError):
             pass
         else:
@@ -263,7 +283,7 @@ class Embed:
         except AttributeError:
             pass
         else:
-            total += len(author['name'])
+            total += len(author["name"])
 
         return total
 
@@ -287,7 +307,7 @@ class Embed:
 
     @property
     def colour(self) -> Optional[Colour]:
-        return getattr(self, '_colour', None)
+        return getattr(self, "_colour", None)
 
     @colour.setter
     def colour(self, value: Optional[Union[int, Colour]]) -> None:
@@ -298,13 +318,15 @@ class Embed:
         elif isinstance(value, int):
             self._colour = Colour(value=value)
         else:
-            raise TypeError(f'Expected discord.Colour, int, or None but received {value.__class__.__name__} instead.')
+            raise TypeError(
+                f"Expected discord.Colour, int, or None but received {value.__class__.__name__} instead."
+            )
 
     color = colour
 
     @property
     def timestamp(self) -> Optional[datetime.datetime]:
-        return getattr(self, '_timestamp', None)
+        return getattr(self, "_timestamp", None)
 
     @timestamp.setter
     def timestamp(self, value: Optional[datetime.datetime]) -> None:
@@ -315,7 +337,9 @@ class Embed:
         elif value is None:
             self._timestamp = None
         else:
-            raise TypeError(f"Expected datetime.datetime or None received {value.__class__.__name__} instead")
+            raise TypeError(
+                f"Expected datetime.datetime or None received {value.__class__.__name__} instead"
+            )
 
     @property
     def footer(self) -> _EmbedFooterProxy:
@@ -326,9 +350,11 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_footer', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_footer", {}))  # type: ignore
 
-    def set_footer(self, *, text: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
+    def set_footer(
+        self, *, text: Optional[Any] = None, icon_url: Optional[Any] = None
+    ) -> Self:
         """Sets the footer for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -344,10 +370,10 @@ class Embed:
 
         self._footer = {}
         if text is not None:
-            self._footer['text'] = str(text)
+            self._footer["text"] = str(text)
 
         if icon_url is not None:
-            self._footer['icon_url'] = str(icon_url)
+            self._footer["icon_url"] = str(icon_url)
 
         return self
 
@@ -380,7 +406,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_image", {}))  # type: ignore
 
     def set_image(self, *, url: Optional[Any]) -> Self:
         """Sets the image for the embed content.
@@ -401,7 +427,7 @@ class Embed:
                 pass
         else:
             self._image = {
-                'url': str(url),
+                "url": str(url),
             }
 
         return self
@@ -420,7 +446,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_thumbnail', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_thumbnail", {}))  # type: ignore
 
     def set_thumbnail(self, *, url: Optional[Any]) -> Self:
         """Sets the thumbnail for the embed content.
@@ -444,7 +470,7 @@ class Embed:
                 pass
         else:
             self._thumbnail = {
-                'url': str(url),
+                "url": str(url),
             }
 
         return self
@@ -462,7 +488,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_video', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_video", {}))  # type: ignore
 
     @property
     def provider(self) -> _EmbedProviderProxy:
@@ -473,7 +499,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_provider', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_provider", {}))  # type: ignore
 
     @property
     def author(self) -> _EmbedAuthorProxy:
@@ -484,9 +510,11 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
+        return EmbedProxy(getattr(self, "_author", {}))  # type: ignore
 
-    def set_author(self, *, name: Any, url: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
+    def set_author(
+        self, *, name: Any, url: Optional[Any] = None, icon_url: Optional[Any] = None
+    ) -> Self:
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -503,14 +531,14 @@ class Embed:
         """
 
         self._author = {
-            'name': str(name),
+            "name": str(name),
         }
 
         if url is not None:
-            self._author['url'] = str(url)
+            self._author["url"] = str(url)
 
         if icon_url is not None:
-            self._author['icon_url'] = str(icon_url)
+            self._author["icon_url"] = str(icon_url)
 
         return self
 
@@ -538,7 +566,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return [EmbedProxy(d) for d in getattr(self, '_fields', [])]  # type: ignore
+        return [EmbedProxy(d) for d in getattr(self, "_fields", [])]  # type: ignore
 
     def add_field(self, *, name: Any, value: Any, inline: bool = True) -> Self:
         """Adds a field to the embed object.
@@ -557,9 +585,9 @@ class Embed:
         """
 
         field = {
-            'inline': inline,
-            'name': str(name),
-            'value': str(value),
+            "inline": inline,
+            "name": str(name),
+            "value": str(value),
         }
 
         try:
@@ -569,7 +597,9 @@ class Embed:
 
         return self
 
-    def insert_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
+    def insert_field_at(
+        self, index: int, *, name: Any, value: Any, inline: bool = True
+    ) -> Self:
         """Inserts a field before a specified index to the embed.
 
         This function returns the class instance to allow for fluent-style
@@ -590,9 +620,9 @@ class Embed:
         """
 
         field = {
-            'inline': inline,
-            'name': str(name),
-            'value': str(value),
+            "inline": inline,
+            "name": str(name),
+            "value": str(value),
         }
 
         try:
@@ -630,7 +660,9 @@ class Embed:
         except (AttributeError, IndexError):
             pass
 
-    def set_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
+    def set_field_at(
+        self, index: int, *, name: Any, value: Any, inline: bool = True
+    ) -> Self:
         """Modifies a field to the embed object.
 
         The index must point to a valid pre-existing field. Can only be up to 25 fields.
@@ -658,11 +690,11 @@ class Embed:
         try:
             field = self._fields[index]
         except (TypeError, IndexError, AttributeError):
-            raise IndexError('field index out of range')
+            raise IndexError("field index out of range")
 
-        field['name'] = str(name)
-        field['value'] = str(value)
-        field['inline'] = inline
+        field["name"] = str(name)
+        field["value"] = str(value)
+        field["inline"] = inline
         return self
 
     def to_dict(self) -> EmbedData:
@@ -680,35 +712,39 @@ class Embed:
         # deal with basic convenience wrappers
 
         try:
-            colour = result.pop('colour')
+            colour = result.pop("colour")
         except KeyError:
             pass
         else:
             if colour:
-                result['color'] = colour.value
+                result["color"] = colour.value
 
         try:
-            timestamp = result.pop('timestamp')
+            timestamp = result.pop("timestamp")
         except KeyError:
             pass
         else:
             if timestamp:
                 if timestamp.tzinfo:
-                    result['timestamp'] = timestamp.astimezone(tz=datetime.timezone.utc).isoformat()
+                    result["timestamp"] = timestamp.astimezone(
+                        tz=datetime.timezone.utc
+                    ).isoformat()
                 else:
-                    result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
+                    result["timestamp"] = timestamp.replace(
+                        tzinfo=datetime.timezone.utc
+                    ).isoformat()
 
         # add in the non raw attribute ones
         if self.type:
-            result['type'] = self.type
+            result["type"] = self.type
 
         if self.description:
-            result['description'] = self.description
+            result["description"] = self.description
 
         if self.url:
-            result['url'] = self.url
+            result["url"] = self.url
 
         if self.title:
-            result['title'] = self.title
+            result["title"] = self.title
 
         return result  # type: ignore # This payload is equivalent to the EmbedData type

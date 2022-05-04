@@ -50,12 +50,12 @@ if TYPE_CHECKING:
     from .context import Context
 
 __all__ = (
-    'Parameter',
-    'parameter',
-    'param',
-    'Author',
-    'CurrentChannel',
-    'CurrentGuild',
+    "Parameter",
+    "parameter",
+    "param",
+    "Author",
+    "CurrentChannel",
+    "CurrentGuild",
 )
 
 
@@ -71,7 +71,7 @@ empty: Any = inspect.Parameter.empty
 
 
 def _gen_property(name: str) -> property:
-    attr = f'_{name}'
+    attr = f"_{name}"
     return property(
         attrgetter(attr),
         lambda self, value: setattr(self, attr, value),
@@ -87,7 +87,7 @@ class Parameter(inspect.Parameter):
     .. versionadded:: 2.0
     """
 
-    __slots__ = ('_displayed_default', '_fallback')
+    __slots__ = ("_displayed_default", "_fallback")
 
     def __init__(
         self,
@@ -133,11 +133,13 @@ class Parameter(inspect.Parameter):
             displayed_default=displayed_default,
         )
 
-    if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
-        name = _gen_property('name')
-        kind = _gen_property('kind')
-        default = _gen_property('default')
-        annotation = _gen_property('annotation')
+    if (
+        not TYPE_CHECKING
+    ):  # this is to prevent anything breaking if inspect internals change
+        name = _gen_property("name")
+        kind = _gen_property("kind")
+        default = _gen_property("default")
+        annotation = _gen_property("annotation")
 
     @property
     def required(self) -> bool:
@@ -209,7 +211,7 @@ def parameter(
         The displayed default in :attr:`Command.signature`.
     """
     return Parameter(
-        name='empty',
+        name="empty",
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
         annotation=converter,
         default=default,
@@ -238,15 +240,15 @@ An alias for :func:`parameter`.
 
 # some handy defaults
 Author = parameter(
-    default=attrgetter('author'),
-    displayed_default='<you>',
+    default=attrgetter("author"),
+    displayed_default="<you>",
     converter=Union[Member, User],
 )
 Author._fallback = True
 
 CurrentChannel = parameter(
-    default=attrgetter('channel'),
-    displayed_default='<this channel>',
+    default=attrgetter("channel"),
+    displayed_default="<this channel>",
     converter=Union[TextChannel, DMChannel, Thread, VoiceChannel],
 )
 CurrentChannel._fallback = True
@@ -260,7 +262,7 @@ def default_guild(ctx: Context[Any]) -> Guild:
 
 CurrentGuild = parameter(
     default=default_guild,
-    displayed_default='<this server>',
+    displayed_default="<this server>",
     converter=GuildConverter,
 )
 

@@ -40,8 +40,8 @@ if TYPE_CHECKING:
     )
 
 __all__ = (
-    'Team',
-    'TeamMember',
+    "Team",
+    "TeamMember",
 )
 
 
@@ -62,26 +62,28 @@ class Team:
         .. versionadded:: 1.3
     """
 
-    __slots__ = ('_state', 'id', 'name', '_icon', 'owner_id', 'members')
+    __slots__ = ("_state", "id", "name", "_icon", "owner_id", "members")
 
     def __init__(self, state: ConnectionState, data: TeamPayload):
         self._state: ConnectionState = state
 
-        self.id: int = int(data['id'])
-        self.name: str = data['name']
-        self._icon: Optional[str] = data['icon']
-        self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_user_id')
-        self.members: List[TeamMember] = [TeamMember(self, self._state, member) for member in data['members']]
+        self.id: int = int(data["id"])
+        self.name: str = data["name"]
+        self._icon: Optional[str] = data["icon"]
+        self.owner_id: Optional[int] = utils._get_as_snowflake(data, "owner_user_id")
+        self.members: List[TeamMember] = [
+            TeamMember(self, self._state, member) for member in data["members"]
+        ]
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        return f"<{self.__class__.__name__} id={self.id} name={self.name}>"
 
     @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`.Asset`]: Retrieves the team's icon asset, if any."""
         if self._icon is None:
             return None
-        return Asset._from_icon(self._state, self.id, self._icon, path='team')
+        return Asset._from_icon(self._state, self.id, self._icon, path="team")
 
     @property
     def owner(self) -> Optional[TeamMember]:
@@ -128,16 +130,18 @@ class TeamMember(BaseUser):
         The membership state of the member (e.g. invited or accepted)
     """
 
-    __slots__ = ('team', 'membership_state', 'permissions')
+    __slots__ = ("team", "membership_state", "permissions")
 
     def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload):
         self.team: Team = team
-        self.membership_state: TeamMembershipState = try_enum(TeamMembershipState, data['membership_state'])
-        self.permissions: List[str] = data['permissions']
-        super().__init__(state=state, data=data['user'])
+        self.membership_state: TeamMembershipState = try_enum(
+            TeamMembershipState, data["membership_state"]
+        )
+        self.permissions: List[str] = data["permissions"]
+        super().__init__(state=state, data=data["user"])
 
     def __repr__(self) -> str:
         return (
-            f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
-            f'discriminator={self.discriminator!r} membership_state={self.membership_state!r}>'
+            f"<{self.__class__.__name__} id={self.id} name={self.name!r} "
+            f"discriminator={self.discriminator!r} membership_state={self.membership_state!r}>"
         )

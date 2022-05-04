@@ -30,15 +30,15 @@ from discord.ext import commands
 
 
 def test_descriptions_describe():
-    @app_commands.command(description='This is the short description that will appear.')
-    @app_commands.describe(arg='Decorator description of arg.')
-    @app_commands.describe(arg2='Decorator description of arg2.')
+    @app_commands.command(description="This is the short description that will appear.")
+    @app_commands.describe(arg="Decorator description of arg.")
+    @app_commands.describe(arg2="Decorator description of arg2.")
     async def describe(interaction: discord.Interaction, arg: str, arg2: int) -> None:
         ...
 
-    assert describe.description == 'This is the short description that will appear.'
-    assert describe._params['arg'].description == 'Decorator description of arg.'
-    assert describe._params['arg2'].description == 'Decorator description of arg2.'
+    assert describe.description == "This is the short description that will appear."
+    assert describe._params["arg"].description == "Decorator description of arg."
+    assert describe._params["arg2"].description == "Decorator description of arg2."
 
 
 def test_descriptions_no_args():
@@ -46,7 +46,7 @@ def test_descriptions_no_args():
     async def no_args(interaction: discord.Interaction) -> None:
         """This is the short description that will appear."""
 
-    assert no_args.description == 'This is the short description that will appear.'
+    assert no_args.description == "This is the short description that will appear."
 
 
 def test_descriptions_numpy():
@@ -65,9 +65,12 @@ def test_descriptions_numpy():
             Docstring description of arg2.
         """
 
-    assert numpy.description == 'This is the short description that will appear.'
-    assert numpy._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert numpy._params['arg2'].description == 'Docstring description of arg2.'
+    assert numpy.description == "This is the short description that will appear."
+    assert (
+        numpy._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert numpy._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_numpy_extras():
@@ -93,9 +96,12 @@ def test_descriptions_numpy_extras():
             This function does not return anything.
         """
 
-    assert numpy.description == 'This is the short description that will appear.'
-    assert numpy._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert numpy._params['arg2'].description == 'Docstring description of arg2.'
+    assert numpy.description == "This is the short description that will appear."
+    assert (
+        numpy._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert numpy._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_google():
@@ -111,9 +117,12 @@ def test_descriptions_google():
             arg2 (int): Docstring description of arg2.
         """
 
-    assert google.description == 'This is the short description that will appear.'
-    assert google._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert google._params['arg2'].description == 'Docstring description of arg2.'
+    assert google.description == "This is the short description that will appear."
+    assert (
+        google._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert google._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_google_extras():
@@ -135,9 +144,12 @@ def test_descriptions_google_extras():
                 This function does not return anything.
         """
 
-    assert google.description == 'This is the short description that will appear.'
-    assert google._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert google._params['arg2'].description == 'Docstring description of arg2.'
+    assert google.description == "This is the short description that will appear."
+    assert (
+        google._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert google._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_sphinx():
@@ -154,9 +166,12 @@ def test_descriptions_sphinx():
         :type arg2: int
         """
 
-    assert sphinx.description == 'This is the short description that will appear.'
-    assert sphinx._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert sphinx._params['arg2'].description == 'Docstring description of arg2.'
+    assert sphinx.description == "This is the short description that will appear."
+    assert (
+        sphinx._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert sphinx._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_sphinx_extras():
@@ -177,14 +192,17 @@ def test_descriptions_sphinx_extras():
         :rtpye: NoneType
         """
 
-    assert sphinx.description == 'This is the short description that will appear.'
-    assert sphinx._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert sphinx._params['arg2'].description == 'Docstring description of arg2.'
+    assert sphinx.description == "This is the short description that will appear."
+    assert (
+        sphinx._params["arg"].description
+        == "Docstring description of arg. This is the second line of the arg docstring."
+    )
+    assert sphinx._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_docstring_and_describe():
-    @app_commands.command(description='This is the short description that will appear.')
-    @app_commands.describe(arg='Decorator description of arg.')
+    @app_commands.command(description="This is the short description that will appear.")
+    @app_commands.describe(arg="Decorator description of arg.")
     async def describe(interaction: discord.Interaction, arg: str, arg2: int) -> None:
         """This description will not appear since it is overriden by the decorator.
 
@@ -196,23 +214,23 @@ def test_descriptions_docstring_and_describe():
             arg2 (int): Docstring description of arg2.
         """
 
-    assert describe.description == 'This is the short description that will appear.'
-    assert describe._params['arg'].description == 'Decorator description of arg.'
-    assert describe._params['arg2'].description == 'Docstring description of arg2.'
+    assert describe.description == "This is the short description that will appear."
+    assert describe._params["arg"].description == "Decorator description of arg."
+    assert describe._params["arg2"].description == "Docstring description of arg2."
 
 
 def test_descriptions_group_no_args():
-    my_group = app_commands.Group(name='mygroup', description='My group')
+    my_group = app_commands.Group(name="mygroup", description="My group")
 
     @my_group.command()
     async def my_command(interaction: discord.Interaction) -> None:
         """Test slash command"""
 
-    assert my_command.description == 'Test slash command'
+    assert my_command.description == "Test slash command"
 
 
 def test_descriptions_group_args():
-    my_group = app_commands.Group(name='mygroup', description='My group')
+    my_group = app_commands.Group(name="mygroup", description="My group")
 
     @my_group.command()
     async def my_command(interaction: discord.Interaction, arg: str, arg2: int) -> None:
@@ -227,15 +245,20 @@ def test_descriptions_group_args():
             Description of arg2.
         """
 
-    assert my_command.description == 'Test slash command'
-    assert my_command._params['arg'].description == 'Description of arg. This is the second line of the arg description.'
-    assert my_command._params['arg2'].description == 'Description of arg2.'
+    assert my_command.description == "Test slash command"
+    assert (
+        my_command._params["arg"].description
+        == "Description of arg. This is the second line of the arg description."
+    )
+    assert my_command._params["arg2"].description == "Description of arg2."
 
 
 def test_descriptions_cog_commands():
     class MyCog(commands.Cog):
         @app_commands.command()
-        async def test(self, interaction: discord.Interaction, arg: str, arg2: int) -> None:
+        async def test(
+            self, interaction: discord.Interaction, arg: str, arg2: int
+        ) -> None:
             """Test slash command
 
             Parameters
@@ -248,6 +271,9 @@ def test_descriptions_cog_commands():
             """
 
     cog = MyCog()
-    assert cog.test.description == 'Test slash command'
-    assert cog.test._params['arg'].description == 'Description of arg. This is the second line of the arg description.'
-    assert cog.test._params['arg2'].description == 'Description of arg2.'
+    assert cog.test.description == "Test slash command"
+    assert (
+        cog.test._params["arg"].description
+        == "Description of arg. This is the second line of the arg description."
+    )
+    assert cog.test._params["arg2"].description == "Description of arg2."
