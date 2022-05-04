@@ -63,7 +63,7 @@ converters, etc.
 
         elif isinstance(error, commands.NotOwner):
             await ctx.send("This command can only be used by my owner!")
-
+            return
         else:
             # Important! We don't want our error handle to ignore the rest of the errors silently, without
             # telling us, so we add an `else` statement, and print unhandled errors in it.
