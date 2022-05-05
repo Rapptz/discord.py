@@ -209,7 +209,7 @@ class AppCommand(Hashable):
 
     @property
     def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: Returns the guild this command is registered to
+        """Optional[:class:`~discord.Guild`]: Returns the guild this command is registered to
         if it exists.
         """
         if self.guild_id and self._state:
@@ -225,11 +225,11 @@ class AppCommand(Hashable):
         Raises
         -------
         NotFound
-            The command was not found.
+            The application command was not found.
         Forbidden
-            You do not have permissions to delete this command.
+            You do not have permission to delete this application command.
         HTTPException
-            Deleting the command failed.
+            Deleting the application command failed.
         ClientException
             The client does not have an application ID.
         """
@@ -264,30 +264,30 @@ class AppCommand(Hashable):
         Parameters
         -----------
         name: :class:`str`
-            The new command name to change to.
+            The new name for the application command.
         description: :class:`str`
-            The commands new description.
-        default_member_permissions: Optional[:class:`Permissions`]
-            The new default permissions needed to use this command. Pass value of
-            ``None`` to remove any permission requirements.
+            The new description for the application command.
+        default_member_permissions: Optional[:class:`~discord.Permissions`]
+            The new default permissions needed to use this application command.
+            Pass value of ``None`` to remove any permission requirements.
         dm_permission: :class:`bool`
-            Indicates if the command can be used in DMs.
+            Indicates if the application command can be used in DMs.
 
         Raises
         -------
         NotFound
-            The command was not found.
+            The application command was not found.
         Forbidden
-            You do not have permissions to edit this command.
+            You do not have permission to edit this application command.
         HTTPException
-            Editing the command failed.
+            Editing the application command failed.
         ClientException
             The client does not have an application ID.
 
         Returns
         --------
         :class:`AppCommand`
-            The newly edited command.
+            The newly edited application command.
         """
         state = self._state
         if not state.application_id:
