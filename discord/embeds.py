@@ -607,6 +607,9 @@ class Embed:
 
         This function returns the class instance to allow for fluent-style
         chaining.
+
+        .. versionchanged:: 2.0
+            This function now returns the class instance.
         """
         try:
             self._fields.clear()
@@ -628,6 +631,9 @@ class Embed:
 
             When deleting a field by index, the index of the other fields
             shift to fill the gap just like a regular list.
+
+        .. versionchanged:: 2.0
+            This function now returns the class instance.
 
         Parameters
         -----------
