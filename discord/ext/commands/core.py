@@ -490,6 +490,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
             ``func`` parameter is now positional-only.
 
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
+
         Parameters
         -----------
         func

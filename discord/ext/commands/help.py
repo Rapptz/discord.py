@@ -388,6 +388,8 @@ class HelpCommand:
 
             ``func`` parameter is now positional-only.
 
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
+
         Parameters
         ----------
         func
