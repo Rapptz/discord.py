@@ -612,7 +612,7 @@ class Embed:
             self._fields.clear()
         except AttributeError:
             self._fields = []
-            
+
         return self
 
     def remove_field(self, index: int) -> Self:
@@ -638,7 +638,7 @@ class Embed:
             del self._fields[index]
         except (AttributeError, IndexError):
             pass
-        
+
         return self
 
     def set_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
