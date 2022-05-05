@@ -787,7 +787,7 @@ class Client:
         self._closed = False
         self._ready.clear()
         self._connection.clear()
-        self.http.recreate()
+        self.http.clear()
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|

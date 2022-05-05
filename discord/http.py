@@ -382,6 +382,10 @@ class HTTPClient:
             except AttributeError:
                 pass
 
+    def clear(self) -> None:
+        if self.__session and self.__session.closed:
+            self.__session = MISSING
+
     async def startup(self) -> None:
         if self._started:
             return
@@ -694,14 +698,6 @@ class HTTPClient:
             raise HTTPException(response, data)
 
     # State management
-
-    def recreate(self) -> None:
-        if self.__session and self.__session.closed:
-            self.__session = aiohttp.ClientSession(
-                connector=self.connector,
-                loop=self.loop,
-                trace_configs=None if self.http_trace is None else [self.http_trace],
-            )
 
     async def close(self) -> None:
         if self.__session:
