@@ -57,6 +57,7 @@ from .errors import (
     CommandNotFound,
     CommandSignatureMismatch,
     CommandLimitReached,
+    MissingApplicationID,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -77,11 +78,6 @@ if TYPE_CHECKING:
 __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
-
-APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
-)
 
 
 def _retrieve_guild_ids(
@@ -158,7 +154,7 @@ class CommandTree(Generic[ClientT]):
         -------
         HTTPException
             Fetching the commands failed.
-        ClientException
+        MissingApplicationID
             The application ID could not be found.
 
         Returns
@@ -167,7 +163,7 @@ class CommandTree(Generic[ClientT]):
             The application's commands.
         """
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         if guild is None:
             commands = await self._http.get_global_commands(self.client.application_id)
@@ -906,7 +902,7 @@ class CommandTree(Generic[ClientT]):
             Syncing the commands failed.
         Forbidden
             The client does not have the ``applications.commands`` scope in the guild.
-        ClientException
+        MissingApplicationID
             The client does not have an application ID.
 
         Returns
@@ -916,7 +912,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         commands = self._get_all_commands(guild=guild)
         payload = [command.to_dict() for command in commands]

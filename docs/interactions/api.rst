@@ -609,6 +609,9 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandNotFound
     :members:
 
+.. autoexception:: discord.app_commands.MissingApplicationID
+    :members:
+
 Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -629,3 +632,4 @@ Exception Hierarchy
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
+            - :exc:`~discord.app_commands.MissingApplicationID`
