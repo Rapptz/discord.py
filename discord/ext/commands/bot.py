@@ -363,7 +363,8 @@ class BotBase(GroupMixin[None]):
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
-        and :meth:`.check_once`.
+        and :meth:`.check_once`. The function passed should
+        take in a single parameter taking a :class:`.Context`.
 
         .. versionchanged:: 2.0
 
