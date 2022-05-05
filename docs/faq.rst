@@ -190,7 +190,9 @@ If you want to use unicode emoji, you must pass a valid unicode code point in a 
 - ``'\U0001F44D'``
 - ``'\N{THUMBS UP SIGN}'``
 
-Quick example: ::
+Quick example:
+
+.. code-block:: python3
 
     emoji = '\N{THUMBS UP SIGN}'
     # or '\U0001f44d' or '👍'
@@ -206,7 +208,9 @@ can use said emoji, you should be able to use :meth:`Client.get_emoji` to get an
 The name and ID of a custom emoji can be found with the client by prefixing ``:custom_emoji:`` with a backslash.
 For example, sending the message ``\:python3:`` with the client will result in ``<:python3:232720527448342530>``.
 
-Quick example: ::
+Quick example:
+
+.. code-block:: python3
 
 
     # if you have the ID already
@@ -235,7 +239,9 @@ us, :mod:`asyncio` comes with a :func:`asyncio.run_coroutine_threadsafe` functio
 a coroutine from another thread.
 
 However, this function returns a :class:`~concurrent.futures.Future` and to actually call it we have to fetch its result. Putting all of
-this together we can do the following: ::
+this together we can do the following:
+
+.. code-block:: python3
 
     def my_after(error):
         coro = some_channel.send('Song is done!')
@@ -281,7 +287,9 @@ The following use an HTTP request:
 If the functions above do not help you, then use of :func:`utils.find` or :func:`utils.get` would serve some use in finding
 specific models.
 
-Quick example: ::
+Quick example:
+
+.. code-block:: python3
 
     # find a guild by name
     guild = discord.utils.get(client.guilds, name='My Server')
@@ -297,7 +305,9 @@ How do I make a web request?
 To make a request, you should use a non-blocking library.
 This library already uses and requires a 3rd party library for making requests, :doc:`aiohttp <aio:index>`.
 
-Quick example: ::
+Quick example:
+
+.. code-block:: python3
 
     async with aiohttp.ClientSession() as session:
         async with session.get('http://aws.random.cat/meow') as r:
@@ -317,7 +327,9 @@ and set the embed's image URL to ``attachment://image.png``,
 where ``image.png`` is the filename of the image you will send.
 
 
-Quick example: ::
+Quick example:
+
+.. code-block:: python3
 
     file = discord.File("path/to/my/image.png", filename="image.png")
     embed = discord.Embed()
@@ -325,7 +337,7 @@ Quick example: ::
     await channel.send(file=file, embed=embed)
 
 Is there an event for audit log entries being created?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Since Discord does not dispatch this information in the gateway, the library cannot provide this information.
 This is currently a Discord limitation.
@@ -359,14 +371,18 @@ to a message. Example::
 Why do my arguments require quotes?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In a simple command defined as: ::
+In a simple command defined as:
+
+.. code-block:: python3
 
     @bot.command()
     async def echo(ctx, message: str):
         await ctx.send(message)
 
 Calling it via ``?echo a b c`` will only fetch the first argument and disregard the rest. To fix this you should either call
-it via ``?echo "a b c"`` or change the signature to have "consume rest" behaviour. Example: ::
+it via ``?echo "a b c"`` or change the signature to have "consume rest" behaviour. Example:
+
+.. code-block:: python3
 
     @bot.command()
     async def echo(ctx, *, message: str):
@@ -380,7 +396,9 @@ How do I get the original ``message``\?
 The :class:`~ext.commands.Context` contains an attribute, :attr:`~.Context.message` to get the original
 message.
 
-Example: ::
+Example:
+
+.. code-block:: python3
 
     @bot.command()
     async def length(ctx):
@@ -392,7 +410,9 @@ How do I make a subcommand?
 Use the :func:`~ext.commands.group` decorator. This will transform the callback into a :class:`~ext.commands.Group` which will allow you to add commands into
 the group operating as "subcommands". These groups can be arbitrarily nested as well.
 
-Example: ::
+Example:
+
+.. code-block:: python3
 
     @bot.group()
     async def git(ctx):
