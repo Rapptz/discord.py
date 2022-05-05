@@ -50,6 +50,7 @@ APP_ID_NOT_FOUND = (
     'was called or application_id was not passed to the Client constructor.'
 )
 
+
 def is_app_command_argument_type(value: int) -> bool:
     return 11 >= value >= 3
 
