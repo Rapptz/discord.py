@@ -449,7 +449,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
             Due to the way this function works, instead of returning
             something similar to :meth:`~.commands.HelpCommand.command_not_found`
-            this returns :class:`None` on bad input or no help command.
+            this returns ``None`` on bad input or no help command.
 
         Parameters
         ------------
