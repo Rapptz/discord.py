@@ -254,7 +254,7 @@ class AppCommand(Hashable):
         *,
         name: str = MISSING,
         description: str = MISSING,
-        default_member_permissions: Permissions = MISSING,
+        default_member_permissions: Optional[Permissions] = MISSING,
         dm_permission: bool = MISSING,
     ) -> AppCommand:
         """|coro|
@@ -267,8 +267,9 @@ class AppCommand(Hashable):
             The new command name to change to.
         description: :class:`str`
             The commands new description.
-        default_member_permissions: :class:`Permissions`
-            The new default permissions needed to use this command.
+        default_member_permissions: Optional[:class:`Permissions`]
+            The new default permissions needed to use this command. Pass value of
+            ``None`` to remove any permission requirements.
         dm_permission: :class:`bool`
             Indicates if the command can be used in DMs.
 
@@ -301,9 +302,12 @@ class AppCommand(Hashable):
             payload['description'] = description
 
         if default_member_permissions is not MISSING:
-            payload['default_member_permissions'] = default_member_permissions.value
+            if default_member_permissions is not None:
+                payload['default_member_permissions'] = default_member_permissions.value
+            else:
+                payload['default_member_permissions'] = None
 
-        if dm_permission is not MISSING and not self.guild_id:
+        if self.guild_id is None and dm_permission is not MISSING:
             payload['dm_permission'] = dm_permission
 
         if not payload:
