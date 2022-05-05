@@ -496,7 +496,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         -----------
         func
             The function that will be used as a check.
-
         """
 
         self.checks.append(func)
