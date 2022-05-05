@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 __all__ = (
     'CommandError',
     'MissingRequiredArgument',
+    'MissingRequiredAttachment',
     'BadArgument',
     'PrivateMessageOnly',
     'NoPrivateMessage',
@@ -182,6 +183,25 @@ class MissingRequiredArgument(UserInputError):
     def __init__(self, param: Parameter) -> None:
         self.param: Parameter = param
         super().__init__(f'{param.name} is a required argument that is missing.')
+
+
+class MissingRequiredAttachment(UserInputError):
+    """Exception raised when parsing a command and a parameter
+    that requires an attachment is not given.
+
+    This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    param: :class:`Parameter`
+        The argument that is missing an attachment.
+    """
+
+    def __init__(self, param: Parameter) -> None:
+        self.param: Parameter = param
+        super().__init__(f'{param.name} is a required argument that is missing an attachment.')
 
 
 class TooManyArguments(UserInputError):

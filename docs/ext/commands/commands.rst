@@ -639,6 +639,85 @@ This command can be invoked any of the following ways:
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
     :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
 
+
+discord.Attachment
+^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+The :class:`discord.Attachment` converter is a special converter that retrieves an attachment from the uploaded attachments on a message. This converter *does not* look at the message content at all and just the uploaded attachments.
+
+Consider the following example:
+
+.. code-block:: python3
+
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: discord.Attachment):
+        await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :data:`typing.Optional` converter, the user does not have to provide an attachment.
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: typing.Optional[discord.Attachment]):
+        if attachment is None:
+            await ctx.send('You did not upload anything!')
+        else:
+            await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+This also works with multiple attachments:
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        second: typing.Optional[discord.Attachment],
+    ):
+        if second is None:
+            files = [first.url]
+        else:
+            files = [first.url, second.url]
+
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+In this example the user must provide at least one file but the second one is optional.
+
+As a special case, using :class:`~ext.commands.Greedy` will return the remaining attachments in the message, if any.
+
+.. code-block:: python3
+
+    import discord
+    from discord.ext import commands
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        remaining: commands.Greedy[discord.Attachment],
+    ):
+        files = [first.url]
+        files.extend(a.url for a in remaining)
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+Note that using a :class:`discord.Attachment` converter after a :class:`~ext.commands.Greedy` of :class:`discord.Attachment` will always fail since the greedy had already consumed the remaining attachments.
+
+If an attachment is expected but not given, then :exc:`~ext.commands.MissingRequiredAttachment` is raised to the error handlers.
+
 .. _ext_commands_flag_converter:
 
 FlagConverter
