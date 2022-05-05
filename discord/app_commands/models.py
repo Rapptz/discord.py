@@ -205,10 +205,7 @@ class AppCommand(Hashable):
         """Optional[:class:`~discord.Guild`]: Returns the guild this command is registered to
         if it exists.
         """
-        if self.guild_id and self._state:
-            return self._state._get_guild(self.guild_id)
-
-        return None
+        return self._state._get_guild(self.guild_id)
 
     async def delete(self) -> None:
         """|coro|
