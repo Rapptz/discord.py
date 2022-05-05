@@ -424,13 +424,11 @@ class Game(BaseActivity):
         if self._end:
             timestamps['end'] = self._end
 
-        # fmt: off
         return {
             'type': ActivityType.playing.value,
             'name': str(self.name),
-            'timestamps': timestamps  # type: ignore
+            'timestamps': timestamps,  # type: ignore
         }
-        # fmt: on
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Game) and other.name == self.name
@@ -528,14 +526,12 @@ class Streaming(BaseActivity):
             return name[7:] if name[:7] == 'twitch:' else None
 
     def to_dict(self) -> ActivityPayload:
-        # fmt: off
         ret: Dict[str, Any] = {
             'type': ActivityType.streaming.value,
             'name': str(self.name),
             'url': str(self.url),
-            'assets': self.assets
+            'assets': self.assets,
         }
-        # fmt: on
         if self.details:
             ret['details'] = self.details
         return ret  # type: ignore
