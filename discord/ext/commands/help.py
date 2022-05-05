@@ -380,14 +380,15 @@ class HelpCommand:
 
     def add_check(self, func: UserCheck[ContextT], /) -> None:
         """
-        Adds a check to the help command. The function passed should
-        take in a single parameter taking a :class:`.Context`.
+        Adds a check to the help command.
 
         .. versionadded:: 1.4
 
         .. versionchanged:: 2.0
 
             ``func`` parameter is now positional-only.
+
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
 
         Parameters
         ----------

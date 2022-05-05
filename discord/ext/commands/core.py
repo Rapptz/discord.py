@@ -462,18 +462,20 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """Adds a check to the command.
 
         This is the non-decorator interface to :func:`.check`.
-        The function passed should take in a single parameter
-        taking a :class:`.Context`.
+
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
 
             ``func`` parameter is now positional-only.
 
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
+
         Parameters
         -----------
         func
             The function that will be used as a check.
+
         """
 
         self.checks.append(func)

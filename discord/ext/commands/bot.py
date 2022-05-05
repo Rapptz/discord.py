@@ -363,12 +363,13 @@ class BotBase(GroupMixin[None]):
         """Adds a global check to the bot.
 
         This is the non-decorator interface to :meth:`.check`
-        and :meth:`.check_once`. The function passed should
-        take in a single parameter taking a :class:`.Context`.
+        and :meth:`.check_once`.
 
         .. versionchanged:: 2.0
 
             ``func`` parameter is now positional-only.
+
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
 
         Parameters
         -----------
