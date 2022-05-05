@@ -427,6 +427,60 @@ Example:
 
 This could then be used as ``?git push origin master``.
 
+Views and Modals
+-----------------
+
+Questions regarding :class:`discord.ui.View`, :class:`discord.ui.Modal`, and their components such as buttons, select menus, etc.
+
+How can I disable all items on timeout?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This requires three steps.
+
+1. Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_message`.
+2. Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled.
+3. Edit the message we retrieved in step 1 with the newly modified view.
+
+Putting it all together, we can do this in a text command:
+
+.. code-block:: python3
+
+    class MyView(discord.ui.View):
+        async def on_timeout(self) -> None:
+            # Step 2
+            for item in self.children:
+                item.disabled = True
+
+            # Step 3
+            await self.message.edit(view=self)
+
+        @discord.ui.button(label='Example')
+        async def example_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+            await interaction.response.send_message('Hello!', ephemeral=True)
+
+    @bot.command()
+    async def timeout_example(ctx):
+        """An example to showcase disabling buttons on timing out"""
+        view = MyView()
+        # Step 1
+        view.message = await ctx.send('Press me!', view=view)
+
+Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_message`.
+
+Putting it all together, using the previous view definition:
+
+.. code-block:: python3
+
+    @tree.command()
+    async def more_timeout_example(interaction):
+        """Another example to showcase disabling buttons on timing out"""
+        view = MyView()
+        await interaction.response.send_message('Press me!', view=view)
+
+        # Step 1
+        view.message = await interaction.original_message()
+
+
 Application Commands
 --------------------
 
