@@ -29,7 +29,8 @@ from datetime import datetime
 from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, try_enum
 from ..mixins import Hashable
-from ..utils import _get_as_snowflake, parse_time, snowflake_time
+from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
+from ..errors import ClientException
 from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
@@ -44,6 +45,10 @@ __all__ = (
 
 ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 
+APP_ID_NOT_FOUND = (
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
+)
 
 def is_app_command_argument_type(value: int) -> bool:
     return 11 >= value >= 3
@@ -67,6 +72,7 @@ if TYPE_CHECKING:
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
     from ..threads import Thread
+    from ..permissions import Permissions
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
 
@@ -138,6 +144,9 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command.
     """
 
     __slots__ = (
@@ -146,14 +155,15 @@ class AppCommand(Hashable):
         'application_id',
         'name',
         'description',
+        'guild_id',
         'options',
         'default_member_permissions',
         'dm_permission',
         '_state',
     )
 
-    def __init__(self, *, data: ApplicationCommandPayload, state: Optional[ConnectionState] = None) -> None:
-        self._state: Optional[ConnectionState] = state
+    def __init__(self, *, data: ApplicationCommandPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
         self._from_data(data)
 
     def _from_data(self, data: ApplicationCommandPayload) -> None:
@@ -161,6 +171,7 @@ class AppCommand(Hashable):
         self.application_id: int = int(data['application_id'])
         self.name: str = data['name']
         self.description: str = data['description']
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.type: AppCommandType = try_enum(AppCommandType, data.get('type', 1))
         self.options: List[Union[Argument, AppCommandGroup]] = [
             app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
@@ -194,6 +205,123 @@ class AppCommand(Hashable):
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: Returns the guild this command is registered to
+        if it exists.
+        """
+        if self.guild_id and self._state:
+            return self._state._get_guild(self.guild_id)
+
+        return None
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Deletes the application command.
+
+        Raises
+        -------
+        NotFound
+            The command was not found.
+        Forbidden
+            You do not have permissions to delete this command.
+        HTTPException
+            Deleting the command failed.
+        ClientException
+            The client does not have an application ID.
+        """
+        state = self._state
+        if not state.application_id:
+            raise ClientException(APP_ID_NOT_FOUND)
+
+        if self.guild_id:
+            await state.http.delete_guild_command(
+                state.application_id,
+                self.guild_id,
+                self.id,
+            )
+        else:
+            await state.http.delete_global_command(
+                state.application_id,
+                self.id,
+            )
+
+    async def edit(
+        self,
+        *,
+        name: str = MISSING,
+        description: str = MISSING,
+        default_member_permissions: Permissions = MISSING,
+        dm_permission: bool = MISSING,
+    ) -> AppCommand:
+        """|coro|
+
+        Edits the application command.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The new command name to change to.
+        description: :class:`str`
+            The commands new description.
+        default_member_permissions: :class:`Permissions`
+            The new default permissions needed to use this command.
+        dm_permission: :class:`bool`
+            Indicates if the command can be used in DMs.
+
+        Raises
+        -------
+        NotFound
+            The command was not found.
+        Forbidden
+            You do not have permissions to edit this command.
+        HTTPException
+            Editing the command failed.
+        ClientException
+            The client does not have an application ID.
+
+        Returns
+        --------
+        :class:`AppCommand`
+            The newly edited command.
+        """
+        state = self._state
+        if not state.application_id:
+            raise ClientException(APP_ID_NOT_FOUND)
+
+        payload = {}
+
+        if name is not MISSING:
+            payload['name'] = name
+
+        if description is not MISSING:
+            payload['description'] = description
+
+        if default_member_permissions is not MISSING:
+            payload['default_member_permissions'] = default_member_permissions.value
+
+        if dm_permission is not MISSING and not self.guild_id:
+            payload['dm_permission'] = dm_permission
+
+        if not payload:
+            return self
+
+        if self.guild_id:
+            data = await state.http.edit_guild_command(
+                state.application_id,
+                self.guild_id,
+                self.id,
+                payload,
+            )
+        else:
+            data = await state.http.edit_global_command(
+                state.application_id,
+                self.id,
+                payload,
+            )
+        return AppCommand(data=data, state=state)
 
 
 class Choice(Generic[ChoiceT]):
