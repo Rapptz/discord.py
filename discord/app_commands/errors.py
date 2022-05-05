@@ -45,6 +45,7 @@ __all__ = (
     'MissingPermissions',
     'BotMissingPermissions',
     'CommandOnCooldown',
+    'MissingApplicationID',
 )
 
 if TYPE_CHECKING:
@@ -52,6 +53,11 @@ if TYPE_CHECKING:
     from .transformers import Transformer
     from ..types.snowflake import Snowflake, SnowflakeList
     from .checks import Cooldown
+
+APP_ID_NOT_FOUND = (
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
+)
 
 
 class AppCommandError(DiscordException):
@@ -391,3 +397,16 @@ class CommandSignatureMismatch(AppCommandError):
             'command tree to fix this issue.'
         )
         super().__init__(msg)
+
+
+class MissingApplicationID(AppCommandError):
+    """An exception raised when the client does not have an application ID set.
+    An application ID is required for syncing application commands.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None):
+        super().__init__(message or APP_ID_NOT_FOUND)

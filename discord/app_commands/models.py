@@ -25,12 +25,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from datetime import datetime
 
-
+from .errors import MissingApplicationID
 from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
-from ..errors import ClientException
 from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
@@ -44,11 +43,6 @@ __all__ = (
 )
 
 ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
-
-APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
-)
 
 
 def is_app_command_argument_type(value: int) -> bool:
@@ -229,12 +223,12 @@ class AppCommand(Hashable):
             You do not have permission to delete this application command.
         HTTPException
             Deleting the application command failed.
-        ClientException
+        MissingApplicationID
             The client does not have an application ID.
         """
         state = self._state
         if not state.application_id:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         if self.guild_id:
             await state.http.delete_guild_command(
@@ -255,6 +249,7 @@ class AppCommand(Hashable):
         description: str = MISSING,
         default_member_permissions: Optional[Permissions] = MISSING,
         dm_permission: bool = MISSING,
+        options: List[Union[Argument, AppCommandGroup]] = MISSING,
     ) -> AppCommand:
         """|coro|
 
@@ -271,6 +266,8 @@ class AppCommand(Hashable):
             Pass value of ``None`` to remove any permission requirements.
         dm_permission: :class:`bool`
             Indicates if the application command can be used in DMs.
+        options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
+            List of new options for this application command.
 
         Raises
         -------
@@ -280,7 +277,7 @@ class AppCommand(Hashable):
             You do not have permission to edit this application command.
         HTTPException
             Editing the application command failed.
-        ClientException
+        MissingApplicationID
             The client does not have an application ID.
 
         Returns
@@ -290,7 +287,7 @@ class AppCommand(Hashable):
         """
         state = self._state
         if not state.application_id:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         payload = {}
 
@@ -308,6 +305,9 @@ class AppCommand(Hashable):
 
         if self.guild_id is None and dm_permission is not MISSING:
             payload['dm_permission'] = dm_permission
+
+        if options is not MISSING:
+            payload['options'] = [option.to_dict() for option in options]
 
         if not payload:
             return self
