@@ -291,10 +291,15 @@ class Cog(metaclass=CogMeta):
                 parent.add_command(command)  # type: ignore
             elif self.__cog_app_commands_group__:
                 if hasattr(command, '__commands_is_hybrid__') and command.parent is None:
-                    # In both of these, the type checker does not see the app_command attribute even though it exists
                     parent = self.__cog_app_commands_group__
-                    command.app_command = command.app_command._copy_with(parent=parent, binding=self)  # type: ignore
-                    children.append(command.app_command)  # type: ignore
+                    app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
+                        command, 'app_command', None
+                    )
+                    if app_command:
+                        app_command = app_command._copy_with(parent=parent, binding=self)
+                        children.append(app_command)
+                        # The type checker does not see the app_command attribute even though it exists
+                        command.app_command = app_command  # type: ignore
 
         for command in cls.__cog_app_commands__:
             copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
