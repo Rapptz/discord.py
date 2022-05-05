@@ -380,7 +380,8 @@ class HelpCommand:
 
     def add_check(self, func: UserCheck[ContextT], /) -> None:
         """
-        Adds a check to the help command.
+        Adds a check to the help command. The function passed should
+        take in a single parameter taking a :class:`.Context`.
 
         .. versionadded:: 1.4
 
