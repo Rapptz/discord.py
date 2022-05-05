@@ -186,6 +186,9 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
                 # However, in here, it probably makes sense to make it required.
                 # I'm unsure how to allow the user to choose right now.
                 inner = converter.converter
+                if inner is discord.Attachment:
+                    raise TypeError('discord.Attachment with Greedy is not supported in hybrid commands')
+
                 param = param.replace(annotation=make_greedy_transformer(inner, parameter))
             elif is_converter(converter):
                 param = param.replace(annotation=make_converter_transformer(converter))
