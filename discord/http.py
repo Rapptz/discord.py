@@ -351,11 +351,9 @@ class HTTPClient:
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    def recreate(self) -> None:
-        if self.__session.closed:
-            self.__session = aiohttp.ClientSession(
-                connector=self.connector, ws_response_class=DiscordClientWebSocketResponse
-            )
+    def clear(self) -> None:
+        if self.__session and self.__session.closed:
+            self.__session = MISSING
 
     async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
         kwargs = {
