@@ -1342,7 +1342,7 @@ class Message(PartialMessage, Hashable):
 
         try:
             # If the channel doesn't have a guild attribute, we handle that
-            self.guild = channel.guild  # type: ignore
+            self.guild = channel.guild
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
