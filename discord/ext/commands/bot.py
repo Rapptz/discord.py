@@ -224,23 +224,23 @@ class BotBase(GroupMixin[None]):
     @discord.utils.copy_doc(GroupMixin.add_command)
     def add_command(self, command: Command[Any, ..., Any], /) -> None:
         super().add_command(command)
-        if hasattr(command, '__commands_is_hybrid__'):
+        if isinstance(command, (HybridCommand, HybridGroup)) and command.app_command:
             # If a cog is also inheriting from app_commands.Group then it'll also
             # add the hybrid commands as text commands, which would recursively add the
             # hybrid commands as slash commands. This check just terminates that recursion
             # from happening
             if command.cog is None or not command.cog.__cog_is_app_commands_group__:
-                self.tree.add_command(command.app_command)  # type: ignore
+                self.tree.add_command(command.app_command)
 
     @discord.utils.copy_doc(GroupMixin.remove_command)
     def remove_command(self, name: str, /) -> Optional[Command[Any, ..., Any]]:
-        cmd = super().remove_command(name)
-        if cmd is not None and hasattr(cmd, '__commands_is_hybrid__'):
+        cmd: Optional[Command[Any, ..., Any]] = super().remove_command(name)
+        if isinstance(cmd, (HybridCommand, HybridGroup)) and cmd.app_command:
             # See above
             if cmd.cog is not None and cmd.cog.__cog_is_app_commands_group__:
                 return cmd
 
-            guild_ids: Optional[List[int]] = cmd.app_command._guild_ids  # type: ignore
+            guild_ids: Optional[List[int]] = cmd.app_command._guild_ids
             if guild_ids is None:
                 self.__tree.remove_command(name)
             else:
@@ -252,6 +252,7 @@ class BotBase(GroupMixin[None]):
     def hybrid_command(
         self,
         name: str = MISSING,
+        with_app_command: bool = True,
         *args: Any,
         **kwargs: Any,
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridCommand[Any, P, T]]:
@@ -266,7 +267,7 @@ class BotBase(GroupMixin[None]):
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
             kwargs.setdefault('parent', self)
-            result = hybrid_command(name=name, *args, **kwargs)(func)
+            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
             self.add_command(result)
             return result
 
@@ -275,6 +276,7 @@ class BotBase(GroupMixin[None]):
     def hybrid_group(
         self,
         name: str = MISSING,
+        with_app_command: bool = True,
         *args: Any,
         **kwargs: Any,
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridGroup[Any, P, T]]:
@@ -289,7 +291,7 @@ class BotBase(GroupMixin[None]):
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
             kwargs.setdefault('parent', self)
-            result = hybrid_group(name=name, *args, **kwargs)(func)
+            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
             self.add_command(result)
             return result
 
