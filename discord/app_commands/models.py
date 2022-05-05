@@ -73,7 +73,6 @@ if TYPE_CHECKING:
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
     from ..threads import Thread
-    from ..permissions import Permissions
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
 
