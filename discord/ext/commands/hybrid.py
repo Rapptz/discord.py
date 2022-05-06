@@ -565,6 +565,19 @@ class HybridGroup(Group[CogT, P, T]):
         copy.fallback = self.fallback
         return copy
 
+    def _update_copy(self, kwargs: Dict[str, Any]) -> Self:
+        copy = super()._update_copy(kwargs)
+        # This is only really called inside CogMeta
+        # I want to ensure that the children of the app command are copied
+        # For example, if someone defines an app command using the app_command property
+        # while inside the cog. This copy is not propagated in normal means.
+        # For some reason doing this copy above will lead to duplicates.
+        if copy.app_command and self.app_command:
+            # This is a very lazy copy because the CogMeta will properly copy it
+            # with bindings and all later
+            copy.app_command._children = self.app_command._children.copy()
+        return copy
+
     def autocomplete(
         self, name: str
     ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:

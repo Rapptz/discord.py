@@ -289,17 +289,19 @@ class Cog(metaclass=CogMeta):
                 # Update our parent's reference to our self
                 parent.remove_command(command.name)  # type: ignore
                 parent.add_command(command)  # type: ignore
-            elif self.__cog_app_commands_group__:
-                if hasattr(command, '__commands_is_hybrid__') and command.parent is None:
-                    parent = self.__cog_app_commands_group__
-                    app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
-                        command, 'app_command', None
-                    )
-                    if app_command:
-                        app_command = app_command._copy_with(parent=parent, binding=self)
+
+            if hasattr(command, '__commands_is_hybrid__') and parent is None:
+                app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
+                    command, 'app_command', None
+                )
+                if app_command:
+                    group_parent = self.__cog_app_commands_group__
+                    app_command = app_command._copy_with(parent=group_parent, binding=self)
+                    # The type checker does not see the app_command attribute even though it exists
+                    command.app_command = app_command  # type: ignore
+
+                    if self.__cog_app_commands_group__:
                         children.append(app_command)
-                        # The type checker does not see the app_command attribute even though it exists
-                        command.app_command = app_command  # type: ignore
 
         for command in cls.__cog_app_commands__:
             copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
