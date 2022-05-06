@@ -1156,7 +1156,12 @@ class Webhook(BaseWebhook):
             )
         elif self.token:
             await adapter.delete_webhook_with_token(
-                self.id, self.token, session=self.session, proxy=self.proxy, proxy_auth=self.proxy_auth, reason=reason,
+                self.id,
+                self.token,
+                session=self.session,
+                proxy=self.proxy,
+                proxy_auth=self.proxy_auth,
+                reason=reason,
             )
 
     async def edit(
