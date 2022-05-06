@@ -304,7 +304,7 @@ class Invite(Hashable):
         The guild the invite is for. Can be ``None`` if it's from a group direct message.
     revoked: :class:`bool`
         Indicates if the invite has been revoked.
-    created_at: :class:`datetime.datetime`
+    created_at: Optional[:class:`datetime.datetime`]
         An aware UTC datetime object denoting the time the invite was created.
     temporary: :class:`bool`
         Indicates that the invite grants temporary membership.
