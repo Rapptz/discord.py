@@ -193,6 +193,8 @@ class BaseUser(_UserTag):
     def accent_colour(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: Returns the user's accent colour, if applicable.
 
+        A user's accent colour is only shown if they do not have a banner.
+
         There is an alias for this named :attr:`accent_color`.
 
         .. versionadded:: 2.0
@@ -208,6 +210,8 @@ class BaseUser(_UserTag):
     @property
     def accent_color(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: Returns the user's accent color, if applicable.
+
+        A user's accent color is only shown if they do not have a banner.
 
         There is an alias for this named :attr:`accent_colour`.
 
