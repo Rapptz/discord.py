@@ -78,7 +78,7 @@ from .invite import Invite
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
-from .integrations import Integration, _integration_factory
+from .integrations import Integration, PartialIntegration, _integration_factory
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
@@ -236,8 +236,6 @@ class Guild(Hashable):
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
         - ``PRIVATE_THREADS``: Guild has access to create private threads.
         - ``ROLE_ICONS``: Guild is able to set role icons.
-        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
-        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
         - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
         - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
         - ``VERIFIED``: Guild is a verified server.
@@ -1127,11 +1125,11 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
-        channel_type: Literal[ChannelType.text],
+        channel_type: Literal[ChannelType.news, ChannelType.text],
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, GuildChannelPayload]:
+    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]:
         ...
 
     @overload
@@ -1184,6 +1182,7 @@ class Guild(Hashable):
         *,
         reason: Optional[str] = None,
         category: Optional[CategoryChannel] = None,
+        news: bool = False,
         position: int = MISSING,
         topic: str = MISSING,
         slowmode_delay: int = MISSING,
@@ -1255,6 +1254,10 @@ class Guild(Hashable):
             The maximum value possible is `21600`.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        news: :class:`bool`
+             Whether to create the text channel as a news channel.
+
+            .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the text channel (in minutes).
 
@@ -1294,7 +1297,12 @@ class Guild(Hashable):
             options["default_auto_archive_duration"] = default_auto_archive_duration
 
         data = await self._create_channel(
-            name, overwrites=overwrites, channel_type=ChannelType.text, category=category, reason=reason, **options
+            name,
+            overwrites=overwrites,
+            channel_type=ChannelType.news if news else ChannelType.text,
+            category=category,
+            reason=reason,
+            **options,
         )
         channel = TextChannel(state=self._state, guild=self, data=data)
 
@@ -3336,11 +3344,11 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 before = Object(id=int(entries[-1]['id']))
 
-            return data.get('users', []), entries, before, limit
+            return data, entries, before, limit
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
@@ -3352,11 +3360,11 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 after = Object(id=int(entries[0]['id']))
 
-            return data.get('users', []), entries, after, limit
+            return data, entries, after, limit
 
         if user is not MISSING:
             user_id = user.id
@@ -3387,31 +3395,46 @@ class Guild(Hashable):
             if after and after != OLDEST_OBJECT:
                 predicate = lambda m: int(m['id']) > after.id
 
+        # avoid circular import
+        from .app_commands import AppCommand
+
         while True:
             retrieve = min(100 if limit is None else limit, 100)
             if retrieve < 1:
                 return
 
-            raw_users, data, state, limit = await strategy(retrieve, state, limit)
+            data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
+            if len(raw_entries) < 100:
                 limit = 0
 
             if reverse:
-                data = reversed(data)
+                raw_entries = reversed(raw_entries)
             if predicate:
-                data = filter(predicate, data)
+                raw_entries = filter(predicate, raw_entries)
 
-            users = (User(data=raw_user, state=self._state) for raw_user in raw_users)
+            users = (User(data=raw_user, state=self._state) for raw_user in data.get('users', []))
             user_map = {user.id: user for user in users}
 
-            for raw_entry in data:
+            integrations = (PartialIntegration(data=raw_i, guild=self) for raw_i in data.get('integrations', []))
+            integration_map = {integration.id: integration for integration in integrations}
+
+            app_commands = (AppCommand(data=raw_cmd, state=self._state) for raw_cmd in data.get('application_commands', []))
+            app_command_map = {app_command.id: app_command for app_command in app_commands}
+
+            for raw_entry in raw_entries:
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
                     continue
 
-                yield AuditLogEntry(data=raw_entry, users=user_map, guild=self)
+                yield AuditLogEntry(
+                    data=raw_entry,
+                    users=user_map,
+                    integrations=integration_map,
+                    app_commands=app_command_map,
+                    guild=self,
+                )
 
     async def widget(self) -> Widget:
         """|coro|

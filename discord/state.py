@@ -480,7 +480,7 @@ class ConnectionState:
         else:
             channel = guild and guild._resolve_channel(channel_id)
 
-        return channel or PartialMessageable(state=self, id=channel_id), guild
+        return channel or PartialMessageable(state=self, guild_id=guild_id, id=channel_id), guild
 
     async def chunker(
         self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, nonce: Optional[str] = None

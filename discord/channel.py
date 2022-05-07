@@ -33,6 +33,7 @@ from typing import (
     List,
     Literal,
     Mapping,
+    NamedTuple,
     Optional,
     TYPE_CHECKING,
     Sequence,
@@ -85,6 +86,7 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .types.channel import (
         TextChannel as TextChannelPayload,
+        NewsChannel as NewsChannelPayload,
         VoiceChannel as VoiceChannelPayload,
         StageChannel as StageChannelPayload,
         DMChannel as DMChannelPayload,
@@ -93,6 +95,11 @@ if TYPE_CHECKING:
         ForumChannel as ForumChannelPayload,
     )
     from .types.snowflake import SnowflakeList
+
+
+class ThreadWithMessage(NamedTuple):
+    thread: Thread
+    message: Message
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -163,7 +170,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         'default_auto_archive_duration',
     )
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: TextChannelPayload):
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self._type: Literal[0, 5] = data['type']
@@ -181,7 +188,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def _update(self, guild: Guild, data: TextChannelPayload) -> None:
+    def _update(self, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]) -> None:
         self.guild: Guild = guild
         self.name: str = data['name']
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
@@ -2158,7 +2165,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         view: View = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
-    ) -> Thread:
+    ) -> ThreadWithMessage:
         """|coro|
 
         Creates a thread in this forum.
@@ -2221,8 +2228,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Returns
         --------
-        :class:`Thread`
-            The created thread
+        Tuple[:class:`Thread`, :class:`Message`]
+            The created thread with the created message.
+            This is also accessible as a namedtuple with ``thread`` and ``message`` fields.
         """
 
         state = self._state
@@ -2266,8 +2274,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             flags=flags,
             channel_payload=channel_payload,
         ) as params:
+            # Circular import
+            from .message import Message
+
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
-            return Thread(guild=self.guild, state=self._state, data=data)
+            thread = Thread(guild=self.guild, state=self._state, data=data)
+            message = Message(state=self._state, channel=thread, data=data['message'])
+            if view:
+                self._state.store_view(view, message.id)
+
+            return ThreadWithMessage(thread=thread, message=message)
 
 
 class DMChannel(discord.abc.Messageable, Hashable):
@@ -2336,6 +2352,16 @@ class DMChannel(discord.abc.Messageable, Hashable):
     def type(self) -> Literal[ChannelType.private]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.private
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this DM channel belongs to. Always ``None``.
+
+        This is mainly provided for compatibility purposes in duck typing.
+
+        .. versionadded:: 2.0
+        """
+        return None
 
     @property
     def jump_url(self) -> str:
@@ -2492,6 +2518,16 @@ class GroupChannel(discord.abc.Messageable, Hashable):
         return ChannelType.group
 
     @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this group channel belongs to. Always ``None``.
+
+        This is mainly provided for compatibility purposes in duck typing.
+
+        .. versionadded:: 2.0
+        """
+        return None
+
+    @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Returns the channel's icon asset if available."""
         if self._icon is None:
@@ -2595,13 +2631,16 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
     -----------
     id: :class:`int`
         The channel ID associated with this partial messageable.
+    guild_id: Optional[:class:`int`]
+        The guild ID associated with this partial messageable.
     type: Optional[:class:`ChannelType`]
         The channel type associated with this partial messageable, if given.
     """
 
-    def __init__(self, state: ConnectionState, id: int, type: Optional[ChannelType] = None):
+    def __init__(self, state: ConnectionState, id: int, guild_id: Optional[int] = None, type: Optional[ChannelType] = None):
         self._state: ConnectionState = state
         self.id: int = id
+        self.guild_id: Optional[int] = guild_id
         self.type: Optional[ChannelType] = type
 
     def __repr__(self) -> str:
@@ -2609,6 +2648,45 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     async def _get_channel(self) -> PartialMessageable:
         return self
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: The guild this partial messageable is in."""
+        return self._state._get_guild(self.guild_id)
+
+    @property
+    def jump_url(self) -> str:
+        """:class:`str`: Returns a URL that allows the client to jump to the channel."""
+        if self.guild_id is None:
+            return f'https://discord.com/channels/@me/{self.id}'
+        return f'https://discord.com/channels/{self.guild_id}/{self.id}'
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    def permissions_for(self, obj: Any = None, /) -> Permissions:
+        """Handles permission resolution for a :class:`User`.
+
+        This function is there for compatibility with other channel types.
+
+        Since partial messageables cannot reasonably have the concept of
+        permissions, this will always return :meth:`Permissions.none`.
+
+        Parameters
+        -----------
+        obj: :class:`User`
+            The user to check permissions for. This parameter is ignored
+            but kept for compatibility with other ``permissions_for`` methods.
+
+        Returns
+        --------
+        :class:`Permissions`
+            The resolved permissions.
+        """
+
+        return Permissions.none()
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.

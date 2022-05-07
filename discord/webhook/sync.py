@@ -399,6 +399,7 @@ class SyncWebhookMessage(Message):
 
     def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
@@ -842,7 +843,7 @@ class SyncWebhook(BaseWebhook):
     def _create_message(self, data: MessagePayload, *, thread: Snowflake = MISSING) -> SyncWebhookMessage:
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
-        channel = self.channel or PartialMessageable(state=self._state, id=int(data['channel_id']))  # type: ignore
+        channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id, id=int(data['channel_id']))  # type: ignore
         # state is artificial
         return SyncWebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 

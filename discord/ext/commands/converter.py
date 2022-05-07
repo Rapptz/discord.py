@@ -259,7 +259,7 @@ class MemberConverter(IDConverter[discord.Member]):
             if not result:
                 raise MemberNotFound(argument)
 
-        return result  # type: ignore
+        return result
 
 
 class UserConverter(IDConverter[discord.User]):
@@ -336,7 +336,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
     """
 
     @staticmethod
-    def _get_id_matches(ctx, argument):
+    def _get_id_matches(ctx: Context[BotT], argument: str) -> Tuple[Optional[int], int, int]:
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,20})-)?(?P<message_id>[0-9]{15,20})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
@@ -378,7 +378,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
         channel = self._resolve_channel(ctx, guild_id, channel_id)
         if not channel or not isinstance(channel, discord.abc.Messageable):
-            raise ChannelNotFound(channel_id)  # type: ignore # channel_id won't be None here
+            raise ChannelNotFound(channel_id)
         return discord.PartialMessage(channel=channel, id=message_id)
 
 
@@ -1159,7 +1159,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
 }
 
 
-async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param: inspect.Parameter):
+async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter):
     if converter is bool:
         return _convert_to_bool(argument)
 
@@ -1182,7 +1182,7 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
     except CommandError:
         raise
     except Exception as exc:
-        raise ConversionError(converter, exc) from exc  # type: ignore
+        raise ConversionError(converter, exc) from exc
 
     try:
         return converter(argument)
@@ -1192,7 +1192,7 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
         try:
             name = converter.__name__
         except AttributeError:
-            name = converter.__class__.__name__  # type: ignore
+            name = converter.__class__.__name__
 
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
 

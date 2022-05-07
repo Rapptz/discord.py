@@ -238,6 +238,15 @@ Cog
 .. autoclass:: discord.ext.commands.Cog
     :members:
 
+GroupCog
+~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.GroupCog
+
+.. autoclass:: discord.ext.commands.GroupCog
+    :members:
+
+
 CogMeta
 ~~~~~~~~
 
@@ -356,7 +365,7 @@ Checks
 .. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.ext.commands.BucketType.default)
     :decorator:
 
-.. autofunction:: discord.ext.commands.dynamic_cooldown(cooldown, type=BucketType.default)
+.. autofunction:: discord.ext.commands.dynamic_cooldown(cooldown, type)
     :decorator:
 
 .. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.ext.commands.BucketType.default, *, wait=False)
@@ -527,6 +536,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRequiredAttachment
     :members:
 
 .. autoexception:: discord.ext.commands.ArgumentParsingError
@@ -705,6 +717,7 @@ Exception Hierarchy
             - :exc:`~.commands.ConversionError`
             - :exc:`~.commands.UserInputError`
                 - :exc:`~.commands.MissingRequiredArgument`
+                - :exc:`~.commands.MissingRequiredAttachment`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`

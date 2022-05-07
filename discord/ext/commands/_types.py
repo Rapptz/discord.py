@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 
-from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, TypeVar, Union, Tuple, Optional
+from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, Protocol, TypeVar, Union, Tuple, Optional
 
 
 T = TypeVar('T')
@@ -49,12 +49,22 @@ MaybeCoro = Union[T, Coro[T]]
 MaybeAwaitable = Union[T, Awaitable[T]]
 
 CogT = TypeVar('CogT', bound='Optional[Cog]')
-Check = Callable[["ContextT"], MaybeCoro[bool]]
+UserCheck = Callable[["ContextT"], MaybeCoro[bool]]
 Hook = Union[Callable[["CogT", "ContextT"], Coro[Any]], Callable[["ContextT"], Coro[Any]]]
 Error = Union[Callable[["CogT", "ContextT", "CommandError"], Coro[Any]], Callable[["ContextT", "CommandError"], Coro[Any]]]
 
 ContextT = TypeVar('ContextT', bound='Context[Any]')
 BotT = TypeVar('BotT', bound=_Bot, covariant=True)
+
+ContextT_co = TypeVar('ContextT_co', bound='Context[Any]', covariant=True)
+
+
+class Check(Protocol[ContextT_co]):
+
+    predicate: Callable[[ContextT_co], Coroutine[Any, Any, bool]]
+
+    def __call__(self, coro_or_commands: T) -> T:
+        ...
 
 
 # This is merely a tag type to avoid circular import issues.

@@ -127,7 +127,7 @@ def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]
         except CommandError:
             raise
         except Exception as exc:
-            raise ConversionError(converter, exc) from exc  # type: ignore
+            raise ConversionError(converter, exc) from exc
 
     return type('ConverterTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
 
@@ -186,6 +186,9 @@ def replace_parameters(parameters: Dict[str, Parameter], signature: inspect.Sign
                 # However, in here, it probably makes sense to make it required.
                 # I'm unsure how to allow the user to choose right now.
                 inner = converter.converter
+                if inner is discord.Attachment:
+                    raise TypeError('discord.Attachment with Greedy is not supported in hybrid commands')
+
                 param = param.replace(annotation=make_greedy_transformer(inner, parameter))
             elif is_converter(converter):
                 param = param.replace(annotation=make_converter_transformer(converter))
@@ -233,7 +236,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             del wrapped.callback.__signature__
 
         self.wrapped: Command[CogT, Any, T] = wrapped
-        self.binding = wrapped.cog
+        self.binding: Optional[CogT] = wrapped.cog
 
     def _copy_with(self, **kwargs) -> Self:
         copy: Self = super()._copy_with(**kwargs)  # type: ignore
@@ -383,10 +386,18 @@ class HybridCommand(Command[CogT, P, T]):
         self,
         func: CommandCallback[CogT, ContextT, P, T],
         /,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(func, **kwargs)
-        self.app_command: HybridAppCommand[CogT, Any, T] = HybridAppCommand(self)
+        self.with_app_command: bool = kwargs.pop('with_app_command', True)
+        self.with_command: bool = kwargs.pop('with_command', True)
+
+        if not self.with_command and not self.with_app_command:
+            raise TypeError('cannot set both with_command and with_app_command to False')
+
+        self.app_command: Optional[HybridAppCommand[CogT, Any, T]] = (
+            HybridAppCommand(self) if self.with_app_command else None
+        )
 
     @property
     def cog(self) -> CogT:
@@ -395,25 +406,29 @@ class HybridCommand(Command[CogT, P, T]):
     @cog.setter
     def cog(self, value: CogT) -> None:
         self._cog = value
-        self.app_command.binding = value
+        if self.app_command is not None:
+            self.app_command.binding = value
 
     async def can_run(self, ctx: Context[BotT], /) -> bool:
-        if ctx.interaction is None:
-            return await super().can_run(ctx)
-        else:
+        if ctx.interaction is not None and self.app_command:
             return await self.app_command._check_can_run(ctx.interaction)
+        else:
+            return await super().can_run(ctx)
 
     async def _parse_arguments(self, ctx: Context[BotT]) -> None:
         interaction = ctx.interaction
         if interaction is None:
             return await super()._parse_arguments(ctx)
-        else:
+        elif self.app_command:
             ctx.kwargs = await self.app_command._transform_arguments(interaction, interaction.namespace)
 
     def _ensure_assignment_on_copy(self, other: Self) -> Self:
         copy = super()._ensure_assignment_on_copy(other)
-        copy.app_command = self.app_command.copy()
-        copy.app_command.wrapped = copy
+        if self.app_command is None:
+            copy.app_command = None
+        else:
+            copy.app_command = self.app_command.copy()
+            copy.app_command.wrapped = copy
         return copy
 
     def autocomplete(
@@ -441,6 +456,9 @@ class HybridCommand(Command[CogT, P, T]):
             The coroutine passed is not actually a coroutine or
             the parameter is not found or of an invalid type.
         """
+        if self.app_command is None:
+            raise TypeError('This command does not have a registered application command')
+
         return self.app_command.autocomplete(name)
 
 
@@ -473,6 +491,8 @@ class HybridGroup(Group[CogT, P, T]):
     def __init__(self, *args: Any, fallback: Optional[str] = None, **attrs: Any) -> None:
         super().__init__(*args, **attrs)
         self.invoke_without_command = True
+        self.with_app_command: bool = attrs.pop('with_app_command', True)
+
         parent = None
         if self.parent is not None:
             if isinstance(self.parent, HybridGroup):
@@ -480,24 +500,38 @@ class HybridGroup(Group[CogT, P, T]):
             else:
                 raise TypeError(f'HybridGroup parent must be HybridGroup not {self.parent.__class__}')
 
-        guild_ids = attrs.pop('guild_ids', None) or getattr(self.callback, '__discord_app_commands_default_guilds__', None)
-        self.app_command: app_commands.Group = app_commands.Group(
-            name=self.name,
-            description=self.description or self.short_doc or '…',
-            guild_ids=guild_ids,
-        )
-
-        # This prevents the group from re-adding the command at __init__
-        self.app_command.parent = parent
+        # I would love for this to be Optional[app_commands.Group]
+        # However, Python does not have conditional typing so it's very hard to
+        # make this type depend on the with_app_command bool without a lot of needless repetition
+        self.app_command: app_commands.Group = MISSING
         self.fallback: Optional[str] = fallback
 
-        if fallback is not None:
-            command = HybridAppCommand(self)
-            command.name = fallback
-            self.app_command.add_command(command)
+        if self.with_app_command:
+            guild_ids = attrs.pop('guild_ids', None) or getattr(
+                self.callback, '__discord_app_commands_default_guilds__', None
+            )
+            guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
+            default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
+            self.app_command = app_commands.Group(
+                name=self.name,
+                description=self.description or self.short_doc or '…',
+                guild_ids=guild_ids,
+                guild_only=guild_only,
+                default_permissions=default_permissions,
+            )
+
+            # This prevents the group from re-adding the command at __init__
+            self.app_command.parent = parent
+
+            if fallback is not None:
+                command = HybridAppCommand(self)
+                command.name = fallback
+                self.app_command.add_command(command)
 
     @property
     def _fallback_command(self) -> Optional[HybridAppCommand[CogT, ..., T]]:
+        if self.app_command is MISSING:
+            return None
         return self.app_command.get_command(self.fallback)  # type: ignore
 
     @property
@@ -529,6 +563,19 @@ class HybridGroup(Group[CogT, P, T]):
     def _ensure_assignment_on_copy(self, other: Self) -> Self:
         copy = super()._ensure_assignment_on_copy(other)
         copy.fallback = self.fallback
+        return copy
+
+    def _update_copy(self, kwargs: Dict[str, Any]) -> Self:
+        copy = super()._update_copy(kwargs)
+        # This is only really called inside CogMeta
+        # I want to ensure that the children of the app command are copied
+        # For example, if someone defines an app command using the app_command property
+        # while inside the cog. This copy is not propagated in normal means.
+        # For some reason doing this copy above will lead to duplicates.
+        if copy.app_command and self.app_command:
+            # This is a very lazy copy because the CogMeta will properly copy it
+            # with bindings and all later
+            copy.app_command._children = self.app_command._children.copy()
         return copy
 
     def autocomplete(
@@ -592,7 +639,9 @@ class HybridGroup(Group[CogT, P, T]):
         if isinstance(command, HybridGroup) and self.parent is not None:
             raise ValueError(f'{command.qualified_name!r} is too nested, groups can only be nested at most one level')
 
-        self.app_command.add_command(command.app_command)
+        if command.app_command and self.app_command:
+            self.app_command.add_command(command.app_command)
+
         command.parent = self
 
         if command.name in self.all_commands:
@@ -607,13 +656,15 @@ class HybridGroup(Group[CogT, P, T]):
 
     def remove_command(self, name: str, /) -> Optional[Command[CogT, ..., Any]]:
         cmd = super().remove_command(name)
-        self.app_command.remove_command(name)
+        if self.app_command:
+            self.app_command.remove_command(name)
         return cmd
 
     def command(
         self,
         name: str = MISSING,
         *args: Any,
+        with_app_command: bool = True,
         **kwargs: Any,
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridCommand[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
@@ -627,7 +678,7 @@ class HybridGroup(Group[CogT, P, T]):
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
             kwargs.setdefault('parent', self)
-            result = hybrid_command(name=name, *args, **kwargs)(func)
+            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
             self.add_command(result)
             return result
 
@@ -637,6 +688,7 @@ class HybridGroup(Group[CogT, P, T]):
         self,
         name: str = MISSING,
         *args: Any,
+        with_app_command: bool = True,
         **kwargs: Any,
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridGroup[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
@@ -650,7 +702,7 @@ class HybridGroup(Group[CogT, P, T]):
 
         def decorator(func: CommandCallback[CogT, ContextT, P2, U]):
             kwargs.setdefault('parent', self)
-            result = hybrid_group(name=name, *args, **kwargs)(func)
+            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
             self.add_command(result)
             return result
 
@@ -659,9 +711,11 @@ class HybridGroup(Group[CogT, P, T]):
 
 def hybrid_command(
     name: str = MISSING,
+    *,
+    with_app_command: bool = True,
     **attrs: Any,
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridCommand[CogT, P, T]]:
-    """A decorator that transforms a function into a :class:`.HybridCommand`.
+    r"""A decorator that transforms a function into a :class:`.HybridCommand`.
 
     A hybrid command is one that functions both as a regular :class:`.Command`
     and one that is also a :class:`app_commands.Command <discord.app_commands.Command>`.
@@ -686,7 +740,9 @@ def hybrid_command(
     name: :class:`str`
         The name to create the command with. By default this uses the
         function name unchanged.
-    attrs
+    with_app_command: :class:`bool`
+        Whether to register the command as an application command.
+    \*\*attrs
         Keyword arguments to pass into the construction of the
         hybrid command.
 
@@ -699,24 +755,36 @@ def hybrid_command(
     def decorator(func: CommandCallback[CogT, ContextT, P, T]):
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridCommand(func, name=name, **attrs)
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)
 
     return decorator
 
 
 def hybrid_group(
     name: str = MISSING,
+    *,
+    with_app_command: bool = True,
     **attrs: Any,
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridGroup[CogT, P, T]]:
     """A decorator that transforms a function into a :class:`.HybridGroup`.
 
     This is similar to the :func:`~discord.ext.commands.group` decorator except it creates
     a hybrid group instead.
+
+    Parameters
+    -----------
+    with_app_command: :class:`bool`
+        Whether to register the command as an application command.
+
+    Raises
+    -------
+    TypeError
+        If the function is not a coroutine or is already a command.
     """
 
     def decorator(func: CommandCallback[CogT, ContextT, P, T]):
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridGroup(func, name=name, **attrs)
+        return HybridGroup(func, name=name, with_app_command=with_app_command, **attrs)
 
     return decorator  # type: ignore

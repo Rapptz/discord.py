@@ -129,6 +129,14 @@ Argument
 .. autoclass:: discord.app_commands.Argument()
     :members:
 
+AllChannels
+~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AllChannels
+
+.. autoclass:: discord.app_commands.AllChannels()
+    :members:
+
 Data Classes
 --------------
 
@@ -601,6 +609,9 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandNotFound
     :members:
 
+.. autoexception:: discord.app_commands.MissingApplicationID
+    :members:
+
 Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -621,3 +632,4 @@ Exception Hierarchy
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
+            - :exc:`~discord.app_commands.MissingApplicationID`

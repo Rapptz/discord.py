@@ -415,7 +415,7 @@ class TextInput(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: TextInputPayload) -> None:
-        self.type: ComponentType = ComponentType.text_input
+        self.type: Literal[ComponentType.text_input] = ComponentType.text_input
         self.style: TextStyle = try_enum(TextStyle, data['style'])
         self.label: str = data['label']
         self.custom_id: str = data['custom_id']
