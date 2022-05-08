@@ -2372,9 +2372,9 @@ class HTTPClient:
         channel: MessageableChannel,
         message: Optional[Message] = None,
         *,
-        form_data: bool = False,
         nonce: Optional[str] = MISSING,
         application_id: Snowflake = MISSING,
+        files: Optional[List[File]] = None,
     ) -> Response[None]:
         state = getattr(message, '_state', channel._state)
         payload = {
@@ -2395,8 +2395,17 @@ class HTTPClient:
             if guild is not None:
                 payload['guild_id'] = str(guild.id)
 
-        if form_data:
-            form = [{'name': 'payload_json', 'value': utils._to_json(payload)}]
-            return self.request(Route('POST', '/interactions'), form=form)
-        else:
-            return self.request(Route('POST', '/interactions'), json=payload)
+        form = []
+        if files is not None:
+            form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
+            for index, file in enumerate(files or []):
+                form.append(
+                    {
+                        'name': f'files[{index}]',
+                        'value': file.fp,
+                        'filename': file.filename,
+                        'content_type': 'application/octet-stream',
+                    }
+                )
+
+        return self.request(Route('POST', '/interactions'), json=payload, form=form, files=files)

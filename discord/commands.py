@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_checkable, TYPE_CHECKING, Union
+from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_checkable, Tuple, TYPE_CHECKING, Union
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
@@ -35,8 +35,9 @@ from .utils import _generate_nonce, _get_as_snowflake
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
     from .appinfo import InteractionApplication
+    from .file import File
     from .interactions import Interaction
-    from .message import Message
+    from .message import Attachment, Message
     from .state import ConnectionState
 
 __all__ = (
@@ -99,7 +100,7 @@ class ApplicationCommand(Protocol):
     def __str__(self) -> str:
         return self.name
 
-    async def __call__(self, data, channel: Optional[Messageable] = None) -> Interaction:
+    async def __call__(self, data: dict, files: Optional[List[File]] = None, channel: Optional[Messageable] = None) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
             raise TypeError('__call__() missing 1 required argument: \'channel\'')
@@ -111,7 +112,7 @@ class ApplicationCommand(Protocol):
         state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)
         try:
             await state.http.interact(
-                type, data, acc_channel, form_data=True, nonce=nonce, application_id=self.application_id
+                type, data, acc_channel, files=files, nonce=nonce, application_id=self.application_id
             )
             i = await state.client.wait_for(
                 'interaction_finish',
@@ -248,25 +249,26 @@ class SlashMixin(ApplicationCommand, Protocol):
         options: List[Option]
         children: List[SubCommand]
 
-    async def __call__(self, options, channel=None):
+    async def __call__(self, options: List[dict], files: Optional[List[File]], attachments: List[Attachment], channel: Optional[Messageable] = None) -> Interaction:
         obj = self._parent
         command = obj._data
         command['name_localized'] = command['name']
         data = {
             'application_command': command,
-            'attachments': [],
+            'attachments': attachments,
             'id': str(obj.id),
             'name': obj.name,
             'options': options,
             'type': obj.type.value,
             'version': str(obj.version),
         }
-        return await super().__call__(data, channel)
+        return await super().__call__(data, files, channel)
 
-    def _parse_kwargs(self, kwargs: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _parse_kwargs(self, kwargs: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[File], List[Attachment]]:
         possible_options = {o.name: o for o in self.options}
         kwargs = {k: v for k, v in kwargs.items() if k in possible_options}
         options = []
+        files = []
 
         for k, v in kwargs.items():
             option = possible_options[k]
@@ -281,6 +283,9 @@ class SlashMixin(ApplicationCommand, Protocol):
                 v = str(v.id)
             elif type is AppCommandOptionType.boolean:
                 v = bool(v)
+            elif type is AppCommandOptionType.attachment:
+                files.append(v)
+                v = len(files) - 1
             else:
                 v = option._convert(v)
 
@@ -293,7 +298,11 @@ class SlashMixin(ApplicationCommand, Protocol):
 
             options.append({'name': k, 'value': v, 'type': type.value})
 
-        return options
+        attachments = []
+        for index, file in enumerate(files):
+            attachments.append(file.to_dict(index))
+
+        return options, files, attachments
 
     def _unwrap_options(self, data: List[Dict[str, Any]]) -> None:
         options = []
@@ -352,7 +361,7 @@ class UserCommand(BaseCommand):
             'type': self.type.value,
             'version': str(self.version),
         }
-        return await super().__call__(data, channel)
+        return await super().__call__(data, None, channel)
 
     @property
     def target_user(self) -> Optional[Snowflake]:
@@ -408,7 +417,7 @@ class MessageCommand(BaseCommand):
             'type': self.type.value,
             'version': str(self.version),
         }
-        return await super().__call__(data, channel)
+        return await super().__call__(data, None, channel)
 
     @property
     def target_message(self) -> Optional[Message]:
@@ -466,7 +475,7 @@ class SlashCommand(BaseCommand, SlashMixin):
         if self.is_group():
             raise TypeError('Cannot use a group')
 
-        return await super().__call__(self._parse_kwargs(kwargs), channel)
+        return await super().__call__(*self._parse_kwargs(kwargs), channel)
 
     def __repr__(self) -> str:
         BASE = f'<SlashCommand id={self.id} name={self.name!r}'
@@ -567,11 +576,13 @@ class SubCommand(SlashMixin):
         if self.is_group():
             raise TypeError('Cannot use a group')
 
+        options, files, attachments = self._parse_kwargs(kwargs)
+
         options = [
             {
                 'type': self._type.value,
                 'name': self.name,
-                'options': self._parse_kwargs(kwargs),
+                'options': options,
             }
         ]
         for parent in self._walk_parents():
@@ -583,7 +594,7 @@ class SubCommand(SlashMixin):
                 }
             ]
 
-        return await super().__call__(options, channel)
+        return await super().__call__(options, files, attachments, channel)
 
     def __repr__(self) -> str:
         BASE = f'<SubCommand name={self.name!r}'
@@ -734,7 +745,7 @@ class OptionChoice:
     ----------
     name: :class:`str`
         The choice's displayed name.
-    value: Any
+    value: Union[:class:`str`, :class:`int`, :class:`float`]
         The choice's value. The type of this depends on the option's type.
     """
 
