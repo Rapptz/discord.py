@@ -31,6 +31,7 @@ from .asset import Asset
 from .enums import ApplicationType, ApplicationVerificationState, RPCApplicationState, StoreApplicationState, try_enum
 from .flags import ApplicationFlags
 from .mixins import Hashable
+from .object import Object
 from .permissions import Permissions
 from .user import User
 
@@ -554,13 +555,8 @@ class InteractionApplication(Hashable):
         The bot attached to the application.
     description: Optional[:class:`str`]
         The application description.
-        Only available from :attr:`~Modal.application`.
     type: Optional[:class:`ApplicationType`]
         The type of application.
-        Only available from :attr:`~Modal.application`.
-    command_count: Optional[:class:`int`]
-        The number of commands the application has.
-        Only available from :attr:`~BaseCommand.application`.
     """
 
     __slots__ = (
@@ -583,14 +579,16 @@ class InteractionApplication(Hashable):
     def _update(self, data: dict) -> None:
         self.id: int = int(data['id'])
         self.name: str = data['name']
-        self.description: Optional[str] = data.get('description')
+        self.description: str = data.get('description') or ''
         self._icon: Optional[str] = data.get('icon')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
 
-        self.bot: User = None  # type: ignore # This should never be None but it's volatile
+        self.bot: User  # User data should always be available, but these payloads are volatile
         user = data.get('bot')
         if user is not None:
             self.bot = User(state=self._state, data=user)
+        else:
+            self.bot = Object(id=self.id)  # type: ignore
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'

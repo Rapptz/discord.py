@@ -27,8 +27,9 @@ from __future__ import annotations
 import asyncio
 from typing import Awaitable, TYPE_CHECKING, TypeVar, Optional, Any, Callable, Union, List, Tuple, AsyncIterator, Dict
 
+from .appinfo import InteractionApplication
 from .errors import InvalidData
-from .utils import _generate_nonce
+from .utils import _generate_nonce, _get_as_snowflake
 from .object import Object
 from .commands import _command_factory
 from .enums import AppCommandType
@@ -97,6 +98,7 @@ class CommandIterator:
         self.applications: bool = kwargs.get('applications', True)
         self.application: Snowflake = kwargs.get('application', None)
         self.commands = asyncio.Queue()
+        self._application_cache: Dict[int, InteractionApplication] = {}
 
     async def _process_args(self) -> Tuple[DMChannel, Optional[str], Optional[Union[User, Message]]]:
         item = self.item
@@ -189,11 +191,11 @@ class CommandIterator:
 
         kwargs['offset'] += retrieve
 
+        for app in data.get('applications', []):
+            self._application_cache[int(app['id'])] = InteractionApplication(state=state, data=app)
+
         for cmd in cmds:
             self.commands.put_nowait(self.create_command(cmd))
-
-        for app in data.get('applications', []):
-            ...
 
     def create_command(self, data) -> ApplicationCommand:
         channel, item, value = self._tuple  # type: ignore
@@ -201,7 +203,8 @@ class CommandIterator:
             kwargs = {item: value}
         else:
             kwargs = {}
-        return self.cls(state=channel._state, data=data, channel=channel, **kwargs)
+        app_id = _get_as_snowflake(data, 'application_id')
+        return self.cls(state=channel._state, data=data, channel=channel, application=self._application_cache.get(app_id), **kwargs)  # type: ignore
 
 
 class FakeCommandIterator:

@@ -33,6 +33,7 @@ from .utils import _generate_nonce
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
+    from .appinfo import InteractionApplication
     from .interactions import Interaction
     from .message import Message
     from .state import ConnectionState
@@ -68,19 +69,27 @@ class ApplicationCommand(Protocol):
         The command's description, if any.
     type: :class:`.AppCommandType`
         The type of application command.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    application: Optional[:class:`InteractionApplication`]
+        The application this command belongs to.
+        Only available if requested.
+    application_id: :class:`int`
+        The ID of the application this command belongs to.
     """
 
     __slots__ = ()
 
     if TYPE_CHECKING:
         _state: ConnectionState
-        _application_id: int
+        application_id: int
         name: str
         description: str
         version: int
         type: AppCommandType
         target_channel: Optional[Messageable]
         default_permission: bool
+        application: Optional[InteractionApplication]
 
     def __str__(self) -> str:
         return self.name
@@ -97,7 +106,7 @@ class ApplicationCommand(Protocol):
         state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)
         try:
             await state.http.interact(
-                type, data, acc_channel, form_data=True, nonce=nonce, application_id=self._application_id
+                type, data, acc_channel, form_data=True, nonce=nonce, application_id=self.application_id
             )
             i = await state.client.wait_for(
                 'interaction_finish',
@@ -138,14 +147,19 @@ class BaseCommand(ApplicationCommand, Hashable):
         The command's ID.
     version: :class:`int`
         The command's version.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     name: :class:`str`
         The command's name.
     description: :class:`str`
         The command's description, if any.
     type: :class:`AppCommandType`
         The type of application command.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    application: Optional[:class:`InteractionApplication`]
+        The application this command belongs to.
+        Only available if requested.
+    application_id: :class:`int`
+        The ID of the application this command belongs to.
     """
 
     __slots__ = (
@@ -155,27 +169,29 @@ class BaseCommand(ApplicationCommand, Hashable):
         'version',
         'type',
         'default_permission',
+        'application',
+        'application_id',
         '_data',
         '_state',
         '_channel',
-        '_application_id',
         '_dm_permission',
         '_default_member_permissions',
     )
 
-    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None) -> None:
+    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, application: Optional[InteractionApplication] = None) -> None:
         self._state = state
         self._data = data
         self.name = data['name']
         self.description = data['description']
         self._channel = channel
-        self._application_id: int = int(data['application_id'])
+        self.application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])
         self.version = int(data['version'])
         self.type = try_enum(AppCommandType, data['type'])
-        self.default_permission: bool = data['default_permission']
+        self.default_permission: bool = data.get('default_permission', True)
         self._dm_permission = data.get('dm_permission')
         self._default_member_permissions = data['default_member_permissions']
+        self.application = application
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
@@ -191,12 +207,6 @@ class BaseCommand(ApplicationCommand, Hashable):
             Whether this command is a group.
         """
         return False
-
-    @property
-    def application(self):
-        """The application this command belongs to."""
-        ...
-        # return self._state.get_application(self._application_id)
 
     @property
     def target_channel(self) -> Optional[Messageable]:
@@ -567,8 +577,9 @@ class SubCommand(SlashMixin):
         return BASE + '>'
 
     @property
-    def _application_id(self) -> int:
-        return self._parent._application_id
+    def application_id(self) -> int:
+        """:class:`int`: The ID of the application this command belongs to."""
+        return self._parent.application_id
 
     @property
     def version(self) -> int:
@@ -592,7 +603,9 @@ class SubCommand(SlashMixin):
 
     @property
     def application(self):
-        """The application this command belongs to."""
+        """Optional[:class:`InteractionApplication`]: The application this command belongs to.
+        Only available if requested.
+        """
         return self._parent.application
 
     @property
@@ -608,7 +621,7 @@ class SubCommand(SlashMixin):
         self._parent.target_channel = value
 
 
-class Option:  # TODO: Add validation
+class Option:
     """Represents a command option.
 
     .. container:: operations
@@ -633,12 +646,17 @@ class Option:  # TODO: Add validation
         Maximum value of the option. Only applicable to :attr:`AppCommandOptionType.integer` and :attr:`AppCommandOptionType.number`.
     choices: List[:class:`OptionChoice`]
         A list of possible choices to choose from. If these are present, you must choose one from them.
+
         Only applicable to :attr:`AppCommandOptionType.string`, :attr:`AppCommandOptionType.integer`, and :attr:`AppCommandOptionType.number`.
     channel_types: List[:class:`ChannelType`]
         A list of channel types that you can choose from. If these are present, you must choose a channel that is one of these types.
+
         Only applicable to :attr:`AppCommandOptionType.channel`.
     autocomplete: :class:`bool`
-        Whether the option autocompletes. Always ``False`` if :attr:`choices` are present.
+        Whether the option autocompletes.
+
+        Only applicable to :attr:`AppCommandOptionType.string`, :attr:`AppCommandOptionType.integer`, and :attr:`AppCommandOptionType.number`.
+        Always ``False`` if :attr:`choices` are present.
     """
 
     __slots__ = (
