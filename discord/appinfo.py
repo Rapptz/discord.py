@@ -178,10 +178,10 @@ class AppInfo:
         self._cover_image: Optional[str] = data.get('cover_image')
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
-        self.tags: List[str] = data.get("tags", [])
-        self.custom_install_url: Optional[str] = data.get("custom_install_url")
+        self.tags: List[str] = data.get('tags', [])
+        self.custom_install_url: Optional[str] = data.get('custom_install_url')
 
-        params = data.get("install_params")
+        params = data.get('install_params')
         self.install_params: Optional[AppInstallParams] = AppInstallParams(params) if params else None
 
     def __repr__(self) -> str:
@@ -308,11 +308,8 @@ class AppInstallParams:
         The permissions to give to application in the guild.
     """
 
-    __slots__ = (
-        "scopes",
-        "permissions",
-    )
+    __slots__ = ('scopes', 'permissions')
 
     def __init__(self, data: InstallParamsPayload) -> None:
-        self.scopes: List[str] = data.get("scopes", [])
-        self.permissions: Permissions = Permissions._from_value(int(data["permissions"]))
+        self.scopes: List[str] = data.get('scopes', [])
+        self.permissions: Permissions = Permissions(int(data['permissions']))
