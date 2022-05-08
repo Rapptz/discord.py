@@ -123,7 +123,7 @@ class WebhookAdapter:
     ) -> Any:
         headers: Dict[str, str] = {}
         files = files or []
-        to_send: Optional[Union[str, Dict[str, Any]]] = None
+        to_send: Optional[Union[str, bytes, Dict[str, Any]]] = None
         bucket = (route.webhook_id, route.webhook_token)
 
         try:
@@ -132,8 +132,8 @@ class WebhookAdapter:
             self._locks[bucket] = lock = threading.Lock()
 
         if payload is not None:
-            headers['Content-Type'] = 'application/json'
-            to_send = utils._to_json(payload)
+            headers['Content-Type'] = 'application/json; charset=utf-8'
+            to_send = utils._to_json(payload).encode('utf-8')
 
         if auth_token is not None:
             headers['Authorization'] = f'Bot {auth_token}'
