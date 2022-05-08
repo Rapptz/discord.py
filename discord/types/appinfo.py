@@ -32,6 +32,11 @@ from .team import Team
 from .snowflake import Snowflake
 
 
+class InstallParams(TypedDict):
+    scopes: List[str]
+    permissions: str
+
+
 class BaseAppInfo(TypedDict):
     id: Snowflake
     name: str
@@ -54,6 +59,9 @@ class AppInfo(BaseAppInfo):
     privacy_policy_url: NotRequired[str]
     hook: NotRequired[bool]
     max_participants: NotRequired[int]
+    tags: NotRequired[List[str]]
+    install_params: NotRequired[InstallParams]
+    custom_install_url: NotRequired[str]
 
 
 class PartialAppInfo(BaseAppInfo, total=False):

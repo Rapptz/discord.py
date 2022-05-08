@@ -72,6 +72,14 @@ PartialAppInfo
 .. autoclass:: PartialAppInfo()
     :members:
 
+AppInstallParams
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppInstallParams
+
+.. autoclass:: AppInstallParams()
+    :members:
+
 Team
 ~~~~~
 
