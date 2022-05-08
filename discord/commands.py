@@ -29,7 +29,8 @@ from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_che
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
 from .mixins import Hashable
-from .utils import _generate_nonce
+from .permissions import Permissions
+from .utils import _generate_nonce, _get_as_snowflake
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
@@ -71,6 +72,8 @@ class ApplicationCommand(Protocol):
         The type of application command.
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
+    dm_permission: :class:`bool`
+        Whether the command is enabled in DMs.
     application: Optional[:class:`InteractionApplication`]
         The application this command belongs to.
         Only available if requested.
@@ -82,13 +85,15 @@ class ApplicationCommand(Protocol):
 
     if TYPE_CHECKING:
         _state: ConnectionState
-        application_id: int
+        _channel: Optional[Messageable]
+        _default_member_permissions: Optional[int]
         name: str
         description: str
         version: int
         type: AppCommandType
-        target_channel: Optional[Messageable]
         default_permission: bool
+        dm_permission: bool
+        application_id: int
         application: Optional[InteractionApplication]
 
     def __str__(self) -> str:
@@ -118,6 +123,42 @@ class ApplicationCommand(Protocol):
         finally:  # Cleanup even if we failed
             state._interaction_cache.pop(nonce, None)
         return i
+
+    def is_group(self) -> bool:
+        """Query whether this command is a group.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether this command is a group.
+        """
+        return False
+
+    @property
+    def target_channel(self) -> Optional[Messageable]:
+        """Optional[:class:`.abc.Messageable`]: The channel this application command will be used on.
+
+        You can set this in order to use this command in a different channel without re-fetching it.
+        """
+        return self._channel
+
+    @target_channel.setter
+    def target_channel(self, value: Optional[Messageable]) -> None:
+        from .abc import Messageable
+
+        if not isinstance(value, Messageable) and value is not None:
+            raise TypeError('channel must derive from Messageable')
+        self._channel = value
+
+    @property
+    def default_member_permissions(self) -> Optional[Permissions]:
+        """Optional[:class:`Permissions`]: The default permissions required to use this command.
+
+        ..note::
+            This may be overrided on a guild-by-guild basis.
+        """
+        perms = self._default_member_permissions
+        return Permissions(perms) if perms is not None else None
 
 
 class BaseCommand(ApplicationCommand, Hashable):
@@ -155,6 +196,8 @@ class BaseCommand(ApplicationCommand, Hashable):
         The type of application command.
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
+    dm_permission: :class:`bool`
+        Whether the command is enabled in DMs.
     application: Optional[:class:`InteractionApplication`]
         The application this command belongs to.
         Only available if requested.
@@ -171,10 +214,10 @@ class BaseCommand(ApplicationCommand, Hashable):
         'default_permission',
         'application',
         'application_id',
+        'dm_permission',
         '_data',
         '_state',
         '_channel',
-        '_dm_permission',
         '_default_member_permissions',
     )
 
@@ -188,41 +231,15 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.id: int = int(data['id'])
         self.version = int(data['version'])
         self.type = try_enum(AppCommandType, data['type'])
-        self.default_permission: bool = data.get('default_permission', True)
-        self._dm_permission = data.get('dm_permission')
-        self._default_member_permissions = data['default_member_permissions']
         self.application = application
+
+        self._default_member_permissions = _get_as_snowflake(data, 'default_member_permissions')
+        self.default_permission: bool = data.get('default_permission', True)
+        dm_permission = data.get('dm_permission')  # Null means true?
+        self.dm_permission = dm_permission if dm_permission is not None else True
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
-
-    def is_group(self) -> bool:
-        """Query whether this command is a group.
-
-        Here for compatibility purposes.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether this command is a group.
-        """
-        return False
-
-    @property
-    def target_channel(self) -> Optional[Messageable]:
-        """Optional[:class:`.abc.Messageable`]: The channel this application command will be used on.
-
-        You can set this in order to use this command in a different channel without re-fetching it.
-        """
-        return self._channel
-
-    @target_channel.setter
-    def target_channel(self, value: Optional[Messageable]) -> None:
-        from .abc import Messageable
-
-        if not isinstance(value, Messageable) and value is not None:
-            raise TypeError('channel must derive from Messageable')
-        self._channel = value
 
 
 class SlashMixin(ApplicationCommand, Protocol):
@@ -577,6 +594,10 @@ class SubCommand(SlashMixin):
         return BASE + '>'
 
     @property
+    def _default_member_permissions(self) -> Optional[int]:
+        return self._parent._default_member_permissions
+
+    @property
     def application_id(self) -> int:
         """:class:`int`: The ID of the application this command belongs to."""
         return self._parent.application_id
@@ -590,6 +611,11 @@ class SubCommand(SlashMixin):
     def default_permission(self) -> bool:
         """:class:`bool`: Whether the command is enabled in guilds by default."""
         return self._parent.default_permission
+
+    @property
+    def dm_permission(self) -> bool:
+        """:class:`bool`: Whether the command is enabled in DMs."""
+        return self._parent.dm_permission
 
     def is_group(self) -> bool:
         """Query whether this command is a group.
