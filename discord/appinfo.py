@@ -111,14 +111,17 @@ class AppInfo:
         The application's privacy policy URL, if set.
 
         .. versionadded:: 2.0
+
     tags: List[:class:`str`]
         The list of tags describing the functionality of the application.
 
         .. versionadded:: 2.0
+
     custom_install_url: List[:class:`str`]
         The custom authorization URL for the application, if enabled.
 
         .. versionadded:: 2.0
+
     install_params: Optional[:class:`AppInstallParams`]
         The settings for custom authorization URL of application, if enabled.
 
