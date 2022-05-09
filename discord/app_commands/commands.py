@@ -233,8 +233,9 @@ def _validate_auto_complete_callback(
     binding = getattr(callback, '__self__', None)
     if binding is not None:
         callback = callback.__func__
-
-    requires_binding = (binding is None and is_inside_class(callback)) or skip_binding
+        requires_binding = True
+    else:
+        requires_binding = is_inside_class(callback) or skip_binding
 
     callback.requires_binding = requires_binding
     callback.binding = binding

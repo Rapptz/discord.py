@@ -104,9 +104,7 @@ class MockTree(discord.app_commands.CommandTree):
         self.last_exception = None
         return await super().call(interaction)
 
-    async def on_error(
-        self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError
-    ) -> None:
+    async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError) -> None:
         self.last_exception = error
 
 
