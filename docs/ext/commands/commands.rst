@@ -913,7 +913,7 @@ This is useful for:
   .. code-block:: python3
 
       @bot.command()
-      async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
+      async def wave(ctx, to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
           await ctx.send(f'Hello {to.mention} :wave:')
 
   Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and
@@ -922,7 +922,7 @@ This is useful for:
   .. code-block:: python3
 
       @bot.command()
-      async def wave(to: discord.User = commands.Author):
+      async def wave(ctx, to: discord.User = commands.Author):
           await ctx.send(f'Hello {to.mention} :wave:')
 
   :obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled.
