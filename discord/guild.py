@@ -278,6 +278,10 @@ class Guild(Hashable):
         Indicates if the guild has premium AKA server boost level progress bar enabled.
 
         .. versionadded:: 2.0
+    widget_enabled: :class:`bool`
+        Indicates if the guild has widget enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -303,6 +307,7 @@ class Guild(Hashable):
         'nsfw_level',
         'mfa_level',
         'vanity_url_code',
+        'widget_enabled',
         '_members',
         '_channels',
         '_icon',
@@ -484,6 +489,7 @@ class Guild(Hashable):
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
+        self.widget_enabled: bool = guild.get('widget_enabled', False)
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
