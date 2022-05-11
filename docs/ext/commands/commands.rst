@@ -920,7 +920,7 @@ This means that decorators that refer to a parameter by name will use the flag n
     async def ban(ctx, *, flags: BanFlags):
         ...
 
-For ease of use, the :func:`~ext.commands.flag` function accepts a ``descriptor`` keyword argument to allow you to pass descriptions inline:
+For ease of use, the :func:`~ext.commands.flag` function accepts a ``description`` keyword argument to allow you to pass descriptions inline:
 
 .. code-block:: python3
 
@@ -934,6 +934,8 @@ For ease of use, the :func:`~ext.commands.flag` function accepts a ``descriptor`
     async def ban(ctx, *, flags: BanFlags):
         ...
 
+
+Likewise, use of the ``name`` keyword argument allows you to pass renames for the parameter, similar to the :func:`~discord.app_commands.rename` decorator.
 
 Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:
 
