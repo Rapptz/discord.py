@@ -939,9 +939,9 @@ Likewise, use of the ``name`` keyword argument allows you to pass renames for th
 
 Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:
 
-- :data:`typing.Tuple`
-- :data:`typing.List`
-- :data:`typing.Dict`
+- ``typing.Tuple``
+- ``typing.List``
+- ``typing.Dict``
 
 .. note::
 
