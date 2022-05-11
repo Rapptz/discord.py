@@ -44,7 +44,7 @@ from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
 from .core import Command, Group
 from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
-from .converter import Converter, Range, Greedy, run_converters
+from .converter import Converter, Range, Greedy, run_converters, CONVERTER_MAPPING
 from .parameters import Parameter
 from .flags import is_flag, FlagConverter
 from .cog import Cog
@@ -117,6 +117,14 @@ def required_pos_arguments(func: Callable[..., Any]) -> int:
 
 
 def make_converter_transformer(converter: Any) -> Type[app_commands.Transformer]:
+    try:
+        module = converter.__module__
+    except AttributeError:
+        pass
+    else:
+        if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
+            converter = CONVERTER_MAPPING.get(converter, converter)
+
     async def transform(cls, interaction: discord.Interaction, value: str) -> Any:
         try:
             if inspect.isclass(converter) and issubclass(converter, Converter):
@@ -219,7 +227,7 @@ def replace_parameter(
             if renames:
                 app_commands.rename(**renames)(callback)
 
-        elif is_converter(converter):
+        elif is_converter(converter) or converter in CONVERTER_MAPPING:
             param = param.replace(annotation=make_converter_transformer(converter))
         elif origin is Union:
             if len(args) == 2 and args[-1] is _NoneType:
