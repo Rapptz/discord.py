@@ -297,6 +297,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
     def _copy_with(self, **kwargs) -> Self:
         copy: Self = super()._copy_with(**kwargs)  # type: ignore
         copy.wrapped = self.wrapped
+        copy.flag_converter = self.flag_converter
         return copy
 
     def copy(self) -> Self:
