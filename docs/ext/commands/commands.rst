@@ -876,6 +876,75 @@ A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` e
 given as a :class:`dict` rather than a :class:`list`.
 
 
+Hybrid Command Interaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When used as a hybrid command, the parameters are flattened into different parameters for the application command. For example, the following converter:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+Would be equivalent to an application command defined as this:
+
+.. code-block:: python3
+
+    @commands.hybrid_command()
+    async def ban(ctx, member: discord.Member, reason: str, days: int = 1):
+        ...
+
+This means that decorators that refer to a parameter by name will use the flag name instead:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    @app_commands.describe(
+        member='The member to ban',
+        reason='The reason for the ban',
+        days='The number of days worth of messages to delete',
+    )
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+For ease of use, the :func:`~ext.commands.flag` function accepts a ``descriptor`` keyword argument to allow you to pass descriptions inline:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member = commands.flag(description='The member to ban')
+        reason: str = commands.flag(description='The reason for the ban')
+        days: int = 1 = commands.flag(description='The number of days worth of messages to delete')
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+
+Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:
+
+- :data:`typing.Tuple`
+- :data:`typing.List`
+- :data:`typing.Dict`
+
+.. note::
+
+    Only one flag converter is supported per hybrid command. Due to the flag converter's way of working, it is unlikely for a user to have two of them in one signature.
+
 .. _ext_commands_parameter:
 
 Parameter Metadata
