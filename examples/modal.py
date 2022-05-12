@@ -9,12 +9,12 @@ TEST_GUILD = discord.Object(0)
 
 
 class MyClient(discord.Client):
-    def __init__(self) -> None:
+    def __init__(self, application_id: int) -> None:
         # Just default intents and a `discord.Client` instance
         # We don't need a `commands.Bot` instance because we are not
         # creating text-based commands.
         intents = discord.Intents.default()
-        super().__init__(intents=intents)
+        super().__init__(intents=intents, application_id=application_id)
 
         # We need an `discord.app_commands.CommandTree` instance
         # to register application commands (slash commands in this case)
