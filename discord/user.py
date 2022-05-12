@@ -194,6 +194,7 @@ class BaseUser(_UserTag):
         """Optional[:class:`Colour`]: Returns the user's accent colour, if applicable.
 
         A user's accent colour is only shown if they do not have a banner.
+        This will only be available if the user explicitly sets a colour.
 
         There is an alias for this named :attr:`accent_color`.
 
@@ -212,6 +213,7 @@ class BaseUser(_UserTag):
         """Optional[:class:`Colour`]: Returns the user's accent color, if applicable.
 
         A user's accent color is only shown if they do not have a banner.
+        This will only be available if the user explicitly sets a color.
 
         There is an alias for this named :attr:`accent_colour`.
 
