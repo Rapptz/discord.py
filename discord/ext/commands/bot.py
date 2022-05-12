@@ -908,7 +908,7 @@ class BotBase(GroupMixin[None]):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    async def _load_from_module_spec(self, spec: importlib.machinery.ModuleSpec, key: str) -> None:
+    async def _load_from_module_spec(self, spec: importlib.machinery.ModuleSpec, key: str, **attrs) -> None:
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
         sys.modules[key] = lib
@@ -925,7 +925,7 @@ class BotBase(GroupMixin[None]):
             raise errors.NoEntryPointError(key)
 
         try:
-            await setup(self)
+            await setup(self, **attrs)
         except Exception as e:
             del sys.modules[key]
             await self._remove_module_references(lib.__name__)
@@ -940,7 +940,7 @@ class BotBase(GroupMixin[None]):
         except ImportError:
             raise errors.ExtensionNotFound(name)
 
-    async def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
+    async def load_extension(self, name: str, *, package: Optional[str] = None, **attrs) -> None:
         """|coro|
 
         Loads an extension.
@@ -968,6 +968,8 @@ class BotBase(GroupMixin[None]):
             Defaults to ``None``.
 
             .. versionadded:: 1.7
+        **attrs
+            Keyword arguments to pass to the setup function.
 
         Raises
         --------
@@ -991,7 +993,7 @@ class BotBase(GroupMixin[None]):
         if spec is None:
             raise errors.ExtensionNotFound(name)
 
-        await self._load_from_module_spec(spec, name)
+        await self._load_from_module_spec(spec, name, **attrs)
 
     async def unload_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """|coro|
