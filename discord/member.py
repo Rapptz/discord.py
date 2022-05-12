@@ -38,11 +38,10 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import AppCommandType, RelationshipAction, Status, try_enum
+from .enums import RelationshipAction, Status, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
-from .iterators import CommandIterator
 
 __all__ = (
     'VoiceState',
@@ -1108,68 +1107,3 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             Sending the friend request failed.
         """
         await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
-
-    def user_commands(
-        self,
-        query: Optional[str] = None,
-        *,
-        limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = None,
-        applications: bool = True,
-        application: Optional[Snowflake] = None,
-    ):
-        """Returns an iterator that allows you to see what user commands are available to use.
-
-        Examples
-        ---------
-
-        Usage ::
-
-            async for command in member.user_commands():
-                print(command.name)
-
-        Flattening into a list ::
-
-            commands = await member.user_commands().flatten()
-            # commands is now a list of UserCommand...
-
-        All parameters are optional.
-
-        Parameters
-        ----------
-        query: Optional[:class:`str`]
-            The query to search for.
-        limit: Optional[:class:`int`]
-            The maximum number of commands to send back.
-        cache: :class:`bool`
-            Whether to cache the commands internally.
-        command_ids: Optional[List[:class:`int`]]
-            List of command IDs to search for. If the command doesn't exist it won't be returned.
-        applications: :class:`bool`
-            Whether to include applications in the response. This defaults to ``False``.
-        application: Optional[:class:`~abc.Snowflake`]
-            Query commands only for this application.
-
-        Raises
-        ------
-        TypeError
-            The limit was not > 0.
-            Both query and command_ids were passed.
-        HTTPException
-            Getting the commands failed.
-
-        Yields
-        -------
-        :class:`.UserCommand`
-            A user command.
-        """
-        iterator = CommandIterator(
-            self,
-            AppCommandType.user,
-            query,
-            limit,
-            command_ids,
-            applications=applications,
-            application=application,
-        )
-        return iterator.iterate()

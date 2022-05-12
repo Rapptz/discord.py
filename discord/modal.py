@@ -25,7 +25,6 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING, Union
 
-from .appinfo import InteractionApplication
 from .components import _component_factory
 from .enums import InteractionType
 from .errors import InvalidData
@@ -33,6 +32,7 @@ from .mixins import Hashable
 from .utils import _generate_nonce
 
 if TYPE_CHECKING:
+    from .appinfo import InteractionApplication
     from .components import Component
     from .interactions import Interaction
 
@@ -92,7 +92,7 @@ class Modal(Hashable):
         self.title: str = data.get('title', '')
         self.custom_id: str = data.get('custom_id', '')
         self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
-        self.application: InteractionApplication = InteractionApplication(state=interaction._state, data=data['application'])
+        self.application: InteractionApplication = interaction._state.create_interaction_application(data['application'])
 
     def __str__(self) -> str:
         return self.title

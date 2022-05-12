@@ -2362,8 +2362,40 @@ class HTTPClient:
 
         return self.request(Route('POST', '/report'), json=payload)
 
-    def get_application_commands(self, id):
-        return self.request(Route('GET', '/applications/{user_id}/commands', user_id=id))
+    def get_application_commands(self, app_id):
+        return self.request(Route('GET', '/applications/{application_id}/commands', application_id=app_id))
+
+    def search_application_commands(
+        self,
+        channel_id: Snowflake,
+        type: int,
+        *,
+        limit: Optional[int] = None,
+        query: Optional[str] = None,
+        cursor: Optional[str] = None,
+        command_ids: Optional[List[Snowflake]] = None,
+        application_id: Optional[Snowflake] = None,
+        include_applications: Optional[bool] = None,
+    ):
+        params: Dict[str, Any] = {
+            'type': type,
+        }
+        if include_applications is not None:
+            params['include_applications'] = str(include_applications).lower()
+        if limit is not None:
+            params['limit'] = limit
+        if query:
+            params['query'] = query
+        if cursor:
+            params['cursor'] = cursor
+        if command_ids:
+            params['command_ids'] = command_ids
+        if application_id:
+            params['application_id'] = application_id
+
+        return self.request(
+            Route('GET', '/channels/{channel_id}/application-commands/search', channel_id=channel_id), params=params
+        )
 
     def interact(
         self,
@@ -2407,5 +2439,6 @@ class HTTPClient:
                         'content_type': 'application/octet-stream',
                     }
                 )
+            payload = None
 
         return self.request(Route('POST', '/interactions'), json=payload, form=form, files=files)

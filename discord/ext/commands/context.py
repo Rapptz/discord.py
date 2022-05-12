@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Generic, List, Optional, TypeVar, Union
 
 import discord.abc
 import discord.utils
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
     from discord.abc import MessageableChannel
+    from discord.commands import MessageCommand
     from discord.guild import Guild
     from discord.member import Member
     from discord.state import ConnectionState
@@ -411,16 +412,16 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         return await self.message.reply(content, **kwargs)
 
-    @discord.utils.copy_doc(Message.message_commands)
-    def message_commands(
+    async def message_commands(
         self,
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
-        applications: bool = True,
         application: Optional[discord.abc.Snowflake] = None,
-    ):
-        return self.message.message_commands(
-            query, limit=limit, command_ids=command_ids, applications=applications, application=application
-        )
+        include_applications: bool = True,
+    ) -> AsyncIterator[MessageCommand]:
+        async for command in self.message.message_commands(
+            query, limit=limit, command_ids=command_ids, include_applications=include_applications, application=application
+        ):
+            yield command

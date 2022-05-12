@@ -31,7 +31,6 @@ from .asset import Asset
 from .colour import Colour
 from .enums import (
     Locale,
-    AppCommandType,
     HypeSquadHouse,
     PremiumType,
     RelationshipAction,
@@ -40,7 +39,6 @@ from .enums import (
 )
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
-from .iterators import FakeCommandIterator
 from .object import Object
 from .relationship import Relationship
 from .settings import UserSettings
@@ -984,66 +982,6 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         state = self._state
         data: DMChannelPayload = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
-
-    def user_commands(
-        self,
-        query: Optional[str] = None,
-        *,
-        limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = [],
-        **_,
-    ):
-        """Returns an iterator that allows you to see what user commands are available to use on this user.
-
-        Only available on bots.
-
-        .. note::
-
-            All parameters here are faked, as the only way to get commands in a DM is to fetch them all at once.
-            Because of this, some are silently ignored. The ones below currently work.
-            It is recommended to not pass any parameters to this iterator.
-
-        Examples
-        ---------
-
-        Usage ::
-
-            async for command in user.user_commands():
-                print(command.name)
-
-        Flattening into a list ::
-
-            commands = await user.user_commands().flatten()
-            # commands is now a list of UserCommand...
-
-        All parameters are optional.
-
-        Parameters
-        ----------
-        query: Optional[:class:`str`]
-            The query to search for.
-        limit: Optional[:class:`int`]
-            The maximum number of commands to send back. Defaults to ``None`` to iterate over all results. Must be at least 1.
-        command_ids: Optional[List[:class:`int`]]
-            List of command IDs to search for. If the command doesn't exist it won't be returned.
-
-        Raises
-        ------
-        TypeError
-            The user is not a bot.
-            Both query and command_ids were passed.
-        ValueError
-            The limit was not > 0.
-        HTTPException
-            Getting the commands failed.
-
-        Yields
-        -------
-        :class:`.UserCommand`
-            A user command.
-        """
-        iterator = FakeCommandIterator(self, AppCommandType.user, query, limit, command_ids)
-        return iterator.iterate()
 
     def is_friend(self) -> bool:
         """:class:`bool`: Checks if the user is your friend."""

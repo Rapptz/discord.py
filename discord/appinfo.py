@@ -468,9 +468,10 @@ class Application(PartialApplication):
         if flags is not MISSING:
             payload['flags'] = flags.value
 
-        data = await self._state.http.edit_application(self.id, payload)
         if team is not MISSING:
-            data = await self._state.http.transfer_application(self.id, team.id)
+            await self._state.http.transfer_application(self.id, team.id)
+
+        data = await self._state.http.edit_application(self.id, payload)
 
         self._update(data)
 
@@ -586,7 +587,7 @@ class InteractionApplication(Hashable):
         self.bot: User  # User data should always be available, but these payloads are volatile
         user = data.get('bot')
         if user is not None:
-            self.bot = User(state=self._state, data=user)
+            self.bot = self._state.create_user(user)
         else:
             self.bot = Object(id=self.id)  # type: ignore
 

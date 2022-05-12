@@ -78,6 +78,7 @@ from .permissions import Permissions, PermissionOverwrite
 from .member import _ClientStatus
 from .modal import Modal
 from .member import VoiceState
+from .appinfo import InteractionApplication
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel, Snowflake as abcSnowflake
@@ -2275,3 +2276,6 @@ class ConnectionState:
 
     def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
+
+    def create_interaction_application(self, data: dict) -> InteractionApplication:
+        return InteractionApplication(state=self, data=data)

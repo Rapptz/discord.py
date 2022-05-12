@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Protocol, Tuple, Type, runtime_checkable, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, Type, Union, runtime_checkable
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
@@ -100,7 +100,9 @@ class ApplicationCommand(Protocol):
     def __str__(self) -> str:
         return self.name
 
-    async def __call__(self, data: dict, files: Optional[List[File]] = None, channel: Optional[Messageable] = None) -> Interaction:
+    async def __call__(
+        self, data: dict, files: Optional[List[File]] = None, channel: Optional[Messageable] = None
+    ) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
             raise TypeError('__call__() missing 1 required argument: \'channel\'')
@@ -111,9 +113,7 @@ class ApplicationCommand(Protocol):
 
         state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)
         try:
-            await state.http.interact(
-                type, data, acc_channel, files=files, nonce=nonce, application_id=self.application_id
-            )
+            await state.http.interact(type, data, acc_channel, files=files, nonce=nonce, application_id=self.application_id)
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,
@@ -222,7 +222,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         '_default_member_permissions',
     )
 
-    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, application: Optional[InteractionApplication] = None) -> None:
+    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None) -> None:
         self._state = state
         self._data = data
         self.name = data['name']
@@ -232,7 +232,9 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.id: int = int(data['id'])
         self.version = int(data['version'])
         self.type = try_enum(AppCommandType, data['type'])
-        self.application = application
+
+        application = data.get('application')
+        self.application = state.create_interaction_application(application) if application else None
 
         self._default_member_permissions = _get_as_snowflake(data, 'default_member_permissions')
         self.default_permission: bool = data.get('default_permission', True)
@@ -249,7 +251,13 @@ class SlashMixin(ApplicationCommand, Protocol):
         options: List[Option]
         children: List[SubCommand]
 
-    async def __call__(self, options: List[dict], files: Optional[List[File]], attachments: List[Attachment], channel: Optional[Messageable] = None) -> Interaction:
+    async def __call__(
+        self,
+        options: List[dict],
+        files: Optional[List[File]],
+        attachments: List[Attachment],
+        channel: Optional[Messageable] = None,
+    ) -> Interaction:
         obj = self._parent
         command = obj._data
         command['name_localized'] = command['name']
