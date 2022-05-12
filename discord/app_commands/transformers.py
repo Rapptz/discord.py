@@ -47,6 +47,7 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
 from ..utils import MISSING, maybe_coroutine
 from ..user import User
@@ -574,6 +575,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.category,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
+    Thread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
@@ -590,6 +592,7 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Type[Transformer]] = {
     Role: passthrough_transformer(AppCommandOptionType.role),
     AppCommandChannel: channel_transformer(AppCommandChannel, raw=True),
     AppCommandThread: channel_transformer(AppCommandThread, raw=True),
+    Thread: channel_transformer(Thread),
     StageChannel: channel_transformer(StageChannel),
     VoiceChannel: channel_transformer(VoiceChannel),
     TextChannel: channel_transformer(TextChannel),
