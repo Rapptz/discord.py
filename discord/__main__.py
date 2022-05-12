@@ -67,8 +67,8 @@ import discord
 import config
 
 class Bot(commands.{base}):
-    def __init__(self, **kwargs):
-        super().__init__(command_prefix=commands.when_mentioned_or('{prefix}'), **kwargs)
+    def __init__(self, intents: discord.Intents, **kwargs):
+        super().__init__(command_prefix=commands.when_mentioned_or('{prefix}'), intents=intents, **kwargs)
 
     async def setup_hook(self):
         for cog in config.cogs:
@@ -81,7 +81,9 @@ class Bot(commands.{base}):
         print(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
 
 
-bot = Bot()
+intents = discord.Intents.default()
+intents.message_content = True
+bot = Bot(intents=intents)
 
 # write general commands here
 
