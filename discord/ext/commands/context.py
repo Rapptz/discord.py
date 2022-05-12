@@ -244,7 +244,9 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             if interaction.channel_id is None:
                 raise RuntimeError('interaction channel ID is null, this is probably a Discord bug')
 
-            channel = interaction.channel or PartialMessageable(state=interaction._state, id=interaction.channel_id)
+            channel = interaction.channel or PartialMessageable(
+                state=interaction._state, guild_id=interaction.guild_id, id=interaction.channel_id
+            )
             message = Message(state=interaction._state, channel=channel, data=synthetic_payload)  # type: ignore
             message.author = interaction.user
             message.attachments = [a for _, a in interaction.namespace if isinstance(a, Attachment)]
@@ -447,7 +449,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
             Due to the way this function works, instead of returning
             something similar to :meth:`~.commands.HelpCommand.command_not_found`
-            this returns :class:`None` on bad input or no help command.
+            this returns ``None`` on bad input or no help command.
 
         Parameters
         ------------

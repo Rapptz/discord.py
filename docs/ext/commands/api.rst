@@ -238,6 +238,15 @@ Cog
 .. autoclass:: discord.ext.commands.Cog
     :members:
 
+GroupCog
+~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.GroupCog
+
+.. autoclass:: discord.ext.commands.GroupCog
+    :members:
+
+
 CogMeta
 ~~~~~~~~
 
@@ -529,6 +538,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
     :members:
 
+.. autoexception:: discord.ext.commands.MissingRequiredAttachment
+    :members:
+
 .. autoexception:: discord.ext.commands.ArgumentParsingError
     :members:
 
@@ -705,6 +717,7 @@ Exception Hierarchy
             - :exc:`~.commands.ConversionError`
             - :exc:`~.commands.UserInputError`
                 - :exc:`~.commands.MissingRequiredArgument`
+                - :exc:`~.commands.MissingRequiredAttachment`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`

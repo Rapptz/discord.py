@@ -3,29 +3,30 @@ from discord import app_commands
 
 import traceback
 
-# Just default intents and a `discord.Client` instance
-# We don't need a `commands.Bot` instance because we are not
-# creating text-based commands.
-intents = discord.Intents.default()
-client = discord.Client(intents=intents)
-
-# We need an `discord.app_commands.CommandTree` instance
-# to register application commands (slash commands in this case)
-tree = app_commands.CommandTree(client)
-
 # The guild in which this slash command will be registered.
-# As global commands can take up to an hour to propagate, it is ideal
-# to test it in a guild.
-TEST_GUILD = discord.Object(ID)
+# It is recommended to have a test guild to separate from your "production" bot
+TEST_GUILD = discord.Object(0)
 
 
-@client.event
-async def on_ready():
-    print(f'Logged in as {client.user} (ID: {client.user.id})')
-    print('------')
+class MyClient(discord.Client):
+    def __init__(self) -> None:
+        # Just default intents and a `discord.Client` instance
+        # We don't need a `commands.Bot` instance because we are not
+        # creating text-based commands.
+        intents = discord.Intents.default()
+        super().__init__(intents=intents)
 
-    # Sync the application command with Discord.
-    await tree.sync(guild=TEST_GUILD)
+        # We need an `discord.app_commands.CommandTree` instance
+        # to register application commands (slash commands in this case)
+        self.tree = app_commands.CommandTree(self)
+
+    async def on_ready(self):
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
+        print('------')
+
+    async def setup_hook(self) -> None:
+        # Sync the application command with Discord.
+        await self.tree.sync(guild=TEST_GUILD)
 
 
 class Feedback(discord.ui.Modal, title='Feedback'):
@@ -56,16 +57,21 @@ class Feedback(discord.ui.Modal, title='Feedback'):
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.send_message(f'Thanks for your feedback, {self.name.value}!', ephemeral=True)
 
-    async def on_error(self, error: Exception, interaction: discord.Interaction) -> None:
+    async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 
         # Make sure we know what the error actually is
         traceback.print_tb(error.__traceback__)
 
 
-@tree.command(guild=TEST_GUILD, description="Submit feedback")
+client = MyClient()
+
+
+@client.tree.command(guild=TEST_GUILD, description="Submit feedback")
 async def feedback(interaction: discord.Interaction):
     # Send the modal with an instance of our `Feedback` class
+    # Since modals require an interaction, they cannot be done as a response to a text command.
+    # They can only be done as a response to either an application command or a button press.
     await interaction.response.send_modal(Feedback())
 
 

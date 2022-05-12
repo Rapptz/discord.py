@@ -56,11 +56,11 @@ from .errors import *
 from .parameters import Parameter, Signature
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
+    from typing_extensions import Concatenate, ParamSpec, Self
 
     from discord.message import Message
 
-    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook
+    from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
 
 
 __all__ = (
@@ -237,6 +237,27 @@ class _CaseInsensitiveDict(dict):
         super().__setitem__(k.casefold(), v)
 
 
+class _AttachmentIterator:
+    def __init__(self, data: List[discord.Attachment]):
+        self.data: List[discord.Attachment] = data
+        self.index: int = 0
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> discord.Attachment:
+        try:
+            value = self.data[self.index]
+        except IndexError:
+            raise StopIteration
+        else:
+            self.index += 1
+            return value
+
+    def is_empty(self) -> bool:
+        return self.index >= len(self.data)
+
+
 class Command(_BaseCommand, Generic[CogT, P, T]):
     r"""A class that implements the protocol for a bot text command.
 
@@ -378,7 +399,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             checks = kwargs.get('checks', [])
 
-        self.checks: List[Check[ContextT]] = checks
+        self.checks: List[UserCheck[ContextT]] = checks
 
         try:
             cooldown = func.__commands_cooldown__
@@ -458,7 +479,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.params: Dict[str, Parameter] = get_signature_parameters(function, globalns)
 
-    def add_check(self, func: Check[ContextT], /) -> None:
+    def add_check(self, func: UserCheck[ContextT], /) -> None:
         """Adds a check to the command.
 
         This is the non-decorator interface to :func:`.check`.
@@ -469,6 +490,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
             ``func`` parameter is now positional-only.
 
+        .. seealso:: The :func:`~discord.ext.commands.check` decorator
+
         Parameters
         -----------
         func
@@ -477,7 +500,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.checks.append(func)
 
-    def remove_check(self, func: Check[ContextT], /) -> None:
+    def remove_check(self, func: UserCheck[ContextT], /) -> None:
         """Removes a check from the command.
 
         This function is idempotent and will not raise an exception
@@ -592,7 +615,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         finally:
             ctx.bot.dispatch('command_error', ctx, error)
 
-    async def transform(self, ctx: Context[BotT], param: Parameter, /) -> Any:
+    async def transform(self, ctx: Context[BotT], param: Parameter, attachments: _AttachmentIterator, /) -> Any:
         converter = param.converter
         consume_rest_is_special = param.kind == param.KEYWORD_ONLY and not self.rest_is_raw
         view = ctx.view
@@ -601,6 +624,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         # The greedy converter is simple -- it keeps going until it fails in which case,
         # it undos the view ready for the next parameter to use instead
         if isinstance(converter, Greedy):
+            # Special case for Greedy[discord.Attachment] to consume the attachments iterator
+            if converter.converter is discord.Attachment:
+                return list(attachments)
+
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
                 return await self._transform_greedy_pos(ctx, param, param.required, converter.converter)
             elif param.kind == param.VAR_POSITIONAL:
@@ -610,6 +637,20 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 # since this is mostly useless, we'll helpfully transform Greedy[X]
                 # into just X and do the parsing that way.
                 converter = converter.converter
+
+        # Try to detect Optional[discord.Attachment] or discord.Attachment special converter
+        if converter is discord.Attachment:
+            try:
+                return next(attachments)
+            except StopIteration:
+                raise MissingRequiredAttachment(param)
+
+        if self._is_typing_optional(param.annotation) and param.annotation.__args__[0] is discord.Attachment:
+            if attachments.is_empty():
+                # I have no idea who would be doing Optional[discord.Attachment] = 1
+                # but for those cases then 1 should be returned instead of None
+                return None if param.default is param.empty else param.default
+            return next(attachments)
 
         if view.eof:
             if param.kind == param.VAR_POSITIONAL:
@@ -759,6 +800,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         ctx.kwargs = {}
         args = ctx.args
         kwargs = ctx.kwargs
+        attachments = _AttachmentIterator(ctx.message.attachments)
 
         view = ctx.view
         iterator = iter(self.params.items())
@@ -766,7 +808,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         for name, param in iterator:
             ctx.current_parameter = param
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
-                transformed = await self.transform(ctx, param)
+                transformed = await self.transform(ctx, param, attachments)
                 args.append(transformed)
             elif param.kind == param.KEYWORD_ONLY:
                 # kwarg only param denotes "consume rest" semantics
@@ -774,14 +816,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     ctx.current_argument = argument = view.read_rest()
                     kwargs[name] = await run_converters(ctx, param.converter, argument, param)
                 else:
-                    kwargs[name] = await self.transform(ctx, param)
+                    kwargs[name] = await self.transform(ctx, param, attachments)
                 break
             elif param.kind == param.VAR_POSITIONAL:
                 if view.eof and self.require_var_positional:
                     raise MissingRequiredArgument(param)
                 while not view.eof:
                     try:
-                        transformed = await self.transform(ctx, param)
+                        transformed = await self.transform(ctx, param, attachments)
                         args.append(transformed)
                     except RuntimeError:
                         break
@@ -1080,7 +1122,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return self.help.split('\n', 1)[0]
         return ''
 
-    def _is_typing_optional(self, annotation: Union[T, Optional[T]]) -> TypeGuard[Optional[T]]:
+    def _is_typing_optional(self, annotation: Union[T, Optional[T]]) -> bool:
         return getattr(annotation, '__origin__', None) is Union and type(None) in annotation.__args__  # type: ignore
 
     @property
@@ -1107,6 +1149,17 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if len(union_args) == 2 and optional:
                     annotation = union_args[0]
                     origin = getattr(annotation, '__origin__', None)
+
+            if annotation is discord.Attachment:
+                # For discord.Attachment we need to signal to the user that it's an attachment
+                # It's not exactly pretty but it's enough to differentiate
+                if optional:
+                    result.append(f'[{name} (upload a file)]')
+                elif greedy:
+                    result.append(f'[{name} (upload files)]...')
+                else:
+                    result.append(f'<{name} (upload a file)>')
+                continue
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
             # parameter signature is a literal list of it's values
@@ -1745,7 +1798,7 @@ def group(
     return command(name=name, cls=cls, **attrs)
 
 
-def check(predicate: Check[ContextT], /) -> Callable[[T], T]:
+def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
     r"""A decorator that adds a check to the :class:`.Command` or its
     subclasses. These checks could be accessed via :attr:`.Command.checks`.
 
@@ -1844,7 +1897,7 @@ def check(predicate: Check[ContextT], /) -> Callable[[T], T]:
     return decorator  # type: ignore
 
 
-def check_any(*checks: Check[ContextT]) -> Callable[[T], T]:
+def check_any(*checks: Check[ContextT]) -> Check[ContextT]:
     r"""A :func:`check` that is added that checks if any of the checks passed
     will pass, i.e. using logical OR.
 
@@ -1910,10 +1963,10 @@ def check_any(*checks: Check[ContextT]) -> Callable[[T], T]:
         # if we're here, all checks failed
         raise CheckAnyFailure(unwrapped, errors)
 
-    return check(predicate)
+    return check(predicate)  # type: ignore
 
 
-def has_role(item: Union[int, str], /) -> Callable[[T], T]:
+def has_role(item: Union[int, str], /) -> Check[Any]:
     """A :func:`.check` that is added that checks if the member invoking the
     command has the role specified via the name or ID specified.
 
@@ -2066,7 +2119,7 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_permissions(**perms: bool) -> Callable[[T], T]:
+def has_permissions(**perms: bool) -> Check[Any]:
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
@@ -2114,7 +2167,7 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
-def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
+def bot_has_permissions(**perms: bool) -> Check[Any]:
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
@@ -2141,7 +2194,7 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_guild_permissions(**perms: bool) -> Callable[[T], T]:
+def has_guild_permissions(**perms: bool) -> Check[Any]:
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
 
@@ -2170,7 +2223,7 @@ def has_guild_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
-def bot_has_guild_permissions(**perms: bool) -> Callable[[T], T]:
+def bot_has_guild_permissions(**perms: bool) -> Check[Any]:
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
@@ -2196,7 +2249,7 @@ def bot_has_guild_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
-def dm_only() -> Callable[[T], T]:
+def dm_only() -> Check[Any]:
     """A :func:`.check` that indicates this command must only be used in a
     DM context. Only private messages are allowed when
     using the command.
@@ -2215,7 +2268,7 @@ def dm_only() -> Callable[[T], T]:
     return check(predicate)
 
 
-def guild_only() -> Callable[[T], T]:
+def guild_only() -> Check[Any]:
     """A :func:`.check` that indicates this command must only be used in a
     guild context only. Basically, no private messages are allowed when
     using the command.
@@ -2232,7 +2285,7 @@ def guild_only() -> Callable[[T], T]:
     return check(predicate)
 
 
-def is_owner() -> Callable[[T], T]:
+def is_owner() -> Check[Any]:
     """A :func:`.check` that checks if the person invoking this command is the
     owner of the bot.
 
@@ -2250,7 +2303,7 @@ def is_owner() -> Callable[[T], T]:
     return check(predicate)
 
 
-def is_nsfw() -> Callable[[T], T]:
+def is_nsfw() -> Check[Any]:
     """A :func:`.check` that checks if the channel is a NSFW channel.
 
     This check raises a special exception, :exc:`.NSFWChannelRequired`

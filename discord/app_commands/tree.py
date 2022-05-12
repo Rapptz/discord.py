@@ -57,6 +57,7 @@ from .errors import (
     CommandNotFound,
     CommandSignatureMismatch,
     CommandLimitReached,
+    MissingApplicationID,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -77,11 +78,6 @@ if TYPE_CHECKING:
 __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
-
-APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
-)
 
 
 def _retrieve_guild_ids(
@@ -117,9 +113,16 @@ class CommandTree(Generic[ClientT]):
     -----------
     client: :class:`~discord.Client`
         The client instance to get application command information from.
+    fallback_to_global: :class:`bool`
+        If a guild-specific command is not found when invoked, then try falling back into
+        a global command in the tree. For example, if the tree locally has a ``/ping`` command
+        under the global namespace but the guild has a guild-specific ``/ping``, instead of failing
+        to find the guild-specific ``/ping`` command it will fall back to the global ``/ping`` command.
+        This has the potential to raise more :exc:`~discord.app_commands.CommandSignatureMismatch` errors
+        than usual. Defaults to ``True``.
     """
 
-    def __init__(self, client: ClientT):
+    def __init__(self, client: ClientT, *, fallback_to_global: bool = True):
         self.client: ClientT = client
         self._http = client.http
         self._state = client._connection
@@ -128,6 +131,7 @@ class CommandTree(Generic[ClientT]):
             raise ClientException('This client already has an associated command tree.')
 
         self._state._command_tree = self
+        self.fallback_to_global: bool = fallback_to_global
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
         self._global_commands: Dict[str, Union[Command, Group]] = {}
         # (name, guild_id, command_type): Command
@@ -158,7 +162,7 @@ class CommandTree(Generic[ClientT]):
         -------
         HTTPException
             Fetching the commands failed.
-        ClientException
+        MissingApplicationID
             The application ID could not be found.
 
         Returns
@@ -167,7 +171,7 @@ class CommandTree(Generic[ClientT]):
             The application's commands.
         """
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         if guild is None:
             commands = await self._http.get_global_commands(self.client.application_id)
@@ -906,7 +910,7 @@ class CommandTree(Generic[ClientT]):
             Syncing the commands failed.
         Forbidden
             The client does not have the ``applications.commands`` scope in the guild.
-        ClientException
+        MissingApplicationID
             The client does not have an application ID.
 
         Returns
@@ -916,7 +920,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         commands = self._get_all_commands(guild=guild)
         payload = [command.to_dict() for command in commands]
@@ -939,7 +943,11 @@ class CommandTree(Generic[ClientT]):
     def _get_context_menu(self, data: ApplicationCommandInteractionData) -> Optional[ContextMenu]:
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')
-        return self._context_menus.get((name, guild_id, data.get('type', 1)))
+        t = data.get('type', 1)
+        cmd = self._context_menus.get((name, guild_id, t))
+        if cmd is None and self.fallback_to_global:
+            return self._context_menus.get((name, None, t))
+        return cmd
 
     def _get_app_command_options(
         self, data: ApplicationCommandInteractionData
@@ -952,9 +960,11 @@ class CommandTree(Generic[ClientT]):
             try:
                 guild_commands = self._guild_commands[command_guild_id]
             except KeyError:
-                command = None
+                command = None if not self.fallback_to_global else self._global_commands.get(name)
             else:
                 command = guild_commands.get(name)
+                if command is None and self.fallback_to_global:
+                    command = self._global_commands.get(name)
         else:
             command = self._global_commands.get(name)
 

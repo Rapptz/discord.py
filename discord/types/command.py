@@ -134,7 +134,7 @@ class _BaseApplicationCommand(TypedDict):
     id: Snowflake
     application_id: Snowflake
     name: str
-    dm_permissions: NotRequired[Optional[bool]]
+    dm_permission: NotRequired[Optional[bool]]
     default_member_permissions: NotRequired[Optional[str]]
     version: Snowflake
 
@@ -192,7 +192,7 @@ ApplicationCommand = Union[
 ]
 
 
-ApplicationCommandPermissionType = Literal[1, 2]
+ApplicationCommandPermissionType = Literal[1, 2, 3]
 
 
 class ApplicationCommandPermissions(TypedDict):

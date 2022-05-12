@@ -135,7 +135,12 @@ else:
 
 
 CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
-VALID_SLASH_COMMAND_NAME = re.compile(r'^[\w-]{1,32}$')
+
+# The re module doesn't support \p{} so we have to list characters from Thai and Devanagari manually.
+THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
+DEVANAGARI_COMBINING = r'\u0900-\u0903\u093a\u093b\u093c\u093e\u093f\u0940-\u094f\u0955\u0956\u0957\u0962\u0963'
+VALID_SLASH_COMMAND_NAME = re.compile(r'^[-_\w' + THAI_COMBINING + DEVANAGARI_COMBINING + r']{1,32}$')
+
 CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
@@ -228,8 +233,9 @@ def _validate_auto_complete_callback(
     binding = getattr(callback, '__self__', None)
     if binding is not None:
         callback = callback.__func__
-
-    requires_binding = (binding is None and is_inside_class(callback)) or skip_binding
+        requires_binding = True
+    else:
+        requires_binding = is_inside_class(callback) or skip_binding
 
     callback.requires_binding = requires_binding
     callback.binding = binding
@@ -572,7 +578,7 @@ class Command(Generic[GroupT, P, T]):
         }
 
         if self.parent is None:
-            base['dm_permissions'] = not self.guild_only
+            base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
 
         return base
@@ -677,18 +683,17 @@ class Command(Generic[GroupT, P, T]):
         if param.autocomplete is None:
             raise CommandSignatureMismatch(self)
 
-        try:
-            if not await self._check_can_run(interaction):
+        predicates = getattr(param.autocomplete, '__discord_app_commands_checks__', [])
+        if predicates:
+            try:
+                if not await async_all(f(interaction) for f in predicates):
+                    if not interaction.response.is_done():
+                        await interaction.response.autocomplete([])
+                    return
+            except Exception:
                 if not interaction.response.is_done():
                     await interaction.response.autocomplete([])
                 return
-        except AppCommandError:
-            # Exceptions can't reasonably be handled by the developer at this point
-            # The autocomplete can either fail or return an empty list of options
-            # Both of these are more or less the same UX to the user.
-            if not interaction.response.is_done():
-                await interaction.response.autocomplete([])
-            return
 
         if param.autocomplete.requires_binding:
             binding = param.autocomplete.binding or self.binding
@@ -714,6 +719,27 @@ class Command(Generic[GroupT, P, T]):
             return None
         parent = self.parent
         return parent.parent or parent
+
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name.
+
+        The qualified name includes the parent name as well. For example,
+        in a command like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+        # A B C
+        #     ^ self
+        #   ^ parent
+        # ^ grandparent
+        if self.parent is None:
+            return self.name
+
+        names = [self.name, self.parent.name]
+        grandparent = self.parent.parent
+        if grandparent is not None:
+            names.append(grandparent.name)
+
+        return ' '.join(reversed(names))
 
     async def _check_can_run(self, interaction: Interaction) -> bool:
         if self.parent is not None and self.parent is not self.binding:
@@ -777,6 +803,10 @@ class Command(Generic[GroupT, P, T]):
         To get the values from other parameters that may be filled in, accessing
         :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those
         values.
+
+        Parent :func:`checks <check>` are ignored within an autocomplete. However, checks can be added
+        to the autocomplete callback and the ones added will be called. If the checks fail for any reason
+        then an empty list is sent as the interaction response.
 
         The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
         Only up to 25 objects are supported.
@@ -934,11 +964,16 @@ class ContextMenu:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
         return self._callback
 
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name."""
+        return self.name
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             'name': self.name,
             'type': self.type.value,
-            'dm_permissions': not self.guild_only,
+            'dm_permission': not self.guild_only,
             'default_member_permissions': self.default_permissions and self.default_permissions.value,
         }
 
@@ -1026,6 +1061,17 @@ class Group:
 
     These are usually inherited rather than created manually.
 
+    Decorators such as :func:`guild_only`, :func:`guilds`, and :func:`default_permissions`
+    will apply to the group if used on top of a subclass. For example:
+
+    .. code-block:: python3
+
+        from discord import app_commands
+
+        @app_commands.guild_only()
+        class MyGroup(app_commands.Group):
+            pass
+
     .. versionadded:: 2.0
 
     Attributes
@@ -1057,8 +1103,8 @@ class Group:
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
-    __discord_app_commands_group_guild_only__: bool = MISSING
-    __discord_app_commands_group_default_permissions__: Optional[Permissions] = MISSING
+    __discord_app_commands_guild_only__: bool = MISSING
+    __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
 
     def __init_subclass__(
@@ -1099,10 +1145,10 @@ class Group:
             cls.__discord_app_commands_group_description__ = description
 
         if guild_only is not MISSING:
-            cls.__discord_app_commands_group_guild_only__ = guild_only
+            cls.__discord_app_commands_guild_only__ = guild_only
 
         if default_permissions is not MISSING:
-            cls.__discord_app_commands_group_default_permissions__ = default_permissions
+            cls.__discord_app_commands_default_permissions__ = default_permissions
 
         if cls.__module__ != __name__:
             cls.__discord_app_commands_has_module__ = True
@@ -1122,21 +1168,21 @@ class Group:
         self.description: str = description or cls.__discord_app_commands_group_description__
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
-        self._guild_ids: Optional[List[int]] = guild_ids
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(cls, '__discord_app_commands_default_guilds__', None)
 
         if default_permissions is MISSING:
-            if cls.__discord_app_commands_group_default_permissions__ is MISSING:
+            if cls.__discord_app_commands_default_permissions__ is MISSING:
                 default_permissions = None
             else:
-                default_permissions = cls.__discord_app_commands_group_default_permissions__
+                default_permissions = cls.__discord_app_commands_default_permissions__
 
         self.default_permissions: Optional[Permissions] = default_permissions
 
         if guild_only is MISSING:
-            if cls.__discord_app_commands_group_guild_only__ is MISSING:
+            if cls.__discord_app_commands_guild_only__ is MISSING:
                 guild_only = False
             else:
-                guild_only = cls.__discord_app_commands_group_guild_only__
+                guild_only = cls.__discord_app_commands_guild_only__
 
         self.guild_only: bool = guild_only
 
@@ -1234,7 +1280,7 @@ class Group:
         }
 
         if self.parent is None:
-            base['dm_permissions'] = not self.guild_only
+            base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
 
         return base
@@ -1243,6 +1289,18 @@ class Group:
     def root_parent(self) -> Optional[Group]:
         """Optional[:class:`Group`]: The parent of this group."""
         return self.parent
+
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified group name.
+
+        The qualified name includes the parent name as well. For example,
+        in a group like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+
+        if self.parent is None:
+            return self.name
+        return f'{self.parent.name} {self.name}'
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
@@ -1693,6 +1751,10 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
 
     Autocomplete is only supported on types that have :class:`str`, :class:`int`, or :class:`float`
     values.
+
+    :func:`Checks <check>` are supported, however they must be attached to the autocomplete
+    callback in order to work. Checks attached to the command are ignored when invoking the autocomplete
+    callback.
 
     For more information, see the :meth:`Command.autocomplete` documentation.
 

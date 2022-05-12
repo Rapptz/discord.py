@@ -78,7 +78,7 @@ from .invite import Invite
 from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
-from .integrations import Integration, _integration_factory
+from .integrations import Integration, PartialIntegration, _integration_factory
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
@@ -236,8 +236,6 @@ class Guild(Hashable):
         - ``PREVIEW_ENABLED``: Guild can be viewed before being accepted via Membership Screening.
         - ``PRIVATE_THREADS``: Guild has access to create private threads.
         - ``ROLE_ICONS``: Guild is able to set role icons.
-        - ``SEVEN_DAY_THREAD_ARCHIVE``: Guild has access to the seven day archive time for threads.
-        - ``THREE_DAY_THREAD_ARCHIVE``: Guild has access to the three day archive time for threads.
         - ``TICKETED_EVENTS_ENABLED``: Guild has enabled ticketed events.
         - ``VANITY_URL``: Guild can have a vanity invite URL (e.g. discord.gg/discord-api).
         - ``VERIFIED``: Guild is a verified server.
@@ -280,6 +278,10 @@ class Guild(Hashable):
         Indicates if the guild has premium AKA server boost level progress bar enabled.
 
         .. versionadded:: 2.0
+    widget_enabled: :class:`bool`
+        Indicates if the guild has widget enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -305,6 +307,7 @@ class Guild(Hashable):
         'nsfw_level',
         'mfa_level',
         'vanity_url_code',
+        'widget_enabled',
         '_members',
         '_channels',
         '_icon',
@@ -486,6 +489,7 @@ class Guild(Hashable):
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
+        self.widget_enabled: bool = guild.get('widget_enabled', False)
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
@@ -3346,11 +3350,11 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 before = Object(id=int(entries[-1]['id']))
 
-            return data.get('users', []), entries, before, limit
+            return data, entries, before, limit
 
         async def _after_strategy(retrieve, after, limit):
             after_id = after.id if after else None
@@ -3362,11 +3366,11 @@ class Guild(Hashable):
 
             if data and entries:
                 if limit is not None:
-                    limit -= len(data)
+                    limit -= len(entries)
 
                 after = Object(id=int(entries[0]['id']))
 
-            return data.get('users', []), entries, after, limit
+            return data, entries, after, limit
 
         if user is not MISSING:
             user_id = user.id
@@ -3397,31 +3401,46 @@ class Guild(Hashable):
             if after and after != OLDEST_OBJECT:
                 predicate = lambda m: int(m['id']) > after.id
 
+        # avoid circular import
+        from .app_commands import AppCommand
+
         while True:
             retrieve = min(100 if limit is None else limit, 100)
             if retrieve < 1:
                 return
 
-            raw_users, data, state, limit = await strategy(retrieve, state, limit)
+            data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
+            if len(raw_entries) < 100:
                 limit = 0
 
             if reverse:
-                data = reversed(data)
+                raw_entries = reversed(raw_entries)
             if predicate:
-                data = filter(predicate, data)
+                raw_entries = filter(predicate, raw_entries)
 
-            users = (User(data=raw_user, state=self._state) for raw_user in raw_users)
+            users = (User(data=raw_user, state=self._state) for raw_user in data.get('users', []))
             user_map = {user.id: user for user in users}
 
-            for raw_entry in data:
+            integrations = (PartialIntegration(data=raw_i, guild=self) for raw_i in data.get('integrations', []))
+            integration_map = {integration.id: integration for integration in integrations}
+
+            app_commands = (AppCommand(data=raw_cmd, state=self._state) for raw_cmd in data.get('application_commands', []))
+            app_command_map = {app_command.id: app_command for app_command in app_commands}
+
+            for raw_entry in raw_entries:
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
                     continue
 
-                yield AuditLogEntry(data=raw_entry, users=user_map, guild=self)
+                yield AuditLogEntry(
+                    data=raw_entry,
+                    users=user_map,
+                    integrations=integration_map,
+                    app_commands=app_command_map,
+                    guild=self,
+                )
 
     async def widget(self) -> Widget:
         """|coro|

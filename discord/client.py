@@ -666,7 +666,7 @@ class Client:
         self._closed = False
         self._ready.clear()
         self._connection.clear()
-        self.http.recreate()
+        self.http.clear()
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|
@@ -807,7 +807,9 @@ class Client:
         """
         return self._connection.get_channel(id)  # type: ignore # The cache contains all channel types
 
-    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+    def get_partial_messageable(
+        self, id: int, *, guild_id: Optional[int] = None, type: Optional[ChannelType] = None
+    ) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
 
         This is useful if you have a channel_id but don't want to do an API call
@@ -819,6 +821,12 @@ class Client:
         -----------
         id: :class:`int`
             The channel ID to create a partial messageable for.
+        guild_id: Optional[:class:`int`]
+            The optional guild ID to create a partial messageable for.
+
+            This is not required to actually send messages, but it does allow the
+            :meth:`~discord.PartialMessageable.jump_url` and
+            :attr:`~discord.PartialMessageable.guild` properties to function properly.
         type: Optional[:class:`.ChannelType`]
             The underlying channel type for the partial messageable.
 
@@ -827,7 +835,7 @@ class Client:
         :class:`.PartialMessageable`
             The partial messageable
         """
-        return PartialMessageable(state=self._connection, id=id, type=type)
+        return PartialMessageable(state=self._connection, id=id, guild_id=guild_id, type=type)
 
     def get_stage_instance(self, id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.
