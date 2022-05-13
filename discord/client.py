@@ -351,6 +351,22 @@ class Client:
         """
         return self._connection.voice_clients
 
+    @property
+    def country_code(self) -> Optional[str]:
+        """Optional[:class:`str`]: The country code of the client. ``None`` if not connected.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.country_code
+
+    @property
+    def preferred_voice_regions(self) -> List[str]:
+        """List[:class:`str`]: Geo-ordered list of voice regions the connected client can use.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.preferred_regions
+
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
@@ -2223,6 +2239,46 @@ class Client:
         state = self._connection
         channels = await state.http.get_private_channels()
         return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore # user is always present when logged in
+
+    async def fetch_country_code(self) -> str:
+        """|coro|
+
+        Retrieves the country code of the client.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the country code failed.
+
+        Returns
+        -------
+        :class:`str`
+            The country code of the client.
+        """
+        data = await self.http.get_country_code()
+        return data['country_code']
+
+    async def fetch_preferred_voice_regions(self) -> List[str]:
+        """|coro|
+
+        Retrieves the preferred voice regions of the client.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the preferred voice regions failed.
+
+        Returns
+        -------
+        List[:class:`str`]
+            The preferred voice regions of the client.
+        """
+        data = await self.http.get_preferred_voice_regions()
+        return [v['region'] for v in data]
 
     async def create_dm(self, user: Snowflake, /) -> DMChannel:
         """|coro|

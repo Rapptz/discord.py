@@ -454,7 +454,8 @@ class ConnectionState:
         self.settings: Optional[UserSettings] = None
         self.consents: Optional[Tracking] = None
         self.analytics_token: Optional[str] = None
-        self.preferred_region: Optional[str] = None
+        self.preferred_regions: List[str] = []
+        self.country_code: Optional[str] = None
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -520,6 +521,10 @@ class ConnectionState:
     def self_id(self) -> Optional[int]:
         u = self.user
         return u.id if u else None
+
+    @property
+    def preferred_region(self) -> str:
+        return self.preferred_regions[0] if self.preferred_regions else 'us-central'
 
     @property
     def voice_clients(self) -> List[VoiceProtocol]:
@@ -875,10 +880,10 @@ class ConnectionState:
 
         # Extras
         self.analytics_token = data.get('analytics_token')
-        region = data.get('geo_ordered_rtc_regions', ['us-west'])[0]
-        self.preferred_region = region
+        self.preferred_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
         self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
         self.consents = Tracking(data=data.get('consents', {}), state=self)
+        self.country_code = data.get('country_code', 'US')
 
         if 'required_action' in data:  # Locked more than likely
             self.parse_user_required_action_update(data)

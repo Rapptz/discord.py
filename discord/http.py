@@ -2433,3 +2433,17 @@ class HTTPClient:
             payload = None
 
         return self.request(Route('POST', '/interactions'), json=payload, form=form, files=files)
+
+    def get_country_code(self):
+        return self.request(Route('GET', '/users/@me/billing/country-code'))
+
+    async def get_preferred_voice_regions(self) -> List[dict]:
+        async with self.__session.get('https://latency.discord.media/rtc') as resp:
+            if resp.status == 200:
+                return await resp.json()
+            elif resp.status == 404:
+                raise NotFound(resp, 'rtc regions not found')
+            elif resp.status == 403:
+                raise Forbidden(resp, 'cannot retrieve rtc regions')
+            else:
+                raise HTTPException(resp, 'failed to get rtc regions')
