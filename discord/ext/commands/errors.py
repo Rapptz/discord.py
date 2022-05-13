@@ -1152,8 +1152,8 @@ class BadFlagArgument(FlagError):
         except AttributeError:
             name = flag.annotation.__class__.__name__
 
-        self.argument = argument
-        self.original = original
+        self.argument: str = argument
+        self.original: Exception = original
 
         super().__init__(f'Could not convert to {name!r} for flag {flag.name!r}')
 
