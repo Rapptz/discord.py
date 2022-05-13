@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
     from .state import ConnectionState
     from datetime import datetime
-    from .types.message import PartialEmoji as PartialEmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.activity import ActivityEmoji
 
 
@@ -148,13 +148,16 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
         return cls(name=value, id=None, animated=False)
 
-    def to_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Any] = {'name': self.name}
-        if self.id:
-            o['id'] = self.id
+    def to_dict(self) -> EmojiPayload:
+        payload: EmojiPayload = {
+            'id': self.id,
+            'name': self.name,
+        }
+
         if self.animated:
-            o['animated'] = self.animated
-        return o
+            payload['animated'] = self.animated
+
+        return payload
 
     def _to_partial(self) -> PartialEmoji:
         return self
