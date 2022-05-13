@@ -81,7 +81,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .sticker import GuildSticker, StickerItem
     from .file import File
-    from .user import ClientUser, User, BaseUser
+    from .user import ClientUser, User
     from .guild import Guild, GuildChannel as GuildChannelType
     from .types.channel import (
         TextChannel as TextChannelPayload,
@@ -2472,8 +2472,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The user presenting yourself.
     id: :class:`int`
         The group channel ID.
-    owner: Optional[:class:`User`]
-        The user that owns the group channel.
     owner_id: :class:`int`
         The owner ID that owns the group channel.
 
@@ -2482,7 +2480,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The group channel's name if provided.
     """
 
-    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', 'owner', '_icon', 'name', 'me', '_state', '_accessed')
+    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', '_icon', 'name', 'me', '_state', '_accessed')
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -2497,12 +2495,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
-
-        self.owner: Optional[BaseUser]
-        if self.owner_id == self.me.id:
-            self.owner = self.me
-        else:
-            self.owner = utils.find(lambda u: u.id == self.owner_id, self.recipients)
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
@@ -2533,6 +2525,11 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     def __repr__(self) -> str:
         return f'<GroupChannel id={self.id} name={self.name!r}>'
+
+    @property
+    def owner(self) -> User:
+        """:class:`User`: The owner that owns the group channel."""
+        return utils.find(lambda u: u.id == self.owner_id, self.recipients)  # type: ignore - All recipients are always present
 
     @property
     def call(self) -> Optional[PrivateCall]:
@@ -2624,7 +2621,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         return base
 
-    async def add_recipients(self, *recipients) -> None:
+    async def add_recipients(self, *recipients: Snowflake) -> None:
         r"""|coro|
 
         Adds recipients to this group.
@@ -2650,7 +2647,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
-    async def remove_recipients(self, *recipients) -> None:
+    async def remove_recipients(self, *recipients: Snowflake) -> None:
         r"""|coro|
 
         Removes recipients from this group.
@@ -2671,20 +2668,13 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         for recipient in recipients:
             await req(self.id, recipient.id)
 
-    @overload
     async def edit(
         self,
         *,
-        name: Optional[str] = ...,
-        icon: Optional[bytes] = ...,
-    ) -> Optional[GroupChannel]:
-        ...
-
-    @overload
-    async def edit(self) -> Optional[GroupChannel]:
-        ...
-
-    async def edit(self, **fields) -> Optional[GroupChannel]:
+        name: Optional[str] = MISSING,
+        icon: Optional[bytes] = MISSING,
+        owner: Snowflake = MISSING,
+    ) -> GroupChannel:
         """|coro|
 
         Edits the group.
@@ -2700,6 +2690,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         icon: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the new icon.
             Could be ``None`` to remove the icon.
+        owner: :class:`~discord.abc.Snowflake`
+            The new owner of the group.
+
+                .. versionadded:: 2.0
 
         Raises
         -------
@@ -2708,18 +2702,20 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         """
         await self._get_channel()
 
-        try:
-            icon_bytes = fields['icon']
-        except KeyError:
-            pass
-        else:
-            if icon_bytes is not None:
-                fields['icon'] = utils._bytes_to_base64_data(icon_bytes)
+        payload = {}
+        if name is not MISSING:
+            payload['name'] = name
+        if icon is not MISSING:
+            if icon is None:
+                payload['icon'] = None
+            else:
+                payload['icon'] = utils._bytes_to_base64_data(icon)
+        if owner is not MISSING:
+            payload['owner'] = owner.id
 
-        data = await self._state.http.edit_group(self.id, **fields)
-        if data is not None:
-            # The payload will always be the proper channel payload
-            return self.__class__(me=self.me, state=self._state, data=payload)  # type: ignore
+        data = await self._state.http.edit_channel(self.id, **payload)
+        # The payload will always be the proper channel payload
+        return self.__class__(me=self.me, state=self._state, data=data)  # type: ignore
 
     async def leave(self) -> None:
         """|coro|

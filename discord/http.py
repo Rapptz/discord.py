@@ -687,17 +687,6 @@ class HTTPClient:
         r = Route('DELETE', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)
         return self.request(r)
 
-    def edit_group(
-        self, channel_id: Snowflake, name: Optional[str] = MISSING, icon: Optional[bytes] = MISSING
-    ) -> Response[channel.GroupDMChannel]:
-        payload = {}
-        if name is not MISSING:
-            payload['name'] = name
-        if icon is not MISSING:
-            payload['icon'] = icon
-
-        return self.request(Route('PATCH', '/channels/{channel_id}', channel_id=channel_id), json=payload)
-
     def get_private_channels(self) -> Response[List[Union[channel.DMChannel, channel.GroupDMChannel]]]:
         return self.request(Route('GET', '/users/@me/channels'))
 
@@ -1028,6 +1017,8 @@ class HTTPClient:
             'invitable',
             'default_auto_archive_duration',
             'flags',
+            'icon',
+            'owner',
         )
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
