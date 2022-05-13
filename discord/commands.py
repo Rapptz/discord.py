@@ -69,13 +69,13 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`.AppCommandType`
+    type: :class:`~discord.AppCommandType`
         The type of application command.
     default_permission: :class:`bool`
         Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
-    application: Optional[:class:`InteractionApplication`]
+    application: Optional[:class:`~discord.InteractionApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
@@ -153,7 +153,7 @@ class ApplicationCommand(Protocol):
 
     @property
     def default_member_permissions(self) -> Optional[Permissions]:
-        """Optional[:class:`Permissions`]: The default permissions required to use this command.
+        """Optional[:class:`~discord.Permissions`]: The default permissions required to use this command.
 
         ..note::
             This may be overrided on a guild-by-guild basis.

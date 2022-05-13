@@ -46,7 +46,7 @@ Users
 | They receive them in certain circumstances (such as when subscribing to updates for specific users), but they're usually rare and nothing to be relied on.
 
 If the Discord client ever needs member objects for specific users, it sends an OPCode 8 with the specific user IDs/names.
-This is why this is recommended if you want to fetch specific members (implemented as :func:``Guild.query_members`` in the library).
+This is why this is recommended if you want to fetch specific members (implemented as :func:`Guild.query_members` in the library).
 
 However, the maximum amount of members you can get with this method is 100 per request.
 
@@ -89,7 +89,7 @@ Additionally, there are more caveats:
 
 There are a few more pieces of the puzzle:
 
-- There is a ``/guilds/:id/roles/:id/member-ids`` endpoint that provides up to 100 member IDs for any role other than the default role. You can use :func:``Guild.query_members`` to fetch all these members in one go.
+- There is a ``/guilds/:id/roles/:id/member-ids`` endpoint that provides up to 100 member IDs for any role other than the default role. You can use :func:`Guild.query_members` to fetch all these members in one go.
 - With OPCode 14, you can subscribe to certain member IDs and receive member/presence updates for them. The limit of IDs per-request is currently unknown, but I have witnessed the client send over 200/request.
 - Thread member sidebars do *not* work the same. You just send an OPCode 14 with the thread IDs and receive a ``THREAD_MEMBER_LIST_UPDATE`` with all the members. The cache then stays updated with ``GUILD_MEMBER_UPDATE`` and ``THREAD_MEMBERS_UPDATE`` events.
 
