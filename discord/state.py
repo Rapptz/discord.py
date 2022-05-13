@@ -886,6 +886,9 @@ class ConnectionState:
         if 'sessions' in data:
             self.parse_sessions_replace(data['sessions'])
 
+        if 'auth_token' in data:
+            self.http._token(data['auth_token'])
+
         # We're done
         del self._ready_data
         self.call_handlers('connect')

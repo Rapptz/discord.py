@@ -59,6 +59,7 @@ class ShardInfo(TypedDict):
 
 class ReadyEvent(TypedDict):
     analytics_token: str
+    auth_token: NotRequired[str]
     connected_accounts: List[dict]
     country_code: str
     friend_suggestion_count: int
@@ -67,6 +68,7 @@ class ReadyEvent(TypedDict):
     merged_members: List[List[MemberWithUser]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
     relationships: List[dict]
+    required_action: NotRequired[str]
     sessions: List[dict]
     session_id: str
     user: User

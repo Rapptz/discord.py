@@ -2489,6 +2489,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self.id: int = int(data['id'])
         self.me: ClientUser = me
         self._update_group(data)
+        self._accessed: bool = False
 
     def _update_group(self, data: GroupChannelPayload) -> None:
         self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_id')
@@ -2496,7 +2497,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
-        self._accessed: bool = False
 
         self.owner: Optional[BaseUser]
         if self.owner_id == self.me.id:

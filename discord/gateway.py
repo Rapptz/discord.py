@@ -431,9 +431,14 @@ class DiscordWebSocket:
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
-                'capabilities': 253,
+                'capabilities': 509,
                 'properties': self._super_properties,
-                'presence': {'status': 'online', 'since': 0, 'activities': [], 'afk': False},
+                'presence': {
+                    'status': 'online',
+                    'since': 0,
+                    'activities': [],
+                    'afk': False,
+                },
                 'compress': False,
                 'client_state': {
                     'guild_hashes': {},
