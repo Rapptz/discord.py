@@ -1633,13 +1633,13 @@ class Message(PartialMessage, Hashable):
                     self.role_mentions.append(role)
 
     def _handle_components(self, data: List[ComponentPayload]) -> None:
-        self.components = components = []
+        self.components = []
 
         for component_data in data:
             component = _component_factory(component_data)
 
             if component is not None:
-                components.append(component)
+                self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
