@@ -47,8 +47,8 @@ if TYPE_CHECKING:
 
 __all__ = (
     'ApplicationBot',
-    'Company',
-    'Executable',
+    'ApplicationCompany',
+    'ApplicationExecutable',
     'Application',
     'PartialApplication',
     'InteractionApplication',
@@ -136,7 +136,7 @@ class ApplicationBot(User):
         self.application._update(data)
 
 
-class Company(Hashable):
+class ApplicationCompany(Hashable):
     """Represents a developer or publisher of an application.
 
     .. container:: operations
@@ -184,8 +184,8 @@ class Company(Hashable):
         return self.name
 
 
-class Executable:
-    """Represents an executable.
+class ApplicationExecutable:
+    """Represents an application executable.
 
     .. versionadded:: 2.0
 
@@ -275,11 +275,11 @@ class PartialApplication(Hashable):
         Whether the application has a Discord overlay or not.
     aliases: List[:class:`str`]
         A list of aliases that can be used to identify the application. Only available for specific applications.
-    developers: List[:class:`Company`]
+    developers: List[:class:`ApplicationCompany`]
         A list of developers that developed the application. Only available for specific applications.
-    publishers: List[:class:`Company`]
+    publishers: List[:class:`ApplicationCompany`]
         A list of publishers that published the application. Only available for specific applications.
-    executables: List[:class:`Executable`]
+    executables: List[:class:`ApplicationExecutable`]
         A list of executables that are the application's. Only available for specific applications.
     """
 
@@ -326,9 +326,15 @@ class PartialApplication(Hashable):
         self.rpc_origins: Optional[List[str]] = data.get('rpc_origins') or []
         self.verify_key: str = data['verify_key']
 
-        self.developers: List[Company] = [Company(data=d, application=self) for d in data.get('developers', [])]
-        self.publishers: List[Company] = [Company(data=d, application=self) for d in data.get('publishers', [])]
-        self.executables: List[Executable] = [Executable(data=e, application=self) for e in data.get('executables', [])]
+        self.developers: List[ApplicationCompany] = [
+            ApplicationCompany(data=d, application=self) for d in data.get('developers', [])
+        ]
+        self.publishers: List[ApplicationCompany] = [
+            ApplicationCompany(data=d, application=self) for d in data.get('publishers', [])
+        ]
+        self.executables: List[ApplicationExecutable] = [
+            ApplicationExecutable(data=e, application=self) for e in data.get('executables', [])
+        ]
         self.aliases: List[str] = data.get('aliases', [])
 
         self._icon: Optional[str] = data.get('icon')

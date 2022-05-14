@@ -4112,6 +4112,16 @@ Application
 .. autoclass:: PartialApplication()
     :members:
 
+.. attributetable:: ApplicationCompany
+
+.. autoclass:: ApplicationCompany()
+    :members:
+
+.. attributetable:: ApplicationExecutable
+
+.. autoclass:: ApplicationExecutable()
+    :members:
+
 .. attributetable:: InteractionApplication
 
 .. autoclass:: InteractionApplication()
