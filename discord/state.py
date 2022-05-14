@@ -456,6 +456,7 @@ class ConnectionState:
         self.analytics_token: Optional[str] = None
         self.preferred_regions: List[str] = []
         self.country_code: Optional[str] = None
+        self.session_type: Optional[str] = None
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -884,6 +885,7 @@ class ConnectionState:
         self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
         self.consents = Tracking(data=data.get('consents', {}), state=self)
         self.country_code = data.get('country_code', 'US')
+        self.session_type = data.get('session_type', 'normal')
 
         if 'required_action' in data:  # Locked more than likely
             self.parse_user_required_action_update(data)

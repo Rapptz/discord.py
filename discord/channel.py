@@ -2529,7 +2529,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     @property
     def owner(self) -> User:
         """:class:`User`: The owner that owns the group channel."""
-        return utils.find(lambda u: u.id == self.owner_id, self.recipients)  # type: ignore - All recipients are always present
+        return utils.find(lambda u: u.id == self.owner_id, self.recipients)  # type: ignore # All recipients are always present
 
     @property
     def call(self) -> Optional[PrivateCall]:

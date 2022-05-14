@@ -71,6 +71,7 @@ class ReadyEvent(TypedDict):
     required_action: NotRequired[str]
     sessions: List[dict]
     session_id: str
+    session_type: str
     user: User
     user_guild_settings: dict
     user_settings: dict
