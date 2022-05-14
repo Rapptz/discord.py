@@ -38,7 +38,6 @@ from .channel import PartialMessageable, ChannelType
 from .user import User
 from .member import Member
 from .message import Message, Attachment
-from .object import Object
 from .permissions import Permissions
 from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
@@ -184,16 +183,14 @@ class Interaction:
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
-        # TODO: there's a potential data loss here
         if self.guild_id:
-            guild = self.guild or Object(id=self.guild_id)
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
             try:
                 member = data['member']  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
             else:
-                # The fallback to Object for guild causes a type check error but is explicitly allowed here
-                self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
+                self.user = Member(state=self._state, guild=guild, data=member)
                 self._permissions = self.user._permissions or 0
         else:
             try:

@@ -168,7 +168,7 @@ class Namespace:
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
         type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
