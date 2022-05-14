@@ -313,6 +313,17 @@ class Asset(AssetMixin):
             animated=False,
         )
 
+    @classmethod
+    def _from_application_asset(cls, state, app_id: int, hash: str) -> Asset:
+        animated = hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-assets/{app_id}/{hash}.{format}',
+            key=hash,
+            animated=animated,
+        )
+
     def __str__(self) -> str:
         return self._url
 

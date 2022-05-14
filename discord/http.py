@@ -2287,6 +2287,9 @@ class HTTPClient:
     def reset_token(self, app_id: Snowflake):
         return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id), super_properties_to_track=True)
 
+    def get_detectable_applications(self) -> Response[List[appinfo.PartialAppInfo]]:
+        return self.request(Route('GET', '/applications/detectable'))
+
     # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:

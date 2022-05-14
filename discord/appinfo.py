@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Collection, List, TYPE_CHECKING, Optional
+from typing import Collection, List, TYPE_CHECKING, Literal, Optional
 
 from . import utils
 from .asset import Asset
@@ -46,8 +46,10 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
 __all__ = (
-    'Application',
     'ApplicationBot',
+    'Company',
+    'Executable',
+    'Application',
     'PartialApplication',
     'InteractionApplication',
 )
@@ -57,6 +59,8 @@ MISSING = utils.MISSING
 
 class ApplicationBot(User):
     """Represents a bot attached to an application.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -132,6 +136,85 @@ class ApplicationBot(User):
         self.application._update(data)
 
 
+class Company(Hashable):
+    """Represents a developer or publisher of an application.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two companies are equal.
+
+        .. describe:: x != y
+
+            Checks if two companies are not equal.
+
+        .. describe:: hash(x)
+
+            Return the company's hash.
+
+        .. describe:: str(x)
+
+            Returns the company's name.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The company's ID.
+    name: :class:`str`
+        The company's name.
+    application: Union[:class:`PartialApplication`, :class:`Application`]
+        The application that the company developed or published.
+    """
+
+    __slots__ = (
+        'id',
+        'name',
+        'application',
+    )
+
+    def __init__(self, *, data: dict, application: PartialApplication):
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.application = application
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Executable:
+    """Represents an executable.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The name of the executable.
+    os: :class:`str`
+        The operating system the executable is for.
+    launcher: :class:`bool`
+        Whether the executable is a launcher or not.
+    application: Union[:class:`PartialApplication`, :class:`Application`]
+        The application that the executable is for.
+    """
+
+    __slots__ = (
+        'name',
+        'os',
+        'launcher',
+        'application',
+    )
+
+    def __init__(self, *, data: dict, application: PartialApplication):
+        self.name: str = data['name']
+        self.os: Literal['win32', 'linux', 'darwin'] = data['os']
+        self.launcher: bool = data['is_launcher']
+        self.application = application
+
+
 class PartialApplication(Hashable):
     """Represents a partial Application.
 
@@ -163,7 +246,7 @@ class PartialApplication(Hashable):
         The application name.
     description: :class:`str`
         The application description.
-    rpc_origins: Optional[List[:class:`str`]]
+    rpc_origins: List[:class:`str`]
         A list of RPC origin URLs, if RPC is enabled.
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
@@ -188,6 +271,16 @@ class PartialApplication(Hashable):
         The type of application.
     tags: List[:class:`str`]
         A list of tags that describe the application.
+    overlay: :class:`bool`
+        Whether the application has a Discord overlay or not.
+    aliases: List[:class:`str`]
+        A list of aliases that can be used to identify the application. Only available for specific applications.
+    developers: List[:class:`Company`]
+        A list of developers that developed the application. Only available for specific applications.
+    publishers: List[:class:`Company`]
+        A list of publishers that published the application. Only available for specific applications.
+    executables: List[:class:`Executable`]
+        A list of executables that are the application's. Only available for specific applications.
     """
 
     __slots__ = (
@@ -202,6 +295,7 @@ class PartialApplication(Hashable):
         '_icon',
         '_flags',
         '_cover_image',
+        '_splash',
         'public',
         'require_code_grant',
         'type',
@@ -210,6 +304,12 @@ class PartialApplication(Hashable):
         'tags',
         'max_participants',
         'install_url',
+        'overlay',
+        'overlay_compatibility_hook',
+        'aliases',
+        'developers',
+        'publishers',
+        'executables',
     )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
@@ -223,11 +323,17 @@ class PartialApplication(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data['description']
-        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins') or []
         self.verify_key: str = data['verify_key']
+
+        self.developers: List[Company] = [Company(data=d, application=self) for d in data.get('developers', [])]
+        self.publishers: List[Company] = [Company(data=d, application=self) for d in data.get('publishers', [])]
+        self.executables: List[Executable] = [Executable(data=e, application=self) for e in data.get('executables', [])]
+        self.aliases: List[str] = data.get('aliases', [])
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')
+        self._splash: Optional[str] = data.get('splash')
 
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
@@ -237,6 +343,8 @@ class PartialApplication(Hashable):
         self.max_participants: Optional[int] = data.get('max_participants')
         self.premium_tier_level: Optional[int] = data.get('embedded_activity_config', {}).get('activity_premium_tier_level')
         self.tags: List[str] = data.get('tags', [])
+        self.overlay: bool = data.get('overlay', False)
+        self.overlay_compatibility_hook: bool = data.get('overlay_compatibility_hook', False)
 
         install_params = data.get('install_params', {})
         self.install_url = (
@@ -275,6 +383,13 @@ class PartialApplication(Hashable):
         if self._cover_image is None:
             return None
         return Asset._from_cover_image(self._state, self.id, self._cover_image)
+
+    @property
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the application's splash asset, if any."""
+        if self._splash is None:
+            return None
+        return Asset._from_application_asset(self._state, self.id, self._splash)
 
     @property
     def flags(self) -> ApplicationFlags:

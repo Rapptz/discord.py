@@ -2439,6 +2439,27 @@ class Client:
         data = await state.http.get_my_applications(with_team_applications=with_team_applications)
         return [Application(state=state, data=d) for d in data]
 
+    async def detectable_applications(self) -> List[PartialApplication]:
+        """|coro|
+
+        Retrieves the list of applications detectable by the Discord client.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the applications failed.
+
+        Returns
+        -------
+        List[:class:`.PartialApplication`]
+            The applications detectable by the Discord client.
+        """
+        state = self._connection
+        data = await state.http.get_detectable_applications()
+        return [PartialApplication(state=state, data=d) for d in data]
+
     async def fetch_application(self, app_id: int, /) -> Application:
         """|coro|
 
