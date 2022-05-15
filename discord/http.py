@@ -50,6 +50,7 @@ import weakref
 
 import aiohttp
 
+from .client import Client
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
 from .gateway import DiscordClientWebSocketResponse
 from .file import File
@@ -162,8 +163,8 @@ def handle_message_parameters(
 
     payload = {}
     if embeds is not MISSING:
-        if len(embeds) > 10:
-            raise ValueError('embeds has a maximum of 10 elements.')
+        if len(embeds) > Client.MAX_MESSAGE_EMBEDS:
+            raise ValueError(f'embeds has a maximum of {Client.MAX_MESSAGE_EMBEDS} elements.')
         payload['embeds'] = [e.to_dict() for e in embeds]
 
     if embed is not MISSING:

@@ -205,6 +205,8 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     """
 
+    MAX_MESSAGE_EMBEDS = 10
+
     def __init__(self, *, intents: Intents, **options: Any) -> None:
         self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
