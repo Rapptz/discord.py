@@ -57,7 +57,6 @@ from .file import File
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
-print(__name__)
 
 _log = logging.getLogger(__name__)
 
