@@ -30,6 +30,8 @@ from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, 
 from . import utils
 from .colour import Colour
 
+MAX_MESSAGE_EMBEDS = 10
+
 # fmt: off
 __all__ = (
     'Embed',

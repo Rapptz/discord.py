@@ -50,13 +50,14 @@ import weakref
 
 import aiohttp
 
-from .client import Client
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .embeds import MAX_MESSAGE_EMBEDS
 from .gateway import DiscordClientWebSocketResponse
 from .file import File
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
+print(__name__)
 
 _log = logging.getLogger(__name__)
 
@@ -163,8 +164,8 @@ def handle_message_parameters(
 
     payload = {}
     if embeds is not MISSING:
-        if len(embeds) > Client.MAX_MESSAGE_EMBEDS:
-            raise ValueError(f'embeds has a maximum of {Client.MAX_MESSAGE_EMBEDS} elements.')
+        if len(embeds) > MAX_MESSAGE_EMBEDS:
+            raise ValueError(f'embeds has a maximum of {MAX_MESSAGE_EMBEDS} elements.')
         payload['embeds'] = [e.to_dict() for e in embeds]
 
     if embed is not MISSING:
