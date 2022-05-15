@@ -553,8 +553,6 @@ class FlagConverter(metaclass=FlagsMeta):
 
         Parameters
         ----------
-        cls: Type[:class:`FlagConverter`]
-            The flag converter class.
         ctx: :class:`Context`
             The invocation context.
         argument: :class:`str`
@@ -564,8 +562,6 @@ class FlagConverter(metaclass=FlagsMeta):
         --------
         FlagError
             A flag related parsing error.
-        CommandError
-            A command related error.
 
         Returns
         --------
