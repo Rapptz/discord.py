@@ -931,7 +931,7 @@ For ease of use, the :func:`~ext.commands.flag` function accepts a ``description
     class BanFlags(commands.FlagConverter):
         member: discord.Member = commands.flag(description='The member to ban')
         reason: str = commands.flag(description='The reason for the ban')
-        days: int = 1 = commands.flag(description='The number of days worth of messages to delete')
+        days: int = commands.flag(default=1, description='The number of days worth of messages to delete')
 
 
     @commands.hybrid_command()
