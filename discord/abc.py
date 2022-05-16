@@ -2083,7 +2083,7 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = MISSING,
+        cls: Callable[[Client, Connectable], T] = VoiceClient,
         _channel: Optional[Connectable] = None,
         self_deaf: bool = False,
         self_mute: bool = False,
@@ -2136,11 +2136,7 @@ class Connectable(Protocol):
         if state._get_voice_client(key_id):
             raise ClientException('Already connected to a voice channel')
 
-        if cls is MISSING:
-            cls = VoiceClient  # type: ignore
-
-        # The type checker doesn't understand that VoiceClient *is* T here.
-        voice: T = cls(state.client, channel)
+        voice: T = cls(state.client, self)
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class')
