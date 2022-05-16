@@ -281,7 +281,7 @@ class View:
             one of its subclasses.
         """
         view = View(timeout=timeout)
-        for component in _walk_all_components(message.components):
+        for component in _walk_all_components(message.components):  # type: ignore
             view.add_item(_component_to_item(component))
         return view
 
@@ -634,7 +634,15 @@ class ViewStore:
     def remove_message_tracking(self, message_id: int) -> Optional[View]:
         return self._synced_message_views.pop(message_id, None)
 
-    def update_from_message(self, message_id: int, components: List[ComponentPayload]) -> None:
+    def update_from_message(self, message_id: int, data: List[ComponentPayload]) -> None:
+        components: List[Component] = []
+
+        for component_data in data:
+            component = _component_factory(component_data)
+
+            if component is not None:
+                components.append(component)
+
         # pre-req: is_message_tracked == true
         view = self._synced_message_views[message_id]
-        view._refresh([_component_factory(d) for d in components])
+        view._refresh(components)

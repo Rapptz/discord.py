@@ -114,7 +114,6 @@ class TextInput(Item[V]):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
 
         self._underlying = TextInputComponent._raw_construct(
-            type=ComponentType.text_input,
             label=label,
             style=style,
             custom_id=custom_id,
@@ -238,7 +237,7 @@ class TextInput(Item[V]):
 
     @property
     def type(self) -> Literal[ComponentType.text_input]:
-        return ComponentType.text_input
+        return self._underlying.type
 
     def is_dispatchable(self) -> bool:
         return False
