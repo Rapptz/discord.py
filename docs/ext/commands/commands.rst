@@ -791,6 +791,10 @@ In order to customise the flag syntax we also have a few options that can be pas
     a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
     all flags need a corresponding value.
 
+Flag converters will only raise :exc:`~ext.commands.FlagError` derived exceptions. If an error is raised while
+converting a flag, :exc:`~ext.commands.BadFlagArgument` is raised instead and the original exception
+can be accessed with the :attr:`~ext.commands.BadFlagArgument.original` attribute.
+
 The flag converter is similar to regular commands and allows you to use most types of converters
 (with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
 annotations as described below.
