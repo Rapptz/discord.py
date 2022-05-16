@@ -94,7 +94,7 @@ if TYPE_CHECKING:
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
-    from .components import ActionRow
+    from .components import ActionRow, ActionRowChildComponentType
     from .state import ConnectionState
     from .channel import TextChannel
     from .mentions import AllowedMentions
@@ -102,6 +102,7 @@ if TYPE_CHECKING:
     from .role import Role
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
+    MessageComponentType = Union[ActionRow, ActionRowChildComponentType]
 
 
 __all__ = (
@@ -1254,7 +1255,7 @@ class Message(PartialMessage, Hashable):
         A list of sticker items given to the message.
 
         .. versionadded:: 1.6
-    components: List[:class:`Component`]
+    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
         A list of components in the message.
 
         .. versionadded:: 2.0
@@ -1311,6 +1312,7 @@ class Message(PartialMessage, Hashable):
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
         role_mentions: List[Role]
+        components: List[MessageComponentType]
 
     def __init__(
         self,
@@ -1337,7 +1339,6 @@ class Message(PartialMessage, Hashable):
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.components: List[ActionRow] = [_component_factory(d, self) for d in data.get('components', [])]  # type: ignore # Will always be rows here
         self.call: Optional[CallMessage] = None
 
         try:
@@ -1387,7 +1388,7 @@ class Message(PartialMessage, Hashable):
                     # The channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'interaction'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'interaction', 'components'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -1579,8 +1580,14 @@ class Message(PartialMessage, Hashable):
         call['participants'] = participants
         self.call = CallMessage(message=self, **call)
 
-    def _handle_components(self, components: List[ComponentPayload]):
-        self.components: List[ActionRow] = [_component_factory(d, self) for d in components]  # type: ignore # Will always be rows here
+    def _handle_components(self, data: List[ComponentPayload]) -> None:
+        self.components = []
+
+        for component_data in data:
+            component = _component_factory(component_data, self)
+
+            if component is not None:
+                self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = Interaction._from_message(self, **data)
