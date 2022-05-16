@@ -2571,7 +2571,7 @@ class ConnectionState:
     # parse_guild_application_commands_update = parse_nothing  # Grabbed directly in command iterators
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
-        if isinstance(channel, TextChannel):
+        if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
             return channel.guild.get_member(user_id)
         return self.get_user(user_id)
 

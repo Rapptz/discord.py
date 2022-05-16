@@ -2304,7 +2304,9 @@ def is_nsfw() -> Check[Any]:
 
     def pred(ctx: Context[BotT]) -> bool:
         ch = ctx.channel
-        if ctx.guild is None or (isinstance(ch, (discord.TextChannel, discord.Thread)) and ch.is_nsfw()):
+        if ctx.guild is None or (
+            isinstance(ch, (discord.TextChannel, discord.Thread, discord.VoiceChannel)) and ch.is_nsfw()
+        ):
             return True
         raise NSFWChannelRequired(ch)  # type: ignore
 
