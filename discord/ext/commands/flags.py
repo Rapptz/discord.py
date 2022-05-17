@@ -519,10 +519,12 @@ class FlagConverter(metaclass=FlagsMeta):
                 if not value:
                     raise MissingFlagArgument(last_flag)
 
+                name = last_flag.name.casefold() if case_insensitive else last_flag.name
+
                 try:
-                    values = result[last_flag.name]
+                    values = result[name]
                 except KeyError:
-                    result[last_flag.name] = [value]
+                    result[name] = [value]
                 else:
                     values.append(value)
 
@@ -535,10 +537,12 @@ class FlagConverter(metaclass=FlagsMeta):
             if not value:
                 raise MissingFlagArgument(last_flag)
 
+            name = last_flag.name.casefold() if case_insensitive else last_flag.name
+
             try:
-                values = result[last_flag.name]
+                values = result[name]
             except KeyError:
-                result[last_flag.name] = [value]
+                result[name] = [value]
             else:
                 values.append(value)
 
