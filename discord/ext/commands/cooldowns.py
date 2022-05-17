@@ -143,7 +143,7 @@ class CooldownMapping:
     def update_rate_limit(self, message: Message, current: Optional[float] = None, tokens: int = 1) -> Optional[float]:
         bucket = self.get_bucket(message, current)
         if bucket is None:
-             return None
+            return None
         return bucket.update_rate_limit(current, tokens=tokens)
 
 
