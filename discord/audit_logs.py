@@ -70,7 +70,19 @@ if TYPE_CHECKING:
     from .app_commands import AppCommand
 
     TargetType = Union[
-        Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None
+        Guild,
+        abc.GuildChannel,
+        Member,
+        User,
+        Role,
+        Invite,
+        Emoji,
+        StageInstance,
+        GuildSticker,
+        Thread,
+        Object,
+        PartialIntegration,
+        None,
     ]
 
 
