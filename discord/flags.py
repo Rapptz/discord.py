@@ -131,6 +131,9 @@ class BaseFlags:
         self.value = value
         return self
 
+    def __or__(self, other: Self) -> Self:
+        return self._from_value(self.value | other.value)
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
@@ -179,6 +182,10 @@ class Capabilities(BaseFlags):
         .. describe:: x != y
 
             Checks if two capabilities are not equal.
+        .. describe:: x | y
+
+            Returns a new capabilities with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
                Return the capability's hash.
@@ -186,6 +193,8 @@ class Capabilities(BaseFlags):
 
                Returns an iterator of ``(name, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -283,10 +292,17 @@ class SystemChannelFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two flags are equal.
+            Checks if two SystemChannelFlags are equal.
         .. describe:: x != y
 
-            Checks if two flags are not equal.
+            Checks if two SystemChannelFlags are not equal.
+
+        .. describe:: x | y
+
+            Returns a new SystemChannelFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -359,10 +375,16 @@ class MessageFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two flags are equal.
+            Checks if two MessageFlags are equal.
         .. describe:: x != y
 
-            Checks if two flags are not equal.
+            Checks if two MessageFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new MessageFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -458,6 +480,12 @@ class PublicUserFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PublicUserFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PublicUserFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -602,6 +630,10 @@ class PrivateUserFlags(PublicUserFlags):
         .. describe:: x != y
 
             Checks if two PrivateUserFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PrivateUserFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -611,10 +643,10 @@ class PrivateUserFlags(PublicUserFlags):
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases or inherited flags are not shown.
 
+    .. versionadded:: 2.0
+
     .. note::
         These are only available on your own user flags.
-
-    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -674,6 +706,10 @@ class PremiumUsageFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PremiumUsageFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PremiumUsageFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -723,6 +759,10 @@ class PurchasedFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PurchasedFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PurchasedFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -788,6 +828,12 @@ class MemberCacheFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+        .. describe:: x | y
+
+            Returns a new MemberCacheFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -878,6 +924,10 @@ class ApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two ApplicationFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new ApplicationFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1025,6 +1075,10 @@ class ChannelFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two channel flags are not equal.
+        .. describe:: x | y
+
+            Returns a new ChannelFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1063,6 +1117,10 @@ class PaymentSourceFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PaymentSourceFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PaymentSourceFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1106,6 +1164,10 @@ class SKUFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two SKUFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new SKUFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1187,6 +1249,10 @@ class PaymentFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PaymentFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PaymentFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1242,6 +1308,10 @@ class PromotionFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PromotionFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PromotionFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1310,6 +1380,10 @@ class GiftFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PaymentFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PaymentFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1366,6 +1440,10 @@ class LibraryApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two LibraryApplicationFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PaymentFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1425,6 +1503,10 @@ class ApplicationDiscoveryFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two LibraryApplicationFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new LibraryApplicationFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1545,6 +1627,10 @@ class FriendSourceFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two FriendSourceFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new FriendSourceFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1627,6 +1713,10 @@ class FriendDiscoveryFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two FriendDiscoveryFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new FriendDiscoveryFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1686,6 +1776,10 @@ class HubProgressFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two HubProgressFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new HubProgressFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1737,6 +1831,10 @@ class OnboardingProgressFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two OnboardingProgressFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new OnboardingProgressFlags instance with all enabled flags
+            from both x and y.
         .. describe:: hash(x)
 
             Return the flag's hash.
