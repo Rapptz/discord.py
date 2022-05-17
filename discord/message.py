@@ -881,7 +881,7 @@ class PartialMessage(Hashable):
         # pinned exists on PartialMessage for duck typing purposes
         self.pinned = False
 
-    async def add_reaction(self, emoji: EmojiInputType, /) -> None:
+    async def add_reaction(self, emoji: Union[EmojiInputType, Reaction], /) -> None:
         """|coro|
 
         Adds a reaction to the message.
