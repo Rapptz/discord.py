@@ -537,10 +537,7 @@ class FlagConverter(metaclass=FlagsMeta):
             if not value:
                 raise MissingFlagArgument(last_flag)
 
-            if case_insensitive:
-                name = last_flag.name.casefold()
-            else:
-                name = last_flag.name
+            name = last_flag.name.casefold() if case_insensitive else last_flag.name
 
             try:
                 values = result[name]
