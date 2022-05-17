@@ -518,7 +518,7 @@ class FlagConverter(metaclass=FlagsMeta):
                 value = argument[last_position : begin - 1].lstrip()
                 if not value:
                     raise MissingFlagArgument(last_flag)
-                
+
                 name = last_flag.name.casefold() if case_insensitive else last_flag.name
 
                 try:
