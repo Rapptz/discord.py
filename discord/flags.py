@@ -117,6 +117,9 @@ class BaseFlags:
         self.value = value
         return self
 
+    def __or__(self, other: Self) -> Self:
+        return self._from_value(self.value | other.value)
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
@@ -168,6 +171,13 @@ class SystemChannelFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+
+        .. describe:: x | y
+
+            Returns a new SystemChannelFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -244,6 +254,12 @@ class MessageFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+        .. describe:: x | y
+
+            Returns a new MessageFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -339,6 +355,12 @@ class PublicUserFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PublicUserFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new PublicUserFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -488,6 +510,12 @@ class Intents(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+        .. describe:: x | y
+
+            Returns a new Intents instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -993,6 +1021,12 @@ class MemberCacheFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+        .. describe:: x | y
+
+            Returns a new MemberCacheFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -1107,6 +1141,12 @@ class ApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two ApplicationFlags are not equal.
+        .. describe:: x | y
+
+            Returns a new ApplicationFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1190,6 +1230,12 @@ class ChannelFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two channel flags are not equal.
+        .. describe:: x | y
+
+            Returns a new ChannelFlags instance with all enabled flags
+            from both x and y.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
             Return the flag's hash.
