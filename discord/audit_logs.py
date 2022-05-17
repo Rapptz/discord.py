@@ -67,7 +67,19 @@ if TYPE_CHECKING:
     from .threads import Thread
 
     TargetType = Union[
-        Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None
+        Guild,
+        abc.GuildChannel,
+        Member,
+        User,
+        Role,
+        Invite,
+        Emoji,
+        StageInstance,
+        GuildSticker,
+        Thread,
+        Object,
+        PartialIntegration,
+        None,
     ]
 
 
