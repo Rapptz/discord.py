@@ -930,6 +930,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return False
 
         bucket = self._buckets.get_bucket(ctx.message)
+        if bucket is None:
+            return False
         dt = ctx.message.edited_at or ctx.message.created_at
         current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
         return bucket.get_tokens(current) == 0
@@ -948,7 +950,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
-            bucket.reset()
+            if bucket is not None:
+                bucket.reset()
 
     def get_cooldown_retry_after(self, ctx: Context[BotT], /) -> float:
         """Retrieves the amount of seconds before this command can be tried again.
@@ -972,6 +975,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
         if self._buckets.valid:
             bucket = self._buckets.get_bucket(ctx.message)
+            if bucket is None:
+                return 0.0
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
             return bucket.get_retry_after(current)
