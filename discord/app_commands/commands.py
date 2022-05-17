@@ -426,7 +426,7 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     if len(params) != 2:
         msg = (
             f'context menu callback {func.__qualname__!r} requires 2 parameters, '
-            'the first one being the annotation and the other one explicitly '
+            'the first one being the interaction and the other one explicitly '
             'annotated with either discord.Message, discord.User, discord.Member, '
             'or a typing.Union of discord.Member and discord.User'
         )
