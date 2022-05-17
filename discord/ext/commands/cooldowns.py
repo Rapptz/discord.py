@@ -125,9 +125,9 @@ class CooldownMapping:
     def create_bucket(self, message: Message) -> Cooldown:
         return self._cooldown.copy()  # type: ignore
 
-    def get_bucket(self, message: Message, current: Optional[float] = None) -> Cooldown:
+    def get_bucket(self, message: Message, current: Optional[float] = None) -> Optional[Cooldown]:
         if self._type is BucketType.default:
-            return self._cooldown  # type: ignore
+            return self._cooldown
 
         self._verify_cache_integrity(current)
         key = self._bucket_key(message)
@@ -142,6 +142,8 @@ class CooldownMapping:
 
     def update_rate_limit(self, message: Message, current: Optional[float] = None, tokens: int = 1) -> Optional[float]:
         bucket = self.get_bucket(message, current)
+        if bucket is None:
+            return None
         return bucket.update_rate_limit(current, tokens=tokens)
 
 
