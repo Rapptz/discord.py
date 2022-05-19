@@ -3165,21 +3165,14 @@ class Guild(Hashable):
         data = await self._state.http.get_welcome_screen(self.id)
         return WelcomeScreen(data=data, guild=self)
 
-    @overload
     async def edit_welcome_screen(
         self,
         *,
-        description: Optional[str] = ...,
-        welcome_channels: Optional[List[WelcomeChannel]] = ...,
-        enabled: Optional[bool] = ...,
+        description: str = MISSING,
+        welcome_channels: List[WelcomeChannel] = MISSING,
+        enabled: bool = MISSING,
+        reason: Optional[str] = None,
     ) -> WelcomeScreen:
-        ...
-
-    @overload
-    async def edit_welcome_screen(self) -> None:
-        ...
-
-    async def edit_welcome_screen(self, **kwargs):
         """|coro|
 
         A shorthand method of :attr:`WelcomeScreen.edit` without needing
@@ -3197,21 +3190,24 @@ class Guild(Hashable):
         :class:`WelcomeScreen`
             The edited welcome screen.
         """
-        try:
-            welcome_channels = kwargs['welcome_channels']
-        except KeyError:
-            pass
-        else:
+        fields = {}
+
+        if welcome_channels is not MISSING:
             welcome_channels_serialised = []
             for wc in welcome_channels:
                 if not isinstance(wc, WelcomeChannel):
-                    raise InvalidArgument('welcome_channels parameter must be a list of WelcomeChannel')
+                    raise TypeError('welcome_channels parameter must be a list of WelcomeChannel')
                 welcome_channels_serialised.append(wc.to_dict())
-            kwargs['welcome_channels'] = welcome_channels_serialised
+            fields['welcome_channels'] = welcome_channels_serialised
 
-        if kwargs:
-            data = await self._state.http.edit_welcome_screen(self.id, kwargs)
-            return WelcomeScreen(data=data, guild=self)
+        if description is not MISSING:
+            fields['description'] = description
+
+        if enabled is not MISSING:
+            fields['enabled'] = enabled
+
+        data = await self._state.http.edit_welcome_screen(self.id, reason=reason, **fields)
+        return WelcomeScreen(data=data, guild=self)
 
     async def kick(self, user: Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|

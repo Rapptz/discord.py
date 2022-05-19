@@ -26,9 +26,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING, Union, overload
-from .utils import _get_as_snowflake, get
-from .errors import InvalidArgument
+from typing import List, Optional, TYPE_CHECKING, Union
+from .utils import _get_as_snowflake, get, MISSING
 from .partial_emoji import _EmojiTag
 
 __all__ = (
@@ -37,6 +36,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from .types.welcome_screen import (
         WelcomeScreen as WelcomeScreenPayload,
         WelcomeScreenChannel as WelcomeScreenChannelPayload,
@@ -62,7 +62,7 @@ class WelcomeChannel:
         The emoji used beside the channel description.
     """
 
-    def __init__(self, *, channel: Snowflake, description: str, emoji: Union[PartialEmoji, Emoji, str] = None):
+    def __init__(self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
         self.channel = channel
         self.description = description
         self.emoji = emoji
@@ -72,8 +72,10 @@ class WelcomeChannel:
 
     @classmethod
     def _from_dict(cls, *, data: WelcomeScreenChannelPayload, guild: Guild) -> WelcomeChannel:
-        channel_id = _get_as_snowflake(data, 'channel_id')
+        channel_id = int(data['channel_id'])
+
         channel = guild.get_channel(channel_id)
+
         description = data['description']
         _emoji_id = _get_as_snowflake(data, 'emoji_id')
         _emoji_name = data['emoji_name']
@@ -96,8 +98,8 @@ class WelcomeChannel:
         }
 
         if isinstance(self.emoji, _EmojiTag):
-            ret['emoji_id'] = self.emoji.id  # type: ignore
-            ret['emoji_name'] = self.emoji.name  # type: ignore
+            ret['emoji_id'] = self.emoji.id
+            ret['emoji_name'] = self.emoji.name
         else:
             # unicode or None
             ret['emoji_name'] = self.emoji
@@ -140,24 +142,19 @@ class WelcomeScreen:
         """
         return 'WELCOME_SCREEN_ENABLED' in self._guild.features
 
-    @overload
     async def edit(
         self,
         *,
-        description: Optional[str] = ...,
-        welcome_channels: Optional[List[WelcomeChannel]] = ...,
-        enabled: Optional[bool] = ...,
-    ) -> None:
-        ...
-
-    @overload
-    async def edit(self) -> None:
-        ...
-
-    async def edit(self, **kwargs):
+        description: str = MISSING,
+        welcome_channels: List[WelcomeChannel] = MISSING,
+        enabled: bool = MISSING,
+        reason: Optional[str] = None,
+    ) -> Self:
         """|coro|
 
         Edit the welcome screen.
+
+        Welcome channels can only accept custom emojis if :attr:`Guild.premium_tier` is level 2 or above.
 
         You must have the :attr:`~Permissions.manage_guild` permission in the
         guild to do this.
@@ -177,10 +174,6 @@ class WelcomeScreen:
                 ]
             )
 
-        .. note::
-
-            Welcome channels can only accept custom emojis if :attr:`~Guild.premium_tier` is level 2 or above.
-
         Parameters
         ------------
         description: Optional[:class:`str`]
@@ -189,6 +182,8 @@ class WelcomeScreen:
             The welcome channels, in their respective order.
         enabled: Optional[:class:`bool`]
             Whether the welcome screen should be displayed.
+        reason: Optional[:class:`str`]
+            The reason for editing the welcome screen. Shows up on the audit log.
 
         Raises
         -------
@@ -199,18 +194,21 @@ class WelcomeScreen:
         NotFound
             This welcome screen does not exist.
         """
-        try:
-            welcome_channels = kwargs['welcome_channels']
-        except KeyError:
-            pass
-        else:
+        fields = {}
+
+        if welcome_channels is not MISSING:
             welcome_channels_serialised = []
             for wc in welcome_channels:
                 if not isinstance(wc, WelcomeChannel):
-                    raise InvalidArgument('welcome_channels parameter must be a list of WelcomeChannel')
+                    raise TypeError('welcome_channels parameter must be a list of WelcomeChannel')
                 welcome_channels_serialised.append(wc.to_dict())
-            kwargs['welcome_channels'] = welcome_channels_serialised
+            fields['welcome_channels'] = welcome_channels_serialised
 
-        if kwargs:
-            data = await self._state.http.edit_welcome_screen(self._guild.id, kwargs)
-            self._store(data)
+        if description is not MISSING:
+            fields['description'] = description
+
+        if enabled is not MISSING:
+            fields['enabled'] = enabled
+
+        data = await self._state.http.edit_welcome_screen(self._guild.id, reason=reason, **fields)
+        return WelcomeScreen(data=data, guild=self._guild)
