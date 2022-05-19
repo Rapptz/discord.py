@@ -816,10 +816,10 @@ class Command(Generic[GroupT, P, T]):
         .. code-block:: python3
 
             @app_commands.command()
-            async def fruits(interaction: discord.Interaction, fruits: str):
-                await interaction.response.send_message(f'Your favourite fruit seems to be {fruits}')
+            async def fruits(interaction: discord.Interaction, fruit: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
 
-            @fruits.autocomplete('fruits')
+            @fruits.autocomplete('fruit')
             async def fruits_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
@@ -1763,11 +1763,11 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     .. code-block:: python3
 
             @app_commands.command()
-            @app_commands.autocomplete(fruits=fruits_autocomplete)
-            async def fruits(interaction: discord.Interaction, fruits: str):
-                await interaction.response.send_message(f'Your favourite fruit seems to be {fruits}')
+            @app_commands.autocomplete(fruit=fruit_autocomplete)
+            async def fruits(interaction: discord.Interaction, fruit: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
 
-            async def fruits_autocomplete(
+            async def fruit_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
             ) -> List[app_commands.Choice[str]]:
