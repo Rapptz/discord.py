@@ -540,12 +540,11 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
+            self.connector = aiohttp.TCPConnector(limit=0)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
             ws_response_class=DiscordClientWebSocketResponse,
-            loop=self.loop,
             trace_configs=None if self.http_trace is None else [self.http_trace],
         )
         self._global_over = asyncio.Event()
