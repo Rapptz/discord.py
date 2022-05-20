@@ -392,7 +392,6 @@ class HTTPClient:
 
         self.__session = session = aiohttp.ClientSession(
             connector=self.connector,
-            loop=self.loop,
             trace_configs=None if self.http_trace is None else [self.http_trace],
         )
         self.user_agent, self.browser_version, self.client_build_number = ua, bv, bn = await utils._get_info(session)
@@ -717,7 +716,7 @@ class HTTPClient:
         old_token, self.token = self.token, token
 
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
+            self.connector = aiohttp.TCPConnector(limit=0)
 
         self._global_over = asyncio.Event()
         self._global_over.set()
