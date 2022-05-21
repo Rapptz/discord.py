@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Generic, List, Optio
 
 import discord.abc
 import discord.utils
+from discord.utils import MISSING
 from discord.message import Message
 
 from ._types import BotT
@@ -53,8 +54,6 @@ __all__ = (
     'Context',
 )
 # fmt: on
-
-MISSING: Any = discord.utils.MISSING
 
 
 T = TypeVar('T')

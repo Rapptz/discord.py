@@ -24,8 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import inspect
-import discord
-from discord.utils import maybe_coroutine
+from discord.utils import maybe_coroutine, MISSING
 
 from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar
 
@@ -44,8 +43,6 @@ __all__ = (
 )
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
-
-MISSING: Any = discord.utils.MISSING
 
 
 class CogMeta(type):

@@ -45,6 +45,7 @@ from typing import (
 )
 
 import discord.utils
+from discord.utils import MISSING
 
 from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
@@ -74,8 +75,6 @@ __all__ = (
 )
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
-
-MISSING: Any = discord.utils.MISSING
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
