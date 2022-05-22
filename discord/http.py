@@ -583,7 +583,7 @@ class HTTPClient:
                             continue
 
                         # Unconditional retry
-                        if response.status in {500, 502, 504}:
+                        if response.status in {500, 502, 504, 524}:
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
