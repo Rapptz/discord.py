@@ -790,6 +790,7 @@ class CommandTree(Generic[ClientT]):
         *,
         name: str = MISSING,
         description: str = MISSING,
+        nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
@@ -804,6 +805,10 @@ class CommandTree(Generic[ClientT]):
             The description of the application command. This shows up in the UI to describe
             the application command. If not given, it defaults to the first line of the docstring
             of the callback shortened to 100 characters.
+        nsfw: :class:`bool`
+            Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+            Due to a Discord limitation, this does not work on subcommands.
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
@@ -829,6 +834,7 @@ class CommandTree(Generic[ClientT]):
                 name=name if name is not MISSING else func.__name__,
                 description=desc,
                 callback=func,
+                nsfw=nsfw,
                 parent=None,
             )
             self.add_command(command, guild=guild, guilds=guilds)
@@ -840,6 +846,7 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         name: str = MISSING,
+        nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
@@ -868,6 +875,10 @@ class CommandTree(Generic[ClientT]):
             The name of the context menu command. If not given, it defaults to a title-case
             version of the callback name. Note that unlike regular slash commands this can
             have spaces and upper case characters in the name.
+        nsfw: :class:`bool`
+            Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+            Due to a Discord limitation, this does not work on subcommands.
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
@@ -882,7 +893,7 @@ class CommandTree(Generic[ClientT]):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
-            context_menu = ContextMenu(name=actual_name, callback=func)
+            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
