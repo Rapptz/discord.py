@@ -238,6 +238,7 @@ class Client:
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
         self._ready: asyncio.Event = MISSING
+        self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
@@ -345,8 +346,9 @@ class Client:
         """Optional[:class:`int`]: The client's application ID.
 
         If this is not passed via ``__init__`` then this is retrieved
-        through the gateway when an event contains the data. Usually
-        after :func:`~discord.on_connect` is called.
+        through the gateway when an event contains the data or after a call
+        to :meth:`~discord.Client.login`. Usually after :func:`~discord.on_connect`
+        is called.
 
         .. versionadded:: 2.0
         """
@@ -359,6 +361,22 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.application_flags
+
+    @property
+    def application(self) -> Optional[AppInfo]:
+        """Optional[:class:`~discord.AppInfo`]: The client's application info.
+
+        This is retrieved on :meth:`~discord.Client.login` and is not updated
+        afterwards. This allows populating the application_id without requiring a
+        gateway connection.
+
+        This is ``None`` if accessed before :meth:`~discord.Client.login` is called.
+
+        .. seealso:: The :meth:`~discord.Client.application_info` API call
+
+        .. versionadded:: 2.0
+        """
+        return self._application
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -541,6 +559,13 @@ class Client:
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
+        self._application = await self.application_info()
+        if self._connection.application_id is None:
+            self._connection.application_id = self._application.id
+
+        if not self._connection.application_flags:
+            self._connection.application_flags = self._application.flags
+
         await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
