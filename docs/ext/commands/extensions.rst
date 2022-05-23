@@ -29,6 +29,8 @@ An example extension looks like this:
 
 In this example we define a simple command, and when the extension is loaded this command is added to the bot. Now the final step to this is loading the extension, which we do by calling :meth:`.Bot.load_extension`. To load this extension we call ``await bot.load_extension('hello')``.
 
+It is also possible to pass setup variables to an extension. When a dictionary is passed to the ``extension_vars`` parameter of :meth:`.Bot.load_extension`, its contents will become available to the ``setup`` function from the :attr:`~.Bot.extension_vars` bot attribute.
+
 .. admonition:: Cogs
     :class: helpful
 

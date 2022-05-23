@@ -33,6 +33,7 @@ import importlib.util
 import sys
 import traceback
 import types
+from contextvars import ContextVar
 from typing import (
     Any,
     Callable,
@@ -173,6 +174,7 @@ class BotBase(GroupMixin[None]):
         self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
         self.__cogs: Dict[str, Cog] = {}
         self.__extensions: Dict[str, types.ModuleType] = {}
+        self._extension_vars: ContextVar[Dict[str, Any]] = ContextVar("extension_vars")
         self._checks: List[UserCheck] = []
         self._check_once: List[UserCheck] = []
         self._before_invoke: Optional[CoroFunc] = None
@@ -908,7 +910,7 @@ class BotBase(GroupMixin[None]):
                 if _is_submodule(name, module):
                     del sys.modules[module]
 
-    async def _load_from_module_spec(self, spec: importlib.machinery.ModuleSpec, key: str) -> None:
+    async def _load_from_module_spec(self, spec: importlib.machinery.ModuleSpec, key: str, extension_vars: Dict[str, Any]) -> None:
         # precondition: key not in self.__extensions
         lib = importlib.util.module_from_spec(spec)
         sys.modules[key] = lib
@@ -925,7 +927,8 @@ class BotBase(GroupMixin[None]):
             raise errors.NoEntryPointError(key)
 
         try:
-            await setup(self)
+            setup_task = asyncio.create_task(self._run_extension_setup(setup, extension_vars))
+            await setup_task
         except Exception as e:
             del sys.modules[key]
             await self._remove_module_references(lib.__name__)
@@ -939,8 +942,12 @@ class BotBase(GroupMixin[None]):
             return importlib.util.resolve_name(name, package)
         except ImportError:
             raise errors.ExtensionNotFound(name)
-
-    async def load_extension(self, name: str, *, package: Optional[str] = None) -> None:
+    
+    async def _run_extension_setup(self, func: CoroFunc, extension_vars: Dict[str, Any]):
+        self._extension_vars.set(extension_vars)  # when invoked from within a asyncio.Task, the value will be stored in the task's Context
+        await func(self)
+    
+    async def load_extension(self, name: str, *, package: Optional[str] = None, extension_vars: Optional[Dict[str, Any]] = None) -> None:
         """|coro|
 
         Loads an extension.
@@ -968,6 +975,13 @@ class BotBase(GroupMixin[None]):
             Defaults to ``None``.
 
             .. versionadded:: 1.7
+        
+        extension_vars: Optional[Dict[:class:`str`, Any]]
+            A dictionary of setup variables to provide to the ``setup`` function of the extension. Those
+            can be accessed from the :attr:`~.Bot.extension_vars` attribute from within the ``setup``
+            function.
+
+            .. versionadded:: 2.0
 
         Raises
         --------
@@ -991,7 +1005,9 @@ class BotBase(GroupMixin[None]):
         if spec is None:
             raise errors.ExtensionNotFound(name)
 
-        await self._load_from_module_spec(spec, name)
+        extension_vars = {} if extension_vars is None else extension_vars
+
+        await self._load_from_module_spec(spec, name, extension_vars)
 
     async def unload_extension(self, name: str, *, package: Optional[str] = None) -> None:
         """|coro|
@@ -1040,7 +1056,7 @@ class BotBase(GroupMixin[None]):
         await self._remove_module_references(lib.__name__)
         await self._call_module_finalizers(lib, name)
 
-    async def reload_extension(self, name: str, *, package: Optional[str] = None) -> None:
+    async def reload_extension(self, name: str, *, package: Optional[str] = None, extension_vars: Optional[Dict[str, Any]] = None) -> None:
         """Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
@@ -1060,6 +1076,13 @@ class BotBase(GroupMixin[None]):
             Defaults to ``None``.
 
             .. versionadded:: 1.7
+
+        extension_vars: Optional[Dict[:class:`str`, Any]]
+            A dictionary of setup variables to provide to the ``setup`` function of the extension. Those
+            can be accessed from the :attr:`~.Bot.extension_vars` attribute from within the ``setup``
+            function.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1093,7 +1116,7 @@ class BotBase(GroupMixin[None]):
             # Unload and then load the module...
             await self._remove_module_references(lib.__name__)
             await self._call_module_finalizers(lib, name)
-            await self.load_extension(name)
+            await self.load_extension(name, extension_vars=extension_vars)
         except Exception:
             # if the load failed, the remnants should have been
             # cleaned from the load_extension function call
@@ -1109,6 +1132,17 @@ class BotBase(GroupMixin[None]):
     def extensions(self) -> Mapping[str, types.ModuleType]:
         """Mapping[:class:`str`, :class:`py:types.ModuleType`]: A read-only mapping of extension name to extension."""
         return types.MappingProxyType(self.__extensions)
+
+    @property
+    def extension_vars(self) -> Dict[str, Any]:
+        """Dict[:class:`str`, Any]: A dictionary containing the setup variables of an extension. The output
+        of this property is context-specific: When accessed from within the ``setup`` function of an extension while
+        it is being (re)loaded, a dictionary of setup variables (if any were specified) for that specific extension will be
+        returned. In all other cases the output will be an empty dictionary.
+
+        .. versionadded:: 2.0
+        """
+        return self._extension_vars.get({})
 
     # help command stuff
 
