@@ -136,6 +136,7 @@ class _BaseApplicationCommand(TypedDict):
     name: str
     dm_permission: NotRequired[Optional[bool]]
     default_member_permissions: NotRequired[Optional[str]]
+    nsfw: NotRequired[bool]
     version: Snowflake
 
 

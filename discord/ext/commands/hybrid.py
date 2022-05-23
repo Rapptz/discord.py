@@ -290,12 +290,13 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         signature = inspect.signature(wrapped.callback)
         params = replace_parameters(wrapped.params, wrapped.callback, signature)
         wrapped.callback.__signature__ = signature.replace(parameters=params)
-
+        nsfw = getattr(wrapped.callback, '__discord_app_commands_is_nsfw__', False)
         try:
             super().__init__(
                 name=wrapped.name,
                 callback=wrapped.callback,  # type: ignore # Signature doesn't match but we're overriding the invoke
                 description=wrapped.description or wrapped.short_doc or '…',
+                nsfw=nsfw,
             )
         finally:
             del wrapped.callback.__signature__
@@ -595,12 +596,14 @@ class HybridGroup(Group[CogT, P, T]):
             )
             guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
             default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
+            nsfw = getattr(self.callback, '__discord_app_commands_is_nsfw__', False)
             self.app_command = app_commands.Group(
                 name=self.name,
                 description=self.description or self.short_doc or '…',
                 guild_ids=guild_ids,
                 guild_only=guild_only,
                 default_permissions=default_permissions,
+                nsfw=nsfw,
             )
 
             # This prevents the group from re-adding the command at __init__

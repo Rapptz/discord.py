@@ -141,6 +141,8 @@ class AppCommand(Hashable):
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
         denotes that it is a global command.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels.
     """
 
     __slots__ = (
@@ -153,6 +155,7 @@ class AppCommand(Hashable):
         'options',
         'default_member_permissions',
         'dm_permission',
+        'nsfw',
         '_state',
     )
 
@@ -183,6 +186,7 @@ class AppCommand(Hashable):
             dm_permission = True
 
         self.dm_permission: bool = dm_permission
+        self.nsfw: bool = data.get('nsfw', False)
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {

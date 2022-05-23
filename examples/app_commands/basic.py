@@ -8,8 +8,8 @@ MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 
 class MyClient(discord.Client):
-    def __init__(self, *, intents: discord.Intents, application_id: int):
-        super().__init__(intents=intents, application_id=application_id)
+    def __init__(self, *, intents: discord.Intents):
+        super().__init__(intents=intents)
         # A CommandTree is a special type that holds all the application command
         # state required to make it work. This is a separate class because it
         # allows all the extra state to be opt-in.
@@ -29,10 +29,7 @@ class MyClient(discord.Client):
 
 
 intents = discord.Intents.default()
-
-# In order to use a basic synchronization of the app commands in the setup_hook,
-# you have to replace the 0 with your bot's application_id that you find in the developer portal.
-client = MyClient(intents=intents, application_id=0)
+client = MyClient(intents=intents)
 
 
 @client.event

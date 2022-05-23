@@ -184,6 +184,7 @@ class ConnectionState:
         self.shard_count: Optional[int] = None
         self._ready_task: Optional[asyncio.Task] = None
         self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
+        self.application_flags: ApplicationFlags = utils.MISSING
         self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
         self.guild_ready_timeout: float = options.get('guild_ready_timeout', 2.0)
         if self.guild_ready_timeout < 0:

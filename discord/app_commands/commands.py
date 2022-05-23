@@ -485,6 +485,11 @@ class Command(Generic[GroupT, P, T]):
         Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels.
+        Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
     """
@@ -495,6 +500,7 @@ class Command(Generic[GroupT, P, T]):
         name: str,
         description: str,
         callback: CommandCallback[GroupT, P, T],
+        nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
     ):
@@ -523,6 +529,7 @@ class Command(Generic[GroupT, P, T]):
             callback, '__discord_app_commands_default_permissions__', None
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
+        self.nsfw: bool = nsfw
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
@@ -553,6 +560,7 @@ class Command(Generic[GroupT, P, T]):
         copy.description = self.description
         copy.default_permissions = self.default_permissions
         copy.guild_only = self.guild_only
+        copy.nsfw = self.nsfw
         copy._attr = self._attr
         copy._callback = self._callback
         copy.on_error = self.on_error
@@ -578,6 +586,7 @@ class Command(Generic[GroupT, P, T]):
         }
 
         if self.parent is None:
+            base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
 
@@ -922,6 +931,9 @@ class ContextMenu:
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels.
+        Defaults to ``False``.
     checks
         A list of predicates that take a :class:`~discord.Interaction` parameter
         to indicate whether the command callback should be executed. If an exception
@@ -936,6 +948,7 @@ class ContextMenu:
         name: str,
         callback: ContextMenuCallback,
         type: AppCommandType = MISSING,
+        nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
     ):
         self.name: str = validate_context_menu_name(name)
@@ -956,6 +969,7 @@ class ContextMenu:
         self.default_permissions: Optional[Permissions] = getattr(
             callback, '__discord_app_commands_default_permissions__', None
         )
+        self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
@@ -975,6 +989,7 @@ class ContextMenu:
             'type': self.type.value,
             'dm_permission': not self.guild_only,
             'default_member_permissions': self.default_permissions and self.default_permissions.value,
+            'nsfw': self.nsfw,
         }
 
     async def _check_can_run(self, interaction: Interaction) -> bool:
@@ -1095,6 +1110,11 @@ class Group:
         Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels.
+        Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent group. ``None`` if there isn't one.
     """
@@ -1103,6 +1123,7 @@ class Group:
     __discord_app_commands_skip_init_binding__: bool = False
     __discord_app_commands_group_name__: str = MISSING
     __discord_app_commands_group_description__: str = MISSING
+    __discord_app_commands_group_nsfw__: bool = False
     __discord_app_commands_guild_only__: bool = MISSING
     __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
@@ -1113,6 +1134,7 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         guild_only: bool = MISSING,
+        nsfw: bool = False,
         default_permissions: Optional[Permissions] = MISSING,
     ) -> None:
         if not cls.__discord_app_commands_group_children__:
@@ -1152,6 +1174,7 @@ class Group:
 
         if cls.__module__ != __name__:
             cls.__discord_app_commands_has_module__ = True
+        cls.__discord_app_commands_group_nsfw__ = nsfw
 
     def __init__(
         self,
@@ -1161,6 +1184,7 @@ class Group:
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
         guild_only: bool = MISSING,
+        nsfw: bool = MISSING,
         default_permissions: Optional[Permissions] = MISSING,
     ):
         cls = self.__class__
@@ -1185,6 +1209,11 @@ class Group:
                 guild_only = cls.__discord_app_commands_guild_only__
 
         self.guild_only: bool = guild_only
+
+        if nsfw is MISSING:
+            nsfw = cls.__discord_app_commands_group_nsfw__
+
+        self.nsfw: bool = nsfw
 
         if not self.description:
             raise TypeError('groups must have a description')
@@ -1246,6 +1275,7 @@ class Group:
         copy.module = self.module
         copy.default_permissions = self.default_permissions
         copy.guild_only = self.guild_only
+        copy.nsfw = self.nsfw
         copy._attr = self._attr
         copy._owner_cls = self._owner_cls
         copy._children = {}
@@ -1280,6 +1310,7 @@ class Group:
         }
 
         if self.parent is None:
+            base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
 
@@ -1483,6 +1514,7 @@ class Group:
         *,
         name: str = MISSING,
         description: str = MISSING,
+        nsfw: bool = False,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """Creates an application command under this group.
 
@@ -1495,6 +1527,8 @@ class Group:
             The description of the application command. This shows up in the UI to describe
             the application command. If not given, it defaults to the first line of the docstring
             of the callback shortened to 100 characters.
+        nsfw: :class:`bool`
+            Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1513,6 +1547,7 @@ class Group:
                 name=name if name is not MISSING else func.__name__,
                 description=desc,
                 callback=func,
+                nsfw=nsfw,
                 parent=self,
             )
             self.add_command(command)
@@ -1525,6 +1560,7 @@ def command(
     *,
     name: str = MISSING,
     description: str = MISSING,
+    nsfw: bool = False,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
 
@@ -1537,6 +1573,10 @@ def command(
         The description of the application command. This shows up in the UI to describe
         the application command. If not given, it defaults to the first line of the docstring
         of the callback shortened to 100 characters.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1556,12 +1596,13 @@ def command(
             description=desc,
             callback=func,
             parent=None,
+            nsfw=nsfw,
         )
 
     return decorator
 
 
-def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], ContextMenu]:
+def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
     This function must have a signature of :class:`~discord.Interaction` as its first parameter
@@ -1587,6 +1628,10 @@ def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], Cont
         The name of the context menu command. If not given, it defaults to a title-case
         version of the callback name. Note that unlike regular slash commands this can
         have spaces and upper case characters in the name.
+    nsfw: :class:`bool`
+        Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+        Due to a Discord limitation, this does not work on subcommands.
     """
 
     def decorator(func: ContextMenuCallback) -> ContextMenu:
@@ -1594,7 +1639,7 @@ def context_menu(*, name: str = MISSING) -> Callable[[ContextMenuCallback], Cont
             raise TypeError('context menu function must be a coroutine function')
 
         actual_name = func.__name__.title() if name is MISSING else name
-        return ContextMenu(name=actual_name, callback=func)
+        return ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
 
     return decorator
 
