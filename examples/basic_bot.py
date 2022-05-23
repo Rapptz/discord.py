@@ -10,10 +10,7 @@ bot = commands.Bot(command_prefix='?', description=description)
 
 @bot.event
 async def on_ready():
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
-    print('------')
+    print("Logged in as: \n {} \n {} \n -------".format(bot.user.name, bot.user.id))
 
 @bot.command()
 async def add(ctx, left: int, right: int):
