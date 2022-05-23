@@ -24,11 +24,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional, TypeVar, Union, Sequence, Type
 
 import discord.abc
 import discord.utils
 from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable
+from discord.context_managers import Typing
 from .view import StringView
 
 from ._types import BotT
@@ -54,6 +55,10 @@ if TYPE_CHECKING:
     from .core import Command
     from .parameters import Parameter
 
+    from types import TracebackType
+
+    BE = TypeVar('BE', bound=BaseException)
+
 # fmt: off
 __all__ = (
     'Context',
@@ -70,6 +75,26 @@ if TYPE_CHECKING:
     P = ParamSpec('P')
 else:
     P = TypeVar('P')
+
+
+class DeferTyping:
+    def __init__(self, ctx: Context[BotT], *, ephemeral: bool):
+        self.ctx: Context[BotT] = ctx
+        self.ephemeral: bool = ephemeral
+
+    def __await__(self) -> Generator[Any, None, None]:
+        return self.ctx.defer(ephemeral=self.ephemeral).__await__()
+
+    async def __aenter__(self) -> None:
+        await self.ctx.defer(ephemeral=self.ephemeral)
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        pass
 
 
 class Context(discord.abc.Messageable, Generic[BotT]):
@@ -547,6 +572,46 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return await self.send(content, reference=self.message, **kwargs)
         else:
             return await self.send(content, **kwargs)
+
+    def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping]:
+        """Returns an asynchronous context manager that allows you to send a typing indicator to
+        the destination for an indefinite period of time, or 10 seconds if the context manager
+        is called using ``await``.
+
+        In an interaction based context, this is equivalent to a :meth:`defer` call and
+        does not do any typing calls.
+
+        Example Usage: ::
+
+            async with channel.typing():
+                # simulate something heavy
+                await asyncio.sleep(20)
+
+            await channel.send('Done!')
+
+        Example Usage: ::
+
+            await channel.typing()
+            # Do some computational magic for about 10 seconds
+            await channel.send('Done!')
+
+        .. versionchanged:: 2.0
+            This no longer works with the ``with`` syntax, ``async with`` must be used instead.
+
+        .. versionchanged:: 2.0
+            Added functionality to ``await`` the context manager to send a typing indicator for 10 seconds.
+
+        Parameters
+        -----------
+        ephemeral: :class:`bool`
+            Indicates whether the deferred message will eventually be ephemeral.
+            Only valid for interaction based contexts.
+
+            .. versionadded:: 2.0
+        """
+        if self.interaction is None:
+            return Typing(self)
+        return DeferTyping(self, ephemeral=ephemeral)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
