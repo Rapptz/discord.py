@@ -82,6 +82,34 @@ class Permissions(BaseFlags):
         .. describe:: x > y
 
              Checks if a permission is a strict superset of another permission.
+
+        .. describe:: x | y, x |= y
+
+            Returns a Permissions instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a Permissions instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a Permissions instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a Permissions instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the permission's hash.

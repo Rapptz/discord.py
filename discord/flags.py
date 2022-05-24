@@ -134,6 +134,29 @@ class BaseFlags:
     def __or__(self, other: Self) -> Self:
         return self._from_value(self.value | other.value)
 
+    def __and__(self, other: Self) -> Self:
+        return self._from_value(self.value & other.value)
+
+    def __xor__(self, other: Self) -> Self:
+        return self._from_value(self.value ^ other.value)
+
+    def __ior__(self, other: Self) -> Self:
+        self.value |= other.value
+        return self
+
+    def __iand__(self, other: Self) -> Self:
+        self.value &= other.value
+        return self
+
+    def __ixor__(self, other: Self) -> Self:
+        self.value ^= other.value
+        return self
+
+    def __invert__(self) -> Self:
+        max_bits = max(self.VALID_FLAGS.values()).bit_length()
+        max_value = -1 + (2**max_bits)
+        return self._from_value(self.value ^ max_value)
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
@@ -182,10 +205,29 @@ class Capabilities(BaseFlags):
         .. describe:: x != y
 
             Checks if two capabilities are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new capabilities with all enabled flags
-            from both x and y.
+            Returns a capabilities instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x & y, x &= y
+
+            Returns a capabilities instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x ^ y, x ^= y
+
+            Returns a capabilities instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+        .. describe:: ~x
+
+            Returns a capabilities instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
         .. describe:: hash(x)
 
                Return the capability's hash.
@@ -296,11 +338,27 @@ class SystemChannelFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two SystemChannelFlags are not equal.
+        .. describe:: x | y, x |= y
 
-        .. describe:: x | y
+            Returns a SystemChannelFlags instance with all enabled flags from
+            both x and y.
 
-            Returns a new SystemChannelFlags instance with all enabled flags
-            from both x and y.
+            .. versionadded:: 2.0
+        .. describe:: x & y, x &= y
+
+            Returns a SystemChannelFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x ^ y, x ^= y
+
+            Returns a SystemChannelFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+        .. describe:: ~x
+
+            Returns a SystemChannelFlags instance with all flags inverted from x.
 
             .. versionadded:: 2.0
         .. describe:: hash(x)
@@ -379,10 +437,27 @@ class MessageFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two MessageFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new MessageFlags instance with all enabled flags
-            from both x and y.
+            Returns a MessageFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x & y, x &= y
+
+            Returns a MessageFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x ^ y, x ^= y
+
+            Returns a MessageFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+        .. describe:: ~x
+
+            Returns a MessageFlags instance with all flags inverted from x.
 
             .. versionadded:: 2.0
         .. describe:: hash(x)
@@ -480,10 +555,27 @@ class PublicUserFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PublicUserFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PublicUserFlags instance with all enabled flags
-            from both x and y.
+            Returns a PublicUserFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x & y, x &= y
+
+            Returns a PublicUserFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PublicUserFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+        .. describe:: ~x
+
+            Returns a PublicUserFlags instance with all flags inverted from x.
 
             .. versionadded:: 2.0
         .. describe:: hash(x)
@@ -630,10 +722,21 @@ class PrivateUserFlags(PublicUserFlags):
         .. describe:: x != y
 
             Checks if two PrivateUserFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PrivateUserFlags instance with all enabled flags
-            from both x and y.
+            Returns a PrivateUserFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PrivateUserFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PrivateUserFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PrivateUserFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -706,10 +809,21 @@ class PremiumUsageFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PremiumUsageFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PremiumUsageFlags instance with all enabled flags
-            from both x and y.
+            Returns a PremiumUsageFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PremiumUsageFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PremiumUsageFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PremiumUsageFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -759,10 +873,21 @@ class PurchasedFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PurchasedFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PurchasedFlags instance with all enabled flags
-            from both x and y.
+            Returns a PurchasedFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PurchasedFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PurchasedFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PurchasedFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -828,10 +953,28 @@ class MemberCacheFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
-        .. describe:: x | y
 
-            Returns a new MemberCacheFlags instance with all enabled flags
-            from both x and y.
+        .. describe:: x | y, x |= y
+
+            Returns a MemberCacheFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x & y, x &= y
+
+            Returns a MemberCacheFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+        .. describe:: x ^ y, x ^= y
+
+            Returns a MemberCacheFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+        .. describe:: ~x
+
+            Returns a MemberCacheFlags instance with all flags inverted from x.
 
             .. versionadded:: 2.0
         .. describe:: hash(x)
@@ -924,10 +1067,21 @@ class ApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two ApplicationFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new ApplicationFlags instance with all enabled flags
-            from both x and y.
+            Returns a ApplicationFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a ApplicationFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a ApplicationFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a ApplicationFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1071,14 +1225,22 @@ class ChannelFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two channel flags are equal.
-        .. describe:: x != y
+            Checks if two ChannelFlags are equal.
+        .. describe:: x | y, x |= y
 
-            Checks if two channel flags are not equal.
-        .. describe:: x | y
+            Returns a ChannelFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
 
-            Returns a new ChannelFlags instance with all enabled flags
-            from both x and y.
+            Returns a ChannelFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a ChannelFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a ChannelFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1117,10 +1279,21 @@ class PaymentSourceFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PaymentSourceFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PaymentSourceFlags instance with all enabled flags
-            from both x and y.
+            Returns a PaymentSourceFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PaymentSourceFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PaymentSourceFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PaymentSourceFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1164,10 +1337,21 @@ class SKUFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two SKUFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new SKUFlags instance with all enabled flags
-            from both x and y.
+            Returns a SKUFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a SKUFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a SKUFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a SKUFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1249,10 +1433,21 @@ class PaymentFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PaymentFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PaymentFlags instance with all enabled flags
-            from both x and y.
+            Returns a PaymentFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PaymentFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PaymentFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PaymentFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1308,10 +1503,21 @@ class PromotionFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PromotionFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PromotionFlags instance with all enabled flags
-            from both x and y.
+            Returns a PromotionFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a PromotionFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PromotionFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a PromotionFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1376,14 +1582,25 @@ class GiftFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two PaymentFlags are equal.
+            Checks if two GiftFlags are equal.
         .. describe:: x != y
 
-            Checks if two PaymentFlags are not equal.
-        .. describe:: x | y
+            Checks if two GiftFlags are not equal.
+        .. describe:: x | y, x |= y
 
-            Returns a new PaymentFlags instance with all enabled flags
-            from both x and y.
+            Returns a GiftFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a GiftFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a GiftFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a GiftFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1440,10 +1657,21 @@ class LibraryApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two LibraryApplicationFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new PaymentFlags instance with all enabled flags
-            from both x and y.
+            Returns a LibraryApplicationFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a LibraryApplicationFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a LibraryApplicationFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a LibraryApplicationFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1503,10 +1731,21 @@ class ApplicationDiscoveryFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two LibraryApplicationFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new LibraryApplicationFlags instance with all enabled flags
-            from both x and y.
+            Returns a LibraryApplicationFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a LibraryApplicationFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a LibraryApplicationFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a LibraryApplicationFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1627,10 +1866,21 @@ class FriendSourceFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two FriendSourceFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new FriendSourceFlags instance with all enabled flags
-            from both x and y.
+            Returns a FriendSourceFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a FriendSourceFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a FriendSourceFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a FriendSourceFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1713,10 +1963,21 @@ class FriendDiscoveryFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two FriendDiscoveryFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new FriendDiscoveryFlags instance with all enabled flags
-            from both x and y.
+            Returns a FriendDiscoveryFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a FriendDiscoveryFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a FriendDiscoveryFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a FriendDiscoveryFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1776,10 +2037,21 @@ class HubProgressFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two HubProgressFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new HubProgressFlags instance with all enabled flags
-            from both x and y.
+            Returns a HubProgressFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a HubProgressFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a HubProgressFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a HubProgressFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1831,10 +2103,21 @@ class OnboardingProgressFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two OnboardingProgressFlags are not equal.
-        .. describe:: x | y
+        .. describe:: x | y, x |= y
 
-            Returns a new OnboardingProgressFlags instance with all enabled flags
-            from both x and y.
+            Returns a OnboardingProgressFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a OnboardingProgressFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a OnboardingProgressFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a OnboardingProgressFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
