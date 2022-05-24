@@ -188,7 +188,7 @@ class WelcomeScreen:
         Raises
         -------
         HTTPException
-            Editing the welcome screen failed failed.
+            Editing the welcome screen failed.
         Forbidden
             You don't have permissions to edit the welcome screen.
         NotFound
