@@ -177,7 +177,7 @@ class WelcomeScreen:
         Parameters
         ------------
         description: Optional[:class:`str`]
-            The template's description.
+            The welcome screen's description.
         welcome_channels: Optional[List[:class:`WelcomeChannel`]]
             The welcome channels, in their respective order.
         enabled: Optional[:class:`bool`]
