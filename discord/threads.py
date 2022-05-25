@@ -751,10 +751,10 @@ class Thread(Messageable, Hashable):
 
         return PartialMessage(channel=self, id=message_id)
 
-    def _add_member(self, member: ThreadMember) -> None:
+    def _add_member(self, member: ThreadMember, /) -> None:
         self._members[member.id] = member
 
-    def _pop_member(self, member_id: int) -> Optional[ThreadMember]:
+    def _pop_member(self, member_id: int, /) -> Optional[ThreadMember]:
         return self._members.pop(member_id, None)
 
 
