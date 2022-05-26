@@ -284,8 +284,11 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
 
+                # If the key is found and overridden then it shouldn't count as an extra addition
+                # read as `0 if override and found else 1` if confusing
+                to_add = not (override and found)
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
-                if total + found > 5:
+                if total + to_add > 5:
                     raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
 
@@ -316,7 +319,9 @@ class CommandTree(Generic[ClientT]):
                 found = name in commands
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
-                if len(commands) + found > 100:
+
+                to_add = not (override and found)
+                if len(commands) + to_add > 100:
                     raise CommandLimitReached(guild_id=guild_id, limit=100)
 
             # Actually add the command now that it has been verified to be okay.
@@ -327,7 +332,9 @@ class CommandTree(Generic[ClientT]):
             found = name in self._global_commands
             if found and not override:
                 raise CommandAlreadyRegistered(name, None)
-            if len(self._global_commands) + found > 100:
+
+            to_add = not (override and found)
+            if len(self._global_commands) + to_add > 100:
                 raise CommandLimitReached(guild_id=None, limit=100)
             self._global_commands[name] = root
 
