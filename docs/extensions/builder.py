@@ -7,6 +7,7 @@ from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator
 import datetime
 import os
+import re
 
 
 class DPYHTML5Translator(HTML5Translator):
@@ -54,6 +55,8 @@ class DPYStandaloneHTMLBuilder(StandaloneHTMLBuilder):
 
 
 class DPYMessageCatalogBuilder(MessageCatalogBuilder):
+    _ADMONITION_REGEX = re.compile(r'\.\.\s*[a-zA-Z\_-]+::')
+
     def finish(self) -> None:
         # Bypass MessageCatalogBuilder.finish
         I18nBuilder.finish(self)
@@ -70,6 +73,8 @@ class DPYMessageCatalogBuilder(MessageCatalogBuilder):
             'display_location': self.config.gettext_location,
             'display_uuid': self.config.gettext_uuid,
         }
+
+        REGEX = self._ADMONITION_REGEX
         for textdomain, catalog in status_iterator(
             self.catalogs.items(),
             __("writing message catalogs... "),
@@ -81,7 +86,12 @@ class DPYMessageCatalogBuilder(MessageCatalogBuilder):
             # noop if config.gettext_compact is set
             ensuredir(os.path.join(self.outdir, os.path.dirname(textdomain)))
 
-            context['messages'] = list(catalog)
+            # Due to a bug in Sphinx where messages contain admonitions, this code makes it
+            # so they're suppressed from the output to prevent the output and CI from breaking
+            # This is quite a bandaid fix but it seems to work ok
+            # See https://github.com/sphinx-doc/sphinx/issues/10334
+            context['messages'] = [msg for msg in catalog if REGEX.search(msg.text) is None]
+
             content = GettextRenderer(template_path='_templates/gettext', outdir=self.outdir).render(
                 'message.pot_t', context
             )
