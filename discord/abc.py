@@ -2107,11 +2107,11 @@ class Connectable(Protocol):
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
 
         Raises
         -------
