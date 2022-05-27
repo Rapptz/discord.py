@@ -122,7 +122,7 @@ class Embed:
         The type of embed. Usually "rich".
         This can be set during initialisation.
         Possible strings for embed types can be found on discord's
-        `api docs <https://discord.com/developers/docs/resources/channel#embed-object-embed-types>`_
+        :ddocs:`api docs <resources/channel#embed-object-embed-types>`
     description: Optional[:class:`str`]
         The description of the embed.
         This can be set during initialisation.
@@ -190,11 +190,7 @@ class Embed:
         """Converts a :class:`dict` to a :class:`Embed` provided it is in the
         format that Discord expects it to be in.
 
-        You can find out about this format in the `official Discord documentation`__.
-
-        .. _DiscordDocs: https://discord.com/developers/docs/resources/channel#embed-object
-
-        __ DiscordDocs_
+        You can find out about this format in the :ddocs:`official Discord documentation <resources/channel#embed-object>`.
 
         Parameters
         -----------

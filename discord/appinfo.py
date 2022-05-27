@@ -79,7 +79,7 @@ class AppInfo:
 
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket>`.
 
         .. versionadded:: 1.3
 
@@ -243,7 +243,7 @@ class PartialAppInfo:
         A list of RPC origin URLs, if RPC is enabled.
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket>`.
     terms_of_service_url: Optional[:class:`str`]
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
@@ -302,7 +302,7 @@ class AppInstallParams:
     Attributes
     ----------
     scopes: List[:class:`str`]
-        The list of `OAuth2 scopes <https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes>`_
+        The list of :ddocs:`OAuth2 scopes <topics/oauth2#shared-resources-oauth2-scopes>`
         to add the application to a guild with.
     permissions: :class:`Permissions`
         The permissions to give to application in the guild.
