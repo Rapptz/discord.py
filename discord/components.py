@@ -351,15 +351,7 @@ class SelectOption:
         self.value: str = label if value is MISSING else value
         self.description: Optional[str] = description
 
-        if emoji is not None:
-            if isinstance(emoji, str):
-                emoji = PartialEmoji.from_str(emoji)
-            elif isinstance(emoji, _EmojiTag):
-                emoji = emoji._to_partial()
-            else:
-                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
-
-        self._emoji: Optional[PartialEmoji] = emoji
+        self.emoji = emoji
         self.default: bool = default
 
     def __repr__(self) -> str:
