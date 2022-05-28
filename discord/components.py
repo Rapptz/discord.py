@@ -326,8 +326,6 @@ class SelectOption:
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 100 characters.
-    emoji: Optional[:class:`PartialEmoji`]
-        The emoji of the option, if available.
     default: :class:`bool`
         Whether this option is selected by default.
     """
@@ -336,7 +334,7 @@ class SelectOption:
         'label',
         'value',
         'description',
-        'emoji',
+        '_emoji',
         'default',
     )
 
@@ -361,7 +359,7 @@ class SelectOption:
             else:
                 raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
 
-        self.emoji: Optional[PartialEmoji] = emoji
+        self._emoji: Optional[PartialEmoji] = emoji
         self.default: bool = default
 
     def __repr__(self) -> str:
@@ -379,6 +377,23 @@ class SelectOption:
         if self.description:
             return f'{base}\n{self.description}'
         return base
+
+    @property
+    def emoji(self) -> Optional[PartialEmoji]:
+        """Optional[:class:`.PartialEmoji`]: The emoji of the option, if available."""
+        return self._emoji
+
+    @emoji.setter
+    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]) -> None:
+        if value is not None:
+            if isinstance(value, str):
+                self._emoji = PartialEmoji.from_str(value)
+            elif isinstance(value, _EmojiTag):
+                self._emoji = value._to_partial()
+            else:
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__} instead')
+        else:
+            self._emoji = None
 
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
