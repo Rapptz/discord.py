@@ -343,7 +343,6 @@ class HTTPClient:
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
         self._global_over: asyncio.Event = MISSING
         self.token: Optional[str] = None
-        self.bot_token: bool = False
         self.proxy: Optional[str] = proxy
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
