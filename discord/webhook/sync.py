@@ -183,7 +183,7 @@ class WebhookAdapter:
                                 data = json.loads(data)
                         except KeyError:
                             pass
-                        
+
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status_code != 429:
                             delta = utils._parse_ratelimit_header(response)
