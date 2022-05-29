@@ -1094,7 +1094,7 @@ Reactions
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
-    :param user: The user who added the reaction.
+    :param user: The user whose reaction was removed.
     :type user: Union[:class:`Member`, :class:`User`]
 
 .. function:: on_reaction_clear(message, reactions)
