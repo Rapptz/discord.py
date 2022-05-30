@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-24 14:51+0000\n"
-"PO-Revision-Date: 2022-05-27 09:42\n"
+"PO-Revision-Date: 2022-05-30 18:34\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1522,83 +1522,83 @@ msgstr "|commands| :class:`~.commands.Greedy` はパージングエラーを伝�
 
 #: ../../whats_new.rst:590
 msgid "|commands| :meth:`Command.can_run <.ext.commands.Command.can_run>` now checks whether a command is disabled."
-msgstr ""
+msgstr "|commands| :meth:`Command.can_run <.ext.commands.Command.can_run>` がコマンドが無効かどうかをチェックするようになりました。"
 
 #: ../../whats_new.rst:591
 msgid "|commands| :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` now takes into consideration nickname mentions. (:issue:`2489`)"
-msgstr ""
+msgstr "|commands| :attr:`HelpCommand.clean_prefix <.ext.commands.HelpCommand.clean_prefix>` がニックネームのメンションを考慮するようになりました。 (:issue:`2489`)"
 
 #: ../../whats_new.rst:592
 msgid "|commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` now properly propagates to the :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` handler."
-msgstr ""
+msgstr "|commands| :meth:`Context.send_help <.ext.commands.Context.send_help>` が :meth:`HelpCommand.on_help_command_error <.ext.commands.HelpCommand.on_help_command_error>` ハンドラに正しく伝播するようになりました。"
 
 #: ../../whats_new.rst:597
 msgid "The library now fully supports Python 3.8 without warnings."
-msgstr ""
+msgstr "ライブラリは警告なしに Python 3.8 を完全にサポートするようになりました。"
 
 #: ../../whats_new.rst:598
 msgid "Bump the dependency of ``websockets`` to 8.0 for those who can use it. (:issue:`2453`)"
-msgstr ""
+msgstr "依存ライブラリ ``websockets`` のバージョンを 8.0 に上げました。(:issue:`2453`)"
 
 #: ../../whats_new.rst:599
 msgid "Due to Discord providing :class:`Member` data in mentions, users will now be upgraded to :class:`Member` more often if mentioned."
-msgstr ""
+msgstr "Discordがメンションで :class:`Member` データを提供するようになったため、メンションされたユーザーが :class:`Member` により多くの機会でアップグレードされるようになりました。"
 
 #: ../../whats_new.rst:600
 msgid ":func:`utils.escape_markdown` now properly escapes new quote markdown."
-msgstr ""
+msgstr ":func:`utils.escape_markdown` が新しい引用マークダウンを正しくエスケープするようになりました。"
 
 #: ../../whats_new.rst:601
 msgid "The message cache can now be disabled by passing ``None`` to ``max_messages`` in :class:`Client`."
-msgstr ""
+msgstr "メッセージキャッシュを :class:`Client` の ``max_messages`` に ``None`` を渡すことで無効にできるようになりました。"
 
 #: ../../whats_new.rst:602
 msgid "The default message cache size has changed from 5000 to 1000 to accommodate small bots."
-msgstr ""
+msgstr "デフォルトのメッセージキャッシュサイズは、小さなボットに対応するために5000から1000に変更されました。"
 
 #: ../../whats_new.rst:603
 msgid "Lower memory usage by only creating certain objects as needed in :class:`Role`."
-msgstr ""
+msgstr ":class:`Role` にて、必要な場合のみ特定のオブジェクトを作成することによりメモリ使用量を削減しました。"
 
 #: ../../whats_new.rst:604
 msgid "There is now a sleep of 5 seconds before re-IDENTIFYing during a reconnect to prevent long loops of session invalidation."
-msgstr ""
+msgstr "セッションの無効化の長いループを防ぐために、再接続中に再度IDENTIFYする前に5秒間待つようになりました。"
 
 #: ../../whats_new.rst:606
 msgid "The rate limiting code now uses millisecond precision to have more granular rate limit handling."
-msgstr ""
+msgstr "レート制限コードは、より細かいレート制限処理を行うためにミリ秒の精度を使用するようになりました。"
 
 #: ../../whats_new.rst:606
 msgid "Along with that, the rate limiting code now uses Discord's response to wait. If you need to use the system clock again for whatever reason, consider passing ``assume_synced_clock`` in :class:`Client`."
-msgstr ""
+msgstr "それに伴い、レート制限コードはDiscordのレスポンスを使用して待つようになりました。 何らかの理由でシステムクロックを使用する必要がある場合は、 :class:`Client` で ``assume_synced_clock`` を渡すことを検討してください。"
 
 #: ../../whats_new.rst:608
 msgid "The performance of :attr:`Guild.default_role` has been improved from O(N) to O(1). (:issue:`2375`)"
-msgstr ""
+msgstr ":attr:`Guild.default_role` のパフォーマンスが O(N) から O(1) に改善されました。 (:issue:`2375`)"
 
 #: ../../whats_new.rst:609
 msgid "The performance of :attr:`Member.roles` has improved due to usage of caching to avoid surprising performance traps."
-msgstr ""
+msgstr "予期しないパフォーマンストラップを避けるために、キャッシュを使用して :attr:`Member.roles` のパフォーマンスを改善しました。"
 
 #: ../../whats_new.rst:610
 msgid "The GC is manually triggered during things that cause large deallocations (such as guild removal) to prevent memory fragmentation."
-msgstr ""
+msgstr "メモリの断片化を防ぐため、大規模なメモリの割り当て解除 (ギルドの除去など) が引き起こされた後に手動でガベージコレクションを行うようになりました。"
 
 #: ../../whats_new.rst:611
 msgid "There have been many changes to the documentation for fixes both for usability, correctness, and to fix some linter errors. Thanks to everyone who contributed to those."
-msgstr ""
+msgstr "ユーザビリティや正確性を向上させ、リンターエラーを修正するため、ドキュメントに多くの変更がありました。 貢献したすべての人に感謝します。"
 
 #: ../../whats_new.rst:612
 msgid "The loading of the opus module has been delayed which would make the result of :func:`opus.is_loaded` somewhat surprising."
-msgstr ""
+msgstr "opus モジュールの読み込みを遅延させるようにしました。このため :func:`opus.is_loaded` の結果が予想しないものになるかもしれません。"
 
 #: ../../whats_new.rst:613
 msgid "|commands| Usernames prefixed with @ inside DMs will properly convert using the :class:`User` converter. (:issue:`2498`)"
-msgstr ""
+msgstr "|commands| DM内の@で始まるユーザー名が、 :class:`User` コンバータを使用したとき正しく変換されるようになりました。 (:issue:`2498`)"
 
 #: ../../whats_new.rst:614
 msgid "|tasks| The task sleeping time will now take into consideration the amount of time the task body has taken before sleeping. (:issue:`2516`)"
-msgstr ""
+msgstr "|tasks| タスクの待ち時間が、タスク本体が実行するのにかかった時間を考慮に入れるようになりました。 (:issue:`2516`)"
 
 #: ../../whats_new.rst:619
 msgid "v1.2.5"
@@ -1606,7 +1606,7 @@ msgstr "v1.2.5"
 
 #: ../../whats_new.rst:624
 msgid "Fix a bug that caused crashes due to missing ``animated`` field in Emoji structures in reactions."
-msgstr ""
+msgstr "絵文字構造の``animated`` フィールドが存在しないとしてクラッシュするバグを修正しました。"
 
 #: ../../whats_new.rst:629
 msgid "v1.2.4"
@@ -1614,39 +1614,39 @@ msgstr "v1.2.4"
 
 #: ../../whats_new.rst:634
 msgid "Fix a regression when :attr:`Message.channel` would be ``None``."
-msgstr ""
+msgstr ":attr:`Message.channel` が ``None`` になるリグレッションを修正しました。"
 
 #: ../../whats_new.rst:635
 msgid "Fix a regression where :attr:`Message.edited_at` would not update during edits."
-msgstr ""
+msgstr ":attr:`Message.edited_at` が編集中に更新されないリグレッションを修正しました。"
 
 #: ../../whats_new.rst:636
 msgid "Fix a crash that would trigger during message updates (:issue:`2265`, :issue:`2287`)."
-msgstr ""
+msgstr "メッセージの更新中に引き起こされるクラッシュを修正しました。(:issue:`2265`, :issue:`2287`)"
 
 #: ../../whats_new.rst:637
 msgid "Fix a bug when :meth:`VoiceChannel.connect` would not return (:issue:`2274`, :issue:`2372`, :issue:`2373`, :issue:`2377`)."
-msgstr ""
+msgstr ":meth:`VoiceChannel.connect` が応答しないバグを修正しました。（:issue:`2274`、 :issue:`2372`、 :issue:`2373`、 :issue:`2377`）"
 
 #: ../../whats_new.rst:638
 msgid "Fix a crash relating to token-less webhooks (:issue:`2364`)."
-msgstr ""
+msgstr "トークンのないWebhookに関するクラッシュを修正しました。(:issue:`2364`)"
 
 #: ../../whats_new.rst:639
 msgid "Fix issue where :attr:`Guild.premium_subscription_count` would be ``None`` due to a Discord bug. (:issue:`2331`, :issue:`2376`)."
-msgstr ""
+msgstr "Discord バグにより :attr:`Guild.premium_subscription_count` が ``None`` になる問題を修正しました。(:issue:`2331`, :issue:`2376`)"
 
 #: ../../whats_new.rst:644
 msgid "v1.2.3"
-msgstr ""
+msgstr "v1.2.3"
 
 #: ../../whats_new.rst:649
 msgid "Fix an AttributeError when accessing :attr:`Member.premium_since` in :func:`on_member_update`. (:issue:`2213`)"
-msgstr ""
+msgstr ":func:`on_member_update` で :attr:`Member.premium_since` にアクセスした際の AttributeError を修正しました。 (:issue:`2213`)"
 
 #: ../../whats_new.rst:650
 msgid "Handle :exc:`asyncio.CancelledError` in :meth:`abc.Messageable.typing` context manager. (:issue:`2218`)"
-msgstr ""
+msgstr ":meth:`abc.Messageable.typing` コンテキストマネージャでの :exc:`asyncio.CanceledError` を処理するようにしました。 (:issue:`2218`)"
 
 #: ../../whats_new.rst:651
 msgid "Raise the max encoder bitrate to 512kbps to account for nitro boosting. (:issue:`2232`)"
@@ -1654,11 +1654,11 @@ msgstr "ニトロブーストを考慮し、最大エンコーダビットレー
 
 #: ../../whats_new.rst:652
 msgid "Properly propagate exceptions in :meth:`Client.run`. (:issue:`2237`)"
-msgstr ""
+msgstr ":meth:`Client.run` にて例外を適切に伝播するようにしました。(:issue:`2237`)"
 
 #: ../../whats_new.rst:653
 msgid "|commands| Ensure cooldowns are properly copied when used in cog level ``command_attrs``."
-msgstr ""
+msgstr "|commands| コグレベル ``command_attrs`` で使用されるクールダウンが正しくコピーされるようにしました。"
 
 #: ../../whats_new.rst:658
 msgid "v1.2.2"
@@ -1666,7 +1666,7 @@ msgstr "v1.2.2"
 
 #: ../../whats_new.rst:663
 msgid "Audit log related attribute access have been fixed to not error out when they shouldn't have."
-msgstr ""
+msgstr "監査ログ関連の属性アクセスは、本来すべきでないときにエラーを起こさないよう修正されました。"
 
 #: ../../whats_new.rst:668
 msgid "v1.2.1"
@@ -1674,11 +1674,11 @@ msgstr "v1.2.1"
 
 #: ../../whats_new.rst:673
 msgid ":attr:`User.avatar_url` and related attributes no longer raise an error."
-msgstr ""
+msgstr ":attr:`User.avatar_url` と関連する属性がエラーを引き起こさないように修正しました。"
 
 #: ../../whats_new.rst:674
 msgid "More compatibility shims with the ``enum.Enum`` code."
-msgstr ""
+msgstr "``enum.Enum`` コードの互換性が向上しました。"
 
 #: ../../whats_new.rst:679
 msgid "v1.2.0"
@@ -1686,151 +1686,151 @@ msgstr "v1.2.0"
 
 #: ../../whats_new.rst:681
 msgid "This update mainly brings performance improvements and various nitro boosting attributes (referred to in the API as \"premium guilds\")."
-msgstr ""
+msgstr "今回のアップデートでは、主にパフォーマンスの向上と、さまざまなニトロブースト属性(APIでは「プレミアムギルド」と呼ばれます) が追加されました。"
 
 #: ../../whats_new.rst:686
 msgid "Add :attr:`Guild.premium_tier` to query the guild's current nitro boost level."
-msgstr ""
+msgstr ":attr:`Guild.premium_tier` で、ギルドの現在のニトロブーストレベルが取得できます。"
 
 #: ../../whats_new.rst:687
 msgid "Add :attr:`Guild.emoji_limit`, :attr:`Guild.bitrate_limit`, :attr:`Guild.filesize_limit` to query the new limits of a guild when taking into consideration boosting."
-msgstr ""
+msgstr "ブーストを考慮してギルドの新しい制限を取得する :attr:`Guild.emoji_limit` 、 :attr:`Guild.bitrate_limit` 、 :attr:`Guild.filesize_limit` を追加しました。"
 
 #: ../../whats_new.rst:688
 msgid "Add :attr:`Guild.premium_subscription_count` to query how many members are boosting a guild."
-msgstr ""
+msgstr "ギルドをブーストしているメンバー数を取得する :attr:`Guild.premium_subscription_count` を追加しました。"
 
 #: ../../whats_new.rst:689
 msgid "Add :attr:`Member.premium_since` to query since when a member has boosted a guild."
-msgstr ""
+msgstr "メンバーがギルドをブーストし始めた日時を取得する :attr:`Member.premium_since` を追加しました。"
 
 #: ../../whats_new.rst:690
 msgid "Add :attr:`Guild.premium_subscribers` to query all the members currently boosting the guild."
-msgstr ""
+msgstr "現在ギルドをブーストしているメンバーをすべて取得する :attr:`Guild.premium_subscribers` を追加しました。"
 
 #: ../../whats_new.rst:691
 msgid "Add :attr:`Guild.system_channel_flags` to query the settings for a guild's :attr:`Guild.system_channel`."
-msgstr ""
+msgstr "ギルドの :attr:`Guild.system_channel` の設定を取得する :attr:`Guild.system_channel_flags` を追加しました。"
 
 #: ../../whats_new.rst:692
 msgid "This includes a new type named :class:`SystemChannelFlags`"
-msgstr ""
+msgstr ":class:`SystemChannelFlags` という新しい型も含まれます。"
 
 #: ../../whats_new.rst:693
 msgid "Add :attr:`Emoji.available` to query if an emoji can be used (within the guild or otherwise)."
-msgstr ""
+msgstr "絵文字が(ギルド内またはそれ以外で)利用できるかを確認する :attr:`Emoji.available` を追加しました。"
 
 #: ../../whats_new.rst:694
 msgid "Add support for animated icons in :meth:`Guild.icon_url_as` and :attr:`Guild.icon_url`."
-msgstr ""
+msgstr ":meth:`Guild.icon_url_as` と :attr:`Guild.icon_url` にアニメーションアイコンのサポートを追加しました。"
 
 #: ../../whats_new.rst:695
 msgid "Add :meth:`Guild.is_icon_animated`."
-msgstr ""
+msgstr ":meth:`Guild.is_icon_animated` を追加しました。"
 
 #: ../../whats_new.rst:696
 msgid "Add support for the various new :class:`MessageType` involving nitro boosting."
-msgstr ""
+msgstr "ニトロブーストに関する様々な新しい :class:`MessageType` のサポートを追加しました。"
 
 #: ../../whats_new.rst:697
 msgid "Add :attr:`VoiceRegion.india`. (:issue:`2145`)"
-msgstr ""
+msgstr ":attr:`VoiceRegion.india` を追加しました。 (:issue:`2145`)"
 
 #: ../../whats_new.rst:698
 msgid "Add :meth:`Embed.insert_field_at`. (:issue:`2178`)"
-msgstr ""
+msgstr ":meth:`Embed.insert_field_at` を追加しました。 (:issue:`2178`)"
 
 #: ../../whats_new.rst:699
 msgid "Add a ``type`` attribute for all channels to their appropriate :class:`ChannelType`. (:issue:`2185`)"
-msgstr ""
+msgstr "すべてのチャンネルに対し、適切な :class:`ChannelType` を返す ``type`` 属性を追加しました。 (:issue:`2185` )"
 
 #: ../../whats_new.rst:700
 msgid "Add :meth:`Client.fetch_channel` to fetch a channel by ID via HTTP. (:issue:`2169`)"
-msgstr ""
+msgstr "HTTP経由でチャンネルをIDにより取得する、 :meth:`Client.fetch_channel` を追加しました。(:issue:`2169`)"
 
 #: ../../whats_new.rst:701
 msgid "Add :meth:`Guild.fetch_channels` to fetch all channels via HTTP. (:issue:`2169`)"
-msgstr ""
+msgstr "HTTP経由でチャンネルをすべて取得する、 :meth:`Guild.fetch_channels` を追加しました。(:issue:`2169`)"
 
 #: ../../whats_new.rst:702
 msgid "|tasks| Add :meth:`Loop.stop <.ext.tasks.Loop.stop>` to gracefully stop a task rather than cancelling."
-msgstr ""
+msgstr "|tasks| タスクをキャンセルするのではなく、現在のタスクが終了後に停止させる :meth:`Loop.stop <.ext.tasks.Loop.stop>` を追加しました。"
 
 #: ../../whats_new.rst:703
 msgid "|tasks| Add :meth:`Loop.failed <.ext.tasks.Loop.failed>` to query if a task had failed somehow."
-msgstr ""
+msgstr "|tasks| タスクが何らかの理由で失敗したかを調べる :meth:`Loop.failed <.ext.tasks.Loop.failed>` を追加しました。"
 
 #: ../../whats_new.rst:704
 msgid "|tasks| Add :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` to change the sleep interval at runtime (:issue:`2158`, :issue:`2162`)"
-msgstr ""
+msgstr "|tasks| 実行時に待機時間を変更できる :meth:`Loop.change_interval <.ext.tasks.Loop.change_interval>` を追加しました。(:issue:`2158`, :issue:`2162`)"
 
 #: ../../whats_new.rst:709
 msgid "Fix internal error when using :meth:`Guild.prune_members`."
-msgstr ""
+msgstr ":meth:`Guild.prune_members` を使用した場合の内部エラーを修正しました。"
 
 #: ../../whats_new.rst:710
 msgid "|commands| Fix :attr:`.Command.invoked_subcommand` being invalid in many cases."
-msgstr ""
+msgstr "|commands| 多くの場合において :attr:`.Command.invoked_subcommand` が誤っているのを修正しました。"
 
 #: ../../whats_new.rst:711
 msgid "|tasks| Reset iteration count when the loop terminates and is restarted."
-msgstr ""
+msgstr "|tasks| ループが終了し、再起動されたときに反復回数をリセットするようにしました。"
 
 #: ../../whats_new.rst:712
 msgid "|tasks| The decorator interface now works as expected when stacking (:issue:`2154`)"
-msgstr ""
+msgstr "|tasks| デコレータインターフェースをスタックした時に期待通り動作するようになりました。 (:issue:`2154`)"
 
 #: ../../whats_new.rst:718
 msgid "Improve performance of all Enum related code significantly."
-msgstr ""
+msgstr "列挙型に関連するすべてのコードのパフォーマンスを大幅に向上させました。"
 
 #: ../../whats_new.rst:718
 msgid "This was done by replacing the ``enum.Enum`` code with an API compatible one."
-msgstr ""
+msgstr "これは、 ``enum.Enum`` コードを API 互換のコードに置き換えることによって行われました。"
 
 #: ../../whats_new.rst:719
 msgid "This should not be a breaking change for most users due to duck-typing."
-msgstr ""
+msgstr "ダックタイピングを使用しているため、ほとんどのユーザーにとっては破壊的変更ではありません。"
 
 #: ../../whats_new.rst:720
 msgid "Improve performance of message creation by about 1.5x."
-msgstr ""
+msgstr "メッセージ作成のパフォーマンスを約1.5倍向上させました。"
 
 #: ../../whats_new.rst:721
 msgid "Improve performance of message editing by about 1.5-4x depending on payload size."
-msgstr ""
+msgstr "メッセージ編集のパフォーマンスが約1.5~4倍向上しました。（内容のサイズに依存します）"
 
 #: ../../whats_new.rst:722
 msgid "Improve performance of attribute access on :class:`Member` about by 2x."
-msgstr ""
+msgstr ":class:`Member` の属性へのアクセスのパフォーマンスが2倍向上しました。"
 
 #: ../../whats_new.rst:723
 msgid "Improve performance of :func:`utils.get` by around 4-6x depending on usage."
-msgstr ""
+msgstr ":func:`utils.get` のパフォーマンスを、使用状況に応じて約 4-6倍 向上させました。"
 
 #: ../../whats_new.rst:724
 msgid "Improve performance of event parsing lookup by around 2.5x."
-msgstr ""
+msgstr "イベント解析中のルックアップのパフォーマンスを約2.5倍向上させました。"
 
 #: ../../whats_new.rst:725
 msgid "Keyword arguments in :meth:`Client.start` and :meth:`Client.run` are now validated (:issue:`953`, :issue:`2170`)"
-msgstr ""
+msgstr ":meth:`Client.start` と :meth:`Client.run` のキーワード引数を検証するようにしました。 (:issue:`953`, :issue:`2170`)"
 
 #: ../../whats_new.rst:726
 msgid "The Discord error code is now shown in the exception message for :exc:`HTTPException`."
-msgstr ""
+msgstr ":exc:`HTTPException` の例外メッセージにDiscordのエラーコードが表示されるようになりました。"
 
 #: ../../whats_new.rst:727
 msgid "Internal tasks launched by the library will now have their own custom ``__repr__``."
-msgstr ""
+msgstr "ライブラリによって実行された内部タスクに独自のカスタム ``__repr__`` を追加しました。"
 
 #: ../../whats_new.rst:728
 msgid "All public facing types should now have a proper and more detailed ``__repr__``."
-msgstr ""
+msgstr "すべての公開された型に、適切でより詳細な ``__repr__`` を追加しました。"
 
 #: ../../whats_new.rst:729
 msgid "|tasks| Errors are now logged via the standard :mod:`py:logging` module."
-msgstr ""
+msgstr "|tasks| 標準の :mod:`py:logging` モジュールを介してエラーが記録されるようになりました。"
 
 #: ../../whats_new.rst:734
 msgid "v1.1.1"
@@ -1838,11 +1838,11 @@ msgstr "v1.1.1"
 
 #: ../../whats_new.rst:739
 msgid "Webhooks do not overwrite data on retrying their HTTP requests (:issue:`2140`)"
-msgstr ""
+msgstr "WebhookがHTTPリクエストを再試行する時にデータを上書きしないようにしました。 (:issue:`2140`)"
 
 #: ../../whats_new.rst:744
 msgid "Add back signal handling to :meth:`Client.run` due to issues some users had with proper cleanup."
-msgstr ""
+msgstr "一部のユーザーが適切なクリーンアップを行うときに問題が生じていたため、 :meth:`Client.run` にシグナル処理を再度追加しました。"
 
 #: ../../whats_new.rst:749
 msgid "v1.1.0"
@@ -1850,27 +1850,27 @@ msgstr "v1.1.0"
 
 #: ../../whats_new.rst:754
 msgid "**There is a new extension dedicated to making background tasks easier.**"
-msgstr ""
+msgstr "**バックグラウンドタスクを簡単にするための新しいエクステンションが追加されました。**"
 
 #: ../../whats_new.rst:755
 msgid "You can check the documentation here: :ref:`ext_tasks_api`."
-msgstr ""
+msgstr "使い方の説明は、 :ref:`ext_tasks_api` で確認できます。"
 
 #: ../../whats_new.rst:756
 msgid "Add :attr:`Permissions.stream` permission. (:issue:`2077`)"
-msgstr ""
+msgstr ":attr:`Permissions.stream` 権限を追加しました。 (:issue:`2077`)"
 
 #: ../../whats_new.rst:757
 msgid "Add equality comparison and hash support to :class:`Asset`"
-msgstr ""
+msgstr ":class:`Asset` に等価比較とハッシュサポートを追加しました。"
 
 #: ../../whats_new.rst:758
 msgid "Add ``compute_prune_members`` parameter to :meth:`Guild.prune_members` (:issue:`2085`)"
-msgstr ""
+msgstr ":meth:`Guild.prune_members` に ``compute_prune_members`` パラメータを追加しました。 (:issue:`2085`)"
 
 #: ../../whats_new.rst:759
 msgid "Add :attr:`Client.cached_messages` attribute to fetch the message cache (:issue:`2086`)"
-msgstr ""
+msgstr "メッセージキャッシュを取得する :attr:`Client.cached_messages` 属性を追加しました。 (:issue:`2086`)"
 
 #: ../../whats_new.rst:760
 msgid "Add :meth:`abc.GuildChannel.clone` to clone a guild channel. (:issue:`2093`)"
