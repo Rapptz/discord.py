@@ -65,7 +65,7 @@ Please note that on Linux installing voice you must install the following packag
 * libffi-dev (or ``libffi-devel`` on some systems)
 * python-dev (e.g. ``python3.6-dev`` for Python 3.6)
 
-Quick Example
+Quick Example (discord.Client)
 --------------
 
 .. code:: py
@@ -83,13 +83,16 @@ Quick Example
 
             if message.content == 'ping':
                 await message.channel.send('pong')
+            
+            if message.content == 'dmme':
+                await message.author.send('I have DMed you.')
 
     intents = discord.Intents.default()
     intents.message_content = True
     client = MyClient(intents=intents)
     client.run('token')
 
-Bot Example
+Bot Example (commands.Bot)
 ~~~~~~~~~~~~~
 
 .. code:: py
@@ -104,6 +107,10 @@ Bot Example
     @bot.command()
     async def ping(ctx):
         await ctx.send('pong')
+        
+    @bot.command()
+    async def dmme(ctx):
+        await ctx.author.send('I have DMed you.')
 
     bot.run('token')
 
@@ -115,3 +122,4 @@ Links
 - `Documentation <https://discordpy.readthedocs.io/en/latest/index.html>`_
 - `Official Discord Server <https://discord.gg/r3sSKJJ>`_
 - `Discord API <https://discord.gg/discord-api>`_
+- `Official discord.py github <https://github.com/Rapptz/discord.py>`__
