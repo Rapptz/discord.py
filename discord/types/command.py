@@ -202,8 +202,11 @@ class ApplicationCommandPermissions(TypedDict):
     permission: bool
 
 
-class GuildApplicationCommandPermissions(TypedDict):
+class _BaseGuildApplicationCommandPermissions(TypedDict):
+    permissions: List[ApplicationCommandPermissions]
+
+
+class GuildApplicationCommandPermissions(_BaseGuildApplicationCommandPermissions):
     id: Snowflake
     application_id: Snowflake
     guild_id: Snowflake
-    permissions: List[ApplicationCommandPermissions]

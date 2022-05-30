@@ -682,6 +682,12 @@ class AppCommandType(Enum):
     message = 3
 
 
+class AppCommandPermissionType(Enum):
+    role = 1
+    user = 2
+    channel = 3
+
+
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
     name = f'unknown_{val}'

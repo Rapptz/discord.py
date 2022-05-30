@@ -33,6 +33,7 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
+from .app_commands.models import AppCommandPermissions
 
 __all__ = (
     'AuditLogDiff',
@@ -367,41 +368,13 @@ class AuditLogChanges:
         new_value: Optional[ApplicationCommandPermissions],
     ):
         guild = entry.guild
-
-        old_permission = new_permission = target = None
-
-        if target_id == (guild.id - 1):
-            # avoid circular import
-            from .app_commands import AllChannels
-
-            # all channels
-            target = AllChannels(guild)
-        else:
-            # get type and determine role, user or channel
-            _value = old_value or new_value
-            if _value is None:
-                return
-            permission_type = _value['type']
-            if permission_type == 1:
-                # role
-                target = guild.get_role(target_id)
-            elif permission_type == 2:
-                # user
-                target = entry._get_member(target_id)
-            elif permission_type == 3:
-                # channel
-                target = guild.get_channel(target_id)
-
-        if target is None:
-            target = Object(target_id)
+        state = entry._state
 
         if old_value is not None:
-            old_permission = old_value['permission']
-            before.app_command_permissions.append((target, old_permission))
+            before.app_command_permissions.append(AppCommandPermissions(data=old_value, guild=guild, state=state))
 
         if new_value is not None:
-            new_permission = new_value['permission']
-            after.app_command_permissions.append((target, new_permission))
+            after.app_command_permissions.append(AppCommandPermissions(data=ew_value, guild=guild, state=state))
 
 
 class _AuditLogProxy:
