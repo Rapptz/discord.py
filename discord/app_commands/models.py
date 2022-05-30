@@ -369,7 +369,7 @@ class AppCommand(Hashable):
 
         data = await state.http.get_application_command_permissions(
             state.application_id,
-            self.guild_id,
+            guild,
             self.id,
         )
         return GuildAppCommandPermissions(data=data, state=state, command=self)
