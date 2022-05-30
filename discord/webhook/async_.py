@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import logging
 import asyncio
-import json
 import re
 
 from urllib.parse import quote as urlquote
@@ -181,9 +180,7 @@ class AsyncWebhookAdapter:
                             url,
                             response.status,
                         )
-                        data = (await response.text(encoding='utf-8')) or None
-                        if data and response.headers['Content-Type'] == 'application/json':
-                            data = json.loads(data)
+                        data = await json_or_text(response)
 
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status != 429:

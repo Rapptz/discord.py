@@ -178,8 +178,11 @@ class WebhookAdapter:
                         response.status = response.status_code  # type: ignore
 
                         data = response.text or None
-                        if data and response.headers['Content-Type'] == 'application/json':
-                            data = json.loads(data)
+                        try:
+                            if data and response.headers['Content-Type'] == 'application/json':
+                                data = json.loads(data)
+                        except KeyError:
+                            pass
 
                         remaining = response.headers.get('X-Ratelimit-Remaining')
                         if remaining == '0' and response.status_code != 429:
