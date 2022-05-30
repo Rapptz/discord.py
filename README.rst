@@ -86,10 +86,7 @@ Quick Example (discord.Client)
             
             if message.content == 'dmme':
                 await message.author.send('I have DMed you.')
-
-    intents = discord.Intents.default()
-    intents.message_content = True
-    client = MyClient(intents=intents)
+    client = MyClient()
     client.run('token')
 
 Bot Example (commands.Bot)
