@@ -279,7 +279,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             message = interaction.message
 
         prefix = '/' if data.get('type', 1) == 1 else '\u200b'  # Mock the prefix
-        return cls(
+        ctx = cls(
             message=message,
             bot=bot,
             view=StringView(''),
@@ -290,6 +290,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             invoked_with=command.name,
             command=command,  # type: ignore # this will be a hybrid command, technically
         )
+        interaction._baton = ctx
+        return ctx
 
     async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
         r"""|coro|
