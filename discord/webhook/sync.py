@@ -863,6 +863,7 @@ class SyncWebhook(BaseWebhook):
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
     ) -> SyncWebhookMessage:
@@ -882,6 +883,7 @@ class SyncWebhook(BaseWebhook):
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
     ) -> None:
@@ -900,6 +902,7 @@ class SyncWebhook(BaseWebhook):
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
         wait: bool = False,
         suppress_embeds: bool = False,
     ) -> Optional[SyncWebhookMessage]:
@@ -950,6 +953,13 @@ class SyncWebhook(BaseWebhook):
             The thread to send this message to.
 
             .. versionadded:: 2.0
+        thread_name: :class:`str`
+            The thread name to create with this webhook if the webhook belongs
+            to a :class:`~discord.ForumChannel`. Note that this is mutually
+            exclusive with the ``thread`` parameter, as this will create a
+            new thread with the given name.
+
+            .. versionadded:: 2.0
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
 
@@ -965,6 +975,7 @@ class SyncWebhook(BaseWebhook):
             The authorization token for the webhook is incorrect.
         TypeError
             You specified both ``embed`` and ``embeds`` or ``file`` and ``files``
+            or ``thread`` and ``thread_name``.
         ValueError
             The length of ``embeds`` was invalid or
             there was no token associated with this webhook.
@@ -987,6 +998,9 @@ class SyncWebhook(BaseWebhook):
         else:
             flags = MISSING
 
+        if thread_name is not MISSING and thread is not MISSING:
+            raise TypeError('Cannot mix thread_name and thread keyword arguments.')
+
         params = handle_message_parameters(
             content=content,
             username=username,
@@ -996,6 +1010,7 @@ class SyncWebhook(BaseWebhook):
             files=files,
             embed=embed,
             embeds=embeds,
+            thread_name=thread_name,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             flags=flags,

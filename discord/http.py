@@ -171,6 +171,7 @@ def handle_message_parameters(
     stickers: Optional[SnowflakeList] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
     mention_author: Optional[bool] = None,
+    thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
@@ -223,6 +224,9 @@ def handle_message_parameters(
 
     if flags is not MISSING:
         payload['flags'] = flags.value
+
+    if thread_name is not MISSING:
+        payload['thread_name'] = thread_name
 
     if allowed_mentions:
         if previous_allowed_mentions is not None:
