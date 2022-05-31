@@ -295,7 +295,7 @@ class Invite(Hashable):
 
     Attributes
     -----------
-    max_age: :class:`int`
+    max_age: Optional[:class:`int`]
         How long before the invite expires in seconds.
         A value of ``0`` indicates that it doesn't expire.
     code: :class:`str`
