@@ -1686,6 +1686,9 @@ def rename(**parameters: str) -> Callable[[T], T]:
     r"""Renames the given parameters by their name using the key of the keyword argument
     as the name.
 
+    This renames the parameter within the Discord UI. When referring to the parameter in other
+    decorators, the parameter name used in the function is used instead of the renamed one.
+
     Example:
 
     .. code-block:: python3
