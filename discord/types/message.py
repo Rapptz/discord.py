@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, Required
 
 from .snowflake import Snowflake, SnowflakeList
 from .member import Member, UserWithMember
@@ -88,7 +88,7 @@ class MessageApplication(TypedDict):
 
 class MessageReference(TypedDict, total=False):
     message_id: Snowflake
-    channel_id: Snowflake
+    channel_id: Required[Snowflake]
     guild_id: Snowflake
     fail_if_not_exists: bool
 
