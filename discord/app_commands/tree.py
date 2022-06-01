@@ -184,8 +184,7 @@ class CommandTree(Generic[ClientT]):
         """Copies all global commands to the specified guild.
 
         This method is mainly available for development purposes, as it allows you
-        to copy your global commands over to a testing guild easily and prevent waiting
-        an hour for the propagation.
+        to copy your global commands over to a testing guild easily.
 
         Note that this method will *override* pre-existing guild commands that would conflict.
 
@@ -912,9 +911,6 @@ class CommandTree(Generic[ClientT]):
         Syncs the application commands to Discord.
 
         This must be called for the application commands to show up.
-
-        Global commands take up to 1-hour to propagate but guild
-        commands propagate instantly.
 
         Parameters
         -----------
