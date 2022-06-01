@@ -150,7 +150,7 @@ class CommandTree(Generic[ClientT]):
         command_id: :class:`int`
             The ID of the command to fetch.
         guild: Optional[:class:`~discord.abc.Snowflake`]
-            The guild to fetch the command from. If not passed then global command
+            The guild to fetch the command from. If not passed then the global command
             is fetched instead.
 
         Raises
@@ -161,12 +161,12 @@ class CommandTree(Generic[ClientT]):
             The application ID could not be found.
         NotFound
             The application command was not found.
-            This could be because the command is a guild command
+            This could also be because the command is a guild command
             and the guild was not specified and vise versa.
 
         Returns
         --------
-        Optional[:class:`~discord.app_commands.AppCommand`]
+        :class:`~discord.app_commands.AppCommand`
             The application command.
         """
         if self.client.application_id is None:
