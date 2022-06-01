@@ -331,7 +331,7 @@ class Invite(Hashable):
 
     Attributes
     -----------
-    max_age: :class:`int`
+    max_age: Optional[:class:`int`]
         How long before the invite expires in seconds.
         A value of ``0`` indicates that it doesn't expire.
     code: :class:`str`
@@ -343,16 +343,16 @@ class Invite(Hashable):
 
     guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
         The guild the invite is for. Can be ``None`` if not a guild invite.
-    revoked: :class:`bool`
+    revoked: Optional[:class:`bool`]
         Indicates if the invite has been revoked.
-    created_at: :class:`datetime.datetime`
+    created_at: Optional[:class:`datetime.datetime`]
         An aware UTC datetime object denoting the time the invite was created.
-    temporary: :class:`bool`
+    temporary: Optional[:class:`bool`]
         Indicates that the invite grants temporary membership.
         If ``True``, members who joined via this invite will be kicked upon disconnect.
-    uses: :class:`int`
+    uses: Optional[:class:`int`]
         How many times the invite has been used.
-    max_uses: :class:`int`
+    max_uses: Optional[:class:`int`]
         How many times the invite can be used.
         A value of ``0`` indicates that it has unlimited uses.
     inviter: Optional[:class:`User`]

@@ -770,7 +770,7 @@ Integrations
 
     .. versionadded:: 2.0
 
-    :param integration: The integration that was created.
+    :param integration: The integration that was updated.
     :type integration: :class:`Integration`
 
 .. function:: on_guild_integrations_update(guild)
