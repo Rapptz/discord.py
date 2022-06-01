@@ -25,8 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from datetime import datetime
 
-from discord.types.snowflake import Snowflake
-
 from .errors import MissingApplicationID
 from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, try_enum
@@ -70,6 +68,8 @@ if TYPE_CHECKING:
         ThreadMetadata,
         ThreadArchiveDuration,
     )
+
+    from ..types.snowflake import Snowflake
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
@@ -342,7 +342,7 @@ class AppCommand(Hashable):
     async def fetch_permissions(self, guild: Snowflake) -> GuildAppCommandPermissions:
         """|coro|
 
-        Retrieves the application command permission for this command in the given guild.
+        Retrieves the application command permission for this command in the guild.
 
         Parameters
         -----------
@@ -858,7 +858,7 @@ class AppCommandPermissions:
     guild: :class:`Guild`
         The guild that the permission is for.
     id: :class:`int`
-        Raw ID of the role, user, or channel.
+        ID of the channel, guild, user or role.
     object: Union[:class:`AllChannels`, :class:`GuildChannel`, :class:`Role`, :class:`Member`, :class:`.Object`, :class:`User`]
         The role, user, or channel that the permission is for. Falls back to :class:`.Object` if not found.
     type: :class:`AppCommandPermissionType`
@@ -870,9 +870,9 @@ class AppCommandPermissions:
 
     __slots__ = ('id', 'type', 'permission', 'object', 'guild', '_state')
 
-    def __init__(self, *, data: ApplicationCommandPermissions, guild: Guild, state: ConnectionState) -> None:
+    def __init__(self, *, data: ApplicationCommandPermissions, guild: Optional[Guild], state: ConnectionState) -> None:
         self._state: ConnectionState = state
-        self.guild: Guild = guild
+        self.guild: Optional[Guild] = guild
 
         self.id: int = int(data['id'])
         self.type: AppCommandPermissionType = try_enum(AppCommandPermissionType, data['type'])
@@ -881,25 +881,29 @@ class AppCommandPermissions:
         self.object: Optional[
             Union[Object, User, Member, Role, AllChannels, GuildChannel]
         ]  # Optional[] is used to avoid errors below.
-        if self.id == (guild.id - 1):
+
+        if guild and self.id == (guild.id - 1):
             self.object = AllChannels(guild)
 
-        if self.type is AppCommandPermissionType.role:
-            self.object = self.guild.get_role(self.id)
-        elif self.type is AppCommandPermissionType.user:
-            self.object = self.guild.get_member(self.id)
-            if not self.object:
-                self.object = self._state.get_user(self.id)
-        elif self.type is AppCommandPermissionType.channel:
-            self.object = self.guild.get_channel(self.id)
 
-        # fallback to Object
+        if self.type is AppCommandPermissionType.user:
+            # try both member and user
+            if guild:
+                self.object = guild.get_member(self.id)
+            else:
+                self.object = self._state.get_user(self.id)
+        elif guild and self.type is AppCommandPermissionType.role:
+            self.object = guild.get_role(self.id)
+        elif guild and self.type is AppCommandPermissionType.channel:
+            self.object = guild.get_channel(self.id)
+        
         if self.object is None:
-            self.object = Object(self.id)
+            self.object = Object(id=self.id)
+
 
     def to_dict(self) -> ApplicationCommandPermissions:
         return {
-            'id': self.object.id,  # type: ignore # it is not None.
+            'id': self.object.id,  # type: ignore # self.object can not be None
             'type': self.type.value,
             'permission': self.permission,
         }
@@ -915,13 +919,15 @@ class GuildAppCommandPermissions:
     command Optional[:class:`AppCommand`]
         The application command that the permission is for.
     id: :class:`int`
-        The command's ID associated with the permissions.
+        ID of the command or the application ID
+        When the this is the application ID instead of a command ID, 
+        the permissions apply to all commands that do not contain explicit overwrites.
     guild: :class:`Guild`
         The guild that the permission is for.
     guild_id: :class:`int`
         The guild ID that the permission is for.
     permissions: List[:class:`AppCommandPermissions`]
-        A list of permissions. Max 100.
+        Permissions for the command in the guild, max of 100
     """
 
     __slots__ = ('id', 'application_id', 'command', 'guild_id', 'guild', 'permissions', '_state')
@@ -936,9 +942,9 @@ class GuildAppCommandPermissions:
         self.application_id: int = int(data['application_id'])
         self.guild_id: int = int(data['guild_id'])
 
-        self.guild: Guild = self._state._get_guild(self.guild_id)
+        self.guild: Optional[Guild] = self._state._get_guild(self.guild_id)
         self.permissions: List[AppCommandPermissions] = [
-            AppCommandPermissions(data=value, guild=self.guild, state=self._state)  # type: ignore # guild can not be None.
+            AppCommandPermissions(data=value, guild=self.guild, state=self._state)
             for value in data['permissions']
         ]
 
