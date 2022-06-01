@@ -30,6 +30,8 @@ from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
+from ..object import Object
+
 from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
@@ -69,7 +71,7 @@ if TYPE_CHECKING:
         ThreadArchiveDuration,
     )
 
-    from ..types.snowflake import Snowflake
+    from ..abc import Snowflake
     from ..state import ConnectionState
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
@@ -77,7 +79,6 @@ if TYPE_CHECKING:
     from ..role import Role
     from ..user import User
     from ..member import Member
-    from ..object import Object
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
 
@@ -357,6 +358,10 @@ class AppCommand(Hashable):
             Fetching the application command permission failed.
         MissingApplicationID
             The client does not have an application ID.
+        NotFound
+            The command's permissions could not be found.
+            This can happen if the permissions are synced
+            and not overriden in the guild.
 
         Returns
         --------
@@ -369,7 +374,7 @@ class AppCommand(Hashable):
 
         data = await state.http.get_application_command_permissions(
             state.application_id,
-            guild,
+            guild.id,
             self.id,
         )
         return GuildAppCommandPermissions(data=data, state=state, command=self)
@@ -878,32 +883,29 @@ class AppCommandPermissions:
         self.type: AppCommandPermissionType = try_enum(AppCommandPermissionType, data['type'])
         self.permission: bool = data['permission']
 
-        self.object: Optional[
-            Union[Object, User, Member, Role, AllChannels, GuildChannel]
-        ]  # Optional[] is used to avoid errors below.
-
-        if guild and self.id == (guild.id - 1):
-            self.object = AllChannels(guild)
-
+        _object: Optional[Union[Object, User, Member, Role, AllChannels, GuildChannel]] = None
 
         if self.type is AppCommandPermissionType.user:
-            # try both member and user
             if guild:
-                self.object = guild.get_member(self.id)
+                _object = guild.get_member(self.id)
             else:
-                self.object = self._state.get_user(self.id)
-        elif guild and self.type is AppCommandPermissionType.role:
-            self.object = guild.get_role(self.id)
+                _object = self._state.get_user(self.id)
         elif guild and self.type is AppCommandPermissionType.channel:
-            self.object = guild.get_channel(self.id)
-        
-        if self.object is None:
-            self.object = Object(id=self.id)
+            if self.id == (guild.id - 1):
+                _object = AllChannels(guild)
+            else:
+                _object = guild.get_channel(self.id)
+        elif guild and self.type is AppCommandPermissionType.role:
+            _object = guild.get_role(self.id)
 
+        if _object is None:
+            _object = Object(id=self.id)
+
+        self.object = _object
 
     def to_dict(self) -> ApplicationCommandPermissions:
         return {
-            'id': self.object.id,  # type: ignore # self.object can not be None
+            'id': self.object.id,
             'type': self.type.value,
             'permission': self.permission,
         }
@@ -920,7 +922,7 @@ class GuildAppCommandPermissions:
         The application command that the permission is for.
     id: :class:`int`
         ID of the command or the application ID
-        When the this is the application ID instead of a command ID, 
+        When the this is the application ID instead of a command ID,
         the permissions apply to all commands that do not contain explicit overwrites.
     guild: :class:`Guild`
         The guild that the permission is for.
@@ -944,8 +946,7 @@ class GuildAppCommandPermissions:
 
         self.guild: Optional[Guild] = self._state._get_guild(self.guild_id)
         self.permissions: List[AppCommandPermissions] = [
-            AppCommandPermissions(data=value, guild=self.guild, state=self._state)
-            for value in data['permissions']
+            AppCommandPermissions(data=value, guild=self.guild, state=self._state) for value in data['permissions']
         ]
 
     def to_dict(self) -> _BaseGuildApplicationCommandPermissions:

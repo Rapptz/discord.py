@@ -33,7 +33,6 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
-from .app_commands.models import AppCommandPermissions
 
 __all__ = (
     'AuditLogDiff',
@@ -276,12 +275,10 @@ class AuditLogChanges:
             self.after.app_command_permissions = []
 
             for d in data:
-
                 self._handle_app_command_permissions(
                     self.before,
                     self.after,
                     entry,
-                    int(d['key']),
                     d.get('old_value'),  # type: ignore # old value will be an ApplicationCommandPermissions if present
                     d.get('new_value'),  # type: ignore # new value will be an ApplicationCommandPermissions if present
                 )
@@ -363,18 +360,19 @@ class AuditLogChanges:
         before: AuditLogDiff,
         after: AuditLogDiff,
         entry: AuditLogEntry,
-        target_id: int,
         old_value: Optional[ApplicationCommandPermissions],
         new_value: Optional[ApplicationCommandPermissions],
     ):
+        # Avoid circular imports
+        from .app_commands.models import AppCommandPermissions
+
         guild = entry.guild
         state = entry._state
-
         if old_value is not None:
             before.app_command_permissions.append(AppCommandPermissions(data=old_value, guild=guild, state=state))
 
         if new_value is not None:
-            after.app_command_permissions.append(AppCommandPermissions(data=ew_value, guild=guild, state=state))
+            after.app_command_permissions.append(AppCommandPermissions(data=new_value, guild=guild, state=state))
 
 
 class _AuditLogProxy:
