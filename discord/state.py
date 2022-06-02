@@ -875,12 +875,15 @@ class ConnectionState:
             return
 
         thread_id = int(data['id'])
+        raw = RawThreadUpdateEvent(data)
         thread = guild.get_thread(thread_id)
+        raw.thread = thread
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
             if thread.archived:
                 guild._remove_thread(thread)
+            self.dispatch('raw_thread_update', raw)
             self.dispatch('thread_update', old, thread)
         else:
             thread = Thread(guild=guild, state=guild._state, data=data)
