@@ -402,7 +402,7 @@ class View:
         print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
         traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
 
-    async def _scheduled_task(self, item: Item, interaction: Interaction):
+    async def _scheduled_task(self, item: Item, interaction: Interaction, values: Optional[List[str]]):
         try:
             if self.timeout:
                 self.__timeout_expiry = time.monotonic() + self.timeout
@@ -410,8 +410,10 @@ class View:
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
-
-            await item.callback(interaction)
+            if '_selected_values' in dir(item):
+                await item.callback(interaction, values)
+            else:
+                await item.callback(interaction)
         except Exception as e:
             return await self.on_error(interaction, e, item)
 
@@ -435,11 +437,11 @@ class View:
         self.__stopped.set_result(True)
         asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
-    def _dispatch_item(self, item: Item, interaction: Interaction):
+    def _dispatch_item(self, item: Item, interaction: Interaction, values: Optional[List[str]]):
         if self.__stopped.done():
             return
 
-        asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
+        asyncio.create_task(self._scheduled_task(item, interaction, values), name=f'discord-ui-view-dispatch-{self.id}')
 
     def _refresh(self, components: List[Component]) -> None:
         # fmt: off
@@ -608,7 +610,8 @@ class ViewStore:
 
         item._refresh_state(interaction.data)  # type: ignore
         # Note, at this point the View is *not* None
-        item.view._dispatch_item(item, interaction)  # type: ignore
+        
+        item.view._dispatch_item(item, interaction, item.__dict__.get('_selected_values', None))  # type: ignore
 
     def dispatch_modal(
         self,

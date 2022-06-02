@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
+from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, List
 
 from ..interactions import Interaction
 
@@ -119,7 +119,7 @@ class Item(Generic[V]):
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 
-    async def callback(self, interaction: Interaction) -> Any:
+    async def callback(self, interaction: Interaction, values: Optional[List[str]]) -> Any:
         """|coro|
 
         The callback associated with this UI item.
@@ -130,5 +130,7 @@ class Item(Generic[V]):
         -----------
         interaction: :class:`.Interaction`
             The interaction that triggered this UI item.
+        values: :type:`Optional[List[str]]`
+            The selected values for this item.
         """
         pass

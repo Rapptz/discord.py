@@ -24,7 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union, Any
+
+from ..interactions import Interaction
+
 import inspect
 import os
 
@@ -228,6 +231,9 @@ class Button(Item[V]):
 
     def _refresh_component(self, button: ButtonComponent) -> None:
         self._underlying = button
+        
+    async def callback(self, interaction: Interaction) -> Any:
+        return await super().callback(interaction, None)
 
 
 def button(
