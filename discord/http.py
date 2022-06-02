@@ -2035,20 +2035,6 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def bulk_edit_guild_application_command_permissions(
-        self,
-        application_id: Snowflake,
-        guild_id: Snowflake,
-        payload: List[command._BaseGuildApplicationCommandPermissions],
-    ) -> Response[None]:
-        r = Route(
-            'PUT',
-            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
-            application_id=application_id,
-            guild_id=guild_id,
-        )
-        return self.request(r, json=payload)
-
     # Misc
 
     def application_info(self) -> Response[appinfo.AppInfo]:
