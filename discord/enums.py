@@ -62,6 +62,7 @@ __all__ = (
     'EventStatus',
     'AppCommandType',
     'AppCommandOptionType',
+    'AppCommandPermissionType',
 )
 
 if TYPE_CHECKING:

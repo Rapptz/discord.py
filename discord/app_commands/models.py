@@ -39,8 +39,8 @@ __all__ = (
     'AppCommandGroup',
     'AppCommandChannel',
     'AppCommandThread',
-    'GuildAppCommandPermissions',
     'AppCommandPermissions',
+    'GuildAppCommandPermissions',
     'Argument',
     'Choice',
     'AllChannels',
@@ -343,30 +343,29 @@ class AppCommand(Hashable):
     async def fetch_permissions(self, guild: Snowflake) -> GuildAppCommandPermissions:
         """|coro|
 
-        Retrieves the application command permission for this command in the guild.
+        Retrieves this command's permission in the guild.
 
         Parameters
         -----------
         guild: :class:`~discord.abc.Snowflake`
-            The guild to retrieve the application command permissions for.
+            The guild to retrieve the permissions from.
 
         Raises
         -------
         Forbidden
-            You do not have permission to fetch the application command permission.
+            You do not have permission to fetch application command's permissions.
         HTTPException
-            Fetching the application command permission failed.
+            Fetching the application command's permissions failed.
         MissingApplicationID
             The client does not have an application ID.
         NotFound
-            The command's permissions could not be found.
-            This can happen if the permissions are synced
-            and not overriden in the guild.
+            The application command's permissions could not be found.
+            This can indicate that the permissions are synced with the guild.
 
         Returns
         --------
         :class:`GuildAppCommandPermissions`
-            The application command permission permissions for this command in the guild
+            An object representing the application command's permissions in the guild.
         """
         state = self._state
         if not state.application_id:
@@ -860,17 +859,16 @@ class AppCommandPermissions:
 
     Attributes
     -----------
-    guild: :class:`Guild`
-        The guild that the permission is for.
+    guild: :class:`.Guild`
+        The guild assosiated with this permission.
     id: :class:`int`
-        ID of the channel, guild, user or role.
-    object: Union[:class:`AllChannels`, :class:`GuildChannel`, :class:`Role`, :class:`Member`, :class:`.Object`, :class:`User`]
-        The role, user, or channel that the permission is for. Falls back to :class:`.Object` if not found.
-    type: :class:`AppCommandPermissionType`
+        ID of which this permission is for, it can be a channel, guild, guild-1, user or role ID.
+    object: Union[:class:`.AllChannels`, :class:`.GuildChannel`, :class:`.Role`, :class:`.Member`, :class:`~discord.User`, :class:`.Object`]
+        The role, user, or channel assosiated with this permission. Falls back to :class:`.Object` if not found in cache.
+    type: :class:`.AppCommandPermissionType`
         The type of permission.
     permission: :class:`bool`
-        The permission value.
-
+        The permission value. True for allow, False for deny.
     """
 
     __slots__ = ('id', 'type', 'permission', 'object', 'guild', '_state')
@@ -918,27 +916,25 @@ class GuildAppCommandPermissions:
     -----------
     application_id: :class:`int`
         The application ID.
-    command Optional[:class:`AppCommand`]
-        The application command that the permission is for.
+    command: :class:`.AppCommand`
+        The application command assosiated with the permissions.
     id: :class:`int`
-        ID of the command or the application ID
+        ID of the command or the application ID.
         When the this is the application ID instead of a command ID,
         the permissions apply to all commands that do not contain explicit overwrites.
-    guild: :class:`Guild`
-        The guild that the permission is for.
+    guild: :class:`.Guild`
+        The guild assosiated with the permissions.
     guild_id: :class:`int`
-        The guild ID that the permission is for.
+        The guild ID assosiated with the permissions.
     permissions: List[:class:`AppCommandPermissions`]
-        Permissions for the command in the guild, max of 100
+       The permissions, this is a max of 100.
     """
 
     __slots__ = ('id', 'application_id', 'command', 'guild_id', 'guild', 'permissions', '_state')
 
-    def __init__(
-        self, *, data: GuildApplicationCommandPermissions, state: ConnectionState, command: Optional[AppCommand] = None
-    ) -> None:
+    def __init__(self, *, data: GuildApplicationCommandPermissions, state: ConnectionState, command: AppCommand) -> None:
         self._state: ConnectionState = state
-        self.command: Optional[AppCommand] = command
+        self.command: AppCommand = command
 
         self.id: int = int(data['id'])
         self.application_id: int = int(data['application_id'])

@@ -121,6 +121,22 @@ AppCommandThread
 .. autoclass:: discord.app_commands.AppCommandThread()
     :members:
 
+AppCommandPermissions
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AppCommandPermissions
+
+.. autoclass:: discord.app_commands.AppCommandPermissions()
+    :members:
+
+GuildAppCommandPermissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.GuildAppCommandPermissions
+
+.. autoclass:: discord.app_commands.GuildAppCommandPermissions()
+    :members:
+
 Argument
 ~~~~~~~~~~
 
@@ -359,6 +375,22 @@ Enumerations
     .. attribute:: message
 
         A message context menu command.
+
+.. class:: AppCommandPermissionType
+    
+    The application command's permission type.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: role
+
+        The permission is for a role.
+    .. attribute:: channel
+
+        The permission is for one or all channels.
+    .. attribute:: user
+
+        The permission is for a user.
 
 .. _discord_ui_kit:
 

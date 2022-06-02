@@ -3512,13 +3512,9 @@ AuditLogDiff
 
     .. attribute:: app_command_permissions
 
-        A list of application command permission tuples that represents a
-        target and a :class:`bool` for said target.
+        The permissions of the app command.
 
-        The first element is the object being targeted, which can either
-        be a :class:`Member`, :class:`abc.GuildChannel`,
-        :class:`~discord.app_commands.AllChannels`, or :class:`Role`.
-        :type: List[Tuple[target, :class:`bool`]]
+        :type: List[:class:`~discord.app_commands.AppCommandPermissions`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
