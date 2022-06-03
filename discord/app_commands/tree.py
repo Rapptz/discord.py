@@ -140,6 +140,45 @@ class CommandTree(Generic[ClientT]):
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
 
+    async def fetch_command(self, command_id: int, /, *, guild: Optional[Snowflake] = None) -> AppCommand:
+        """|coro|
+
+        Fetches an application command from the application.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command to fetch.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to fetch the command from. If not passed then the global command
+            is fetched instead.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the command failed.
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The application command was not found.
+            This could also be because the command is a guild command
+            and the guild was not specified and vise versa.
+
+        Returns
+        --------
+        :class:`~discord.app_commands.AppCommand`
+            The application command.
+        """
+        if self.client.application_id is None:
+            raise MissingApplicationID
+
+        if guild is None:
+            command = await self._http.get_global_command(self.client.application_id, command_id)
+        else:
+            command = await self._http.get_guild_command(self.client.application_id, guild.id, command_id)
+
+        return AppCommand(data=command, state=self._state)
+
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
         """|coro|
 
