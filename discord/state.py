@@ -874,8 +874,9 @@ class ConnectionState:
             _log.debug('THREAD_UPDATE referencing an unknown guild ID: %s. Discarding', guild_id)
             return
 
-        thread_id = int(data['id'])
-        thread = guild.get_thread(thread_id)
+        raw = RawThreadUpdateEvent(data)
+        raw.thread = thread = guild.get_thread(raw.thread_id)
+        self.dispatch('raw_thread_update', raw)
         if thread is not None:
             old = copy.copy(thread)
             thread._update(data)
