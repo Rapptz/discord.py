@@ -864,7 +864,7 @@ class AppCommandPermissions:
     guild: :class:`~discord.Guild`
         The guild assosiated with this permission.
     id: :class:`int`
-        The ID of the permission target, such as a role, channel, or guild. 
+        The ID of the permission target, such as a role, channel, or guild.
         The special ``guild_id - 1`` sentinel is used to represent "all channels".
     target: Any
         The role, user, or channel associated with this permission. This could also be the :class:`AllChannels` sentinel type.
@@ -934,7 +934,7 @@ class GuildAppCommandPermissions:
        The permissions, this is a max of 100.
     """
 
-    __slots__ = ('id', 'application_id', 'command', 'guild_id', 'guild', 'permissions', '_state')
+    __slots__ = ('id', 'application_id', 'command', 'guild_id', 'permissions', '_state')
 
     def __init__(self, *, data: GuildApplicationCommandPermissions, state: ConnectionState, command: AppCommand) -> None:
         self._state: ConnectionState = state
@@ -954,6 +954,7 @@ class GuildAppCommandPermissions:
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`~discord.Guild`]: The guild associated with the permissions."""
         return self._state._get_guild(self.guild_id)
+
 
 def app_command_option_factory(
     parent: ApplicationCommandParent, data: ApplicationCommandOption, *, state: Optional[ConnectionState] = None
