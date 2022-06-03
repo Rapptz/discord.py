@@ -12,13 +12,13 @@ bot = commands.Bot(command_prefix=commands.when_mentioned, description="Nothing 
 
 # the `hidden` keyword argument hides it from the help command.
 @bot.group(hidden=True)
-async def secret(ctx: commands.Context):
+async def secret(ctx: commands.Context) -> None:
     """What is this "secret" you speak of?"""
     if ctx.invoked_subcommand is None:
         await ctx.send('Shh!', delete_after=5)
 
 
-def create_overwrites(ctx, *objects):
+def create_overwrites(ctx: commands.Context, *objects) -> dict:
     """This is just a helper function that creates the overwrites for the
     voice/text channels.
 
@@ -48,7 +48,7 @@ def create_overwrites(ctx, *objects):
 # it is best to lock it to be guild-only.
 @secret.command()
 @commands.guild_only()
-async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]):
+async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]) -> None:
     """This makes a text channel with a specified name
     that is only visible to roles or members that are specified.
     """
@@ -65,7 +65,7 @@ async def text(ctx: commands.Context, name: str, *objects: typing.Union[discord.
 
 @secret.command()
 @commands.guild_only()
-async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]):
+async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord.Role, discord.Member]) -> None:
     """This does the same thing as the `text` subcommand
     but instead creates a voice channel.
     """
@@ -81,7 +81,7 @@ async def voice(ctx: commands.Context, name: str, *objects: typing.Union[discord
 
 @secret.command()
 @commands.guild_only()
-async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: discord.Role):
+async def emoji(ctx: commands.Context, emoji: discord.PartialEmoji, *roles: discord.Role) -> None:
     """This clones a specified emoji that only specified roles
     are allowed to use.
     """

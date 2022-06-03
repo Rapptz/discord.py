@@ -8,7 +8,7 @@ MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 
 class MyClient(discord.Client):
-    def __init__(self, *, intents: discord.Intents):
+    def __init__(self, *, intents: discord.Intents) -> discord.Client:
         super().__init__(intents=intents)
         # A CommandTree is a special type that holds all the application command
         # state required to make it work. This is a separate class because it
@@ -22,7 +22,7 @@ class MyClient(discord.Client):
     # In this basic example, we just synchronize the app commands to one guild.
     # Instead of specifying a guild to every command, we copy over our global commands instead.
     # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
-    async def setup_hook(self):
+    async def setup_hook(self) -> None:
         # This copies the global commands over to your guild.
         self.tree.copy_global_to(guild=MY_GUILD)
         await self.tree.sync(guild=MY_GUILD)
@@ -33,13 +33,13 @@ client = MyClient(intents=intents)
 
 
 @client.event
-async def on_ready():
+async def on_ready() -> None:
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
 
 
 @client.tree.command()
-async def hello(interaction: discord.Interaction):
+async def hello(interaction: discord.Interaction) -> None: 
     """Says hello!"""
     await interaction.response.send_message(f'Hi, {interaction.user.mention}')
 
@@ -49,7 +49,7 @@ async def hello(interaction: discord.Interaction):
     first_value='The first value you want to add something to',
     second_value='The value you want to add to the first value',
 )
-async def add(interaction: discord.Interaction, first_value: int, second_value: int):
+async def add(interaction: discord.Interaction, first_value: int, second_value: int) -> None:
     """Adds two numbers together."""
     await interaction.response.send_message(f'{first_value} + {second_value} = {first_value + second_value}')
 
@@ -60,7 +60,7 @@ async def add(interaction: discord.Interaction, first_value: int, second_value: 
 @client.tree.command()
 @app_commands.rename(text_to_send='text')
 @app_commands.describe(text_to_send='Text to send in the current channel')
-async def send(interaction: discord.Interaction, text_to_send: str):
+async def send(interaction: discord.Interaction, text_to_send: str) -> None:
     """Sends the text into the current channel."""
     await interaction.response.send_message(text_to_send)
 
@@ -69,7 +69,7 @@ async def send(interaction: discord.Interaction, text_to_send: str):
 # or you can mark it as Optional from the typing standard library. This example does both.
 @client.tree.command()
 @app_commands.describe(member='The member you want to get the joined date from; defaults to the user who uses the command')
-async def joined(interaction: discord.Interaction, member: Optional[discord.Member] = None):
+async def joined(interaction: discord.Interaction, member: Optional[discord.Member] = None) -> None:
     """Says when a member joined."""
     # If no member is explicitly provided then we use the command user here
     member = member or interaction.user
@@ -84,14 +84,14 @@ async def joined(interaction: discord.Interaction, member: Optional[discord.Memb
 
 # This context menu command only works on members
 @client.tree.context_menu(name='Show Join Date')
-async def show_join_date(interaction: discord.Interaction, member: discord.Member):
+async def show_join_date(interaction: discord.Interaction, member: discord.Member) -> None:
     # The format_dt function formats the date time into a human readable representation in the official client
     await interaction.response.send_message(f'{member} joined at {discord.utils.format_dt(member.joined_at)}')
 
 
 # This context menu command only works on messages
 @client.tree.context_menu(name='Report to Moderators')
-async def report_message(interaction: discord.Interaction, message: discord.Message):
+async def report_message(interaction: discord.Interaction, message: discord.Message) -> None:
     # We're sending this response message with ephemeral=True, so only the command executor can see it
     await interaction.response.send_message(
         f'Thanks for reporting this message by {message.author.mention} to our moderators.', ephemeral=True

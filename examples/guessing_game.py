@@ -6,11 +6,11 @@ import asyncio
 
 
 class MyClient(discord.Client):
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
             return

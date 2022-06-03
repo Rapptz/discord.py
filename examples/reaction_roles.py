@@ -4,7 +4,7 @@ import discord
 
 
 class MyClient(discord.Client):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> discord.Client:
         super().__init__(*args, **kwargs)
 
         self.role_message_id = 0  # ID of the message that can be reacted to to add/remove a role.
@@ -14,7 +14,7 @@ class MyClient(discord.Client):
             discord.PartialEmoji(name='green', id=0): 0,  # ID of the role associated with a partial emoji's ID.
         }
 
-    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         """Gives a role based on a reaction emoji."""
         # Make sure that the message the user is reacting to is the one we care about.
         if payload.message_id != self.role_message_id:
@@ -43,7 +43,7 @@ class MyClient(discord.Client):
             # If we want to do something in case of errors we'd do it here.
             pass
 
-    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
         """Removes a role based on a reaction emoji."""
         # Make sure that the message the user is reacting to is the one we care about.
         if payload.message_id != self.role_message_id:

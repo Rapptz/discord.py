@@ -8,7 +8,7 @@ from discord.ext import commands
 
 
 class MyContext(commands.Context):
-    async def tick(self, value):
+    async def tick(self, value: int) -> None:
         # reacts to the message with an emoji
         # depending on whether value is True or False
         # if its True, it'll add a green check mark
@@ -39,7 +39,7 @@ bot = MyBot(command_prefix='!', intents=intents)
 
 
 @bot.command()
-async def guess(ctx, number: int):
+async def guess(ctx: MyContext, number: int):
     """Guess a random number from 1 to 6."""
     # explained in a previous example, this gives you
     # a random number from 1-6
@@ -50,10 +50,4 @@ async def guess(ctx, number: int):
     await ctx.tick(number == value)
 
 
-# IMPORTANT: You shouldn't hard code your token
-# these are very important, and leaking them can
-# let people do very malicious things with your
-# bot. Try to use a file or something to keep
-# them private, and don't commit it to GitHub
-token = "your token here"
-bot.run(token)
+bot.run('token')

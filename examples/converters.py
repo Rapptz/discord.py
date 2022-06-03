@@ -14,7 +14,7 @@ bot = commands.Bot('!', intents=intents)
 
 
 @bot.command()
-async def userinfo(ctx: commands.Context, user: discord.User):
+async def userinfo(ctx: commands.Context, user: discord.User) -> None:
     # In the command signature above, you can see that the `user`
     # parameter is typehinted to `discord.User`. This means that
     # during command invocation we will attempt to convert
@@ -35,7 +35,7 @@ async def userinfo(ctx: commands.Context, user: discord.User):
 
 
 @userinfo.error
-async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
+async def userinfo_error(ctx: commands.Context, error: commands.CommandError) -> None:
     # if the conversion above fails for any reason, it will raise `commands.BadArgument`
     # so we handle this in this error handler:
     if isinstance(error, commands.BadArgument):
@@ -44,7 +44,7 @@ async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
 
 # Custom Converter here
 class ChannelOrMemberConverter(commands.Converter):
-    async def convert(self, ctx: commands.Context, argument: str):
+    async def convert(self, ctx: commands.Context, argument: str) -> typing.Union[commands.MemberConverter, commands.TextChannelConverter]:
         # In this example we have made a custom converter.
         # This checks if an input is convertible to a
         # `discord.Member` or `discord.TextChannel` instance from the
@@ -78,7 +78,7 @@ class ChannelOrMemberConverter(commands.Converter):
 
 
 @bot.command()
-async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
+async def notify(ctx: commands.Context, target: ChannelOrMemberConverter) -> None:
     # This command signature utilises the custom converter written above
     # What will happen during command invocation is that the `target` above will be passed to
     # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and
@@ -88,7 +88,7 @@ async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
 
 
 @bot.command()
-async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]):
+async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, discord.TextChannel]) -> None:
     # This command signature utilises the `typing.Union` typehint.
     # The `commands` framework attempts a conversion of each type in this Union *in order*.
     # So, it will attempt to convert whatever is passed to `target` to a `discord.Member` instance.
@@ -106,7 +106,7 @@ async def ignore(ctx: commands.Context, target: typing.Union[discord.Member, dis
 
 # Built-in type converters.
 @bot.command()
-async def multiply(ctx: commands.Context, number: int, maybe: bool):
+async def multiply(ctx: commands.Context, number: int, maybe: bool) -> None:
     # We want an `int` and a `bool` parameter here.
     # `bool` is a slightly special case, as shown here:
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool

@@ -20,7 +20,7 @@ class MyClient(discord.Client):
         # to register application commands (slash commands in this case)
         self.tree = app_commands.CommandTree(self)
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
@@ -54,7 +54,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
         max_length=300,
     )
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction) -> None:
         await interaction.response.send_message(f'Thanks for your feedback, {self.name.value}!', ephemeral=True)
 
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
@@ -68,7 +68,7 @@ client = MyClient()
 
 
 @client.tree.command(guild=TEST_GUILD, description="Submit feedback")
-async def feedback(interaction: discord.Interaction):
+async def feedback(interaction: discord.Interaction) -> None:
     # Send the modal with an instance of our `Feedback` class
     # Since modals require an interaction, they cannot be done as a response to a text command.
     # They can only be done as a response to either an application command or a button press.

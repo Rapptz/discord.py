@@ -3,18 +3,18 @@ import asyncio
 
 
 class MyClient(discord.Client):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> discord.Client:
         super().__init__(*args, **kwargs)
 
     async def setup_hook(self) -> None:
         # create the background task and run it in the background
         self.bg_task = self.loop.create_task(self.my_background_task())
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def my_background_task(self):
+    async def my_background_task(self) -> None:
         await self.wait_until_ready()
         counter = 0
         channel = self.get_channel(1234567)  # channel ID goes here

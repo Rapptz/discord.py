@@ -4,11 +4,11 @@ import discord
 
 
 class MyClient(discord.Client):
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
         if message.content.startswith('!deleteme'):
             msg = await message.channel.send('I will delete myself now...')
             await msg.delete()
@@ -16,7 +16,7 @@ class MyClient(discord.Client):
             # this also works
             await message.channel.send('Goodbye in 3 seconds...', delete_after=3.0)
 
-    async def on_message_delete(self, message):
+    async def on_message_delete(self, message: discord.Message) -> None:
         msg = f'{message.author} has deleted the message: {message.content}'
         await message.channel.send(msg)
 

@@ -2,6 +2,7 @@
 
 from discord.ext import commands
 import discord
+from discord.ui import View
 
 
 # Define a simple View that persists between bot restarts
@@ -12,25 +13,25 @@ import discord
 # prevent conflicts with other buttons the bot sends.
 # For this example the custom_id is prefixed with the name of the bot.
 # Note that custom_ids can only be up to 100 characters long.
-class PersistentView(discord.ui.View):
-    def __init__(self):
+class PersistentView(View):
+    def __init__(self) -> View:
         super().__init__(timeout=None)
 
     @discord.ui.button(label='Green', style=discord.ButtonStyle.green, custom_id='persistent_view:green')
-    async def green(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def green(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_message('This is green.', ephemeral=True)
 
     @discord.ui.button(label='Red', style=discord.ButtonStyle.red, custom_id='persistent_view:red')
-    async def red(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def red(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_message('This is red.', ephemeral=True)
 
     @discord.ui.button(label='Grey', style=discord.ButtonStyle.grey, custom_id='persistent_view:grey')
-    async def grey(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def grey(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         await interaction.response.send_message('This is grey.', ephemeral=True)
 
 
 class PersistentViewBot(commands.Bot):
-    def __init__(self):
+    def __init__(self) -> commands.Bot:
         intents = discord.Intents.default()
         intents.message_content = True
 
@@ -44,7 +45,7 @@ class PersistentViewBot(commands.Bot):
         # we don't have one.
         self.add_view(PersistentView())
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
@@ -54,7 +55,7 @@ bot = PersistentViewBot()
 
 @bot.command()
 @commands.is_owner()
-async def prepare(ctx: commands.Context):
+async def prepare(ctx: commands.Context) -> None:
     """Starts a persistent view."""
     # In order for a persistent view to be listened to, it needs to be sent to an actual message.
     # Call this method once just to store it somewhere.

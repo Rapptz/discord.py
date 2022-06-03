@@ -1,14 +1,15 @@
 # This example requires the 'message_content' privileged intent to function.
 
-from typing import List
+from typing import List, Union
 from discord.ext import commands
 import discord
 
+from discord.ui import View
 # Defines a custom button that contains the logic of the game.
 # The ['TicTacToe'] bit is for type hinting purposes to tell your IDE or linter
 # what the type of `self.view` is. It is not required.
 class TicTacToeButton(discord.ui.Button['TicTacToe']):
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int) -> None:
         # A label is required, but we don't need one so a zero-width space is used
         # The row parameter tells the View which row to place the button under.
         # A View can only contain up to 5 rows -- each row can only have 5 buttons.
@@ -19,7 +20,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToe']):
 
     # This function is called whenever this particular button is pressed
     # This is part of the "meat" of the game logic
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
         view: TicTacToe = self.view
         state = view.board[self.y][self.x]
@@ -59,7 +60,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToe']):
 
 
 # This is our actual board View
-class TicTacToe(discord.ui.View):
+class TicTacToe(View):
     # This tells the IDE or linter that all our children will be TicTacToeButtons
     # This is not required
     children: List[TicTacToeButton]
@@ -67,7 +68,7 @@ class TicTacToe(discord.ui.View):
     O = 1
     Tie = 2
 
-    def __init__(self):
+    def __init__(self) -> View:
         super().__init__()
         self.current_player = self.X
         self.board = [
@@ -84,7 +85,7 @@ class TicTacToe(discord.ui.View):
                 self.add_item(TicTacToeButton(x, y))
 
     # This method checks for the board winner -- it is used by the TicTacToeButton
-    def check_board_winner(self):
+    def check_board_winner(self) -> Union[int, None]:
         for across in self.board:
             value = sum(across)
             if value == 3:
@@ -121,13 +122,13 @@ class TicTacToe(discord.ui.View):
 
 
 class TicTacToeBot(commands.Bot):
-    def __init__(self):
+    def __init__(self) -> commands.Bot:
         intents = discord.Intents.default()
         intents.message_content = True
 
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
 
@@ -136,7 +137,7 @@ bot = TicTacToeBot()
 
 
 @bot.command()
-async def tic(ctx: commands.Context):
+async def tic(ctx: commands.Context) -> None:
     """Starts a tic-tac-toe game with yourself."""
     await ctx.send('Tic Tac Toe: X goes first', view=TicTacToe())
 
