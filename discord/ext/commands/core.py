@@ -2159,8 +2159,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
     def predicate(ctx: Context[BotT]) -> bool:
-        ch = ctx.channel
-        permissions = ch.permissions_for(ctx.author)  # type: ignore
+        permissions = ctx.permissions
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
@@ -2185,9 +2184,7 @@ def bot_has_permissions(**perms: bool) -> Check[Any]:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
     def predicate(ctx: Context[BotT]) -> bool:
-        guild = ctx.guild
-        me = guild.me if guild is not None else ctx.bot.user
-        permissions = ctx.channel.permissions_for(me)  # type: ignore
+        permissions = ctx.bot_permissions
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 

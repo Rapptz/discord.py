@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional,
 
 import discord.abc
 import discord.utils
-from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable
+from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable, Permissions, ChannelType, Thread
 from discord.context_managers import Typing
 from .view import StringView
 
@@ -455,6 +455,63 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         # bot.user will never be None at this point.
         return self.guild.me if self.guild is not None else self.bot.user  # type: ignore
+
+    @discord.utils.cached_property
+    def permissions(self) -> Permissions:
+        """:class:`.Permissions`: Returns the resolved permissions for the invoking user in this channel.
+        Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.permissions`.
+
+        .. versionadded:: 2.0
+        """
+        if self.channel.type == ChannelType.private:
+            return Permissions._dm_permissions()
+        if not self.interaction:
+            # channel and author will always match relevant types here
+            return self.channel.permissions_for(self.author)  # type: ignore
+        return self.interaction.permissions
+
+    @discord.utils.cached_property
+    def bot_permissions(self) -> Permissions:
+        """:class:`.Permissions`: Returns the resolved permissions for the bot in this channel.
+
+        .. note::
+
+            For interaction-based commands, this will reflect the effective permissions
+            for :class:`Context` calls, which may differ from calls through
+            other :class:`.abc.Messageable` endpoints, like :attr:`channel`.
+
+            Notably, sending messages, embedding links, and attaching files are always
+            permitted, while reading messages might not be. Mass mentioning and using
+            external emojis and stickers also inherits their permissions from the
+            default guild role.
+
+        .. versionadded:: 2.0
+        """
+        channel = self.channel
+        if channel.type == ChannelType.private:
+            return Permissions._dm_permissions()
+        # channel and me will always match relevant types here
+        my_perms = channel.permissions_for(self.me)  # type: ignore
+        if not self.interaction:
+            return my_perms
+        guild = channel.guild
+        if guild:
+            everyone = channel.permissions_for(guild.default_role)
+        else:
+            everyone = Permissions.none()
+        my_perms.update(
+            embed_links=True,
+            attach_files=True,
+            external_emojis=everyone.external_emojis,
+            external_stickers=everyone.external_stickers,
+            mention_everyone=everyone.mention_everyone,
+            send_tts_messages=False,
+        )
+        if isinstance(channel, Thread):
+            my_perms.send_messages_in_threads = True
+        else:
+            my_perms.send_messages = True
+        return my_perms
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
