@@ -32,7 +32,7 @@ from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
 
-from typing import Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
 __all__ = (
     'AppCommand',
@@ -58,7 +58,6 @@ if TYPE_CHECKING:
         ApplicationCommand as ApplicationCommandPayload,
         ApplicationCommandOptionChoice,
         ApplicationCommandOption,
-        _BaseGuildApplicationCommandPermissions,
         ApplicationCommandPermissions,
         GuildApplicationCommandPermissions,
     )
@@ -945,7 +944,7 @@ class GuildAppCommandPermissions:
             AppCommandPermissions(data=value, guild=self.guild, state=self._state) for value in data['permissions']
         ]
 
-    def to_dict(self) -> _BaseGuildApplicationCommandPermissions:
+    def to_dict(self) -> Dict[str, Any]:
         return {'permissions': [p.to_dict() for p in self.permissions]}
 
 

@@ -2024,7 +2024,7 @@ class HTTPClient:
         application_id: Snowflake,
         guild_id: Snowflake,
         command_id: Snowflake,
-        payload: command._BaseGuildApplicationCommandPermissions,
+        payload: Dict[str, Any],
     ) -> Response[None]:
         r = Route(
             'PUT',
