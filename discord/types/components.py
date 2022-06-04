@@ -36,7 +36,7 @@ TextStyle = Literal[1, 2]
 
 class ActionRow(TypedDict):
     type: Literal[1]
-    components: List[Component]
+    components: List[ActionRowChildComponent]
 
 
 class ButtonComponent(TypedDict):
@@ -79,4 +79,5 @@ class TextInput(TypedDict):
     max_length: NotRequired[int]
 
 
-Component = Union[ActionRow, ButtonComponent, SelectMenu, TextInput]
+ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
+Component = Union[ActionRow, ActionRowChildComponent]

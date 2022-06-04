@@ -72,6 +72,14 @@ PartialAppInfo
 .. autoclass:: PartialAppInfo()
     :members:
 
+AppInstallParams
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppInstallParams
+
+.. autoclass:: AppInstallParams()
+    :members:
+
 Team
 ~~~~~
 
@@ -273,6 +281,9 @@ Channels
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
+    If the channel or user could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_typing` instead.
+
     This requires :attr:`Intents.typing` to be enabled.
 
     :param channel: The location where the typing originated from.
@@ -281,6 +292,18 @@ Channels
     :type user: Union[:class:`User`, :class:`Member`]
     :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
+
+.. function:: on_raw_typing(payload)
+
+    Called when someone begins typing a message. Unlike :func:`on_typing` this
+    is called regardless of the channel and user being in the internal cache.
+
+    This requires :attr:`Intents.typing` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawTypingEvent`
 
 Connection
 ~~~~~~~~~~~
@@ -367,7 +390,7 @@ Debug
 
     :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
     :type event_type: :class:`str`
-    
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is completely received from the WebSocket, before
@@ -592,7 +615,7 @@ Integrations
 
     .. versionadded:: 2.0
 
-    :param integration: The integration that was created.
+    :param integration: The integration that was updated.
     :type integration: :class:`Integration`
 
 .. function:: on_guild_integrations_update(guild)
@@ -650,14 +673,39 @@ Members
 ~~~~~~~~
 
 .. function:: on_member_join(member)
-              on_member_remove(member)
 
-    Called when a :class:`Member` join or leaves a :class:`Guild`.
+    Called when a :class:`Member` joins a :class:`Guild`.
 
     This requires :attr:`Intents.members` to be enabled.
 
-    :param member: The member who joined or left.
+    :param member: The member who joined.
     :type member: :class:`Member`
+
+.. function:: on_member_remove(member)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    If the guild or member could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_member_remove` instead.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who left.
+    :type member: :class:`Member`
+
+.. function:: on_raw_member_remove(payload)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    Unlike :func:`on_member_remove`
+    this is called regardless of the guild or member being in the internal cache.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMemberRemoveEvent`
 
 .. function:: on_member_update(before, after)
 
@@ -668,6 +716,10 @@ Members
     - nickname
     - roles
     - pending
+    - timeout
+    - guild avatar
+
+    Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
     This requires :attr:`Intents.members` to be enabled.
 
@@ -827,7 +879,7 @@ Messages
     will return a :class:`Message` object that represents the message before the content was modified.
 
     Due to the inherently raw nature of this event, the data parameter coincides with
-    the raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_.
+    the raw data given by the :ddocs:`gateway <topics/gateway#message-update>`.
 
     Since the data payload can be partial, care must be taken when accessing stuff in the dictionary.
     One example of a common case of partial data is when the ``'content'`` key is inaccessible. This
@@ -913,7 +965,7 @@ Reactions
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
-    :param user: The user who added the reaction.
+    :param user: The user whose reaction was removed.
     :type user: Union[:class:`Member`, :class:`User`]
 
 .. function:: on_reaction_clear(message, reactions)
@@ -1124,7 +1176,11 @@ Threads
 
 .. function:: on_thread_update(before, after)
 
-    Called whenever a thread is updated.
+    Called whenever a thread is updated. If the thread could
+    not be found in the internal cache this event will not be called.
+    Threads will not be in the cache if they are archived.
+
+    If you need this information use :func:`on_raw_thread_update` instead.
 
     This requires :attr:`Intents.guilds` to be enabled.
 
@@ -1171,6 +1227,18 @@ Threads
 
     :param thread: The thread that got deleted.
     :type thread: :class:`Thread`
+
+.. function:: on_raw_thread_update(payload)
+
+    Called whenever a thread is update. Unlike :func:`on_thread_update` this
+    is called regardless of the thread being in the internal thread cache or not.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawThreadUpdateEvent`
 
 .. function:: on_raw_thread_delete(payload)
 
@@ -1267,6 +1335,12 @@ Utility Functions
 .. autofunction:: discord.utils.format_dt
 
 .. autofunction:: discord.utils.as_chunks
+
+.. data:: discord.utils.MISSING
+
+    A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values.
+
+    .. versionadded:: 2.0
 
 .. _discord-api-enums:
 
@@ -2190,7 +2264,8 @@ of :class:`enum.Enum`.
         A guild integration was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was created.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was created.
 
         .. versionadded:: 1.3
 
@@ -2199,7 +2274,8 @@ of :class:`enum.Enum`.
         A guild integration was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was updated.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was updated.
 
         .. versionadded:: 1.3
 
@@ -2208,7 +2284,8 @@ of :class:`enum.Enum`.
         A guild integration was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was deleted.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was deleted.
 
         .. versionadded:: 1.3
 
@@ -2413,6 +2490,27 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
         - :attr:`~AuditLogDiff.invitable`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: app_command_permission_update
+
+        An application command or integrations application command permissions
+        were updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`PartialIntegration` for an integrations general permissions,
+        :class:`~discord.app_commands.AppCommand` for a specific commands permissions,
+        or :class:`Object` with the ID of the command or integration which
+        was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an :class:`PartialIntegration` or :class:`Object` with the ID of
+        application that command or integration belongs to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.app_command_permissions`
 
         .. versionadded:: 2.0
 
@@ -3428,6 +3526,16 @@ AuditLogDiff
 
         :type: :class:`Asset`
 
+    .. attribute:: app_command_permissions
+
+        A list of application command permission tuples that represents a
+        target and a :class:`bool` for said target.
+
+        The first element is the object being targeted, which can either
+        be a :class:`Member`, :class:`abc.GuildChannel`,
+        :class:`~discord.app_commands.AllChannels`, or :class:`Role`.
+        :type: List[Tuple[target, :class:`bool`]]
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
@@ -3452,6 +3560,7 @@ WebhookMessage
 
 .. autoclass:: WebhookMessage()
     :members:
+    :inherited-members:
 
 SyncWebhook
 ~~~~~~~~~~~~
@@ -3677,6 +3786,9 @@ Integration
 .. autoclass:: StreamIntegration()
     :members:
 
+.. autoclass:: PartialIntegration()
+    :members:
+
 Member
 ~~~~~~
 
@@ -3886,6 +3998,22 @@ Template
 .. autoclass:: Template()
     :members:
 
+WelcomeScreen
+~~~~~~~~~~~~~~~
+
+.. attributetable:: WelcomeScreen
+
+.. autoclass:: WelcomeScreen()
+    :members:
+
+WelcomeChannel
+~~~~~~~~~~~~~~~
+
+.. attributetable:: WelcomeChannel
+
+.. autoclass:: WelcomeChannel()
+    :members:
+
 WidgetChannel
 ~~~~~~~~~~~~~~~
 
@@ -4007,12 +4135,36 @@ RawIntegrationDeleteEvent
 .. autoclass:: RawIntegrationDeleteEvent()
     :members:
 
+RawThreadUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawThreadUpdateEvent
+
+.. autoclass:: RawThreadUpdateEvent()
+    :members:
+
 RawThreadDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: RawThreadDeleteEvent
 
 .. autoclass:: RawThreadDeleteEvent()
+    :members:
+
+RawTypingEvent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawTypingEvent
+
+.. autoclass:: RawTypingEvent()
+    :members:
+
+RawMemberRemoveEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMemberRemoveEvent
+
+.. autoclass:: RawMemberRemoveEvent()
     :members:
 
 PartialWebhookGuild

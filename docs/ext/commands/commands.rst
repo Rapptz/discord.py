@@ -639,6 +639,85 @@ This command can be invoked any of the following ways:
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
     :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
 
+
+discord.Attachment
+^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+The :class:`discord.Attachment` converter is a special converter that retrieves an attachment from the uploaded attachments on a message. This converter *does not* look at the message content at all and just the uploaded attachments.
+
+Consider the following example:
+
+.. code-block:: python3
+
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: discord.Attachment):
+        await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :data:`typing.Optional` converter, the user does not have to provide an attachment.
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: typing.Optional[discord.Attachment]):
+        if attachment is None:
+            await ctx.send('You did not upload anything!')
+        else:
+            await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+This also works with multiple attachments:
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        second: typing.Optional[discord.Attachment],
+    ):
+        if second is None:
+            files = [first.url]
+        else:
+            files = [first.url, second.url]
+
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+In this example the user must provide at least one file but the second one is optional.
+
+As a special case, using :class:`~ext.commands.Greedy` will return the remaining attachments in the message, if any.
+
+.. code-block:: python3
+
+    import discord
+    from discord.ext import commands
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        remaining: commands.Greedy[discord.Attachment],
+    ):
+        files = [first.url]
+        files.extend(a.url for a in remaining)
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+Note that using a :class:`discord.Attachment` converter after a :class:`~ext.commands.Greedy` of :class:`discord.Attachment` will always fail since the greedy had already consumed the remaining attachments.
+
+If an attachment is expected but not given, then :exc:`~ext.commands.MissingRequiredAttachment` is raised to the error handlers.
+
 .. _ext_commands_flag_converter:
 
 FlagConverter
@@ -719,6 +798,10 @@ In order to customise the flag syntax we also have a few options that can be pas
     a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
     all flags need a corresponding value.
 
+Flag converters will only raise :exc:`~ext.commands.FlagError` derived exceptions. If an error is raised while
+converting a flag, :exc:`~ext.commands.BadFlagArgument` is raised instead and the original exception
+can be accessed with the :attr:`~ext.commands.BadFlagArgument.original` attribute.
+
 The flag converter is similar to regular commands and allows you to use most types of converters
 (with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
 annotations as described below.
@@ -797,6 +880,77 @@ A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` e
 given as a :class:`dict` rather than a :class:`list`.
 
 
+Hybrid Command Interaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When used as a hybrid command, the parameters are flattened into different parameters for the application command. For example, the following converter:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+Would be equivalent to an application command defined as this:
+
+.. code-block:: python3
+
+    @commands.hybrid_command()
+    async def ban(ctx, member: discord.Member, reason: str, days: int = 1):
+        ...
+
+This means that decorators that refer to a parameter by name will use the flag name instead:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    @app_commands.describe(
+        member='The member to ban',
+        reason='The reason for the ban',
+        days='The number of days worth of messages to delete',
+    )
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+For ease of use, the :func:`~ext.commands.flag` function accepts a ``description`` keyword argument to allow you to pass descriptions inline:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member = commands.flag(description='The member to ban')
+        reason: str = commands.flag(description='The reason for the ban')
+        days: int = commands.flag(default=1, description='The number of days worth of messages to delete')
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+
+Likewise, use of the ``name`` keyword argument allows you to pass renames for the parameter, similar to the :func:`~discord.app_commands.rename` decorator.
+
+Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:
+
+- ``typing.Tuple``
+- ``typing.List``
+- ``typing.Dict``
+
+.. note::
+
+    Only one flag converter is supported per hybrid command. Due to the flag converter's way of working, it is unlikely for a user to have two of them in one signature.
+
 .. _ext_commands_parameter:
 
 Parameter Metadata
@@ -834,7 +988,7 @@ This is useful for:
   .. code-block:: python3
 
       @bot.command()
-      async def wave(to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
+      async def wave(ctx, to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
           await ctx.send(f'Hello {to.mention} :wave:')
 
   Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and
@@ -843,7 +997,7 @@ This is useful for:
   .. code-block:: python3
 
       @bot.command()
-      async def wave(to: discord.User = commands.Author):
+      async def wave(ctx, to: discord.User = commands.Author):
           await ctx.send(f'Hello {to.mention} :wave:')
 
   :obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled.

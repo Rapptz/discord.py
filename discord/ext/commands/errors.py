@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 __all__ = (
     'CommandError',
     'MissingRequiredArgument',
+    'MissingRequiredAttachment',
     'BadArgument',
     'PrivateMessageOnly',
     'NoPrivateMessage',
@@ -182,6 +183,25 @@ class MissingRequiredArgument(UserInputError):
     def __init__(self, param: Parameter) -> None:
         self.param: Parameter = param
         super().__init__(f'{param.name} is a required argument that is missing.')
+
+
+class MissingRequiredAttachment(UserInputError):
+    """Exception raised when parsing a command and a parameter
+    that requires an attachment is not given.
+
+    This inherits from :exc:`UserInputError`
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    param: :class:`Parameter`
+        The argument that is missing an attachment.
+    """
+
+    def __init__(self, param: Parameter) -> None:
+        self.param: Parameter = param
+        super().__init__(f'{param.name} is a required argument that is missing an attachment.')
 
 
 class TooManyArguments(UserInputError):
@@ -1118,14 +1138,22 @@ class BadFlagArgument(FlagError):
     -----------
     flag: :class:`~discord.ext.commands.Flag`
         The flag that failed to convert.
+    argument: :class:`str`
+        The argument supplied by the caller that was not able to be converted.
+    original: :class:`Exception`
+        The original exception that was raised. You can also get this via
+        the ``__cause__`` attribute.
     """
 
-    def __init__(self, flag: Flag) -> None:
+    def __init__(self, flag: Flag, argument: str, original: Exception) -> None:
         self.flag: Flag = flag
         try:
             name = flag.annotation.__name__
         except AttributeError:
             name = flag.annotation.__class__.__name__
+
+        self.argument: str = argument
+        self.original: Exception = original
 
         super().__init__(f'Could not convert to {name!r} for flag {flag.name!r}')
 

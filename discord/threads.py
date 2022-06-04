@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
+from typing import Callable, Dict, Iterable, List, Literal, Optional, Union, TYPE_CHECKING
 from datetime import datetime
 
 from .mixins import Hashable
@@ -57,6 +57,8 @@ if TYPE_CHECKING:
     from .role import Role
     from .permissions import Permissions
     from .state import ConnectionState
+
+    ThreadChannelType = Literal[ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread]
 
 
 class Thread(Messageable, Hashable):
@@ -172,7 +174,7 @@ class Thread(Messageable, Hashable):
         self.parent_id: int = int(data['parent_id'])
         self.owner_id: int = int(data['owner_id'])
         self.name: str = data['name']
-        self._type: ChannelType = try_enum(ChannelType, data['type'])
+        self._type: ThreadChannelType = try_enum(ChannelType, data['type'])  # type: ignore
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
@@ -211,7 +213,7 @@ class Thread(Messageable, Hashable):
             pass
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> ThreadChannelType:
         """:class:`ChannelType`: The channel's Discord type."""
         return self._type
 
@@ -749,10 +751,10 @@ class Thread(Messageable, Hashable):
 
         return PartialMessage(channel=self, id=message_id)
 
-    def _add_member(self, member: ThreadMember) -> None:
+    def _add_member(self, member: ThreadMember, /) -> None:
         self._members[member.id] = member
 
-    def _pop_member(self, member_id: int) -> Optional[ThreadMember]:
+    def _pop_member(self, member_id: int, /) -> Optional[ThreadMember]:
         return self._members.pop(member_id, None)
 
 

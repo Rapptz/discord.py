@@ -300,7 +300,7 @@ class _Overwrites:
     ROLE = 0
     MEMBER = 1
 
-    def __init__(self, data: PermissionOverwritePayload):
+    def __init__(self, data: PermissionOverwritePayload) -> None:
         self.id: int = int(data['id'])
         self.allow: int = int(data.get('allow', 0))
         self.deny: int = int(data.get('deny', 0))
@@ -732,12 +732,6 @@ class GuildChannel:
         if base.administrator:
             return Permissions.all()
 
-        if obj.is_timed_out():
-            # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
-            # being explicitly denied
-            base.value &= Permissions._timeout_mask()
-            return base
-
         # Apply @everyone allow/deny first since it's special
         try:
             maybe_everyone = self._overwrites[0]
@@ -778,6 +772,12 @@ class GuildChannel:
         if not base.read_messages:
             denied = Permissions.all_channel()
             base.value &= ~denied.value
+
+        if obj.is_timed_out():
+            # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
+            # being explicitly denied
+            # N.B.: This *must* come last, because it's a conclusive mask
+            base.value &= Permissions._timeout_mask()
 
         return base
 
@@ -1277,12 +1277,13 @@ class GuildChannel:
 class Messageable:
     """An ABC that details the common operations on a model that can send messages.
 
-    The following implement this ABC:
+    The following classes implement this ABC:
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
+    - :class:`~discord.PartialMessageable`
     - :class:`~discord.User`
     - :class:`~discord.Member`
     - :class:`~discord.ext.commands.Context`
@@ -1543,32 +1544,30 @@ class Messageable:
             await ret.delete(delay=delete_after)
         return ret
 
-    async def trigger_typing(self) -> None:
-        """|coro|
-
-        Triggers a *typing* indicator to the destination.
-
-        *Typing* indicator will go away after 10 seconds, or after a message is sent.
-        """
-
-        channel = await self._get_channel()
-        await self._state.http.send_typing(channel.id)
-
     def typing(self) -> Typing:
-        """Returns an asynchronous context manager that allows you to type for an indefinite period of time.
-
-        This is useful for denoting long computations in your bot.
+        """Returns an asynchronous context manager that allows you to send a typing indicator to
+        the destination for an indefinite period of time, or 10 seconds if the context manager
+        is called using ``await``.
 
         Example Usage: ::
 
             async with channel.typing():
                 # simulate something heavy
-                await asyncio.sleep(10)
+                await asyncio.sleep(20)
 
-            await channel.send('done!')
+            await channel.send('Done!')
+
+        Example Usage: ::
+
+            await channel.typing()
+            # Do some computational magic for about 10 seconds
+            await channel.send('Done!')
 
         .. versionchanged:: 2.0
             This no longer works with the ``with`` syntax, ``async with`` must be used instead.
+
+        .. versionchanged:: 2.0
+            Added functionality to ``await`` the context manager to send a typing indicator for 10 seconds.
         """
         return Typing(self)
 
@@ -1815,7 +1814,7 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = MISSING,
+        cls: Callable[[Client, Connectable], T] = VoiceClient,
         self_deaf: bool = False,
         self_mute: bool = False,
     ) -> T:
@@ -1840,11 +1839,11 @@ class Connectable(Protocol):
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1868,12 +1867,7 @@ class Connectable(Protocol):
             raise ClientException('Already connected to a voice channel.')
 
         client = state._get_client()
-
-        if cls is MISSING:
-            cls = VoiceClient
-
-        # The type checker doesn't understand that VoiceClient *is* T here.
-        voice: T = cls(client, self)  # type: ignore
+        voice: T = cls(client, self)
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class.')

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
@@ -134,6 +134,9 @@ class _BaseApplicationCommand(TypedDict):
     id: Snowflake
     application_id: Snowflake
     name: str
+    dm_permission: NotRequired[Optional[bool]]
+    default_member_permissions: NotRequired[Optional[str]]
+    nsfw: NotRequired[bool]
     version: Snowflake
 
 
@@ -190,7 +193,7 @@ ApplicationCommand = Union[
 ]
 
 
-ApplicationCommandPermissionType = Literal[1, 2]
+ApplicationCommandPermissionType = Literal[1, 2, 3]
 
 
 class ApplicationCommandPermissions(TypedDict):

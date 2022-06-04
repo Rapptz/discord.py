@@ -38,6 +38,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Sequence,
     Set,
     Tuple,
     TypeVar,
@@ -56,6 +57,7 @@ from .errors import (
     CommandNotFound,
     CommandSignatureMismatch,
     CommandLimitReached,
+    MissingApplicationID,
 )
 from ..errors import ClientException
 from ..enums import AppCommandType, InteractionType
@@ -77,14 +79,9 @@ __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
 
-APP_ID_NOT_FOUND = (
-    'Client does not have an application_id set. Either the function was called before on_ready '
-    'was called or application_id was not passed to the Client constructor.'
-)
-
 
 def _retrieve_guild_ids(
-    command: Any, guild: Optional[Snowflake] = MISSING, guilds: List[Snowflake] = MISSING
+    command: Any, guild: Optional[Snowflake] = MISSING, guilds: Sequence[Snowflake] = MISSING
 ) -> Optional[Set[int]]:
     if guild is not MISSING and guilds is not MISSING:
         raise TypeError('cannot mix guild and guilds keyword arguments')
@@ -116,9 +113,16 @@ class CommandTree(Generic[ClientT]):
     -----------
     client: :class:`~discord.Client`
         The client instance to get application command information from.
+    fallback_to_global: :class:`bool`
+        If a guild-specific command is not found when invoked, then try falling back into
+        a global command in the tree. For example, if the tree locally has a ``/ping`` command
+        under the global namespace but the guild has a guild-specific ``/ping``, instead of failing
+        to find the guild-specific ``/ping`` command it will fall back to the global ``/ping`` command.
+        This has the potential to raise more :exc:`~discord.app_commands.CommandSignatureMismatch` errors
+        than usual. Defaults to ``True``.
     """
 
-    def __init__(self, client: ClientT):
+    def __init__(self, client: ClientT, *, fallback_to_global: bool = True):
         self.client: ClientT = client
         self._http = client.http
         self._state = client._connection
@@ -127,6 +131,7 @@ class CommandTree(Generic[ClientT]):
             raise ClientException('This client already has an associated command tree.')
 
         self._state._command_tree = self
+        self.fallback_to_global: bool = fallback_to_global
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
         self._global_commands: Dict[str, Union[Command, Group]] = {}
         # (name, guild_id, command_type): Command
@@ -134,6 +139,45 @@ class CommandTree(Generic[ClientT]):
         # by name and guild_id in the above case while here it isn't as important since
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
+
+    async def fetch_command(self, command_id: int, /, *, guild: Optional[Snowflake] = None) -> AppCommand:
+        """|coro|
+
+        Fetches an application command from the application.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command to fetch.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to fetch the command from. If not passed then the global command
+            is fetched instead.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the command failed.
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The application command was not found.
+            This could also be because the command is a guild command
+            and the guild was not specified and vise versa.
+
+        Returns
+        --------
+        :class:`~discord.app_commands.AppCommand`
+            The application command.
+        """
+        if self.client.application_id is None:
+            raise MissingApplicationID
+
+        if guild is None:
+            command = await self._http.get_global_command(self.client.application_id, command_id)
+        else:
+            command = await self._http.get_guild_command(self.client.application_id, guild.id, command_id)
+
+        return AppCommand(data=command, state=self._state)
 
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
         """|coro|
@@ -157,7 +201,7 @@ class CommandTree(Generic[ClientT]):
         -------
         HTTPException
             Fetching the commands failed.
-        ClientException
+        MissingApplicationID
             The application ID could not be found.
 
         Returns
@@ -166,7 +210,7 @@ class CommandTree(Generic[ClientT]):
             The application's commands.
         """
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         if guild is None:
             commands = await self._http.get_global_commands(self.client.application_id)
@@ -179,8 +223,7 @@ class CommandTree(Generic[ClientT]):
         """Copies all global commands to the specified guild.
 
         This method is mainly available for development purposes, as it allows you
-        to copy your global commands over to a testing guild easily and prevent waiting
-        an hour for the propagation.
+        to copy your global commands over to a testing guild easily.
 
         Note that this method will *override* pre-existing guild commands that would conflict.
 
@@ -226,7 +269,7 @@ class CommandTree(Generic[ClientT]):
         /,
         *,
         guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
+        guilds: Sequence[Snowflake] = MISSING,
         override: bool = False,
     ) -> None:
         """Adds an application command to the tree.
@@ -279,8 +322,11 @@ class CommandTree(Generic[ClientT]):
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
 
+                # If the key is found and overridden then it shouldn't count as an extra addition
+                # read as `0 if override and found else 1` if confusing
+                to_add = not (override and found)
                 total = sum(1 for _, g, t in self._context_menus if g == guild_id and t == type)
-                if total + found > 5:
+                if total + to_add > 5:
                     raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
 
@@ -311,7 +357,9 @@ class CommandTree(Generic[ClientT]):
                 found = name in commands
                 if found and not override:
                     raise CommandAlreadyRegistered(name, guild_id)
-                if len(commands) + found > 100:
+
+                to_add = not (override and found)
+                if len(commands) + to_add > 100:
                     raise CommandLimitReached(guild_id=guild_id, limit=100)
 
             # Actually add the command now that it has been verified to be okay.
@@ -322,7 +370,9 @@ class CommandTree(Generic[ClientT]):
             found = name in self._global_commands
             if found and not override:
                 raise CommandAlreadyRegistered(name, None)
-            if len(self._global_commands) + found > 100:
+
+            to_add = not (override and found)
+            if len(self._global_commands) + to_add > 100:
                 raise CommandLimitReached(guild_id=None, limit=100)
             self._global_commands[name] = root
 
@@ -785,8 +835,9 @@ class CommandTree(Generic[ClientT]):
         *,
         name: str = MISSING,
         description: str = MISSING,
+        nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
+        guilds: Sequence[Snowflake] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
 
@@ -799,6 +850,10 @@ class CommandTree(Generic[ClientT]):
             The description of the application command. This shows up in the UI to describe
             the application command. If not given, it defaults to the first line of the docstring
             of the callback shortened to 100 characters.
+        nsfw: :class:`bool`
+            Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+            Due to a Discord limitation, this does not work on subcommands.
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
@@ -824,6 +879,7 @@ class CommandTree(Generic[ClientT]):
                 name=name if name is not MISSING else func.__name__,
                 description=desc,
                 callback=func,
+                nsfw=nsfw,
                 parent=None,
             )
             self.add_command(command, guild=guild, guilds=guilds)
@@ -835,8 +891,9 @@ class CommandTree(Generic[ClientT]):
         self,
         *,
         name: str = MISSING,
+        nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
+        guilds: Sequence[Snowflake] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates a application command context menu from a regular function directly under this tree.
 
@@ -863,6 +920,10 @@ class CommandTree(Generic[ClientT]):
             The name of the context menu command. If not given, it defaults to a title-case
             version of the callback name. Note that unlike regular slash commands this can
             have spaces and upper case characters in the name.
+        nsfw: :class:`bool`
+            Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+
+            Due to a Discord limitation, this does not work on subcommands.
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
@@ -877,7 +938,7 @@ class CommandTree(Generic[ClientT]):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
-            context_menu = ContextMenu(name=actual_name, callback=func)
+            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
@@ -889,9 +950,6 @@ class CommandTree(Generic[ClientT]):
         Syncs the application commands to Discord.
 
         This must be called for the application commands to show up.
-
-        Global commands take up to 1-hour to propagate but guild
-        commands propagate instantly.
 
         Parameters
         -----------
@@ -905,7 +963,7 @@ class CommandTree(Generic[ClientT]):
             Syncing the commands failed.
         Forbidden
             The client does not have the ``applications.commands`` scope in the guild.
-        ClientException
+        MissingApplicationID
             The client does not have an application ID.
 
         Returns
@@ -915,7 +973,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         if self.client.application_id is None:
-            raise ClientException(APP_ID_NOT_FOUND)
+            raise MissingApplicationID
 
         commands = self._get_all_commands(guild=guild)
         payload = [command.to_dict() for command in commands]
@@ -938,7 +996,11 @@ class CommandTree(Generic[ClientT]):
     def _get_context_menu(self, data: ApplicationCommandInteractionData) -> Optional[ContextMenu]:
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')
-        return self._context_menus.get((name, guild_id, data.get('type', 1)))
+        t = data.get('type', 1)
+        cmd = self._context_menus.get((name, guild_id, t))
+        if cmd is None and self.fallback_to_global:
+            return self._context_menus.get((name, None, t))
+        return cmd
 
     def _get_app_command_options(
         self, data: ApplicationCommandInteractionData
@@ -951,9 +1013,11 @@ class CommandTree(Generic[ClientT]):
             try:
                 guild_commands = self._guild_commands[command_guild_id]
             except KeyError:
-                command = None
+                command = None if not self.fallback_to_global else self._global_commands.get(name)
             else:
                 command = guild_commands.get(name)
+                if command is None and self.fallback_to_global:
+                    command = self._global_commands.get(name)
         else:
             command = self._global_commands.get(name)
 
@@ -1003,7 +1067,8 @@ class CommandTree(Generic[ClientT]):
 
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
 
-        target_id = data.get('target_id')
+        # This is annotated as str | int but realistically this will always be str
+        target_id: Optional[Union[str, int]] = data.get('target_id')
         # Right now, the only types are message and user
         # Therefore, there's no conflict with snowflakes
 

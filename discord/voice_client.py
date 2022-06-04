@@ -124,11 +124,7 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw `voice state payload`__.
-
-            .. _voice_state_update_payload: https://discord.com/developers/docs/resources/voice#voice-state-object
-
-            __ voice_state_update_payload_
+            The raw :ddocs:`voice state payload <resources/voice#voice-state-object>`.
         """
         raise NotImplementedError
 
@@ -141,11 +137,7 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw `voice server update payload`__.
-
-            .. _voice_server_update_payload: https://discord.com/developers/docs/topics/gateway#voice-server-update-voice-server-update-event-fields
-
-            __ voice_server_update_payload_
+            The raw :ddocs:`voice server update payload <topics/gateway#voice-server-update>`.
         """
         raise NotImplementedError
 
@@ -172,11 +164,11 @@ class VoiceProtocol:
         self_mute: :class:`bool`
             Indicates if the client should be self-muted.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
         self_deaf: :class:`bool`
             Indicates if the client should be self-deafened.
 
-            .. versionadded: 2.0
+            .. versionadded:: 2.0
         """
         raise NotImplementedError
 

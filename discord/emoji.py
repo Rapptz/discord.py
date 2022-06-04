@@ -108,12 +108,12 @@ class Emoji(_EmojiTag, AssetMixin):
         'available',
     )
 
-    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload):
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload) -> None:
         self.guild_id: int = guild.id
         self._state: ConnectionState = state
         self._from_data(data)
 
-    def _from_data(self, emoji: EmojiPayload):
+    def _from_data(self, emoji: EmojiPayload) -> None:
         self.require_colons: bool = emoji.get('require_colons', False)
         self.managed: bool = emoji.get('managed', False)
         self.id: int = int(emoji['id'])  # type: ignore # This won't be None for full emoji objects.

@@ -87,7 +87,7 @@ if TYPE_CHECKING:
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
-    from .components import Component
+    from .components import ActionRow, ActionRowChildComponentType
     from .state import ConnectionState
     from .channel import TextChannel
     from .mentions import AllowedMentions
@@ -96,6 +96,7 @@ if TYPE_CHECKING:
     from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
+    MessageComponentType = Union[ActionRow, ActionRowChildComponentType]
 
 
 __all__ = (
@@ -467,7 +468,7 @@ class MessageReference:
     def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> Self:
         self = cls.__new__(cls)
         self.message_id = utils._get_as_snowflake(data, 'message_id')
-        self.channel_id = int(data.pop('channel_id'))
+        self.channel_id = int(data['channel_id'])
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
         self.fail_if_not_exists = data.get('fail_if_not_exists', True)
         self._state = state
@@ -785,6 +786,7 @@ class PartialMessage(Hashable):
 
     async def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
@@ -882,7 +884,11 @@ class PartialMessage(Hashable):
         message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
-            self._state.store_view(view, self.id)
+            interaction: Optional[MessageInteraction] = getattr(self, 'interaction', None)
+            if interaction is not None:
+                self._state.store_view(view, self.id, interaction_id=interaction.id)
+            else:
+                self._state.store_view(view, self.id)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -968,7 +974,7 @@ class PartialMessage(Hashable):
         # pinned exists on PartialMessage for duck typing purposes
         self.pinned = False
 
-    async def add_reaction(self, emoji: EmojiInputType, /) -> None:
+    async def add_reaction(self, emoji: Union[EmojiInputType, Reaction], /) -> None:
         """|coro|
 
         Adds a reaction to the message.
@@ -1335,7 +1341,7 @@ class Message(PartialMessage, Hashable):
         A list of sticker items given to the message.
 
         .. versionadded:: 1.6
-    components: List[:class:`Component`]
+    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
         A list of components in the message.
 
         .. versionadded:: 2.0
@@ -1387,6 +1393,7 @@ class Message(PartialMessage, Hashable):
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
         role_mentions: List[Role]
+        components: List[MessageComponentType]
 
     def __init__(
         self,
@@ -1404,7 +1411,6 @@ class Message(PartialMessage, Hashable):
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.application: Optional[MessageApplicationPayload] = data.get('application')
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
-        self.channel: MessageableChannel = channel
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.type: MessageType = try_enum(MessageType, data['type'])
         self.pinned: bool = data['pinned']
@@ -1414,11 +1420,10 @@ class Message(PartialMessage, Hashable):
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
-            self.guild = channel.guild  # type: ignore
+            self.guild = channel.guild
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
@@ -1456,7 +1461,7 @@ class Message(PartialMessage, Hashable):
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -1627,8 +1632,14 @@ class Message(PartialMessage, Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
-    def _handle_components(self, components: List[ComponentPayload]):
-        self.components = [_component_factory(d) for d in components]
+    def _handle_components(self, data: List[ComponentPayload]) -> None:
+        self.components = []
+
+        for component_data in data:
+            component = _component_factory(component_data)
+
+            if component is not None:
+                self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
@@ -1899,6 +1910,7 @@ class Message(PartialMessage, Hashable):
 
     async def edit(
         self,
+        *,
         content: Optional[str] = MISSING,
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,

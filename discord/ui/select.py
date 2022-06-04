@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
 import inspect
 import os
 
@@ -117,7 +117,6 @@ class Select(Item[V]):
         options = [] if options is MISSING else options
         self._underlying = SelectMenu._raw_construct(
             custom_id=custom_id,
-            type=ComponentType.select,
             placeholder=placeholder,
             min_values=min_values,
             max_values=max_values,
@@ -288,7 +287,7 @@ class Select(Item[V]):
         )
 
     @property
-    def type(self) -> ComponentType:
+    def type(self) -> Literal[ComponentType.select]:
         return self._underlying.type
 
     def is_dispatchable(self) -> bool:

@@ -25,10 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, Generator, Optional, Type, TypeVar
 
 if TYPE_CHECKING:
-    from .abc import Messageable
+    from .abc import Messageable, MessageableChannel
 
     from types import TracebackType
 
@@ -53,21 +53,32 @@ class Typing:
     def __init__(self, messageable: Messageable) -> None:
         self.loop: asyncio.AbstractEventLoop = messageable._state.loop
         self.messageable: Messageable = messageable
+        self.channel: Optional[MessageableChannel] = None
+
+    async def _get_channel(self) -> MessageableChannel:
+        if self.channel:
+            return self.channel
+
+        self.channel = channel = await self.messageable._get_channel()
+        return channel
+
+    async def wrapped_typer(self) -> None:
+        channel = await self._get_channel()
+        await channel._state.http.send_typing(channel.id)
+
+    def __await__(self) -> Generator[None, None, None]:
+        return self.wrapped_typer().__await__()
 
     async def do_typing(self) -> None:
-        try:
-            channel = self._channel
-        except AttributeError:
-            channel = await self.messageable._get_channel()
-
+        channel = await self._get_channel()
         typing = channel._state.http.send_typing
 
         while True:
-            await typing(channel.id)
             await asyncio.sleep(5)
+            await typing(channel.id)
 
     async def __aenter__(self) -> None:
-        self._channel = channel = await self.messageable._get_channel()
+        channel = await self._get_channel()
         await channel._state.http.send_typing(channel.id)
         self.task: asyncio.Task[None] = self.loop.create_task(self.do_typing())
         self.task.add_done_callback(_typing_done_callback)

@@ -238,6 +238,7 @@ class Client:
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
         self._ready: asyncio.Event = MISSING
+        self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
@@ -345,8 +346,9 @@ class Client:
         """Optional[:class:`int`]: The client's application ID.
 
         If this is not passed via ``__init__`` then this is retrieved
-        through the gateway when an event contains the data. Usually
-        after :func:`~discord.on_connect` is called.
+        through the gateway when an event contains the data or after a call
+        to :meth:`~discord.Client.login`. Usually after :func:`~discord.on_connect`
+        is called.
 
         .. versionadded:: 2.0
         """
@@ -359,6 +361,22 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.application_flags
+
+    @property
+    def application(self) -> Optional[AppInfo]:
+        """Optional[:class:`~discord.AppInfo`]: The client's application info.
+
+        This is retrieved on :meth:`~discord.Client.login` and is not updated
+        afterwards. This allows populating the application_id without requiring a
+        gateway connection.
+
+        This is ``None`` if accessed before :meth:`~discord.Client.login` is called.
+
+        .. seealso:: The :meth:`~discord.Client.application_info` API call
+
+        .. versionadded:: 2.0
+        """
+        return self._application
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -484,7 +502,6 @@ class Client:
         self.loop = loop
         self.http.loop = loop
         self._connection.loop = loop
-        await self._connection.async_setup()
 
         self._ready = asyncio.Event()
 
@@ -542,6 +559,13 @@ class Client:
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
+        self._application = await self.application_info()
+        if self._connection.application_id is None:
+            self._connection.application_id = self._application.id
+
+        if not self._connection.application_flags:
+            self._connection.application_flags = self._application.flags
+
         await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -667,7 +691,7 @@ class Client:
         self._closed = False
         self._ready.clear()
         self._connection.clear()
-        self.http.recreate()
+        self.http.clear()
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|
@@ -808,7 +832,9 @@ class Client:
         """
         return self._connection.get_channel(id)  # type: ignore # The cache contains all channel types
 
-    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+    def get_partial_messageable(
+        self, id: int, *, guild_id: Optional[int] = None, type: Optional[ChannelType] = None
+    ) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
 
         This is useful if you have a channel_id but don't want to do an API call
@@ -820,6 +846,12 @@ class Client:
         -----------
         id: :class:`int`
             The channel ID to create a partial messageable for.
+        guild_id: Optional[:class:`int`]
+            The optional guild ID to create a partial messageable for.
+
+            This is not required to actually send messages, but it does allow the
+            :meth:`~discord.PartialMessageable.jump_url` and
+            :attr:`~discord.PartialMessageable.guild` properties to function properly.
         type: Optional[:class:`.ChannelType`]
             The underlying channel type for the partial messageable.
 
@@ -828,7 +860,7 @@ class Client:
         :class:`.PartialMessageable`
             The partial messageable
         """
-        return PartialMessageable(state=self._connection, id=id, type=type)
+        return PartialMessageable(state=self._connection, id=id, guild_id=guild_id, type=type)
 
     def get_stage_instance(self, id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.

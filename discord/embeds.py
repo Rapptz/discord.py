@@ -122,7 +122,7 @@ class Embed:
         The type of embed. Usually "rich".
         This can be set during initialisation.
         Possible strings for embed types can be found on discord's
-        `api docs <https://discord.com/developers/docs/resources/channel#embed-object-embed-types>`_
+        :ddocs:`api docs <resources/channel#embed-object-embed-types>`
     description: Optional[:class:`str`]
         The description of the embed.
         This can be set during initialisation.
@@ -190,11 +190,7 @@ class Embed:
         """Converts a :class:`dict` to a :class:`Embed` provided it is in the
         format that Discord expects it to be in.
 
-        You can find out about this format in the `official Discord documentation`__.
-
-        .. _DiscordDocs: https://discord.com/developers/docs/resources/channel#embed-object
-
-        __ DiscordDocs_
+        You can find out about this format in the :ddocs:`official Discord documentation <resources/channel#embed-object>`.
 
         Parameters
         -----------
@@ -602,23 +598,38 @@ class Embed:
 
         return self
 
-    def clear_fields(self) -> None:
-        """Removes all fields from this embed."""
+    def clear_fields(self) -> Self:
+        """Removes all fields from this embed.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionchanged:: 2.0
+            This function now returns the class instance.
+        """
         try:
             self._fields.clear()
         except AttributeError:
             self._fields = []
 
-    def remove_field(self, index: int) -> None:
+        return self
+
+    def remove_field(self, index: int) -> Self:
         """Removes a field at a specified index.
 
         If the index is invalid or out of bounds then the error is
         silently swallowed.
 
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
         .. note::
 
             When deleting a field by index, the index of the other fields
             shift to fill the gap just like a regular list.
+
+        .. versionchanged:: 2.0
+            This function now returns the class instance.
 
         Parameters
         -----------
@@ -629,6 +640,8 @@ class Embed:
             del self._fields[index]
         except (AttributeError, IndexError):
             pass
+
+        return self
 
     def set_field_at(self, index: int, *, name: Any, value: Any, inline: bool = True) -> Self:
         """Modifies a field to the embed object.

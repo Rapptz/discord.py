@@ -142,7 +142,7 @@ def _err_ne(result: T, func: Callable, args: List) -> T:
 # The fourth is the error handler.
 exported_functions: List[Tuple[Any, ...]] = [
     # Generic
-    ('opus_get_version_string', None, ctypes.c_char_p, None),
+    ('opus_get_version_string', [], ctypes.c_char_p, None),
     ('opus_strerror', [ctypes.c_int], ctypes.c_char_p, None),
     # Encoder functions
     ('opus_encoder_get_size', [ctypes.c_int], ctypes.c_int, None),
@@ -154,7 +154,7 @@ exported_functions: List[Tuple[Any, ...]] = [
         ctypes.c_int32,
         _err_lt,
     ),
-    ('opus_encoder_ctl', None, ctypes.c_int32, _err_lt),
+    ('opus_encoder_ctl', [EncoderStructPtr, ctypes.c_int], ctypes.c_int32, _err_lt),
     ('opus_encoder_destroy', [EncoderStructPtr], None, None),
     # Decoder functions
     ('opus_decoder_get_size', [ctypes.c_int], ctypes.c_int, None),
@@ -171,7 +171,7 @@ exported_functions: List[Tuple[Any, ...]] = [
         ctypes.c_int,
         _err_lt,
     ),
-    ('opus_decoder_ctl', None, ctypes.c_int32, _err_lt),
+    ('opus_decoder_ctl', [DecoderStructPtr, ctypes.c_int], ctypes.c_int32, _err_lt),
     ('opus_decoder_destroy', [DecoderStructPtr], None, None),
     ('opus_decoder_get_nb_samples', [DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int, _err_lt),
     # Packet functions

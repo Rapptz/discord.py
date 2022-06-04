@@ -87,6 +87,7 @@ if TYPE_CHECKING:
         threads,
         scheduled_event,
         sticker,
+        welcome_screen,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -147,7 +148,8 @@ def handle_message_parameters(
     stickers: Optional[SnowflakeList] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
     mention_author: Optional[bool] = None,
-    extras: Dict[str, Any] = MISSING,
+    thread_name: str = MISSING,
+    channel_payload: Dict[str, Any] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -205,6 +207,9 @@ def handle_message_parameters(
     if flags is not MISSING:
         payload['flags'] = flags.value
 
+    if thread_name is not MISSING:
+        payload['thread_name'] = thread_name
+
     if allowed_mentions:
         if previous_allowed_mentions is not None:
             payload['allowed_mentions'] = previous_allowed_mentions.merge(allowed_mentions).to_dict()
@@ -235,8 +240,11 @@ def handle_message_parameters(
 
         payload['attachments'] = attachments_payload
 
-    if extras is not MISSING:
-        payload.update(extras)
+    if channel_payload is not MISSING:
+        payload = {
+            'message': payload,
+        }
+        payload.update(channel_payload)
 
     multipart = []
     if files:
@@ -339,7 +347,6 @@ class HTTPClient:
         self._locks: weakref.WeakValueDictionary = weakref.WeakValueDictionary()
         self._global_over: asyncio.Event = MISSING
         self.token: Optional[str] = None
-        self.bot_token: bool = False
         self.proxy: Optional[str] = proxy
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
@@ -348,11 +355,9 @@ class HTTPClient:
         user_agent = 'DiscordBot (https://github.com/Rapptz/discord.py {0}) Python/{1[0]}.{1[1]} aiohttp/{2}'
         self.user_agent: str = user_agent.format(__version__, sys.version_info, aiohttp.__version__)
 
-    def recreate(self) -> None:
-        if self.__session.closed:
-            self.__session = aiohttp.ClientSession(
-                connector=self.connector, ws_response_class=DiscordClientWebSocketResponse
-            )
+    def clear(self) -> None:
+        if self.__session and self.__session.closed:
+            self.__session = MISSING
 
     async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
         kwargs = {
@@ -485,8 +490,8 @@ class HTTPClient:
 
                             continue
 
-                        # we've received a 500, 502, or 504, unconditional retry
-                        if response.status in {500, 502, 504}:
+                        # we've received a 500, 502, 504, or 524, unconditional retry
+                        if response.status in {500, 502, 504, 524}:
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
@@ -539,12 +544,11 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(loop=self.loop, limit=0)
+            self.connector = aiohttp.TCPConnector(limit=0)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
             ws_response_class=DiscordClientWebSocketResponse,
-            loop=self.loop,
             trace_configs=None if self.http_trace is None else [self.http_trace],
         )
         self._global_over = asyncio.Event()
@@ -987,12 +991,13 @@ class HTTPClient:
         *,
         params: MultipartParameters,
         reason: Optional[str] = None,
-    ) -> Response[threads.Thread]:
+    ) -> Response[threads.ForumThread]:
+        query = {'use_nested_fields': 1}
         r = Route('POST', '/channels/{channel_id}/threads', channel_id=channel_id)
         if params.files:
-            return self.request(r, files=params.files, form=params.multipart, reason=reason)
+            return self.request(r, files=params.files, form=params.multipart, params=query, reason=reason)
         else:
-            return self.request(r, json=params.payload, reason=reason)
+            return self.request(r, json=params.payload, params=query, reason=reason)
 
     def join_thread(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/thread-members/@me', channel_id=channel_id))
@@ -1209,6 +1214,22 @@ class HTTPClient:
             params['after'] = after
 
         return self.request(Route('GET', '/guilds/{guild_id}/bans', guild_id=guild_id), params=params)
+
+    def get_welcome_screen(self, guild_id: Snowflake) -> Response[welcome_screen.WelcomeScreen]:
+        return self.request(Route('GET', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id))
+
+    def edit_welcome_screen(
+        self, guild_id: Snowflake, *, reason: Optional[str] = None, **fields: Any
+    ) -> Response[welcome_screen.WelcomeScreen]:
+        valid_keys = (
+            'description',
+            'welcome_channels',
+            'enabled',
+        )
+        payload = {k: v for k, v in fields.items() if k in valid_keys}
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id), json=payload, reason=reason
+        )
 
     def get_ban(self, user_id: Snowflake, guild_id: Snowflake) -> Response[guild.Ban]:
         return self.request(Route('GET', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id))

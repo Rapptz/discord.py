@@ -28,7 +28,7 @@ import discord
 from discord import app_commands
 from discord.utils import maybe_coroutine
 
-from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from ._types import _BaseCommand, BotT
 
@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 __all__ = (
     'CogMeta',
     'Cog',
+    'GroupCog',
 )
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
@@ -108,36 +109,65 @@ class CogMeta(type):
                 @commands.command(hidden=False)
                 async def bar(self, ctx):
                     pass # hidden -> False
+
+    group_name: :class:`str`
+        The group name of a cog. This is only applicable for :class:`GroupCog` instances.
+        By default, it's the same value as :attr:`name`.
+
+        .. versionadded:: 2.0
+    group_description: :class:`str`
+        The group description of a cog. This is only applicable for :class:`GroupCog` instances.
+        By default, it's the same value as :attr:`description`.
+
+        .. versionadded:: 2.0
+    group_nsfw: :class:`bool`
+        Whether the application command group is NSFW. This is only applicable for :class:`GroupCog` instances.
+        By default, it's ``False``.
+
+        .. versionadded:: 2.0
     """
 
     __cog_name__: str
+    __cog_description__: str
+    __cog_group_name__: str
+    __cog_group_description__: str
+    __cog_group_nsfw__: bool
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Any, ..., Any]]
-    __cog_is_app_commands_group__: bool
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         name, bases, attrs = args
-        attrs['__cog_name__'] = kwargs.get('name', name)
-        attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
-        is_parent = any(issubclass(base, app_commands.Group) for base in bases)
-        attrs['__cog_is_app_commands_group__'] = is_parent
+        if any(issubclass(base, app_commands.Group) for base in bases):
+            raise TypeError(
+                'Cannot inherit from app_commands.Group with commands.Cog, consider using commands.GroupCog instead'
+            )
 
-        description = kwargs.get('description', None)
+        # If name='...' is given but not group_name='...' then name='...' is used for both.
+        # If neither is given then cog name is the class name but group name is kebab case
+        try:
+            cog_name = kwargs.pop('name')
+        except KeyError:
+            cog_name = name
+            try:
+                group_name = kwargs.pop('group_name')
+            except KeyError:
+                group_name = app_commands.commands._to_kebab_case(name)
+        else:
+            group_name = kwargs.pop('group_name', cog_name)
+
+        attrs['__cog_settings__'] = kwargs.pop('command_attrs', {})
+        attrs['__cog_name__'] = cog_name
+        attrs['__cog_group_name__'] = group_name
+        attrs['__cog_group_nsfw__'] = kwargs.pop('group_nsfw', False)
+
+        description = kwargs.pop('description', None)
         if description is None:
             description = inspect.cleandoc(attrs.get('__doc__', ''))
-        attrs['__cog_description__'] = description
 
-        if is_parent:
-            attrs['__discord_app_commands_skip_init_binding__'] = True
-            # This is hacky, but it signals the Group not to process this info.
-            # It's overridden later.
-            attrs['__discord_app_commands_group_children__'] = True
-        else:
-            # Remove the extraneous keyword arguments we're using
-            kwargs.pop('name', None)
-            kwargs.pop('description', None)
+        attrs['__cog_description__'] = description
+        attrs['__cog_group_description__'] = kwargs.pop('group_description', description or '\u2026')
 
         commands = {}
         cog_app_commands = {}
@@ -180,12 +210,6 @@ class CogMeta(type):
         new_cls.__cog_commands__ = list(commands.values())  # this will be copied in Cog.__new__
         new_cls.__cog_app_commands__ = list(cog_app_commands.values())
 
-        if is_parent:
-            # Prefill the app commands for the Group as well..
-            # The type checker doesn't like runtime attribute modification and this one's
-            # optional so it can't be cheesed.
-            new_cls.__discord_app_commands_group_children__ = new_cls.__cog_app_commands__  # type: ignore
-
         listeners_as_list = []
         for listener in listeners.values():
             for listener_name in listener.__cog_listener_names__:
@@ -221,10 +245,15 @@ class Cog(metaclass=CogMeta):
     """
 
     __cog_name__: str
+    __cog_description__: str
+    __cog_group_name__: str
+    __cog_group_description__: str
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Self, ..., Any]]
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
+    __cog_is_app_commands_group__: ClassVar[bool] = False
+    __cog_app_commands_group__: Optional[app_commands.Group]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         # For issue 426, we need to store a copy of the command objects
@@ -242,6 +271,21 @@ class Cog(metaclass=CogMeta):
         # Register the application commands
         children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
 
+        if cls.__cog_is_app_commands_group__:
+            group = app_commands.Group(
+                name=cls.__cog_group_name__,
+                description=cls.__cog_group_description__,
+                nsfw=cls.__cog_group_nsfw__,
+                parent=None,
+                guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
+                guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
+                default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
+            )
+        else:
+            group = None
+
+        self.__cog_app_commands_group__ = group
+
         # Update the Command instances dynamically as well
         for command in self.__cog_commands__:
             setattr(self, command.callback.__name__, command)
@@ -253,42 +297,51 @@ class Cog(metaclass=CogMeta):
                 # Update our parent's reference to our self
                 parent.remove_command(command.name)  # type: ignore
                 parent.add_command(command)  # type: ignore
-            elif cls.__cog_is_app_commands_group__:
-                if hasattr(command, '__commands_is_hybrid__') and command.parent is None:
-                    # In both of these, the type checker does not see the app_command attribute even though it exists
-                    command.app_command = command.app_command._copy_with(parent=self, binding=self)  # type: ignore
-                    children.append(command.app_command)  # type: ignore
+
+            if hasattr(command, '__commands_is_hybrid__') and parent is None:
+                app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
+                    command, 'app_command', None
+                )
+                if app_command:
+                    group_parent = self.__cog_app_commands_group__
+                    app_command = app_command._copy_with(parent=group_parent, binding=self)
+                    # The type checker does not see the app_command attribute even though it exists
+                    command.app_command = app_command  # type: ignore
+
+                    if self.__cog_app_commands_group__:
+                        children.append(app_command)
 
         for command in cls.__cog_app_commands__:
-            copy = command._copy_with(
-                # Type checker doesn't understand this type of narrowing.
-                # Not even with TypeGuard somehow.
-                parent=self if cls.__cog_is_app_commands_group__ else None,  # type: ignore
-                binding=self,
-            )
+            copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
+
+            # Update set bindings
+            if copy._attr:
+                setattr(self, copy._attr, copy)
 
             children.append(copy)
 
         self.__cog_app_commands__ = children
-        if cls.__cog_is_app_commands_group__:
-            # Dynamic attribute setting
-            self.__discord_app_commands_group_children__ = children  # type: ignore
-            # Enforce this to work even if someone forgets __init__
-            self.module = cls.__module__  # type: ignore
+        if self.__cog_app_commands_group__:
+            self.__cog_app_commands_group__.module = cls.__module__
+            mapping = {cmd.name: cmd for cmd in children}
+            if len(mapping) > 25:
+                raise TypeError('maximum number of application command children exceeded')
+
+            self.__cog_app_commands_group__._children = mapping  # type: ignore  # Variance issue
 
         return self
 
     def get_commands(self) -> List[Command[Self, ..., Any]]:
-        r"""
+        r"""Returns the commands that are defined inside this cog.
+
+        This does *not* include :class:`discord.app_commands.Command` or :class:`discord.app_commands.Group`
+        instances.
+
         Returns
         --------
         List[:class:`.Command`]
             A :class:`list` of :class:`.Command`\s that are
-            defined inside this cog.
-
-            .. note::
-
-                This does not include subcommands.
+            defined inside this cog, not including subcommands.
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
 
@@ -321,6 +374,14 @@ class Cog(metaclass=CogMeta):
                 yield command
                 if isinstance(command, GroupMixin):
                     yield from command.walk_commands()
+
+    @property
+    def app_command(self) -> Optional[app_commands.Group]:
+        """Optional[:class:`discord.app_commands.Group`]: Returns the associated group with this cog.
+
+        This is only available if inheriting from :class:`GroupCog`.
+        """
+        return self.__cog_app_commands_group__
 
     def get_listeners(self) -> List[Tuple[str, Callable[..., Any]]]:
         """Returns a :class:`list` of (name, function) listener pairs that are defined in this cog.
@@ -508,8 +569,7 @@ class Cog(metaclass=CogMeta):
             command.cog = self
             if command.parent is None:
                 try:
-                    # Type checker does not understand the generic bounds here
-                    bot.add_command(command)  # type: ignore
+                    bot.add_command(command)
                 except Exception as e:
                     # undo our additions
                     for to_undo in self.__cog_commands__[:index]:
@@ -532,7 +592,7 @@ class Cog(metaclass=CogMeta):
             bot.add_listener(getattr(self, method_name), name)
 
         # Only do this if these are "top level" commands
-        if not cls.__cog_is_app_commands_group__:
+        if not self.__cog_app_commands_group__:
             for command in self.__cog_app_commands__:
                 # This is already atomic
                 bot.tree.add_command(command, override=override, guild=guild, guilds=guilds)
@@ -547,7 +607,7 @@ class Cog(metaclass=CogMeta):
                 if command.parent is None:
                     bot.remove_command(command.name)
 
-            if not cls.__cog_is_app_commands_group__:
+            if not self.__cog_app_commands_group__:
                 for command in self.__cog_app_commands__:
                     guild_ids = guild_ids or command._guild_ids
                     if guild_ids is None:
@@ -569,3 +629,31 @@ class Cog(metaclass=CogMeta):
                 await maybe_coroutine(self.cog_unload)
             except Exception:
                 pass
+
+
+class GroupCog(Cog):
+    """Represents a cog that also doubles as a parent :class:`discord.app_commands.Group` for
+    the application commands defined within it.
+
+    This inherits from :class:`Cog` and the options in :class:`CogMeta` also apply to this.
+    See the :class:`Cog` documentation for methods.
+
+    Decorators such as :func:`~discord.app_commands.guild_only`, :func:`~discord.app_commands.guilds`,
+    and :func:`~discord.app_commands.default_permissions` will apply to the group if used on top of the
+    cog.
+
+    For example:
+
+    .. code-block:: python3
+
+        from discord import app_commands
+        from discord.ext import commands
+
+        @app_commands.guild_only()
+        class MyCog(commands.GroupCog, group_name='my-cog'):
+            pass
+
+    .. versionadded:: 2.0
+    """
+
+    __cog_is_app_commands_group__: ClassVar[bool] = True

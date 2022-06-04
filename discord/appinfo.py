@@ -29,6 +29,7 @@ from typing import List, TYPE_CHECKING, Optional
 from . import utils
 from .asset import Asset
 from .flags import ApplicationFlags
+from .permissions import Permissions
 
 if TYPE_CHECKING:
     from .guild import Guild
@@ -36,6 +37,7 @@ if TYPE_CHECKING:
         AppInfo as AppInfoPayload,
         PartialAppInfo as PartialAppInfoPayload,
         Team as TeamPayload,
+        InstallParams as InstallParamsPayload,
     )
     from .user import User
     from .state import ConnectionState
@@ -43,6 +45,7 @@ if TYPE_CHECKING:
 __all__ = (
     'AppInfo',
     'PartialAppInfo',
+    'AppInstallParams',
 )
 
 
@@ -76,7 +79,7 @@ class AppInfo:
 
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket>`.
 
         .. versionadded:: 1.3
 
@@ -108,6 +111,21 @@ class AppInfo:
         The application's privacy policy URL, if set.
 
         .. versionadded:: 2.0
+
+    tags: List[:class:`str`]
+        The list of tags describing the functionality of the application.
+
+        .. versionadded:: 2.0
+
+    custom_install_url: List[:class:`str`]
+        The custom authorization URL for the application, if enabled.
+
+        .. versionadded:: 2.0
+
+    install_params: Optional[:class:`AppInstallParams`]
+        The settings for custom authorization URL of application, if enabled.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -129,6 +147,9 @@ class AppInfo:
         '_flags',
         'terms_of_service_url',
         'privacy_policy_url',
+        'tags',
+        'custom_install_url',
+        'install_params',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -157,6 +178,11 @@ class AppInfo:
         self._cover_image: Optional[str] = data.get('cover_image')
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.tags: List[str] = data.get('tags', [])
+        self.custom_install_url: Optional[str] = data.get('custom_install_url')
+
+        params = data.get('install_params')
+        self.install_params: Optional[AppInstallParams] = AppInstallParams(params) if params else None
 
     def __repr__(self) -> str:
         return (
@@ -217,7 +243,7 @@ class PartialAppInfo:
         A list of RPC origin URLs, if RPC is enabled.
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket>`.
     terms_of_service_url: Optional[:class:`str`]
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
@@ -266,3 +292,24 @@ class PartialAppInfo:
         .. versionadded:: 2.0
         """
         return ApplicationFlags._from_value(self._flags)
+
+
+class AppInstallParams:
+    """Represents the settings for custom authorization URL of an application.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    scopes: List[:class:`str`]
+        The list of :ddocs:`OAuth2 scopes <topics/oauth2#shared-resources-oauth2-scopes>`
+        to add the application to a guild with.
+    permissions: :class:`Permissions`
+        The permissions to give to application in the guild.
+    """
+
+    __slots__ = ('scopes', 'permissions')
+
+    def __init__(self, data: InstallParamsPayload) -> None:
+        self.scopes: List[str] = data.get('scopes', [])
+        self.permissions: Permissions = Permissions(int(data['permissions']))

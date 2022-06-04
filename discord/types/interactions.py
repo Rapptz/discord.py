@@ -186,7 +186,7 @@ ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData,
 
 class ModalSubmitInteractionData(TypedDict):
     custom_id: str
-    components: List[ModalSubmitActionRowInteractionData]
+    components: List[ModalSubmitComponentInteractionData]
 
 
 InteractionData = Union[

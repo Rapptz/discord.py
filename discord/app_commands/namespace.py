@@ -168,7 +168,7 @@ class Namespace:
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
         type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
@@ -213,9 +213,11 @@ class Namespace:
         for (message_id, message_data) in resolved.get('messages', {}).items():
             channel_id = int(message_data['channel_id'])
             if guild is None:
-                channel = PartialMessageable(state=state, id=channel_id)
+                channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
             else:
-                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
+                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(
+                    state=state, guild_id=guild_id, id=channel_id
+                )
 
             # Type checker doesn't understand this due to failure to narrow
             message = Message(state=state, channel=channel, data=message_data)  # type: ignore
