@@ -65,7 +65,7 @@ Please note that for installing voice on Linux, you must install the following p
 * libffi-dev (or ``libffi-devel`` on some systems)
 * python-dev (e.g. ``python3.6-dev`` for Python 3.6)
 
-Quick Example (``discord.Client``)
+Quick Example
 --------------
 
 .. code:: py
@@ -89,7 +89,7 @@ Quick Example (``discord.Client``)
     client = MyClient(intents=intents)
     client.run('token')
 
-Bot Example (``commands.Bot``)
+Bot Example
 ~~~~~~~~~~~~~
 
 .. code:: py
