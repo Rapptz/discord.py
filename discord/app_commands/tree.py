@@ -162,7 +162,7 @@ class CommandTree(Generic[ClientT]):
         NotFound
             The application command was not found.
             This could also be because the command is a guild command
-            and the guild was not specified and vise versa.
+            and the guild was not specified and vice versa.
 
         Returns
         --------
