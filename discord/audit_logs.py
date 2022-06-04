@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from .sticker import GuildSticker
     from .threads import Thread
     from .integrations import PartialIntegration
-    from .app_commands import AppCommand
+    from .app_commands import AppCommand, AppCommandPermissions
 
     TargetType = Union[
         Guild,
@@ -96,6 +96,20 @@ def _transform_color(entry: AuditLogEntry, data: int) -> Colour:
 
 def _transform_snowflake(entry: AuditLogEntry, data: Snowflake) -> int:
     return int(data)
+
+
+def _transform_app_command_permissions(
+    entry: AuditLogEntry, data: ApplicationCommandPermissions
+) -> Optional[AppCommandPermissions]:
+    # avoid circular import
+    from discord.app_commands.models import AppCommandPermissions
+
+    if data is None:
+        return None
+
+    state = entry._state
+    guild = entry.guild
+    return AppCommandPermissions(data=data, guild=guild, state=state)
 
 
 def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optional[Union[abc.GuildChannel, Object]]:
@@ -261,6 +275,7 @@ class AuditLogChanges:
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
         'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
+        'app_command_permission_update': ('app_command_permissions', _transform_app_command_permissions),
     }
     # fmt: on
 
@@ -268,24 +283,14 @@ class AuditLogChanges:
         self.before: AuditLogDiff = AuditLogDiff()
         self.after: AuditLogDiff = AuditLogDiff()
 
-        if entry.action is enums.AuditLogAction.app_command_permission_update:
+        for elem in data:
             # special case entire process since each
             # element in data is a different target
-            self.before.app_command_permissions = []
-            self.after.app_command_permissions = []
-
-            for d in data:
-                self._handle_app_command_permissions(
-                    self.before,
-                    self.after,
-                    entry,
-                    d.get('old_value'),  # type: ignore # old value will be an ApplicationCommandPermissions if present
-                    d.get('new_value'),  # type: ignore # new value will be an ApplicationCommandPermissions if present
-                )
-            return
-
-        for elem in data:
-            attr = elem['key']
+            # key is the target id
+            if entry.action is enums.AuditLogAction.app_command_permission_update:
+                attr = entry.action.name
+            else:
+                attr = elem['key']
 
             # special cases for role add/remove
             if attr == '$add':
@@ -354,25 +359,6 @@ class AuditLogChanges:
             data.append(role)
 
         setattr(second, 'roles', data)
-
-    def _handle_app_command_permissions(
-        self,
-        before: AuditLogDiff,
-        after: AuditLogDiff,
-        entry: AuditLogEntry,
-        old_value: Optional[ApplicationCommandPermissions],
-        new_value: Optional[ApplicationCommandPermissions],
-    ):
-        # Avoid circular imports
-        from .app_commands.models import AppCommandPermissions
-
-        guild = entry.guild
-        state = entry._state
-        if old_value is not None:
-            before.app_command_permissions.append(AppCommandPermissions(data=old_value, guild=guild, state=state))
-
-        if new_value is not None:
-            after.app_command_permissions.append(AppCommandPermissions(data=new_value, guild=guild, state=state))
 
 
 class _AuditLogProxy:

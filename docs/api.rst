@@ -3514,7 +3514,7 @@ AuditLogDiff
 
         The permissions of the app command.
 
-        :type: List[:class:`~discord.app_commands.AppCommandPermissions`]
+        :type: :class:`~discord.app_commands.AppCommandPermissions`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
