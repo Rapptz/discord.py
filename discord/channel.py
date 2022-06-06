@@ -46,7 +46,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
+from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -215,6 +215,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @property
     def _sorting_bucket(self) -> int:
         return ChannelType.text.value
+
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
@@ -1046,6 +1050,10 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return self
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return EntityType.voice
+
+    @property
     def type(self) -> Literal[ChannelType.voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
@@ -1481,6 +1489,10 @@ class StageChannel(VocalGuildChannel):
         self.topic: Optional[str] = data.get('topic')
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return EntityType.stage_instance
+
+    @property
     def requesting_to_speak(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
         return [member for member in self.members if member.voice and member.voice.requested_to_speak_at is not None]
@@ -1759,6 +1771,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
+
+    @property
     def type(self) -> Literal[ChannelType.category]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.category
@@ -2033,6 +2049,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @property
     def _sorting_bucket(self) -> int:
         return ChannelType.text.value
+
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:

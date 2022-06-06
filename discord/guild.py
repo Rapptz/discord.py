@@ -2657,7 +2657,7 @@ class Guild(Hashable):
         *,
         name: str,
         start_time: datetime.datetime,
-        entity_type: EntityType,
+        entity_type: EntityType = MISSING,
         privacy_level: PrivacyLevel = MISSING,
         channel: Optional[Snowflake] = MISSING,
         location: str = MISSING,
@@ -2681,7 +2681,9 @@ class Guild(Hashable):
         description: :class:`str`
             The description of the scheduled event.
         channel: Optional[:class:`abc.Snowflake`]
-            The channel to send the scheduled event to.
+            The channel to send the scheduled event to. If the channel is
+            a :class:`StageInstance` or :class:`VoiceChannel` then
+            it automatically sets the entity type.
 
             Required if ``entity_type`` is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
@@ -2694,7 +2696,11 @@ class Guild(Hashable):
 
             Required if the entity type is :attr:`EntityType.external`.
         entity_type: :class:`EntityType`
-            The entity type of the scheduled event.
+            The entity type of the scheduled event. If the channel is a
+            :class:`StageInstance` or :class:`VoiceChannel` then this is
+            automatically set to the appropriate entity type. If no channel
+            is passed then the entity type is assumed to be
+            :attr:`EntityType.external`
         image: :class:`bytes`
             The image of the scheduled event.
         location: :class:`str`
@@ -2735,6 +2741,18 @@ class Guild(Hashable):
                     'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                 )
             payload['scheduled_start_time'] = start_time.isoformat()
+
+        if entity_type is MISSING:
+            if channel is MISSING:
+                entity_type = EntityType.external
+            else:
+                entity_type = getattr(channel, '_scheduled_event_entity_type', MISSING)
+                if entity_type is None:
+                    raise TypeError(
+                        f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__!r}'
+                    )
+                if entity_type is MISSING:
+                    raise TypeError('entity_type must be passed in when passing an ambiguous channel type')
 
         if not isinstance(entity_type, EntityType):
             raise TypeError('entity_type must be of type EntityType')

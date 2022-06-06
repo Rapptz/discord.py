@@ -324,7 +324,9 @@ class ScheduledEvent(Hashable):
         description: :class:`str`
             The description of the scheduled event.
         channel: Optional[:class:`~discord.abc.Snowflake`]
-            The channel to put the scheduled event in.
+            The channel to put the scheduled event in. If the channel is
+            a :class:`StageInstance` or :class:`VoiceChannel` then
+            it automatically sets the entity type.
 
             Required if the entity type is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
@@ -343,7 +345,9 @@ class ScheduledEvent(Hashable):
         privacy_level: :class:`PrivacyLevel`
             The privacy level of the scheduled event.
         entity_type: :class:`EntityType`
-            The new entity type.
+            The new entity type. If the channel is a :class:`StageInstance`
+            or :class:`VoiceChannel` then this is automatically set to the
+            appropriate entity type.
         status: :class:`EventStatus`
             The new status of the scheduled event.
         image: Optional[:class:`bytes`]
@@ -406,6 +410,12 @@ class ScheduledEvent(Hashable):
         if image is not MISSING:
             image_as_str: Optional[str] = _bytes_to_base64_data(image) if image is not None else image
             payload['image'] = image_as_str
+
+        entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
+        if entity_type is None:
+            raise TypeError(
+                f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__!r}'
+            )
 
         if entity_type is not MISSING:
             if not isinstance(entity_type, EntityType):
