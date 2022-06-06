@@ -184,6 +184,13 @@ class ScheduledEvent(Hashable):
         """:class:`str`: The url for the scheduled event."""
         return f'https://discord.com/events/{self.guild_id}/{self.id}'
 
+    async def __modify_status(self, status: EventStatus, reason: Optional[str], /) -> ScheduledEvent:
+        payload = {'status': status.value}
+        data = await self._state.http.edit_scheduled_event(self.guild_id, self.id, **payload, reason=reason)
+        s = ScheduledEvent(state=self._state, data=data)
+        s._users = self._users
+        return s
+
     async def start(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
 
@@ -217,7 +224,7 @@ class ScheduledEvent(Hashable):
         if self.status is not EventStatus.scheduled:
             raise ValueError('This scheduled event is already running')
 
-        return await self.edit(status=EventStatus.active, reason=reason)
+        return await self.__modify_status(EventStatus.active, reason)
 
     async def end(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
@@ -252,7 +259,7 @@ class ScheduledEvent(Hashable):
         if self.status is not EventStatus.active:
             raise ValueError('This scheduled event is not active')
 
-        return await self.edit(status=EventStatus.ended, reason=reason)
+        return await self.__modify_status(EventStatus.ended, reason)
 
     async def cancel(self, *, reason: Optional[str] = None) -> ScheduledEvent:
         """|coro|
@@ -287,7 +294,7 @@ class ScheduledEvent(Hashable):
         if self.status is not EventStatus.scheduled:
             raise ValueError('This scheduled event is already running')
 
-        return await self.edit(status=EventStatus.cancelled, reason=reason)
+        return await self.__modify_status(EventStatus.cancelled, reason)
 
     async def edit(
         self,
