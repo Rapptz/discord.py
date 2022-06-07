@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-05-30 18:34\n"
+"POT-Creation-Date: 2022-06-06 16:28+0000\n"
+"PO-Revision-Date: 2022-06-06 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -300,7 +300,7 @@ msgstr "これが ``__init__`` で渡されなかった場合、データを含�
 #: ../../../discord/client.py:docstring of discord.Client.application_id:10
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo:72
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo:82
-#: ../../api.rst:1309
+#: ../../api.rst:1325
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook:71
 msgid "Optional[:class:`int`]"
 msgstr "Optional[:class:`int`]"
@@ -1446,7 +1446,7 @@ msgid "The application owner."
 msgstr "アプリケーションの所有者。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo:20
-#: ../../api.rst:3743
+#: ../../api.rst:3759
 #: ../../../discord/integrations.py:docstring of discord.integrations.Integration:45
 #: ../../../discord/integrations.py:docstring of discord.integrations.BotIntegration:39
 #: ../../../discord/integrations.py:docstring of discord.integrations.StreamIntegration:63
@@ -1619,8 +1619,8 @@ msgid "The permissions to give to application in the guild."
 msgstr "ギルドに追加するアプリケーションに与える権限。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInstallParams:16
-#: ../../api.rst:3244
-#: ../../api.rst:3333
+#: ../../api.rst:3260
+#: ../../api.rst:3349
 #: ../../../discord/member.py:docstring of discord.Member.guild_permissions:14
 #: ../../../discord/role.py:docstring of discord.Role.permissions:3
 msgid ":class:`Permissions`"
@@ -1826,7 +1826,7 @@ msgstr ":attr:`colour` という名前のエイリアスが存在します。"
 
 #: ../../../discord/team.py:docstring of discord.TeamMember.color:6
 #: ../../../discord/team.py:docstring of discord.TeamMember.colour:6
-#: ../../api.rst:3253
+#: ../../api.rst:3269
 #: ../../../discord/user.py:docstring of discord.ClientUser.color:6
 #: ../../../discord/user.py:docstring of discord.ClientUser.colour:6
 msgid ":class:`Colour`"
@@ -1879,9 +1879,9 @@ msgstr "ユーザーのデフォルトのアバターを返します。これは
 
 #: ../../../discord/team.py:docstring of discord.TeamMember.default_avatar:3
 #: ../../../discord/team.py:docstring of discord.TeamMember.display_avatar:7
-#: ../../api.rst:3027
-#: ../../api.rst:3033
-#: ../../api.rst:3039
+#: ../../api.rst:3043
+#: ../../api.rst:3049
+#: ../../api.rst:3055
 msgid ":class:`Asset`"
 msgstr ":class:`Asset`"
 
@@ -3057,13 +3057,16 @@ msgid "This requires :attr:`Intents.integrations` to be enabled."
 msgstr ":attr:`Intents.integrations` を有効にする必要があります。"
 
 #: ../../api.rst:607
-#: ../../api.rst:618
 msgid "The integration that was created."
 msgstr "作成された連携サービス。"
 
 #: ../../api.rst:612
 msgid "Called when an integration is updated."
 msgstr "連携サービスが更新されたときに呼び出されます。"
+
+#: ../../api.rst:618
+msgid "The integration that was updated."
+msgstr "更新された連携サービス。"
 
 #: ../../api.rst:623
 msgid "Called whenever an integration is created, modified, or removed from a guild."
@@ -3406,7 +3409,6 @@ msgid "The current state of the reaction."
 msgstr "リアクションの現在の状態。"
 
 #: ../../api.rst:946
-#: ../../api.rst:968
 msgid "The user who added the reaction."
 msgstr "リアクションを追加したユーザー。"
 
@@ -3425,6 +3427,10 @@ msgstr "これを使用するには :attr:`Intents.reactions` と :attr:`Intents
 #: ../../api.rst:963
 msgid "Consider using :func:`on_raw_reaction_remove` if you need this and do not want to enable the members intent."
 msgstr "このイベントが必要でメンバーインテントを有効化したくない場合は :func:`on_raw_reaction_remove` の使用を検討してください。"
+
+#: ../../api.rst:968
+msgid "The user whose reaction was removed."
+msgstr "リアクションが除去されたユーザー。"
 
 #: ../../api.rst:973
 msgid "Called when a message has all its reactions removed from it. Similar to :func:`on_message_edit`, if the message is not found in the internal message cache, then this event will not be called. Consider using :func:`on_raw_reaction_clear` instead."
@@ -3514,7 +3520,7 @@ msgstr ":class:`ScheduledEvent` が変更されたときに呼び出されます
 
 #: ../../api.rst:1089
 #: ../../api.rst:1136
-#: ../../api.rst:1260
+#: ../../api.rst:1276
 msgid "The following, but not limited to, examples illustrate when this event is called:"
 msgstr "これらの場合に限りませんが、例を挙げると、以下の場合に呼び出されます:"
 
@@ -3600,8 +3606,8 @@ msgstr "スレッドが作成されたときに発生します。"
 
 #: ../../api.rst:1155
 #: ../../api.rst:1168
-#: ../../api.rst:1194
-#: ../../api.rst:1218
+#: ../../api.rst:1198
+#: ../../api.rst:1222
 msgid "Note that you can get the guild from :attr:`Thread.guild`."
 msgstr "ギルドは :attr:`Thread.guild` から取得できます。"
 
@@ -3618,98 +3624,106 @@ msgid "The thread that got joined."
 msgstr "参加したスレッド。"
 
 #: ../../api.rst:1179
-msgid "Called whenever a thread is updated."
-msgstr "スレッドが更新されたときに呼び出されます。"
+msgid "Called whenever a thread is updated. If the thread could not be found in the internal cache this event will not be called. Threads will not be in the cache if they are archived."
+msgstr "スレッドが更新されたときに呼び出されます。スレッドが内部キャッシュに見つからなかった場合、このイベントは呼び出されません。 スレッドがアーカイブされている場合、キャッシュには含まれません。"
 
-#: ../../api.rst:1185
+#: ../../api.rst:1183
+msgid "If you need this information use :func:`on_raw_thread_update` instead."
+msgstr "この情報が必要な場合は、代わりに :func:`on_raw_thread_update` を使用してください。"
+
+#: ../../api.rst:1189
 msgid "The updated thread's old info."
 msgstr "古いスレッドの情報。"
 
-#: ../../api.rst:1187
+#: ../../api.rst:1191
 msgid "The updated thread's new info."
 msgstr "新しいスレッドの情報。"
 
-#: ../../api.rst:1192
+#: ../../api.rst:1196
 msgid "Called whenever a thread is removed. This is different from a thread being deleted."
 msgstr "スレッドが除去されたときに呼び出されます。これはスレッドの削除とは異なります。"
 
-#: ../../api.rst:1200
+#: ../../api.rst:1204
 msgid "Due to technical limitations, this event might not be called as soon as one expects. Since the library tracks thread membership locally, the API only sends updated thread membership status upon being synced by joining a thread."
 msgstr "技術的な制約のためこのイベントは期待通りの早さで呼び出されない場合があります。ライブラリーがスレッドの参加をローカルで追跡するため、APIは更新されたスレッドの参加状態をスレッドの参加時にのみ同期します。"
 
-#: ../../api.rst:1207
+#: ../../api.rst:1211
 msgid "The thread that got removed."
 msgstr "削除されたスレッド。"
 
-#: ../../api.rst:1212
+#: ../../api.rst:1216
 msgid "Called whenever a thread is deleted. If the thread could not be found in the internal cache this event will not be called. Threads will not be in the cache if they are archived."
 msgstr "スレッドが削除されたときに呼び出されます。スレッドが内部キャッシュに見つからなかった場合、このイベントは呼び出されません。 スレッドがアーカイブされている場合、キャッシュには含まれません。"
 
-#: ../../api.rst:1216
+#: ../../api.rst:1220
 msgid "If you need this information use :func:`on_raw_thread_delete` instead."
 msgstr "この情報が必要な場合は、代わりに :func:`on_raw_thread_delete` を使用してください。"
 
-#: ../../api.rst:1224
+#: ../../api.rst:1228
 msgid "The thread that got deleted."
 msgstr "削除されたスレッド。"
 
-#: ../../api.rst:1229
+#: ../../api.rst:1233
+msgid "Called whenever a thread is update. Unlike :func:`on_thread_update` this is called regardless of the thread being in the internal thread cache or not."
+msgstr "スレッドが更新されたときに呼び出されます。 :func:`on_thread_update` とは異なり、更新されたスレッドが内部キャッシュに存在するか否かにかかわらず呼び出されます。"
+
+#: ../../api.rst:1245
 msgid "Called whenever a thread is deleted. Unlike :func:`on_thread_delete` this is called regardless of the thread being in the internal thread cache or not."
 msgstr "スレッドが削除されたときに呼び出されます。 :func:`on_thread_delete` とは異なり、削除されたスレッドが内部キャッシュに存在するか否かにかかわらず呼び出されます。"
 
-#: ../../api.rst:1242
+#: ../../api.rst:1258
 msgid "Called when a :class:`ThreadMember` leaves or joins a :class:`Thread`."
 msgstr ":class:`ThreadMember` が :class:`Thread` に参加したり退出したりしたときに呼び出されます。"
 
-#: ../../api.rst:1244
+#: ../../api.rst:1260
 msgid "You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`."
 msgstr "メンバーが所属するスレッドは :attr:`ThreadMember.thread` から取得できます。"
 
-#: ../../api.rst:1250
+#: ../../api.rst:1266
 msgid "The member who joined or left."
 msgstr "参加、または脱退したメンバー。"
 
-#: ../../api.rst:1254
+#: ../../api.rst:1270
 msgid "Voice"
 msgstr "Voice"
 
-#: ../../api.rst:1258
+#: ../../api.rst:1274
 msgid "Called when a :class:`Member` changes their :class:`VoiceState`."
 msgstr ":class:`Member` が :class:`VoiceState` を変更したとき呼び出されます。"
 
-#: ../../api.rst:1262
+#: ../../api.rst:1278
 msgid "A member joins a voice or stage channel."
 msgstr "メンバーがボイスチャンネルやステージチャンネルに参加したとき。"
 
-#: ../../api.rst:1263
+#: ../../api.rst:1279
 msgid "A member leaves a voice or stage channel."
 msgstr "メンバーがボイスチャンネルやステージチャンネルから退出したとき。"
 
-#: ../../api.rst:1264
+#: ../../api.rst:1280
 msgid "A member is muted or deafened by their own accord."
 msgstr "メンバーが自身でマイクやスピーカーをミュートしたとき。"
 
-#: ../../api.rst:1265
+#: ../../api.rst:1281
 msgid "A member is muted or deafened by a guild administrator."
 msgstr "メンバーがギルドの管理者によってマイクやスピーカーをミュートされたとき。"
 
-#: ../../api.rst:1267
+#: ../../api.rst:1283
 msgid "This requires :attr:`Intents.voice_states` to be enabled."
 msgstr ":attr:`Intents.voice_states` を有効にする必要があります。"
 
-#: ../../api.rst:1269
+#: ../../api.rst:1285
 msgid "The member whose voice states changed."
 msgstr "ボイスの状態が変わった `Member` 。"
 
-#: ../../api.rst:1271
+#: ../../api.rst:1287
 msgid "The voice state prior to the changes."
 msgstr "更新前のボイス状態。"
 
-#: ../../api.rst:1273
+#: ../../api.rst:1289
 msgid "The voice state after the changes."
 msgstr "更新後のボイス状態。"
 
-#: ../../api.rst:1279
+#: ../../api.rst:1295
 msgid "Utility Functions"
 msgstr "ユーティリティ関数"
 
@@ -3887,15 +3901,15 @@ msgstr "メンションをエスケープするテキスト。"
 msgid "The text with the mentions removed."
 msgstr "メンションが削除されたテキスト。"
 
-#: ../../api.rst:1297
+#: ../../api.rst:1313
 msgid "A data class which represents a resolved invite returned from :func:`discord.utils.resolve_invite`."
 msgstr ":func:`discord.utils.resolve_invite` から返された解決済みの招待を表すデータクラス。"
 
-#: ../../api.rst:1301
+#: ../../api.rst:1317
 msgid "The invite code."
 msgstr "招待コード。"
 
-#: ../../api.rst:1307
+#: ../../api.rst:1323
 msgid "The id of the scheduled event that the invite refers to."
 msgstr "招待が参照するスケジュールイベントのID。"
 
@@ -3977,8 +3991,8 @@ msgid "Example Output"
 msgstr "出力例"
 
 #: ../../../discord/utils.py:docstring of discord.utils.format_dt:6
-#: ../../api.rst:2961
-#: ../../api.rst:2981
+#: ../../api.rst:2977
+#: ../../api.rst:2997
 msgid "Description"
 msgstr "説明"
 
@@ -4106,1672 +4120,1672 @@ msgstr "指定されたサイズのチャンクを生成する新しいイテレ
 msgid "Union[:class:`Iterator`, :class:`AsyncIterator`]"
 msgstr "Union[:class:`Iterator`, :class:`AsyncIterator`]"
 
-#: ../../api.rst:1325
+#: ../../api.rst:1341
 msgid "A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values."
 msgstr "ライブラリで見つからないものを表現するために使用されるタイプセーフなセンチネル型。 ``None`` 値と区別するために使用されます。"
 
-#: ../../api.rst:1332
+#: ../../api.rst:1348
 msgid "Enumerations"
 msgstr "列挙型"
 
-#: ../../api.rst:1334
+#: ../../api.rst:1350
 msgid "The API provides some enumerations for certain types of strings to avoid the API from being stringly typed in case the strings change in the future."
 msgstr "APIは、文字列が将来変わることに備え、文字列を直書きするのを防ぐために、いくらかの文字列の列挙型を提供します。"
 
-#: ../../api.rst:1337
+#: ../../api.rst:1353
 msgid "All enumerations are subclasses of an internal class which mimics the behaviour of :class:`enum.Enum`."
 msgstr "列挙型はすべて :class:`enum.Enum` の動作を模倣した内部クラスのサブクラスです。"
 
-#: ../../api.rst:1342
+#: ../../api.rst:1358
 msgid "Specifies the type of channel."
 msgstr "特定チャンネルのチャンネルタイプ。"
 
-#: ../../api.rst:1346
+#: ../../api.rst:1362
 msgid "A text channel."
 msgstr "テキストチャンネル。"
 
-#: ../../api.rst:1349
+#: ../../api.rst:1365
 msgid "A voice channel."
 msgstr "ボイスチャンネル。"
 
-#: ../../api.rst:1352
+#: ../../api.rst:1368
 msgid "A private text channel. Also called a direct message."
 msgstr "プライベートのテキストチャンネル。ダイレクトメッセージとも呼ばれています。"
 
-#: ../../api.rst:1355
+#: ../../api.rst:1371
 msgid "A private group text channel."
 msgstr "プライベートのグループDM。"
 
-#: ../../api.rst:1358
+#: ../../api.rst:1374
 msgid "A category channel."
 msgstr "カテゴリチャンネル。"
 
-#: ../../api.rst:1361
+#: ../../api.rst:1377
 msgid "A guild news channel."
 msgstr "ギルドのニュースチャンネル。"
 
-#: ../../api.rst:1365
+#: ../../api.rst:1381
 msgid "A guild stage voice channel."
 msgstr "ギルドのステージボイスチャンネル。"
 
-#: ../../api.rst:1371
+#: ../../api.rst:1387
 msgid "A news thread"
 msgstr "ニューススレッド。"
 
-#: ../../api.rst:1377
+#: ../../api.rst:1393
 msgid "A public thread"
 msgstr "パブリックスレッド。"
 
-#: ../../api.rst:1383
+#: ../../api.rst:1399
 msgid "A private thread"
 msgstr "プライベートスレッド。"
 
-#: ../../api.rst:1389
+#: ../../api.rst:1405
 msgid "A forum channel."
 msgstr "フォーラムチャンネル。"
 
-#: ../../api.rst:1395
+#: ../../api.rst:1411
 msgid "Specifies the type of :class:`Message`. This is used to denote if a message is to be interpreted as a system message or a regular message."
 msgstr ":class:`Message` のタイプを指定します。これは、メッセージが通常のものかシステムメッセージかを判断するのに使用できます。"
 
-#: ../../api.rst:1402
+#: ../../api.rst:1418
 #: ../../../discord/message.py:docstring of discord.message.Message:7
 msgid "Checks if two messages are equal."
 msgstr "二つのメッセージが等しいかを比較します。"
 
-#: ../../api.rst:1405
+#: ../../api.rst:1421
 #: ../../../discord/message.py:docstring of discord.message.Message:11
 msgid "Checks if two messages are not equal."
 msgstr "二つのメッセージが等しくないかを比較します。"
 
-#: ../../api.rst:1409
+#: ../../api.rst:1425
 msgid "The default message type. This is the same as regular messages."
 msgstr "デフォルトのメッセージ。これは通常のメッセージと同じです。"
 
-#: ../../api.rst:1412
+#: ../../api.rst:1428
 msgid "The system message when a user is added to a group private message or a thread."
 msgstr "ユーザーがグループプライベートメッセージまたはスレッドに追加されたときのシステムメッセージ。"
 
-#: ../../api.rst:1416
+#: ../../api.rst:1432
 msgid "The system message when a user is removed from a group private message or a thread."
 msgstr "ユーザーがグループプライベートメッセージまたはスレッドから削除されたときのシステムメッセージ。"
 
-#: ../../api.rst:1420
+#: ../../api.rst:1436
 msgid "The system message denoting call state, e.g. missed call, started call, etc."
 msgstr "通話の状態を示すシステムメッセージ。例: 不在着信、通話の開始、その他。"
 
-#: ../../api.rst:1424
+#: ../../api.rst:1440
 msgid "The system message denoting that a channel's name has been changed."
 msgstr "チャンネル名の変更を示すシステムメッセージ。"
 
-#: ../../api.rst:1427
+#: ../../api.rst:1443
 msgid "The system message denoting that a channel's icon has been changed."
 msgstr "チャンネルのアイコンの変更を示すシステムメッセージ。"
 
-#: ../../api.rst:1430
+#: ../../api.rst:1446
 msgid "The system message denoting that a pinned message has been added to a channel."
 msgstr "ピン留めの追加を示すシステムメッセージ。"
 
-#: ../../api.rst:1433
+#: ../../api.rst:1449
 msgid "The system message denoting that a new member has joined a Guild."
 msgstr "ギルドの新規メンバーの参加を示すシステムメッセージ。"
 
-#: ../../api.rst:1437
+#: ../../api.rst:1453
 msgid "The system message denoting that a member has \"nitro boosted\" a guild."
 msgstr "メンバーがギルドを「ニトロブースト」したことを表すシステムメッセージ。"
 
-#: ../../api.rst:1440
+#: ../../api.rst:1456
 msgid "The system message denoting that a member has \"nitro boosted\" a guild and it achieved level 1."
 msgstr "メンバーがギルドを「ニトロブースト」し、それによってギルドがレベル1に到達したことを表すシステムメッセージ。"
 
-#: ../../api.rst:1444
+#: ../../api.rst:1460
 msgid "The system message denoting that a member has \"nitro boosted\" a guild and it achieved level 2."
 msgstr "メンバーがギルドを「ニトロブースト」し、それによってギルドがレベル2に到達したことを表すシステムメッセージ。"
 
-#: ../../api.rst:1448
+#: ../../api.rst:1464
 msgid "The system message denoting that a member has \"nitro boosted\" a guild and it achieved level 3."
 msgstr "メンバーがギルドを「ニトロブースト」し、それによってギルドがレベル3に到達したことを表すシステムメッセージ。"
 
-#: ../../api.rst:1452
+#: ../../api.rst:1468
 msgid "The system message denoting that an announcement channel has been followed."
 msgstr "アナウンスチャンネルがフォローされたことを表すシステムメッセージ。"
 
-#: ../../api.rst:1457
+#: ../../api.rst:1473
 msgid "The system message denoting that a member is streaming in the guild."
 msgstr "メンバーがギルドでストリーミングしていることを表すシステムメッセージ。"
 
-#: ../../api.rst:1462
+#: ../../api.rst:1478
 msgid "The system message denoting that the guild is no longer eligible for Server Discovery."
 msgstr "ギルドがサーバー発見の資格を持たなくなったことを示すシステムメッセージ。"
 
-#: ../../api.rst:1468
+#: ../../api.rst:1484
 msgid "The system message denoting that the guild has become eligible again for Server Discovery."
 msgstr "ギルドがサーバー発見の資格を再び持ったことを示すシステムメッセージ。"
 
-#: ../../api.rst:1474
+#: ../../api.rst:1490
 msgid "The system message denoting that the guild has failed to meet the Server Discovery requirements for one week."
 msgstr "ギルドが1週間サーバー発見の要件を満たすことに失敗したことを示すシステムメッセージ。"
 
-#: ../../api.rst:1480
+#: ../../api.rst:1496
 msgid "The system message denoting that the guild has failed to meet the Server Discovery requirements for 3 weeks in a row."
 msgstr "ギルドが連続で3週間サーバー発見の要件を満たすことに失敗したというシステムメッセージ。"
 
-#: ../../api.rst:1486
+#: ../../api.rst:1502
 msgid "The system message denoting that a thread has been created. This is only sent if the thread has been created from an older message. The period of time required for a message to be considered old cannot be relied upon and is up to Discord."
 msgstr "スレッドが作成されたことを示すシステムメッセージ。これはスレッドが古いメッセージから作成されたときにのみ送信されます。メッセージが古いものとされる時間の閾値は信頼できずDiscord次第です。"
 
-#: ../../api.rst:1494
+#: ../../api.rst:1510
 msgid "The system message denoting that the author is replying to a message."
 msgstr "送信者がメッセージに返信したことを示すシステムメッセージ。"
 
-#: ../../api.rst:1499
+#: ../../api.rst:1515
 msgid "The system message denoting that a slash command was executed."
 msgstr "スラッシュコマンドを実行したことを示すシステムメッセージ。"
 
-#: ../../api.rst:1504
+#: ../../api.rst:1520
 msgid "The system message sent as a reminder to invite people to the guild."
 msgstr "人々をギルドに招待することのリマインダーとして送信されたシステムメッセージ。"
 
-#: ../../api.rst:1509
+#: ../../api.rst:1525
 msgid "The system message denoting the message in the thread that is the one that started the thread's conversation topic."
 msgstr "スレッドの会話を始めたメッセージであるスレッド内のメッセージを示すシステムメッセージ。"
 
-#: ../../api.rst:1515
+#: ../../api.rst:1531
 msgid "The system message denoting that a context menu command was executed."
 msgstr "コンテキストメニューコマンドを実行したことを示すシステムメッセージ。"
 
-#: ../../api.rst:1521
+#: ../../api.rst:1537
 msgid "Represents Discord User flags."
 msgstr "Discordユーザーフラグを表します。"
 
-#: ../../api.rst:1525
+#: ../../api.rst:1541
 msgid "The user is a Discord Employee."
 msgstr "ユーザーはDiscordの従業員です。"
 
-#: ../../api.rst:1528
+#: ../../api.rst:1544
 msgid "The user is a Discord Partner."
 msgstr "ユーザーはDiscordパートナーです。"
 
-#: ../../api.rst:1531
+#: ../../api.rst:1547
 msgid "The user is a HypeSquad Events member."
 msgstr "ユーザーはHypeSquad Eventsメンバーです。"
 
-#: ../../api.rst:1534
+#: ../../api.rst:1550
 msgid "The user is a Bug Hunter."
 msgstr "ユーザーはバグハンターです。"
 
-#: ../../api.rst:1537
+#: ../../api.rst:1553
 msgid "The user has SMS recovery for Multi Factor Authentication enabled."
 msgstr "ユーザーの多要素認証のSMSリカバリーが有効になっています。"
 
-#: ../../api.rst:1540
+#: ../../api.rst:1556
 msgid "The user has dismissed the Discord Nitro promotion."
 msgstr "ユーザーはDiscord Nitroプロモーションを無視しました。"
 
-#: ../../api.rst:1543
+#: ../../api.rst:1559
 msgid "The user is a HypeSquad Bravery member."
 msgstr "ユーザーはHypeSquad Braveryのメンバーです。"
 
-#: ../../api.rst:1546
+#: ../../api.rst:1562
 msgid "The user is a HypeSquad Brilliance member."
 msgstr "ユーザーはHypeSquad Brillianceのメンバーです。"
 
-#: ../../api.rst:1549
+#: ../../api.rst:1565
 msgid "The user is a HypeSquad Balance member."
 msgstr "ユーザーはHypeSquad Balanceのメンバーです。"
 
-#: ../../api.rst:1552
+#: ../../api.rst:1568
 msgid "The user is an Early Supporter."
 msgstr "ユーザーは早期サポーターです。"
 
-#: ../../api.rst:1555
+#: ../../api.rst:1571
 msgid "The user is a Team User."
 msgstr "ユーザーはチームユーザーです。"
 
-#: ../../api.rst:1558
+#: ../../api.rst:1574
 msgid "The user is a system user (i.e. represents Discord officially)."
 msgstr "ユーザーはシステムユーザーです。(つまり、Discord公式を表しています)"
 
-#: ../../api.rst:1561
+#: ../../api.rst:1577
 msgid "The user has an unread system message."
 msgstr "ユーザーに未読のシステムメッセージがあります。"
 
-#: ../../api.rst:1564
+#: ../../api.rst:1580
 msgid "The user is a Bug Hunter Level 2."
 msgstr "ユーザーはバグハンターレベル2です。"
 
-#: ../../api.rst:1567
+#: ../../api.rst:1583
 msgid "The user is a Verified Bot."
 msgstr "ユーザーは認証済みボットです。"
 
-#: ../../api.rst:1570
+#: ../../api.rst:1586
 msgid "The user is an Early Verified Bot Developer."
 msgstr "ユーザーは早期認証Botデベロッパーです。"
 
-#: ../../api.rst:1573
+#: ../../api.rst:1589
 msgid "The user is a Discord Certified Moderator."
 msgstr "ユーザーはDiscord認定モデレータです。"
 
-#: ../../api.rst:1576
+#: ../../api.rst:1592
 msgid "The user is a bot that only uses HTTP interactions and is shown in the online member list."
 msgstr "ユーザーはHTTPインタラクションのみを使用し、オンラインメンバーのリストに表示されるボットです。"
 
-#: ../../api.rst:1581
+#: ../../api.rst:1597
 msgid "The user is flagged as a spammer by Discord."
 msgstr "ユーザーはDiscordよりスパマーとフラグ付けされました。"
 
-#: ../../api.rst:1587
+#: ../../api.rst:1603
 msgid "Specifies the type of :class:`Activity`. This is used to check how to interpret the activity itself."
 msgstr ":class:`Activity` のタイプを指定します。これはアクティビティをどう解釈するか確認するために使われます。"
 
-#: ../../api.rst:1592
+#: ../../api.rst:1608
 msgid "An unknown activity type. This should generally not happen."
 msgstr "不明なアクティビティタイプ。これは通常起こらないはずです。"
 
-#: ../../api.rst:1595
+#: ../../api.rst:1611
 msgid "A \"Playing\" activity type."
 msgstr "プレイ中のアクティビティタイプ。"
 
-#: ../../api.rst:1598
+#: ../../api.rst:1614
 msgid "A \"Streaming\" activity type."
 msgstr "放送中のアクティビティタイプ。"
 
-#: ../../api.rst:1601
+#: ../../api.rst:1617
 msgid "A \"Listening\" activity type."
 msgstr "再生中のアクティビティタイプ。"
 
-#: ../../api.rst:1604
+#: ../../api.rst:1620
 msgid "A \"Watching\" activity type."
 msgstr "視聴中のアクティビティタイプ。"
 
-#: ../../api.rst:1607
+#: ../../api.rst:1623
 msgid "A custom activity type."
 msgstr "カスタムのアクティビティタイプ。"
 
-#: ../../api.rst:1610
+#: ../../api.rst:1626
 msgid "A competing activity type."
 msgstr "競争中のアクティビティタイプ。"
 
-#: ../../api.rst:1616
+#: ../../api.rst:1632
 msgid "Specifies a :class:`Guild`\\'s verification level, which is the criteria in which a member must meet before being able to send messages to the guild."
 msgstr ":class:`Guild` の認証レベルを指定します。これは、メンバーがギルドにメッセージを送信できるようになるまでの条件です。"
 
-#: ../../api.rst:1625
+#: ../../api.rst:1641
 msgid "Checks if two verification levels are equal."
 msgstr "認証レベルが等しいか確認します。"
 
-#: ../../api.rst:1628
+#: ../../api.rst:1644
 msgid "Checks if two verification levels are not equal."
 msgstr "認証レベルが等しくないか確認します。"
 
-#: ../../api.rst:1631
+#: ../../api.rst:1647
 msgid "Checks if a verification level is higher than another."
 msgstr "認証レベルがあるレベルより厳しいか確認します。"
 
-#: ../../api.rst:1634
+#: ../../api.rst:1650
 msgid "Checks if a verification level is lower than another."
 msgstr "認証レベルがあるレベルより緩いか確認します。"
 
-#: ../../api.rst:1637
+#: ../../api.rst:1653
 msgid "Checks if a verification level is higher or equal to another."
 msgstr "認証レベルがあるレベルと同じ、又は厳しいか確認します。"
 
-#: ../../api.rst:1640
+#: ../../api.rst:1656
 msgid "Checks if a verification level is lower or equal to another."
 msgstr "認証レベルがあるレベルと同じ、又は緩いか確認します。"
 
-#: ../../api.rst:1644
+#: ../../api.rst:1660
 msgid "No criteria set."
 msgstr "無制限。"
 
-#: ../../api.rst:1647
+#: ../../api.rst:1663
 msgid "Member must have a verified email on their Discord account."
 msgstr "メンバーはDiscordアカウントのメール認証を済ませないといけません。"
 
-#: ../../api.rst:1650
+#: ../../api.rst:1666
 msgid "Member must have a verified email and be registered on Discord for more than five minutes."
 msgstr "メンバーはメール認証をし、かつアカウント登録から5分経過しないといけません。"
 
-#: ../../api.rst:1654
+#: ../../api.rst:1670
 msgid "Member must have a verified email, be registered on Discord for more than five minutes, and be a member of the guild itself for more than ten minutes."
 msgstr "メンバーはメール認証をし、Discordのアカウント登録から5分経過し、かつ10分以上ギルドに所属していないといけません。"
 
-#: ../../api.rst:1659
+#: ../../api.rst:1675
 msgid "Member must have a verified phone on their Discord account."
 msgstr "メンバーはDiscordアカウントの電話番号認証を済ませないといけません。"
 
-#: ../../api.rst:1663
+#: ../../api.rst:1679
 msgid "Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default."
 msgstr ":class:`Guild` の通知対象のデフォルト設定をすべてのメッセージ、またはメンションのみに指定します。"
 
-#: ../../api.rst:1671
+#: ../../api.rst:1687
 msgid "Checks if two notification levels are equal."
 msgstr "通知レベルが等しいか確認します。"
 
-#: ../../api.rst:1674
+#: ../../api.rst:1690
 msgid "Checks if two notification levels are not equal."
 msgstr "通知レベルが等しくないか確認します。"
 
-#: ../../api.rst:1677
+#: ../../api.rst:1693
 msgid "Checks if a notification level is higher than another."
 msgstr "通知レベルがあるレベルより高いか確認します。"
 
-#: ../../api.rst:1680
+#: ../../api.rst:1696
 msgid "Checks if a notification level is lower than another."
 msgstr "通知レベルがあるレベルより低いか確認します。"
 
-#: ../../api.rst:1683
+#: ../../api.rst:1699
 msgid "Checks if a notification level is higher or equal to another."
 msgstr "通知レベルがあるレベルと同じ、又は高いか確認します。"
 
-#: ../../api.rst:1686
+#: ../../api.rst:1702
 msgid "Checks if a notification level is lower or equal to another."
 msgstr "通知レベルがあるレベルと同じ、又は低いか確認します。"
 
-#: ../../api.rst:1690
+#: ../../api.rst:1706
 msgid "Members receive notifications for every message regardless of them being mentioned."
 msgstr "メンバーは、メンションされているかどうかに関わらず、すべてのメッセージの通知を受け取ります。"
 
-#: ../../api.rst:1693
+#: ../../api.rst:1709
 msgid "Members receive notifications for messages they are mentioned in."
 msgstr "メンバーは自分がメンションされているメッセージの通知のみ受け取ります。"
 
-#: ../../api.rst:1697
+#: ../../api.rst:1713
 msgid "Specifies a :class:`Guild`\\'s explicit content filter, which is the machine learning algorithms that Discord uses to detect if an image contains pornography or otherwise explicit content."
 msgstr ":class:`Guild` の不適切な表現のフィルターを指定します。これはDiscordがポルノ画像や不適切な表現を検出するために使用している機械学習アルゴリズムです。"
 
-#: ../../api.rst:1707
+#: ../../api.rst:1723
 msgid "Checks if two content filter levels are equal."
 msgstr "表現のフィルターのレベルが等しいか確認します。"
 
-#: ../../api.rst:1710
+#: ../../api.rst:1726
 msgid "Checks if two content filter levels are not equal."
 msgstr "表現のフィルターのレベルが等しくないか確認します。"
 
-#: ../../api.rst:1713
+#: ../../api.rst:1729
 msgid "Checks if a content filter level is higher than another."
 msgstr "表現のフィルターのレベルが他のレベルより大きいか確認します。"
 
-#: ../../api.rst:1716
+#: ../../api.rst:1732
 msgid "Checks if a content filter level is lower than another."
 msgstr "表現のフィルターのレベルが他のレベルより小さいか確認します。"
 
-#: ../../api.rst:1719
+#: ../../api.rst:1735
 msgid "Checks if a content filter level is higher or equal to another."
 msgstr "表現のフィルターのレベルが他のレベルより大きい、または等しいか確認します。"
 
-#: ../../api.rst:1722
+#: ../../api.rst:1738
 msgid "Checks if a content filter level is lower or equal to another."
 msgstr "表現のフィルターのレベルが他のレベルより小さい、または等しいか確認します。"
 
-#: ../../api.rst:1726
+#: ../../api.rst:1742
 msgid "The guild does not have the content filter enabled."
 msgstr "ギルドで表現のフィルターが有効ではない。"
 
-#: ../../api.rst:1729
+#: ../../api.rst:1745
 msgid "The guild has the content filter enabled for members without a role."
 msgstr "ギルドで役職を持たないメンバーに対して表現のフィルターが有効化されている。"
 
-#: ../../api.rst:1732
+#: ../../api.rst:1748
 msgid "The guild has the content filter enabled for every member."
 msgstr "ギルドで、すべてのメンバーに対して表現のフィルターが有効化されている。"
 
-#: ../../api.rst:1736
+#: ../../api.rst:1752
 msgid "Specifies a :class:`Member` 's status."
 msgstr ":class:`Member` のステータスを指定します。"
 
-#: ../../api.rst:1740
+#: ../../api.rst:1756
 msgid "The member is online."
 msgstr "メンバーがオンライン。"
 
-#: ../../api.rst:1743
+#: ../../api.rst:1759
 msgid "The member is offline."
 msgstr "メンバーがオフライン。"
 
-#: ../../api.rst:1746
+#: ../../api.rst:1762
 msgid "The member is idle."
 msgstr "メンバーが退席中。"
 
-#: ../../api.rst:1749
+#: ../../api.rst:1765
 msgid "The member is \"Do Not Disturb\"."
 msgstr "メンバーが取り込み中。"
 
-#: ../../api.rst:1752
+#: ../../api.rst:1768
 msgid "An alias for :attr:`dnd`."
 msgstr ":attr:`dnd` のエイリアス。"
 
-#: ../../api.rst:1755
+#: ../../api.rst:1771
 msgid "The member is \"invisible\". In reality, this is only used in sending a presence a la :meth:`Client.change_presence`. When you receive a user's presence this will be :attr:`offline` instead."
 msgstr "メンバーがオンライン状態を隠す。実際には、これは :meth:`Client.change_presence` でプレゼンスを送信する時のみ使用します。ユーザーのプレゼンスを受け取った場合、これは :attr:`offline` に置き換えられます。"
 
-#: ../../api.rst:1762
+#: ../../api.rst:1778
 msgid "Represents the type of action being done for a :class:`AuditLogEntry`\\, which is retrievable via :meth:`Guild.audit_logs`."
 msgstr ":class:`AuditLogEntry` で行われた動作の種類を取得します。AuditLogEntryは :meth:`Guild.audit_logs` で取得可能です。"
 
-#: ../../api.rst:1767
+#: ../../api.rst:1783
 msgid "The guild has updated. Things that trigger this include:"
 msgstr "ギルドが更新された。このトリガーとなるものは以下のとおりです。"
 
-#: ../../api.rst:1769
+#: ../../api.rst:1785
 msgid "Changing the guild vanity URL"
 msgstr "ギルドのvanity URLの変更"
 
-#: ../../api.rst:1770
+#: ../../api.rst:1786
 msgid "Changing the guild invite splash"
 msgstr "ギルドの招待時のスプラッシュ画像の変更"
 
-#: ../../api.rst:1771
+#: ../../api.rst:1787
 msgid "Changing the guild AFK channel or timeout"
 msgstr "ギルドのAFKチャンネル、またはタイムアウトの変更"
 
-#: ../../api.rst:1772
+#: ../../api.rst:1788
 msgid "Changing the guild voice server region"
 msgstr "ギルドの音声通話のサーバーリージョンの変更"
 
-#: ../../api.rst:1773
+#: ../../api.rst:1789
 msgid "Changing the guild icon, banner, or discovery splash"
 msgstr "ギルドのアイコン、バナー、ディスカバリースプラッシュの変更"
 
-#: ../../api.rst:1774
+#: ../../api.rst:1790
 msgid "Changing the guild moderation settings"
 msgstr "ギルドの管理設定の変更"
 
-#: ../../api.rst:1775
+#: ../../api.rst:1791
 msgid "Changing things related to the guild widget"
 msgstr "ギルドのウィジェットに関連するものの変更"
 
-#: ../../api.rst:1777
+#: ../../api.rst:1793
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Guild`."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型は :class:`Guild` になります。"
 
-#: ../../api.rst:1780
-#: ../../api.rst:1814
-#: ../../api.rst:1833
-#: ../../api.rst:1855
-#: ../../api.rst:1874
+#: ../../api.rst:1796
+#: ../../api.rst:1830
+#: ../../api.rst:1849
+#: ../../api.rst:1871
+#: ../../api.rst:1890
 msgid "Possible attributes for :class:`AuditLogDiff`:"
 msgstr ":class:`AuditLogDiff` から、以下の属性を参照できます："
 
-#: ../../api.rst:1782
+#: ../../api.rst:1798
 msgid ":attr:`~AuditLogDiff.afk_channel`"
 msgstr ":attr:`~AuditLogDiff.afk_channel`"
 
-#: ../../api.rst:1783
+#: ../../api.rst:1799
 msgid ":attr:`~AuditLogDiff.system_channel`"
 msgstr ":attr:`~AuditLogDiff.system_channel`"
 
-#: ../../api.rst:1784
+#: ../../api.rst:1800
 msgid ":attr:`~AuditLogDiff.afk_timeout`"
 msgstr ":attr:`~AuditLogDiff.afk_timeout`"
 
-#: ../../api.rst:1785
+#: ../../api.rst:1801
 msgid ":attr:`~AuditLogDiff.default_notifications`"
 msgstr ":attr:`~AuditLogDiff.default_notifications`"
 
-#: ../../api.rst:1786
+#: ../../api.rst:1802
 msgid ":attr:`~AuditLogDiff.explicit_content_filter`"
 msgstr ":attr:`~AuditLogDiff.explicit_content_filter`"
 
-#: ../../api.rst:1787
+#: ../../api.rst:1803
 msgid ":attr:`~AuditLogDiff.mfa_level`"
 msgstr ":attr:`~AuditLogDiff.mfa_level`"
 
-#: ../../api.rst:1788
-#: ../../api.rst:1816
-#: ../../api.rst:1835
-#: ../../api.rst:1857
-#: ../../api.rst:2031
+#: ../../api.rst:1804
+#: ../../api.rst:1832
+#: ../../api.rst:1851
+#: ../../api.rst:1873
+#: ../../api.rst:2047
 msgid ":attr:`~AuditLogDiff.name`"
 msgstr ":attr:`~AuditLogDiff.name`"
 
-#: ../../api.rst:1789
+#: ../../api.rst:1805
 msgid ":attr:`~AuditLogDiff.owner`"
 msgstr ":attr:`~AuditLogDiff.owner`"
 
-#: ../../api.rst:1790
+#: ../../api.rst:1806
 msgid ":attr:`~AuditLogDiff.splash`"
 msgstr ":attr:`~AuditLogDiff.splash`"
 
-#: ../../api.rst:1791
+#: ../../api.rst:1807
 msgid ":attr:`~AuditLogDiff.discovery_splash`"
 msgstr ":attr:`~AuditLogDiff.discovery_splash`"
 
-#: ../../api.rst:1792
-#: ../../api.rst:2029
-#: ../../api.rst:2052
+#: ../../api.rst:1808
+#: ../../api.rst:2045
+#: ../../api.rst:2068
 msgid ":attr:`~AuditLogDiff.icon`"
 msgstr ":attr:`~AuditLogDiff.icon`"
 
-#: ../../api.rst:1793
+#: ../../api.rst:1809
 msgid ":attr:`~AuditLogDiff.banner`"
 msgstr ":attr:`~AuditLogDiff.banner`"
 
-#: ../../api.rst:1794
+#: ../../api.rst:1810
 msgid ":attr:`~AuditLogDiff.vanity_url_code`"
 msgstr ":attr:`~AuditLogDiff.vanity_url_code`"
 
-#: ../../api.rst:1795
-#: ../../api.rst:2326
-#: ../../api.rst:2345
-#: ../../api.rst:2364
+#: ../../api.rst:1811
+#: ../../api.rst:2342
+#: ../../api.rst:2361
+#: ../../api.rst:2380
 msgid ":attr:`~AuditLogDiff.description`"
 msgstr ":attr:`~AuditLogDiff.description`"
 
-#: ../../api.rst:1796
+#: ../../api.rst:1812
 msgid ":attr:`~AuditLogDiff.preferred_locale`"
 msgstr ":attr:`~AuditLogDiff.preferred_locale`"
 
-#: ../../api.rst:1797
+#: ../../api.rst:1813
 msgid ":attr:`~AuditLogDiff.prune_delete_days`"
 msgstr ":attr:`~AuditLogDiff.prune_delete_days`"
 
-#: ../../api.rst:1798
+#: ../../api.rst:1814
 msgid ":attr:`~AuditLogDiff.public_updates_channel`"
 msgstr ":attr:`~AuditLogDiff.public_updates_channel`"
 
-#: ../../api.rst:1799
+#: ../../api.rst:1815
 msgid ":attr:`~AuditLogDiff.rules_channel`"
 msgstr ":attr:`~AuditLogDiff.rules_channel`"
 
-#: ../../api.rst:1800
+#: ../../api.rst:1816
 msgid ":attr:`~AuditLogDiff.verification_level`"
 msgstr ":attr:`~AuditLogDiff.verification_level`"
 
-#: ../../api.rst:1801
+#: ../../api.rst:1817
 msgid ":attr:`~AuditLogDiff.widget_channel`"
 msgstr ":attr:`~AuditLogDiff.widget_channel`"
 
-#: ../../api.rst:1802
+#: ../../api.rst:1818
 msgid ":attr:`~AuditLogDiff.widget_enabled`"
 msgstr ":attr:`~AuditLogDiff.widget_enabled`"
 
-#: ../../api.rst:1806
+#: ../../api.rst:1822
 msgid "A new channel was created."
 msgstr "チャンネルが作成されました。"
 
-#: ../../api.rst:1808
+#: ../../api.rst:1824
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is either a :class:`abc.GuildChannel` or :class:`Object` with an ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、IDが設定されている :class:`abc.GuildChannel` か、 :class:`Object` のいずれかになります。"
 
-#: ../../api.rst:1811
+#: ../../api.rst:1827
 msgid "A more filled out object in the :class:`Object` case can be found by using :attr:`~AuditLogEntry.after`."
 msgstr ":class:`Object` の場合、 :attr:`~AuditLogEntry.after` を使用して、より詳細な情報を持つオブジェクトを見つけることができます。"
 
-#: ../../api.rst:1817
-#: ../../api.rst:1836
-#: ../../api.rst:1858
-#: ../../api.rst:1879
+#: ../../api.rst:1833
+#: ../../api.rst:1852
+#: ../../api.rst:1874
 #: ../../api.rst:1895
+#: ../../api.rst:1911
 msgid ":attr:`~AuditLogDiff.type`"
 msgstr ":attr:`~AuditLogDiff.type`"
 
-#: ../../api.rst:1818
-#: ../../api.rst:1838
-#: ../../api.rst:1859
+#: ../../api.rst:1834
+#: ../../api.rst:1854
+#: ../../api.rst:1875
 msgid ":attr:`~AuditLogDiff.overwrites`"
 msgstr ":attr:`~AuditLogDiff.overwrites`"
 
-#: ../../api.rst:1822
+#: ../../api.rst:1838
 msgid "A channel was updated. Things that trigger this include:"
 msgstr "チャンネルが更新されました。これのトリガーとなるものは以下の通りです。"
 
-#: ../../api.rst:1824
+#: ../../api.rst:1840
 msgid "The channel name or topic was changed"
 msgstr "チャンネルのチャンネルトピックの変更、または名前の変更。"
 
-#: ../../api.rst:1825
+#: ../../api.rst:1841
 msgid "The channel bitrate was changed"
 msgstr "チャンネルのビットレートの変更。"
 
-#: ../../api.rst:1827
-#: ../../api.rst:1865
+#: ../../api.rst:1843
+#: ../../api.rst:1881
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`abc.GuildChannel` or :class:`Object` with an ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、IDが設定されている :class:`abc.GuildChannel` か、 :class:`Object` のいずれかになります。"
 
-#: ../../api.rst:1830
+#: ../../api.rst:1846
 msgid "A more filled out object in the :class:`Object` case can be found by using :attr:`~AuditLogEntry.after` or :attr:`~AuditLogEntry.before`."
 msgstr ":class:`Object` の場合、 :attr:`~AuditLogEntry.after` または :attr:`~AuditLogEntry.before` を使用して、より詳細な情報を持つオブジェクトを見つけることができます。"
 
-#: ../../api.rst:1837
+#: ../../api.rst:1853
 msgid ":attr:`~AuditLogDiff.position`"
 msgstr ":attr:`~AuditLogDiff.position`"
 
-#: ../../api.rst:1839
-#: ../../api.rst:2286
-#: ../../api.rst:2301
+#: ../../api.rst:1855
+#: ../../api.rst:2302
+#: ../../api.rst:2317
 msgid ":attr:`~AuditLogDiff.topic`"
 msgstr ":attr:`~AuditLogDiff.topic`"
 
-#: ../../api.rst:1840
+#: ../../api.rst:1856
 msgid ":attr:`~AuditLogDiff.bitrate`"
 msgstr ":attr:`~AuditLogDiff.bitrate`"
 
-#: ../../api.rst:1841
+#: ../../api.rst:1857
 msgid ":attr:`~AuditLogDiff.rtc_region`"
 msgstr ":attr:`~AuditLogDiff.rtc_region`"
 
-#: ../../api.rst:1842
+#: ../../api.rst:1858
 msgid ":attr:`~AuditLogDiff.video_quality_mode`"
 msgstr ":attr:`~AuditLogDiff.video_quality_mode`"
 
-#: ../../api.rst:1843
+#: ../../api.rst:1859
 msgid ":attr:`~AuditLogDiff.default_auto_archive_duration`"
 msgstr ":attr:`~AuditLogDiff.default_auto_archive_duration`"
 
-#: ../../api.rst:1847
+#: ../../api.rst:1863
 msgid "A channel was deleted."
 msgstr "チャンネルの削除。"
 
-#: ../../api.rst:1849
+#: ../../api.rst:1865
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is an :class:`Object` with an ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、IDが設定されている :class:`Object` になります。"
 
-#: ../../api.rst:1852
+#: ../../api.rst:1868
 msgid "A more filled out object can be found by using the :attr:`~AuditLogEntry.before` object."
 msgstr ":attr:`~AuditLogEntry.before` オブジェクトを使用すると、より詳細な情報が見つかります。"
 
-#: ../../api.rst:1863
+#: ../../api.rst:1879
 msgid "A channel permission overwrite was created."
 msgstr "チャンネルにおける権限の上書き設定の作成。"
 
-#: ../../api.rst:1868
+#: ../../api.rst:1884
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.extra` is either a :class:`Role` or :class:`Member`. If the object is not found then it is a :class:`Object` with an ID being filled, a name, and a ``type`` attribute set to either ``'role'`` or ``'member'`` to help dictate what type of ID it is."
 msgstr "この場合には、 :attr:`~AuditLogEntry.extra` は :class:`Role` か :class:`Member` です。もしオブジェクトが見つからない場合はid、name、 ``'role'`` か ``'member'`` である ``type`` 属性がある :class:`Object` です。"
 
-#: ../../api.rst:1876
 #: ../../api.rst:1892
-#: ../../api.rst:1907
+#: ../../api.rst:1908
+#: ../../api.rst:1923
 msgid ":attr:`~AuditLogDiff.deny`"
 msgstr ":attr:`~AuditLogDiff.deny`"
 
-#: ../../api.rst:1877
 #: ../../api.rst:1893
-#: ../../api.rst:1908
+#: ../../api.rst:1909
+#: ../../api.rst:1924
 msgid ":attr:`~AuditLogDiff.allow`"
 msgstr ":attr:`~AuditLogDiff.allow`"
 
-#: ../../api.rst:1878
 #: ../../api.rst:1894
-#: ../../api.rst:1909
+#: ../../api.rst:1910
+#: ../../api.rst:1925
 msgid ":attr:`~AuditLogDiff.id`"
 msgstr ":attr:`~AuditLogDiff.id`"
 
-#: ../../api.rst:1883
+#: ../../api.rst:1899
 msgid "A channel permission overwrite was changed, this is typically when the permission values change."
 msgstr "チャンネルの権限の上書きが変更されました。典型的な例は、権限が変更された場合です。"
 
-#: ../../api.rst:1886
-#: ../../api.rst:1901
+#: ../../api.rst:1902
+#: ../../api.rst:1917
 msgid "See :attr:`overwrite_create` for more information on how the :attr:`~AuditLogEntry.target` and :attr:`~AuditLogEntry.extra` fields are set."
 msgstr ":attr:`overwrite_create` に、 :attr:`~AuditLogEntry.target` と :attr:`~AuditLogEntry.extra` についての説明があります。"
 
-#: ../../api.rst:1899
+#: ../../api.rst:1915
 msgid "A channel permission overwrite was deleted."
 msgstr "チャンネルにおける権限の上書き設定の削除。"
 
-#: ../../api.rst:1914
+#: ../../api.rst:1930
 msgid "A member was kicked."
 msgstr "メンバーのキック。"
 
-#: ../../api.rst:1916
+#: ../../api.rst:1932
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`User` who got kicked."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型はキックされたユーザーに該当する :class:`User` になります。"
 
-#: ../../api.rst:1919
-#: ../../api.rst:1934
-#: ../../api.rst:1943
-#: ../../api.rst:1952
+#: ../../api.rst:1935
+#: ../../api.rst:1950
+#: ../../api.rst:1959
+#: ../../api.rst:1968
 msgid "When this is the action, :attr:`~AuditLogEntry.changes` is empty."
 msgstr "これが上記のactionなら、:attr:`~AuditLogEntry.changes` は空になります。"
 
-#: ../../api.rst:1923
+#: ../../api.rst:1939
 msgid "A member prune was triggered."
 msgstr "非アクティブメンバーの一括キック。"
 
-#: ../../api.rst:1925
+#: ../../api.rst:1941
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is set to ``None``."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型は ``None`` に設定されます。"
 
-#: ../../api.rst:1928
-#: ../../api.rst:1988
-#: ../../api.rst:2196
-#: ../../api.rst:2223
-#: ../../api.rst:2238
+#: ../../api.rst:1944
+#: ../../api.rst:2004
+#: ../../api.rst:2212
+#: ../../api.rst:2239
+#: ../../api.rst:2254
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.extra` is set to an unspecified proxy object with two attributes:"
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.extra` は以下の属性を持つプロキシオブジェクトになります："
 
-#: ../../api.rst:1931
+#: ../../api.rst:1947
 msgid "``delete_members_days``: An integer specifying how far the prune was."
 msgstr "``delete_members_days`` ： 一括キック対象の期間を示す整数。"
 
-#: ../../api.rst:1932
+#: ../../api.rst:1948
 msgid "``members_removed``: An integer specifying how many members were removed."
 msgstr "``members_removed`` ： 除去されたメンバーの数を示す整数。"
 
-#: ../../api.rst:1938
+#: ../../api.rst:1954
 msgid "A member was banned."
 msgstr "メンバーのBAN。"
 
-#: ../../api.rst:1940
+#: ../../api.rst:1956
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`User` who got banned."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型はBANされたユーザーに該当する :class:`User` になります。"
 
-#: ../../api.rst:1947
+#: ../../api.rst:1963
 msgid "A member was unbanned."
 msgstr "メンバーのBANの解除。"
 
-#: ../../api.rst:1949
+#: ../../api.rst:1965
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`User` who got unbanned."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型はBANが解除されたユーザーに該当する :class:`User` になります。"
 
-#: ../../api.rst:1956
+#: ../../api.rst:1972
 msgid "A member has updated. This triggers in the following situations:"
 msgstr "メンバーの何らかの更新。これのトリガーとなるのは以下の場合です："
 
-#: ../../api.rst:1958
+#: ../../api.rst:1974
 msgid "A nickname was changed"
 msgstr "メンバーのニックネームの変更。"
 
-#: ../../api.rst:1959
+#: ../../api.rst:1975
 msgid "They were server muted or deafened (or it was undo'd)"
 msgstr "サーバー側でミュートやスピーカーミュートされた（あるいは解除された）場合。"
 
-#: ../../api.rst:1961
+#: ../../api.rst:1977
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` who got updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、更新の行われた :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:1966
+#: ../../api.rst:1982
 msgid ":attr:`~AuditLogDiff.nick`"
 msgstr ":attr:`~AuditLogDiff.nick`"
 
-#: ../../api.rst:1967
+#: ../../api.rst:1983
 msgid ":attr:`~AuditLogDiff.mute`"
 msgstr ":attr:`~AuditLogDiff.mute`"
 
-#: ../../api.rst:1968
+#: ../../api.rst:1984
 msgid ":attr:`~AuditLogDiff.deaf`"
 msgstr ":attr:`~AuditLogDiff.deaf`"
 
-#: ../../api.rst:1969
+#: ../../api.rst:1985
 msgid ":attr:`~AuditLogDiff.timed_out_until`"
 msgstr ":attr:`~AuditLogDiff.timed_out_until`"
 
-#: ../../api.rst:1973
+#: ../../api.rst:1989
 msgid "A member's role has been updated. This triggers when a member either gains a role or loses a role."
 msgstr "メンバーの役職の更新。これは、メンバーが役職を得たり、失った場合に発生します。"
 
-#: ../../api.rst:1976
+#: ../../api.rst:1992
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` who got the role."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、役職の更新が行われた :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:1981
+#: ../../api.rst:1997
 msgid ":attr:`~AuditLogDiff.roles`"
 msgstr ":attr:`~AuditLogDiff.roles`"
 
-#: ../../api.rst:1985
+#: ../../api.rst:2001
 msgid "A member's voice channel has been updated. This triggers when a member is moved to a different voice channel."
 msgstr "メンバーのボイスチャンネルの更新。これは、メンバーが他のボイスチャンネルに移動させられた時に発生します。"
 
-#: ../../api.rst:1991
+#: ../../api.rst:2007
 msgid "``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the members were moved."
 msgstr "``channel`` ： メンバーの移動先の :class:`TextChannel` か チャンネルIDを持つ :class:`Object` 。"
 
-#: ../../api.rst:1992
+#: ../../api.rst:2008
 msgid "``count``: An integer specifying how many members were moved."
 msgstr "``count`` ： 移動されたメンバーの数を示す整数。"
 
-#: ../../api.rst:1998
+#: ../../api.rst:2014
 msgid "A member's voice state has changed. This triggers when a member is force disconnected from voice."
 msgstr "メンバーのボイス状態が変更されました。これはメンバーがボイスから強制的に切断された場合に発生します。"
 
-#: ../../api.rst:2001
-#: ../../api.rst:2209
+#: ../../api.rst:2017
+#: ../../api.rst:2225
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.extra` is set to an unspecified proxy object with one attribute:"
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.extra` は以下の属性を持つプロキシオブジェクトになります："
 
-#: ../../api.rst:2004
+#: ../../api.rst:2020
 msgid "``count``: An integer specifying how many members were disconnected."
 msgstr "``count`` ： 切断されたメンバーの数を示す整数。"
 
-#: ../../api.rst:2010
+#: ../../api.rst:2026
 msgid "A bot was added to the guild."
 msgstr "ボットがギルドに追加されました。"
 
-#: ../../api.rst:2012
+#: ../../api.rst:2028
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` which was added to the guild."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、ギルドに追加された :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:2019
+#: ../../api.rst:2035
 msgid "A new role was created."
 msgstr "新しい役職の作成。"
 
-#: ../../api.rst:2021
-#: ../../api.rst:2044
-#: ../../api.rst:2061
+#: ../../api.rst:2037
+#: ../../api.rst:2060
+#: ../../api.rst:2077
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Role` or a :class:`Object` with the ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、IDが設定されている :class:`Role` か、 :class:`Object` のいずれかになります。"
 
-#: ../../api.rst:2026
-#: ../../api.rst:2049
-#: ../../api.rst:2066
+#: ../../api.rst:2042
+#: ../../api.rst:2065
+#: ../../api.rst:2082
 msgid ":attr:`~AuditLogDiff.colour`"
 msgstr ":attr:`~AuditLogDiff.colour`"
 
-#: ../../api.rst:2027
-#: ../../api.rst:2050
-#: ../../api.rst:2067
+#: ../../api.rst:2043
+#: ../../api.rst:2066
+#: ../../api.rst:2083
 msgid ":attr:`~AuditLogDiff.mentionable`"
 msgstr ":attr:`~AuditLogDiff.mentionable`"
 
-#: ../../api.rst:2028
-#: ../../api.rst:2051
-#: ../../api.rst:2068
+#: ../../api.rst:2044
+#: ../../api.rst:2067
+#: ../../api.rst:2084
 msgid ":attr:`~AuditLogDiff.hoist`"
 msgstr ":attr:`~AuditLogDiff.hoist`"
 
-#: ../../api.rst:2030
-#: ../../api.rst:2053
+#: ../../api.rst:2046
+#: ../../api.rst:2069
 msgid ":attr:`~AuditLogDiff.unicode_emoji`"
 msgstr ":attr:`~AuditLogDiff.unicode_emoji`"
 
-#: ../../api.rst:2032
-#: ../../api.rst:2055
-#: ../../api.rst:2070
+#: ../../api.rst:2048
+#: ../../api.rst:2071
+#: ../../api.rst:2086
 msgid ":attr:`~AuditLogDiff.permissions`"
 msgstr ":attr:`~AuditLogDiff.permissions`"
 
-#: ../../api.rst:2036
+#: ../../api.rst:2052
 msgid "A role was updated. This triggers in the following situations:"
 msgstr "役職の何らかの更新。これのトリガーとなるのは以下の場合です："
 
-#: ../../api.rst:2038
+#: ../../api.rst:2054
 msgid "The name has changed"
 msgstr "名前の更新。"
 
-#: ../../api.rst:2039
+#: ../../api.rst:2055
 msgid "The permissions have changed"
 msgstr "権限の更新。"
 
-#: ../../api.rst:2040
+#: ../../api.rst:2056
 msgid "The colour has changed"
 msgstr "色の更新。"
 
-#: ../../api.rst:2041
+#: ../../api.rst:2057
 msgid "The role icon (or unicode emoji) has changed"
 msgstr "ロールアイコン （または Unicode 絵文字）の変更。"
 
-#: ../../api.rst:2042
+#: ../../api.rst:2058
 msgid "Its hoist/mentionable state has changed"
 msgstr "ロールメンバーのオンライン表示、ロールへのメンションの許可の変更。"
 
-#: ../../api.rst:2059
+#: ../../api.rst:2075
 msgid "A role was deleted."
 msgstr "役職の削除。"
 
-#: ../../api.rst:2074
+#: ../../api.rst:2090
 msgid "An invite was created."
 msgstr "招待の作成。"
 
-#: ../../api.rst:2076
+#: ../../api.rst:2092
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Invite` that was created."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型は作成された招待に該当する :class:`Invite` になります。"
 
-#: ../../api.rst:2081
-#: ../../api.rst:2105
+#: ../../api.rst:2097
+#: ../../api.rst:2121
 msgid ":attr:`~AuditLogDiff.max_age`"
 msgstr ":attr:`~AuditLogDiff.max_age`"
 
-#: ../../api.rst:2082
-#: ../../api.rst:2106
+#: ../../api.rst:2098
+#: ../../api.rst:2122
 msgid ":attr:`~AuditLogDiff.code`"
 msgstr ":attr:`~AuditLogDiff.code`"
 
-#: ../../api.rst:2083
-#: ../../api.rst:2107
+#: ../../api.rst:2099
+#: ../../api.rst:2123
 msgid ":attr:`~AuditLogDiff.temporary`"
 msgstr ":attr:`~AuditLogDiff.temporary`"
 
-#: ../../api.rst:2084
-#: ../../api.rst:2108
+#: ../../api.rst:2100
+#: ../../api.rst:2124
 msgid ":attr:`~AuditLogDiff.inviter`"
 msgstr ":attr:`~AuditLogDiff.inviter`"
 
-#: ../../api.rst:2085
-#: ../../api.rst:2109
-#: ../../api.rst:2122
+#: ../../api.rst:2101
+#: ../../api.rst:2125
 #: ../../api.rst:2138
-#: ../../api.rst:2151
+#: ../../api.rst:2154
+#: ../../api.rst:2167
 msgid ":attr:`~AuditLogDiff.channel`"
 msgstr ":attr:`~AuditLogDiff.channel`"
 
-#: ../../api.rst:2086
-#: ../../api.rst:2110
+#: ../../api.rst:2102
+#: ../../api.rst:2126
 msgid ":attr:`~AuditLogDiff.uses`"
 msgstr ":attr:`~AuditLogDiff.uses`"
 
-#: ../../api.rst:2087
-#: ../../api.rst:2111
+#: ../../api.rst:2103
+#: ../../api.rst:2127
 msgid ":attr:`~AuditLogDiff.max_uses`"
 msgstr ":attr:`~AuditLogDiff.max_uses`"
 
-#: ../../api.rst:2091
+#: ../../api.rst:2107
 msgid "An invite was updated."
 msgstr "招待の更新。"
 
-#: ../../api.rst:2093
+#: ../../api.rst:2109
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Invite` that was updated."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` の型は更新された招待に該当する :class:`Invite` になります。"
 
-#: ../../api.rst:2098
+#: ../../api.rst:2114
 msgid "An invite was deleted."
 msgstr "招待の削除。"
 
-#: ../../api.rst:2100
+#: ../../api.rst:2116
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Invite` that was deleted."
 msgstr "これが上記のactionならば、:attr:`~AuditLogEntry.target` のタイプは削除された招待に該当する :class:`Invite` になります。"
 
-#: ../../api.rst:2115
+#: ../../api.rst:2131
 msgid "A webhook was created."
 msgstr "Webhookが作成されたとき。"
 
-#: ../../api.rst:2117
 #: ../../api.rst:2133
-#: ../../api.rst:2146
+#: ../../api.rst:2149
+#: ../../api.rst:2162
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Object` with the webhook ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` のタイプは、webhook IDが設定されている :class:`Object` になります。"
 
-#: ../../api.rst:2124
-#: ../../api.rst:2153
+#: ../../api.rst:2140
+#: ../../api.rst:2169
 msgid ":attr:`~AuditLogDiff.type` (always set to ``1`` if so)"
 msgstr ":attr:`~AuditLogDiff.type` (その場合は常に ``1`` です。)"
 
-#: ../../api.rst:2128
+#: ../../api.rst:2144
 msgid "A webhook was updated. This trigger in the following situations:"
 msgstr "Webhookが更新されたとき。これのトリガーとなるのは以下の場合です。"
 
-#: ../../api.rst:2130
+#: ../../api.rst:2146
 msgid "The webhook name changed"
 msgstr "Webhook名が変更されたとき"
 
-#: ../../api.rst:2131
+#: ../../api.rst:2147
 msgid "The webhook channel changed"
 msgstr "Webhookチャンネルが変更されたとき"
 
-#: ../../api.rst:2140
+#: ../../api.rst:2156
 msgid ":attr:`~AuditLogDiff.avatar`"
 msgstr ":attr:`~AuditLogDiff.avatar`"
 
-#: ../../api.rst:2144
+#: ../../api.rst:2160
 msgid "A webhook was deleted."
 msgstr "Webhookが削除されたとき。"
 
-#: ../../api.rst:2157
+#: ../../api.rst:2173
 msgid "An emoji was created."
 msgstr "絵文字が作成されたとき。"
 
-#: ../../api.rst:2159
-#: ../../api.rst:2170
+#: ../../api.rst:2175
+#: ../../api.rst:2186
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Emoji` or :class:`Object` with the emoji ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`Emoji` または 絵文字IDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2168
+#: ../../api.rst:2184
 msgid "An emoji was updated. This triggers when the name has changed."
 msgstr "絵文字に対する何らかの更新。これは名前が変更されたときに発生します。"
 
-#: ../../api.rst:2179
+#: ../../api.rst:2195
 msgid "An emoji was deleted."
 msgstr "絵文字の削除。"
 
-#: ../../api.rst:2181
+#: ../../api.rst:2197
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Object` with the emoji ID."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、絵文字IDが設定されている :class:`Object` になります。"
 
-#: ../../api.rst:2190
+#: ../../api.rst:2206
 msgid "A message was deleted by a moderator. Note that this only triggers if the message was deleted by someone other than the author."
 msgstr "管理者によるメッセージの削除。なお、これのトリガーとなるのは、メッセージが投稿者以外によって削除された場合のみです。"
 
-#: ../../api.rst:2193
+#: ../../api.rst:2209
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` who had their message deleted."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、削除が行われたメッセージの送信者である :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:2199
-#: ../../api.rst:2212
+#: ../../api.rst:2215
+#: ../../api.rst:2228
 msgid "``count``: An integer specifying how many messages were deleted."
 msgstr "``count`` ： 削除されたメッセージの数を示す整数。"
 
-#: ../../api.rst:2200
+#: ../../api.rst:2216
 msgid "``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message got deleted."
 msgstr "``channel`` ： メッセージが削除された :class:`TextChannel` か チャンネルIDを持つ :class:`Object` 。"
 
-#: ../../api.rst:2204
+#: ../../api.rst:2220
 msgid "Messages were bulk deleted by a moderator."
 msgstr "管理者によるメッセージの一括削除。"
 
-#: ../../api.rst:2206
+#: ../../api.rst:2222
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`TextChannel` or :class:`Object` with the ID of the channel that was purged."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`TextChannel` またはメッセージが一括削除されたチャンネルIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2218
+#: ../../api.rst:2234
 msgid "A message was pinned in a channel."
 msgstr "チャンネルにメッセージがピン留めされた。"
 
-#: ../../api.rst:2220
+#: ../../api.rst:2236
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` who had their message pinned."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、ピン留めされたメッセージの送信者である :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:2226
+#: ../../api.rst:2242
 msgid "``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was pinned."
 msgstr "``channel`` ： メッセージがピン留めされた :class:`TextChannel` か チャンネルIDを持つ :class:`Object` 。"
 
-#: ../../api.rst:2227
+#: ../../api.rst:2243
 msgid "``message_id``: the ID of the message which was pinned."
 msgstr "``message_id`` ： ピン留めされたメッセージのID。"
 
-#: ../../api.rst:2233
+#: ../../api.rst:2249
 msgid "A message was unpinned in a channel."
 msgstr "チャンネルのメッセージのピン留めが外された。"
 
-#: ../../api.rst:2235
+#: ../../api.rst:2251
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Member` or :class:`User` who had their message unpinned."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、ピン留めが外されたメッセージの送信者である :class:`Member` あるいは :class:`User` になります。"
 
-#: ../../api.rst:2241
+#: ../../api.rst:2257
 msgid "``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the message was unpinned."
 msgstr "``channel`` ： メッセージのピン留めが外された :class:`TextChannel` か チャンネルIDを持つ :class:`Object` 。"
 
-#: ../../api.rst:2242
+#: ../../api.rst:2258
 msgid "``message_id``: the ID of the message which was unpinned."
 msgstr "``message_id`` ： ピン留めが外されたメッセージのID。"
 
-#: ../../api.rst:2248
+#: ../../api.rst:2264
 msgid "A guild integration was created."
 msgstr "ギルドの連携サービスの作成。"
 
-#: ../../api.rst:2250
+#: ../../api.rst:2266
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is a :class:`PartialIntegration` or :class:`Object` with the integration ID of the integration which was created."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`PartialIntegration` または作成されたインテグレーションのIDを持つ :class:`Object` になります。"
 
-#: ../../api.rst:2258
+#: ../../api.rst:2274
 msgid "A guild integration was updated."
 msgstr "ギルド連携サービスの更新。"
 
-#: ../../api.rst:2260
+#: ../../api.rst:2276
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is a :class:`PartialIntegration` or :class:`Object` with the integration ID of the integration which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`PartialIntegration` または更新されたインテグレーションのIDを持つ :class:`Object` になります。"
 
-#: ../../api.rst:2268
+#: ../../api.rst:2284
 msgid "A guild integration was deleted."
 msgstr "ギルド連携サービスの削除。"
 
-#: ../../api.rst:2270
+#: ../../api.rst:2286
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is a :class:`PartialIntegration` or :class:`Object` with the integration ID of the integration which was deleted."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`PartialIntegration` または削除されたインテグレーションのIDを持つ :class:`Object` になります。"
 
-#: ../../api.rst:2278
+#: ../../api.rst:2294
 msgid "A stage instance was started."
 msgstr "ステージインスタンスの開始。"
 
-#: ../../api.rst:2280
+#: ../../api.rst:2296
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`StageInstance` or :class:`Object` with the ID of the stage instance which was created."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`StageInstance` または作成されたステージインスタンスのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2287
-#: ../../api.rst:2302
+#: ../../api.rst:2303
+#: ../../api.rst:2318
 msgid ":attr:`~AuditLogDiff.privacy_level`"
 msgstr ":attr:`~AuditLogDiff.privacy_level`"
 
-#: ../../api.rst:2293
+#: ../../api.rst:2309
 msgid "A stage instance was updated."
 msgstr "ステージインスタンスの更新。"
 
-#: ../../api.rst:2295
+#: ../../api.rst:2311
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`StageInstance` or :class:`Object` with the ID of the stage instance which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`StageInstance` または更新されたステージインスタンスのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2308
+#: ../../api.rst:2324
 msgid "A stage instance was ended."
 msgstr "ステージインスタンスの終了。"
 
-#: ../../api.rst:2314
+#: ../../api.rst:2330
 msgid "A sticker was created."
 msgstr "スタンプの作成。"
 
-#: ../../api.rst:2316
+#: ../../api.rst:2332
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`GuildSticker` or :class:`Object` with the ID of the sticker which was created."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`GuildSticker` または作成されたスタンプのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2323
-#: ../../api.rst:2342
-#: ../../api.rst:2361
+#: ../../api.rst:2339
+#: ../../api.rst:2358
+#: ../../api.rst:2377
 msgid ":attr:`~AuditLogDiff.emoji`"
 msgstr ":attr:`~AuditLogDiff.emoji`"
 
-#: ../../api.rst:2325
-#: ../../api.rst:2344
-#: ../../api.rst:2363
+#: ../../api.rst:2341
+#: ../../api.rst:2360
+#: ../../api.rst:2379
 msgid ":attr:`~AuditLogDiff.format_type`"
 msgstr ":attr:`~AuditLogDiff.format_type`"
 
-#: ../../api.rst:2327
-#: ../../api.rst:2346
-#: ../../api.rst:2365
+#: ../../api.rst:2343
+#: ../../api.rst:2362
+#: ../../api.rst:2381
 msgid ":attr:`~AuditLogDiff.available`"
 msgstr ":attr:`~AuditLogDiff.available`"
 
-#: ../../api.rst:2333
+#: ../../api.rst:2349
 msgid "A sticker was updated."
 msgstr "スタンプの更新。"
 
-#: ../../api.rst:2335
-#: ../../api.rst:2354
+#: ../../api.rst:2351
+#: ../../api.rst:2370
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`GuildSticker` or :class:`Object` with the ID of the sticker which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`GuildSticker` または更新されたスタンプのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2352
+#: ../../api.rst:2368
 msgid "A sticker was deleted."
 msgstr "スタンプの削除。"
 
-#: ../../api.rst:2371
-#: ../../api.rst:2390
-#: ../../api.rst:2409
+#: ../../api.rst:2387
+#: ../../api.rst:2406
+#: ../../api.rst:2425
 msgid "A scheduled event was created."
 msgstr "スケジュールイベントの作成。"
 
-#: ../../api.rst:2373
+#: ../../api.rst:2389
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`ScheduledEvent` or :class:`Object` with the ID of the event which was created."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`ScheduledEvent` または作成されたスケジュールイベントのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2377
-#: ../../api.rst:2396
-#: ../../api.rst:2415
+#: ../../api.rst:2393
+#: ../../api.rst:2412
+#: ../../api.rst:2431
 msgid "Possible attributes for :class:`AuditLogDiff`: - :attr:`~AuditLogDiff.name` - :attr:`~AuditLogDiff.channel` - :attr:`~AuditLogDiff.description` - :attr:`~AuditLogDiff.privacy_level` - :attr:`~AuditLogDiff.status` - :attr:`~AuditLogDiff.entity_type` - :attr:`~AuditLogDiff.cover_image`"
 msgstr ":class:`AuditLogDiff` の可能な属性: - :attr:`~AuditLogDiff.name` - :attr:`~AuditLogDiff.channel` - :attr:`~AuditLogDiff.description` - :attr:`~AuditLogDiff.privacy_level` - :attr:`~AuditLogDiff.status` - :attr:`~AuditLogDiff.entity_type` - :attr:`~AuditLogDiff.cover_image`"
 
-#: ../../api.rst:2392
+#: ../../api.rst:2408
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`ScheduledEvent` or :class:`Object` with the ID of the event which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`ScheduledEvent` または更新されたスケジュールイベントのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2411
+#: ../../api.rst:2427
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`ScheduledEvent` or :class:`Object` with the ID of the event which was deleted."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`ScheduledEvent` または削除されたスケジュールイベントのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2428
+#: ../../api.rst:2444
 msgid "A thread was created."
 msgstr "スレッドの作成。"
 
-#: ../../api.rst:2430
+#: ../../api.rst:2446
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Thread` or :class:`Object` with the ID of the thread which was created."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`Thread` または作成されたスレッドのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2437
-#: ../../api.rst:2455
-#: ../../api.rst:2473
+#: ../../api.rst:2453
+#: ../../api.rst:2471
+#: ../../api.rst:2489
 msgid ":attr:`~AuditLogDiff.archived`"
 msgstr ":attr:`~AuditLogDiff.archived`"
 
-#: ../../api.rst:2438
-#: ../../api.rst:2456
-#: ../../api.rst:2474
+#: ../../api.rst:2454
+#: ../../api.rst:2472
+#: ../../api.rst:2490
 msgid ":attr:`~AuditLogDiff.locked`"
 msgstr ":attr:`~AuditLogDiff.locked`"
 
-#: ../../api.rst:2439
-#: ../../api.rst:2457
-#: ../../api.rst:2475
+#: ../../api.rst:2455
+#: ../../api.rst:2473
+#: ../../api.rst:2491
 msgid ":attr:`~AuditLogDiff.auto_archive_duration`"
 msgstr ":attr:`~AuditLogDiff.auto_archive_duration`"
 
-#: ../../api.rst:2440
-#: ../../api.rst:2458
-#: ../../api.rst:2476
+#: ../../api.rst:2456
+#: ../../api.rst:2474
+#: ../../api.rst:2492
 msgid ":attr:`~AuditLogDiff.invitable`"
 msgstr ":attr:`~AuditLogDiff.invitable`"
 
-#: ../../api.rst:2446
+#: ../../api.rst:2462
 msgid "A thread was updated."
 msgstr "スレッドの更新。"
 
-#: ../../api.rst:2448
+#: ../../api.rst:2464
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Thread` or :class:`Object` with the ID of the thread which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`Thread` または更新されたスレッドのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2464
+#: ../../api.rst:2480
 msgid "A thread was deleted."
 msgstr "スレッドの削除。"
 
-#: ../../api.rst:2466
+#: ../../api.rst:2482
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is the :class:`Thread` or :class:`Object` with the ID of the thread which was deleted."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 :class:`Thread` または削除されたスレッドのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2482
+#: ../../api.rst:2498
 msgid "An application command or integrations application command permissions were updated."
 msgstr "アプリケーションコマンドまたはインテグレーションアプリケーションコマンドの権限の更新。"
 
-#: ../../api.rst:2485
+#: ../../api.rst:2501
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.target` is a :class:`PartialIntegration` for an integrations general permissions, :class:`~discord.app_commands.AppCommand` for a specific commands permissions, or :class:`Object` with the ID of the command or integration which was updated."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.target` の型は、 インテグレーション一般の権限の場合 :class:`PartialIntegration` 、特定のコマンドの権限の場合 :class:`~discord.app_commands.AppCommand` 、あるいは更新されたコマンドまたはインテグレーションのIDが設定された :class:`Object` です。"
 
-#: ../../api.rst:2491
+#: ../../api.rst:2507
 msgid "When this is the action, the type of :attr:`~AuditLogEntry.extra` is set to an :class:`PartialIntegration` or :class:`Object` with the ID of application that command or integration belongs to."
 msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.extra` の型は、 :class:`PartialIntegration` またはコマンドまたはインテグレーションが属するアプリケーションのIDを持つ :class:`Object` になります。"
 
-#: ../../api.rst:2497
+#: ../../api.rst:2513
 msgid ":attr:`~AuditLogDiff.app_command_permissions`"
 msgstr ":attr:`~AuditLogDiff.app_command_permissions`"
 
-#: ../../api.rst:2503
+#: ../../api.rst:2519
 msgid "Represents the category that the :class:`AuditLogAction` belongs to."
 msgstr ":class:`AuditLogAction` が属するカテゴリ。"
 
-#: ../../api.rst:2505
+#: ../../api.rst:2521
 msgid "This can be retrieved via :attr:`AuditLogEntry.category`."
 msgstr "これは :attr:`AuditLogEntry.category` で取得できます。"
 
-#: ../../api.rst:2509
+#: ../../api.rst:2525
 msgid "The action is the creation of something."
 msgstr "アクションは何かの作成です。"
 
-#: ../../api.rst:2513
+#: ../../api.rst:2529
 msgid "The action is the deletion of something."
 msgstr "アクションは何かの削除です。"
 
-#: ../../api.rst:2517
+#: ../../api.rst:2533
 msgid "The action is the update of something."
 msgstr "アクションは何かの更新です。"
 
-#: ../../api.rst:2521
+#: ../../api.rst:2537
 msgid "Represents the membership state of a team member retrieved through :func:`Client.application_info`."
 msgstr ":func:`Client.application_info` で取得したチームメンバーのメンバーシップ状態。"
 
-#: ../../api.rst:2527
+#: ../../api.rst:2543
 msgid "Represents an invited member."
 msgstr "招待されたメンバー。"
 
-#: ../../api.rst:2531
+#: ../../api.rst:2547
 msgid "Represents a member currently in the team."
 msgstr "現在チームにいるメンバー。"
 
-#: ../../api.rst:2535
+#: ../../api.rst:2551
 msgid "Represents the type of webhook that can be received."
 msgstr "受け取れるWebhookの種類。"
 
-#: ../../api.rst:2541
+#: ../../api.rst:2557
 msgid "Represents a webhook that can post messages to channels with a token."
 msgstr "トークンでチャンネルにメッセージを投稿できるWebhook。"
 
-#: ../../api.rst:2545
+#: ../../api.rst:2561
 msgid "Represents a webhook that is internally managed by Discord, used for following channels."
 msgstr "チャンネルのフォローのためDiscord内部で管理されるWebhook。"
 
-#: ../../api.rst:2549
+#: ../../api.rst:2565
 msgid "Represents a webhook that is used for interactions or applications."
 msgstr "インタラクションやアプリケーションに用いられるWebhook。"
 
-#: ../../api.rst:2555
+#: ../../api.rst:2571
 msgid "Represents the behaviour the :class:`Integration` should perform when a user's subscription has finished."
 msgstr "ユーザーのサブスクリプションが終了した後の :class:`Integration` の動作。"
 
-#: ../../api.rst:2558
+#: ../../api.rst:2574
 msgid "There is an alias for this called ``ExpireBehavior``."
 msgstr "``ExpireBehavior`` という名のエイリアスがあります。"
 
-#: ../../api.rst:2564
+#: ../../api.rst:2580
 msgid "This will remove the :attr:`StreamIntegration.role` from the user when their subscription is finished."
 msgstr "サブスクリプションが終了したユーザーから :attr:`StreamIntegration.role` を除去します。"
 
-#: ../../api.rst:2569
+#: ../../api.rst:2585
 msgid "This will kick the user when their subscription is finished."
 msgstr "サブスクリプションが終了したユーザーをキックします。"
 
-#: ../../api.rst:2573
+#: ../../api.rst:2589
 msgid "Represents the default avatar of a Discord :class:`User`"
 msgstr "Discord :class:`User` のデフォルトのアバター。"
 
-#: ../../api.rst:2577
+#: ../../api.rst:2593
 msgid "Represents the default avatar with the color blurple. See also :attr:`Colour.blurple`"
 msgstr "ブループル色のデフォルトのアバター。 :attr:`Colour.blurple` も参照してください。"
 
-#: ../../api.rst:2581
+#: ../../api.rst:2597
 msgid "Represents the default avatar with the color grey. See also :attr:`Colour.greyple`"
 msgstr "灰色のデフォルトのアバター。 :attr:`Colour.greyple` も参照してください。"
 
-#: ../../api.rst:2585
+#: ../../api.rst:2601
 msgid "An alias for :attr:`grey`."
 msgstr ":attr:`grey` のエイリアス。"
 
-#: ../../api.rst:2588
+#: ../../api.rst:2604
 msgid "Represents the default avatar with the color green. See also :attr:`Colour.green`"
 msgstr "緑色のデフォルトのアバター。 :attr:`Colour.green` も参照してください。"
 
-#: ../../api.rst:2592
+#: ../../api.rst:2608
 msgid "Represents the default avatar with the color orange. See also :attr:`Colour.orange`"
 msgstr "オレンジ色のデフォルトのアバター。 :attr:`Colour.orange` も参照してください。"
 
-#: ../../api.rst:2596
+#: ../../api.rst:2612
 msgid "Represents the default avatar with the color red. See also :attr:`Colour.red`"
 msgstr "赤色のデフォルトのアバター。 :attr:`Colour.red` も参照してください。"
 
-#: ../../api.rst:2601
+#: ../../api.rst:2617
 msgid "Represents the type of sticker."
 msgstr "スタンプの種類。"
 
-#: ../../api.rst:2607
+#: ../../api.rst:2623
 msgid "Represents a standard sticker that all Nitro users can use."
 msgstr "Nitroユーザー全員が使用できる標準スタンプ。"
 
-#: ../../api.rst:2611
+#: ../../api.rst:2627
 msgid "Represents a custom sticker created in a guild."
 msgstr "ギルドで作成されたカスタムスタンプ。"
 
-#: ../../api.rst:2615
+#: ../../api.rst:2631
 msgid "Represents the type of sticker images."
 msgstr "スタンプ画像の種類。"
 
-#: ../../api.rst:2621
+#: ../../api.rst:2637
 msgid "Represents a sticker with a png image."
 msgstr "PNG画像のスタンプ。"
 
-#: ../../api.rst:2625
+#: ../../api.rst:2641
 msgid "Represents a sticker with an apng image."
 msgstr "APNG画像のスタンプ。"
 
-#: ../../api.rst:2629
+#: ../../api.rst:2645
 msgid "Represents a sticker with a lottie image."
 msgstr "ロッティー画像のスタンプ。"
 
-#: ../../api.rst:2633
+#: ../../api.rst:2649
 msgid "Represents the invite type for voice channel invites."
 msgstr "ボイスチャンネル招待の招待タイプ。"
 
-#: ../../api.rst:2639
+#: ../../api.rst:2655
 msgid "The invite doesn't target anyone or anything."
 msgstr "招待の対象がないもの。"
 
-#: ../../api.rst:2643
+#: ../../api.rst:2659
 msgid "A stream invite that targets a user."
 msgstr "ユーザーを対象とするもの。"
 
-#: ../../api.rst:2647
+#: ../../api.rst:2663
 msgid "A stream invite that targets an embedded application."
 msgstr "埋め込まれたアプリケーションを対象とするもの。"
 
-#: ../../api.rst:2651
+#: ../../api.rst:2667
 msgid "Represents the camera video quality mode for voice channel participants."
 msgstr "ボイスチャンネル参加者のカメラビデオの画質モード。"
 
-#: ../../api.rst:2657
+#: ../../api.rst:2673
 msgid "Represents auto camera video quality."
 msgstr "自動のカメラビデオ画質。"
 
-#: ../../api.rst:2661
+#: ../../api.rst:2677
 msgid "Represents full camera video quality."
 msgstr "フルのカメラビデオ画質。"
 
-#: ../../api.rst:2665
+#: ../../api.rst:2681
 msgid "Represents the privacy level of a stage instance or scheduled event."
 msgstr "ステージインスタンスやスケジュールイベントのプライバシーレベル。"
 
-#: ../../api.rst:2671
+#: ../../api.rst:2687
 msgid "The stage instance or scheduled event is only accessible within the guild."
 msgstr "ステージインスタンスやスケジュールイベントはギルド内でのみアクセスできます。"
 
-#: ../../api.rst:2675
+#: ../../api.rst:2691
 msgid "Represents the NSFW level of a guild."
 msgstr "ギルドの年齢制限レベル。"
 
-#: ../../api.rst:2683
+#: ../../api.rst:2699
 msgid "Checks if two NSFW levels are equal."
 msgstr "二つの年齢制限レベルが等しいかを比較します。"
 
-#: ../../api.rst:2686
+#: ../../api.rst:2702
 msgid "Checks if two NSFW levels are not equal."
 msgstr "二つの年齢制限レベルが等しくないかを比較します。"
 
-#: ../../api.rst:2689
+#: ../../api.rst:2705
 msgid "Checks if a NSFW level is higher than another."
 msgstr "年齢制限レベルがあるレベルより高いか確認します。"
 
-#: ../../api.rst:2692
+#: ../../api.rst:2708
 msgid "Checks if a NSFW level is lower than another."
 msgstr "年齢制限レベルがあるレベルより低いか確認します。"
 
-#: ../../api.rst:2695
+#: ../../api.rst:2711
 msgid "Checks if a NSFW level is higher or equal to another."
 msgstr "年齢制限レベルがあるレベルと同じ、又は高いか確認します。"
 
-#: ../../api.rst:2698
+#: ../../api.rst:2714
 msgid "Checks if a NSFW level is lower or equal to another."
 msgstr "年齢制限レベルがあるレベルと同じ、又は低いか確認します。"
 
-#: ../../api.rst:2702
+#: ../../api.rst:2718
 msgid "The guild has not been categorised yet."
 msgstr "未分類のギルド。"
 
-#: ../../api.rst:2706
+#: ../../api.rst:2722
 msgid "The guild contains NSFW content."
 msgstr "年齢制限されたコンテンツを含むギルド。"
 
-#: ../../api.rst:2710
+#: ../../api.rst:2726
 msgid "The guild does not contain any NSFW content."
 msgstr "年齢制限されたコンテンツを一切含まないギルド。"
 
-#: ../../api.rst:2714
+#: ../../api.rst:2730
 msgid "The guild may contain NSFW content."
 msgstr "年齢制限されたコンテンツを含む可能性のあるギルド。"
 
-#: ../../api.rst:2718
+#: ../../api.rst:2734
 msgid "Supported locales by Discord. Mainly used for application command localisation."
 msgstr "Discordでサポートされているロケール。主にアプリケーションコマンドの多言語化に使用されます。"
 
-#: ../../api.rst:2724
+#: ../../api.rst:2740
 msgid "The ``en-US`` locale."
 msgstr "``en-US`` ロケール。"
 
-#: ../../api.rst:2728
+#: ../../api.rst:2744
 msgid "The ``en-GB`` locale."
 msgstr "``en-GB`` ロケール。"
 
-#: ../../api.rst:2732
+#: ../../api.rst:2748
 msgid "The ``bg`` locale."
 msgstr "``bg`` ロケール。"
 
-#: ../../api.rst:2736
+#: ../../api.rst:2752
 msgid "The ``zh-CN`` locale."
 msgstr "``zh-CN`` ロケール。"
 
-#: ../../api.rst:2740
+#: ../../api.rst:2756
 msgid "The ``zh-TW`` locale."
 msgstr "``zh-TW`` ロケール。"
 
-#: ../../api.rst:2744
+#: ../../api.rst:2760
 msgid "The ``hr`` locale."
 msgstr "``hr`` ロケール。"
 
-#: ../../api.rst:2748
+#: ../../api.rst:2764
 msgid "The ``cs`` locale."
 msgstr "``cs`` ロケール。"
 
-#: ../../api.rst:2752
+#: ../../api.rst:2768
 msgid "The ``da`` locale."
 msgstr "``da`` ロケール。"
 
-#: ../../api.rst:2756
+#: ../../api.rst:2772
 msgid "The ``nl`` locale."
 msgstr "``nl`` ロケール。"
 
-#: ../../api.rst:2760
+#: ../../api.rst:2776
 msgid "The ``fi`` locale."
 msgstr "``fi`` ロケール。"
 
-#: ../../api.rst:2764
+#: ../../api.rst:2780
 msgid "The ``fr`` locale."
 msgstr "``fr`` ロケール。"
 
-#: ../../api.rst:2768
+#: ../../api.rst:2784
 msgid "The ``de`` locale."
 msgstr "``de`` ロケール。"
 
-#: ../../api.rst:2772
+#: ../../api.rst:2788
 msgid "The ``el`` locale."
 msgstr "``el`` ロケール。"
 
-#: ../../api.rst:2776
+#: ../../api.rst:2792
 msgid "The ``hi`` locale."
 msgstr "``hi`` ロケール。"
 
-#: ../../api.rst:2780
+#: ../../api.rst:2796
 msgid "The ``hu`` locale."
 msgstr "``hu`` ロケール。"
 
-#: ../../api.rst:2784
+#: ../../api.rst:2800
 msgid "The ``it`` locale."
 msgstr "``it`` ロケール。"
 
-#: ../../api.rst:2788
+#: ../../api.rst:2804
 msgid "The ``ja`` locale."
 msgstr "``ja`` ロケール。"
 
-#: ../../api.rst:2792
+#: ../../api.rst:2808
 msgid "The ``ko`` locale."
 msgstr "``ko`` ロケール。"
 
-#: ../../api.rst:2796
+#: ../../api.rst:2812
 msgid "The ``lt`` locale."
 msgstr "``lt`` ロケール。"
 
-#: ../../api.rst:2800
+#: ../../api.rst:2816
 msgid "The ``no`` locale."
 msgstr "``no`` ロケール。"
 
-#: ../../api.rst:2804
+#: ../../api.rst:2820
 msgid "The ``pl`` locale."
 msgstr "``pl`` ロケール。"
 
-#: ../../api.rst:2808
+#: ../../api.rst:2824
 msgid "The ``pt-BR`` locale."
 msgstr "``pt-BR`` ロケール。"
 
-#: ../../api.rst:2812
+#: ../../api.rst:2828
 msgid "The ``ro`` locale."
 msgstr "``ro`` ロケール。"
 
-#: ../../api.rst:2816
+#: ../../api.rst:2832
 msgid "The ``ru`` locale."
 msgstr "``ru`` ロケール。"
 
-#: ../../api.rst:2820
+#: ../../api.rst:2836
 msgid "The ``es-ES`` locale."
 msgstr "``es-ES`` ロケール。"
 
-#: ../../api.rst:2824
+#: ../../api.rst:2840
 msgid "The ``sv-SE`` locale."
 msgstr "``sv-SE`` ロケール。"
 
-#: ../../api.rst:2828
+#: ../../api.rst:2844
 msgid "The ``th`` locale."
 msgstr "``th`` ロケール。"
 
-#: ../../api.rst:2832
+#: ../../api.rst:2848
 msgid "The ``tr`` locale."
 msgstr "``tr`` ロケール。"
 
-#: ../../api.rst:2836
+#: ../../api.rst:2852
 msgid "The ``uk`` locale."
 msgstr "``uk`` ロケール。"
 
-#: ../../api.rst:2840
+#: ../../api.rst:2856
 msgid "The ``vi`` locale."
 msgstr "``vi`` ロケール。"
 
-#: ../../api.rst:2845
+#: ../../api.rst:2861
 msgid "Represents the Multi-Factor Authentication requirement level of a guild."
 msgstr "ギルドの多要素認証要件レベル。"
 
-#: ../../api.rst:2853
+#: ../../api.rst:2869
 msgid "Checks if two MFA levels are equal."
 msgstr "二つのMFAレベルが等しいかを比較します。"
 
-#: ../../api.rst:2856
+#: ../../api.rst:2872
 msgid "Checks if two MFA levels are not equal."
 msgstr "二つのMFAレベルが等しくないかを比較します。"
 
-#: ../../api.rst:2859
+#: ../../api.rst:2875
 msgid "Checks if a MFA level is higher than another."
 msgstr "多要素認証レベルがあるレベルより厳しいか確認します。"
 
-#: ../../api.rst:2862
+#: ../../api.rst:2878
 msgid "Checks if a MFA level is lower than another."
 msgstr "多要素認証レベルがあるレベルより緩いか確認します。"
 
-#: ../../api.rst:2865
+#: ../../api.rst:2881
 msgid "Checks if a MFA level is higher or equal to another."
 msgstr "多要素認証レベルがあるレベルと同じ、又は厳しいか確認します。"
 
-#: ../../api.rst:2868
+#: ../../api.rst:2884
 msgid "Checks if a MFA level is lower or equal to another."
 msgstr "多要素認証レベルがあるレベルと同じ、又は緩いか確認します。"
 
-#: ../../api.rst:2872
+#: ../../api.rst:2888
 msgid "The guild has no MFA requirement."
 msgstr "多要素認証要件がないギルド。"
 
-#: ../../api.rst:2876
+#: ../../api.rst:2892
 msgid "The guild requires 2 factor authentication."
 msgstr "二要素認証を必須とするギルド。"
 
-#: ../../api.rst:2880
+#: ../../api.rst:2896
 msgid "Represents the type of entity that a scheduled event is for."
 msgstr "スケジュールイベントの開催場所の種類。"
 
-#: ../../api.rst:2886
+#: ../../api.rst:2902
 msgid "The scheduled event will occur in a stage instance."
 msgstr "ステージインスタンスで起こるスケジュールイベント。"
 
-#: ../../api.rst:2890
+#: ../../api.rst:2906
 msgid "The scheduled event will occur in a voice channel."
 msgstr "ボイスチャンネルで起こるスケジュールイベント。"
 
-#: ../../api.rst:2894
+#: ../../api.rst:2910
 msgid "The scheduled event will occur externally."
 msgstr "外部で起こるスケジュールイベント。"
 
-#: ../../api.rst:2898
+#: ../../api.rst:2914
 msgid "Represents the status of an event."
 msgstr "イベントの状態。"
 
-#: ../../api.rst:2904
+#: ../../api.rst:2920
 msgid "The event is scheduled."
 msgstr "予定されたイベント。"
 
-#: ../../api.rst:2908
+#: ../../api.rst:2924
 msgid "The event is active."
 msgstr "開催中のイベント。"
 
-#: ../../api.rst:2912
+#: ../../api.rst:2928
 msgid "The event has ended."
 msgstr "終了したイベント。"
 
-#: ../../api.rst:2916
+#: ../../api.rst:2932
 msgid "The event has been cancelled."
 msgstr "キャンセルされたイベント。"
 
-#: ../../api.rst:2920
+#: ../../api.rst:2936
 msgid "An alias for :attr:`cancelled`."
 msgstr ":attr:`cancelled` のエイリアス。"
 
-#: ../../api.rst:2924
+#: ../../api.rst:2940
 msgid "An alias for :attr:`completed`."
 msgstr ":attr:`completed` のエイリアス。"
 
-#: ../../api.rst:2929
+#: ../../api.rst:2945
 msgid "Audit Log Data"
 msgstr "監査ログデータ"
 
-#: ../../api.rst:2931
+#: ../../api.rst:2947
 msgid "Working with :meth:`Guild.audit_logs` is a complicated process with a lot of machinery involved. The library attempts to make it easy to use and friendly. In order to accomplish this goal, it must make use of a couple of data classes that aid in this goal."
 msgstr ":meth:`Guild.audit_logs` の使用は複雑なプロセスです。このライブラリーはこれを使いやすくフレンドリーにしようと試みています。この目標の達成のためにいくつかのデータクラスを使用しています。"
 
-#: ../../api.rst:2936
+#: ../../api.rst:2952
 msgid "AuditLogEntry"
 msgstr "AuditLogEntry"
 
@@ -5869,401 +5883,401 @@ msgstr ":class:`AuditLogDiff`"
 msgid "The target's subsequent state."
 msgstr "対象の直後の状態。"
 
-#: ../../api.rst:2944
+#: ../../api.rst:2960
 msgid "AuditLogChanges"
 msgstr "AuditLogChanges"
 
-#: ../../api.rst:2950
+#: ../../api.rst:2966
 msgid "An audit log change set."
 msgstr "監査ログの変更のセット。"
 
-#: ../../api.rst:2954
+#: ../../api.rst:2970
 msgid "The old value. The attribute has the type of :class:`AuditLogDiff`."
 msgstr "以前の値。この属性は :class:`AuditLogDiff` 型です。"
 
-#: ../../api.rst:2956
-#: ../../api.rst:2976
+#: ../../api.rst:2972
+#: ../../api.rst:2992
 msgid "Depending on the :class:`AuditLogActionCategory` retrieved by :attr:`~AuditLogEntry.category`\\, the data retrieved by this attribute differs:"
 msgstr ":attr:`~AuditLogEntry.category` で取得される :class:`AuditLogActionCategory` によりこの属性の値が異なります："
 
-#: ../../api.rst:2961
-#: ../../api.rst:2981
+#: ../../api.rst:2977
+#: ../../api.rst:2997
 msgid "Category"
 msgstr "カテゴリー"
 
-#: ../../api.rst:2963
-#: ../../api.rst:2983
+#: ../../api.rst:2979
+#: ../../api.rst:2999
 msgid ":attr:`~AuditLogActionCategory.create`"
 msgstr ":attr:`~AuditLogActionCategory.create`"
 
-#: ../../api.rst:2963
+#: ../../api.rst:2979
 msgid "All attributes are set to ``None``."
 msgstr "全ての属性は ``None`` です。"
 
-#: ../../api.rst:2965
-#: ../../api.rst:2985
+#: ../../api.rst:2981
+#: ../../api.rst:3001
 msgid ":attr:`~AuditLogActionCategory.delete`"
 msgstr ":attr:`~AuditLogActionCategory.delete`"
 
-#: ../../api.rst:2965
+#: ../../api.rst:2981
 msgid "All attributes are set the value before deletion."
 msgstr "全ての属性は削除前の値に設定されています。"
 
-#: ../../api.rst:2967
-#: ../../api.rst:2987
+#: ../../api.rst:2983
+#: ../../api.rst:3003
 msgid ":attr:`~AuditLogActionCategory.update`"
 msgstr ":attr:`~AuditLogActionCategory.update`"
 
-#: ../../api.rst:2967
+#: ../../api.rst:2983
 msgid "All attributes are set the value before updating."
 msgstr "全ての属性は更新前の値に設定されています。"
 
-#: ../../api.rst:2969
-#: ../../api.rst:2989
+#: ../../api.rst:2985
+#: ../../api.rst:3005
 msgid "``None``"
 msgstr "``None``"
 
-#: ../../api.rst:2969
-#: ../../api.rst:2989
+#: ../../api.rst:2985
+#: ../../api.rst:3005
 msgid "No attributes are set."
 msgstr "属性が設定されていません。"
 
-#: ../../api.rst:2974
+#: ../../api.rst:2990
 msgid "The new value. The attribute has the type of :class:`AuditLogDiff`."
 msgstr "新しい値。この属性は :class:`AuditLogDiff` 型です。"
 
-#: ../../api.rst:2983
+#: ../../api.rst:2999
 msgid "All attributes are set to the created value"
 msgstr "全ての属性は作成時の値に設定されています。"
 
-#: ../../api.rst:2985
+#: ../../api.rst:3001
 msgid "All attributes are set to ``None``"
 msgstr "全ての属性は ``None`` です。"
 
-#: ../../api.rst:2987
+#: ../../api.rst:3003
 msgid "All attributes are set the value after updating."
 msgstr "全ての属性は更新後の値に設定されています。"
 
-#: ../../api.rst:2993
+#: ../../api.rst:3009
 msgid "AuditLogDiff"
 msgstr "AuditLogDiff"
 
-#: ../../api.rst:2999
+#: ../../api.rst:3015
 msgid "Represents an audit log \"change\" object. A change object has dynamic attributes that depend on the type of action being done. Certain actions map to certain attributes being set."
 msgstr "監査ログの「変更」オブジェクト。変更オブジェクトには、行われたアクションの種類によって異なる属性があります。特定のアクションが行われた場合に特定の属性が設定されます。"
 
-#: ../../api.rst:3003
+#: ../../api.rst:3019
 msgid "Note that accessing an attribute that does not match the specified action will lead to an attribute error."
 msgstr "指定されたアクションに一致しない属性にアクセスすると、AttributeErrorが発生することに注意してください。"
 
-#: ../../api.rst:3006
+#: ../../api.rst:3022
 msgid "To get a list of attributes that have been set, you can iterate over them. To see a list of all possible attributes that could be set based on the action being done, check the documentation for :class:`AuditLogAction`, otherwise check the documentation below for all attributes that are possible."
 msgstr "設定された属性のリストを取得するには、イテレートすることができます。 行われたアクションに対応した可能な属性の一覧は、 :class:`AuditLogAction` の説明を確認してください。あるいは、可能なすべての属性について、以下の説明を確認してください。"
 
-#: ../../api.rst:3015
+#: ../../api.rst:3031
 msgid "Returns an iterator over (attribute, value) tuple of this diff."
 msgstr "差分の（属性、値）タプルのイテレーターを返します。"
 
-#: ../../api.rst:3019
+#: ../../api.rst:3035
 msgid "A name of something."
 msgstr "何かの名前。"
 
-#: ../../api.rst:3025
+#: ../../api.rst:3041
 msgid "A guild's or role's icon. See also :attr:`Guild.icon` or :attr:`Role.icon`."
 msgstr "ギルドまたはロールのアイコン。 :attr:`Guild.icon` と :attr:`Role.icon` も参照してください。"
 
-#: ../../api.rst:3031
+#: ../../api.rst:3047
 msgid "The guild's invite splash. See also :attr:`Guild.splash`."
 msgstr "ギルドの招待のスプラッシュ。 :attr:`Guild.splash` も参照してください。"
 
-#: ../../api.rst:3037
+#: ../../api.rst:3053
 msgid "The guild's discovery splash. See also :attr:`Guild.discovery_splash`."
 msgstr "ギルドのディスカバリースプラッシュ。 :attr:`Guild.discovery_splash` も参照してください。"
 
-#: ../../api.rst:3043
+#: ../../api.rst:3059
 msgid "The guild's banner. See also :attr:`Guild.banner`."
 msgstr "ギルドのバナー。 :attr:`Guild.banner` も参照してください。"
 
-#: ../../api.rst:3049
+#: ../../api.rst:3065
 msgid "The guild's owner. See also :attr:`Guild.owner`"
 msgstr "ギルドの所有者。 :attr:`Guild.owner` も参照してください。"
 
-#: ../../api.rst:3051
+#: ../../api.rst:3067
 msgid "Union[:class:`Member`, :class:`User`]"
 msgstr "Union[:class:`Member`, :class:`User`]"
 
-#: ../../api.rst:3055
+#: ../../api.rst:3071
 msgid "The guild's AFK channel."
 msgstr "ギルドのAFKチャンネル。"
 
-#: ../../api.rst:3057
-#: ../../api.rst:3068
+#: ../../api.rst:3073
+#: ../../api.rst:3084
 msgid "If this could not be found, then it falls back to a :class:`Object` with the ID being set."
 msgstr "見つからない場合は、IDが設定された :class:`Object` になります。"
 
-#: ../../api.rst:3060
+#: ../../api.rst:3076
 msgid "See :attr:`Guild.afk_channel`."
 msgstr ":attr:`Guild.afk_channel` を参照してください。"
 
-#: ../../api.rst:3062
+#: ../../api.rst:3078
 msgid "Union[:class:`VoiceChannel`, :class:`Object`]"
 msgstr "Union[:class:`VoiceChannel`, :class:`Object`]"
 
-#: ../../api.rst:3066
+#: ../../api.rst:3082
 msgid "The guild's system channel."
 msgstr "ギルドのシステムチャンネル。"
 
-#: ../../api.rst:3071
+#: ../../api.rst:3087
 msgid "See :attr:`Guild.system_channel`."
 msgstr ":attr:`Guild.system_channel` を参照してください。"
 
-#: ../../api.rst:3073
-#: ../../api.rst:3085
-#: ../../api.rst:3097
-#: ../../api.rst:3124
+#: ../../api.rst:3089
+#: ../../api.rst:3101
+#: ../../api.rst:3113
+#: ../../api.rst:3140
 msgid "Union[:class:`TextChannel`, :class:`Object`]"
 msgstr "Union[:class:`TextChannel`, :class:`Object`]"
 
-#: ../../api.rst:3078
+#: ../../api.rst:3094
 msgid "The guild's rules channel."
 msgstr "ギルドのルールチャンネル。"
 
-#: ../../api.rst:3080
-#: ../../api.rst:3092
-#: ../../api.rst:3121
+#: ../../api.rst:3096
+#: ../../api.rst:3108
+#: ../../api.rst:3137
 msgid "If this could not be found then it falls back to a :class:`Object` with the ID being set."
 msgstr "見つからない場合は、IDが設定された :class:`Object` になります。"
 
-#: ../../api.rst:3083
+#: ../../api.rst:3099
 msgid "See :attr:`Guild.rules_channel`."
 msgstr ":attr:`Guild.rules_channel` を参照してください。"
 
-#: ../../api.rst:3090
+#: ../../api.rst:3106
 msgid "The guild's public updates channel."
 msgstr "ギルドのパブリックアップデートチャンネル。"
 
-#: ../../api.rst:3095
+#: ../../api.rst:3111
 msgid "See :attr:`Guild.public_updates_channel`."
 msgstr ":attr:`Guild.public_updates_channel` を参照してください。"
 
-#: ../../api.rst:3101
+#: ../../api.rst:3117
 msgid "The guild's AFK timeout. See :attr:`Guild.afk_timeout`."
 msgstr "ギルドのAFKタイムアウト。 :attr:`Guild.afk_timeout` も参照してください。"
 
-#: ../../api.rst:3107
+#: ../../api.rst:3123
 msgid "The guild's MFA level. See :attr:`Guild.mfa_level`."
 msgstr "ギルドの多要素認証レベル。 :attr:`Guild.mfa_level` も参照してください。"
 
-#: ../../api.rst:3109
+#: ../../api.rst:3125
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:203
 msgid ":class:`MFALevel`"
 msgstr ":class:`MFALevel`"
 
-#: ../../api.rst:3113
+#: ../../api.rst:3129
 msgid "The guild's widget has been enabled or disabled."
 msgstr "ギルドのウィジェットが有効化または無効化された。"
 
-#: ../../api.rst:3119
+#: ../../api.rst:3135
 msgid "The widget's channel."
 msgstr "ウィジェットのチャンネル。"
 
-#: ../../api.rst:3128
+#: ../../api.rst:3144
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:109
 msgid "The guild's verification level."
 msgstr "ギルドの認証レベル。"
 
-#: ../../api.rst:3130
+#: ../../api.rst:3146
 msgid "See also :attr:`Guild.verification_level`."
 msgstr ":attr:`Guild.verification_level` も参照してください。"
 
-#: ../../api.rst:3132
+#: ../../api.rst:3148
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:111
 #: ../../../discord/invite.py:docstring of discord.invite.PartialInviteGuild:40
 msgid ":class:`VerificationLevel`"
 msgstr ":class:`VerificationLevel`"
 
-#: ../../api.rst:3136
+#: ../../api.rst:3152
 msgid "The guild's default notification level."
 msgstr "ギルドのデフォルト通知レベル。"
 
-#: ../../api.rst:3138
+#: ../../api.rst:3154
 msgid "See also :attr:`Guild.default_notifications`."
 msgstr ":attr:`Guild.default_notifications` も参照してください。"
 
-#: ../../api.rst:3140
+#: ../../api.rst:3156
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:131
 msgid ":class:`NotificationLevel`"
 msgstr ":class:`NotificationLevel`"
 
-#: ../../api.rst:3144
+#: ../../api.rst:3160
 msgid "The guild's content filter."
 msgstr "ギルドのコンテンツフィルター。"
 
-#: ../../api.rst:3146
+#: ../../api.rst:3162
 msgid "See also :attr:`Guild.explicit_content_filter`."
 msgstr ":attr:`Guild.explicit_content_filter` も参照してください。"
 
-#: ../../api.rst:3148
+#: ../../api.rst:3164
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:125
 msgid ":class:`ContentFilter`"
 msgstr ":class:`ContentFilter`"
 
-#: ../../api.rst:3152
+#: ../../api.rst:3168
 msgid "The guild's vanity URL."
 msgstr "ギルドのバニティURL。"
 
-#: ../../api.rst:3154
+#: ../../api.rst:3170
 msgid "See also :meth:`Guild.vanity_invite` and :meth:`Guild.edit`."
 msgstr ":meth:`Guild.vanity_invite` と :meth:`Guild.edit` も参照してください。"
 
-#: ../../api.rst:3160
+#: ../../api.rst:3176
 msgid "The position of a :class:`Role` or :class:`abc.GuildChannel`."
 msgstr ":class:`Role` や :class:`abc.GuildChannel` の位置。"
 
-#: ../../api.rst:3166
+#: ../../api.rst:3182
 msgid "The type of channel or sticker."
 msgstr "チャンネルまたはスタンプのタイプ。"
 
-#: ../../api.rst:3168
+#: ../../api.rst:3184
 msgid "Union[:class:`ChannelType`, :class:`StickerType`]"
 msgstr "Union[:class:`ChannelType`, :class:`StickerType`]"
 
-#: ../../api.rst:3172
+#: ../../api.rst:3188
 msgid "The topic of a :class:`TextChannel` or :class:`StageChannel`."
 msgstr ":class:`TextChannel` または :class:`StageChannel` のトピック。"
 
-#: ../../api.rst:3174
+#: ../../api.rst:3190
 msgid "See also :attr:`TextChannel.topic` or :attr:`StageChannel.topic`."
 msgstr ":attr:`TextChannel.topic` または :attr:`StageChannel.topic` も参照してください。"
 
-#: ../../api.rst:3180
+#: ../../api.rst:3196
 msgid "The bitrate of a :class:`VoiceChannel`."
 msgstr ":class:`VoiceChannel` のビットレート。"
 
-#: ../../api.rst:3182
+#: ../../api.rst:3198
 msgid "See also :attr:`VoiceChannel.bitrate`."
 msgstr ":attr:`VoiceChannel.bitrate` も参照してください。"
 
-#: ../../api.rst:3188
+#: ../../api.rst:3204
 msgid "A list of permission overwrite tuples that represents a target and a :class:`PermissionOverwrite` for said target."
 msgstr "対象とその :class:`PermissionOverwrite` のタプルで示された権限の上書きのリスト。"
 
-#: ../../api.rst:3191
+#: ../../api.rst:3207
 msgid "The first element is the object being targeted, which can either be a :class:`Member` or :class:`User` or :class:`Role`. If this object is not found then it is a :class:`Object` with an ID being filled and a ``type`` attribute set to either ``'role'`` or ``'member'`` to help decide what type of ID it is."
 msgstr "最初の要素は対象のオブジェクトで、 :class:`Member` か :class:`User` か :class:`Role` です。このオブジェクトが見つからない場合はこれはIDが設定され、 ``type`` 属性が ``'role'`` か ``'member'`` に設定された :class:`Object` になります。"
 
-#: ../../api.rst:3197
+#: ../../api.rst:3213
 msgid "List[Tuple[target, :class:`PermissionOverwrite`]]"
 msgstr "List[Tuple[target, :class:`PermissionOverwrite`]]"
 
-#: ../../api.rst:3201
+#: ../../api.rst:3217
 msgid "The privacy level of the stage instance or scheduled event"
 msgstr "ステージインスタンスやスケジュールイベントのプライバシーレベル。"
 
-#: ../../api.rst:3203
+#: ../../api.rst:3219
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:65
 #: ../../../discord/stage_instance.py:docstring of discord.stage_instance.StageInstance:47
 msgid ":class:`PrivacyLevel`"
 msgstr ":class:`PrivacyLevel`"
 
-#: ../../api.rst:3207
+#: ../../api.rst:3223
 msgid "A list of roles being added or removed from a member."
 msgstr "メンバーから追加または削除されたロールのリスト。"
 
-#: ../../api.rst:3209
+#: ../../api.rst:3225
 msgid "If a role is not found then it is a :class:`Object` with the ID and name being filled in."
 msgstr "ロールが見つからない場合は、IDとnameが設定された :class:`Object` になります。"
 
-#: ../../api.rst:3212
+#: ../../api.rst:3228
 msgid "List[Union[:class:`Role`, :class:`Object`]]"
 msgstr "List[Union[:class:`Role`, :class:`Object`]]"
 
-#: ../../api.rst:3216
+#: ../../api.rst:3232
 msgid "The nickname of a member."
 msgstr "メンバーのニックネーム。"
 
-#: ../../api.rst:3218
+#: ../../api.rst:3234
 msgid "See also :attr:`Member.nick`"
 msgstr ":attr:`Member.nick` も参照してください。"
 
-#: ../../api.rst:3224
+#: ../../api.rst:3240
 msgid "Whether the member is being server deafened."
 msgstr "メンバーがサーバーでスピーカーミュートされているかどうか。"
 
-#: ../../api.rst:3226
+#: ../../api.rst:3242
 msgid "See also :attr:`VoiceState.deaf`."
 msgstr ":attr:`VoiceState.deaf` も参照してください。"
 
-#: ../../api.rst:3232
+#: ../../api.rst:3248
 msgid "Whether the member is being server muted."
 msgstr "メンバーがサーバーでミュートされているかどうか。"
 
-#: ../../api.rst:3234
+#: ../../api.rst:3250
 msgid "See also :attr:`VoiceState.mute`."
 msgstr ":attr:`VoiceState.mute` も参照してください。"
 
-#: ../../api.rst:3240
+#: ../../api.rst:3256
 msgid "The permissions of a role."
 msgstr "ロールの権限。"
 
-#: ../../api.rst:3242
+#: ../../api.rst:3258
 msgid "See also :attr:`Role.permissions`."
 msgstr ":attr:`Role.permissions` も参照してください。"
 
-#: ../../api.rst:3249
+#: ../../api.rst:3265
 msgid "The colour of a role."
 msgstr "ロールの色。"
 
-#: ../../api.rst:3251
+#: ../../api.rst:3267
 msgid "See also :attr:`Role.colour`"
 msgstr ":attr:`Role.colour` も参照してください。"
 
-#: ../../api.rst:3257
+#: ../../api.rst:3273
 msgid "Whether the role is being hoisted or not."
 msgstr "役割が別に表示されるかどうか。"
 
-#: ../../api.rst:3259
+#: ../../api.rst:3275
 msgid "See also :attr:`Role.hoist`"
 msgstr ":attr:`Role.hoist` も参照してください。"
 
-#: ../../api.rst:3265
+#: ../../api.rst:3281
 msgid "Whether the role is mentionable or not."
 msgstr "役割がメンションできるかどうか。"
 
-#: ../../api.rst:3267
+#: ../../api.rst:3283
 msgid "See also :attr:`Role.mentionable`"
 msgstr ":attr:`Role.mentionable` も参照してください。"
 
-#: ../../api.rst:3273
+#: ../../api.rst:3289
 msgid "The invite's code."
 msgstr "招待のコード。"
 
-#: ../../api.rst:3275
+#: ../../api.rst:3291
 msgid "See also :attr:`Invite.code`"
 msgstr ":attr:`Invite.code` も参照してください。"
 
-#: ../../api.rst:3281
+#: ../../api.rst:3297
 msgid "A guild channel."
 msgstr "ギルドのチャンネル。"
 
-#: ../../api.rst:3283
+#: ../../api.rst:3299
 msgid "If the channel is not found then it is a :class:`Object` with the ID being set. In some cases the channel name is also set."
 msgstr "チャンネルが見つからない場合は、IDが設定された :class:`Object` になります。 場合によっては、チャンネル名も設定されています。"
 
-#: ../../api.rst:3286
+#: ../../api.rst:3302
 msgid "Union[:class:`abc.GuildChannel`, :class:`Object`]"
 msgstr "Union[:class:`abc.GuildChannel`, :class:`Object`]"
 
-#: ../../api.rst:3290
+#: ../../api.rst:3306
 #: ../../../discord/invite.py:docstring of discord.invite.Invite:101
 msgid "The user who created the invite."
 msgstr "招待を作成したユーザー。"
 
-#: ../../api.rst:3292
+#: ../../api.rst:3308
 msgid "See also :attr:`Invite.inviter`."
 msgstr ":attr:`Invite.inviter` も参照してください。"
 
-#: ../../api.rst:3294
+#: ../../api.rst:3310
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:83
 #: ../../../discord/integrations.py:docstring of discord.integrations.IntegrationApplication:39
 #: ../../../discord/emoji.py:docstring of discord.emoji.Emoji:76
@@ -6271,96 +6285,96 @@ msgstr ":attr:`Invite.inviter` も参照してください。"
 msgid "Optional[:class:`User`]"
 msgstr "Optional[:class:`User`]"
 
-#: ../../api.rst:3298
+#: ../../api.rst:3314
 msgid "The invite's max uses."
 msgstr "招待の最大使用回数。"
 
-#: ../../api.rst:3300
+#: ../../api.rst:3316
 msgid "See also :attr:`Invite.max_uses`."
 msgstr ":attr:`Invite.max_uses` も参照してください。"
 
-#: ../../api.rst:3306
+#: ../../api.rst:3322
 msgid "The invite's current uses."
 msgstr "招待の現在の使用回数。"
 
-#: ../../api.rst:3308
+#: ../../api.rst:3324
 msgid "See also :attr:`Invite.uses`."
 msgstr ":attr:`Invite.uses` も参照してください。"
 
-#: ../../api.rst:3314
+#: ../../api.rst:3330
 msgid "The invite's max age in seconds."
 msgstr "招待者の最大時間は秒数です。"
 
-#: ../../api.rst:3316
+#: ../../api.rst:3332
 msgid "See also :attr:`Invite.max_age`."
 msgstr ":attr:`Invite.max_age` も参照してください。"
 
-#: ../../api.rst:3322
+#: ../../api.rst:3338
 msgid "If the invite is a temporary invite."
 msgstr "招待が一時的な招待であるか。"
 
-#: ../../api.rst:3324
+#: ../../api.rst:3340
 msgid "See also :attr:`Invite.temporary`."
 msgstr ":attr:`Invite.temporary` も参照してください。"
 
-#: ../../api.rst:3331
+#: ../../api.rst:3347
 msgid "The permissions being allowed or denied."
 msgstr "許可または拒否された権限。"
 
-#: ../../api.rst:3337
+#: ../../api.rst:3353
 msgid "The ID of the object being changed."
 msgstr "変更されたオブジェクトのID。"
 
-#: ../../api.rst:3343
+#: ../../api.rst:3359
 msgid "The avatar of a member."
 msgstr "メンバーのアバター。"
 
-#: ../../api.rst:3345
+#: ../../api.rst:3361
 msgid "See also :attr:`User.avatar`."
 msgstr ":attr:`User.avatar` も参照してください。"
 
-#: ../../api.rst:3351
+#: ../../api.rst:3367
 msgid "The number of seconds members have to wait before sending another message in the channel."
 msgstr "メンバーが別のメッセージをチャンネルに送信するまでの秒単位の待ち時間。"
 
-#: ../../api.rst:3354
+#: ../../api.rst:3370
 msgid "See also :attr:`TextChannel.slowmode_delay`."
 msgstr ":attr:`TextChannel.slowmode_delay` も参照してください。"
 
-#: ../../api.rst:3360
+#: ../../api.rst:3376
 msgid "The region for the voice channel’s voice communication. A value of ``None`` indicates automatic voice region detection."
 msgstr "ボイスチャンネルの音声通信のためのリージョン。値が ``None`` の場合は自動で検出されます。"
 
-#: ../../api.rst:3363
+#: ../../api.rst:3379
 msgid "See also :attr:`VoiceChannel.rtc_region`."
 msgstr ":attr:`VoiceChannel.rtc_region` も参照してください。"
 
-#: ../../api.rst:3369
+#: ../../api.rst:3385
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_voice_channel:31
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel:86
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.edit:47
 msgid "The camera video quality for the voice channel's participants."
 msgstr "ボイスチャンネル参加者のカメラビデオの画質。"
 
-#: ../../api.rst:3371
+#: ../../api.rst:3387
 msgid "See also :attr:`VoiceChannel.video_quality_mode`."
 msgstr ":attr:`VoiceChannel.video_quality_mode` も参照してください。"
 
-#: ../../api.rst:3373
+#: ../../api.rst:3389
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel:90
 #: ../../../discord/channel.py:docstring of discord.channel.StageChannel:93
 msgid ":class:`VideoQualityMode`"
 msgstr ":class:`VideoQualityMode`"
 
-#: ../../api.rst:3377
+#: ../../api.rst:3393
 msgid "The format type of a sticker being changed."
 msgstr "変更されたスタンプのフォーマットの種類。"
 
-#: ../../api.rst:3379
+#: ../../api.rst:3395
 msgid "See also :attr:`GuildSticker.format`"
 msgstr ":attr:`GuildSticker.format` も参照してください。"
 
-#: ../../api.rst:3381
+#: ../../api.rst:3397
 #: ../../../discord/sticker.py:docstring of discord.sticker.StickerItem:35
 #: ../../../discord/sticker.py:docstring of discord.sticker.Sticker:47
 #: ../../../discord/sticker.py:docstring of discord.sticker.StandardSticker:47
@@ -6368,67 +6382,67 @@ msgstr ":attr:`GuildSticker.format` も参照してください。"
 msgid ":class:`StickerFormatType`"
 msgstr ":class:`StickerFormatType`"
 
-#: ../../api.rst:3385
+#: ../../api.rst:3401
 msgid "The name of the emoji that represents a sticker being changed."
 msgstr "変更されたスタンプを示す絵文字の名前。"
 
-#: ../../api.rst:3387
+#: ../../api.rst:3403
 msgid "See also :attr:`GuildSticker.emoji`."
 msgstr ":attr:`GuildSticker.emoji` も参照してください。"
 
-#: ../../api.rst:3393
+#: ../../api.rst:3409
 msgid "The unicode emoji that is used as an icon for the role being changed."
 msgstr "変更された役職のアイコンとして使用されるUnicode絵文字。"
 
-#: ../../api.rst:3395
+#: ../../api.rst:3411
 msgid "See also :attr:`Role.unicode_emoji`."
 msgstr ":attr:`Role.unicode_emoji` も参照してください。"
 
-#: ../../api.rst:3401
+#: ../../api.rst:3417
 msgid "The description of a guild, a sticker, or a scheduled event."
 msgstr "ギルド、スタンプ、またはスケジュールイベントの説明。"
 
-#: ../../api.rst:3403
+#: ../../api.rst:3419
 msgid "See also :attr:`Guild.description`, :attr:`GuildSticker.description`, or :attr:`ScheduledEvent.description`."
 msgstr ":attr:`Guild.description` 、 :attr:`GuildSticker.description` 、または :attr:`ScheduledEvent.description` も参照してください。"
 
-#: ../../api.rst:3410
+#: ../../api.rst:3426
 msgid "The availability of a sticker being changed."
 msgstr "変更されたスタンプの利用可能かどうかの状態。"
 
-#: ../../api.rst:3412
+#: ../../api.rst:3428
 msgid "See also :attr:`GuildSticker.available`"
 msgstr ":attr:`GuildSticker.available` も参照してください。"
 
-#: ../../api.rst:3418
+#: ../../api.rst:3434
 msgid "The thread is now archived."
 msgstr "スレッドがアーカイブされたか。"
 
-#: ../../api.rst:3424
+#: ../../api.rst:3440
 msgid "The thread is being locked or unlocked."
 msgstr "スレッドがロックされ、またはロックが解除されたかどうか。"
 
-#: ../../api.rst:3430
+#: ../../api.rst:3446
 msgid "The thread's auto archive duration being changed."
 msgstr "変更されたスレッドの自動アーカイブ期間。"
 
-#: ../../api.rst:3432
+#: ../../api.rst:3448
 msgid "See also :attr:`Thread.auto_archive_duration`"
 msgstr ":attr:`Thread.auto_archive_duration` も参照してください。"
 
-#: ../../api.rst:3438
+#: ../../api.rst:3454
 msgid "The default auto archive duration for newly created threads being changed."
 msgstr "変更された新規作成されたスレッドの既定の自動アーカイブ期間。"
 
-#: ../../api.rst:3444
+#: ../../api.rst:3460
 msgid "Whether non-moderators can add users to this private thread."
 msgstr "モデレータ以外がプライベートスレッドにユーザーを追加できるかどうか。"
 
-#: ../../api.rst:3450
+#: ../../api.rst:3466
 msgid "Whether the user is timed out, and if so until when."
 msgstr "ユーザーがタイムアウトされているかどうか、そしてその場合はいつまでか。"
 
-#: ../../api.rst:3452
+#: ../../api.rst:3468
 #: ../../../discord/webhook/async_.py:docstring of discord.WebhookMessage.edited_at:3
 #: ../../../discord/message.py:docstring of discord.Message.edited_at:3
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:59
@@ -6436,98 +6450,98 @@ msgstr "ユーザーがタイムアウトされているかどうか、そして
 msgid "Optional[:class:`datetime.datetime`]"
 msgstr "Optional[:class:`datetime.datetime`]"
 
-#: ../../api.rst:3456
+#: ../../api.rst:3472
 msgid "Integration emoticons were enabled or disabled."
 msgstr "連携サービスの絵文字が有効化され、または無効化されたか。"
 
-#: ../../api.rst:3458
+#: ../../api.rst:3474
 msgid "See also :attr:`StreamIntegration.enable_emoticons`"
 msgstr ":attr:`StreamIntegration.enable_emoticons` も参照してください。"
 
-#: ../../api.rst:3465
+#: ../../api.rst:3481
 msgid "The behaviour of expiring subscribers changed."
 msgstr "変更された期限切れのサブスクライバーの動作。"
 
-#: ../../api.rst:3467
+#: ../../api.rst:3483
 msgid "See also :attr:`StreamIntegration.expire_behaviour`"
 msgstr ":attr:`StreamIntegration.expire_behaviour` も参照してください。"
 
-#: ../../api.rst:3469
+#: ../../api.rst:3485
 #: ../../../discord/integrations.py:docstring of discord.integrations.StreamIntegration:51
 #: ../../../discord/integrations.py:docstring of discord.StreamIntegration.expire_behavior:3
 msgid ":class:`ExpireBehaviour`"
 msgstr ":class:`ExpireBehaviour`"
 
-#: ../../api.rst:3473
+#: ../../api.rst:3489
 msgid "The grace period before expiring subscribers changed."
 msgstr "変更された期限切れのサブスクライバーの猶予期間。"
 
-#: ../../api.rst:3475
+#: ../../api.rst:3491
 msgid "See also :attr:`StreamIntegration.expire_grace_period`"
 msgstr ":attr:`StreamIntegration.expire_grace_period` も参照してください。"
 
-#: ../../api.rst:3481
+#: ../../api.rst:3497
 msgid "The preferred locale for the guild changed."
 msgstr "変更されたギルドの優先ローケル。"
 
-#: ../../api.rst:3483
+#: ../../api.rst:3499
 msgid "See also :attr:`Guild.preferred_locale`"
 msgstr ":attr:`Guild.preferred_locale` も参照してください。"
 
-#: ../../api.rst:3485
+#: ../../api.rst:3501
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:186
 msgid ":class:`Locale`"
 msgstr ":class:`Locale`"
 
-#: ../../api.rst:3489
+#: ../../api.rst:3505
 msgid "The number of days after which inactive and role-unassigned members are kicked has been changed."
 msgstr "変更された活動していない、かつロールが割り当てられていないメンバーがキックさえるまでの日数。"
 
-#: ../../api.rst:3495
+#: ../../api.rst:3511
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:69
 msgid "The status of the scheduled event."
 msgstr "スケジュールイベントのステータス。"
 
-#: ../../api.rst:3497
+#: ../../api.rst:3513
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:71
 msgid ":class:`EventStatus`"
 msgstr ":class:`EventStatus`"
 
-#: ../../api.rst:3501
+#: ../../api.rst:3517
 msgid "The type of entity this scheduled event is for."
 msgstr "スケジュールイベントの開催場所の種類。"
 
-#: ../../api.rst:3503
+#: ../../api.rst:3519
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:41
 msgid ":class:`EntityType`"
 msgstr ":class:`EntityType`"
 
-#: ../../api.rst:3507
+#: ../../api.rst:3523
 #: ../../../discord/scheduled_event.py:docstring of discord.ScheduledEvent.cover_image:1
 msgid "The scheduled event's cover image."
 msgstr "スケジュールイベントのカバー画像。"
 
-#: ../../api.rst:3509
+#: ../../api.rst:3525
 msgid "See also :attr:`ScheduledEvent.cover_image`."
 msgstr ":attr:`ScheduledEvent.cover_image` も参照してください。"
 
-#: ../../api.rst:3515
+#: ../../api.rst:3531
 msgid "A list of application command permission tuples that represents a target and a :class:`bool` for said target."
 msgstr "アプリケーションコマンド権限のタプルを表す対象とその対象の :class:`bool` のリスト。"
 
-#: ../../api.rst:3518
+#: ../../api.rst:3534
 msgid "The first element is the object being targeted, which can either be a :class:`Member`, :class:`abc.GuildChannel`, :class:`~discord.app_commands.AllChannels`, or :class:`Role`. :type: List[Tuple[target, :class:`bool`]]"
 msgstr "最初の要素は対象のオブジェクトで、 :class:`Member` 、 :class:`abc.GuildChannel` 、 :class:`~discord.app_commands.AllChannels` 、または :class:`Role` になりえます。 :type: List[Tuple[target, :class:`bool`]]"
 
-#: ../../api.rst:3527
+#: ../../api.rst:3543
 msgid "Webhook Support"
 msgstr "Webhookサポート"
 
-#: ../../api.rst:3529
+#: ../../api.rst:3545
 msgid "discord.py offers support for creating, editing, and executing webhooks through the :class:`Webhook` class."
 msgstr "discord.pyは、 :class:`Webhook` クラスからWebhookの作成、編集、実行をサポートします。"
 
-#: ../../api.rst:3532
+#: ../../api.rst:3548
 msgid "Webhook"
 msgstr "Webhook"
 
@@ -6961,44 +6975,50 @@ msgstr "このWebhookを送信するスレッド。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:67
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:46
+msgid "The thread name to create with this webhook if the webhook belongs to a :class:`~discord.ForumChannel`. Note that this is mutually exclusive with the ``thread`` parameter, as this will create a new thread with the given name."
+msgstr "Webhookが :class:`~discord.ForumChannel` に属する場合、このWebhookで作成するスレッドの名前。なお、これは与えられた名前の新しいスレッドを作成するため、 ``thread`` パラメータと同時に使用できません。"
+
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:74
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:53
 #: ../../../discord/abc.py:docstring of discord.abc.Messageable.send:72
 #: ../../../discord/user.py:docstring of discord.abc.Messageable.send:72
 #: ../../../discord/member.py:docstring of discord.abc.Messageable.send:72
 msgid "Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``."
 msgstr "メッセージの埋め込みを抑制するかどうか。これが ``True`` に設定されている場合、埋め込みなしでメッセージを送信します。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:72
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:79
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.reply:12
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:51
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:58
 #: ../../../discord/abc.py:docstring of discord.abc.Messageable.send:77
 #: ../../../discord/user.py:docstring of discord.abc.Messageable.send:77
 msgid "Sending the message failed."
 msgstr "メッセージの送信に失敗した場合。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:73
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:52
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:80
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:59
 msgid "This webhook was not found."
 msgstr "Webhookが見つからなかった場合。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:74
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:53
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:81
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:60
 msgid "The authorization token for the webhook is incorrect."
 msgstr "Webhookの認証トークンが正しくない場合。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:75
-msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``."
-msgstr "``embed`` と ``embeds`` または ``file`` と ``files`` の両方を指定した場合。"
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:82
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:61
+msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``     or ``thread`` and ``thread_name``."
+msgstr "``embed`` と ``embeds`` または ``file`` と ``files`` または ``thread`` と ``thread_name`` の両方を指定した場合。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:76
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:83
 msgid "The length of ``embeds`` was invalid, there was no token     associated with this webhook or ``ephemeral`` was passed     with the improper webhook type or there was no state     attached with this webhook when giving it a view."
 msgstr "``embeds`` の長さが不正な場合、Webhookにトークンが紐づいていない場合、 ``ephemeral`` が適切でない種類のWebhookに渡された場合、またはステートが付属していないWebhookにビューを渡した場合。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:78
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:57
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:85
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:64
 msgid "If ``wait`` is ``True`` then the message that was sent, otherwise ``None``."
 msgstr "``wait`` が ``True`` のとき、送信されたメッセージ、それ以外の場合は ``None`` 。"
 
-#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:79
+#: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:86
 msgid "Optional[:class:`WebhookMessage`]"
 msgstr "Optional[:class:`WebhookMessage`]"
 
@@ -7199,7 +7219,7 @@ msgstr "メッセージの削除に失敗した場合。"
 msgid "Deleted a message that is not yours."
 msgstr "自分以外のメッセージを削除しようとした場合。"
 
-#: ../../api.rst:3541
+#: ../../api.rst:3557
 msgid "WebhookMessage"
 msgstr "WebhookMessage"
 
@@ -7239,7 +7259,7 @@ msgid "The updated view to update this message with. If ``None`` is passed then 
 msgstr "このメッセージを更新するために更新されたビュー。 ``None`` が渡された場合、ビューは削除されます。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.WebhookMessage.edit:42
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:55
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:62
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.edit_message:33
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhookMessage.edit:30
 msgid "The length of ``embeds`` was invalid or     there was no token associated with this webhook."
@@ -7824,7 +7844,7 @@ msgstr "このメッセージのピン留めを外す権限を持っていない
 msgid "Unpinning the message failed."
 msgstr "メッセージのピン留め解除に失敗した場合。"
 
-#: ../../api.rst:3550
+#: ../../api.rst:3566
 msgid "SyncWebhook"
 msgstr "SyncWebhook"
 
@@ -7858,11 +7878,7 @@ msgstr "サーバーが応答を送信するまで待機するかどうか。``T
 msgid "The thread to send this message to."
 msgstr "このメッセージを送信するスレッド。"
 
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:54
-msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``"
-msgstr "``embed`` と ``embeds`` の両方、もしくは ``file`` と ``files`` の両方を指定した場合。"
-
-#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:58
+#: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.send:65
 msgid "Optional[:class:`SyncWebhookMessage`]"
 msgstr "Optional[:class:`SyncWebhookMessage`]"
 
@@ -7874,7 +7890,7 @@ msgstr "このwebhookが送信した :class:`~discord.SyncWebhookMessage` を1�
 msgid ":class:`~discord.SyncWebhookMessage`"
 msgstr ":class:`~discord.SyncWebhookMessage`"
 
-#: ../../api.rst:3559
+#: ../../api.rst:3575
 msgid "SyncWebhookMessage"
 msgstr "SyncWebhookMessage"
 
@@ -7888,19 +7904,19 @@ msgstr ":class:`SyncWebhookMessage`"
 msgid "If provided, the number of seconds to wait before deleting the message. This blocks the thread."
 msgstr "指定された場合、メッセージを削除するまでの待機秒数。これはスレッドをブロックします。"
 
-#: ../../api.rst:3569
+#: ../../api.rst:3585
 msgid "Abstract Base Classes"
 msgstr "抽象基底クラス"
 
-#: ../../api.rst:3571
+#: ../../api.rst:3587
 msgid "An :term:`abstract base class` (also known as an ``abc``) is a class that models can inherit to get their behaviour. **Abstract base classes should not be instantiated**. They are mainly there for usage with :func:`isinstance` and :func:`issubclass`\\."
 msgstr ":term:`abstract base class` （ ``abc`` という名称でも知られています）はモデルが振る舞いを得るために継承するクラスです。 **抽象基底クラスはインスタンス化されるべきではありません。** これらは主に :func:`isinstance` や :func:`issubclass` で使用するために存在します。"
 
-#: ../../api.rst:3575
+#: ../../api.rst:3591
 msgid "This library has a module related to abstract base classes, in which all the ABCs are subclasses of :class:`typing.Protocol`."
 msgstr "このライブラリには抽象基底クラスに関連するモジュールがあり、その中の抽象基底クラスは全て :class:`typing.Protocol` のサブクラスです。"
 
-#: ../../api.rst:3579
+#: ../../api.rst:3595
 msgid "Snowflake"
 msgstr "Snowflake"
 
@@ -7920,8 +7936,8 @@ msgstr "snowflakeを自分で作成したい場合は、 :class:`.Object` を使
 msgid "The model's unique ID."
 msgstr "モデルのユニークなID。"
 
-#: ../../api.rst:3587
-#: ../../api.rst:3667
+#: ../../api.rst:3603
+#: ../../api.rst:3683
 msgid "User"
 msgstr "User"
 
@@ -7983,7 +7999,7 @@ msgstr "Optional[:class:`~discord.Asset`]"
 msgid ":class:`~discord.Asset`"
 msgstr ":class:`~discord.Asset`"
 
-#: ../../api.rst:3595
+#: ../../api.rst:3611
 msgid "PrivateChannel"
 msgstr "PrivateChannel"
 
@@ -8007,7 +8023,7 @@ msgstr ":class:`~discord.GroupChannel`"
 msgid "The user presenting yourself."
 msgstr "あなた自身を示すユーザー。"
 
-#: ../../api.rst:3603
+#: ../../api.rst:3619
 msgid "GuildChannel"
 msgstr "GuildChannel"
 
@@ -8865,7 +8881,7 @@ msgstr "現時点でアクティブな招待のリスト。"
 msgid "List[:class:`~discord.Invite`]"
 msgstr "List[:class:`~discord.Invite`]"
 
-#: ../../api.rst:3611
+#: ../../api.rst:3627
 msgid "Messageable"
 msgstr "Messageable"
 
@@ -9201,7 +9217,7 @@ msgstr "メッセージ履歴の取得に失敗した場合。"
 msgid ":class:`~discord.Message` -- The message with the message data parsed."
 msgstr ":class:`~discord.Message` -- メッセージデータをパースしたメッセージ。"
 
-#: ../../api.rst:3623
+#: ../../api.rst:3639
 msgid "Connectable"
 msgstr "Connectable"
 
@@ -9269,32 +9285,32 @@ msgstr "ボイスサーバーに完全に接続されたボイスクライアン
 msgid ":class:`~discord.VoiceProtocol`"
 msgstr ":class:`~discord.VoiceProtocol`"
 
-#: ../../api.rst:3633
+#: ../../api.rst:3649
 msgid "Discord Models"
 msgstr "Discordモデル"
 
-#: ../../api.rst:3635
+#: ../../api.rst:3651
 msgid "Models are classes that are received from Discord and are not meant to be created by the user of the library."
 msgstr "モデルはDiscordから受け取るクラスであり、ユーザーによって作成されることを想定していません。"
 
-#: ../../api.rst:3640
+#: ../../api.rst:3656
 msgid "The classes listed below are **not intended to be created by users** and are also **read-only**."
 msgstr "下記のクラスは、 **ユーザーによって作成されることを想定しておらず** 、中には **読み取り専用** のものもあります。"
 
-#: ../../api.rst:3643
+#: ../../api.rst:3659
 msgid "For example, this means that you should not make your own :class:`User` instances nor should you modify the :class:`User` instance yourself."
 msgstr "つまり、独自の :class:`User` を作成したりするべきではなく、また、 :class:`User` インスタンスの値の変更もするべきではありません。"
 
-#: ../../api.rst:3646
+#: ../../api.rst:3662
 msgid "If you want to get one of these model classes instances they'd have to be through the cache, and a common way of doing so is through the :func:`utils.find` function or attributes of model classes that you receive from the events specified in the :ref:`discord-api-events`."
 msgstr "このようなモデルクラスのインスタンスを取得したい場合は、 キャッシュを経由して取得する必要があります。一般的な方法としては :func:`utils.find` 関数を用いるか、 :ref:`discord-api-events` の特定のイベントから受け取る方法が挙げられます。"
 
-#: ../../api.rst:3653
-#: ../../api.rst:4172
+#: ../../api.rst:3669
+#: ../../api.rst:4196
 msgid "Nearly all classes here have :ref:`py:slots` defined which means that it is impossible to have dynamic attributes to the data classes."
 msgstr "ほぼすべてのクラスに :ref:`py:slots` が定義されています。つまり、データクラスに動的に変数を追加することは不可能です。"
 
-#: ../../api.rst:3658
+#: ../../api.rst:3674
 msgid "ClientUser"
 msgstr "ClientUser"
 
@@ -9418,7 +9434,7 @@ msgstr "List[:class:`Guild`]"
 msgid "Creates a :class:`DMChannel` with this user."
 msgstr "このユーザーと :class:`DMChannel` を作ります。"
 
-#: ../../api.rst:3680
+#: ../../api.rst:3696
 msgid "Attachment"
 msgstr "Attachment"
 
@@ -9576,7 +9592,7 @@ msgstr "送信に適したファイルに変換された添付ファイル。"
 msgid ":class:`File`"
 msgstr ":class:`File`"
 
-#: ../../api.rst:3688
+#: ../../api.rst:3704
 msgid "Asset"
 msgstr "Asset"
 
@@ -9770,7 +9786,7 @@ msgstr "アセットがロッティータイプのスタンプであった場合
 msgid "The asset as a file suitable for sending."
 msgstr "送信に適したファイルとしてのアセット。"
 
-#: ../../api.rst:3697
+#: ../../api.rst:3713
 msgid "Message"
 msgstr "Message"
 
@@ -10055,7 +10071,7 @@ msgstr "もし指定したなら、これはメッセージを編集したあと
 msgid "Tried to suppress a message without permissions or     edited a message's content or embed that isn't yours."
 msgstr "権限なしに埋め込みを除去しようとした場合や、他人のメッセージの内容や埋め込みを編集しようとした場合。"
 
-#: ../../api.rst:3706
+#: ../../api.rst:3722
 msgid "DeletedReferencedMessage"
 msgstr "DeletedReferencedMessage"
 
@@ -10079,7 +10095,7 @@ msgstr "削除された参照されたメッセージが属していたチャン
 msgid "The guild ID of the deleted referenced message."
 msgstr "削除された参照されたメッセージが属していたギルドのID。"
 
-#: ../../api.rst:3715
+#: ../../api.rst:3731
 msgid "Reaction"
 msgstr "Reaction"
 
@@ -10185,7 +10201,7 @@ msgstr "リアクションを付けたユーザーの取得に失敗した場合
 msgid "Union[:class:`User`, :class:`Member`] -- The member (if retrievable) or the user that has reacted to this message. The case where it can be a :class:`Member` is in a guild message context. Sometimes it can be a :class:`User` if the member has left the guild."
 msgstr "Union[:class:`User`, :class:`Member`] -- リアクションを付けたメンバー（取得できる場合）かユーザー。ギルド内では :class:`Member` となります。メンバーがギルドを脱退した場合は :class:`User` になります。"
 
-#: ../../api.rst:3723
+#: ../../api.rst:3739
 msgid "Guild"
 msgstr "Guild"
 
@@ -11392,13 +11408,14 @@ msgstr "ギルド内のWebhookのリストを取得します。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.webhooks:5
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:5
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:5
-#: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.webhooks:5
-#: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:5
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:5
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:5
 msgid "Requires :attr:`~.Permissions.manage_webhooks` permissions."
 msgstr "これには :attr:`~.Permissions.manage_webhooks` 権限が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.webhooks:7
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:7
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:7
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.webhooks:9
 msgid "You don't have permissions to get the webhooks."
 msgstr "Webhookを取得する権限がない場合。"
@@ -11409,6 +11426,7 @@ msgstr "ギルド内のWebhook。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.webhooks:10
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:10
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:10
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.webhooks:12
 msgid "List[:class:`Webhook`]"
 msgstr "List[:class:`Webhook`]"
@@ -11665,7 +11683,7 @@ msgid "The scheduled event."
 msgstr "スケジュールイベント。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.fetch_scheduled_event:17
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:43
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:49
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.start:19
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.end:19
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.cancel:19
@@ -11695,78 +11713,78 @@ msgid "The description of the scheduled event."
 msgstr "スケジュールイベントの説明。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:13
-msgid "The channel to send the scheduled event to.  Required if ``entity_type`` is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
-msgstr "スケジュールイベントの送信先。 ``entity_type`` が :attr:`EntityType.voice` か :attr:`EntityType.stage_instance` の場合必須です。"
+msgid "The channel to send the scheduled event to. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then it automatically sets the entity type.  Required if ``entity_type`` is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
+msgstr "スケジュールイベントの送信先チャンネル。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` ならば、開催場所の種類が自動で設定されます。 ``entity_type`` が :attr:`EntityType.voice` または :attr:`EntityType.stage_instance` の場合必須です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:13
-msgid "The channel to send the scheduled event to."
-msgstr "スケジュールイベントの送信先。"
+msgid "The channel to send the scheduled event to. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then it automatically sets the entity type."
+msgstr "スケジュールイベントの送信先チャンネル。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` ならば、開催場所の種類が自動で設定されます。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:15
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:17
 msgid "Required if ``entity_type`` is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
 msgstr "``entity_type`` が :attr:`EntityType.voice` か :attr:`EntityType.stage_instance` の場合必須です。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:18
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:20
 msgid "The scheduled start time of the scheduled event. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`."
 msgstr "スケジュールイベントの開始予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:21
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:23
 msgid "The scheduled end time of the scheduled event. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.  Required if the entity type is :attr:`EntityType.external`."
 msgstr "スケジュールイベントの終了予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。 :attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:21
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:23
 msgid "The scheduled end time of the scheduled event. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`."
 msgstr "スケジュールイベントの終了予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:24
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:26
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:38
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:26
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:28
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:42
 msgid "Required if the entity type is :attr:`EntityType.external`."
 msgstr ":attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:26
-msgid "The entity type of the scheduled event."
-msgstr "スケジュールイベントのエンティティタイプ。"
-
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:28
+msgid "The entity type of the scheduled event. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then this is automatically set to the appropriate entity type. If no channel is passed then the entity type is assumed to be :attr:`EntityType.external`"
+msgstr "スケジュールイベントの開催場所の種類。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` の場合これは適切な種類に自動で設定されます。もしチャンネルが渡されなかった場合は :attr:`EntityType.external` とみなされます。"
+
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:34
 msgid "The image of the scheduled event."
 msgstr "スケジュールイベントの画像。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:30
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:36
 msgid "The location of the scheduled event.  Required if the ``entity_type`` is :attr:`EntityType.external`."
 msgstr "スケジュールイベントの場所。 ``entity_type`` が :attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:30
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:36
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:87
 msgid "The location of the scheduled event."
 msgstr "スケジュールイベントの場所。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:32
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:38
 msgid "Required if the ``entity_type`` is :attr:`EntityType.external`."
 msgstr "``entity_type`` が :attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:34
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:40
 msgid "The reason for creating this scheduled event. Shows up on the audit log."
 msgstr "スケジュールイベントを作成する理由。監査ログに表示されます。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:37
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:43
 msgid "`image` was not a :term:`py:bytes-like object`, or ``privacy_level``     was not a :class:`PrivacyLevel`, or ``entity_type`` was not an     :class:`EntityType`, ``status`` was not an :class:`EventStatus`,     or an argument was provided that was incompatible with the provided     ``entity_type``."
 msgstr "`image` が :term:`py:bytes-like object` でない場合、 ``privacy_level`` が :class:`PrivacyLevel` でない場合、 ``entity_type`` が :class:`EntityType` でない場合、 ``status`` が :class:`EventStatus` でない場合、または引数が渡された ``entity_type`` と互換性のない場合。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:38
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:44
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:44
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:48
 msgid "``start_time`` or ``end_time`` was not a timezone-aware datetime object."
 msgstr "``start_time`` や ``end_time`` がtimezone awareなdatetimeオブジェクトでない場合。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:39
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:45
 msgid "You are not allowed to create scheduled events."
 msgstr "スケジュールイベントを作成する権限がない場合。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:40
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:46
 msgid "Creating the scheduled event failed."
 msgstr "スケジュールイベントの作成に失敗した場合。"
 
-#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:42
+#: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:48
 msgid "The created scheduled event."
 msgstr "作成されたスケジュールイベント。"
 
@@ -12313,19 +12331,19 @@ msgstr "ギルド内のクライアントのボイス状態を変更します。
 msgid "Channel the client wants to join. Use ``None`` to disconnect."
 msgstr "クライアントが接続するチャンネル。切断するには ``None`` を渡してください。"
 
-#: ../../api.rst:3732
+#: ../../api.rst:3748
 msgid "A namedtuple which represents a ban returned from :meth:`~Guild.bans`."
 msgstr ":meth:`~Guild.bans` から返されたBANを表すnamedtuple。"
 
-#: ../../api.rst:3736
+#: ../../api.rst:3752
 msgid "The reason this user was banned."
 msgstr "ユーザーがBANされた理由。"
 
-#: ../../api.rst:3741
+#: ../../api.rst:3757
 msgid "The :class:`User` that was banned."
 msgstr "BANされた :class:`User` 。"
 
-#: ../../api.rst:3747
+#: ../../api.rst:3763
 msgid "ScheduledEvent"
 msgstr "ScheduledEvent"
 
@@ -12366,7 +12384,7 @@ msgid "The time that the scheduled event will end in UTC."
 msgstr "スケジュールイベントのUTCの終了予定時間。"
 
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:63
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:28
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:30
 msgid "The privacy level of the scheduled event."
 msgstr "スケジュールイベントのプライバシーレベル。"
 
@@ -12478,70 +12496,70 @@ msgid "Edits the scheduled event."
 msgstr "スケジュールイベントを編集します。"
 
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:11
-msgid "The channel to put the scheduled event in.  Required if the entity type is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
-msgstr "スケジュールイベントの開催チャンネル。 ``entity_type`` が :attr:`EntityType.voice` か :attr:`EntityType.stage_instance` の場合必須です。"
+msgid "The channel to put the scheduled event in. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then it automatically sets the entity type.  Required if the entity type is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
+msgstr "スケジュールイベントを開催するチャンネル。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` ならば、開催場所の種類が自動で設定されます。 開催場所の種類が :attr:`EntityType.voice` または :attr:`EntityType.stage_instance` の場合必須です。"
 
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:11
-msgid "The channel to put the scheduled event in."
-msgstr "スケジュールイベントの開催チャンネル。"
+msgid "The channel to put the scheduled event in. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then it automatically sets the entity type."
+msgstr "スケジュールイベントを開催するチャンネル。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` ならば、開催場所の種類が自動で設定されます。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:13
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:15
 msgid "Required if the entity type is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`."
 msgstr "``entity_type`` が :attr:`EntityType.voice` か :attr:`EntityType.stage_instance` の場合必須です。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:16
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:18
 msgid "The time that the scheduled event will start. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`."
 msgstr "スケジュールイベントの開始予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:19
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:21
 msgid "The time that the scheduled event will end. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.  If the entity type is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`, the end_time can be cleared by passing ``None``.  Required if the entity type is :attr:`EntityType.external`."
 msgstr "スケジュールイベントの終了予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。もし開催場所が :attr:`EntityType.voice` や :attr:`EntityType.stage_instance` の場合はこれは ``None`` を渡して除去することができます。 ``entity_type`` が :attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:19
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:21
 msgid "The time that the scheduled event will end. This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`."
 msgstr "スケジュールイベントの終了予定時刻。これはtimezone awareなdatetimeオブジェクトでないといけません。 :func:`utils.utcnow` を使用してみてください。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:22
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:24
 msgid "If the entity type is either :attr:`EntityType.voice` or :attr:`EntityType.stage_instance`, the end_time can be cleared by passing ``None``."
 msgstr "もし開催場所が :attr:`EntityType.voice` や :attr:`EntityType.stage_instance` の場合はこれは ``None`` を渡して除去することができます。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:30
-msgid "The new entity type."
-msgstr "新しい開催場所の種類。"
-
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:32
+msgid "The new entity type. If the channel is a :class:`StageInstance` or :class:`VoiceChannel` then this is automatically set to the appropriate entity type."
+msgstr "新しいスケジュールイベントの開催場所の種類。もしチャンネルが :class:`StageInstance` または :class:`VoiceChannel` の場合これは適切な種類に自動で設定されます。"
+
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:36
 msgid "The new status of the scheduled event."
 msgstr "スケジュールイベントの新しいステータス。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:34
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:38
 msgid "The new image of the scheduled event or ``None`` to remove the image."
 msgstr "スケジュールイベントの新しい画像。 ``None`` を渡すと画像を削除できます。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:36
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:40
 msgid "The new location of the scheduled event.  Required if the entity type is :attr:`EntityType.external`."
 msgstr "新しいスケジュールイベントの場所。開催場所の種類が :attr:`EntityType.external` の場合必須です。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:36
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:40
 msgid "The new location of the scheduled event."
 msgstr "新しいスケジュールイベントの場所。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:40
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:44
 msgid "The reason for editing the scheduled event. Shows up on the audit log."
 msgstr "スケジュールイベントを編集する理由。監査ログに表示されます。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:43
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:47
 msgid "`image` was not a :term:`py:bytes-like object`, or ``privacy_level``     was not a :class:`PrivacyLevel`, or ``entity_type`` was not an     :class:`EntityType`, ``status`` was not an :class:`EventStatus`, or     an argument was provided that was incompatible with the scheduled event's     entity type."
 msgstr "`image` が :term:`py:bytes-like object` でない場合、 ``privacy_level`` が :class:`PrivacyLevel` でない場合、 ``entity_type`` が :class:`EntityType` でない場合、 ``status`` が :class:`EventStatus` でない場合、または引数がスケジュールイベントの開催場所の種類と互換性のない場合。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:45
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:49
 msgid "You do not have permissions to edit the scheduled event."
 msgstr "スケジュールイベントを編集するのに必要な権限がない場合。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:46
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:50
 msgid "Editing the scheduled event failed."
 msgstr "スケジュールイベントの編集に失敗した場合。"
 
-#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:48
+#: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:52
 msgid "The edited scheduled event."
 msgstr "編集されたスケジュールイベント。"
 
@@ -12584,7 +12602,7 @@ msgstr "このイベントに購読済みのユーザー。"
 msgid "List[:class:`User`]"
 msgstr "List[:class:`User`]"
 
-#: ../../api.rst:3756
+#: ../../api.rst:3772
 msgid "Integration"
 msgstr "Integration"
 
@@ -12722,10 +12740,10 @@ msgid "Whether emoticons should be synced for this integration (currently twitch
 msgstr "この連携サービスで絵文字を同期するか（現在Twitch専用）。"
 
 #: ../../../discord/integrations.py:docstring of discord.integrations.StreamIntegration:45
+#: ../../../discord/invite.py:docstring of discord.invite.Invite:71
+#: ../../../discord/invite.py:docstring of discord.invite.Invite:84
 #: ../../../discord/template.py:docstring of discord.template.Template:60
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:73
-#: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:79
-#: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:85
 msgid "Optional[:class:`bool`]"
 msgstr "Optional[:class:`bool`]"
 
@@ -12797,7 +12815,7 @@ msgstr "不完全なギルドの連携サービス。"
 msgid "The id of the application this integration belongs to."
 msgstr "このインテグレーションが属するアプリケーションのID。"
 
-#: ../../api.rst:3777
+#: ../../api.rst:3793
 msgid "Member"
 msgstr "Member"
 
@@ -13318,7 +13336,7 @@ msgstr "このメンバーがタイムアウトされているかどうかを返
 msgid "``True`` if the member is timed out. ``False`` otherwise."
 msgstr "メンバーがタイムアウトした場合は ``True`` 。そうでなければ、 ``False`` 。"
 
-#: ../../api.rst:3790
+#: ../../api.rst:3806
 msgid "Spotify"
 msgstr "Spotify"
 
@@ -13435,7 +13453,7 @@ msgstr ":class:`datetime.timedelta`"
 msgid "The party ID of the listening party."
 msgstr "リスニングパーティーのパーティーID。"
 
-#: ../../api.rst:3798
+#: ../../api.rst:3814
 msgid "VoiceState"
 msgstr "VoiceState"
 
@@ -13487,7 +13505,7 @@ msgstr "ユーザーがギルドのAFKチャンネルにいるかどうかを示
 msgid "The voice channel that the user is currently connected to. ``None`` if the user is not currently in a voice channel."
 msgstr "ユーザーが現在接続しているボイスチャンネル。ユーザーがボイスチャンネルに接続していない場合は ``None`` 。"
 
-#: ../../api.rst:3806
+#: ../../api.rst:3822
 msgid "Emoji"
 msgstr "Emoji"
 
@@ -13607,7 +13625,7 @@ msgstr "絵文字の編集中にエラーが発生した場合。"
 msgid "The newly updated emoji."
 msgstr "新しく更新された絵文字。"
 
-#: ../../api.rst:3815
+#: ../../api.rst:3831
 msgid "PartialEmoji"
 msgstr "PartialEmoji"
 
@@ -13705,7 +13723,7 @@ msgstr "これがカスタム絵文字でない場合は、空の文字列が返
 msgid "The PartialEmoji is not a custom emoji."
 msgstr "PartialEmojiがカスタム絵文字でない場合。"
 
-#: ../../api.rst:3824
+#: ../../api.rst:3840
 msgid "Role"
 msgstr "Role"
 
@@ -13938,7 +13956,7 @@ msgstr "ロールを削除する権限がない場合。"
 msgid "Deleting the role failed."
 msgstr "ロールの削除に失敗した場合。"
 
-#: ../../api.rst:3832
+#: ../../api.rst:3848
 msgid "RoleTags"
 msgstr "RoleTags"
 
@@ -13962,7 +13980,7 @@ msgstr "ロールを管理するボットのユーザーID。"
 msgid "The integration ID that manages the role."
 msgstr "ロールを管理する連携サービスID。"
 
-#: ../../api.rst:3840
+#: ../../api.rst:3856
 msgid "PartialMessageable"
 msgstr "PartialMessageable"
 
@@ -14077,7 +14095,7 @@ msgstr "部分的なメッセージ。"
 msgid ":class:`PartialMessage`"
 msgstr ":class:`PartialMessage`"
 
-#: ../../api.rst:3849
+#: ../../api.rst:3865
 msgid "TextChannel"
 msgstr "TextChannel"
 
@@ -14486,16 +14504,19 @@ msgid "List[:class:`.Message`]"
 msgstr "List[:class:`.Message`]"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:3
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:3
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.webhooks:3
 msgid "Gets the list of webhooks from this channel."
 msgstr "チャンネル内のWebhookのリストを取得します。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:9
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:9
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.webhooks:11
 msgid "The webhooks for this channel."
 msgstr "チャンネル内のWebhook。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:3
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:3
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:3
 msgid "Creates a webhook for this channel."
 msgstr "チャンネルに新しいWebhookを作ります。"
@@ -14505,32 +14526,38 @@ msgid "Added the ``reason`` keyword-only parameter."
 msgstr "``reason`` キーワード引数が追加されました。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:10
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:7
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:9
 msgid "The webhook's name."
 msgstr "Webhookの名前。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:12
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:9
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:11
 msgid "A :term:`py:bytes-like object` representing the webhook's default avatar. This operates similarly to :meth:`~ClientUser.edit`."
 msgstr "Webhookのデフォルトアバターを表す :term:`py:bytes-like object` 。 :meth:`~ClientUser.edit` と同様に動作します。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:15
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:12
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:14
 msgid "The reason for creating this webhook. Shows up in the audit logs."
 msgstr "Webhookを作成する理由。監査ログに表示されます。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:18
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:15
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:17
 msgid "Creating the webhook failed."
 msgstr "Webhookの作成に失敗した場合。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:19
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:16
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:18
 msgid "You do not have permissions to create a webhook."
 msgstr "Webhookを作成する権限を持っていない場合。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.create_webhook:21
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.follow:28
+#: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:18
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.create_webhook:20
 msgid "The created webhook."
 msgstr "作成されたwebhook。"
@@ -14646,7 +14673,7 @@ msgstr "``joined`` が ``True`` に設定され、``private`` が ``False`` に�
 msgid ":class:`Thread` -- The archived threads."
 msgstr ":class:`Thread` -- アーカイブされたスレッド。"
 
-#: ../../api.rst:3862
+#: ../../api.rst:3878
 msgid "ForumChannel"
 msgstr "ForumChannel"
 
@@ -14794,7 +14821,7 @@ msgstr "作成されたスレッドとメッセージ。これは、 ``thread`` 
 msgid "Tuple[:class:`Thread`, :class:`Message`]"
 msgstr "Tuple[:class:`Thread`, :class:`Message`]"
 
-#: ../../api.rst:3871
+#: ../../api.rst:3887
 msgid "Thread"
 msgstr "Thread"
 
@@ -15164,7 +15191,7 @@ msgstr "スレッドを削除する権限がない場合。"
 msgid "Deleting the thread failed."
 msgstr "スレッドの削除に失敗した場合。"
 
-#: ../../api.rst:3884
+#: ../../api.rst:3900
 msgid "ThreadMember"
 msgstr "ThreadMember"
 
@@ -15204,7 +15231,7 @@ msgstr "メンバーがスレッドに参加したUTC時刻。"
 msgid "The thread this member belongs to."
 msgstr "メンバーが属するスレッド。"
 
-#: ../../api.rst:3892
+#: ../../api.rst:3908
 msgid "VoiceChannel"
 msgstr "VoiceChannel"
 
@@ -15281,7 +15308,7 @@ msgstr "メンバーIDをキーとしボイス状態を値とするマッピン�
 msgid "Mapping[:class:`int`, :class:`VoiceState`]"
 msgstr "Mapping[:class:`int`, :class:`VoiceState`]"
 
-#: ../../api.rst:3901
+#: ../../api.rst:3917
 msgid "StageChannel"
 msgstr "StageChannel"
 
@@ -15388,7 +15415,7 @@ msgstr "新しく編集されたステージチャンネル。編集が位置の
 msgid "Optional[:class:`.StageChannel`]"
 msgstr "Optional[:class:`.StageChannel`]"
 
-#: ../../api.rst:3911
+#: ../../api.rst:3927
 msgid "StageInstance"
 msgstr "StageInstance"
 
@@ -15488,7 +15515,7 @@ msgstr "ステージインスタンスを削除する権限がない場合。"
 msgid "Deleting the stage instance failed."
 msgstr "ステージインスタンスの削除に失敗した場合。"
 
-#: ../../api.rst:3919
+#: ../../api.rst:3935
 msgid "CategoryChannel"
 msgstr "CategoryChannel"
 
@@ -15608,7 +15635,7 @@ msgstr "カテゴリ内に :class:`VoiceChannel` を作成するための :meth:
 msgid "A shortcut method to :meth:`Guild.create_stage_channel` to create a :class:`StageChannel` in the category."
 msgstr "カテゴリ内に :class:`StageChannel` を作成するための :meth:`Guild.create_stage_channel` のショートカット。"
 
-#: ../../api.rst:3928
+#: ../../api.rst:3944
 msgid "DMChannel"
 msgstr "DMChannel"
 
@@ -15662,7 +15689,7 @@ msgstr ":attr:`~Permissions.send_tts_messages` ：DMにTTSメッセージは送�
 msgid ":attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM."
 msgstr ":attr:`~Permissions.manage_messages` ：DM内の他のメッセージは削除できません。"
 
-#: ../../api.rst:3941
+#: ../../api.rst:3957
 msgid "GroupChannel"
 msgstr "GroupChannel"
 
@@ -15722,7 +15749,7 @@ msgstr "あなたがグループにいる唯一の者である場合、グルー
 msgid "Leaving the group failed."
 msgstr "グループの脱退に失敗した場合。"
 
-#: ../../api.rst:3954
+#: ../../api.rst:3970
 msgid "PartialInviteGuild"
 msgstr "PartialInviteGuild"
 
@@ -15789,7 +15816,7 @@ msgstr "部分的なギルドの現在の「ブースト」数。"
 msgid "The Discord vanity invite URL for this partial guild, if available."
 msgstr "存在する場合、部分的なギルドのDiscord バニティURL。"
 
-#: ../../api.rst:3962
+#: ../../api.rst:3978
 msgid "PartialInviteChannel"
 msgstr "PartialInviteChannel"
 
@@ -15831,7 +15858,7 @@ msgstr "部分的なチャンネルのID。"
 msgid "The partial channel's type."
 msgstr "部分的なチャンネルの種類。"
 
-#: ../../api.rst:3970
+#: ../../api.rst:3986
 msgid "Invite"
 msgstr "Invite"
 
@@ -15973,8 +16000,8 @@ msgid "The channel the invite is for."
 msgstr "招待先のチャンネル。"
 
 #: ../../../discord/invite.py:docstring of discord.invite.Invite:131
-msgid "Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]"
-msgstr "Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]"
+msgid "Optional[Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]]"
+msgstr "Optional[Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]]"
 
 #: ../../../discord/invite.py:docstring of discord.invite.Invite:135
 msgid "The type of target for the voice channel invite."
@@ -16040,7 +16067,7 @@ msgstr "これを行うには :attr:`~Permissions.manage_channels` 権限が必�
 msgid "The reason for deleting this invite. Shows up on the audit log."
 msgstr "招待を削除する理由。監査ログに表示されます。"
 
-#: ../../api.rst:3978
+#: ../../api.rst:3994
 msgid "Template"
 msgstr "Template"
 
@@ -16143,7 +16170,7 @@ msgstr "テンプレートを削除します。"
 msgid "The template url."
 msgstr "テンプレートのURL。"
 
-#: ../../api.rst:3986
+#: ../../api.rst:4002
 msgid "WelcomeScreen"
 msgstr "WelcomeScreen"
 
@@ -16215,7 +16242,7 @@ msgstr "ようこそ画面を編集するのに必要な権限がない場合。
 msgid "This welcome screen does not exist."
 msgstr "ようこそ画面が存在しない場合。"
 
-#: ../../api.rst:3994
+#: ../../api.rst:4010
 msgid "WelcomeChannel"
 msgstr "WelcomeChannel"
 
@@ -16243,7 +16270,7 @@ msgstr "チャンネルの説明の横に使用される絵文字。"
 msgid "Optional[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]"
 msgstr "Optional[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]"
 
-#: ../../api.rst:4002
+#: ../../api.rst:4018
 msgid "WidgetChannel"
 msgstr "WidgetChannel"
 
@@ -16259,7 +16286,7 @@ msgstr "チャンネルのID。"
 msgid "The channel's position"
 msgstr "チャンネルの位置。"
 
-#: ../../api.rst:4010
+#: ../../api.rst:4026
 msgid "WidgetMember"
 msgstr "WidgetMember"
 
@@ -16339,7 +16366,7 @@ msgstr "Optional[:class:`WidgetChannel`]"
 msgid "Returns the member's display name."
 msgstr "メンバーの表示名を返します。"
 
-#: ../../api.rst:4019
+#: ../../api.rst:4035
 msgid "Widget"
 msgstr "Widget"
 
@@ -16407,7 +16434,7 @@ msgstr "招待にカウント情報を含めるかどうか。これにより :a
 msgid "The invite from the widget's invite URL, if available."
 msgstr "利用可能な場合は、ウィジェットの招待URLからの招待。"
 
-#: ../../api.rst:4027
+#: ../../api.rst:4043
 msgid "StickerPack"
 msgstr "StickerPack"
 
@@ -16467,7 +16494,7 @@ msgstr "Optional[:class:`StandardSticker`]"
 msgid "The banner asset of the sticker pack."
 msgstr "スタンプパックのバナーアセット。"
 
-#: ../../api.rst:4035
+#: ../../api.rst:4051
 msgid "StickerItem"
 msgstr "StickerItem"
 
@@ -16521,7 +16548,7 @@ msgstr "スタンプアイテムの完全なスタンプデータを取得する
 msgid "Union[:class:`StandardSticker`, :class:`GuildSticker`]"
 msgstr "Union[:class:`StandardSticker`, :class:`GuildSticker`]"
 
-#: ../../api.rst:4043
+#: ../../api.rst:4059
 msgid "Sticker"
 msgstr "Sticker"
 
@@ -16562,7 +16589,7 @@ msgstr "スタンプパックのID。"
 msgid "Returns the sticker's creation time in UTC."
 msgstr "スタンプの作成された時間をUTCで返します。"
 
-#: ../../api.rst:4051
+#: ../../api.rst:4067
 msgid "StandardSticker"
 msgstr "StandardSticker"
 
@@ -16598,7 +16625,7 @@ msgstr "取得したスタンプパック。"
 msgid ":class:`StickerPack`"
 msgstr ":class:`StickerPack`"
 
-#: ../../api.rst:4059
+#: ../../api.rst:4075
 msgid "GuildSticker"
 msgstr "GuildSticker"
 
@@ -16654,7 +16681,7 @@ msgstr "スタンプの編集中にエラーが発生した場合。"
 msgid "The newly modified sticker."
 msgstr "新しく変更されたスタンプ。"
 
-#: ../../api.rst:4067
+#: ../../api.rst:4083
 msgid "RawMessageDeleteEvent"
 msgstr "RawMessageDeleteEvent"
 
@@ -16679,7 +16706,7 @@ msgstr "削除されたメッセージ ID。"
 msgid "The cached message, if found in the internal message cache."
 msgstr "内部のメッセージキャッシュに見つかった場合、そのキャッシュされたメッセージ。"
 
-#: ../../api.rst:4075
+#: ../../api.rst:4091
 msgid "RawBulkMessageDeleteEvent"
 msgstr "RawBulkMessageDeleteEvent"
 
@@ -16711,7 +16738,7 @@ msgstr "内部のメッセージキャッシュに見つかった場合、その
 msgid "List[:class:`Message`]"
 msgstr "List[:class:`Message`]"
 
-#: ../../api.rst:4083
+#: ../../api.rst:4099
 msgid "RawMessageUpdateEvent"
 msgstr "RawMessageUpdateEvent"
 
@@ -16736,10 +16763,10 @@ msgid "The raw data given by the :ddocs:`gateway <topics/gateway#message-update>
 msgstr ":ddocs:`ゲートウェイ <topics/gateway#message-update>` によって与えられた生のデータ。"
 
 #: ../../../discord/raw_models.py:docstring of discord.raw_models.RawMessageUpdateEvent:29
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:33
 #: ../../../discord/activity.py:docstring of discord.activity.Activity:57
 #: ../../../discord/activity.py:docstring of discord.activity.Activity:69
 #: ../../../discord/activity.py:docstring of discord.activity.Activity:78
-#: ../../../discord/activity.py:docstring of discord.activity.Streaming:61
 msgid ":class:`dict`"
 msgstr ":class:`dict`"
 
@@ -16747,7 +16774,7 @@ msgstr ":class:`dict`"
 msgid "The cached message, if found in the internal message cache. Represents the message before it is modified by the data in :attr:`RawMessageUpdateEvent.data`."
 msgstr "内部メッセージキャッシュで見つかった場合、そのキャッシュされたメッセージ。 :attr:`RawMessageUpdateEvent.data` のデータによって変更される前のメッセージを表します。"
 
-#: ../../api.rst:4091
+#: ../../api.rst:4107
 msgid "RawReactionActionEvent"
 msgstr "RawReactionActionEvent"
 
@@ -16783,7 +16810,7 @@ msgstr "リアクションを追加したメンバー。`event_type` が `REACTI
 msgid "The event type that triggered this action. Can be ``REACTION_ADD`` for reaction addition or ``REACTION_REMOVE`` for reaction removal."
 msgstr "このアクションの原因であるイベントタイプ。リアクションの追加は ``REACTION_ADD`` 、リアクションの除去は ``REACTION_REMOVE`` です。"
 
-#: ../../api.rst:4099
+#: ../../api.rst:4115
 msgid "RawReactionClearEvent"
 msgstr "RawReactionClearEvent"
 
@@ -16806,7 +16833,7 @@ msgstr "リアクションの一括除去が行われたチャンネルのID。"
 msgid "The guild ID where the reactions got cleared."
 msgstr "リアクションの一括除去が行われたギルドのID。"
 
-#: ../../api.rst:4107
+#: ../../api.rst:4123
 msgid "RawReactionClearEmojiEvent"
 msgstr "RawReactionClearEmojiEvent"
 
@@ -16818,7 +16845,7 @@ msgstr ":func:`on_raw_reaction_clear_emoji` イベントのペイロードを表
 msgid "The custom or unicode emoji being removed."
 msgstr "除去されたカスタムまたはユニコード絵文字。"
 
-#: ../../api.rst:4115
+#: ../../api.rst:4131
 msgid "RawIntegrationDeleteEvent"
 msgstr "RawIntegrationDeleteEvent"
 
@@ -16838,7 +16865,50 @@ msgstr "削除された連携サービスのボットやOAuth2 アプリケー�
 msgid "The guild ID where the integration got deleted."
 msgstr "連携サービスが削除されたギルドのID。"
 
-#: ../../api.rst:4123
+#: ../../api.rst:4139
+msgid "RawThreadUpdateEvent"
+msgstr "RawThreadUpdateEvent"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:1
+msgid "Represents the payload for a :func:`on_raw_thread_update` event."
+msgstr ":func:`on_raw_thread_update` イベントのペイロードを表します。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:7
+msgid "The ID of the thread that was updated."
+msgstr "更新されたスレッドのID。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:13
+msgid "The channel type of the updated thread."
+msgstr "更新されたスレッドのチャンネルタイプ。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:15
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:15
+msgid ":class:`discord.ChannelType`"
+msgstr ":class:`discord.ChannelType`"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:19
+msgid "The ID of the guild the thread is in."
+msgstr "スレッドが属するギルドのID。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:25
+msgid "The ID of the channel the thread belongs to."
+msgstr "スレッドが属するチャンネルの ID。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:31
+msgid "The raw data given by the :ddocs:`gateway <topics/gateway#thread-update>`"
+msgstr ":ddocs:`ゲートウェイ <topics/gateway#thread-update>` によって与えられた生のデータ。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:37
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:31
+msgid "The thread, if it could be found in the internal cache."
+msgstr "スレッドが内部キャッシュで見つかった場合、そのスレッド。"
+
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadUpdateEvent:39
+#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:33
+msgid "Optional[:class:`discord.Thread`]"
+msgstr "Optional[:class:`discord.Thread`]"
+
+#: ../../api.rst:4147
 msgid "RawThreadDeleteEvent"
 msgstr "RawThreadDeleteEvent"
 
@@ -16854,10 +16924,6 @@ msgstr "削除されたスレッドのID。"
 msgid "The channel type of the deleted thread."
 msgstr "削除されたスレッドのチャンネルタイプ。"
 
-#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:15
-msgid ":class:`discord.ChannelType`"
-msgstr ":class:`discord.ChannelType`"
-
 #: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:19
 msgid "The ID of the guild the thread was deleted in."
 msgstr "スレッドが削除されたギルドのID。"
@@ -16866,15 +16932,7 @@ msgstr "スレッドが削除されたギルドのID。"
 msgid "The ID of the channel the thread belonged to."
 msgstr "スレッドが属したチャンネルの ID。"
 
-#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:31
-msgid "The thread, if it could be found in the internal cache."
-msgstr "スレッドが内部キャッシュで見つかった場合、そのスレッド。"
-
-#: ../../../discord/raw_models.py:docstring of discord.raw_models.RawThreadDeleteEvent:33
-msgid "Optional[:class:`discord.Thread`]"
-msgstr "Optional[:class:`discord.Thread`]"
-
-#: ../../api.rst:4131
+#: ../../api.rst:4155
 msgid "RawTypingEvent"
 msgstr "RawTypingEvent"
 
@@ -16902,7 +16960,7 @@ msgstr "Optional[Union[:class:`discord.User`, :class:`discord.Member`]]"
 msgid "The ID of the guild the user started typing in, if applicable."
 msgstr "該当する場合、ユーザーが入力し始めたギルドのID。"
 
-#: ../../api.rst:4139
+#: ../../api.rst:4163
 msgid "RawMemberRemoveEvent"
 msgstr "RawMemberRemoveEvent"
 
@@ -16922,7 +16980,7 @@ msgstr "Union[:class:`discord.User`, :class:`discord.Member`]"
 msgid "The ID of the guild the user left."
 msgstr "ユーザーが脱退したギルドのID。"
 
-#: ../../api.rst:4147
+#: ../../api.rst:4171
 msgid "PartialWebhookGuild"
 msgstr "PartialWebhookGuild"
 
@@ -16935,7 +16993,7 @@ msgstr "Webhook用の部分的なギルドを表します。"
 msgid "These are typically given for channel follower webhooks."
 msgstr "これは通常、チャンネルをフォローするWebhookから与えられます。"
 
-#: ../../api.rst:4155
+#: ../../api.rst:4179
 msgid "PartialWebhookChannel"
 msgstr "PartialWebhookChannel"
 
@@ -16943,23 +17001,23 @@ msgstr "PartialWebhookChannel"
 msgid "Represents a partial channel for webhooks."
 msgstr "Webhook用の部分的なチャンネルを表します。"
 
-#: ../../api.rst:4165
+#: ../../api.rst:4189
 msgid "Data Classes"
 msgstr "データクラス"
 
-#: ../../api.rst:4167
+#: ../../api.rst:4191
 msgid "Some classes are just there to be data containers, this lists them."
 msgstr "一部のクラスはデータコンテナとして用いられます。ここではそのクラスを一覧表にしています。"
 
-#: ../../api.rst:4169
+#: ../../api.rst:4193
 msgid "Unlike :ref:`models <discord_api_models>` you are allowed to create most of these yourself, even if they can also be used to hold attributes."
 msgstr ":ref:`models <discord_api_models>` とは異なり、属性を持つものであっても、自分で作成することが許されています。"
 
-#: ../../api.rst:4175
+#: ../../api.rst:4199
 msgid "The only exception to this rule is :class:`Object`, which is made with dynamic attributes in mind."
 msgstr "このルールの唯一の例外は :class:`Object` で、動的な属性を念頭に置いて作成されます。"
 
-#: ../../api.rst:4180
+#: ../../api.rst:4204
 msgid "Object"
 msgstr "Object"
 
@@ -16995,7 +17053,7 @@ msgstr "オブジェクトのID。"
 msgid "Returns the snowflake's creation time in UTC."
 msgstr "スノーフレークの作成時刻をUTCで返します。"
 
-#: ../../api.rst:4188
+#: ../../api.rst:4212
 msgid "Embed"
 msgstr "Embed"
 
@@ -17304,7 +17362,7 @@ msgstr "無効なインデックスが指定された場合。"
 msgid "Converts this embed object into a dict."
 msgstr "埋め込みオブジェクトを辞書型に変換します。"
 
-#: ../../api.rst:4196
+#: ../../api.rst:4220
 msgid "AllowedMentions"
 msgstr "AllowedMentions"
 
@@ -17345,7 +17403,7 @@ msgstr "すべてのフィールドが ``True`` に明示的に設定された :
 msgid "A factory method that returns a :class:`AllowedMentions` with all fields set to ``False``"
 msgstr "すべてのフィールドが ``False`` に設定された :class:`AllowedMentions` を返すファクトリメソッド。"
 
-#: ../../api.rst:4204
+#: ../../api.rst:4228
 msgid "MessageReference"
 msgstr "MessageReference"
 
@@ -17410,7 +17468,7 @@ msgstr "Optional[:class:`~discord.Message`]"
 msgid "Returns a URL that allows the client to jump to the referenced message."
 msgstr "クライアントが参照されたメッセージにジャンプすることのできるURLを返します。"
 
-#: ../../api.rst:4212
+#: ../../api.rst:4236
 msgid "PartialMessage"
 msgstr "PartialMessage"
 
@@ -17466,7 +17524,7 @@ msgstr "該当する場合、この部分的なメッセージが属するギル
 msgid "The partial message's creation time in UTC."
 msgstr "UTCの、部分的なメッセージが作成された時刻。"
 
-#: ../../api.rst:4220
+#: ../../api.rst:4244
 msgid "Intents"
 msgstr "Intents"
 
@@ -18191,7 +18249,7 @@ msgstr ":func:`on_scheduled_event_user_add`"
 msgid ":func:`on_scheduled_event_user_remove`"
 msgstr ":func:`on_scheduled_event_user_remove`"
 
-#: ../../api.rst:4228
+#: ../../api.rst:4252
 msgid "MemberCacheFlags"
 msgstr "MemberCacheFlags"
 
@@ -18275,7 +18333,7 @@ msgstr "結果として生成されるメンバーキャッシュフラグ。"
 msgid ":class:`MemberCacheFlags`"
 msgstr ":class:`MemberCacheFlags`"
 
-#: ../../api.rst:4236
+#: ../../api.rst:4260
 msgid "ApplicationFlags"
 msgstr "ApplicationFlags"
 
@@ -18345,7 +18403,7 @@ msgstr "アプリケーションが認証済みでギルドのメッセージコ
 msgid "Returns ``True`` if the application is unverified and is allowed to read message content in guilds."
 msgstr "アプリケーションが認証されておらず、ギルドのメッセージコンテンツを読むことができる場合に ``True`` を返します。"
 
-#: ../../api.rst:4244
+#: ../../api.rst:4268
 msgid "ChannelFlags"
 msgstr "ChannelFlags"
 
@@ -18381,7 +18439,7 @@ msgstr "x のすべてのフラグが反転したChannelFlagsインスタンス�
 msgid "Returns ``True`` if the thread is pinned to the forum channel."
 msgstr "スレッドがフォーラムチャンネルにピン留めされている場合に ``True`` を返します。"
 
-#: ../../api.rst:4253
+#: ../../api.rst:4277
 msgid "File"
 msgstr "File"
 
@@ -18421,7 +18479,7 @@ msgstr "表示するファイルの説明。現在画像でのみサポートさ
 msgid "The filename to display when uploading to Discord. If this is not given then it defaults to ``fp.name`` or if ``fp`` is a string then the ``filename`` will default to the string given."
 msgstr "Discordにアップロードするときに表示されるファイル名。指定されていない場合はデフォルトでは ``fp.name`` 、または ``fp`` が文字列の場合、 ``filename`` は与えられた文字列をデフォルトにします。"
 
-#: ../../api.rst:4261
+#: ../../api.rst:4285
 msgid "Colour"
 msgstr "Colour"
 
@@ -18645,7 +18703,7 @@ msgstr "``0xEB459E`` の値を持つ :class:`Colour` を返すクラスメソッ
 msgid "A factory method that returns a :class:`Colour` with a value of ``0xFEE75C``."
 msgstr "``0xFEE75C`` の値を持つ :class:`Colour` を返すクラスメソッドです。"
 
-#: ../../api.rst:4269
+#: ../../api.rst:4293
 msgid "BaseActivity"
 msgstr "BaseActivity"
 
@@ -18683,7 +18741,7 @@ msgstr "なお、ライブラリはこれらをユーザー設定可能としま
 msgid "When the user started doing this activity in UTC."
 msgstr "ユーザーがアクティビティを開始したときのUTC時刻。"
 
-#: ../../api.rst:4277
+#: ../../api.rst:4301
 msgid "Activity"
 msgstr "Activity"
 
@@ -18804,7 +18862,7 @@ msgstr "該当する場合、このアクティビティの大きな画像アセ
 msgid "Returns the small image asset hover text of this activity, if applicable."
 msgstr "該当する場合、このアクティビティの小さな画像アセットのホバーテキストを返します。"
 
-#: ../../api.rst:4285
+#: ../../api.rst:4309
 msgid "Game"
 msgstr "Game"
 
@@ -18854,7 +18912,7 @@ msgstr "該当する場合、ユーザーがゲームを開始したときのUTC
 msgid "When the user will stop playing this game in UTC, if applicable."
 msgstr "該当する場合、ユーザーがゲームを終了する予定のUTC時刻。"
 
-#: ../../api.rst:4293
+#: ../../api.rst:4317
 msgid "Streaming"
 msgstr "Streaming"
 
@@ -18918,7 +18976,7 @@ msgstr "提供された場合、ストリーム中のユーザーのTwitchの名
 msgid "This corresponds to the ``large_image`` key of the :attr:`Streaming.assets` dictionary if it starts with ``twitch:``. Typically set by the Discord client."
 msgstr "これが ``twitch:`` で始まる場合、 :attr:`Streaming.assets` 辞書の ``large_image`` キーに対応します。典型的にはDiscordクライアントによって設定されます。"
 
-#: ../../api.rst:4301
+#: ../../api.rst:4325
 msgid "CustomActivity"
 msgstr "CustomActivity"
 
@@ -18942,7 +19000,7 @@ msgstr "存在する場合、アクティビティに渡す絵文字。"
 msgid "It always returns :attr:`ActivityType.custom`."
 msgstr "これは常に :attr:`ActivityType.custom` を返します。"
 
-#: ../../api.rst:4309
+#: ../../api.rst:4333
 msgid "Permissions"
 msgstr "Permissions"
 
@@ -19385,7 +19443,7 @@ msgstr "ユーザーがボイスチャンネルにて埋め込みアプリケー
 msgid "Returns ``True`` if a user can time out other members."
 msgstr "ユーザーが他のユーザーをタイムアウトできる場合は ``True`` を返します。"
 
-#: ../../api.rst:4317
+#: ../../api.rst:4341
 msgid "PermissionOverwrite"
 msgstr "PermissionOverwrite"
 
@@ -19441,7 +19499,7 @@ msgstr "権限上書きオブジェクトを一括更新します。"
 msgid "A list of key/value pairs to bulk update with."
 msgstr "一括更新するためのキーと値のペアのリスト。"
 
-#: ../../api.rst:4325
+#: ../../api.rst:4349
 msgid "ShardInfo"
 msgstr "ShardInfo"
 
@@ -19485,7 +19543,7 @@ msgstr "シャードを接続します。もしすでに接続されている場
 msgid "Measures latency between a HEARTBEAT and a HEARTBEAT_ACK in seconds for this shard."
 msgstr "このシャードのHEARTBEATとHEARTBEAT_ACK間の待ち時間を秒単位で測定します。"
 
-#: ../../api.rst:4333
+#: ../../api.rst:4357
 msgid "SystemChannelFlags"
 msgstr "SystemChannelFlags"
 
@@ -19535,7 +19593,7 @@ msgstr "システムチャンネルがサーバー設定に役立つヒントの
 msgid "Returns ``True`` if sticker reply button (\"Wave to say hi!\") is shown for member join notifications."
 msgstr "メンバーの参加通知にスタンプ返信ボタン（「手を振って挨拶しましょう！」）が表示される場合に ``True`` を返します。"
 
-#: ../../api.rst:4341
+#: ../../api.rst:4365
 msgid "MessageFlags"
 msgstr "MessageFlags"
 
@@ -19603,7 +19661,7 @@ msgstr "メッセージがインタラクションの応答で、ボットが「
 msgid "Returns ``True`` if the message failed to mention some roles in a thread and add their members to the thread."
 msgstr "メッセージがロールをメンションし、そのメンバーをスレッドに追加するのに失敗した場合に ``True`` を返します。"
 
-#: ../../api.rst:4349
+#: ../../api.rst:4373
 msgid "PublicUserFlags"
 msgstr "PublicUserFlags"
 
@@ -19707,11 +19765,11 @@ msgstr "ユーザーがDiscordによりスパマーとフラグ付けされて�
 msgid "List[:class:`UserFlags`]: Returns all public flags the user has."
 msgstr "List[:class:`UserFlags`]: ユーザーが持つすべての公開フラグを返します。"
 
-#: ../../api.rst:4357
+#: ../../api.rst:4381
 msgid "Exceptions"
 msgstr "例外"
 
-#: ../../api.rst:4359
+#: ../../api.rst:4383
 msgid "The following exceptions are thrown by the library."
 msgstr "以下の例外がライブラリにより送出されます。"
 
@@ -19853,59 +19911,59 @@ msgstr "返されたエラーコード。"
 msgid "An exception that is thrown for when libopus is not loaded."
 msgstr "libopus がロードされていないときに送出される例外。"
 
-#: ../../api.rst:4391
+#: ../../api.rst:4415
 msgid "Exception Hierarchy"
 msgstr "例外の階層構造"
 
-#: ../../api.rst:4406
+#: ../../api.rst:4430
 msgid ":exc:`Exception`"
 msgstr ":exc:`Exception`"
 
-#: ../../api.rst:4406
+#: ../../api.rst:4430
 msgid ":exc:`DiscordException`"
 msgstr ":exc:`DiscordException`"
 
-#: ../../api.rst:4401
+#: ../../api.rst:4425
 msgid ":exc:`ClientException`"
 msgstr ":exc:`ClientException`"
 
-#: ../../api.rst:4398
+#: ../../api.rst:4422
 msgid ":exc:`InvalidData`"
 msgstr ":exc:`InvalidData`"
 
-#: ../../api.rst:4399
+#: ../../api.rst:4423
 msgid ":exc:`LoginFailure`"
 msgstr ":exc:`LoginFailure`"
 
-#: ../../api.rst:4400
+#: ../../api.rst:4424
 msgid ":exc:`ConnectionClosed`"
 msgstr ":exc:`ConnectionClosed`"
 
-#: ../../api.rst:4401
+#: ../../api.rst:4425
 msgid ":exc:`PrivilegedIntentsRequired`"
 msgstr ":exc:`PrivilegedIntentsRequired`"
 
-#: ../../api.rst:4402
+#: ../../api.rst:4426
 msgid ":exc:`InteractionResponded`"
 msgstr ":exc:`InteractionResponded`"
 
-#: ../../api.rst:4403
+#: ../../api.rst:4427
 msgid ":exc:`GatewayNotFound`"
 msgstr ":exc:`GatewayNotFound`"
 
-#: ../../api.rst:4406
+#: ../../api.rst:4430
 msgid ":exc:`HTTPException`"
 msgstr ":exc:`HTTPException`"
 
-#: ../../api.rst:4405
+#: ../../api.rst:4429
 msgid ":exc:`Forbidden`"
 msgstr ":exc:`Forbidden`"
 
-#: ../../api.rst:4406
+#: ../../api.rst:4430
 msgid ":exc:`NotFound`"
 msgstr ":exc:`NotFound`"
 
-#: ../../api.rst:4407
+#: ../../api.rst:4431
 msgid ":exc:`DiscordServerError`"
 msgstr ":exc:`DiscordServerError`"
 

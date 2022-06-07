@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-05-30 18:34\n"
+"POT-Creation-Date: 2022-06-05 15:14+0000\n"
+"PO-Revision-Date: 2022-06-06 17:05\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1203,7 +1203,6 @@ msgid "The emoji of the button, if available."
 msgstr "利用可能な場合、ボタンの絵文字。"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:47
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:48
 msgid "Optional[:class:`PartialEmoji`]"
 msgstr "Optional[:class:`PartialEmoji`]"
 
@@ -1438,7 +1437,7 @@ msgstr "アプリケーションコマンドの削除に失敗した場合。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.delete:8
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.edit:20
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:16
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:13
 msgid "The client does not have an application ID."
 msgstr "クライアントにアプリケーションIDがない場合。"
 
@@ -1846,15 +1845,20 @@ msgid "An additional description of the option, if any. Can only be up to 100 ch
 msgstr "存在する場合、オプションの追加の説明。最大 100 文字まで可能です。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:17
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:46
+#: ../../../discord/components.py:docstring of discord.SelectOption.emoji:1
 msgid "The emoji of the option, if available."
 msgstr "利用可能な場合、オプションの絵文字。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:19
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:52
+#: ../../../discord/components.py:docstring of discord.components.SelectOption:46
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:18
 msgid "Whether this option is selected by default."
 msgstr "このオプションがデフォルトで選択されているかどうか。"
+
+#: ../../../discord/components.py:docstring of discord.SelectOption.emoji:3
+#: ../../../discord/ui/button.py:docstring of discord.ui.Button.emoji:3
+msgid "Optional[:class:`.PartialEmoji`]"
+msgstr "Optional[:class:`.PartialEmoji`]"
 
 #: ../../interactions/api.rst:154
 msgid "Choice"
@@ -2474,10 +2478,6 @@ msgstr "このボタンが URL 用の場合、カスタム ID はありません
 msgid "The label of the button, if available."
 msgstr "利用可能な場合、ボタンのラベル。"
 
-#: ../../../discord/ui/button.py:docstring of discord.ui.Button.emoji:3
-msgid "Optional[:class:`.PartialEmoji`]"
-msgstr "Optional[:class:`.PartialEmoji`]"
-
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.button:1
 msgid "A decorator that attaches a button to a component."
 msgstr "コンポーネントにボタンを付属させるデコレータ。"
@@ -2655,6 +2655,39 @@ msgstr "アプリケーションコマンドの情報を取得するためのク
 msgid "If a guild-specific command is not found when invoked, then try falling back into a global command in the tree. For example, if the tree locally has a ``/ping`` command under the global namespace but the guild has a guild-specific ``/ping``, instead of failing to find the guild-specific ``/ping`` command it will fall back to the global ``/ping`` command. This has the potential to raise more :exc:`~discord.app_commands.CommandSignatureMismatch` errors than usual. Defaults to ``True``."
 msgstr "ギルド固有のコマンドが呼び出されたときに見つからない場合は、ツリー内のグローバルコマンドを呼び出します。 例えば、ローカル環境でグローバル名前空間の下に ``/ping`` コマンドがあるが、ギルド本体ではギルド固有の ``/ping`` がある場合、ギルド固有の ``/ping`` コマンドを見つけるのに失敗せずに、グローバルの ``/ping`` コマンドをフォールバックとして使用します。 これは :exc:`~discord.app_commands.CommandSignatureMismatch` エラーを通常より多く引き起こす可能性があります。デフォルトは ``True`` です。"
 
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:3
+msgid "Fetches an application command from the application."
+msgstr "アプリケーションからアプリケーションコマンドを取得します。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:5
+msgid "The ID of the command to fetch."
+msgstr "取得するコマンドのID。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:7
+msgid "The guild to fetch the command from. If not passed then the global command is fetched instead."
+msgstr "コマンドを取得するギルド。渡されない場合は、代わりにグローバルコマンドが取得されます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:11
+msgid "Fetching the command failed."
+msgstr "コマンドの取得に失敗した場合。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:12
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:17
+msgid "The application ID could not be found."
+msgstr "アプリケーションコマンドが見つからなかった場合。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:13
+msgid "The application command was not found.     This could also be because the command is a guild command     and the guild was not specified and vice versa."
+msgstr "アプリケーションコマンドが見つからなかった場合。 これは、コマンドがギルドコマンドであるのにギルドが指定されていない場合またはその逆を含みます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:15
+msgid "The application command."
+msgstr "アプリケーションコマンド。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:16
+msgid ":class:`~discord.app_commands.AppCommand`"
+msgstr ":class:`~discord.app_commands.AppCommand`"
+
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:3
 msgid "Fetches the application's current commands."
 msgstr "アプリケーションの現在のコマンドを取得します。"
@@ -2675,10 +2708,6 @@ msgstr "コマンドを取得するギルド。渡されない場合は、代わ
 msgid "Fetching the commands failed."
 msgstr "コマンドの取得に失敗した場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:17
-msgid "The application ID could not be found."
-msgstr "アプリケーションコマンドが見つからなかった場合。"
-
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:19
 msgid "The application's commands."
 msgstr "アプリケーションコマンド。"
@@ -2692,18 +2721,18 @@ msgid "Copies all global commands to the specified guild."
 msgstr "指定したギルドにグローバルコマンドをすべてコピーします。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:3
-msgid "This method is mainly available for development purposes, as it allows you to copy your global commands over to a testing guild easily and prevent waiting an hour for the propagation."
-msgstr "これは、グローバルコマンドをテスト用のギルドにコピーして、伝播されるのに一時間待たずに済むようにするため、主に開発のために提供されています。"
+msgid "This method is mainly available for development purposes, as it allows you to copy your global commands over to a testing guild easily."
+msgstr "これは、グローバルコマンドをテスト用のギルドにコピーできるので、主に開発のために提供されています。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:7
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:6
 msgid "Note that this method will *override* pre-existing guild commands that would conflict."
 msgstr "このメソッドは競合する既存のギルドコマンドを *上書き* することに注意してください。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:9
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:8
 msgid "The guild to copy the commands to."
 msgstr "コマンドをコピーするギルド。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:12
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:11
 msgid "The maximum number of commands was reached for that guild.     This is currently 100 for slash commands and 5 for context menu commands."
 msgstr "ギルドの最大コマンド数に達した場合。これはスラッシュコマンドでは100個で、コンテキストメニューコマンドでは5個です。"
 
@@ -2966,26 +2995,22 @@ msgid "This must be called for the application commands to show up."
 msgstr "アプリケーションコマンドを表示するためには、これを呼び出さないといけません。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:7
-msgid "Global commands take up to 1-hour to propagate but guild commands propagate instantly."
-msgstr "グローバルコマンドは伝播に最大1時間かかりますが、ギルドコマンドは即時に伝播します。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:10
 msgid "The guild to sync the commands to. If ``None`` then it syncs all global commands instead."
 msgstr "コマンドを同期するギルド。指定されていない場合や ``None`` の場合グローバルコマンドを同期します。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:14
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:11
 msgid "Syncing the commands failed."
 msgstr "コマンドの同期に失敗した場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:15
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:12
 msgid "The client does not have the ``applications.commands`` scope in the guild."
 msgstr "クライアントがギルドで ``applications.commands`` スコープを有さない場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:18
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:15
 msgid "The application's commands that got synced."
 msgstr "同期されたアプリケーションコマンド。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:19
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:16
 msgid "List[:class:`AppCommand`]"
 msgstr "List[:class:`AppCommand`]"
 
@@ -3138,7 +3163,7 @@ msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choic
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:18
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:4
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:7
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:12
 msgid "Example:"
@@ -3380,7 +3405,7 @@ msgid "The description of the parameters."
 msgstr "パラメータの説明。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:15
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:16
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:19
 msgid "The parameter name is not found."
 msgstr "パラメータ名が見つからない場合。"
 
@@ -3388,11 +3413,15 @@ msgstr "パラメータ名が見つからない場合。"
 msgid "Renames the given parameters by their name using the key of the keyword argument as the name."
 msgstr "キーワード引数のキーを名前として使用して与えられたパラメータを改名します。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:13
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:4
+msgid "This renames the parameter within the Discord UI. When referring to the parameter in other decorators, the parameter name used in the function is used instead of the renamed one."
+msgstr "これはDiscord UI内のパラメータの名前を変更します。 他のデコレータでパラメータを参照する場合、改名先のものではなく関数内で使用されるパラメータ名を使用しないといけません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:16
 msgid "The name of the parameters."
 msgstr "パラメータの名前。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:15
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:18
 msgid "The parameter name is already used by another parameter."
 msgstr "パラメータ名がすでに他のパラメータによって使用されている場合。"
 

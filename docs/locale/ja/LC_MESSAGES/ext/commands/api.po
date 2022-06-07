@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-05-30 18:34\n"
+"PO-Revision-Date: 2022-06-06 17:05\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -3134,7 +3134,7 @@ msgstr "デフォルトは以下のどちらかです:"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.subcommand_not_found:8
 msgid "``'Command \"{command.qualified_name}\" has no subcommands.'``"
-msgstr "``'Command \"{command.qualified_name}\" にはサブコマンドがありません.'``"
+msgstr "``'Command \"{command.qualified_name}\" has no subcommands.'``"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.subcommand_not_found:9
 msgid "If there is no subcommand in the ``command`` parameter."
@@ -3142,7 +3142,7 @@ msgstr "``command`` パラメータにサブコマンドがない場合。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.subcommand_not_found:11
 msgid "``'Command \"{command.qualified_name}\" has no subcommand named {string}'``"
-msgstr "``'Command \"{command.qualified_name}\" には {string} '`` という名前のサブコマンドがありません"
+msgstr "``'Command \"{command.qualified_name}\" has no subcommand named {string}'``"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.subcommand_not_found:11
 msgid "If the ``command`` parameter has subcommands but not one named ``string``."
