@@ -862,7 +862,7 @@ class AppCommandPermissions:
     Attributes
     -----------
     guild: :class:`~discord.Guild`
-        The guild assosiated with this permission.
+        The guild associated with this permission.
     id: :class:`int`
         The ID of the permission target, such as a role, channel, or guild.
         The special ``guild_id - 1`` sentinel is used to represent "all channels".
@@ -872,7 +872,7 @@ class AppCommandPermissions:
     type: :class:`.AppCommandPermissionType`
         The type of permission.
     permission: :class:`bool`
-        The permission value. True for allow, False for deny.
+        The permission value. ``True`` for allow, ``False`` for deny.
     """
 
     __slots__ = ('id', 'type', 'permission', 'target', 'guild', '_state')
