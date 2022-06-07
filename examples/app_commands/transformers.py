@@ -67,7 +67,7 @@ async def channelinfo(
     interaction: discord.Interaction, channel: Union[discord.TextChannel, discord.VoiceChannel, discord.Thread]
 ):
     # Using an Union we can provide the different channel types that are allowed.
-    # Here the user can select between the text channels, the voice channels and the threads on the guild.
+    # Here the user can select between the text channels, the voice channels, and the threads on the guild.
     if isinstance(channel, discord.TextChannel):
         channel_type = "text channel"
     elif isinstance(channel, discord.VoiceChannel):
