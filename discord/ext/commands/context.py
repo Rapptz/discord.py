@@ -468,7 +468,12 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if not self.interaction:
             # channel and author will always match relevant types here
             return self.channel.permissions_for(self.author)  # type: ignore
-        return self.interaction.permissions
+        base = self.interaction.permissions
+        if self.channel.type not in (ChannelType.voice, ChannelType.stage_voice):
+            # text channels do not have voice related permissions
+            denied = Permissions.voice()
+            base.value &= ~denied.value
+        return base
 
     @discord.utils.cached_property
     def bot_permissions(self) -> Permissions:
