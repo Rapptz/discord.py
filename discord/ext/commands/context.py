@@ -474,16 +474,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     def bot_permissions(self) -> Permissions:
         """:class:`.Permissions`: Returns the resolved permissions for the bot in this channel.
 
-        .. note::
+        For interaction-based commands, this will reflect the effective permissions
+        for :class:`Context` calls, which may differ from calls through
+        other :class:`.abc.Messageable` endpoints, like :attr:`channel`.
 
-            For interaction-based commands, this will reflect the effective permissions
-            for :class:`Context` calls, which may differ from calls through
-            other :class:`.abc.Messageable` endpoints, like :attr:`channel`.
-
-            Notably, sending messages, embedding links, and attaching files are always
-            permitted, while reading messages might not be. Mass mentioning and using
-            external emojis and stickers also inherits their permissions from the
-            default guild role.
+        Notably, sending messages, embedding links, and attaching files are always
+        permitted, while reading messages might not be. Mass mentioning and using
+        external emojis and stickers also inherits their permissions from the
+        default guild role.
 
         .. versionadded:: 2.0
         """
