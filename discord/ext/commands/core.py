@@ -672,7 +672,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             except ArgumentParsingError as exc:
                 if self._is_typing_optional(param.annotation):
                     view.index = previous
-                    return None
+                    return None if param.required else await param.get_default(ctx)
                 else:
                     raise exc
         view.previous = previous
