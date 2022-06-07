@@ -96,6 +96,8 @@ else:
 T = TypeVar('T')
 F = TypeVar('F', bound=Callable[..., Any])
 GroupT = TypeVar('GroupT', bound='Binding')
+CogT = TypeVar('CogT', bound='Cog')
+
 Coro = Coroutine[Any, Any, T]
 UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
 Error = Union[
@@ -113,11 +115,10 @@ if TYPE_CHECKING:
     ]
 
     ContextMenuCallback = Union[
-        # If groups end up support context menus these would be uncommented
-        # Callable[[GroupT, 'Interaction', Member], Coro[Any]],
-        # Callable[[GroupT, 'Interaction', User], Coro[Any]],
-        # Callable[[GroupT, 'Interaction', Message], Coro[Any]],
-        # Callable[[GroupT, 'Interaction', Union[Member, User]], Coro[Any]],
+        Callable[[CogT, 'Interaction', Member], Coro[Any]],
+        Callable[[CogT, 'Interaction', User], Coro[Any]],
+        Callable[[CogT, 'Interaction', Message], Coro[Any]],
+        Callable[[CogT, 'Interaction', Union[Member, User]], Coro[Any]],
         Callable[['Interaction', Member], Coro[Any]],
         Callable[['Interaction', User], Coro[Any]],
         Callable[['Interaction', Message], Coro[Any]],
@@ -421,29 +422,41 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     return result
 
 
-def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, AppCommandType]:
+def _get_context_menu_parameter(
+    func: ContextMenuCallback, requires_binding: bool = False
+) -> Tuple[str, Any, AppCommandType]:
     params = inspect.signature(func).parameters
-    if len(params) != 2:
+    print(params)
+    requires_binding = requires_binding or is_inside_class(func)
+    required_params = 2 if not requires_binding else 3
+    annotation_text = (
+        'the first one being the interaction and the other one explicitly '
+        if not requires_binding
+        else 'the first one being the class, the second one being the interaction and the third one explicitly '
+    )
+    if len(params) != required_params:
         msg = (
-            f'context menu callback {func.__qualname__!r} requires 2 parameters, '
-            'the first one being the interaction and the other one explicitly '
+            f'context menu callback {func.__qualname__!r} requires {required_params} parameters, {annotation_text}'
             'annotated with either discord.Message, discord.User, discord.Member, '
             'or a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
 
     iterator = iter(params.values())
+    next(iterator)  # skip self
     next(iterator)  # skip interaction
     parameter = next(iterator)
     if parameter.annotation is parameter.empty:
+        second_or_third = 'second' if not requires_binding else 'third'
         msg = (
-            f'second parameter of context menu callback {func.__qualname__!r} must be explicitly '
+            f'{second_or_third} parameter of context menu callback {func.__qualname__!r} must be explicitly '
             'annotated with either discord.Message, discord.User, discord.Member, or '
             'a typing.Union of discord.Member and discord.User'
         )
         raise TypeError(msg)
 
     resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
+    print(parameter, parameter.annotation, resolved, iterator)
     type = _context_menu_annotation(resolved)
     return (parameter.name, resolved, type)
 
@@ -905,7 +918,7 @@ class Command(Generic[GroupT, P, T]):
             pass
 
 
-class ContextMenu:
+class ContextMenu(Generic[CogT]):
     """A class that implements a context menu application command.
 
     These are usually not created manually, instead they are created using
@@ -953,7 +966,19 @@ class ContextMenu:
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
-        (param, annotation, actual_type) = _get_context_menu_parameter(callback)
+
+        # for classes
+        self.binding: Optional[CogT] = None
+        self.parent = None
+        # Unwrap __self__ for bound methods
+        try:
+            self.binding = callback.__self__
+            self._callback = callback = callback.__func__
+        except AttributeError:
+            pass
+        # ----
+
+        (param, annotation, actual_type) = _get_context_menu_parameter(callback, requires_binding=bool(self.binding))
         if type is MISSING:
             type = actual_type
 
@@ -965,7 +990,7 @@ class ContextMenu:
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
         self._guild_ids = guild_ids or getattr(callback, '__discord_app_commands_default_guilds__', None)
-        self.on_error: Optional[UnboundError] = None
+        self.on_error: Optional[Error[CogT]] = None
         self.default_permissions: Optional[Permissions] = getattr(
             callback, '__discord_app_commands_default_permissions__', None
         )
@@ -982,6 +1007,34 @@ class ContextMenu:
     def qualified_name(self) -> str:
         """:class:`str`: Returns the fully qualified command name."""
         return self.name
+
+    def _copy_with(
+        self,
+        *,
+        binding: CogT,
+        bindings: MutableMapping[CogT, CogT] = MISSING,
+        set_on_binding: bool = True,  # backwards compatibility
+        parent: Any = None,  # backwards compatibility
+    ) -> ContextMenu:
+        bindings = {} if bindings is MISSING else bindings
+
+        cls = self.__class__
+        copy = cls.__new__(cls)
+        copy.name = self.name
+        copy.type = self.type
+        copy._guild_ids = self._guild_ids
+        copy.checks = self.checks
+        copy.default_permissions = self.default_permissions
+        copy.guild_only = self.guild_only
+        copy.nsfw = self.nsfw
+        copy._attr = None  # backwards compatibility
+        copy._callback = self._callback
+        copy.on_error = self.on_error
+        copy.module = self.module
+        copy.parent = None  # backwards compatibility
+        copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+
+        return copy
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -1000,6 +1053,10 @@ class ContextMenu:
         # Type checker does not understand negative narrowing cases like this function
         return await async_all(f(interaction) for f in predicates)  # type: ignore
 
+    async def _invoke_error_handler(self, interaction: Interaction, error: AppCommandError) -> None:
+        args = (interaction, error) if self.binding is None else (self.binding, interaction, error)
+        await self.on_error(*args)  # type: ignore
+
     def _has_any_error_handlers(self) -> bool:
         return self.on_error is not None
 
@@ -1008,13 +1065,15 @@ class ContextMenu:
             if not await self._check_can_run(interaction):
                 raise CheckFailure(f'The check functions for context menu {self.name!r} failed.')
 
-            await self._callback(interaction, arg)
+            args = (interaction, arg) if self.binding is None else (self.binding, interaction, arg)
+
+            await self._callback(*args)  # type: ignore
         except AppCommandError:
             raise
         except Exception as e:
             raise CommandInvokeError(self, e) from e
 
-    def error(self, coro: UnboundError) -> UnboundError:
+    def error(self, coro: Error[CogT]) -> Error[CogT]:
         """A decorator that registers a coroutine as a local error handler.
 
         The local error handler is called whenever an exception is raised in the body

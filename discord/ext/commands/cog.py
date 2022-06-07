@@ -191,7 +191,10 @@ class CogMeta(type):
                     if elem.startswith(('cog_', 'bot_')):
                         raise TypeError(no_bot_cog.format(base, elem))
                     commands[elem] = value
-                elif isinstance(value, (app_commands.Group, app_commands.Command)) and value.parent is None:
+                elif (
+                    isinstance(value, (app_commands.Group, app_commands.Command, app_commands.ContextMenu))
+                    and value.parent is None
+                ):
                     if is_static_method:
                         raise TypeError(f'Command in method {base}.{elem!r} must not be staticmethod.')
                     if elem.startswith(('cog_', 'bot_')):
@@ -269,7 +272,7 @@ class Cog(metaclass=CogMeta):
         lookup = {cmd.qualified_name: cmd for cmd in self.__cog_commands__}
 
         # Register the application commands
-        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = []
+        children: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any], app_commands.ContextMenu[Self]]] = []
 
         if cls.__cog_is_app_commands_group__:
             group = app_commands.Group(
@@ -299,9 +302,9 @@ class Cog(metaclass=CogMeta):
                 parent.add_command(command)  # type: ignore
 
             if hasattr(command, '__commands_is_hybrid__') and parent is None:
-                app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
-                    command, 'app_command', None
-                )
+                app_command: Optional[
+                    Union[app_commands.Group, app_commands.Command[Self, ..., Any], app_commands.ContextMenu[Self]]
+                ] = getattr(command, 'app_command', None)
                 if app_command:
                     group_parent = self.__cog_app_commands_group__
                     app_command = app_command._copy_with(parent=group_parent, binding=self)
