@@ -62,6 +62,7 @@ __all__ = (
     'EventStatus',
     'AppCommandType',
     'AppCommandOptionType',
+    'AppCommandPermissionType',
 )
 
 if TYPE_CHECKING:
@@ -680,6 +681,12 @@ class AppCommandType(Enum):
     chat_input = 1
     user = 2
     message = 3
+
+
+class AppCommandPermissionType(Enum):
+    role = 1
+    user = 2
+    channel = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
