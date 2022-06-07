@@ -877,9 +877,9 @@ class AppCommandPermissions:
 
     __slots__ = ('id', 'type', 'permission', 'target', 'guild', '_state')
 
-    def __init__(self, *, data: ApplicationCommandPermissions, guild: Optional[Guild], state: ConnectionState) -> None:
+    def __init__(self, *, data: ApplicationCommandPermissions, guild: Guild, state: ConnectionState) -> None:
         self._state: ConnectionState = state
-        self.guild: Optional[Guild] = guild
+        self.guild: Guild = guild
 
         self.id: int = int(data['id'])
         self.type: AppCommandPermissionType = try_enum(AppCommandPermissionType, data['type'])
@@ -888,16 +888,13 @@ class AppCommandPermissions:
         _object = None
 
         if self.type is AppCommandPermissionType.user:
-            if guild:
-                _object = guild.get_member(self.id)
-            else:
-                _object = self._state.get_user(self.id)
-        elif guild and self.type is AppCommandPermissionType.channel:
+            _object = guild.get_member(self.id) or self._state.get_user(self.id)
+        elif self.type is AppCommandPermissionType.channel:
             if self.id == (guild.id - 1):
                 _object = AllChannels(guild)
             else:
                 _object = guild.get_channel(self.id)
-        elif guild and self.type is AppCommandPermissionType.role:
+        elif self.type is AppCommandPermissionType.role:
             _object = guild.get_role(self.id)
 
         if _object is None:
@@ -943,17 +940,18 @@ class GuildAppCommandPermissions:
         self.id: int = int(data['id'])
         self.application_id: int = int(data['application_id'])
         self.guild_id: int = int(data['guild_id'])
+        guild = self.guild
         self.permissions: List[AppCommandPermissions] = [
-            AppCommandPermissions(data=value, guild=self.guild, state=self._state) for value in data['permissions']
+            AppCommandPermissions(data=value, guild=guild, state=self._state) for value in data['permissions']
         ]
 
     def to_dict(self) -> Dict[str, Any]:
         return {'permissions': [p.to_dict() for p in self.permissions]}
 
     @property
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`~discord.Guild`]: The guild associated with the permissions."""
-        return self._state._get_guild(self.guild_id)
+    def guild(self) -> Guild:
+        """:class:`~discord.Guild`: The guild associated with the permissions."""
+        return self._state._get_or_create_unavailable_guild(self.guild_id)
 
 
 def app_command_option_factory(
