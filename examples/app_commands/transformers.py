@@ -49,7 +49,7 @@ async def age(interaction: discord.Interaction, age: app_commands.Range[int, 0, 
 
 @bot.tree.command()
 async def userinfo(interaction: discord.Interaction, user: Optional[discord.User]):
-    """Get some information about an User"""
+    """Get some information about a User"""
     # In the command signature above, you can see that the `user`
     # parameter is typehinted to `Optinal[discord.User]`. This means that
     # the end-user will be able to pick a user that has access
